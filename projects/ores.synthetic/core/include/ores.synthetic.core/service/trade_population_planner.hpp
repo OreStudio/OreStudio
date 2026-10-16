@@ -85,8 +85,7 @@ trade_id_for(const domain::trade_generation_scope& scope, std::uint32_t slot);
  * The issue is shared by every trade of the same security, so it is named by
  * the security and by nothing else: two trades of one ISIN name one issue.
  */
-ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
-issue_id_for_security(const std::string& security_id);
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid issue_id_for_security(const std::string& security_id);
 
 /**
  * @brief The Internal identifier value a slot carries.
@@ -104,14 +103,15 @@ internal_identifier_for(const domain::trade_generation_scope& scope, std::uint32
  * shares its issue row, because a security is a fact about the issuer and not
  * about the trade.
  */
-ORES_SYNTHETIC_CORE_EXPORT std::string
-security_id_for(const domain::trade_generation_scope& scope, std::uint32_t slot);
+ORES_SYNTHETIC_CORE_EXPORT std::string security_id_for(const domain::trade_generation_scope& scope,
+                                                       std::uint32_t slot);
 
 /**
  * @brief The security identifier a named book's trades carry.
  */
 ORES_SYNTHETIC_CORE_EXPORT std::string
-security_id_for_book(const domain::trade_generation_scope& scope, const boost::uuids::uuid& book_id);
+security_id_for_book(const domain::trade_generation_scope& scope,
+                     const boost::uuids::uuid& book_id);
 
 /**
  * @brief The id a config carries, named by the party it books for and by its
@@ -121,16 +121,17 @@ security_id_for_book(const domain::trade_generation_scope& scope, const boost::u
  * the same recipe twice reaches the same config, and the trade identifiers
  * that name the config are stable from one environment to the next.
  */
-ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
-config_id_for(const boost::uuids::uuid& party_id, const std::string& name);
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid config_id_for(const boost::uuids::uuid& party_id,
+                                                            const std::string& name);
 
 /// The id one book of a config's scope carries.
-ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
-book_scope_id_for(const boost::uuids::uuid& config_id, const boost::uuids::uuid& book_id);
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid book_scope_id_for(const boost::uuids::uuid& config_id,
+                                                                const boost::uuids::uuid& book_id);
 
 /// The id one counterparty of a config's scope carries.
-ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid counterparty_scope_id_for(
-    const boost::uuids::uuid& config_id, const boost::uuids::uuid& counterparty_id);
+ORES_SYNTHETIC_CORE_EXPORT boost::uuids::uuid
+counterparty_scope_id_for(const boost::uuids::uuid& config_id,
+                          const boost::uuids::uuid& counterparty_id);
 
 }
 

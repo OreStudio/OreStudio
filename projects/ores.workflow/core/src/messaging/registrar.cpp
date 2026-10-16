@@ -18,7 +18,6 @@
  *
  */
 #include "ores.workflow.core/messaging/registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.dq.api/workflow/bundle_publish_workflow.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
@@ -29,6 +28,7 @@
 #include "ores.refdata.api/workflow/book_apply_workflow.hpp"
 #include "ores.refdata.api/workflow/counterparty_apply_workflow.hpp"
 #include "ores.reporting.api/workflow/report_execution_workflow.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.telemetry.core/messaging/service_samples_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"

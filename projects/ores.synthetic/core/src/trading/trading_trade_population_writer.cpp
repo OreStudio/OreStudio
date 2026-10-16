@@ -79,8 +79,7 @@ constexpr double coupon_rate = 0.05;
 
 trading_trade_population_writer::trading_trade_population_writer(
     ores::nats::service::nats_client& nats)
-    : nats_(nats) {
-}
+    : nats_(nats) {}
 
 template <typename Request>
 bool trading_trade_population_writer::call_ok(std::string_view subject,
@@ -95,9 +94,8 @@ bool trading_trade_population_writer::call_ok(std::string_view subject,
 
     auto decoded = codec.decode<typename Request::response_type>(reply.data);
     if (!decoded)
-        throw trade_population_write_error(
-            std::format("Writing {} answered something unreadable: {}", what,
-                        decoded.error().what()));
+        throw trade_population_write_error(std::format(
+            "Writing {} answered something unreadable: {}", what, decoded.error().what()));
     if (decoded->result.outcome != outcome::ok)
         throw trade_population_write_error(
             std::format("Writing {} failed: {}", what, decoded->result.message));
@@ -118,15 +116,13 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
             nats_.authenticated_request(request_type::nats_subject, codec.encode(request));
         const auto error = reply.headers.find("X-Error");
         if (error != reply.headers.end())
-            throw trade_population_write_error(std::format("{} was refused: {}",
-                                                           request_type::nats_subject,
-                                                           error->second));
+            throw trade_population_write_error(
+                std::format("{} was refused: {}", request_type::nats_subject, error->second));
         auto decoded = codec.decode<typename request_type::response_type>(reply.data);
         if (!decoded)
-            throw trade_population_write_error(
-                std::format("{} answered something unreadable: {}",
-                            request_type::nats_subject,
-                            decoded.error().what()));
+            throw trade_population_write_error(std::format("{} answered something unreadable: {}",
+                                                           request_type::nats_subject,
+                                                           decoded.error().what()));
         return *decoded;
     };
 
@@ -139,7 +135,8 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     config_req.filter = config_filter;
     const auto configs = read(config_req);
     if (configs.trade_generation_configs.empty())
-        throw trade_population_write_error("No trade generation config " + boost::uuids::to_string(config_id) +
+        throw trade_population_write_error("No trade generation config " +
+                                           boost::uuids::to_string(config_id) +
                                            " is on the books.");
     const auto& config = configs.trade_generation_configs.front();
 
@@ -179,9 +176,8 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     books_req.limit = page;
     const auto books = read(books_req);
     for (const auto& book_id : scope.book_ids) {
-        const auto known = std::ranges::any_of(books.books, [&](const auto& candidate) {
-            return candidate.id == book_id;
-        });
+        const auto known = std::ranges::any_of(
+            books.books, [&](const auto& candidate) { return candidate.id == book_id; });
         if (!known)
             throw trade_population_write_error("Book " + boost::uuids::to_string(book_id) +
                                                " is in the config's scope and is not a book of "
@@ -267,8 +263,8 @@ trading_trade_population_writer::read_trade(const boost::uuids::uuid& trade_id) 
         ores::trading::messaging::list_trades_request::nats_subject, codec.encode(req));
     const auto error = reply.headers.find("X-Error");
     if (error != reply.headers.end())
-        throw trade_population_write_error(
-            std::format("Reading trade {} was refused: {}", boost::uuids::to_string(trade_id), error->second));
+        throw trade_population_write_error(std::format(
+            "Reading trade {} was refused: {}", boost::uuids::to_string(trade_id), error->second));
     auto decoded = codec.decode<ores::trading::messaging::list_trades_response>(reply.data);
     if (!decoded)
         throw trade_population_write_error(
@@ -279,8 +275,7 @@ trading_trade_population_writer::read_trade(const boost::uuids::uuid& trade_id) 
         return std::nullopt;
     return trade_population_stored{
         .version = static_cast<std::uint32_t>(decoded->trades.front().version),
-        .external_version =
-            static_cast<std::uint32_t>(decoded->trades.front().external_version)};
+        .external_version = static_cast<std::uint32_t>(decoded->trades.front().external_version)};
 }
 
 void trading_trade_population_writer::write_trade(const trade_population_write& write,
@@ -343,8 +338,8 @@ void trading_trade_population_writer::write_trade(const trade_population_write& 
     identifier_req.change.write.trade_activity_id = *booked->activity_id;
     identifier_req.change.write.id_value = slot.internal_identifier;
     identifier_req.change.write.issuing_party_id = scope.party_id;
-    identifier_req.change.precondition = {
-        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    identifier_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                          std::nullopt};
     identifier_req.intent.reason_code = std::string(population_reason);
     identifier_req.intent.commentary = "Generated trade population.";
 
@@ -354,8 +349,7 @@ void trading_trade_population_writer::write_trade(const trade_population_write& 
 }
 
 void trading_trade_population_writer::write_instrument(
-    const trade_population_write& write,
-    const domain::trade_generation_scope& scope) {
+    const trade_population_write& write, const domain::trade_generation_scope& scope) {
     const auto& slot = write.slot;
     const auto activity = activities_.find(slot.trade_id);
     if (activity == activities_.end())
@@ -380,8 +374,8 @@ void trading_trade_population_writer::write_instrument(
         issue_req.change.write.calendar = slot.calendar;
         issue_req.change.write.sub_type = "Fixed";
         issue_req.change.write.price_type = "Clean";
-        issue_req.change.precondition = {
-            ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+        issue_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                         std::nullopt};
         issue_req.intent.reason_code = std::string(population_reason);
         issue_req.intent.commentary = "Generated trade population.";
 
@@ -401,8 +395,8 @@ void trading_trade_population_writer::write_instrument(
     instrument_req.change.write.issue_id = write.issue_id;
     instrument_req.change.write.notional =
         ores::utility::decimal::decimal::from_double(slot.notional).value();
-    instrument_req.change.precondition = {
-        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    instrument_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                          std::nullopt};
     instrument_req.intent.reason_code = std::string(population_reason);
     instrument_req.intent.commentary = "Generated trade population.";
 
@@ -411,9 +405,8 @@ void trading_trade_population_writer::write_instrument(
             "the bond instrument of trade " + boost::uuids::to_string(slot.trade_id));
 }
 
-void trading_trade_population_writer::write_issue_leg(
-    const trade_population_write& write,
-    const domain::trade_generation_scope&) {
+void trading_trade_population_writer::write_issue_leg(const trade_population_write& write,
+                                                      const domain::trade_generation_scope&) {
     const auto& slot = write.slot;
 
     ores::trading::messaging::put_bond_issue_leg_request leg_req;
@@ -424,8 +417,8 @@ void trading_trade_population_writer::write_issue_leg(
     leg_req.change.write.currency = slot.currency;
     leg_req.change.write.payment_convention = "F";
     leg_req.change.write.day_counter = "ACT/ACT";
-    leg_req.change.precondition = {
-        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    leg_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                   std::nullopt};
     leg_req.intent.reason_code = std::string(population_reason);
     leg_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_request::nats_subject,
@@ -439,8 +432,8 @@ void trading_trade_population_writer::write_issue_leg(
     amount_req.change.write.sequence_number = 1;
     amount_req.change.write.value =
         ores::utility::decimal::decimal::from_double(slot.notional).value();
-    amount_req.change.precondition = {
-        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    amount_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                      std::nullopt};
     amount_req.intent.reason_code = std::string(population_reason);
     amount_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_amount_request::nats_subject,
@@ -456,8 +449,8 @@ void trading_trade_population_writer::write_issue_leg(
     rate_req.change.write.issue_id = write.issue_id;
     rate_req.change.write.leg_number = 1;
     rate_req.change.write.rate_kind = "fixed";
-    rate_req.change.precondition = {
-        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    rate_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                    std::nullopt};
     rate_req.intent.reason_code = std::string(population_reason);
     rate_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_rate_request::nats_subject,
@@ -471,8 +464,8 @@ void trading_trade_population_writer::write_issue_leg(
     coupon_req.change.write.sequence_number = 2;
     coupon_req.change.write.value =
         ores::utility::decimal::decimal::from_double(coupon_rate).value();
-    coupon_req.change.precondition = {
-        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    coupon_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                      std::nullopt};
     coupon_req.intent.reason_code = std::string(population_reason);
     coupon_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_amount_request::nats_subject,
@@ -497,8 +490,8 @@ void trading_trade_population_writer::write_issue_leg(
     schedule_req.change.write.convention = "F";
     schedule_req.change.write.term_convention = "F";
     schedule_req.change.write.rule = "Forward";
-    schedule_req.change.precondition = {
-        ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
+    schedule_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                        std::nullopt};
     schedule_req.intent.reason_code = std::string(population_reason);
     schedule_req.intent.commentary = "Generated trade population.";
     call_ok(ores::trading::messaging::put_bond_issue_leg_schedule_request::nats_subject,

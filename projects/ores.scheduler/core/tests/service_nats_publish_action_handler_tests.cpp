@@ -180,8 +180,7 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     // reference would point at a destroyed client by then, and the publish below
     // would run against a torn-down connection. The suite passes alone and
     // segfaults under load, which is what a race looks like.
-    auto nats = std::make_shared<ores::nats::service::client>(
-        ores::testing::make_nats_options());
+    auto nats = std::make_shared<ores::nats::service::client>(ores::testing::make_nats_options());
     nats->connect();
     REQUIRE(nats->is_connected());
 
@@ -192,8 +191,8 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     // and the job was recorded as succeeded while no report instance existed.
     auto responder = nats->subscribe(refused_in_envelope_subject, [nats](ores::nats::message msg) {
         nats->publish(msg.reply_subject,
-                     {},
-                     {{std::string(ores::nats::headers::x_error), std::string("forbidden")}});
+                      {},
+                      {{std::string(ores::nats::headers::x_error), std::string("forbidden")}});
     });
 
     auto svc_nats = make_unauthenticated_client(*nats);
@@ -221,8 +220,7 @@ TEST_CASE("nats_publish_action_handler fails the job when the trigger is refused
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto nats = std::make_shared<ores::nats::service::client>(
-        ores::testing::make_nats_options());
+    auto nats = std::make_shared<ores::nats::service::client>(ores::testing::make_nats_options());
     nats->connect();
     REQUIRE(nats->is_connected());
 

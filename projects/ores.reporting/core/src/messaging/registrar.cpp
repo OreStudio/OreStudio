@@ -18,7 +18,6 @@
  *
  */
 #include "ores.reporting.core/messaging/registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
@@ -38,6 +37,7 @@
 #include "ores.reporting.core/messaging/report_scheduling_handler.hpp"
 #include "ores.reporting.core/messaging/report_type_handler.hpp"
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
 #include <array>
 #include <memory>
@@ -289,15 +289,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     auto reh = std::make_shared<report_execution_handler>(
         nats, ctx, svc_nats, instance_states, std::move(http_base_url));
-    static constexpr std::array step_subjects{
-        gather_trades_request::nats_subject,
-        gather_market_data_request::nats_subject,
-        assemble_bundle_request::nats_subject,
-        resolve_prepared_input_request::nats_subject,
-        collect_compute_results_request::nats_subject,
-        ignore_compute_results_request::nats_subject,
-        finalise_report_request::nats_subject,
-        fail_report_request::nats_subject};
+    static constexpr std::array step_subjects{gather_trades_request::nats_subject,
+                                              gather_market_data_request::nats_subject,
+                                              assemble_bundle_request::nats_subject,
+                                              resolve_prepared_input_request::nats_subject,
+                                              collect_compute_results_request::nats_subject,
+                                              ignore_compute_results_request::nats_subject,
+                                              finalise_report_request::nats_subject,
+                                              fail_report_request::nats_subject};
     const auto step_stream =
         ores::service::messaging::ensure_step_stream(nats, group, step_subjects, "execution");
 
@@ -405,15 +404,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ores::service::messaging::ensure_step_stream(nats, group, publish_subjects);
         for (const auto subject : publish_subjects) {
             subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats,
-                subject,
-                group,
-                step_stream,
-                [pdq](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            pdq->handle(std::move(msg));
-            ack.accept();
-        }));
+                nats, subject, group, step_stream, [pdq](ores::nats::message msg) {
+                    ores::nats::ack_guard ack(msg);
+                    pdq->handle(std::move(msg));
+                    ack.accept();
+                }));
         }
     }
 

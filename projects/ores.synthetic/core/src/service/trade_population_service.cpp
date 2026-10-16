@@ -39,17 +39,15 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
         const auto stored = writer_.read_trade(slot.trade_id);
         if (stored.has_value()) {
             ++run.already_present;
-            run.outcomes.push_back(trade_population_outcome{.trade_id = slot.trade_id,
-                                                            .internal_identifier =
-                                                                slot.internal_identifier,
-                                                            .book_id = slot.book_id,
-                                                            .counterparty_id = slot.counterparty_id,
-                                                            .trade_type_code =
-                                                                slot.trade_type_code,
-                                                            .already_present = true,
-                                                            .version = stored->version,
-                                                            .external_version =
-                                                                stored->external_version});
+            run.outcomes.push_back(
+                trade_population_outcome{.trade_id = slot.trade_id,
+                                         .internal_identifier = slot.internal_identifier,
+                                         .book_id = slot.book_id,
+                                         .counterparty_id = slot.counterparty_id,
+                                         .trade_type_code = slot.trade_type_code,
+                                         .already_present = true,
+                                         .version = stored->version,
+                                         .external_version = stored->external_version});
             continue;
         }
 
@@ -62,14 +60,13 @@ trade_population_run trade_population_service::run(const boost::uuids::uuid& con
         writer_.write_instrument(write, scope);
 
         ++run.written;
-        run.outcomes.push_back(trade_population_outcome{.trade_id = slot.trade_id,
-                                                        .internal_identifier =
-                                                            slot.internal_identifier,
-                                                        .book_id = slot.book_id,
-                                                        .counterparty_id =
-                                                            slot.counterparty_id,
-                                                        .trade_type_code = slot.trade_type_code,
-                                                        .already_present = false});
+        run.outcomes.push_back(
+            trade_population_outcome{.trade_id = slot.trade_id,
+                                     .internal_identifier = slot.internal_identifier,
+                                     .book_id = slot.book_id,
+                                     .counterparty_id = slot.counterparty_id,
+                                     .trade_type_code = slot.trade_type_code,
+                                     .already_present = false});
     }
 
     return run;

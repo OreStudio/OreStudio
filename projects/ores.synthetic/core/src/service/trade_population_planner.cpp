@@ -39,9 +39,22 @@ using namespace std::chrono;
  * generator rather than a value a caller supplies, so a trade id is a function
  * of the scope and never of a deployment.
  */
-const boost::uuids::uuid population_namespace = {
-    {0x3f, 0x2a, 0x9c, 0x18, 0x6d, 0x4b, 0x4c, 0x61,
-     0x9e, 0x0d, 0x7b, 0x21, 0x5a, 0x88, 0x0c, 0x94}};
+const boost::uuids::uuid population_namespace = {{0x3f,
+                                                  0x2a,
+                                                  0x9c,
+                                                  0x18,
+                                                  0x6d,
+                                                  0x4b,
+                                                  0x4c,
+                                                  0x61,
+                                                  0x9e,
+                                                  0x0d,
+                                                  0x7b,
+                                                  0x21,
+                                                  0x5a,
+                                                  0x88,
+                                                  0x0c,
+                                                  0x94}};
 
 boost::uuids::uuid named(const std::string& name) {
     static const boost::uuids::name_generator_sha1 generator(population_namespace);
@@ -222,9 +235,8 @@ boost::uuids::uuid config_id_for(const boost::uuids::uuid& party_id, const std::
 
 boost::uuids::uuid book_scope_id_for(const boost::uuids::uuid& config_id,
                                      const boost::uuids::uuid& book_id) {
-    return named(std::format("config_book:{}:{}",
-                             boost::uuids::to_string(config_id),
-                             boost::uuids::to_string(book_id)));
+    return named(std::format(
+        "config_book:{}:{}", boost::uuids::to_string(config_id), boost::uuids::to_string(book_id)));
 }
 
 boost::uuids::uuid counterparty_scope_id_for(const boost::uuids::uuid& config_id,
@@ -250,14 +262,16 @@ std::string security_id_for(const domain::trade_generation_scope& scope, std::ui
     return security_id_for_book(scope, book_id);
 }
 
-std::string security_id_for_book(const domain::trade_generation_scope& scope,
-                                 const boost::uuids::uuid& book_id) {    /*
-     * One security per book, named by the party and the book. Every trade of
-     * the book states the same terms and shares one issue row, which is what
-     * a security is: a fact about the issuer rather than about the trade.
-     */
-    const auto digest = named(std::format("bond:{}:{}", boost::uuids::to_string(scope.party_id),
-                                          boost::uuids::to_string(book_id)));
+std::string security_id_for_book(
+    const domain::trade_generation_scope& scope,
+    const boost::uuids::uuid&
+        book_id) { /*
+                    * One security per book, named by the party and the book. Every trade of
+                    * the book states the same terms and shares one issue row, which is what
+                    * a security is: a fact about the issuer rather than about the trade.
+                    */
+    const auto digest = named(std::format(
+        "bond:{}:{}", boost::uuids::to_string(scope.party_id), boost::uuids::to_string(book_id)));
     static constexpr char alphabet[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     std::string body;
     body.reserve(9);
@@ -272,9 +286,7 @@ std::string security_id_for_book(const domain::trade_generation_scope& scope,
     int sum = 0;
     bool double_it = true;
     for (auto it = without_check.rbegin(); it != without_check.rend(); ++it) {
-        const auto digit = (*it >= '0' && *it <= '9')
-                               ? (*it - '0')
-                               : (10 + (*it - 'A'));
+        const auto digit = (*it >= '0' && *it <= '9') ? (*it - '0') : (10 + (*it - 'A'));
         auto value = double_it ? digit * 2 : digit;
         sum += (value / 10) + (value % 10);
         double_it = !double_it;

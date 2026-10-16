@@ -18,7 +18,6 @@
  *
  */
 #include "ores.dq.core/messaging/registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.dq.api/messaging/artefact_type_protocol.hpp"
 #include "ores.dq.api/messaging/catalog_protocol.hpp"
 #include "ores.dq.api/messaging/change_reason_category_protocol.hpp"
@@ -89,6 +88,7 @@
 #include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include <array>
 #include <memory>
 #include <string_view>
@@ -464,11 +464,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ores::service::messaging::ensure_step_stream(nats, queue_group, subjects);
         for (const auto subject : subjects) {
             subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats,
-                subject,
-                queue_group,
-                step_stream,
-                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+                nats, subject, queue_group, step_stream, [pdq](ores::nats::message msg) {
+                    pdq->handle(std::move(msg));
+                }));
         }
     }
 

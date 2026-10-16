@@ -104,8 +104,8 @@ resolve_report_definition(std::ostream& out, nats_client& session, const std::st
     ores::reporting::messaging::list_report_definitions_request req;
     req.limit = 100;
     req.filter = ores::reporting::messaging::report_definitions_filter{
-        .party_id_one_of = std::vector<boost::uuids::uuid>{boost::uuids::string_generator()(
-            party_id)}};
+        .party_id_one_of =
+            std::vector<boost::uuids::uuid>{boost::uuids::string_generator()(party_id)}};
 
     const auto listing =
         do_auth_request<ores::reporting::messaging::list_report_definitions_response>(

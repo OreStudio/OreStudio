@@ -244,14 +244,13 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
 
 TEST_CASE("the trade generation waits for the books, the staff and the feeds", tags) {
     const auto def = setup_definition();
-    const auto steps =
-        def.build_steps(request_json({declared("publish_bundle"),
-                                      declared("provision_party"),
-                                      declared("load_staff"),
-                                      declared("start_market_feeds"),
-                                      declared("generate_trades")}),
-                        tenant_id,
-                        correlation_id);
+    const auto steps = def.build_steps(request_json({declared("publish_bundle"),
+                                                     declared("provision_party"),
+                                                     declared("load_staff"),
+                                                     declared("start_market_feeds"),
+                                                     declared("generate_trades")}),
+                                       tenant_id,
+                                       correlation_id);
 
     const auto inputs_of = [&](const std::string& name) {
         for (const auto& step : steps)

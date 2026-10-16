@@ -41,18 +41,18 @@ const std::string tags("[trade_population]");
 using namespace ores::synthetic;
 using namespace ores::synthetic::service;
 
-const boost::uuids::uuid config_id = boost::uuids::string_generator()(
-    "0cd68b09-6ebc-4180-a298-0cc386590f31");
-const boost::uuids::uuid party_id = boost::uuids::string_generator()(
-    "11111111-1111-1111-1111-111111111111");
-const boost::uuids::uuid bond_book = boost::uuids::string_generator()(
-    "22222222-2222-2222-2222-222222222222");
-const boost::uuids::uuid second_book = boost::uuids::string_generator()(
-    "33333333-3333-3333-3333-333333333333");
-const boost::uuids::uuid bank = boost::uuids::string_generator()(
-    "44444444-4444-4444-4444-444444444444");
-const boost::uuids::uuid second_bank = boost::uuids::string_generator()(
-    "55555555-5555-5555-5555-555555555555");
+const boost::uuids::uuid config_id =
+    boost::uuids::string_generator()("0cd68b09-6ebc-4180-a298-0cc386590f31");
+const boost::uuids::uuid party_id =
+    boost::uuids::string_generator()("11111111-1111-1111-1111-111111111111");
+const boost::uuids::uuid bond_book =
+    boost::uuids::string_generator()("22222222-2222-2222-2222-222222222222");
+const boost::uuids::uuid second_book =
+    boost::uuids::string_generator()("33333333-3333-3333-3333-333333333333");
+const boost::uuids::uuid bank =
+    boost::uuids::string_generator()("44444444-4444-4444-4444-444444444444");
+const boost::uuids::uuid second_bank =
+    boost::uuids::string_generator()("55555555-5555-5555-5555-555555555555");
 
 domain::trade_generation_scope bond_scope() {
     domain::trade_generation_scope scope;
@@ -208,8 +208,7 @@ TEST_CASE("a_family_the_generator_does_not_cover_is_refused_by_name", tags) {
     auto rates = bond_scope();
     rates.asset_class_code = "interest_rates";
 
-    CHECK_THROWS_WITH(plan_population(rates),
-                      Catch::Matchers::ContainsSubstring("interest_rates"));
+    CHECK_THROWS_WITH(plan_population(rates), Catch::Matchers::ContainsSubstring("interest_rates"));
 }
 
 TEST_CASE("the_notional_of_every_slot_sits_in_the_band", tags) {
@@ -260,8 +259,7 @@ TEST_CASE("two_runs_over_one_scope_write_nothing_the_second_time", tags) {
     REQUIRE(second.outcomes.size() == first.outcomes.size());
     for (std::size_t i = 0; i < second.outcomes.size(); ++i) {
         REQUIRE(second.outcomes[i].trade_id == first.outcomes[i].trade_id);
-        REQUIRE(second.outcomes[i].internal_identifier ==
-                first.outcomes[i].internal_identifier);
+        REQUIRE(second.outcomes[i].internal_identifier == first.outcomes[i].internal_identifier);
         REQUIRE(version_of(writer, second.outcomes[i].trade_id) ==
                 version_of(writer, first.outcomes[i].trade_id));
         REQUIRE(version_of(writer, second.outcomes[i].trade_id) ==

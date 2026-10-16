@@ -18,12 +18,12 @@
  *
  */
 #include "ores.assets.core/messaging/registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.assets.core/messaging/image_operations_handler.hpp"
 #include "ores.assets.core/messaging/image_registrar.hpp"
 #include "ores.assets.core/messaging/image_tag_registrar.hpp"
 #include "ores.assets.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.assets.core/messaging/tag_registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include <array>
 #include <iterator>
 #include <memory>
@@ -75,15 +75,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, std::move(ctx));
         static constexpr std::array publish_subjects{"assets.v1.ops.publish_images_from_dq"};
-        const auto step_stream =
-            ores::service::messaging::ensure_step_stream(nats, "ores.assets.service", publish_subjects);
+        const auto step_stream = ores::service::messaging::ensure_step_stream(
+            nats, "ores.assets.service", publish_subjects);
         for (const auto subject : publish_subjects) {
             subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats,
-                subject,
-                "ores.assets.service",
-                step_stream,
-                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+                nats, subject, "ores.assets.service", step_stream, [pdq](ores::nats::message msg) {
+                    pdq->handle(std::move(msg));
+                }));
         }
     }
 

@@ -97,11 +97,7 @@ std::vector<bond_leg_entity> read_leg_versions(context ctx, const std::string& t
                        sqlgen::order_by("valid_from"_c);
 
     return execute_read_query<bond_leg_entity, bond_leg_entity>(
-        ctx,
-        query,
-        [](const auto& entities) { return entities; },
-        lg,
-        "Reading raw bond leg rows");
+        ctx, query, [](const auto& entities) { return entities; }, lg, "Reading raw bond leg rows");
 }
 
 /*
@@ -263,8 +259,7 @@ TEST_CASE("as_of_read_reports_the_legs_current_at_each_parent_version", tags) {
      * written microseconds later, and its own window does not overlap this one.
      */
     const auto booking = opens_at(before_leg.front());
-    const auto earlier = leg_repo.read_by_trade_id_as_of(
-        ctx, id_str, booking, booking);
+    const auto earlier = leg_repo.read_by_trade_id_as_of(ctx, id_str, booking, booking);
     CHECK(earlier.empty());
 
     /* The leg was written inside the trade's current window, so it is current. */

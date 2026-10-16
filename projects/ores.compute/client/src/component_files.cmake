@@ -27,4 +27,5 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.client/client/package_publisher.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.client/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.client/ores.compute.client.hpp"
 )

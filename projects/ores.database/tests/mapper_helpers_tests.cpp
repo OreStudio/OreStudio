@@ -46,5 +46,5 @@ TEST_CASE("a_row_that_ended_has_the_instant_it_ended", tags) {
     const auto end = validity_end(ended.value());
     REQUIRE(end.has_value());
     CHECK(*end == timestamp_to_timepoint(ended.value()));
-    CHECK(ores::platform::time::datetime::to_iso8601_utc(*end) == "2026-10-11 16:52:50Z");
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(*end) == "2026-10-11 16:52:50.000000Z");
 }

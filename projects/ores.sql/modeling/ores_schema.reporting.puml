@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: reporting
-Tables: 23
+Tables: 25
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -467,6 +467,96 @@ package "reporting" #E0F7FA {
     It is cleared when the definition is suspended or archived.
     end note
 
+    entity ores_reporting_report_error_scopes_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * code : text <<PK>>
+        --
+        * version : integer
+        * name : text
+        * description : text
+        * display_order : integer
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_error_scopes_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Error Scope Table
+    The vocabulary a report error's scope is drawn from. The engine that computes a
+    report states the scope of every error it emits, in its structured log, as a
+    group. The codes here are those group names verbatim, so the model adds no
+    classification of its own: the engine says Trade and the row says Trade.
+    Report is the only code this model states rather than copies. Every other code
+    is a string the engine writes, and a code the engine writes that is not a row
+    here is a vocabulary the engine has grown: the row is refused, loudly, rather
+    than stored with a scope no reader can place.
+    end note
+
+    entity ores_reporting_report_errors_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * report_instance_id : uuid <<FK>>
+        * scope_code : text <<FK>>
+        * severity : text
+        * message : text
+          subject : text
+          subject_id : text <<FK>>
+          detail : jsonb
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_reporting_report_errors_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Report Error Table
+    +#+updated: 2026-10-16
+    One error a report run produced, held against the run. A report run is one
+    execution of a report definition, and a run whose analytics fail is still a run
+    that completed: the engine finished, wrote its report, and said in its own log
+    that a trade would not build. Those errors are facts about the run, they belong
+    to it, and they are what this table holds.
+    A row says four things: how bad the error is, what it is about, what it said,
+    and which subject it names. The first is severity. The second is scope_code,
+    drawn from the engine's own vocabulary, and it is what places the error:
+    Trade on the trade, Analytics on the analytic, Curve on the curve, and
+    Report on the run itself. The third is message, the engine's own words.
+    The fourth is subject and subject_id, a discriminator and a value, holding
+    the identifier of the thing the error names: trade and a trade id,
+    analytic and an analytic type, curve and a curve id. It is a discriminator
+    and a value rather than one column because the ids are of different kinds — a
+    trade id is a UUID the portfolio builder minted, a curve id is a free-text name
+    such as [IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)] — and one column holding
+    both would be a text column no reader can key on. It is not a database foreign
+    key for the same reason: the engine names trades by its own ids and curves by
+    their ORE names, and neither is a key any table here holds. The pair is stored
+    so that a screen can find every error about one subject, and it is a
+    discriminator rather than a fixed column per kind because the engine adds
+    sub-fields to the groups it already has, as the corpus shows it doing when an
+    Analytics error grew a tradeId.
+    scope_code and subject are not the same question. The scope is the group the
+    engine emitted, which is what the error is about at the level the engine named
+    it; the subject is the particular thing, and it can be narrower than the scope.
+    An Analytics error that names a tradeId is about that trade and not about
+    the analytic as a whole, and its subject says so.
+    A run that fails before the engine sees it, because a workflow step did not
+    complete, produces a row too, with scope Report. That is why the table is one
+    table rather than two: a reader opening a report wants its errors in one place.
+    end note
+
     entity ores_reporting_report_input_bundles_tbl  #F7E5FF {
         * tenant_id : uuid <<PK, FK>>
         * id : uuid <<PK>>
@@ -790,6 +880,8 @@ ores_reporting_report_definitions_tbl ||--o{ ores_reporting_report_configuration
 ores_reporting_configuration_types_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_configurations_tbl ||--o{ ores_reporting_report_configurations_tbl : "has"
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_definitions_tbl : "has"
+ores_reporting_report_instances_tbl ||--o{ ores_reporting_report_errors_tbl : "has"
+ores_reporting_report_error_scopes_tbl ||--o{ ores_reporting_report_errors_tbl : "has"
 ores_reporting_report_instance_kinds_tbl ||--o{ ores_reporting_report_instances_tbl : "has"
 ores_reporting_report_trigger_types_tbl ||--o{ ores_reporting_report_trigger_events_tbl : "has"
 ores_reporting_report_types_tbl ||--o{ ores_reporting_report_type_configuration_types_tbl : "has"

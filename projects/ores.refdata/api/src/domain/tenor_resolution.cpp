@@ -70,17 +70,14 @@ std::chrono::year_month_day resolve_anchor_date(const std::string& anchor_code,
                                 "TOMORROW do)");
 }
 
-// The closed-form IMM roll rule: the first business day on-or-after the 20th
-// of the quarter month (March, June, September, December). The 20th itself
-// when it is a weekday; the next weekday otherwise (doc/knowledge/domain/
-// imm_dates.org).
+// The closed-form CDS roll rule: the 20th of the quarter month (March, June,
+// September, December), exactly. No business-day adjustment: the date may fall
+// on a weekend, which is what lets every contract in a CDS series mature on
+// the same day. This is the CDS roll date, not the exchange-traded IMM date,
+// which is the third Wednesday and is not modelled here — see
+// doc/knowledge/domain/imm_dates.org.
 std::chrono::year_month_day roll_quarter_date(std::chrono::year y, std::chrono::month m) {
-    using namespace std::chrono;
-
-    auto d = year_month_day(y / m / day(20));
-    while (weekday(sys_days(d)) == Saturday || weekday(sys_days(d)) == Sunday)
-        d = year_month_day(sys_days(d) + days(1));
-    return d;
+    return std::chrono::year_month_day(y / m / std::chrono::day(20));
 }
 
 // The n-th ROLL_QUARTER date on-or-after the anchor, walking the closed form

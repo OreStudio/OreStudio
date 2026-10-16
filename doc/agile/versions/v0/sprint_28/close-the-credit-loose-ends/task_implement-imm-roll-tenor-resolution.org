@@ -114,12 +114,21 @@ whose schedule is =ROLL_QUARTER=, in
 
 The resolver computes the roll closed-form in
 =projects/ores.refdata/api/src/domain/tenor_resolution.cpp=:
-=roll_quarter_date()= takes the 20th of the March/June/September/December
-quarter and advances to the next weekday, and =walk_roll_quarter()= counts the
-requested quarters forward from the anchor. That is the rule
-=doc/knowledge/domain/imm_dates.org= states, which defines the closed form as
-"20th + business-day adjustment" rather than the third-Wednesday form used
-elsewhere in the industry.
+=roll_quarter_date()= returns the 20th of the March/June/September/December
+quarter, and =walk_roll_quarter()= counts the requested quarters forward from
+the anchor.
+
+That the rule is the 20th, and not a business-day adjustment of it, is a
+correction this task made. The knowledge page had called the 20th "the first
+business day following" it, and the code advanced a weekend date to the next
+weekday. Both were wrong, and neither matched a market convention. There are
+two conventions under the name "IMM date", and the page now documents both:
+the true IMM date is the third Wednesday of the quarter month, used by
+exchange-traded STIR futures, and the CDS roll date is the 20th, used by
+credit default swaps. =ROLL_QUARTER= models the second, because its only
+consumer is =CREDIT_CDS_IMM=. The 20th is kept exactly, weekend or not, since
+that is what lets every contract in a CDS series mature on one date. The
+third-Wednesday IMM date has no schedule and is recorded as a gap.
 
 Two tests pin it: =resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quarter=
 and =resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset=, both in

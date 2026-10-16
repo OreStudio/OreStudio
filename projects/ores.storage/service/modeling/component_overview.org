@@ -105,6 +105,42 @@ co_await ores::service::service::run(
 co_return;
 #+end_src
 
+** Config option member
+
+The member the =--storage-dir= option fills. It must be the same directory the
+HTTP storage routes are given, because the two interfaces serve the same
+objects through the same store.
+
+#+begin_src cpp :name service_app_config_option :implements 0B222F2C-B8B6-41AE-AF03-C61D76AF6833
+    /**
+     * @brief Root directory the buckets live under.
+     *
+     * It must be the same directory the HTTP storage routes are given, because
+     * the two interfaces serve the same objects through the same store.
+     */
+    std::string storage_dir;
+#+end_src
+
+** Config option declaration
+
+#+begin_src cpp :name service_app_config_option_decl :implements F98CC722-3E53-4B86-90E7-69EC5D25702E
+    options_description sod("Object storage");
+    sod.add_options()("storage-dir",
+                      boost::program_options::value<std::string>()->default_value(
+                          "/var/ores/http-server/storage"),
+                      "Root directory the buckets live under. It must match the HTTP "
+                      "server's --storage-dir, because both interfaces serve the same "
+                      "objects through the same store.");
+    const auto od(
+        standard_service_options::make_options_description("ores.storage.service.log", sod));
+#+end_src
+
+** Config assignment
+
+#+begin_src cpp :name service_app_config_assignment :implements 691CE3AB-6788-4E1C-8E8A-948CE6534C75
+    r.storage_dir = vm["storage-dir"].as<std::string>();
+#+end_src
+
 * See also
 
 - [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component group overview.

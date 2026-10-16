@@ -23,11 +23,13 @@ _COMPONENT_FILES_TEMPLATES = {
     "cmake_component_files_tests.mustache",
 }
 
-# The paste kind ores.cpp.service-app.application_impl offers for the body of
-# run(). A service that implements it supplies its own body, and the template
-# renders the "not yet implemented" stub only when nothing implements it, so a
-# stub and a real implementation never appear together.
+# The paste kinds ores.cpp.service-app offers for the pieces of a service that
+# outgrows the stub: the body of run(), and the service's own command-line
+# option, whose declaration replaces the default options_description. A service
+# that implements either one supplies it from its model, and the template emits
+# the stub only when nothing implements it, so the two never appear together.
 SERVICE_APP_RUN_BODY_PASTE_KIND = "2CD994C9-83FF-4C41-8909-5AD2BF3DECCC"
+SERVICE_APP_CONFIG_DECL_PASTE_KIND = "F98CC722-3E53-4B86-90E7-69EC5D25702E"
 
 # Templates whose context needs the component's shell-command units injected
 # at render time -- the opted-in models scanned from the modeling directory of
@@ -2971,13 +2973,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             component['headers'] = headers
             component['has_headers'] = bool(headers)
 
-        # Whether this component supplies its own run() body through the
-        # service-app paste point. The template renders the "not yet
-        # implemented" stub only when it does not, so the two never appear
-        # together.
+        # Which of the service-app paste points this component fills. The
+        # templates render their stub and their default options_description only
+        # when the matching point is empty, so a supplied piece never appears
+        # beside the default it replaces.
+        pasted = {k.lower() for k in (component.get('implementations') or {})}
         component['has_app_run_body'] = (
-            SERVICE_APP_RUN_BODY_PASTE_KIND.lower()
-            in {k.lower() for k in (component.get('implementations') or {})})
+            SERVICE_APP_RUN_BODY_PASTE_KIND.lower() in pasted)
+        component['has_app_config_decl'] = (
+            SERVICE_APP_CONFIG_DECL_PASTE_KIND.lower() in pasted)
 
         data['component'] = component
 

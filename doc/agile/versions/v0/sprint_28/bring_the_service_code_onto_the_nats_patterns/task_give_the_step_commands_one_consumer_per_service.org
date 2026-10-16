@@ -37,11 +37,11 @@ Prerequisites]] states them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6B5E348B-6B7A-46BF-AB56-33E4D5327AE4][Bring the service code onto the NATS patterns]] |
-| Now          | Implementation landed on the branch; the full build and the live end-to-end run are outstanding. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build, then restart the fleet and compare the consumer shape against the baseline. |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
@@ -127,3 +127,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Every service serves its workflow step commands on one durable consumer
+declared from one =step_routes= table, the handler answers its own delivery, the
+consumers a service no longer declares are pruned at start, and the step streams
+use interest retention with a one-day backstop. Fifteen step streams went from
+eighty-eight consumers, none named after its stream, to one each.
+
+Step completion is an atomic claim. A hand-written lease table in the workflow
+schema holds it, the workflow service decides it with one conditional statement
+on =workflow.v1.ops.claim_step=, the transport takes it before dispatching to a
+handler, and the engine gives it back when the step leaves =in_progress=.
+
+The report run that was refused on =compute.v1.workunits.list_by_batch_id= now
+reaches =completed=: the role the run acts as held the write half of the compute
+batch and never the read.
+
+What it was verified against. The claim statement in SQL against the real table;
+four repository tests including two claims launched together with =std::async=;
+live under two replicas with a duplicate, showing one owner and one attempt;
+live under a busy answer; and live under a kill, where the takeover landed at
+one hundred and twenty seconds and the step completed with no deadline failure.
+The report run reaching =completed=. The full build green, and ninety of
+ninety-three suites passing, with the three failures in mainline features rather
+than here.
+
+What it did not settle. The claim's timing constants are bound to the delivery
+bound and to the shortest step deadline, and the invariant is written beside
+them; the fixture used for the kill run needed a deadline raised above the lease
+to stage it. The remaining red gates are mainline, and this branch inherits them.
+

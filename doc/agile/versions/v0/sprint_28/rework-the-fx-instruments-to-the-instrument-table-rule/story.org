@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+created: 2026-10-02
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Rework forwards, swaps, vanilla, barrier, digital, Asian, accumulator and varian
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | The family is reviewed. Seven units are staged; none is started. |
 | Waiting on    | Nothing.                               |
@@ -39,7 +39,7 @@ Rework forwards, swaps, vanilla, barrier, digital, Asian, accumulator and varian
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:64E2FF71-5AE6-4F32-A9FA-22306BD21E36][Carry the FX money digits across the ORE boundary]] | BACKLOG | | | Finding 1 of the FX review. Every FX money leaf in the ORE binding is a plain float, so the document's digits are lost before the mapper runs and all 35 exact_decimal call sites fall back to from_double. Make the family's money members lexical leaves through scripts/reapply_ore_lexical_form.py, write them back with set_exact, and prove the digits survive. |
+| [[id:64E2FF71-5AE6-4F32-A9FA-22306BD21E36][Carry the FX money digits across the ORE boundary]] | DONE | 2026-10-16 | 2026-10-16 | Finding 1 of the FX review. Every FX money leaf in the ORE binding is a plain float, so the document's digits are lost before the mapper runs and all 35 exact_decimal call sites fall back to from_double. Make the family's money members lexical leaves through scripts/reapply_ore_lexical_form.py, write them back with set_exact, and prove the digits survive. |
 | [[id:25681E10-8823-4DD7-910D-7C68FD4168A7][Give the FX accumulator range bounds their own table]] | BACKLOG | | | Finding 2 of the FX review. fx_accumulator_instrument.range_bounds_json holds the ORE RangeBounds list as JSON text in a column, because the list has no child table. Give the child its own model and table keyed by the trade, map it in both directions, and delete the column. |
 | [[id:336BB8B7-8E44-4CA1-A2AE-CAAC4275D666][Agree the FX continuous columns with their domain types]] | BACKLOG | | | Finding 3 of the FX review. fx_variance_swap_instrument.strike is numeric(38, 12) at rest with a double in the domain and the entity. A variance strike is a continuous quantity, so move the column to double precision and check every other FX continuous column agrees with its domain type. |
 | [[id:EB58810C-13FC-4464-A4B5-9981B6AB63E9][Batch the FX service reads onto the repository query]] | BACKLOG | | | Finding 4 of the FX review. The seven FX services issue 21 per-key single reads where the repository already declares a batch read by key vector. The shape is seven of seven services, so decide whether the fix belongs on a shared service base or on each service, and land it for the family. |

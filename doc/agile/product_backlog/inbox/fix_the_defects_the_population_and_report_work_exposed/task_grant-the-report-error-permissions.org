@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ A role holds each report error permission, chosen deliberately, so the error sub
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -60,6 +60,49 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+** Blocked on a schema decision, found before any grant was written
+
+The grant cannot be made yet, because the table it protects is not scoped the
+way the table it hangs off is.
+
+=ores_reporting_report_instances_tbl= carries two policies: a permissive tenant
+policy, and a restrictive party policy keyed on its own =party_id= column.
+
+  ores_reporting_report_instances_tbl | report_instances_party_isolation_policy
+    ((ores_iam_visible_party_ids_fn() IS NULL)
+     OR (party_id = ANY (ores_iam_visible_party_ids_fn())))
+
+=ores_reporting_report_errors_tbl= carries the tenant policy and nothing else.
+It has no =party_id= column, so the same policy cannot be written for it.
+
+** Why this blocks the grant
+
+Choosing the role is the small half. The reach is the large half. Today no role
+below admin reads a report run at all, so the only candidate is the every-person
+role, =Member=. Granting it =report_errors:read= would let a member of one party
+read the errors of another party's run, because a run is party-scoped and its
+errors are not. That is a leak the grant would create rather than one it would
+close.
+
+** The decision
+
+Either an error carries the party of the run it belongs to, so the existing
+restrictive policy shape applies to it unchanged, or errors are declared
+tenant-wide on purpose and the grant is withheld until the screen states who
+may see another party's failures.
+
+The first is the shape the rest of =ores.reporting= uses. It costs a column on
+=ores.reporting.report_error=, populated from the run, and the policy that
+mirrors =report_instances=. It is a model change and a regeneration, not a seed
+edit.
+
+** Also worth recording
+
+=TenantAdmin= and =SuperAdmin= already hold =*=, which =ores::security::
+authorization::grants= applies to every code except =installation::=. So the six
+seeded codes are reachable by those two roles today. The gap is every other
+role, not the handlers.
 
 * Test Scenarios
 

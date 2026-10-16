@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 505C7A75-017F-4030-91E7-D761C24BC002
+:END:
+#+title: The marketdata handler export_market_data_to_storage reads a…
+#+description: The marketdata handler export_market_data_to_storage reads a run's market data as the run identity and makes no permission check at all, so any caller that reaches the subject reads it. Every sibling read in the same family checks a code. Found while tracing why collect_compute_results was refused on compute.v1.workunits.list_by_batch_id.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

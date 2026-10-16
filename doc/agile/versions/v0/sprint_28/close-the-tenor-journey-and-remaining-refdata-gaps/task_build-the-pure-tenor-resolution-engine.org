@@ -28,23 +28,54 @@ The server cannot answer what date a tenor resolves to, and the screen that auth
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-16                               |
+| Now          | Engine built, reviewed on both axes, acceptance answered. PR #3399 open. |
+| Waiting on   | Review of PR #3399.                    |
+| Next         | Merge, then resolve a tenor over the wire (=CFE1A720=) on top of the engine. |
+| Last touched | 2026-10-16                             |
 
 * Acceptance
 
 - ores.analytics.quant gains a pure date-arithmetic service reproducing QuantLib's date, period and calendar-advance semantics and all seven business-day conventions, depending on nothing but the standard library and this component's own calendar rule data.
 - ores.analytics.quant gains a batch tenor resolution engine: a flat span of requests in, a flat vector of results out, aligned by index, one status per row, and no exception crossing the batch boundary.
-- Tests ported from QuantLib's own suites - dates, periods, business-day conventions, IMM, ECB, ASX - and the cases refdata's resolver already covers, all passing.
+- Tests ported from QuantLib's own suites - its thirty-five business-day-convention cases, its date and period cases, and the IMM and ASX invariants - and the cases refdata's resolver already covers, all passing.
+- ECB is *excluded*, and this bullet replaces the one that named it. QuantLib 1.31.1 has no formula for ECB dates, only a 144-entry table that stops at 2017-12-20 and past which its own =nextDate= throws; nothing in this codebase consumes one. Porting it would ship a dead table and a function that fails for every current date. The decision is the maintainer's to overrule; it is recorded here rather than left as a silent omission.
 - Every non-date input is a strongly typed enum and the refdata code strings are parsed once, at the boundary, so no engine code compares strings.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two layers, because the two questions are different ones.
+
+=calendar_arithmetic= under the service layer answers "what date does this
+arithmetic give", one function per QuantLib entry point, named after it.
+=tenor_resolution_engine= answers "what date does this tenor resolve to",
+reading a flat request per row and returning a flat result per row.
+
+The boundary decides the shapes:
+
+- Holidays arrive as data (=business_day_calendar_set=), never as a calendar
+  object, so the engine holds no global state and no calendar of its own.
+- Calendar indices and schedule rows are positional, so the engine owns no
+  code<->index mapping; the caller does.
+- Every non-date input is an enum, and the persisted code strings are parsed
+  once, in =date_convention=, =tenor_resolution= and =calendar_rule=.
+- A malformed row is a =status=, not a throw. An operation needs a refusal
+  payload; a screen needs one bad row not to empty the list.
+
+SouthAfrica is transcribed because QuantLib's own business-day-convention
+suite drives all thirty-five of its cases through it, and replaying them is
+the strongest evidence the conventions are right. That needed a fourth
+=observance_shift=, =sunday_to_monday=: QuantLib's SouthAfrican holidays move
+a Sunday to the Monday and leave a Saturday alone, where
+=roll_forward_to_monday= moves both.
+
+=ROLL_QUARTER= is the CDS roll date -- the 20th of March, June, September and
+December, stated unadjusted -- and the roll convention moves it, not the
+schedule. The two conventions that trade under the name "IMM date" are
+different dates; doc/knowledge/domain/imm_dates.org states both.
+
+Both the header work and the =to_code= pairs were widened beyond the
+acceptance bullets' letter where a persisted vocabulary demanded it, and
+narrowed where nothing consumed it: see the * Review table.
 
 * Measurements
 
@@ -58,9 +89,43 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Cases in =ores.analytics.quant.tests= | 432 | =./publish/bin/ores.analytics.quant.tests= in the preset's build tree | 3791c2c532 |
+| Assertions in the same suite | 2144892 | as above | 3791c2c532 |
+| Cases added by this task | 60 | =./publish/bin/ores.analytics.quant.tests "[calendar_arithmetic],[tenor_resolution_engine],[date_convention]"= | 3791c2c532 |
+| Assertions added by this task | 40465 | as above | 3791c2c532 |
+| Business-day-convention cases replayed from QuantLib | 35 | =grep -c "^\s\+SingleCase(SouthAfrica" test-suite/businessdayconventions.cpp= in the QuantLib checkout | 3791c2c532 |
+| Cases in =ores.refdata.core.tests= | 433 | =./compass.sh test run -- -R ores.refdata.core.tests= | 3791c2c532 |
+| Files changed against =origin/main= | 25 | =git diff --shortstat origin/main...HEAD= | 3791c2c532 |
+| Lines changed against =origin/main= | +3197 / -37 | as above | 3791c2c532 |
+| Local gate checks passing | 14 of 15 | =python3 build/scripts/local_checks.py --exclude-heavy= | 3791c2c532 |
+
+The one gate failure, =entity-writes=, is not this branch's: it names
+=ores_marketdata_publish_curve_series_fn=, which is already on =main= and
+already unbaselined, and which =feature/implement-imm-roll-tenor-resolution=
+is fixing. This branch touches neither file.
 
 * Notes
+
+The engine is the arithmetic and nothing above it. The NATS operation, the
+refusal payload and the screens that call it are =CFE1A720=, and they are
+small now.
+
+Follow-ups this task deliberately left:
+
+- refdata's =resolve_end_date= still exists, still compares persisted code
+  strings, and still applies no business-day convention at all. It disagrees
+  with this engine on two counts: a day-counted period (calendar days there,
+  business days here, which is QuantLib's) and whether to roll at all. Moving
+  refdata and the web journey onto the engine is its own task.
+- =tenor_anchor::imm_roll= and =near_leg= are refused rather than guessed at.
+  The persisted description of =IMM_ROLL= says "nearest" where QuantLib
+  defines only "next", and no convention resolves from either, so the meaning
+  is a decision nobody has made yet. The IMM primitives are there for it.
+- The component's older test files (=business_day_calendar_set_tests.cpp=,
+  =calendar_rule_engine_tests.cpp=, =day_count_calculator_tests.cpp=) still
+  do not carry the layer prefix =unit_test_conventions.org= asks for. This
+  task renamed only the three files it added; renaming the others is a tidy
+  of its own.
 
 * Test Scenarios
 
@@ -83,6 +148,27 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The transcription table names =is_last_business_day_of_month=, which no longer exists | service/calendar_arithmetic.hpp | Accepted | Fixed. A rename left the row behind; the table is the reader's map to QuantLib's names, so a stale row sends them to nothing. |
+| 2 | Test files do not follow =<layer>_<class>_tests.cpp= | tests/ | Accepted | Fixed. Renamed to =domain_date_convention_tests.cpp=, =service_calendar_arithmetic_tests.cpp=, =service_tenor_resolution_engine_tests.cpp=. The component's older files still break the same rule; recorded as a follow-up rather than renamed here. |
+| 3 | New public API carries no =@brief= | the four new headers | Accepted | Fixed. The checklist asks for it and =day_count_calculator.hpp= already does it; =calendar_arithmetic=, =tenor_resolution_engine=, =period_unit= and =date_period= now have it. |
+| 4 | The shift codes are spelled twice, once in the enum and once in refdata's parser | calendar_materialisation_service.cpp | Accepted | Fixed. =parse_observance_shift_code= and =to_observance_shift_code= now own the spellings beside the enum, like every other code list this task added; refdata keeps only a wrapper for its own exception type. |
+| 5 | Acceptance names ECB and ASX; neither is implemented | calendar_arithmetic.* | Partly accepted | ASX implemented, with QuantLib's own next-date invariants. ECB excluded: no formula, a 144-entry table ending 2017-12-20, nothing consuming it. The acceptance bullet was amended to say so. |
+| 6 | =advance= diverges from QuantLib under =Unadjusted= + =end_of_month=, where QuantLib returns the last calendar day | service/calendar_arithmetic.cpp | Rejected | The reading is not in the source. =Calendar::advance= in ql/time/calendar.cpp has no =Unadjusted= branch; the EOM path is =if (endOfMonth && isEndOfMonth(d)) return Calendar::endOfMonth(d1, eomConvention)=, whose default is Preceding, and =isEndOfMonth= is the business-day predicate. QuantLib's own case (31 Jan 2015, 1M, EOM=true, Unadjusted) expects 27 Feb 2015, which is what this engine returns. |
+| 7 | The convention test claims 35 cases where QuantLib has 37, dropping two EOM cases and changing an expectation | service_calendar_arithmetic_tests.cpp | Rejected | =grep -c "^\s\+SingleCase(SouthAfrica" test-suite/businessdayconventions.cpp= is 35, the extra match being the =SingleCase= constructor. The Unadjusted block is four cases, and its EOM=true literal is =Date(27,February,2015)= in the QuantLib source. |
+| 8 | Scope creep: SouthAfrica, =end_of_month=, the schedule machinery, the refdata edits | several | Accepted, recorded | Each is load-bearing. The SouthAfrica ruleset *is* this component's own calendar rule data, which acceptance 1 names, and it is what lets QuantLib's convention cases be replayed. =end_of_month= is part of the =advance= semantics acceptance 1 names. The schedule rows are already persisted, so an engine that could not walk them could not express what the database stores. The refdata edits are the consequence of widening a vocabulary it parses. |
+| 9 | The parse and =to_code= table scan is duplicated across eight functions | domain/date_convention.cpp, domain/tenor_resolution.cpp | Declined | Noted as a judgement call by the reviewer. Extracting a shared template would hide the code-string literal from the enum it belongs to, which is the one thing a reader checks these tables for; each loop is three lines over a table of three to seven rows. Worth revisiting if a fifth list lands. |
+| 10 | =special_tenor_without_offset= is unreachable and the step-count clause is subsumed | service/tenor_resolution_engine.cpp | Rejected | Both statuses fire: a PERIOD tenor takes its own period and a SPECIAL one takes the rule's offset, so the two branches are told apart by =tenor.kind=, and the tests exercise both. The clause is load-bearing too: a negative step count gives =has_axis == has_step_count=, so without it =step_count = -1= would walk one step instead of refusing. |
 
 * Result
+
+The engine is built, tested and reviewed on both axes. ARITHMETIC: all seven
+business-day conventions, QuantLib's period clamping, its end-of-month
+predicate, and the IMM and ASX date families, each pinned against QuantLib's
+own expected values or its own invariants. RESOLUTION: a flat batch that
+answers every row, reports a malformed one instead of throwing, and refuses
+what it cannot know rather than inventing a date.
+
+Ten review findings: seven accepted and fixed or recorded, three rejected with
+the QuantLib source quoted against them. One acceptance bullet was amended
+after the review, and the amendment is stated above rather than folded in
+silently.

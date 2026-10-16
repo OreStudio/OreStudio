@@ -34,7 +34,7 @@ using Catch::Approx;
  *
  * For each example trade:
  *   1. Parse ORE XML using ores.ore XSD types.
- *   2. Forward-map to ORES typed domain object (via fx_instrument_variant).
+ *   2. Forward-map to the typed ORES domain object.
  *   3. Verify key fields were captured correctly.
  *   4. Reverse-map back to ORE XSD types.
  *   5. Verify the reconstructed ORE type has the fields we mapped.
@@ -77,7 +77,7 @@ TEST_CASE("mapper_roundtrip_fx_forward_forward", tags) {
     const auto t = load_first_trade("FX_Forward.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_forward(t);
-    const auto& instr = std::get<fx_forward_instrument>(result);
+    const auto& instr = result;
 
     CHECK(instr.identity.trade_type_code == "FxForward");
     CHECK(instr.value_date.ok());
@@ -94,7 +94,7 @@ TEST_CASE("mapper_roundtrip_fx_forward_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Forward.xml");
     const auto result = fx_instrument_mapper::forward_fx_forward(t);
-    const auto& instr = std::get<fx_forward_instrument>(result);
+    const auto& instr = result;
 
     const auto reconstructed = fx_instrument_mapper::reverse_fx_forward(instr);
 
@@ -117,7 +117,7 @@ TEST_CASE("mapper_roundtrip_fx_swap_forward", tags) {
     const auto t = load_first_trade("FX_Swap.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_swap(t);
-    const auto& instr = std::get<fx_forward_instrument>(result);
+    const auto& instr = result;
 
     CHECK(instr.identity.trade_type_code == "FxSwap");
     CHECK(instr.value_date.ok());
@@ -134,7 +134,7 @@ TEST_CASE("mapper_roundtrip_fx_swap_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Swap.xml");
     const auto result = fx_instrument_mapper::forward_fx_swap(t);
-    const auto& instr = std::get<fx_forward_instrument>(result);
+    const auto& instr = result;
 
     const auto reconstructed = fx_instrument_mapper::reverse_fx_swap(instr);
 
@@ -155,7 +155,7 @@ TEST_CASE("mapper_roundtrip_fx_option_forward", tags) {
     const auto t = load_first_trade("FX_Option_European.xml");
 
     const auto result = fx_instrument_mapper::forward_fx_option(t);
-    const auto& instr = std::get<fx_vanilla_option_instrument>(result);
+    const auto& instr = result;
 
     CHECK(instr.identity.trade_type_code == "FxOption");
     CHECK(instr.bought_currency == "EUR");
@@ -171,7 +171,7 @@ TEST_CASE("mapper_roundtrip_fx_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("FX_Option_European.xml");
     const auto result = fx_instrument_mapper::forward_fx_option(t);
-    const auto& instr = std::get<fx_vanilla_option_instrument>(result);
+    const auto& instr = result;
 
     const auto reconstructed = fx_instrument_mapper::reverse_fx_option(instr);
 
@@ -231,7 +231,7 @@ TEST_CASE("mapper_holds_fx_money_digits", tags) {
     const auto t = load_inline_trade(precise_fx_forward_document());
 
     const auto result = fx_instrument_mapper::forward_fx_forward(t);
-    const auto& instr = std::get<fx_forward_instrument>(result);
+    const auto& instr = result;
     CHECK(instr.bought_amount ==
           ores::utility::decimal::decimal::from_string(precise_bought).value());
     CHECK(instr.sold_amount == ores::utility::decimal::decimal::from_string(precise_sold).value());

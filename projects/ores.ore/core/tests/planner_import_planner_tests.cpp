@@ -381,7 +381,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
         std::visit(
             [&](const auto& r) {
                 using ores::trading::domain::swap_instrument_data;
-                using ores::trading::domain::fx_instrument_variant;
+                using ores::trading::domain::fx_instrument_data;
                 using ores::trading::domain::equity_instrument_data;
                 using ores::trading::domain::composite_instrument_data;
                 using ores::trading::domain::commodity_instrument_data;
@@ -394,8 +394,8 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     INFO("Instrument variant index checked");
                     CHECK(r.header.identity.trade_id == item.anchor.id);
                     ++checked;
-                } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
-                    std::visit(
+                } else if constexpr (std::is_same_v<T, fx_instrument_data>) {
+                    ores::trading::domain::visit_fx_products(
                         [&](const auto& instr) {
                             INFO("Instrument variant index checked");
                             CHECK(instr.identity.trade_id == item.anchor.id);

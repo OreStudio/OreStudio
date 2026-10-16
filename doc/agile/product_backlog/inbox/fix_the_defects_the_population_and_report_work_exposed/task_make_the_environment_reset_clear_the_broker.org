@@ -1,22 +1,22 @@
 :PROPERTIES:
-:ID: C56065A2-FB59-4B46-A35E-0D0D1A635433
+:ID: B14B058D-6EBF-453B-90A5-F635B4E253D4
 :END:
-#+title: Task: Let a second tenant setup complete
-#+description: A second tenant_setup_workflow run cannot finish. publish_bundle fails at marketdata.fx_driver_rates_2026 with 'p_params.party_id is required to publish market data observations', because the step resolves the actor's default party, which is now a trading party, instead of the tenant's system party its own comment says it acts as.
+#+title: Task: Make the environment reset clear the broker
+#+description: compass db recreate is the clean-slate reset everyone reaches for, and it leaves JetStream untouched. compass nats purge is the command that clears it, and it matches only streams whose names start with the lowercase environment prefix, so a hand-made stream is invisible to it. Ten streams and 398 messages survived a recreate.
 #+type: task
 #+level: s1
-#+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
+#+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-16
-#+updated: 2026-10-16
+#+created: 2026-10-15
+#+updated: 2026-10-15
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,11 +27,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
+| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-16                               |
+| Last touched | 2026-10-15                               |
 
 * Acceptance
 

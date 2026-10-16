@@ -5,7 +5,7 @@
 #+description: datetime::from_iso8601_utc("9999-12-31 23:59:59+00") round-trips to 1816-03-30. The infinity sentinel marks the current row everywhere, so any code that round-trips it through a time_point silently produces 1816. Establish whether this is confined to the as-of read or is a general fault.
 #+type: task
 #+level: s1
-#+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
+#+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
+| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

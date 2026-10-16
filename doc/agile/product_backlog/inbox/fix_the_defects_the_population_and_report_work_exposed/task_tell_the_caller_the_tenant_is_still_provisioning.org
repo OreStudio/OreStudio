@@ -1,22 +1,22 @@
 :PROPERTIES:
-:ID: 43641A03-D2F3-4156-8DF7-CAEB08F2DA83
+:ID: 74BE7F11-9B64-4000-9D79-9DA3C3F1C4EA
 :END:
-#+title: Task: Make a stream overlap visible rather than fatal
-#+description: ensure_stream treats JSStreamSubjectOverlapErr as fatal, so one stale stream that claims a subject a service now wants stops that service booting and takes the whole fleet target down. The only diagnostic is one ERROR line. A stale stream should be reported and reconciled, not an environment-wide outage.
+#+title: Task: Tell the caller the tenant is still provisioning
+#+description: bootstrap setup prints 'System provisioned. Tenant ready to work in.' and exits after 2 steps, while the tenant's own 7-step workflow runs for about four more minutes as a separate instance the command does not follow. Two agents misdiagnosed the system from that output; one published reference data by hand to work around a fault that did not exist.
 #+type: task
 #+level: s1
-#+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
+#+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
-#+created: 2026-10-15
-#+updated: 2026-10-15
+#+created: 2026-10-16
+#+updated: 2026-10-16
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,11 +27,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
+| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-10-15                               |
+| Last touched | 2026-10-16                               |
 
 * Acceptance
 

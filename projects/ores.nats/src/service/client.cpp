@@ -34,6 +34,8 @@
 #include <boost/system/error_code.hpp>
 #include <algorithm>
 #include <atomic>
+#include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
@@ -238,6 +240,11 @@ public:
 
     void retry() override {
         answer([this] { natsMsg_Nak(msg_.get(), nullptr); });
+    }
+
+    void retry_after(std::chrono::milliseconds delay) override {
+        const auto ms = static_cast<std::int64_t>(delay.count());
+        answer([this, ms] { natsMsg_NakWithDelay(msg_.get(), ms, nullptr); });
     }
 
     void reject() override {

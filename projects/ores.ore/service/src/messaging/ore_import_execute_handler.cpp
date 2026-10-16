@@ -149,19 +149,6 @@ parse_optional_date(const std::optional<std::string>& text) {
     return text ? parse_date(*text) : std::nullopt;
 }
 
-// The document states an amount as text and the flat write carries a
-// decimal, so the boundary parses the text; a spelling that does not parse
-// stays an unengaged optional.
-std::optional<ores::utility::decimal::decimal>
-parse_optional_decimal(const std::optional<std::string>& text) {
-    if (!text || text->empty())
-        return std::nullopt;
-    auto parsed = ores::utility::decimal::decimal::from_string(*text);
-    if (!parsed)
-        return std::nullopt;
-    return std::move(*parsed);
-}
-
 // The schema states a list of numbers as one text, split on the separators
 // the corpus uses.
 std::vector<std::string> split_numbers(const std::string& text) {
@@ -1342,7 +1329,7 @@ std::string save_option_block(Nats& nats,
         req.change.write.settlement = block.settlement;
         req.change.write.settlement_method = block.settlement_method;
         req.change.write.pay_off_at_expiry = block.pay_off_at_expiry;
-        req.change.write.premium_amount = parse_optional_decimal(block.premium_amount);
+        req.change.write.premium_amount = block.premium_amount;
         req.change.write.premium_currency = block.premium_currency;
         req.change.write.premium_pay_date = parse_optional_date(block.premium_pay_date);
         req.change.write.exercise_fee_settlement_period = block.exercise_fee_settlement_period;

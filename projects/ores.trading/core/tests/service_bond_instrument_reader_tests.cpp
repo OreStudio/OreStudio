@@ -935,7 +935,7 @@ TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", tags) {
     forward.amount = ores::utility::decimal::decimal::from_string("250000").value();
     forward.lock_rate = ores::utility::decimal::decimal::from_string("2.5").value();
     forward.dv01 = ores::utility::decimal::decimal::from_string("12.75").value();
-    forward.premium_amount = "1500";
+    forward.premium_amount = decimal_of("1500");
     forward.premium_date = "2024-03-15";
     bond_forward_repository().write(ctx, forward);
 
@@ -964,7 +964,7 @@ TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", tags) {
     CHECK(!rebuilt.forward_settlement->forward_settlement_date.has_value());
 
     REQUIRE(rebuilt.forward_premium.has_value());
-    CHECK(rebuilt.forward_premium->amount == "1500");
+    CHECK(rebuilt.forward_premium->amount == decimal_of("1500"));
     CHECK(rebuilt.forward_premium->date == "2024-03-15");
 }
 

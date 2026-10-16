@@ -43,7 +43,7 @@ std::vector<ores::diff::domain::field_value> render_bond_repo_fields(const domai
     fields.push_back({.name = "Repo Type", .value = v.repo_type});
     fields.push_back(
         {.name = "Repo Rate", .value = v.repo_rate ? v.repo_rate->to_string() : std::string{}});
-    fields.push_back({.name = "Repo Index", .value = v.repo_index});
+    fields.push_back({.name = "Repo Index", .value = v.repo_index.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

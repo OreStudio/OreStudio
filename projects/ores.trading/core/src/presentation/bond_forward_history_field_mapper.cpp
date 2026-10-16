@@ -56,7 +56,8 @@ render_bond_forward_fields(const domain::bond_forward& v) {
                       .value = v.lock_rate_day_counter.value_or(std::string{})});
     fields.push_back(
         {.name = "Settlement Dirty", .value = v.settlement_dirty.value_or(std::string{})});
-    fields.push_back({.name = "Premium Amount", .value = v.premium_amount.value_or(std::string{})});
+    fields.push_back({.name = "Premium Amount",
+                      .value = v.premium_amount ? v.premium_amount->to_string() : std::string{}});
     fields.push_back({.name = "Premium Date", .value = v.premium_date.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});

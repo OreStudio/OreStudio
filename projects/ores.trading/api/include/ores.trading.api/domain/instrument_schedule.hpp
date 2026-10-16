@@ -99,9 +99,9 @@ struct instrument_schedule final {
 
     /**
      * @brief Which list of the instrument states this schedule: tranches, trs_funding, repo,
-     * ascot_swap, option or trs.
+     * ascot_swap, swap, option or trs.
      *
-     * The first four name a leg list. option is the exercise schedule an option block states, and
+     * The first five name a leg list. option is the exercise schedule an option block states, and
      * trs is the return schedule a total return swap states. Neither is a leg, so the column names
      * an owner rather than a leg.
      */

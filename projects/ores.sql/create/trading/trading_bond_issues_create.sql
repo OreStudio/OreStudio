@@ -67,7 +67,7 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "credit_group" text null,
     "volatility_curve_id" text null,
     "price_quote_method" text null,
-    "price_quote_base_value" text null,
+    "price_quote_base_value" numeric(38, 12) null,
     "sub_type" text null,
     "price_type" text null,
     "payer" text null,

@@ -212,13 +212,16 @@ Price quote method the document states for the issue.
 
 ** price_quote_base_value
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :economic: true
 :END:
 
 Price quote base value the document states for the issue.
+
+The column is decimal because the base value is money. The schema spells
+it as text and the mapper parses those digits.
 
 ** sub_type
 :PROPERTIES:

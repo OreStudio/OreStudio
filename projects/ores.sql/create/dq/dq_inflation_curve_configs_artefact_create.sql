@@ -43,7 +43,7 @@ create table if not exists "ores_dq_inflation_curve_configs_artefact_tbl" (
     "day_counter" text null,
     "lag" text not null,
     "frequency" text not null,
-    "base_rate" text null,
+    "base_rate" numeric(38, 12) null,
     "tolerance" double precision null,
     "has_seasonality" boolean not null,
     "seasonality_base_date" text null,

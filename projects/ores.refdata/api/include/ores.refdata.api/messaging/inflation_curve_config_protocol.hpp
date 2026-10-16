@@ -51,7 +51,7 @@ struct inflation_curve_config_write {
     std::optional<std::string> day_counter;
     std::string lag;
     std::string frequency;
-    std::optional<std::string> base_rate;
+    std::optional<ores::utility::decimal::decimal> base_rate;
     std::optional<double> tolerance;
     bool has_seasonality;
     std::optional<std::string> seasonality_base_date;

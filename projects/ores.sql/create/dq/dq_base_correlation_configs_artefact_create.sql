@@ -46,7 +46,7 @@ create table if not exists "ores_dq_base_correlation_configs_artefact_tbl" (
     "rule" text null,
     "adjust_for_losses" text null,
     "index_term" text null,
-    "index_spread" text null,
+    "index_spread" numeric(38, 12) null,
     "currency" text null,
     "calibrate_constituents_to_index_spread" text null,
     "use_assumed_recovery" text null

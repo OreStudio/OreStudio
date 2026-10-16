@@ -25,6 +25,7 @@
 #ifndef ORES_REFDATA_API_DOMAIN_INFLATION_CURVE_CONFIG_HPP
 #define ORES_REFDATA_API_DOMAIN_INFLATION_CURVE_CONFIG_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -121,9 +122,10 @@ struct inflation_curve_config final {
     std::string frequency;
 
     /**
-     * @brief The base rate of a year on year curve, as the document writes it.
+     * @brief The base rate of a year on year curve. The schema states it as a string and ORE parses
+     * it to a Real, so the column is decimal because a rate is money.
      */
-    std::optional<std::string> base_rate;
+    std::optional<ores::utility::decimal::decimal> base_rate;
 
     /**
      * @brief The bootstrap tolerance.

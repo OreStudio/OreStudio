@@ -44,7 +44,7 @@ std::vector<ores::diff::domain::field_value> render_bond_trs_fields(const domain
     fields.push_back({.name = "Funding Leg Type", .value = v.funding_leg_type});
     fields.push_back({.name = "Funding Rate",
                       .value = v.funding_rate ? v.funding_rate->to_string() : std::string{}});
-    fields.push_back({.name = "Funding Index", .value = v.funding_index});
+    fields.push_back({.name = "Funding Index", .value = v.funding_index.value_or(std::string{})});
     fields.push_back({.name = "Payer", .value = v.payer.value_or(std::string{})});
     fields.push_back({.name = "Price Type", .value = v.price_type.value_or(std::string{})});
     fields.push_back({.name = "Initial Price",

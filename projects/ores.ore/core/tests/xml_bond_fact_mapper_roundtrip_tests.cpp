@@ -110,7 +110,8 @@ TEST_CASE("the_six_issue_fields_survive_the_round_trip", tags) {
     CHECK(r.issue.credit_group == "ACME");
     CHECK(r.issue.volatility_curve_id == "VOL-EUR-1");
     CHECK(r.issue.price_quote_method == "Percentage");
-    CHECK(r.issue.price_quote_base_value == "100");
+    CHECK(r.issue.price_quote_base_value ==
+          ores::utility::decimal::decimal::from_string("100").value());
     CHECK(r.issue.sub_type == "GovernmentBond");
     REQUIRE(r.issue.price_type);
     CHECK(*r.issue.price_type == "Clean");
@@ -1299,7 +1300,8 @@ TEST_CASE("the_option_block_survives_the_round_trip", tags) {
     CHECK(o.settlement == "Cash");
     CHECK(o.settlement_method == "ParYieldCurve");
     CHECK(o.pay_off_at_expiry == "false");
-    CHECK(o.premium_amount == "12500");
+    CHECK(o.premium_amount ==
+          ores::utility::decimal::decimal::from_string("12500").value());
     CHECK(o.premium_currency == "USD");
     CHECK(o.premium_pay_date == "2025-03-01");
     REQUIRE(o.premiums.size() == 1);
@@ -1948,7 +1950,8 @@ TEST_CASE("a_forward_bonds_settlement_premium_and_flag_survive_the_round_trip", 
     REQUIRE(r.forward_settlement->settlement_dirty);
     CHECK(*r.forward_settlement->settlement_dirty == "true");
     REQUIRE(r.forward_premium);
-    CHECK(r.forward_premium->amount == "2500");
+    CHECK(r.forward_premium->amount ==
+          ores::utility::decimal::decimal::from_string("2500").value());
     CHECK(r.forward_premium->date == "2025-01-15");
 
     const auto rt = bond_instrument_mapper::reverse_forward_bond(r);

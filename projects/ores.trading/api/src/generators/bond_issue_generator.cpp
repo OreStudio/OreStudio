@@ -50,6 +50,9 @@ domain::bond_issue generate_synthetic_bond_issue(utility::generation::generation
     r.face_value = ores::utility::decimal::decimal::from_string("1000").value();
     r.issue_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.settlement_days = 2;
+    r.price_quote_base_value = ores::utility::decimal::decimal::from_string(
+                                   std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                                   .value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

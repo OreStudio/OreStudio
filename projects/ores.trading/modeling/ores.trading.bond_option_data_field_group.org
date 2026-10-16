@@ -20,10 +20,11 @@ beyond the type and the strike, so the container holds the block whole and
 export re-emits it.
 
 The schema requires the long and short flag and makes every other member
-optional, so a member the document omits stays absent. The premium amount and
-the exercise price list are text in the schema, not numbers, and stay text
-here, and the automatic exercise flag carries the document's own spelling of
-the schema's bool type.
+optional, so a member the document omits stays absent. The premium amount is
+money, so it is an exact decimal; the schema spells it as text and the mapper
+parses those digits. The exercise price list stays text, because the schema
+states the whole list as one string with no separator it fixes. The automatic
+exercise flag carries the document's own spelling of the schema's bool type.
 
 * Includes
 
@@ -31,6 +32,7 @@ the schema's bool type.
 #include <optional>
 #include <vector>
 #include <string>
+#include "ores.utility/decimal/decimal.hpp"
 #include "ores.trading.api/domain/bond_option_exercise.hpp"
 #include "ores.trading.api/domain/bond_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/bond_option_payment_data.hpp"
@@ -126,10 +128,10 @@ True when the payoff lands at expiry.
 
 ** premium_amount
 :PROPERTIES:
-:cpp_type: std::optional<std::string>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :END:
 
-The premium amount, as the document spells it.
+The premium amount.
 
 ** premium_currency
 :PROPERTIES:

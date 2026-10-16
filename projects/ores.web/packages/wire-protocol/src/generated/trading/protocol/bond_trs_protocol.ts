@@ -38,7 +38,7 @@ export interface BondTrsWrite {
     return_type: string;
     funding_leg_type: string;
     funding_rate: string | null;
-    funding_index: string;
+    funding_index: string | null;
     payer: string | null;
     price_type: string | null;
     initial_price: string | null;

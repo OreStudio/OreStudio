@@ -37,7 +37,7 @@ export interface BondRepoWrite {
     trade_activity_id: string;
     repo_type: string;
     repo_rate: string | null;
-    repo_index: string;
+    repo_index: string | null;
 }
 
 export interface BondRepoChange {

@@ -109,7 +109,7 @@ struct bond_trs final {
     /**
      * @brief Index code of the funding leg, when the leg is floating.
      */
-    std::string funding_index;
+    std::optional<std::string> funding_index;
 
     /**
      * @brief Flag saying the seller pays the total return.

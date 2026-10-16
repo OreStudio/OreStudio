@@ -28,10 +28,12 @@
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
 #include "ores.refdata.api/domain/base_correlation_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/base_correlation_config_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -61,7 +63,10 @@ base_correlation_config_mapper::map(const base_correlation_config_entity& v) {
     r.rule = v.rule;
     r.adjust_for_losses = v.adjust_for_losses;
     r.index_term = v.index_term;
-    r.index_spread = v.index_spread;
+    r.index_spread =
+        v.index_spread.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.index_spread).value()) :
+            std::nullopt;
     r.currency = v.currency;
     r.calibrate_constituents_to_index_spread = v.calibrate_constituents_to_index_spread;
     r.use_assumed_recovery = v.use_assumed_recovery;
@@ -97,7 +102,8 @@ base_correlation_config_mapper::map(const domain::base_correlation_config& v) {
     r.rule = v.rule;
     r.adjust_for_losses = v.adjust_for_losses;
     r.index_term = v.index_term;
-    r.index_spread = v.index_spread;
+    r.index_spread =
+        v.index_spread.has_value() ? std::optional(v.index_spread->to_string()) : std::nullopt;
     r.currency = v.currency;
     r.calibrate_constituents_to_index_spread = v.calibrate_constituents_to_index_spread;
     r.use_assumed_recovery = v.use_assumed_recovery;

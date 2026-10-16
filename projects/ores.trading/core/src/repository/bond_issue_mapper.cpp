@@ -68,7 +68,11 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     r.credit_group = v.credit_group;
     r.volatility_curve_id = v.volatility_curve_id;
     r.price_quote_method = v.price_quote_method;
-    r.price_quote_base_value = v.price_quote_base_value;
+    r.price_quote_base_value =
+        v.price_quote_base_value.has_value() ?
+            std::optional(
+                ores::utility::decimal::decimal::from_string(*v.price_quote_base_value).value()) :
+            std::nullopt;
     r.sub_type = v.sub_type;
     r.price_type = v.price_type;
     r.payer = v.payer;
@@ -106,7 +110,9 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     r.credit_group = v.credit_group;
     r.volatility_curve_id = v.volatility_curve_id;
     r.price_quote_method = v.price_quote_method;
-    r.price_quote_base_value = v.price_quote_base_value;
+    r.price_quote_base_value = v.price_quote_base_value.has_value() ?
+                                   std::optional(v.price_quote_base_value->to_string()) :
+                                   std::nullopt;
     r.sub_type = v.sub_type;
     r.price_type = v.price_type;
     r.payer = v.payer;

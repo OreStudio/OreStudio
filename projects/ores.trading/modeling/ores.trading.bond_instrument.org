@@ -16,7 +16,7 @@
 
 One row per bond trade, reshaped from the wide legacy table per the
 bond relational model deliverable
-(=doc/knowledge/architecture/trading_bond_relational_model.org=). The
+(=doc/agile/versions/v0/sprint_25/data-oriented-trading-model/design_bond_relational_model.org=). The
 row carries the instrument's identity only: =trade_id=, the trade that
 identifies both the trade and its instrument, =trade_type_code= over the
 ten bond codes, =party_id=, and =issue_id=, the NOT NULL foreign key to the

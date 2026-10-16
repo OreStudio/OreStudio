@@ -232,12 +232,14 @@ std::nullopt
 
 ** index_spread
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
-The quote of the credit index spread.
+The credit index spread the surface calibrates to. The schema states it as a
+string and ORE parses it to a Real, so the column is decimal because a spread
+is money.
 
 #+begin_src cpp :name generator
 std::nullopt

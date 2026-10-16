@@ -587,8 +587,7 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         block.settlement = row.settlement;
         block.settlement_method = row.settlement_method;
         block.pay_off_at_expiry = row.pay_off_at_expiry;
-        block.premium_amount =
-            row.premium_amount ? std::optional(row.premium_amount->to_string()) : std::nullopt;
+        block.premium_amount = row.premium_amount;
         block.premium_currency = row.premium_currency;
         block.premium_pay_date = iso_optional(row.premium_pay_date);
 
@@ -680,8 +679,9 @@ void apply_forward(domain::bond_instrument_data& data, const instrument_rows& ro
     data.forward_settlement = std::move(settlement);
 
     if (row.premium_amount || row.premium_date)
-        data.forward_premium = domain::bond_forward_premium{row.premium_amount.value_or(""),
-                                                            row.premium_date.value_or("")};
+        data.forward_premium = domain::bond_forward_premium{
+            row.premium_amount.value_or(ores::utility::decimal::decimal{}),
+            row.premium_date.value_or("")};
 }
 
 /**

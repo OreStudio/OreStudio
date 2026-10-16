@@ -55,6 +55,9 @@ domain::bond_forward generate_synthetic_bond_forward(utility::generation::genera
     r.dv01 = ores::utility::decimal::decimal::from_string(
                  std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                  .value();
+    r.premium_amount = ores::utility::decimal::decimal::from_string(
+                           std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
+                           .value();
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

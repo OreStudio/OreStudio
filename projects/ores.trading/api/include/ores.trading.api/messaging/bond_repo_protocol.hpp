@@ -44,7 +44,7 @@ struct bond_repo_write {
     boost::uuids::uuid trade_activity_id;
     std::string repo_type;
     std::optional<ores::utility::decimal::decimal> repo_rate;
-    std::string repo_index;
+    std::optional<std::string> repo_index;
 };
 
 struct bond_repo_change {

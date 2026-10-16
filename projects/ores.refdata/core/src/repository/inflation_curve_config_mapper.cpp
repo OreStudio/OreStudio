@@ -28,10 +28,12 @@
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/inflation_curve_config_entity.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 #include <vector>
 
 namespace ores::refdata::repository {
@@ -58,7 +60,10 @@ inflation_curve_config_mapper::map(const inflation_curve_config_entity& v) {
     r.day_counter = v.day_counter;
     r.lag = v.lag;
     r.frequency = v.frequency;
-    r.base_rate = v.base_rate;
+    r.base_rate =
+        v.base_rate.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.base_rate).value()) :
+            std::nullopt;
     r.tolerance = v.tolerance;
     r.has_seasonality = v.has_seasonality;
     r.seasonality_base_date = v.seasonality_base_date;
@@ -95,7 +100,7 @@ inflation_curve_config_mapper::map(const domain::inflation_curve_config& v) {
     r.day_counter = v.day_counter;
     r.lag = v.lag;
     r.frequency = v.frequency;
-    r.base_rate = v.base_rate;
+    r.base_rate = v.base_rate.has_value() ? std::optional(v.base_rate->to_string()) : std::nullopt;
     r.tolerance = v.tolerance;
     r.has_seasonality = v.has_seasonality;
     r.seasonality_base_date = v.seasonality_base_date;

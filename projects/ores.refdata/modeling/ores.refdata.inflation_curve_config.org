@@ -196,12 +196,13 @@ std::string("Monthly")
 
 ** base_rate
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :END:
 
-The base rate of a year on year curve, as the document writes it.
+The base rate of a year on year curve. The schema states it as a string and
+ORE parses it to a Real, so the column is decimal because a rate is money.
 
 #+begin_src cpp :name generator
 std::nullopt

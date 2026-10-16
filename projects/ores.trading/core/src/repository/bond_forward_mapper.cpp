@@ -65,7 +65,10 @@ domain::bond_forward bond_forward_mapper::map(const bond_forward_entity& v) {
                  std::nullopt;
     r.lock_rate_day_counter = v.lock_rate_day_counter;
     r.settlement_dirty = v.settlement_dirty;
-    r.premium_amount = v.premium_amount;
+    r.premium_amount =
+        v.premium_amount.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.premium_amount).value()) :
+            std::nullopt;
     r.premium_date = v.premium_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -94,7 +97,8 @@ bond_forward_entity bond_forward_mapper::map(const domain::bond_forward& v) {
     r.dv01 = v.dv01.has_value() ? std::optional(v.dv01->to_string()) : std::nullopt;
     r.lock_rate_day_counter = v.lock_rate_day_counter;
     r.settlement_dirty = v.settlement_dirty;
-    r.premium_amount = v.premium_amount;
+    r.premium_amount =
+        v.premium_amount.has_value() ? std::optional(v.premium_amount->to_string()) : std::nullopt;
     r.premium_date = v.premium_date;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

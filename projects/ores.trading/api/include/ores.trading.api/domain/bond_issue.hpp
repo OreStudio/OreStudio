@@ -152,8 +152,11 @@ struct bond_issue final {
 
     /**
      * @brief Price quote base value the document states for the issue.
+     *
+     * The column is decimal because the base value is money. The schema spells it as text and the
+     * mapper parses those digits.
      */
-    std::optional<std::string> price_quote_base_value;
+    std::optional<ores::utility::decimal::decimal> price_quote_base_value;
 
     /**
      * @brief Bond sub-type the document states for the issue.

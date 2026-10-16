@@ -185,6 +185,7 @@ begin
      and b.valid_to = ores_utility_infinity_timestamp_fn()
     where a.tenant_id = ores_iam_current_tenant_id_fn()
       and a.party_id = any(ores_iam_visible_party_ids_fn())
+      and a.valid_to = ores_utility_infinity_timestamp_fn()
       and a.id = any(p_trade_ids);
 end;
 $$ language plpgsql stable security definer set search_path = public, pg_temp;

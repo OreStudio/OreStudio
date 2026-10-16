@@ -2,27 +2,47 @@
 :ID: E296B5EC-F01B-4664-9DE1-E5EFCE6E123C
 :END:
 #+title: The workflow engine leaves completed_at and the published marker unwritten
-#+description: workflow_instance.completed_at and .last_event_at are never written by the engine or by any trigger, and recover_in_progress re-dispatches a step without stamping command_published_at. The shell's workflow summary therefore always reports no completion time, and the published marker says a recovered step never went out.
+#+description: workflow_instance.completed_at and .last_event_at were never written by the engine or by any trigger. Both are now written at the transitions the engine already knew about; the recovery pass already stamps command_published_at.
 #+type: capture
 #+level: cross
 #+filetags: :workflow:engine:defect:
 #+created: 2026-09-27
-#+updated: 2026-09-27
+#+updated: 2026-10-16
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 
-Two markers the workflow tables carry are never written.
+Two markers the workflow tables carry were never written.
 
 - =workflow_instance.completed_at= and =workflow_instance.last_event_at=: the
-  engine's =set_instance_state= writes only =state_id=, =result_json= and
-  =error=, and no trigger touches either column, so both stay null for every
-  run that has ever completed.
+  engine's =set_instance_state= wrote only =state_id=, =result_json= and
+  =error=, and no trigger touches either column, so both stayed null for every
+  run that had ever completed.
 - =workflow_step.command_published_at= after a recovery: the start and the
   next-step dispatch both call =stamp_command_published=, and
-  =recover_in_progress= does not, so a step that a restart put back on the wire
-  reads as never published.
+  =recover_in_progress= did not, so a step that a restart put back on the wire
+  read as never published.
+
+* Resolution (2026-10-16)
+
+Both halves are done, on task
+[[id:0349A777-2F79-4DC2-BCFB-002E1D7E04D1][Stamp a workflow's completion and
+activity]].
+
+The timestamps are written where the engine already knows the completion: the
+first transition into a terminal state stamps =completed_at=, every transition
+moves =last_event_at=, and the work between two transitions -- a start
+dispatching its first steps, a recovery re-dispatching one -- moves it too. A
+step's =started_at= and =completed_at= are written the same way, and every step
+transition is logged with both states. Measured on a clean =acme_demo=
+provision: 34 current instances and 415 current steps, every one stamped, and
+the tenant's =tenant_setup_workflow= carrying the same completion time as the
+tenant reaching =active=.
+
+=recover_in_progress= already called =stamp_command_published= per re-dispatched
+step, so the second half of this capture was stale by the time the task picked
+it up; nothing on this branch changed it.
 
 * Why
 

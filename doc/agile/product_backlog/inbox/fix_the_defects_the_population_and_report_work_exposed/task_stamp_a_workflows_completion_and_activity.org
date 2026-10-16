@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: chore/stamp-workflow-completion-and-activity
+#+pr: 3396
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -26,38 +26,78 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented and verified on a clean provision. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Review the branch and raise the PR.    |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
 
--
+- A clean =compass db recreate -y -k=, a fleet restart and one =bootstrap
+  setup ... --profile acme_demo= leave every current instance and every
+  current step with its times written, and the terminal state still correct.
+- A poll on =completed_at= terminates for a run that finished.
+- Every step transition appears in the service log with the step, the
+  instance, the state it left, the state it entered and when.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The columns exist, are documented in the model, and are read by the query
+path; nothing writes them. The engine reaches the completion at
+=set_instance_state= and the step answers at =set_step_state=, so both
+timestamps are written at those two funnels rather than at each of their
+callers:
+
+- =set_instance_state= moves =last_event_at= on every transition and writes
+  =completed_at= on the first transition into a terminal state (completed,
+  failed, compensated), leaving it alone afterwards so it names when the run
+  finished rather than when its row was last written.
+- =note_instance_activity= covers the work between two transitions, so a
+  start that dispatches its first steps and a recovery that re-dispatches a
+  step both move =last_event_at=.
+- =set_step_state= writes =started_at= when a step first goes to work and
+  =completed_at= when it first settles (=completed=,
+  =completed_with_warnings=, =failed=, =compensated=), and logs the
+  transition. The dispatch path writes =started_at= with the row it creates.
+- A run the engine cannot reach, such as a test tenant dropped mid-run, is
+  left alone rather than failed on a guess: its =last_event_at= stops where
+  it stopped, which is how a reader tells it from a live run. This is the
+  pattern the capture on the leftover test runs wants, and it does not need
+  a hand over the state machine.
+
+The model doc for =last_event_at= said "the most recent step-completed event
+processed", which is narrower than what it now records, so the comment was
+updated to match the behaviour.
 
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+and the commit it was measured at.
 
-| What | Value | Command | Commit |
-|------+-------+---------+--------|
-|      |       |         |        |
+| What                                            | Value                              | Command                                                                                                                     | Commit     |
+|-------------------------------------------------+------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+------------|
+| Instances with a completion time, before        | 0 of 50 rows (25 runs)             | =select count(*), count(completed_at), count(last_event_at) from ores_workflow_workflow_instances_tbl=                        | d75b6c3d41 |
+| Steps with a completion time, before            | 0 of 828 rows (552 with a publish) | =select count(*), count(started_at), count(completed_at), count(command_published_at) from ores_workflow_workflow_steps_tbl= | d75b6c3d41 |
+| Current instances after a clean acme provision  | 25, all completed, all stamped     | =build/stamp-verify/check_timestamps.sql=                                                                                    | 6f84397531 |
+| Current steps after a clean acme provision      | 276, all completed, all stamped    | =build/stamp-verify/check_timestamps.sql=                                                                                    | 6f84397531 |
+| Terminal rows without a completion time, after  | 0 instances, 0 steps               | =build/stamp-verify/check_timestamps.sql=                                                                                    | 6f84397531 |
+| Workflow core suite                             | 49 cases, 385 assertions, green    | =./compass.sh test run -- -R "ores.workflow"=                                                                                | 6f84397531 |
 
 * Notes
+
+=build/stamp-verify/= holds the two scripts the clean check used: the minimal
+provisioning script copied from the shipped Acme library script, and the SQL
+that reads the properties. Both are untracked build output.
+
+Two things the brief got wrong, both about the tables' shape rather than the
+defect. The 50 instance rows are 25 instances, each with two version rows, and
+the 828 step rows are 552 steps across versions: write-version tables carry
+one row per version, so a count of rows is not a count of runs. And
+=workflow_instance.last_event_at= was never going to be moved by a trigger:
+the column is the engine's to write, and the engine is where the completion is
+known.
 
 * Test Scenarios
 
@@ -74,7 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3396][#3396]] | [workflow] Stamp a run's completion and its activity |
 
 * Review
 
@@ -83,3 +123,61 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done on branch =chore/stamp-workflow-completion-and-activity=.
+
+A clean =compass db recreate -y -k=, a fleet restart and one =bootstrap
+setup ... --profile acme_demo= left 25 current instances, every one of them
+=completed=, every one with =completed_at= and =last_event_at=, and 276
+current steps, every one =completed= with =started_at= and =completed_at=.
+None of the 50 instance rows or 828 step rows the defect was measured on
+carried any of those times; those 50 rows are 25 runs and those 828 rows are
+552 steps, because both tables are write-version. The tenant's
+=tenant_setup_workflow= finished at =19:28:45.709675+01= by the log and wrote
+=completed_at 19:28:45+01=, the second it finished in, while the tenant row
+became =active= at =19:28:45.554809+01=, 155 milliseconds before the run's own
+last step answered. Neither time is finer than a second in the store as it
+stands: the generated mapper writes a whole-second =Timestamp=, so a
+microsecond part read back is a round hundred thousand. The engine's writer
+and every other writer share that truncation, and no reader can see past it.
+
+Twelve lines carried the run's eight steps from their first dispatch to its
+close -- a creation line for each of the four steps the graph is free to start
+with and a transition line for each state change -- and each names the step,
+the instance, the state it left, the state it entered and the time. The last
+two were:
+
+#+begin_example
+2026-10-16 19:28:45.705551 [INFO] [ores.workflow.service.workflow_engine] step 7 (complete_provisioning) workflow=c9ed737f-484d-4b62-8f1b-8270827a56ec step_id=098e1728-3744-4d3b-88f9-1a71b171bda5 state=in_progress->completed at=2026-10-16 18:28:45Z
+2026-10-16 19:28:45.709675 [INFO] [ores.workflow.service.workflow_engine] Workflow COMPLETED: type=tenant_setup_workflow workflow=c9ed737f-484d-4b62-8f1b-8270827a56ec steps=8
+#+end_example
+
+=./compass.sh test run -- -R "ores.workflow"= passed all three suites:
+=ores.workflow.api.tests= 10 cases and 32 assertions, =ores.workflow.core.tests=
+49 cases and 385 assertions, =ores.workflow.service.tests= 6 cases and 46
+assertions.
+
+Left for another task: rows written before this change still carry no times,
+including the runs the test suites leave in progress in a tenant they then
+drop. Nothing can recover the instant a past run finished, and the newer
+capture on those leftovers is the place to decide what to do with them.
+
+Also left, and named rather than fixed here because each is its own defect:
+
+- =workflow_instance_summary=, the message the shell's =workflow list= reads,
+  carries =completed_at= but not =last_event_at=, so the abandoned-run answer
+  is available on the database and on the entity read but not yet on that
+  summary. Adding it means a model change in
+  =ores.workflow.workflow_messages.org= and the codegen run that follows it.
+  =ores.workflow.workflow_instance= carries both, so a reader that needs the
+  activity time has a path today.
+- The generated CRUD verbs for both entities treat =completed_at=,
+  =last_event_at= and =started_at= as caller-supplied: the write record
+  carries them, the shell's =set= commands require them, and the service
+  builds the new row from the record alone. So a caller that edits an instance
+  without re-stating the times erases them. They are the engine's to own; the
+  write record should stop carrying them.
+- A compensation step reaches =compensated= while the forward step it undid
+  keeps =in_progress=. That is pre-existing behaviour the deadline pass and
+  the shell both read, so changing it here would have been a second fix
+  wearing this one's clothes.

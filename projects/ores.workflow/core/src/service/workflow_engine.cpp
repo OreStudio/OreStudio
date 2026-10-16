@@ -21,6 +21,7 @@
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/domain/workflow_plan_dependency.hpp"
 #include "ores.workflow.api/domain/workflow_plan_step.hpp"
@@ -222,6 +223,20 @@ bool service_owns_component(const std::string& service_name, const std::string& 
            service_name.starts_with("ores." + component + ".");
 }
 
+/**
+ * @brief The name a step state id carries, or the id when the map has no name.
+ *
+ * The map is loaded from the store at start, so a name is absent only for a
+ * state the store gained after this engine started. A log that named no state
+ * at all would be worse than one naming the id, so the id is the fallback.
+ */
+std::string state_name(const fsm_state_map& states, const boost::uuids::uuid& state_id) {
+    for (const auto& [name, id] : states.states)
+        if (id == state_id)
+            return name;
+    return boost::uuids::to_string(state_id);
+}
+
 } // namespace
 
 using namespace ores::logging;
@@ -319,7 +334,50 @@ void workflow_engine::set_instance_state(const boost::uuids::uuid& instance_id,
     if (!result_json.empty())
         instance.result_json = result_json;
     instance.error = error;
+    // Every transition says the run was acted on, which is what a reader
+    // watching for silence polls.
+    instance.last_event_at = std::chrono::system_clock::now();
+    if (is_instance_terminal(state_id)) {
+        // The first time the run stopped is the one that counts, so a later
+        // write to a run that has already stopped -- a redelivery, a recovery,
+        // a compensation that follows -- cannot move it on.
+        if (!instance.completed_at)
+            instance.completed_at = instance.last_event_at;
+    } else {
+        // A run that is going again has not finished. The retry is the case
+        // that matters: leaving the failure's completion time on a resumed run
+        // would have it say both that it stopped and that it is running.
+        instance.completed_at.reset();
+    }
     instance_repo_.write(ctx_, instance);
+}
+
+void workflow_engine::note_instance_activity(const boost::uuids::uuid& instance_id) {
+    const auto rows = instance_repo_.read_latest(ctx_, boost::uuids::to_string(instance_id));
+    if (rows.empty())
+        return;
+    auto instance = rows.front();
+    // A run that has finished is not made live again by a late answer, a
+    // recovery pass or a rollback that follows it. What this column is for is
+    // telling work in flight from work abandoned, and a finished run is
+    // neither: it says when it stopped, and that is the whole answer.
+    if (instance.completed_at)
+        return;
+    instance.last_event_at = std::chrono::system_clock::now();
+    instance_repo_.write(ctx_, instance);
+}
+
+bool workflow_engine::is_instance_terminal(const boost::uuids::uuid& state_id) const {
+    return state_id == instance_states_.require("completed") ||
+           state_id == instance_states_.require("failed") ||
+           state_id == instance_states_.require("compensated");
+}
+
+bool workflow_engine::is_step_terminal(const boost::uuids::uuid& state_id) const {
+    return state_id == step_states_.require("completed") ||
+           state_id == step_states_.require("completed_with_warnings") ||
+           state_id == step_states_.require("failed") ||
+           state_id == step_states_.require("compensated");
 }
 
 void workflow_engine::stamp_command_published(const boost::uuids::uuid& step_id) {
@@ -349,22 +407,47 @@ void workflow_engine::note_awaiting(const domain::workflow_step& step,
                                              .budget = budget->second});
 }
 
-void workflow_engine::set_step_state(const boost::uuids::uuid& step_id,
+void workflow_engine::set_step_state(const domain::workflow_step& step,
                                      const boost::uuids::uuid& state_id,
                                      const std::string& response_json,
                                      const std::string& error,
                                      const std::string& step_log_json) {
-    const auto rows = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_id));
+    const auto rows = step_repo_.read_latest(ctx_, boost::uuids::to_string(step.id));
     if (rows.empty())
         return;
-    auto step = rows.front();
-    step.state_id = state_id;
+    auto updated = rows.front();
+    const auto from_state_id = updated.state_id;
+    updated.state_id = state_id;
     if (!response_json.empty())
-        step.response_json = response_json;
-    step.error = error;
+        updated.response_json = response_json;
+    updated.error = error;
     if (!step_log_json.empty())
-        step.step_log_json = step_log_json;
-    step_repo_.write(ctx_, step);
+        updated.step_log_json = step_log_json;
+    const auto now = std::chrono::system_clock::now();
+    const auto in_progress = step_states_.require("in_progress");
+    if (state_id == in_progress) {
+        // A step that is running has not finished. The retry that puts a failed
+        // step back to work is the case that matters: leaving the failure's
+        // completion time on it would have the row say the step both stopped
+        // and is running, and the run's own completion would then be read off
+        // the wrong attempt. Its start stays, because the step's life is what
+        // that names.
+        updated.completed_at.reset();
+        if (!updated.started_at)
+            updated.started_at = now;
+    } else if (is_step_terminal(state_id) && !updated.completed_at) {
+        // The first settlement is the one that counts, so a later answer to a
+        // step the engine has already accounted for cannot move it.
+        updated.completed_at = now;
+    }
+    step_repo_.write(ctx_, updated);
+
+    BOOST_LOG_SEV(lg(), info)
+        << "step " << step.step_index << " (" << step.name << ")"
+        << " workflow=" << boost::uuids::to_string(step.workflow_id) << " step_id="
+        << boost::uuids::to_string(step.id) << " state="
+        << state_name(step_states_, from_state_id) << "->" << state_name(step_states_, state_id)
+        << " at=" << ores::platform::time::datetime::to_iso8601_utc(now);
 }
 
 void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) {
@@ -549,13 +632,23 @@ void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) 
         step.command_json = cmd_json;
         step.idempotency_key = boost::uuids::to_string(new_id);
         step.compensation_subject = row->second->compensation_subject;
-        step.recorded_at = std::chrono::system_clock::now();
+        // A step that is created is a step that has gone to work, so the start
+        // of its life is written with it rather than left for the first answer.
+        step.started_at = std::chrono::system_clock::now();
+        step.recorded_at = *step.started_at;
         // The instance carries the actor from the start request, so every step
         // of the run is attributed to the same caller.
         step.modified_by = instance.modified_by;
 
         // Persist before publishing (ensures restart can re-dispatch).
         step_repo_.write(ctx_, step);
+
+        BOOST_LOG_SEV(lg(), info)
+            << "step " << step.step_index << " (" << step.name << ")"
+            << " workflow=" << id_str << " step_id=" << boost::uuids::to_string(new_id)
+            << " state=" << state_name(step_states_, step.state_id)
+            << " at=" << ores::platform::time::datetime::to_iso8601_utc(*step.started_at)
+            << " entered=created";
 
         note_awaiting(step, instance.id, instance.tenant_id.to_uuid());
         publish_command(step, instance.id, instance.tenant_id.to_uuid());
@@ -565,6 +658,9 @@ void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) 
                                   << ") for workflow=" << id_str << " type=" << instance.type;
     }
 
+    // Dispatching is work done on the run, so the run's activity moves even
+    // though its own state does not.
+    note_instance_activity(instance.id);
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
 }
 
@@ -628,13 +724,21 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         comp_step.command_subject = step_def.compensation_subject;
         comp_step.command_json = comp_json;
         comp_step.idempotency_key = boost::uuids::to_string(comp_id);
-        comp_step.recorded_at = std::chrono::system_clock::now();
+        comp_step.started_at = std::chrono::system_clock::now();
+        comp_step.recorded_at = *comp_step.started_at;
         // A compensation step is the same run's work, so it carries the
         // actor the instance was started by.
         comp_step.modified_by = instance.modified_by;
         step_repo_.write(ctx_, comp_step);
 
         // Publish compensation command with tenant header.
+        BOOST_LOG_SEV(lg(), info)
+            << "step " << comp_step.step_index << " (" << comp_step.name << ")"
+            << " workflow=" << boost::uuids::to_string(instance.id)
+            << " step_id=" << boost::uuids::to_string(comp_id)
+            << " state=" << state_name(step_states_, comp_step.state_id)
+            << " at=" << ores::platform::time::datetime::to_iso8601_utc(*comp_step.started_at)
+            << " entered=created";
         BOOST_LOG_SEV(lg(), info) << "Dispatching compensation for step " << s.step_index << " ("
                                   << step_def.name << "_compensation)"
                                   << " workflow=" << boost::uuids::to_string(instance.id);
@@ -642,6 +746,9 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         stamp_command_published(comp_id);
         dispatched_any = true;
     }
+
+    // Rolling work back is work done on the run, so its activity moves too.
+    note_instance_activity(instance.id);
 
     // If no compensation steps were dispatched (e.g. no completed forward
     // steps with compensation subjects), transition directly to compensated.
@@ -732,7 +839,10 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
         ack.retry();
         return;
     }
-    const auto* step = &found_steps.front();
+    // A copy rather than a reference: the step's state is written below, and
+    // what the code after that needs is the step as it arrived, not as it was
+    // left.
+    const auto step = found_steps.front();
 
     /*
      * Guard: an event for a step the engine is no longer waiting on.
@@ -747,15 +857,15 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
      * re-dispatches this step under the same identity, so the same service
      * replays the outcome it already holds instead of doing the work twice.
      */
-    if (step->state_id != step_states_.require("in_progress")) {
+    if (step.state_id != step_states_.require("in_progress")) {
         const bool late_answer =
-            step->state_id == step_states_.require("failed") && !step->error.empty();
+            step.state_id == step_states_.require("failed") && !step.error.empty();
         if (late_answer)
             BOOST_LOG_SEV(lg(), warn)
-                << "Step " << event.step_id << " (" << step->name
+                << "Step " << event.step_id << " (" << step.name
                 << ") answered after the engine stopped waiting for it; the run keeps the "
                    "failure it recorded: "
-                << step->error;
+                << step.error;
         else
             BOOST_LOG_SEV(lg(), info) << "Duplicate step-completed event for step " << event.step_id
                                       << " (state is not in_progress); ignoring.";
@@ -775,10 +885,10 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     using outcome = ores::workflow::messaging::step_outcome;
     switch (event.outcome) {
         case outcome::completed:
-            set_step_state(step_id, step_states_.require("completed"), event.result_json, "", "");
+            set_step_state(step, step_states_.require("completed"), event.result_json, "", "");
             break;
         case outcome::completed_with_warnings:
-            set_step_state(step_id,
+            set_step_state(step,
                            step_states_.require("completed_with_warnings"),
                            event.result_json,
                            "",
@@ -786,7 +896,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
             break;
         case outcome::failed:
             set_step_state(
-                step_id, step_states_.require("failed"), "", event.error_message, log_json);
+                step, step_states_.require("failed"), "", event.error_message, log_json);
             break;
     }
 
@@ -814,7 +924,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     const bool is_success =
         event.outcome == outcome::completed || event.outcome == outcome::completed_with_warnings;
 
-    if (step->step_index < 0) {
+    if (step.step_index < 0) {
         // Compensation step completed — check if all compensations are done.
         if (!is_success) {
             BOOST_LOG_SEV(lg(), error)
@@ -994,7 +1104,8 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.created_by = actor;
     instance.modified_by = actor;
     instance.step_count = static_cast<int>(steps.size());
-    instance.recorded_at = std::chrono::system_clock::now();
+    instance.last_event_at = std::chrono::system_clock::now();
+    instance.recorded_at = *instance.last_event_at;
 
     bool instance_created = false;
     try {
@@ -1036,7 +1147,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
                  step_repo_.read_latest_by_workflow_id(ctx_, id_str, 0, 1000)) {
                 if (started.step_index >= 0 &&
                     started.state_id == step_states_.require("in_progress"))
-                    set_step_state(started.id, step_states_.require("failed"), "", failure);
+                    set_step_state(started, step_states_.require("failed"), "", failure);
             }
         } else {
             BOOST_LOG_SEV(lg(), error)
@@ -1119,6 +1230,8 @@ void workflow_engine::recover_in_progress() {
                 // part-way through.
                 stamp_command_published(s.id);
             }
+            if (!steps.empty())
+                note_instance_activity(instance.id);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error) << "Recovery failed for instance "
                                        << boost::uuids::to_string(instance.id) << ": " << e.what();
@@ -1254,7 +1367,7 @@ std::size_t workflow_engine::expire_overdue_steps() {
                                        << boost::uuids::to_string(waiting.instance_id)
                                        << " step=" << step.name << " reason=" << reason;
 
-            set_step_state(step.id, step_failed, "", reason);
+            set_step_state(step, step_failed, "", reason);
             ++expired;
 
             const auto instances =
@@ -1370,7 +1483,7 @@ workflow_engine::retry_instance(const boost::uuids::uuid& instance_id,
     // goes out again under the step id the store already holds: that id is
     // the step's idempotency key, so a service that answers twice is the
     // engine's to catch rather than the retry's to prevent.
-    set_step_state(target->id, in_progress_id, "", "", "[]");
+    set_step_state(*target, in_progress_id, "", "", "[]");
     set_instance_state(instance.id, instance_states_.require("in_progress"), "", "");
     publish_command(*target, instance.id, instance.tenant_id.to_uuid());
     publish_status_event(instance.id, instance.tenant_id.to_uuid());

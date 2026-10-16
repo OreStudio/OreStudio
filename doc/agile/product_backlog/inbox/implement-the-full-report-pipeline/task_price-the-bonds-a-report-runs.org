@@ -8,7 +8,7 @@
 #+filetags: :implement-the-full-report-pipeline:inbox:product_backlog:
 #+owner: marco
 #+branch: fix/price-bonds-in-report-runs
-#+pr:
+#+pr: 3382
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3382][#3382]] | [marketdata] Give a curve pillar the tenor its template names, and record a valuation-date close |
 
 * Review
 

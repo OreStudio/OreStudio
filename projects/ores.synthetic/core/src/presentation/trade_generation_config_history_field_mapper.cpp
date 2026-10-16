@@ -49,6 +49,7 @@ render_trade_generation_config_fields(const domain::trade_generation_config& v) 
     fields.push_back({.name = "As Of Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.as_of_date)});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
+    fields.push_back({.name = "Reference Curve ID", .value = v.reference_curve_id});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

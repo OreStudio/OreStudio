@@ -236,6 +236,24 @@ Whether the configuration is active and eligible for generation.
 faker::datatype::boolean()
 #+end_src
 
+** reference_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The curve the population's bonds are discounted on, as the oresmd URI of
+the market series that curve is. An ORE bond resolves its discount curve
+by the index the trade names and the market's own forwarding decides which
+curve that index is, so the trade states a curve and the market decides the
+rest.
+
+The population is kept in one currency, the first book's own, so one curve
+serves every trade it emits. A population whose book keeps no currency a
+curve exists for states none, and its bonds then name no curve and are
+refused by the engine's builder rather than priced on a guess.
+
 * SQL
 
 ** Flags

@@ -159,6 +159,19 @@ struct trade_generation_config final {
     bool enabled = false;
 
     /**
+     * @brief The curve the population's bonds are discounted on, as the oresmd URI of the market
+     * series that curve is. An ORE bond resolves its discount curve by the index the trade names
+     * and the market's own forwarding decides which curve that index is, so the trade states a
+     * curve and the market decides the rest.
+     *
+     * The population is kept in one currency, the first book's own, so one curve serves every trade
+     * it emits. A population whose book keeps no currency a curve exists for states none, and its
+     * bonds then name no curve and are refused by the engine's builder rather than priced on a
+     * guess.
+     */
+    std::string reference_curve_id;
+
+    /**
      * @brief Username of the person who last modified this trade generation config.
      */
     std::string modified_by;

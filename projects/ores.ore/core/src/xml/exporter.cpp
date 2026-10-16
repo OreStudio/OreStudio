@@ -113,9 +113,10 @@ std::string exporter::export_conventions(const ores::refdata::messaging::convent
     return domain::save_data(xsd);
 }
 
-std::string
-exporter::export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
-                           const trading::domain::instrument_batch& instruments) {
+std::string exporter::export_portfolio(
+    const std::vector<trading::messaging::trade_export_item>& items,
+    const trading::domain::instrument_batch& instruments,
+    const reference_curve_names& reference_curves) {
     BOOST_LOG_SEV(lg(), debug) << "Started portfolio export. Items: " << items.size();
 
     domain::portfolio p;
@@ -290,24 +291,36 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                         return;
                     }
                 } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
+                    /*
+                     * The reference curve the trade states is the market series'
+                     * own URI, and ORE resolves the name the market configuration
+                     * forwards that series under. The mapping is the run's, so a
+                     * run that supplies none writes the trade's own value.
+                     */
+                    auto issue = r;
+                    if (reference_curves && issue.issue.reference_curve_id &&
+                        !issue.issue.reference_curve_id->empty())
+                        issue.issue.reference_curve_id =
+                            reference_curves(*issue.issue.reference_curve_id);
+
                     if (tt == "Bond")
-                        xsd_t = bond_instrument_mapper::reverse_bond(r);
+                        xsd_t = bond_instrument_mapper::reverse_bond(issue);
                     else if (tt == "ForwardBond")
-                        xsd_t = bond_instrument_mapper::reverse_forward_bond(r);
+                        xsd_t = bond_instrument_mapper::reverse_forward_bond(issue);
                     else if (tt == "CallableBond")
-                        xsd_t = bond_instrument_mapper::reverse_callable_bond(r);
+                        xsd_t = bond_instrument_mapper::reverse_callable_bond(issue);
                     else if (tt == "ConvertibleBond")
-                        xsd_t = bond_instrument_mapper::reverse_convertible_bond(r);
+                        xsd_t = bond_instrument_mapper::reverse_convertible_bond(issue);
                     else if (tt == "BondOption")
-                        xsd_t = bond_instrument_mapper::reverse_bond_option(r);
+                        xsd_t = bond_instrument_mapper::reverse_bond_option(issue);
                     else if (tt == "BondTRS")
-                        xsd_t = bond_instrument_mapper::reverse_bond_trs(r);
+                        xsd_t = bond_instrument_mapper::reverse_bond_trs(issue);
                     else if (tt == "BondRepo")
-                        xsd_t = bond_instrument_mapper::reverse_bond_repo(r);
+                        xsd_t = bond_instrument_mapper::reverse_bond_repo(issue);
                     else if (tt == "BondFuture")
-                        xsd_t = bond_instrument_mapper::reverse_bond_future(r);
+                        xsd_t = bond_instrument_mapper::reverse_bond_future(issue);
                     else if (tt == "Ascot")
-                        xsd_t = bond_instrument_mapper::reverse_ascot(r);
+                        xsd_t = bond_instrument_mapper::reverse_ascot(issue);
                     else {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for bond type: " << tt;
                         return;

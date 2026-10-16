@@ -47,6 +47,7 @@
 #include "ores.iam.core/service/tenant_provisioning_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
+#include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -1351,8 +1352,9 @@ private:
     /// left as it stands, so re-provisioning writes no version and a
     /// population that has already run keeps the anchor it ran on.
     boost::uuids::uuid record_trade_generation_config(internal_request_client& client,
-                                                      const boost::uuids::uuid& party_id,
-                                                      const trade_generation_assignment& entry) {
+                                                       const boost::uuids::uuid& party_id,
+                                                       const trade_generation_assignment& entry,
+                                                       const std::string& reference_curve_id) {
         if (const auto existing = find_trade_generation_config(client, entry.name)) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "generate_trades: the config '" << entry.name << "' is already recorded.";
@@ -1373,6 +1375,7 @@ private:
         request.change.write.as_of_date = trade_anchor_date(entry);
         request.change.write.seed = *entry.seed;
         request.change.write.enabled = true;
+        request.change.write.reference_curve_id = reference_curve_id;
         request.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
                                        std::nullopt};
         request.intent.reason_code = "system.initial_load";
@@ -1381,6 +1384,41 @@ private:
         const auto response = client.request(request);
         require_recorded(response.result, "the trade generation config '" + entry.name + "'");
         return config_id;
+    }
+
+    /// The curve a party's book is discounted on, as the oresmd URI of the
+    /// market series the party's own curve configuration published for the
+    /// book's currency.
+    ///
+    /// The curve belongs to the market, so the config names the series the
+    /// party holds rather than spelling ORE's name for it: ORE's own name for
+    /// one index differs between the reference data and the market's
+    /// forwarding, and only the latter is what the engine resolves. A party
+    /// with no curve for the book's currency gets an empty name, and the
+    /// population's bonds then state none and are refused by the engine's
+    /// builder rather than priced on another party's curve.
+    std::string find_reference_curve_id(internal_request_client& client,
+                                        const boost::uuids::uuid& party_id,
+                                        const std::string& currency) {
+        if (currency.empty())
+            return {};
+
+        ores::marketdata::messaging::list_market_series_request request;
+        request.limit = 10000;
+        const auto response = client.request(request);
+        require_read(response.result, "the market series of the tenant");
+
+        const auto prefix = "oresmd://ir/" + currency + "?type=series&instrument=";
+        for (const auto& s : response.market_series) {
+            if (s.party_id != party_id)
+                continue;
+            if (!s.oresmd_uri.starts_with(prefix))
+                continue;
+            if (s.oresmd_uri.find("&curve_id=") == std::string::npos)
+                continue;
+            return s.oresmd_uri;
+        }
+        return {};
     }
 
     /// Records the scope the entry describes: the party's book of that name,
@@ -1467,7 +1505,22 @@ private:
 
             auto party_client =
                 make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
-            const auto config_id = record_trade_generation_config(party_client, party->id, entry);
+
+            /*
+             * The population is kept in the book's own currency, so the curve
+             * its bonds are discounted on is resolved from that same book. The
+             * curve configuration the party published is what the resolution
+             * reads, so the config names a series the party actually holds.
+             */
+            const auto book = find_party_book(party_client, party->id, entry.book);
+            if (!book)
+                throw std::runtime_error("The party holds no book named '" + entry.book +
+                                         "', so the population has nowhere to land.");
+            const auto reference_curve_id =
+                find_reference_curve_id(party_client, party->id, book->functional_currency);
+
+            const auto config_id =
+                record_trade_generation_config(party_client, party->id, entry, reference_curve_id);
             record_trade_generation_scope(party_client, config_id, party->id, entry);
 
             auto generation_client = make_generation_client(

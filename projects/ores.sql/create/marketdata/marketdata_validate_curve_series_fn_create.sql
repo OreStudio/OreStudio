@@ -29,9 +29,11 @@
  * find.
  *
  * A series with no curve coordinate names a pillar rather than a curve, and a
- * discount engine cannot resolve one: a curve's URI carries a curve_id, and a
- * pillar's carries a term instead. The identity projection decodes that
- * coordinate, so a pillar is refused by the curve_id it has not got.
+ * discount engine cannot resolve one: a curve's URI carries a curve id and a
+ * day counter, and a pillar's carries a term instead. Both are read from the
+ * URI the catalogue is keyed by, so the check does not depend on the identity
+ * projection: a series the catalogue holds is nameable at once, and a series
+ * whose projection has not run yet is not refused for it.
  *
  * The series is scoped to the party that owns it as well as to the tenant.
  * One curve id is defined once per entity -- GBP1D exists in three of them --
@@ -56,16 +58,17 @@ begin
     if not exists (
         select 1
         from ores_marketdata_market_series_tbl s
-        join ores_marketdata_market_series_identity_tbl i
-          on i.series_id = s.id
-         and i.tenant_id = s.tenant_id
         where s.tenant_id = p_tenant_id
           and s.oresmd_uri = p_value
           and (v_party_id is null or s.party_id = v_party_id)
-          and i.instrument_type in ('zero', 'discount')
-          and coalesce(i.curve_id, '') <> ''
+          and s.valid_to = ores_utility_infinity_timestamp_fn()
+          and s.oresmd_uri like 'oresmd://ir/%?type=series&instrument=%'
+          and (s.oresmd_uri like '%&instrument=zero&%'
+               or s.oresmd_uri like '%&instrument=discount&%')
+          and s.oresmd_uri like '%&curve_id=%'
+          and position('&curve_id=&' in s.oresmd_uri) = 0
     ) then
-        raise exception 'Invalid reference_curve_id: %. No curve series of this tenant and party names that curve. A curve series reads oresmd://ir/<currency>?type=series&instrument=zero&quote=rate&curve_id=<curve>.', p_value
+        raise exception 'Invalid reference_curve_id: %. No curve series of this tenant and party names that curve. A curve series reads oresmd://ir/<currency>?type=series&instrument=zero&quote=rate&curve_id=<curve>&day_counter=<day counter>.', p_value
             using errcode = '23503';
     end if;
 

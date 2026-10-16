@@ -22,6 +22,7 @@
 
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
@@ -71,6 +72,24 @@ void undo_import(ores::nats::service::nats_client& owners,
  */
 input_files export_run(ores::nats::service::nats_client& owners,
                        const std::string& report_definition_id);
+
+/**
+ * @brief The ORE name of every curve the run's own market configuration
+ * forwards an index to, keyed by the oresmd URI of the series that curve is.
+ *
+ * A bond names the curve it is discounted on as the market series' own URI,
+ * which is ours; ORE resolves that name through the market configuration's
+ * IndexForwardingCurves, and the two spell the same curve differently. The
+ * mapping is read from the same two documents the run prices under -- its
+ * curve configuration and its today's market -- so the export names exactly
+ * the curves the run has. A curve the mapping does not hold reads back as the
+ * URI it was given, so a run whose market forwards nothing writes what its
+ * trades state.
+ */
+using reference_curve_names = std::function<std::string(const std::string&)>;
+
+reference_curve_names reference_curve_names_of(ores::nats::service::nats_client& owners,
+                                               const std::string& report_definition_id);
 
 }
 

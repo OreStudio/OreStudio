@@ -144,13 +144,23 @@ jobs:
         with:
           path: ${{ env.SCCACHE_DIR }}
           # Saves use a run-unique key, pruned to the newest entry per variant,
-          # so restore by prefix and take that entry. The key is scoped to this
-          # workflow: the clang variants are also built by Continuous Linux, but
-          # with coverage flags this workflow does not pass, so its entries hold
-          # objects this build cannot use.
-          key: sccache-nightly-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          # so restore by prefix and take that entry. The key is deliberately
+          # not scoped to this workflow, because Continuous Linux compiles the
+          # same variants with the same settings, so one entry serves both.
+          #
+          # The two tiers do differ, and none of the differences reaches a
+          # compile line:
+          #   - build_group names the CDash track, not a CMake input.
+          #   - with_memcheck runs valgrind in the test step; valgrind appears
+          #     nowhere in the build, so it cannot change a flag.
+          #   - a run that does not pass package=0 builds the package target,
+          #     which compiles the same objects and only adds cpack.
+          # code_coverage is the one input that does change the compile line,
+          # and both tiers pass it on the same variants: on for debug, absent
+          # for release.
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
           restore-keys: |
-            sccache-nightly-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
+            sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2.24
@@ -312,7 +322,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-nightly-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
 
       - name: Prune older sccache entries
         # Saves use a run-unique key, so entries accumulate: two clang-debug runs
@@ -320,6 +330,11 @@ jobs:
         # for want of room. Drop every older entry of this variant now that the
         # new one is stored. This delete runs only after the new entry is really
         # there, so it cannot destroy the cache the way deleting first did.
+        #
+        # One entry per variant is the goal, and Continuous Linux prunes the
+        # same prefix, so whichever tier runs last leaves the newest entry for
+        # both. Keeping only this run's key is therefore right even though the
+        # other tier may have stored the entry this one restored.
         #
         # The save step cannot be trusted for that: actions/cache turns a tar
         # that raced the cache into a warning and exits zero, so the step
@@ -329,7 +344,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          prefix="sccache-nightly-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
+          prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
           keep="${prefix}${{ github.run_id }}"
           stored=$(gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
             --jq '.actions_caches[].key' | grep -cxF "${keep}" || true)

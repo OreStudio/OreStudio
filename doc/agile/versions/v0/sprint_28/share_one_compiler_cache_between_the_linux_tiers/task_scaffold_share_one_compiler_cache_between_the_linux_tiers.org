@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: 9ABED26A-BE4C-405A-8826-F95A04647532
+:END:
+#+title: Task: Scaffold story: Share one compiler cache between the Linux tiers
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :share_one_compiler_cache_between_the_linux_tiers:sprint_28:v0:
+#+owner: marco
+#+branch: feature/share-one-compiler-cache-between-the-linux-tiers
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2EAFE9F-65EE-4C06-AA6F-14EBBFE51461][Share one compiler cache between the Linux tiers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Establish from the two workflows that the tiers really compile a variant
+identically, and wire the story into Sprint 28.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2EAFE9F-65EE-4C06-AA6F-14EBBFE51461][Share one compiler cache between the Linux tiers]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- The story is wired into Sprint 28 and the branch carries its documents.
+- Every difference between the two tiers is enumerated and classified.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Steps only Continuous has | 5, of which 4 are the same action under another name | step-list diff of the two workflows | 4bf4405fe6 |
+| Steps only Nightly has | 3, all the same actions under another names | same | 4bf4405fe6 |
+| Differences that reach a compile line | 1, code_coverage, and it matches | CTest.cmake and the two cmake_args | 4bf4405fe6 |
+| References to valgrind in the build system | 0 | =grep -rn valgrind CMakeLists.txt cmake/ build/cmake/= | 4bf4405fe6 |
+| Linux variants cached per tier before | 2 continuous + 4 nightly | the workflow matrices | 4bf4405fe6 |
+
+* Notes
+
+The step difference is not a build difference: the hand-written names differ
+("Ccache for gh actions" against "Setup ccache", "get-cmake" against "Get latest
+CMake") for the same actions. The one genuine extra is Continuous's Boost header
+check, which runs before the build and cannot change a compile line.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story is scaffolded and wired into Sprint 28. This task carries the story
+documents, the sprint row and the branch, and closes after the scaffold PR
+merges.
+
+The classification that the work task rests on: of everything that differs
+between the two tiers, only =code_coverage= can move a compile line, and both
+pass it on debug and neither on release.

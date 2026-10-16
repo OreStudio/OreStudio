@@ -18,10 +18,10 @@
  *
  */
 #include "ores.platform/process/executable.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <cstdio>
 #include <ctime>
 #include <filesystem>
 #include <iomanip>
@@ -34,6 +34,7 @@ const std::string tags("[process][executable]");
 
 using ores::platform::process::executable_build_time;
 using ores::platform::process::executable_path;
+using ores::platform::time::datetime;
 using ores::platform::time::time_utils;
 
 /**
@@ -97,27 +98,25 @@ TEST_CASE("executable_build_time_parses_as_a_calendar_timestamp", tags) {
     const auto value = executable_build_time();
     REQUIRE(value != "unknown");
 
-    int year = 0;
-    int month = 0;
-    int day = 0;
-    int hour = 0;
-    int minute = 0;
-    int second = 0;
-    const auto fields = std::sscanf(
-        value.c_str(), "%d/%d/%d %d:%d:%d", &year, &month, &day, &hour, &minute, &second);
+    // The platform parser for a format that is not ISO 8601. It throws when the
+    // text does not match, so reaching the checks below is itself the assertion
+    // that the whole string is a YYYY/MM/DD HH:MM:SS timestamp.
+    const auto tp = datetime::from_utc_format(value, "%Y/%m/%d %H:%M:%S");
+    const auto day = std::chrono::floor<std::chrono::days>(tp);
+    const std::chrono::year_month_day ymd{day};
+    const std::chrono::hh_mm_ss tod{tp - day};
 
-    REQUIRE(fields == 6);
-    CHECK(year >= 2026);
-    CHECK(month >= 1);
-    CHECK(month <= 12);
-    CHECK(day >= 1);
-    CHECK(day <= 31);
-    CHECK(hour >= 0);
-    CHECK(hour <= 23);
-    CHECK(minute >= 0);
-    CHECK(minute <= 59);
-    CHECK(second >= 0);
-    CHECK(second <= 60);
+    CHECK(static_cast<int>(ymd.year()) >= 2026);
+    CHECK(static_cast<unsigned>(ymd.month()) >= 1);
+    CHECK(static_cast<unsigned>(ymd.month()) <= 12);
+    CHECK(static_cast<unsigned>(ymd.day()) >= 1);
+    CHECK(static_cast<unsigned>(ymd.day()) <= 31);
+    CHECK(tod.hours().count() >= 0);
+    CHECK(tod.hours().count() <= 23);
+    CHECK(tod.minutes().count() >= 0);
+    CHECK(tod.minutes().count() <= 59);
+    CHECK(tod.seconds().count() >= 0);
+    CHECK(tod.seconds().count() <= 60);
 }
 
 TEST_CASE("executable_build_time_does_not_postdate_the_test_run", tags) {

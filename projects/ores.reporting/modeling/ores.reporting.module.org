@@ -20,6 +20,8 @@ The =ores.reporting= module groups all logical entities in the =ores.reporting= 
 | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] | Persistent template for a scheduled report. |
 | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] | A single execution of a report definition. |
 | [[id:32FCDE76-1C5A-4AFC-8671-7468C0F024DB][ores.reporting.risk_report_config]] | ORE-level parameters for a risk report definition. |
+| [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error]] | An error a report run produced, and what it is about. |
+| [[id:FF774B04-12E6-4BDF-B94C-222095651C4F][ores.reporting.report_error_scope]] | What a report error is about, named in the engine's own vocabulary. |
 
 * See also
 

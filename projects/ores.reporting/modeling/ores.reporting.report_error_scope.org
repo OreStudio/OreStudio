@@ -1,0 +1,183 @@
+:PROPERTIES:
+:ID: FF774B04-12E6-4BDF-B94C-222095651C4F
+:END:
+#+title: ores.reporting.report_error_scope
+#+description: Codegen entity model for the reporting =report_error_scope= table. The scope an error a report run produced is about, taken from the engine's own vocabulary.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: What a report error is about, named in the engine's own vocabulary.
+#+entity_singular: report_error_scope
+#+entity_plural: report_error_scopes
+#+entity_title: Report Error Scope
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+The vocabulary a report error's scope is drawn from. The engine that computes a
+report states the scope of every error it emits, in its structured log, as a
+=group=. The codes here are those group names verbatim, so the model adds no
+classification of its own: the engine says =Trade= and the row says =Trade=.
+
+| Code | Where an error of this scope appears |
+|---|---|
+| =Trade= | On the one trade the error names. A trade that would not build is one of these, and a run that reports sixteen of them reported sixteen trades that would not build. |
+| =Analytics= | On the one analytic the error names, or on the trade the analytic could not build. Which of the two is stated by the error row's subject, not by the scope. |
+| =Curve= | On the one curve the error names, a curve that would not build while the market was assembled. |
+| =Configuration= | On the input the error names, which belongs to no one trade. |
+| =Report= | Nowhere below the run: the error is about the run itself. This is the one code the engine does not emit. It is here because a run can also fail for a reason no engine saw, such as a workflow step that never reached it, and a reader wants one table. |
+
+=Report= is the only code this model states rather than copies. Every other code
+is a string the engine writes, and a code the engine writes that is not a row
+here is a vocabulary the engine has grown: the row is refused, loudly, rather
+than stored with a scope no reader can place.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:system_tenant_validation: true
+:profile:                  simple-lookup
+:tablename: ores_reporting_report_error_scopes_tbl
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+The engine's own group name, verbatim: Trade, Analytics, Curve, Configuration,
+or Report for an error about the run itself.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The human-readable name of the scope.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+What an error of this scope is about, in one line.
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:END:
+
+The order the scope appears in a list, narrowest subject first.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_error_scopes_tbl
+:END:
+
+The table's row-level security is stated by hand in
+=reporting_rls_policies_create.sql= rather than generated, because the scope
+vocabulary is seeded for the system tenant and has to be readable by every
+tenant that reads a report. A generated tenant-only policy shows a tenant its
+own rows and nothing else, so every tenant would find the vocabulary empty.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: scope
+:entity_plural_short:   scopes
+:entity_singular_words: report error scope
+:entity_plural_words:   report error scopes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: es
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| code          | Code        |
+| name          | Name        |
+| description   | Description |
+| display_order | Order       |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/report_error_scope.hpp
+:domain_class:           reporting::domain::report_error_scope
+:protocol_include:       ores.reporting.api/messaging/report_error_scope_protocol.hpp
+:collection_name:        report_error_scopes
+:key_field:              code
+:get_request_class:      reporting::messaging::get_report_error_scopes_request
+:get_response_class:     reporting::messaging::get_report_error_scopes_response
+:get_message_type:       get_report_error_scopes_request
+:save_request_class:     reporting::messaging::save_report_error_scope_request
+:save_response_class:    reporting::messaging::save_report_error_scope_response
+:save_message_type:      save_report_error_scope_request
+:delete_request_class:   reporting::messaging::delete_report_error_scope_request
+:delete_response_class:  reporting::messaging::delete_report_error_scope_response
+:delete_message_type:    delete_report_error_scope_request
+:END:
+
+*** Detail fields
+
+| field         | label       | type      | is_key | is_required | placeholder            |
+|---------------+-------------+-----------+--------+-------------+------------------------|
+| code          | Code        | line_edit | true   | true        | Enter scope code       |
+| name          | Name        | line_edit |        | true        | Enter display name     |
+| description   | Description | line_edit |        | true        | Enter description      |
+| display_order | Order       | spin_edit |        | true        | Enter order            |
+
+*** Columns
+
+| enum_name    | field         | header      | type   | width |
+|--------------+---------------+-------------+--------+-------|
+| Code         | code          | Code        | string | 160   |
+| Name         | name          | Name        | string | 200   |
+| Description  | description   | Description | string | 320   |
+| DisplayOrder | display_order | Order       | int    | 80    |
+| Version      | version       | Version     | int    | 80    |
+| ModifiedBy   | modified_by   | Modified By | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error]] — the error rows these scopes classify.
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

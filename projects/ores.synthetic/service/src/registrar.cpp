@@ -152,8 +152,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // before the write rather than after it. The read of any kind's feed configs
     // opens it, as it opens the feed reads.
     subs.push_back(nats.queue_subscribe(
-        std::string(
-            ores::synthetic::messaging::resolve_series_owners_request::nats_subject),
+        std::string(ores::synthetic::messaging::resolve_series_owners_request::nats_subject),
         queue,
         [&nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
             feed_overview_handler h(nats, ctrl, ctx, verifier, registry);

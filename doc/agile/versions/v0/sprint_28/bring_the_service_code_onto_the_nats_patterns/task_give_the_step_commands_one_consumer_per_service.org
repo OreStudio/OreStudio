@@ -8,7 +8,7 @@
 #+filetags: :bring_the_service_code_onto_the_nats_patterns:sprint_28:v0:
 #+owner: marco
 #+branch: feature/give-at-least-once-its-structure
-#+pr:
+#+pr: 3373
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3373][#3373]] | [nats] Serve each service's step commands on one consumer |
 
 * Review
 

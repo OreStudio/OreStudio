@@ -124,19 +124,15 @@ struct workflow_instance final {
     int step_count = 0;
 
     /**
-     * @brief Timestamp when the workflow reached a terminal state.
+     * @brief Timestamp when the workflow reached a terminal state. The engine writes it from its
+     * state funnel, so a caller editing the run never states it.
      */
     std::optional<std::chrono::system_clock::time_point> completed_at;
 
     /**
-     * @brief Timestamp of the most recent thing that happened to the run.
-     *
-     * Every transition of the run moves it, and so does the work between two of
-     * them: a start that dispatches its first steps, a step command a recovery
-     * re-dispatches, and the rollback of a failed run. A reader watching it for
-     * silence is what tells a live run from an abandoned one -- nothing else
-     * does, because a run left in progress by a fleet that never came back
-     * looks exactly like one that is working.
+     * @brief Timestamp of the run's most recent activity: every state transition, and every
+     * dispatch the run does between two of them. The engine writes it, so a caller editing the run
+     * never states it.
      */
     std::optional<std::chrono::system_clock::time_point> last_event_at;
 

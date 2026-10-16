@@ -1086,6 +1086,71 @@ TEST_CASE("a definition that declares compensate still rolls its work back", tag
     BOOST_LOG_SEV(lg, debug) << "Default policy still compensates.";
 }
 
+TEST_CASE("a rollback settles the forward steps it abandoned", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    // Three steps the graph is free to start together, so one can fail while
+    // the others are still running. A linear chain cannot say this.
+    f.register_chain(
+        "test_settled_after_rollback_workflow", {{"one", {}}, {"two", {}}, {"three", {}}});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, step_command_buffer);
+    auto compensation = f.nats.subscribe_buffered(compensation_subject, step_command_buffer);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_settled_after_rollback_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    const auto id_at = [&](int index) {
+        for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
+            if (s.step_index == index)
+                return boost::uuids::to_string(s.id);
+        return std::string{};
+    };
+    const auto state_at = [&](int index) {
+        for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
+            if (s.step_index == index)
+                return s.state_id;
+        return boost::uuids::uuid{};
+    };
+    REQUIRE(!id_at(0).empty());
+    REQUIRE(!id_at(2).empty());
+
+    // One step answers, one fails, and the third is still running when the run
+    // decides to roll back.
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, id_at(0), step_outcome::completed)));
+    f.engine->on_step_completed(as_message(
+        completion_for(instance_id, id_at(1), step_outcome::failed, "two broke")));
+
+    // The rollback runs to its end, which is where a compensated run is read.
+    REQUIRE(wait_for_instance(compensation, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+    std::string compensation_id;
+    for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
+        if (s.step_index < 0)
+            compensation_id = boost::uuids::to_string(s.id);
+    REQUIRE(!compensation_id.empty());
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, compensation_id, step_outcome::completed)));
+
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("compensated"));
+
+    // The run has finished, so no step of it is still running: the step that
+    // answered keeps its result, the one that failed keeps its own failure, and
+    // the one the rollback abandoned is settled rather than left in flight.
+    CHECK(state_at(0) == f.step_states.require("completed"));
+    CHECK(state_at(1) == f.step_states.require("failed"));
+    CHECK(state_at(2) == f.step_states.require("failed"));
+    for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
+        CHECK(s.state_id != f.step_states.require("in_progress"));
+    BOOST_LOG_SEV(lg, debug) << "A compensated run has no step left running.";
+}
+
 TEST_CASE("workflow_engine drives a run that belongs to another tenant", tags) {
     auto lg(make_logger(test_suite));
 
@@ -1415,6 +1480,77 @@ TEST_CASE("workflow_query_handler filters runs by type and by target", tags) {
     CHECK(has(type_ids, a_none));
     CHECK_FALSE(has(type_ids, b_party));
     BOOST_LOG_SEV(lg, debug) << "Filters checked over " << type_runs.size() << " run(s).";
+}
+
+TEST_CASE("a listed run says when it last did anything", tags) {
+    auto lg(make_logger(test_suite));
+
+    using ores::workflow::messaging::list_workflow_instance_summaries_request;
+    using ores::workflow::messaging::list_workflow_instance_summaries_response;
+    using ores::workflow::messaging::workflow_query_handler;
+
+    fixture f;
+    f.register_steps("test_activity_workflow", {"one"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    // The list handler reads as the system tenant, so it sees every tenant's
+    // rows and the type name alone would match the runs earlier cases of this
+    // name left behind. The target is new per run, so it names this one run.
+    const auto target = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, step_command_buffer);
+    auto start = start_for("test_activity_workflow", f.tenant(), instance_id);
+    start.target_kind = "tenant";
+    start.target_id = target;
+    f.engine->on_start_workflow(as_message(start));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    auto handler = std::make_shared<workflow_query_handler>(
+        f.nats,
+        f.service_context(),
+        ores::security::jwt::jwt_authenticator::create_hs256(handler_secret),
+        f.instance_states,
+        f.step_states,
+        f.registry);
+
+    auto replies = f.nats.subscribe_buffered(reply_subject, 10);
+    const auto ask = [&]() {
+        list_workflow_instance_summaries_request req;
+        req.target_kind_filter = "tenant";
+        req.target_id_filter = target;
+        auto msg = signed_request(handler_secret, f.tenant(), {});
+        msg.data = ores::nats::default_wire_codec().encode(req);
+        const auto before = replies.size();
+        handler->list_instances(std::move(msg));
+        const auto answer = await_reply<list_workflow_instance_summaries_response>(
+            replies, before, std::chrono::seconds(5));
+        REQUIRE(answer.has_value());
+        REQUIRE(answer->success);
+        REQUIRE(answer->instances.size() == 1);
+        return answer->instances.front();
+    };
+
+    // A run that is still open has no completion, so its activity is the only
+    // thing that says whether anything is driving it: that is the timestamp a
+    // reader polls to tell a live run from an abandoned one.
+    const auto running = ask();
+    CHECK_FALSE(running.completed_at.has_value());
+    REQUIRE(running.last_event_at.has_value());
+    CHECK_FALSE(running.last_event_at->empty());
+
+    // The run finishes, and the list carries both: the completion for a reader
+    // that asks whether it finished, and the activity for the one that asks
+    // when it was last touched.
+    workflow_step_repository steps;
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed)));
+
+    const auto finished = ask();
+    REQUIRE(finished.completed_at.has_value());
+    REQUIRE(finished.last_event_at.has_value());
+    CHECK_FALSE(finished.last_event_at->empty());
+    BOOST_LOG_SEV(lg, debug) << "A listed run carries its activity and its completion.";
 }
 
 TEST_CASE("workflow_handler retries a run only for a permitted caller in its tenant", tags) {

@@ -136,9 +136,12 @@ Serialised JSON command payload published to the domain service.
 :type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
+:server_owned: true
 :END:
 
-Timestamp when the step command was published to NATS.
+Timestamp when the step command was published to NATS. The engine writes it
+when it dispatches or re-dispatches the step, and the deadline pass reads it to
+judge the step's silence, so a caller editing the step never states it.
 
 ** idempotency_key
 :PROPERTIES:
@@ -175,18 +178,22 @@ Serialised JSON compensation command payload, populated when compensation is tri
 :type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
+:server_owned: true
 :END:
 
-Timestamp when the step began executing.
+Timestamp when the step began executing. The engine writes it with the row it
+creates at dispatch, so a caller editing the step never states it.
 
 ** completed_at
 :PROPERTIES:
 :type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
+:server_owned: true
 :END:
 
-Timestamp when the step reached a terminal state.
+Timestamp when the step reached a terminal state. The engine writes it from its
+state funnel, so a caller editing the step never states it.
 
 * SQL
 

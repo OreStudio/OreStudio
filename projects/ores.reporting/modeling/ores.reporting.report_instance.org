@@ -195,9 +195,12 @@ std::string{}
 :type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
+:server_owned: true
 :END:
 
-When execution began. NULL if cancelled before starting.
+When execution began. NULL if cancelled before starting. The admission service
+writes it when the run is admitted, so a caller editing the instance never
+states it.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -208,9 +211,11 @@ std::nullopt
 :type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
+:server_owned: true
 :END:
 
-When execution completed. NULL while running or before start.
+When execution completed. NULL while running or before start. The service that
+drives the run writes it, so a caller editing the instance never states it.
 
 #+begin_src cpp :name generator
 std::nullopt

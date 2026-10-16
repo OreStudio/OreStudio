@@ -5460,6 +5460,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             shell_menu_name,
             shell_recipe_document,
             sibling_entity_singulars,
+            service_preserved_fields,
             write_record_for,
         )
         for _field in (
@@ -5591,6 +5592,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The write record's fields, which the service builds a domain object
         # from: one derivation, so the record and the service agree.
         domain_entity['write_fields'] = write_record_for(domain_entity)
+        # The service-owned fields the record cannot carry because only the
+        # row knows them. An update builds the row afresh, so without these
+        # the service's own defaults would clear what its state funnels wrote.
+        domain_entity['preserved_fields'] = service_preserved_fields(domain_entity)
+        domain_entity['has_preserved_fields'] = bool(domain_entity['preserved_fields'])
         _prepare_enum_write_fields(domain_entity)
         _prepare_date_write_fields(domain_entity)
         # The same list as operations, which is what the service and handler

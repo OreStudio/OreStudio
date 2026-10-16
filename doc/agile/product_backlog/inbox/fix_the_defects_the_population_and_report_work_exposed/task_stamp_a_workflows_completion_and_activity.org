@@ -8,7 +8,7 @@
 #+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch: chore/stamp-workflow-completion-and-activity
-#+pr: 3398
+#+pr: 3403
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -114,6 +114,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3403][#3403]] | [workflow] Own the timestamps the engine stamps |
 | [[https://github.com/OreStudio/OreStudio/pull/3398][#3398]] | [agile] Capture the erase-on-set timestamps |
 | [[https://github.com/OreStudio/OreStudio/pull/3397][#3397]] | [agile] Close the task that stamps a workflow's completion and activity |
 | [[https://github.com/OreStudio/OreStudio/pull/3396][#3396]] | [workflow] Stamp a run's completion and its activity |

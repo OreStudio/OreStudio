@@ -50,8 +50,6 @@ struct report_instance_write {
     boost::uuids::uuid trigger_id;
     std::string output_message;
     std::string output_storage_key;
-    std::optional<std::chrono::system_clock::time_point> started_at;
-    std::optional<std::chrono::system_clock::time_point> completed_at;
 };
 
 struct report_instance_change {

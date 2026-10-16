@@ -391,6 +391,22 @@ void workflow_engine::stamp_command_published(const boost::uuids::uuid& step_id)
     step_repo_.write(ctx_, step);
 }
 
+void workflow_engine::settle_abandoned_forward_steps(const boost::uuids::uuid& instance_id,
+                                                     const std::string& reason) {
+    const auto mine =
+        step_repo_.read_latest_by_workflow_id(ctx_, boost::uuids::to_string(instance_id), 0, 1000);
+    // The step did not fail on its own account, so its error says what
+    // happened to the run rather than inventing a failure of the step.
+    const auto abandoned = "The run rolled back while this step was still running. " + reason;
+    for (const auto& step : mine) {
+        if (step.step_index < 0)
+            continue;
+        if (is_step_terminal(step.state_id))
+            continue;
+        set_step_state(step, step_states_.require("failed"), "", abandoned, {});
+    }
+}
+
 void workflow_engine::note_awaiting(const domain::workflow_step& step,
                                     const boost::uuids::uuid& instance_id,
                                     const boost::uuids::uuid& tenant_id) {
@@ -674,6 +690,12 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
 
     set_instance_state(instance.id, instance_states_.require("compensating"), "", failure_msg);
     publish_status_event(instance.id, instance.tenant_id.to_uuid());
+
+    // The run has stopped waiting on its forward steps, so none of them is
+    // still running. Settled here rather than at the end of the rollback
+    // because a sibling that answered in between would otherwise advance a run
+    // that is already on its way out.
+    settle_abandoned_forward_steps(instance.id, failure_msg);
 
     const auto* def = registry_->find(instance.type);
     if (!def) {

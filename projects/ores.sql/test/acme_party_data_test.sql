@@ -179,11 +179,16 @@ select is(
      where not exists (select 1 from t_gleif_entities e where e.lei = a.counterparty_lei)),
     0::bigint, 'every approved bank is one the GLEIF counterparty set carries');
 
+-- A party works in several countries, so a bank matches when its country is
+-- any one of them. Counting the pairs whose countries differ would count every
+-- bank once for each of the party's other countries.
 select is(
     (select count(*) from t_approved a
-     join t_countries t on t.company = a.company
-     join t_gleif_entities e on e.lei = a.counterparty_lei
-     where t.country_alpha2_code <> e.country),
+     where not exists (
+         select 1 from t_countries t
+         join t_gleif_entities e on e.lei = a.counterparty_lei
+         where t.company = a.company
+           and t.country_alpha2_code = e.country)),
     0::bigint, 'the approved banks of a party are the banks of the countries it works in');
 
 select * from finish();

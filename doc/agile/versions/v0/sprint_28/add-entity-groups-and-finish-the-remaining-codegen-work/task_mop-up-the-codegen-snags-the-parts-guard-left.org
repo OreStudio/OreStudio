@@ -8,7 +8,7 @@
 #+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3400
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -79,7 +79,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3400][#3400]] | [agile] File the codegen mop-up task |
 
 * Review
 

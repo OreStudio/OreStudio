@@ -34,6 +34,8 @@ drop policy if exists books_sandbox_isolation_policy on "ores_refdata_books_tbl"
 drop policy if exists books_tenant_isolation_policy on "ores_refdata_books_tbl";
 drop policy if exists netting_agreements_party_isolation_policy on "ores_refdata_netting_agreements_tbl";
 drop policy if exists netting_agreements_tenant_isolation_policy on "ores_refdata_netting_agreements_tbl";
+drop policy if exists credit_limits_party_isolation_policy on "ores_refdata_credit_limits_tbl";
+drop policy if exists credit_limits_tenant_isolation_policy on "ores_refdata_credit_limits_tbl";
 drop policy if exists netting_sets_party_isolation_policy on "ores_refdata_netting_sets_tbl";
 drop policy if exists netting_sets_tenant_isolation_policy on "ores_refdata_netting_sets_tbl";
 drop policy if exists csas_party_isolation_policy on "ores_refdata_csas_tbl";

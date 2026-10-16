@@ -37,6 +37,7 @@ export interface NettingSet {
     code: string;
     party_id: string;
     netting_agreement_id: string | null;
+    credit_limit_id: string | null;
     counterparty_id: string | null;
     call_type: string | null;
     initial_margin_type: string | null;

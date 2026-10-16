@@ -165,6 +165,31 @@ public:
 
 
     /**
+     * @brief Reads latest netting sets filtered by credit_limit_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param credit_limit_id The credit_limit_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::netting_set> read_latest_by_credit_limit_id(
+        context ctx,
+        const std::string& credit_limit_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::netting_sets_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active netting sets filtered by credit_limit_id.
+     */
+    std::uint32_t get_total_netting_set_count_by_credit_limit_id(
+        context ctx,
+        const std::string& credit_limit_id,
+        const std::optional<messaging::netting_sets_filter>& filter = std::nullopt);
+
+
+    /**
      * @brief Whether a list of netting sets can be ordered by a field.
      *
      * The model's :sortable: columns, and nothing else.

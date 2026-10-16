@@ -43,6 +43,7 @@
 #include "ores.shell/app/commands/refdata/counterparty_identifier_change_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_identifier_commands.hpp"
 #include "ores.shell/app/commands/refdata/country_commands.hpp"
+#include "ores.shell/app/commands/refdata/credit_limit_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_driver_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_enabled_derived_pair_commands.hpp"
 #include "ores.shell/app/commands/refdata/crm_topology_config_commands.hpp"
@@ -206,6 +207,7 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     counterparty_identifier_commands::register_commands(root_menu, session);
     counterparty_identifier_change_commands::register_commands(root_menu, session);
     country_commands::register_commands(root_menu, session);
+    credit_limit_commands::register_commands(root_menu, session);
     crm_driver_pair_commands::register_commands(root_menu, session);
     crm_enabled_derived_pair_commands::register_commands(root_menu, session);
     crm_topology_config_commands::register_commands(root_menu, session);

@@ -190,6 +190,10 @@
 \ir ./refdata_counterparty_contact_informations_create.sql
 \ir ./refdata_counterparty_contact_informations_notify_trigger_create.sql
 
+-- Counterparty credit limits, which a netting set is bucketed by
+\ir ./refdata_credit_limits_create.sql
+\ir ./refdata_credit_limits_notify_trigger_create.sql
+
 -- Netting agreements and the netting sets opened under them
 \ir ./refdata_netting_agreements_create.sql
 \ir ./refdata_netting_agreements_notify_trigger_create.sql

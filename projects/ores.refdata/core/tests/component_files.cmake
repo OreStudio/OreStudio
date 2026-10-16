@@ -64,6 +64,7 @@ set(files
     "counterparty_identifier_change_eventing_integration_tests.cpp"
     "counterparty_identifier_eventing_integration_tests.cpp"
     "country_eventing_integration_tests.cpp"
+    "credit_limit_eventing_integration_tests.cpp"
     "crm_driver_pair_eventing_integration_tests.cpp"
     "crm_enabled_derived_pair_eventing_integration_tests.cpp"
     "crm_topology_config_eventing_integration_tests.cpp"

@@ -231,6 +231,10 @@
 \ir ./refdata_netting_agreements_notify_trigger_drop.sql
 \ir ./refdata_netting_agreements_drop.sql
 
+-- Counterparty credit limits, after the netting sets that reference them
+\ir ./refdata_credit_limits_notify_trigger_drop.sql
+\ir ./refdata_credit_limits_drop.sql
+
 -- Party and counterparty contact information (drop first, depends on parties/counterparties)
 \ir ./refdata_counterparty_contact_informations_notify_trigger_drop.sql
 \ir ./refdata_counterparty_contact_informations_drop.sql

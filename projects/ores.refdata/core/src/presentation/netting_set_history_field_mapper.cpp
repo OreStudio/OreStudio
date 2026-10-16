@@ -46,6 +46,9 @@ render_netting_set_fields(const domain::netting_set& v) {
                                    boost::uuids::to_string(*v.netting_agreement_id) :
                                    std::string{}});
     fields.push_back(
+        {.name = "Credit Limit ID",
+         .value = v.credit_limit_id ? boost::uuids::to_string(*v.credit_limit_id) : std::string{}});
+    fields.push_back(
         {.name = "Counterparty ID",
          .value = v.counterparty_id ? boost::uuids::to_string(*v.counterparty_id) : std::string{}});
     fields.push_back({.name = "Call Type", .value = v.call_type.value_or(std::string{})});

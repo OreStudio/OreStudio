@@ -64,6 +64,7 @@
 #include "ores.refdata.core/messaging/counterparty_identifier_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_registrar.hpp"
 #include "ores.refdata.core/messaging/country_registrar.hpp"
+#include "ores.refdata.core/messaging/credit_limit_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_driver_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_topology_config_registrar.hpp"
@@ -186,6 +187,7 @@
 #include "ores.refdata.core/messaging/counterparty_identifier_change_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/counterparty_identifier_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/country_history_provider_registrar.hpp"
+#include "ores.refdata.core/messaging/credit_limit_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_driver_pair_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_enabled_derived_pair_history_provider_registrar.hpp"
 #include "ores.refdata.core/messaging/crm_topology_config_history_provider_registrar.hpp"
@@ -370,6 +372,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_csa_handlers(nats, ctx, verifier));
     append(register_csa_eligible_currency_handlers(nats, ctx, verifier));
     append(register_country_handlers(nats, ctx, verifier));
+    append(register_credit_limit_handlers(nats, ctx, verifier));
     append(register_crm_driver_pair_handlers(nats, ctx, verifier));
     append(register_crm_enabled_derived_pair_handlers(nats, ctx, verifier));
     append(register_crm_topology_config_handlers(nats, ctx, verifier));
@@ -607,6 +610,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
         register_counterparty_history_provider(hist_registry);
         register_counterparty_change_history_provider(hist_registry);
         register_country_history_provider(hist_registry);
+        register_credit_limit_history_provider(hist_registry);
         register_crm_driver_pair_history_provider(hist_registry);
         register_crm_enabled_derived_pair_history_provider(hist_registry);
         register_crm_topology_config_history_provider(hist_registry);

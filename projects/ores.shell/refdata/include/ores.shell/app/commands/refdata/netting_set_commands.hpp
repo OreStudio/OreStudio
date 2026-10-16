@@ -87,24 +87,26 @@ public:
                                  const std::vector<std::string>& args);
 
     /**
-     * @brief add <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type>
-     * <initial_margin_type> <risk_weight> <description> <reason> <commentary>
+     * @brief add <code> <party_id> <netting_agreement_id> <credit_limit_id> <counterparty_id>
+     * <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief set <id> <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type>
-     * <initial_margin_type> <risk_weight> <description> <reason> <commentary> [--version <n>]
+     * @brief set <id> <code> <party_id> <netting_agreement_id> <credit_limit_id> <counterparty_id>
+     * <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
+     * [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
                             const std::vector<std::string>& args);
 
     /**
-     * @brief put-many --count <n> <id> <code> <party_id> <netting_agreement_id> <counterparty_id>
-     * <call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>
+     * @brief put-many --count <n> <id> <code> <party_id> <netting_agreement_id> <credit_limit_id>
+     * <counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason>
+     * <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,
@@ -131,6 +133,14 @@ public:
     static void process_by_netting_agreement_id(std::ostream& out,
                                                 ores::nats::service::nats_client& session,
                                                 const std::vector<std::string>& args);
+
+    /**
+     * @brief by-credit-limit-id <credit_limit_id> [--offset <n>] [--limit <n>] [--order <field>]
+     * [--desc]
+     */
+    static void process_by_credit_limit_id(std::ostream& out,
+                                           ores::nats::service::nats_client& session,
+                                           const std::vector<std::string>& args);
 
     /**
      * @brief versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]

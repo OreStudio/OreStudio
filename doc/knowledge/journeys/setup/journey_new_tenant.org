@@ -208,7 +208,8 @@ each part turned out to be.
    parameter schema and the step-kind catalogue. A profile is registered data
    that orders step kinds from a fixed catalogue: =publish_bundle=,
    =import_lei_hierarchy=, =provision_party=, =load_staff=, =attach_photos=,
-   =start_market_feeds=. A new profile is a row; a new step kind is code. The
+   =start_market_feeds=, =generate_trades=. A new profile is a row; a new step
+   kind is code. The
    reads =iam.v1.seed_profiles.list= and =iam.v1.seed_profiles.get= answer the
    profile, and
    =iam.v1.seed_profile_steps.list-by-seed-profile-id= and

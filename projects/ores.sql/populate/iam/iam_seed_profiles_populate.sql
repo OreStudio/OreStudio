@@ -27,10 +27,10 @@
  * cards' copy is the accepted prototype's.
  *
  * The step kinds come from the catalogue in code: publish_bundle,
- * import_lei_hierarchy, provision_party, load_staff, attach_photos and
- * start_market_feeds. ACME orders all six, because it produces every kind of
- * datum a demonstration needs. Operational orders the three that create real
- * data and no test data at all.
+ * import_lei_hierarchy, provision_party, load_staff, attach_photos,
+ * start_market_feeds and generate_trades. ACME orders all seven, because it
+ * produces every kind of datum a demonstration needs. Operational orders the
+ * three that create real data and no test data at all.
  *
  * Operational is offered first: it is the production starting point, and the
  * demonstration is the deliberate second choice.
@@ -146,7 +146,34 @@ cross join (values
         {"name": "ACME Corporation US Inc", "dataset": "acme.acme_us.accounts"},
         {"name": "ACME Corporation HK Ltd", "dataset": "acme.acme_hk.accounts"}
     ]}'::jsonb),
-    ('acme_demo', 'start_market_feeds', 60, '{"dataset": "synthetic.feeds.bloomberg"}'::jsonb)
+    ('acme_demo', 'start_market_feeds', 60, '{"dataset": "synthetic.feeds.bloomberg"}'::jsonb),
+    -- One config per trading entity, each booking into the book that entity
+    -- keeps its liquidity in. The counterparties are the entity's own
+    -- tradeable links, which is why the step resolves them rather than the
+    -- row naming them. No anchor is stated: the population is meant to sit
+    -- relative to the present, so it is anchored on the day the run makes it.
+    ('acme_demo', 'generate_trades', 70, '{"configs": [
+        {"party": "Acme Corporation Plc", "name": "ACME ACMCOR bond population",
+         "description": "The bonds ACME Plc books, generated from its own books, counterparties and staff.",
+         "asset_class_code": "bond", "book": "Group Intercompany Loans",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+        {"party": "ACME Corporation UK plc", "name": "ACME ACCOUK bond population",
+         "description": "The bonds ACME UK plc books, generated from its own books, counterparties and staff.",
+         "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+        {"party": "ACME Corporation US Inc", "name": "ACME ACCOUS bond population",
+         "description": "The bonds ACME US Inc books, generated from its own books, counterparties and staff.",
+         "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+        {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK bond population",
+         "description": "The bonds ACME HK Ltd books, generated from its own books, counterparties and staff.",
+         "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
+         "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+         "min_notional": "100000", "max_notional": "10000000", "seed": 42}
+    ]}'::jsonb)
 ) as v(code, step_kind, display_order, arguments_json)
 where p.code = v.code
   and p.valid_to = ores_utility_infinity_timestamp_fn()

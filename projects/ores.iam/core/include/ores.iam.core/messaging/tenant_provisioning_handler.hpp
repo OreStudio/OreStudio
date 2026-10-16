@@ -53,7 +53,9 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/party_counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
@@ -66,6 +68,12 @@
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/trade_generation_book_protocol.hpp"
+#include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/trade_generation_counterparty_protocol.hpp"
+#include "ores.synthetic.core/service/trade_population_planner.hpp"
+#include "ores.synthetic.core/service/trade_population_service.hpp"
+#include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.variability.api/messaging/operations_protocol.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
@@ -76,7 +84,9 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <memory>
 #include <optional>
+#include <ranges>
 #include <rfl/json.hpp>
 #include <stdexcept>
 #include <thread>
@@ -731,6 +741,12 @@ private:
         /// The instance id of the run this step started, when the kind hands
         /// the tenant to another run. Empty for every other kind.
         std::string child_instance_id;
+        /// The trade generation configs a generate_trades step recorded, and
+        /// what the population it wrote came to.
+        std::vector<std::string> configs;
+        std::uint32_t trades_planned = 0;
+        std::uint32_t trades_written = 0;
+        std::uint32_t trades_already_present = 0;
     };
 
     /**
@@ -846,6 +862,9 @@ private:
                 return;
             case provision_step_action::start_market_feeds:
                 start_market_feeds_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::generate_trades:
+                generate_trades_step(wf, command, resolve_step_actor(command));
                 return;
             case provision_step_action::refuse:
                 wf.fail("The step kind '" + command.kind +
@@ -1178,6 +1197,299 @@ private:
 
         wf.complete(rfl::json::write(provision_step_result{
             .kind = command.kind, .parties = bound, .datasets = {arguments.dataset}}));
+    }
+
+    /// A client that speaks as one party over the connection this handler
+    /// already holds.
+    ///
+    /// The generation writes through the trading operation, and that operation
+    /// takes the instrument's party from the token rather than from the row, so
+    /// the population reaches the books of the party the config books for and of
+    /// no other. The token is minted once and re-minted when the server rejects
+    /// it as expired, which is the contract a service-path client states.
+    ores::nats::service::nats_client make_generation_client(const std::string& tenant_id,
+                                                            const boost::uuids::uuid& account_id,
+                                                            const boost::uuids::uuid& party_id,
+                                                            const std::string& username) {
+        auto token = std::make_shared<std::string>(
+            impersonation_.mint_token(ctx_, tenant_id, account_id, party_id, username));
+        return ores::nats::service::nats_client(
+            nats_, [this, token, tenant_id, account_id, party_id, username](bool force) {
+                if (force)
+                    *token = impersonation_.mint_token(
+                        ctx_, tenant_id, account_id, party_id, username);
+                return *token;
+            });
+    }
+
+    /// The book the step names, among the party's own.
+    ///
+    /// The book is resolved by the name the party's own reference data gives
+    /// it, so a recipe names no identifier that only one environment holds and
+    /// a book the party does not have fails here rather than at the booking
+    /// trigger, which would report it as the trade's fault.
+    static std::optional<ores::refdata::domain::book>
+    find_party_book(internal_request_client& client,
+                    const boost::uuids::uuid& party_id,
+                    const std::string& name) {
+        ores::refdata::messaging::list_books_request request;
+        request.limit = 10000;
+        const auto response = client.request(request);
+        require_read(response.result, "the books of the tenant");
+        for (const auto& book : response.books)
+            if (book.party_id == party_id && book.name == name)
+                return book;
+        return std::nullopt;
+    }
+
+    /// The counterparties a party may face, each once and in a stable order.
+    ///
+    /// The links are the set a population should face: a counterparty outside
+    /// it inserts, because nothing in the schema checks the pair, and a trade
+    /// against one is wrong rather than merely unusual. The read is the
+    /// party's own and carries no filter, because this component refuses a
+    /// filtered read of the table rather than answering it.
+    static std::vector<boost::uuids::uuid>
+    party_counterparties(internal_request_client& client, const boost::uuids::uuid& party_id) {
+        ores::refdata::messaging::list_by_party_id_party_counterparties_request request;
+        request.party_id = party_id;
+        request.limit = 10000;
+
+        const auto response = client.request(request);
+        require_read(response.result, "the counterparty links of party " +
+                                          boost::uuids::to_string(party_id));
+
+        std::vector<boost::uuids::uuid> result;
+        for (const auto& link : response.party_counterparties)
+            result.push_back(link.counterparty_id);
+        std::ranges::sort(result);
+        const auto duplicates = std::ranges::unique(result);
+        result.erase(duplicates.begin(), result.end());
+        return result;
+    }
+
+    /// The counterparties a config already scopes, in a stable order.
+    static std::vector<boost::uuids::uuid>
+    scoped_counterparties(internal_request_client& client, const boost::uuids::uuid& config_id) {
+        ores::synthetic::messaging::list_trade_generation_counterparties_request request;
+        request.limit = 10000;
+        request.filter =
+            ores::synthetic::messaging::trade_generation_counterparties_filter{.config_id =
+                                                                                  config_id};
+
+        const auto response = client.request(request);
+        require_read(response.result, "the scope of config " + boost::uuids::to_string(config_id));
+
+        std::vector<boost::uuids::uuid> result;
+        for (const auto& row : response.trade_generation_counterparties)
+            result.push_back(row.counterparty_id);
+        std::ranges::sort(result);
+        return result;
+    }
+
+    /// Whether a config already lands its population in the book named.
+    static bool book_is_scoped(internal_request_client& client,
+                               const boost::uuids::uuid& config_id,
+                               const boost::uuids::uuid& book_id) {
+        ores::synthetic::messaging::list_trade_generation_books_request request;
+        request.limit = 1000;
+        request.filter =
+            ores::synthetic::messaging::trade_generation_books_filter{.config_id = config_id};
+        const auto response = client.request(request);
+        require_read(response.result, "the book scope of config " + boost::uuids::to_string(config_id));
+        for (const auto& row : response.trade_generation_books)
+            if (row.book_id == book_id)
+                return true;
+        return false;
+    }
+
+    /// The config the step's party already holds under the name the entry
+    /// states, so a second run reuses the recipe rather than recording a
+    /// second one.
+    static std::optional<ores::synthetic::domain::trade_generation_config>
+    find_trade_generation_config(internal_request_client& client, const std::string& name) {
+        ores::synthetic::messaging::list_trade_generation_configs_request request;
+        request.limit = 1000;
+        const auto response = client.request(request);
+        require_read(response.result, "the trade generation configs of the party");
+        for (const auto& config : response.trade_generation_configs)
+            if (config.name == name)
+                return config;
+        return std::nullopt;
+    }
+
+    /// A read a step cannot act without, refused loudly.
+    ///
+    /// The store reports a refusal in the response and not as a transport
+    /// error, so a step that read the refusal as an empty answer would record
+    /// a config that scopes nobody and write nothing against it.
+    static void require_read(const ores::utility::domain::result& result, const std::string& what) {
+        if (result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("Reading " + what + " failed: " + result.message);
+    }
+
+    static void require_recorded(const ores::utility::domain::result& result,
+                                 const std::string& what) {
+        if (result.outcome != ores::utility::domain::outcome::ok)
+            throw std::runtime_error("Recording " + what + " failed: " + result.message);
+    }
+
+    /// The day the population is anchored on. An entry that states a date pins
+    /// the population to it; an entry that states none anchors on the day the
+    /// step runs, because the population is meant to sit relative to the
+    /// present rather than to the day the recipe was written.
+    static std::chrono::year_month_day
+    trade_anchor_date(const trade_generation_assignment& assignment) {
+        if (assignment.as_of_date)
+            return *assignment.as_of_date;
+        return std::chrono::year_month_day(
+            std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()));
+    }
+
+    /// Records one entry's config against the party it books for, and returns
+    /// the id it carries. A config the party already holds under that name is
+    /// left as it stands, so re-provisioning writes no version and a
+    /// population that has already run keeps the anchor it ran on.
+    boost::uuids::uuid record_trade_generation_config(internal_request_client& client,
+                                                      const boost::uuids::uuid& party_id,
+                                                      const trade_generation_assignment& entry) {
+        if (const auto existing = find_trade_generation_config(client, entry.name)) {
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "generate_trades: the config '" << entry.name << "' is already recorded.";
+            return existing->id;
+        }
+
+        const auto config_id = ores::synthetic::service::config_id_for(party_id, entry.name);
+        ores::synthetic::messaging::put_trade_generation_config_request request;
+        request.change.write.id = config_id;
+        request.change.write.name = entry.name;
+        request.change.write.description =
+            entry.description.empty() ? entry.name : entry.description;
+        request.change.write.asset_class_code = entry.asset_class_code;
+        request.change.write.min_tenor_code = entry.min_tenor_code;
+        request.change.write.max_tenor_code = entry.max_tenor_code;
+        request.change.write.min_notional = *entry.min_notional;
+        request.change.write.max_notional = *entry.max_notional;
+        request.change.write.as_of_date = trade_anchor_date(entry);
+        request.change.write.seed = *entry.seed;
+        request.change.write.enabled = true;
+        request.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                       std::nullopt};
+        request.intent.reason_code = "system.initial_load";
+        request.intent.commentary = "Recorded by the tenant's seed profile.";
+
+        const auto response = client.request(request);
+        require_recorded(response.result, "the trade generation config '" + entry.name + "'");
+        return config_id;
+    }
+
+    /// Records the scope the entry describes: the party's book of that name,
+    /// and every counterparty the party may face. A row that is already there
+    /// is left alone, so the step is re-runnable and a scope that grew between
+    /// two runs gains only what it gained.
+    void record_trade_generation_scope(internal_request_client& client,
+                                       const boost::uuids::uuid& config_id,
+                                       const boost::uuids::uuid& party_id,
+                                       const trade_generation_assignment& entry) {
+        const auto book = find_party_book(client, party_id, entry.book);
+        if (!book)
+            throw std::runtime_error("The party holds no book named '" + entry.book +
+                                     "', so the population has nowhere to land.");
+
+        ores::synthetic::messaging::put_many_trade_generation_books_request book_request;
+        ores::synthetic::messaging::trade_generation_book_change book_change;
+        book_change.write.id =
+            ores::synthetic::service::book_scope_id_for(config_id, book->id);
+        book_change.write.config_id = config_id;
+        book_change.write.book_id = book->id;
+        book_change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                    std::nullopt};
+        book_request.changes.push_back(book_change);
+        book_request.intent.reason_code = "system.initial_load";
+        book_request.intent.commentary = "Book scope of the population.";
+
+        if (!book_is_scoped(client, config_id, book->id))
+            require_recorded(client.request(book_request).result,
+                             "the book scope of '" + entry.name + "'");
+
+        const auto scoped = scoped_counterparties(client, config_id);
+        std::vector<boost::uuids::uuid> missing;
+        for (const auto& counterparty_id : party_counterparties(client, party_id))
+            if (!std::ranges::binary_search(scoped, counterparty_id))
+                missing.push_back(counterparty_id);
+        if (missing.empty())
+            return;
+
+        ores::synthetic::messaging::put_many_trade_generation_counterparties_request request;
+        request.intent.reason_code = "system.initial_load";
+        request.intent.commentary = "Counterparty scope of the population.";
+        for (const auto& counterparty_id : missing) {
+            ores::synthetic::messaging::trade_generation_counterparty_change change;
+            change.write.id =
+                ores::synthetic::service::counterparty_scope_id_for(config_id, counterparty_id);
+            change.write.config_id = config_id;
+            change.write.counterparty_id = counterparty_id;
+            change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
+                                   std::nullopt};
+            request.changes.push_back(std::move(change));
+        }
+        require_recorded(client.request(request).result,
+                         "the counterparty scope of '" + entry.name + "'");
+    }
+
+    /// Records a trade generation config for each party the step names, and
+    /// writes the population each one describes into that party's own books.
+    ///
+    /// The step owns the config because the config cannot exist before the step
+    /// runs: its book scope and its counterparty scope are rows of the tenant
+    /// that the earlier steps publish, so a recipe stated anywhere else would
+    /// name identifiers no environment holds yet. An entry therefore states a
+    /// party by the legal name the LEI import created, a book by the name that
+    /// party's own reference data gives it, and leaves the counterparties to the
+    /// links the party actually has.
+    ///
+    /// The writes go through the trading operation as the party that books
+    /// them, because that operation takes the instrument's party from the token
+    /// rather than from the row.
+    void generate_trades_step(const ores::service::messaging::workflow_step_context& wf,
+                              const ores::iam::workflow::provision_tenant_step_command& command,
+                              const step_actor& actor) {
+        const auto assignments = parse_trade_generation_assignments(command.arguments_json);
+        auto discover =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        provision_step_result result;
+        result.kind = command.kind;
+
+        for (const auto& entry : assignments) {
+            const auto party = find_party(discover, entry.party);
+            if (!party)
+                throw std::runtime_error("The tenant holds no party named '" + entry.party + "'.");
+
+            auto party_client =
+                make_step_client(command.tenant_id, actor.account_id, party->id, actor.username);
+            const auto config_id = record_trade_generation_config(party_client, party->id, entry);
+            record_trade_generation_scope(party_client, config_id, party->id, entry);
+
+            auto generation_client = make_generation_client(
+                command.tenant_id, actor.account_id, party->id, actor.username);
+            ores::synthetic::service::trading_trade_population_writer writer(generation_client);
+            ores::synthetic::service::trade_population_service service(writer);
+            const auto run = service.run(config_id);
+
+            result.configs.push_back(boost::uuids::to_string(config_id));
+            result.parties.push_back(boost::uuids::to_string(party->id));
+            result.trades_planned += run.planned;
+            result.trades_written += run.written;
+            result.trades_already_present += run.already_present;
+
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "generate_trades: " << entry.name << " for party " << entry.party << ": planned "
+                << run.planned << ", wrote " << run.written << ", already present "
+                << run.already_present;
+        }
+
+        wf.complete(rfl::json::write(result));
     }
 
     /**

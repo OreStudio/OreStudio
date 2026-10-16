@@ -21,6 +21,7 @@
 #include "ores.iam.core/messaging/provision_step_arguments.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <chrono>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -38,6 +39,7 @@ using ores::iam::messaging::parse_provision_party_arguments;
 using ores::iam::messaging::parse_publish_bundle_arguments;
 using ores::iam::messaging::parse_staff_assignments;
 using ores::iam::messaging::parse_step_bundles;
+using ores::iam::messaging::parse_trade_generation_assignments;
 using ores::iam::messaging::provision_step_action;
 
 std::vector<ores::iam::workflow::provision_tenant_parameter> parameters(std::string name,
@@ -56,6 +58,7 @@ TEST_CASE("the executor classifies each kind it executes into its own action", t
     CHECK(classify_step_kind("load_staff") == provision_step_action::load_staff);
     CHECK(classify_step_kind("attach_photos") == provision_step_action::attach_photos);
     CHECK(classify_step_kind("start_market_feeds") == provision_step_action::start_market_feeds);
+    CHECK(classify_step_kind("generate_trades") == provision_step_action::generate_trades);
     CHECK(classify_step_kind("complete_provisioning") ==
           provision_step_action::complete_provisioning);
     CHECK(classify_step_kind("start_tenant_setup") == provision_step_action::start_tenant_setup);
@@ -326,4 +329,38 @@ TEST_CASE("a party step reads the one party it acts on", tags) {
 TEST_CASE("a party step that names no bundle is refused", tags) {
     CHECK_THROWS_WITH(parse_provision_party_arguments(R"({"party": "BARCLAYS PLC"})"),
                       "The step names no 'bundles' argument.");
+}
+
+TEST_CASE("a trade generation step reads each config's recipe in the order it names them", tags) {
+    const auto assignments = parse_trade_generation_assignments(
+        R"({"configs": [
+            {"party": "Acme Corporation Plc", "name": "ACME ACMCOR bond population",
+             "asset_class_code": "bond", "book": "Group Intercompany Loans",
+             "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+             "min_notional": "100000", "max_notional": "10000000", "seed": 42},
+            {"party": "ACME Corporation HK Ltd", "name": "ACME ACCOHK bond population",
+             "asset_class_code": "bond", "book": "Liquidity Buffer Bonds",
+             "min_tenor_code": "1Y", "max_tenor_code": "10Y",
+             "min_notional": "100000", "max_notional": "10000000", "seed": 42,
+             "as_of_date": "2026-10-15"}
+        ]})");
+
+    REQUIRE(assignments.size() == 2);
+    CHECK(assignments[0].party == "Acme Corporation Plc");
+    CHECK(assignments[0].asset_class_code == "bond");
+    CHECK(assignments[0].book == "Group Intercompany Loans");
+    CHECK(assignments[0].min_notional->to_double() == 100000.0);
+    CHECK(assignments[0].max_notional->to_double() == 10000000.0);
+    CHECK(assignments[0].seed == 42);
+    // An entry that states no anchor has none, so the step anchors it on the
+    // day it runs rather than on a date the profile cannot know.
+    CHECK_FALSE(assignments[0].as_of_date.has_value());
+    CHECK(assignments[1].as_of_date ==
+          std::chrono::year_month_day(std::chrono::year{2026}, std::chrono::month{10},
+                                      std::chrono::day{15}));
+}
+
+TEST_CASE("a trade generation step that states no config is refused", tags) {
+    CHECK_THROWS_WITH(parse_trade_generation_assignments(R"({"configs": []})"),
+                      "The step names no config in its 'configs' argument.");
 }

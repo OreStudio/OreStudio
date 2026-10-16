@@ -8,7 +8,7 @@
 #+filetags: :save_the_compiler_cache_instead_of_dropping_it:sprint_28:v0:
 #+owner: marco
 #+branch: feature/save-the-compiler-cache-instead-of-dropping-it
-#+pr:
+#+pr: 3381
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3381][#3381]] | [ci] Store the compiler cache instead of dropping it silently |
 
 * Review
 

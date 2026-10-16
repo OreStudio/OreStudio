@@ -30,7 +30,7 @@ catalogue routes 19 of them, of which 17 route to nine =equity_*=
 instrument tables and two route to =composite_instrument=. The other 13
 codes have an empty =instrument=, so no table holds them.
 
-Nine routed tables and one child table hold 218 columns together, 17 to
+Nine routed tables and one child table hold 222 columns together, 17 to
 26 per table. Each is the union of a shared option shape and one product's
 own fields. 32 of those columns are written by no ORE import mapper (the
 generated synthetic-data generators set 20 of them). Four more are written
@@ -142,13 +142,13 @@ Studio]]. Every evidence cell names a command from *Measurements*.
 
 | # | Sev | Finding | DOD criterion | Effort | Evidence |
 |---+-----+---------+---------------+--------+----------|
-| E1 | Critical | The family has no header. Nine wide tables hold the variation; the code/cold split is absent, and 32 of 218 columns are written by no ORE import mapper. | Core/cold split | Large | M2, M3 |
+| E1 | Critical | The family has no header. Nine wide tables hold the variation, the core/cold split is absent, and 17 of the 45 distinct business columns are assigned by no ORE import mapper. | Core/cold split | Large | M2, M2b, M3 |
 | E2 | Critical | The equity money leaves are bare floats in the ORE binding. Only the option strike keeps the document's digits (it is an =xsd::string=). Every other money leaf is read with the =double= overload of =exact_decimal=, and the mapper never calls =set_exact=. | Exact money at rest; One-way numeric conversion | Medium | M6, M7 |
 | E3 | Critical | =variance_strike= is money stored =double precision= in the column and =double= in the domain type. Both are wrong. | Exact money at rest | Small | M4, M5 |
 | E4 | Critical | The equity swap keeps one leg's worth of terms (currency, notional, dates, frequency) on the instrument row. The ORE document's legs have no rows, and the export rebuilds one equity leg and one floating leg. | Table-shaped children | Large | M8, M9 |
 | E5 | Critical | The family travels as a nested =std::variant=. =trade_instrument= holds =equity_instrument_data=, which holds =equity_instrument_variant= of nine structs whose members sum to 107 across the nine alternatives (the M10 grep matches 116 lines; it also counts one =_economic_fields= line per header, which is not a member); each tagged write reaches one alternative, and the export selects an alternative with a hand-written =if constexpr= chain. | Flat value messages; No polymorphic payload fields | Large | M10, M11 |
 | E6 | Critical | A =TotalReturnSwap= that wraps an =EquityPosition= is routed by the catalogue to =composite_instrument=, but the importer writes an =equity_position_instrument= row whose =trade_type_code= is =EquityPosition=. The routing and the stored type disagree. | Explicit variation; Identity by key | Medium | M12 |
-| E7 | Important | 32 columns are written by no ORE import mapper, on every table but the underlying child: =long_short= on eight tables and =description= on nine, =settlement_type= on two, and one each of =upper_barrier_type=, =rebate=, =payout_amount=, =price=, =expiry_date= (accumulator), =fixing_frequency=, =target_amount=, =target_type=, =payoff_type=, =currency= (position), =exercise_type= (Asian), =average_type= and =averaging_end_date=. | Core/cold split | Medium | M3 |
+| E7 | Important | Business columns are written by no ORE import mapper, most of them on every table that holds them: =long_short= and =description= on most, =settlement_type=, =upper_barrier_type=, =rebate=, =payout_amount=, =price=, =fixing_frequency=, =target_amount=, =target_type=, =payoff_type=, =average_type=, =averaging_end_date=, =weight= and the trade activity and trade type columns. The distinct count is M2b; the generating surfaces that do write some of them are named in E1. | Core/cold split | Medium | M2b, M3 |
 | E8 | Important | Four columns are written and never read: =equity_swap.start_date=, =equity_swap.maturity_date=, =equity_swap.payment_frequency_code= and =equity_asian_option.averaging_start_date=. | Core/cold split | Small | M3 |
 | E9 | Important | =equity_digital_option.notional= holds the ORE =PayoffAmount=, and the column named =payout_amount= has no writer. The schema and the mapper disagree on what the money is. | Exact money at rest; Explicit variation | Medium | M3, M8 |
 | E10 | Important | =Reverse_equity_digital_option= never writes =PayoffCurrency=, so a digital option loses its currency on export. The forward reads it, so the round trip does not return the document. | Codec drift (round trip) | Small | M8 |
@@ -168,22 +168,24 @@ command (M2):
 
 | Table | Columns | Business columns (total − 12 key/audit) |
 |-------+---------+------------------------------------------|
-| =ores_trading_equity_accumulator_instruments_tbl= | 25 | 13 |
+| =ores_trading_equity_accumulator_instruments_tbl= | 26 | 14 |
 | =ores_trading_equity_barrier_option_instruments_tbl= | 26 | 14 |
 | =ores_trading_equity_asian_option_instruments_tbl= | 24 | 12 |
 | =ores_trading_equity_digital_option_instruments_tbl= | 23 | 11 |
 | =ores_trading_equity_option_instruments_tbl= | 23 | 11 |
-| =ores_trading_equity_swap_instruments_tbl= | 22 | 10 |
+| =ores_trading_equity_swap_instruments_tbl= | 25 | 13 |
 | =ores_trading_equity_forward_instruments_tbl= | 20 | 8 |
 | =ores_trading_equity_variance_swap_instruments_tbl= | 20 | 8 |
 | =ores_trading_equity_position_instruments_tbl= | 17 | 5 |
 | =ores_trading_equity_position_option_underlyings_tbl= | 18 | 7 |
-| *Total* | *218* | *99* |
+| *Total* | *222* | *104* |
 
-The earlier figures for =equity_option= (23), =equity_forward= (20),
-=equity_accumulator= (25) and =equity_variance_swap= (20) reproduce
-exactly. The reworked =trading_bond_instruments= is 14 columns and
-=trading_credit_instruments= is 16. All three counts use the same method:
+These counts are measured at the commit the branch is rebased onto, after PR
+#3384 carried the accumulator ranges and the worst-of-basket levels into the
+domain, which added two columns to =equity_accumulator= and three to
+=equity_swap=. The figures for =equity_option= (23), =equity_forward= (20) and
+=equity_variance_swap= (20) reproduce. The reworked =trading_bond_instruments=
+is 14 columns and =trading_credit_instruments= is 16. All counts use the same method:
 every line of the =create table= block that starts with a quoted column
 name, so keys, =version=, the audit columns and the validity window are
 in. There is no discrepancy to correct; the family's tables are wide
@@ -424,7 +426,7 @@ decimal required) or CONTINUOUS (binary float). Evidence M4 and M5.
 | =equity_position_option_underlying.strike= | MONEY | =numeric(38,12)= | =decimal= | yes |
 | =equity_position_option_underlying.weight= | CONTINUOUS | =double precision= | =optional<double>= | yes |
 
-*23 columns are money and 3 are continuous.* The domain type and the
+*22 columns are money and 4 are continuous.* The domain type and the
 column type disagree in *one* case: =variance_strike= is money in a
 =double=. Every other money column is already =numeric(38,12)= and its
 domain type a =decimal=, so the column work is the single variance-strike
@@ -681,7 +683,8 @@ stated.
 |----+------+-------+---------|
 | M1 | Equity codes total / routed / unrouted | 32 / 19 / 13 | =awk -F'\174' '$1=="" && $2 ~ /^ [A-Za-z]/ { pt=$4; inst=$7; sub(/^ +/,"",pt); sub(/ +$/,"",pt); sub(/^ +/,"",inst); sub(/ +$/,"",inst); if (pt=="equity") { t++; if (inst=="") unrouted++; else routed++ } } END { printf "equity_total=%d routed=%d unrouted=%d\n", t, routed, unrouted }' projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org= |
 | M1b | Codes routed to an =equity_*= table | 17 | the =awk= of M1 with =inst ~ /^equity_/= in place of the routing test |
-| M2 | Equity table column count (matches bond 14, credit 16) | 218 (option 23, forward 20, accumulator 25, variance 20) | =awk '/^create table if not exists/,/^\);/' projects/ores.sql/create/trading/trading_equity_*_create.sql= then =grep -oE '^\s+"[a-z_]+"'= |
+| M2 | Equity table column count (matches bond 14, credit 16) | 222 (option 23, forward 20, accumulator 26, swap 25, variance 20) | =awk '/create table/{f=1} f && /^    "/{c++} /^\);/{f=0} END{print c}'= over each =projects/ores.sql/create/trading/trading_equity_*_create.sql= |
+| M2b | Business columns the ORE import mapper never assigns | 17 of 45 distinct, measured after PR #3384; the earlier 32-of-218 figure did not reproduce | =comm -23= of the distinct non-key columns against =grep -oE 'inst\.[a-z_]+ *='= over =equity_instrument_mapper.cpp= |
 | M3 | Per-column writer and reader | the use table | =awk= over =projects/ores.ore/core/src/domain/equity_instrument_mapper.cpp= printing =inst.<field> = and =instr.<field>= per =forward_*=/=reverse_*= function |
 | M3b | Columns the mapper never names | 19 | =for c in <business columns>; do grep -c "\b$c\b" .../equity_instrument_mapper.cpp; done=, counting the zeros |
 | M4 | Numeric column SQL types | the exact-money table | the =create table= block of M2, then =grep -nE 'numeric'= and =grep -nE 'double precision'= |

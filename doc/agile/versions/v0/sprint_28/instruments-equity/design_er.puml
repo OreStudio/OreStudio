@@ -193,6 +193,7 @@ package "Product facts (one row per trade, keyed by trade_id)" {
     underlying_name : text
     currency : text
     quantity : double precision <<continuous>>
+    price : numeric(38,12) <<money>>
   }
   entity equity_option_position_instruments #FCF3CF {
     * trade_id : uuid <<PK>>

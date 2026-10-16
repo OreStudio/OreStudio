@@ -3264,7 +3264,7 @@ const pt: SourceCatalogue = {
             'Inicia os dados de mercado sintéticos a partir dos quais as curvas e os preços do inquilino são construídos.',
         'Generate the trades': 'Gerar as transações',
         "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
-            "Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.",
+            'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',
         'Hand the tenant to its administrator': 'Entregar o inquilino ao seu administrador',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             'Inicia a execução de configuração do próprio inquilino, que corre como o administrador do inquilino e conclui o inquilino.',

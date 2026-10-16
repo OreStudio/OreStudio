@@ -75,12 +75,20 @@ Five units, each with its own check.
 5. Write the pattern page and refresh the architecture catalogue. Check:
    =compass lint=.
 
-Deferred, and why. The atomic claim for step completion stays out of this
-change. The step handlers already survive a repeat, because the publish
-functions are upserts and the engine ignores a completion for a step that is no
-longer in progress, and a claim needs a new table and a schema change of its
-own. The entity-mirror reconciliation also stays out: it is a separate defect
-in event delivery, not in the step-command path.
+Then the two gaps the first pass left, as their own units.
+
+6. Make step completion an atomic claim. A lease table in the workflow schema,
+   written by hand the way the compute work ledger is, and a claim the engine
+   serves over NATS. The transport takes the claim before it dispatches to a
+   handler, so exactly one delivery does a step's work. Check: the claim
+   statement takes once and refuses a live second, and a duplicate delivery
+   leaves one attempt.
+7. Grant the report run role the compute reads it makes. The run token carried
+   the write half of the batch only, so collecting the results was refused.
+   Check: a report instance reaches completed rather than compensated.
+
+Deferred, and why. The entity-mirror reconciliation stays out: it is a separate
+defect in event delivery, not in the step-command path.
 
 * Measurements
 

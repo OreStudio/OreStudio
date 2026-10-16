@@ -190,12 +190,22 @@ enum class resolution_status {
 /// refusal payload that has to say why.
 [[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::string_view to_string(resolution_status status);
 
-/// One answer, aligned by index with the request that asked it. Both dates
-/// are meaningful only when @c status is @c ok.
+/// One answer, aligned by index with the request that asked it. Every date is
+/// meaningful only when @c status is @c ok.
 struct tenor_resolution_result final {
     resolution_status status = resolution_status::ok;
     /// The date the rule counted from -- the anchor the answer is relative to.
     std::chrono::year_month_day anchor_date{};
+    /// The date the rule landed on *before* the business-day convention was
+    /// applied: the anchor plus the period, or the schedule date the walk
+    /// reached. It may fall on a weekend, which is the point of reporting it
+    /// -- it is what the roll rule moved.
+    ///
+    /// One exception, and it is the arithmetic's rather than this engine's: a
+    /// period QuantLib counts in *business* days lands on a business day
+    /// already, so for those this equals @c resolved_date. There is no
+    /// pre-roll date to report when no roll happens.
+    std::chrono::year_month_day unadjusted_date{};
     /// The resolved date, after the rule's business-day convention. The date a
     /// screen shows and a contract matures on.
     std::chrono::year_month_day resolved_date{};

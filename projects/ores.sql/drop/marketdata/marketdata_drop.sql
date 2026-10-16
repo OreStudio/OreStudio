@@ -35,5 +35,7 @@
 \ir ./marketdata_market_series_asset_class_drop.sql
 \ir ./marketdata_market_series_notify_trigger_drop.sql
 \ir ./marketdata_market_series_drop.sql
+\ir ./marketdata_validate_curve_series_fn_drop.sql
+\ir ./marketdata_curve_series_drop.sql
 \ir ./marketdata_series_classification_rules_notify_trigger_drop.sql
 \ir ./marketdata_series_classification_rules_drop.sql

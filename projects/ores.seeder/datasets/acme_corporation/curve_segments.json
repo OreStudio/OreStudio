@@ -13,31 +13,11 @@
     "company_code": "acme_group",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "36db76c0-3958-5103-aee9-b66ed4b85d15",
-    "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
-    "segment_type": "Deposit",
-    "position": 0,
-    "conventions": "USD-ON-SOFR-DEPOSIT"
-  },
-  {
-    "company_code": "acme_group",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
     "id": "4353f07e-b03d-5693-8d8b-b9ff17840dcf",
     "curve_definition_id": "fe0d4374-04e9-5e73-962e-31c211011b78",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "USD-SOFR-OIS"
-  },
-  {
-    "company_code": "acme_group",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "d1013b6f-5977-530e-9478-99ef1951ed11",
-    "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "HKD-ON-HONIA-DEPOSIT"
+    "conventions": "USD-SOFR-OIS"
   },
   {
     "company_code": "acme_group",
@@ -46,18 +26,8 @@
     "id": "826dc027-43ae-585e-89de-06634b65247d",
     "curve_definition_id": "ef10d506-ba8d-5728-8441-87e6b52afd63",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "HKD-OIS"
-  },
-  {
-    "company_code": "acme_group",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "3e507e1b-c242-5d60-bfcf-7a2153d6a513",
-    "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "EUR-ON-DEPOSIT-ESTER"
+    "conventions": "HKD-OIS"
   },
   {
     "company_code": "acme_group",
@@ -66,7 +36,7 @@
     "id": "57287b30-7942-59ae-a03a-3bf882020c4a",
     "curve_definition_id": "7a8fbb1c-41fb-59a1-84fc-4b5958084910",
     "segment_type": "OIS",
-    "position": 1,
+    "position": 0,
     "conventions": "EUR-ESTER-OIS"
   },
   {
@@ -83,31 +53,11 @@
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "18e95383-7e10-5b2e-b8ec-7b2a791356d6",
-    "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
-    "segment_type": "Deposit",
-    "position": 0,
-    "conventions": "EUR-ON-DEPOSIT-ESTER"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
     "id": "49cd0562-72bc-5184-805c-de32add5d72e",
     "curve_definition_id": "05a4fc3c-bf88-579a-8872-2bdc1b2e866d",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "EUR-ESTER-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "31e39269-5c2b-5c69-b948-0005910a7a07",
-    "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "USD-ON-SOFR-DEPOSIT"
+    "conventions": "EUR-ESTER-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -116,18 +66,8 @@
     "id": "43a9c899-e25c-5136-9883-2e40ac218cde",
     "curve_definition_id": "a150e32f-371a-5f37-b069-348de2c5723f",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "USD-SOFR-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "45f8e58d-fe7b-5f26-9fb6-c4fc91e08ac8",
-    "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "CHF-ON-DEPOSIT"
+    "conventions": "USD-SOFR-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -136,7 +76,7 @@
     "id": "97af060a-3515-5964-827b-896d9ebda0d2",
     "curve_definition_id": "9ae3e93b-a50f-585e-8eae-f663edfcc655",
     "segment_type": "OIS",
-    "position": 1,
+    "position": 0,
     "conventions": "CHF-OIS"
   },
   {
@@ -153,31 +93,11 @@
     "company_code": "acme_uk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "f221a246-c56f-567d-ba10-d13249bf9317",
-    "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
-    "segment_type": "Deposit",
-    "position": 0,
-    "conventions": "CAD-ON-DEPOSIT"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
     "id": "8748ea7b-cd3a-5963-a259-d60bdfcc848a",
     "curve_definition_id": "4df8c9dd-0fd2-5a79-a2fc-680248543bc3",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "CAD-OIS-CONVENTIONS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "25e6c25b-2fd9-5f7f-a174-fd0daa1a0b48",
-    "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "AUD-ON-DEPOSIT"
+    "conventions": "CAD-OIS-CONVENTIONS"
   },
   {
     "company_code": "acme_uk",
@@ -186,18 +106,8 @@
     "id": "83f63436-e382-59b2-8d4b-39faf6051914",
     "curve_definition_id": "16df4240-c736-5bb9-a30c-537d54ac28b6",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "AUD-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "c512aa94-3012-543e-a157-f32878fc8ac3",
-    "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "NZD-ON-DEPOSIT"
+    "conventions": "AUD-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -206,18 +116,8 @@
     "id": "a9bd5de7-9583-5be9-8821-e03596ea1865",
     "curve_definition_id": "ff39e3ec-b18a-560c-8b0b-971c16ff1f2d",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "NZD-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "44e13cc7-fc26-5fec-9c71-18323afc952e",
-    "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "SEK-ON-DEPOSIT"
+    "conventions": "NZD-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -226,18 +126,8 @@
     "id": "d780bbf0-d96a-5f7d-867f-07fdd96ebf6a",
     "curve_definition_id": "a0749747-5b5d-5b93-8ce3-005d1d8294da",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "SEK-OIS-CONVENTIONS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "d697357d-ab3d-54a6-ad6d-72262997fd66",
-    "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "NOK-ON-DEPOSIT"
+    "conventions": "SEK-OIS-CONVENTIONS"
   },
   {
     "company_code": "acme_uk",
@@ -246,18 +136,8 @@
     "id": "9f4cb758-8ab1-516b-9655-eede88c88b8d",
     "curve_definition_id": "f813f5a9-7970-5797-9366-22c80ecc0d09",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "NOK-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "5a0d7ef5-f5b5-5442-838f-e52ce01bed81",
-    "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "DKK-ON-DEPOSIT-DESTR"
+    "conventions": "NOK-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -266,18 +146,8 @@
     "id": "88d9b7cd-ee49-58f2-a507-ca95480e0315",
     "curve_definition_id": "d4a0b861-9548-535e-9bd1-5fc87ac599f7",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "DKK-DESTR-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "5bed9e6a-709a-5c6f-9282-fdbf68471b4b",
-    "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "ZAR-ON-DEPOSIT-ZARONIA"
+    "conventions": "DKK-DESTR-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -286,18 +156,8 @@
     "id": "48a9aa9c-1a29-538a-b6cc-49c785f0e552",
     "curve_definition_id": "780a0e23-e3f6-560b-bbb8-73aef4245006",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "ZAR-ZARONIA-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "a3acaefe-5845-539b-a273-b840be9cf2cb",
-    "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "TRY-ON-DEPOSIT"
+    "conventions": "ZAR-ZARONIA-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -306,18 +166,8 @@
     "id": "2cab2c39-0064-5f82-b913-f3753d3f4b20",
     "curve_definition_id": "3a43708c-a015-5f67-9bda-0ca4f9351321",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "TRY-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "2f2fe20e-c89b-5aee-981e-9d77e52284ff",
-    "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "PLN-ON-POLONIA-DEPOSIT"
+    "conventions": "TRY-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -326,18 +176,8 @@
     "id": "b4c77c5b-da98-5819-b18d-29ce0349ca9a",
     "curve_definition_id": "27cf15c6-b78d-55a9-89b9-e4a6581ca078",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "PLN-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "20c0d816-52af-566a-bcf3-76beb0d86b76",
-    "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "CZK-ON-DEPOSIT"
+    "conventions": "PLN-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -346,18 +186,8 @@
     "id": "55e65a67-9f60-59f3-8e99-2de1be2948d6",
     "curve_definition_id": "e0960488-a875-51c9-ae7b-8105c23d4772",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "CZK-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "8e08564f-438b-5e1c-9555-13721c0b4553",
-    "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "HUF-ON-DEPOSIT"
+    "conventions": "CZK-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -366,18 +196,8 @@
     "id": "8a5d9e1b-9e15-5ecb-b6fd-b756dfe688b8",
     "curve_definition_id": "69896cd9-9ae2-577f-8959-5f75b0d9d6c4",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "HUF-OIS"
-  },
-  {
-    "company_code": "acme_uk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "abdb643c-e391-5639-896d-7b885b7725fd",
-    "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "ILS-ON-DEPOSIT"
+    "conventions": "HUF-OIS"
   },
   {
     "company_code": "acme_uk",
@@ -386,18 +206,8 @@
     "id": "3d08937b-66e6-5cb1-bcc1-5449f90dedde",
     "curve_definition_id": "e5dbe34d-33e7-50b5-b6b4-0e7ee0ca5dd1",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "ILS-OIS"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "5c845035-f632-5c6e-8f17-66534c558d16",
-    "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "USD-ON-SOFR-DEPOSIT"
+    "conventions": "ILS-OIS"
   },
   {
     "company_code": "acme_us",
@@ -406,18 +216,8 @@
     "id": "5e1c5b19-037c-57c3-9ac9-c2f19131e13d",
     "curve_definition_id": "97c0fcc2-43ab-5a97-b699-80dae66def3f",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "USD-SOFR-OIS"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "fbd56288-cba4-5231-b4e0-50dcec879fa1",
-    "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "CAD-ON-DEPOSIT"
+    "conventions": "USD-SOFR-OIS"
   },
   {
     "company_code": "acme_us",
@@ -426,18 +226,8 @@
     "id": "2052cc7b-f7d5-57e9-a16a-3077dce68f9e",
     "curve_definition_id": "1156fb05-e2eb-5b06-9e71-f0a21785e0cc",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "CAD-OIS-CONVENTIONS"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "53037a3e-99b9-51e5-8725-0f2f7f760b34",
-    "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "EUR-ON-DEPOSIT-ESTER"
+    "conventions": "CAD-OIS-CONVENTIONS"
   },
   {
     "company_code": "acme_us",
@@ -446,7 +236,7 @@
     "id": "afb14727-076d-5a09-9b73-589b43cfd015",
     "curve_definition_id": "a5c0640f-bd00-58fc-8be1-88dbe88a76c1",
     "segment_type": "OIS",
-    "position": 1,
+    "position": 0,
     "conventions": "EUR-ESTER-OIS"
   },
   {
@@ -473,31 +263,11 @@
     "company_code": "acme_us",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "027b229e-f09f-5bbb-bdfb-a7c9dd605759",
-    "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
-    "segment_type": "Deposit",
-    "position": 0,
-    "conventions": "MXN-ON-DEPOSIT"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
     "id": "6d92f3fc-3dd8-5a4c-8d0b-d41cbf60b63b",
     "curve_definition_id": "039b2380-6fc0-5a4c-8ee2-6dd851b9bce9",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "MXN-OIS"
-  },
-  {
-    "company_code": "acme_us",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "bb96c9e0-2729-5131-9742-f8f32ddbae77",
-    "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "BRL-ON-DEPOSIT"
+    "conventions": "MXN-OIS"
   },
   {
     "company_code": "acme_us",
@@ -506,18 +276,8 @@
     "id": "7742f5ce-02c7-5dbd-a0fa-75a777605857",
     "curve_definition_id": "18f1ae2a-5b15-58da-a5db-96af653645db",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "BRL-OIS"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "4033837b-c196-5189-bf2d-a97bc2f6364b",
-    "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "HKD-ON-HONIA-DEPOSIT"
+    "conventions": "BRL-OIS"
   },
   {
     "company_code": "acme_hk",
@@ -526,18 +286,8 @@
     "id": "c352e89b-df70-5b94-b98b-14e595da98a2",
     "curve_definition_id": "98478ee4-2da4-57a2-a782-39e82454712d",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "HKD-OIS"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "debcb295-18bd-5ce4-b63c-60e1fb65a40e",
-    "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "USD-ON-SOFR-DEPOSIT"
+    "conventions": "HKD-OIS"
   },
   {
     "company_code": "acme_hk",
@@ -546,7 +296,7 @@
     "id": "9328888d-39e7-50db-b8be-c1aec8c2ceaf",
     "curve_definition_id": "1bfb441a-3601-5191-9879-540000d057ba",
     "segment_type": "OIS",
-    "position": 1,
+    "position": 0,
     "conventions": "USD-SOFR-OIS"
   },
   {
@@ -563,31 +313,11 @@
     "company_code": "acme_hk",
     "version": 0,
     "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "c13fa732-6c93-5aae-a3b5-d97aaed6ff18",
-    "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
-    "segment_type": "Deposit",
-    "position": 0,
-    "conventions": "AUD-ON-DEPOSIT"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
     "id": "459e9c33-1f7e-5bf5-870f-32d3f25c0269",
     "curve_definition_id": "859ec9d1-58e1-595b-9d26-0b701e2a1556",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "AUD-OIS"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "4ec23c31-a719-50c7-8141-370bd75b9be8",
-    "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "NZD-ON-DEPOSIT"
+    "conventions": "AUD-OIS"
   },
   {
     "company_code": "acme_hk",
@@ -596,18 +326,8 @@
     "id": "b607a216-41e9-5d66-b751-702a1c6b892f",
     "curve_definition_id": "cfeb5f91-5577-5abc-972a-471dcec8738b",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "NZD-OIS"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "17249546-dd1d-5be7-8e60-316433c60fa3",
-    "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "SGD-ON-DEPOSIT"
+    "conventions": "NZD-OIS"
   },
   {
     "company_code": "acme_hk",
@@ -616,18 +336,8 @@
     "id": "43ff73d1-201c-555e-9b4a-762a877d8f1d",
     "curve_definition_id": "38382408-64ba-5dc5-a7aa-4a1870d4caeb",
     "segment_type": "OIS",
-    "position": 1,
-    "conventions": "SGD-OIS"
-  },
-  {
-    "company_code": "acme_hk",
-    "version": 0,
-    "party_id": "00000000-0000-0000-0000-000000000000",
-    "id": "2d30f345-728a-5444-bf94-54b9c2be39fb",
-    "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
-    "segment_type": "Deposit",
     "position": 0,
-    "conventions": "INR-ON-DEPOSIT"
+    "conventions": "SGD-OIS"
   },
   {
     "company_code": "acme_hk",
@@ -636,7 +346,7 @@
     "id": "6006c831-598a-5108-ae18-3a9520a2dc55",
     "curve_definition_id": "5b4636ac-ca81-5234-b5be-75c0890c968f",
     "segment_type": "OIS",
-    "position": 1,
+    "position": 0,
     "conventions": "INR-OIS"
   }
 ]

@@ -209,6 +209,7 @@ domain::trade_population_plan plan_population(const domain::trade_generation_sco
 
         entry.notional = notional_from(scope, draw(name, 1));
         entry.currency = scope.currency_code;
+        entry.reference_curve_id = scope.reference_curve_id;
 
         for (const auto& pair : scope.netting_sets) {
             if (pair.first == counterparty_id) {

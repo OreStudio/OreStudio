@@ -5563,6 +5563,12 @@ $$ language plpgsql security definer set search_path = public, pg_temp;
 -- publish copies each staged table into its live table in the order the document
 -- store writes them, re-keying every uuid for the party, so a definition still
 -- points at its configuration and a curve at its definition.
+--
+-- The curves the document defines are also named by the trades that discount on
+-- them, and a name is a market series. The curves' own definer is this document,
+-- so it publishes their series: the party's curves exist in the market as soon as
+-- the party's configuration does, and the validator that refuses a trade naming a
+-- curve the market does not hold has something to validate against.
 create or replace function ores_refdata_publish_curve_configuration_from_dq_fn(
     p_dataset_id uuid,
     p_target_tenant_id uuid,
@@ -5572,6 +5578,7 @@ create or replace function ores_refdata_publish_curve_configuration_from_dq_fn(
 returns table (action text, record_count bigint) as $$
 declare
     v_party_id uuid;
+    v_curves jsonb;
 begin
     v_party_id := ores_refdata_publish_target_party_fn(p_target_tenant_id, p_params);
     if v_party_id is null then
@@ -5596,6 +5603,29 @@ begin
               'commodity_volatility_configs', 'bond_future_volatility_configs',
               'curve_bootstrap_configs', 'curve_segments', 'curve_segment_curves',
               'curve_quotes']);
+
+    -- The curves the publish just stored, read from the live tables so the ids
+    -- the series are keyed by are the party's own. Only the yield curves state a
+    -- currency and a day counter, which are two of a discount curve's three
+    -- coordinates.
+    select coalesce(jsonb_agg(jsonb_build_object(
+               'currency', y.currency,
+               'curve_id', d.curve_id,
+               'day_counter', y.day_counter)), '[]'::jsonb)
+    into v_curves
+    from ores_refdata_curve_definitions_tbl d
+    join ores_refdata_yield_curve_configs_tbl y
+      on y.curve_definition_id = d.id
+     and y.tenant_id = d.tenant_id
+     and y.valid_to = ores_utility_infinity_timestamp_fn()
+    where d.tenant_id = p_target_tenant_id
+      and d.party_id = v_party_id
+      and d.valid_to = ores_utility_infinity_timestamp_fn()
+      and y.day_counter is not null;
+
+    if jsonb_array_length(v_curves) > 0 then
+        perform ores_marketdata_publish_curve_series_fn(p_target_tenant_id, v_party_id, v_curves);
+    end if;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 

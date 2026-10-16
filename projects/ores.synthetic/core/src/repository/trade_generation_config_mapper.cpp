@@ -35,6 +35,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <optional>
 #include <vector>
 
 namespace ores::synthetic::repository {
@@ -64,6 +65,7 @@ trade_generation_config_mapper::map(const trade_generation_config_entity& v) {
     r.as_of_date = ores::platform::time::datetime::from_iso8601_date(v.as_of_date);
     r.seed = v.seed;
     r.enabled = v.enabled;
+    r.reference_curve_id = v.reference_curve_id.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -96,6 +98,8 @@ trade_generation_config_mapper::map(const domain::trade_generation_config& v) {
     r.as_of_date = ores::platform::time::datetime::to_iso8601_date(v.as_of_date);
     r.seed = v.seed;
     r.enabled = v.enabled;
+    r.reference_curve_id =
+        v.reference_curve_id.empty() ? std::nullopt : std::optional(v.reference_curve_id);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

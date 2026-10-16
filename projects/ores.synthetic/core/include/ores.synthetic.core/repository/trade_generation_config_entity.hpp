@@ -61,6 +61,7 @@ struct trade_generation_config_entity {
     std::string as_of_date;
     std::uint64_t seed = 1;
     bool enabled = false;
+    std::optional<std::string> reference_curve_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

@@ -150,6 +150,7 @@ trading_trade_population_writer::resolve_scope(const boost::uuids::uuid& config_
     scope.max_notional = config.max_notional.to_double();
     scope.as_of_date = config.as_of_date;
     scope.seed = config.seed;
+    scope.reference_curve_id = config.reference_curve_id;
 
     synthetic::list_trade_generation_books_request book_scope_req;
     book_scope_req.limit = page;
@@ -374,6 +375,14 @@ void trading_trade_population_writer::write_instrument(
         issue_req.change.write.calendar = slot.calendar;
         issue_req.change.write.sub_type = "Fixed";
         issue_req.change.write.price_type = "Clean";
+        /*
+         * The curve the bond is discounted on. The engine resolves the name
+         * the trade states through the market's own forwarding, so a bond that
+         * states none is refused with a curve it could not find rather than
+         * priced.
+         */
+        if (!slot.reference_curve_id.empty())
+            issue_req.change.write.reference_curve_id = slot.reference_curve_id;
         issue_req.change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,
                                          std::nullopt};
         issue_req.intent.reason_code = std::string(population_reason);

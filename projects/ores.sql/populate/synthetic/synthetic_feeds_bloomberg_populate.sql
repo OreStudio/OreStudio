@@ -247,14 +247,25 @@ begin
         v_dataset_id, v_tenant_id, c.currency_code, c.index_family, '',
         e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
     from t_bloomberg_ir c
+    -- One spot-starting pillar per maturity, on the ladder every OIS discount curve
+    -- in the corpus is marked from: the ACME curve configurations name these tenors
+    -- and no others (see OIS_TENORS in ores.seeder's generate_configuration_data.py),
+    -- so a curve here is buildable from what this feed publishes. One year is 12M:
+    -- the RATES_SPOT_FORWARD convention this feed resolves pillars under has no 1Y
+    -- resolution, so a 1Y pillar would not start at all.
     cross join (values
         (0, 'SPOT', '1M', 'DEPO'),
         (1, 'SPOT', '3M', 'DEPO'),
-        (2, '3M', '6M', 'FRA'),
-        (3, '6M', '12M', 'FRA'),
+        (2, 'SPOT', '6M', 'FRA'),
+        (3, 'SPOT', '12M', 'IRS'),
         (4, 'SPOT', '2Y', 'IRS'),
-        (5, 'SPOT', '5Y', 'IRS'),
-        (6, 'SPOT', '10Y', 'IRS')
+        (5, 'SPOT', '3Y', 'IRS'),
+        (6, 'SPOT', '5Y', 'IRS'),
+        (7, 'SPOT', '7Y', 'IRS'),
+        (8, 'SPOT', '10Y', 'IRS'),
+        (9, 'SPOT', '15Y', 'IRS'),
+        (10, 'SPOT', '20Y', 'IRS'),
+        (11, 'SPOT', '30Y', 'IRS')
     ) as e(sequence_index, start_tenor_code, end_tenor_code, instrument_code);
 
     -- The USD FOMC-dated short end: one series per meeting-dated OIS pillar,

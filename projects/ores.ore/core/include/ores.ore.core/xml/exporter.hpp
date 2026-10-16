@@ -27,6 +27,7 @@
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include "ores.trading.api/messaging/trade_operations_protocol.hpp"
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -46,6 +47,21 @@ private:
     }
 
 public:
+    /**
+     * @brief The ORE name a bond's reference curve is written under, from the
+     * oresmd URI the trade states it as.
+     *
+     * A trade names the curve it is discounted on by the market series' own
+     * URI, and ORE resolves that name through the market configuration the run
+     * is priced under. The two name the same curve differently, so a run
+     * supplies the mapping rather than the trade carrying ORE's spelling: it
+     * is a fact about the market the run reads, not about the trade.
+     *
+     * A curve the map does not hold is written as the trade states it, so a run
+     * that supplies no map exports exactly what its trades hold.
+     */
+    using reference_curve_names = std::function<std::string(const std::string&)>;
+
     static std::string export_currency_config(const std::vector<refdata::domain::currency>& v);
 
     static std::string
@@ -61,10 +77,15 @@ public:
      * reverse-mapped through the appropriate instrument mapper. Items whose
      * trade has no instrument row, or whose type no reverse mapper handles,
      * are written as their type and envelope alone.
+     *
+     * @param reference_curves the ORE name of a bond's reference curve, from
+     *                        the series URI the trade states. Absent for an
+     *                        export that writes the trade's own value.
      */
     static std::string
     export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
-                     const trading::domain::instrument_batch& instruments);
+                     const trading::domain::instrument_batch& instruments,
+                     const reference_curve_names& reference_curves = {});
 };
 
 }

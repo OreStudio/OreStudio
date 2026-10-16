@@ -72,6 +72,12 @@ struct trade_generation_scope final {
      * of the notional travels on the leg and comes from the book.
      */
     std::string currency_code = "USD";
+    /**
+     * @brief The curve the population's bonds are discounted on, as the oresmd
+     * URI of the market series that curve is. Empty when the config states
+     * none, and a bond then names no curve.
+     */
+    std::string reference_curve_id;
 };
 
 /**
@@ -103,6 +109,12 @@ struct trade_population_slot final {
     std::string currency;
     std::string calendar = "TARGET";
     bool intra_group = false;
+    /**
+     * @brief The curve this trade's bond is discounted on, as the oresmd URI of
+     * the market series that curve is, or empty when the population states
+     * none.
+     */
+    std::string reference_curve_id;
 };
 
 /**

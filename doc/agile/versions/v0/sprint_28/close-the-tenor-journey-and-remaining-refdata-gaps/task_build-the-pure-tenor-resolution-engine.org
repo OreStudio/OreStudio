@@ -8,7 +8,7 @@
 #+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-pure-tenor-resolution-engine
-#+pr: 3399
+#+pr: 3406
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -26,11 +26,11 @@ The server cannot answer what date a tenor resolves to, and the screen that auth
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | Engine built, reviewed on both axes, acceptance answered. PR #3399 open. |
+| Now          | Nothing. |
 | Waiting on   | Review of PR #3399.                    |
-| Next         | Merge, then resolve a tenor over the wire (=CFE1A720=) on top of the engine. |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                             |
 
 * Acceptance
@@ -142,6 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3406][#3406]] | [agile] Close the pure batch tenor resolution engine |
 | [[https://github.com/OreStudio/OreStudio/pull/3399][#3399]] | [analytics] Resolve tenors to dates in a pure batch engine |
 
 * Review
@@ -175,3 +176,15 @@ Thirteen review findings: six accepted and fixed or recorded, one partly
 accepted, two declined with a reason, and four rejected with the QuantLib
 source quoted against them. One acceptance bullet was amended after the
 review, and the amendment is stated above rather than folded in silently.
+
+Merged to =main= as 6f6f11efb9, rebased onto =origin/main= (5d0fa921e8) first.
+On the merged tree the local gate is 15 of 15 -- the =entity-writes= failure
+this branch had documented as pre-existing is gone, because =main= picked up
+the baseline entry for =ores_marketdata_publish_curve_series_fn= from the IMM
+roll work. Both suites re-run on that tree: =ores.analytics.quant.tests= 432
+cases and =ores.refdata.core.tests= passing.
+
+The parent story's =* Decisions= still needs the two decisions this task
+settled -- positional calendar indices with the caller owning the
+code<->index mapping, and a refusal as a row's status rather than a throw --
+distilled into it at story close.

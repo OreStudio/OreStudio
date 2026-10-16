@@ -5,13 +5,13 @@
 #+description: Apply the bond pattern to the FX family: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum.
 #+type: story
 #+level: s2
-#+filetags: :next:product_backlog:
+#+filetags: :instruments-fx:sprint_28:v0:
 #+created: 2026-10-02
-#+updated: 2026-10-02
+#+updated: 2026-10-16
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -22,7 +22,7 @@ Rework forwards, swaps, vanilla, barrier, digital, Asian, accumulator and varian
 | Field         | Value                                  |
 |---------------+----------------------------------------|
 | State         | BACKLOG                              |
-| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | The family is reviewed. Seven units are staged; none is started. |
 | Waiting on    | Nothing.                               |
 | Next          | Start the first unit: carry the FX money digits. |

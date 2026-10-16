@@ -5,7 +5,7 @@
 #+description: The enforcement gap of the FX review. check_money_decimal_columns.py cannot see a continuous quantity whose name reads as money, a money value read through a binary float, or money typed text, and both of its baselines are blank. Teach the check the shapes the family exposes, seed the baselines, and correct the exact-numbers page, which still claims ten columns in the continuous direction.
 #+type: task
 #+level: s1
-#+filetags: :instruments-fx:next:product_backlog:
+#+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch:
 #+pr:

@@ -5,7 +5,7 @@
 #+description: Findings 6, 8 and 9 of the FX review. The barrier and digital instruments encode a choice as nullable columns with no discriminator; fx_vanilla_option_instrument states three exercise styles in prose and admits two in its check; and four more closed vocabularies are stated both in a table and in a check. Decide each one and enforce it, or record why it stays.
 #+type: task
 #+level: s1
-#+filetags: :instruments-fx:next:product_backlog:
+#+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch:
 #+pr:

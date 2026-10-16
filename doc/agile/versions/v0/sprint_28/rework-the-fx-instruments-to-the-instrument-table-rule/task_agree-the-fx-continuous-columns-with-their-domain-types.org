@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: EB58810C-13FC-4464-A4B5-9981B6AB63E9
+:ID: 336BB8B7-8E44-4CA1-A2AE-CAAC4275D666
 :END:
-#+title: Task: Batch the FX service reads onto the repository query
-#+description: Finding 4 of the FX review. The seven FX services issue 21 per-key single reads where the repository already declares a batch read by key vector. The shape is seven of seven services, so decide whether the fix belongs on a shared service base or on each service, and land it for the family.
+#+title: Task: Agree the FX continuous columns with their domain types
+#+description: Finding 3 of the FX review. fx_variance_swap_instrument.strike is numeric(38, 12) at rest with a double in the domain and the entity. A variance strike is a continuous quantity, so move the column to double precision and check every other FX continuous column agrees with its domain type.
 #+type: task
 #+level: s1
-#+filetags: :instruments-fx:next:product_backlog:
+#+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,14 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Stop the FX services reading one row per key when the repository already offers
-a batch read. Each of the seven services has three such loops: the =get_many=
-lookup, the =put_many= precondition check and the =put_many= read-back. The
-repository's batch read is a single query, and the services do not use it on
-these paths.
-
-The shape is seven of seven services, so the fix is a component decision, not
-an FX one. The family is where it lands first.
+Make every FX continuous quantity agree with its column. A variance strike is
+volatility, which is continuous, so the domain type =double= is right and the
+=numeric(38, 12)= column is wrong. A value that is exact at rest and lossy in
+the domain is the shape the exact-numbers rule exists to end.
 
 * Status
 
@@ -37,22 +33,22 @@ an FX one. The family is where it lands first.
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Decide whether the loop lives in a shared service base. |
+| Next         | Move the variance strike, then sweep the family. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
 
-- No FX service issues a per-key read on a path that reads a collection. The reply stays positional: one entry per requested key, in the order asked for.
-- A =put_many= call reads the written set once, not once per element.
-- The decision — shared service base, codegen template, or per service — is recorded, with the reason.
-- The same defect is reported on the other components the base or the template reaches, so it is fixed once, not seven times.
+- =fx_variance_swap_instrument.strike= is =double precision= in every column declaration.
+- Every other FX column that holds a continuous quantity agrees with its domain type. Record the sweep, including the columns that already agree.
+- Nothing that is money moves to a float in this unit.
+- The models, the generated SQL and the generated C++ regenerate together, and =check_model_sql_types.py= passes.
 
 * Plan
 
-1. Read the generated service template and count the loops the whole component carries, not just the FX ones.
-2. Decide the seam. A shared base or the template is preferred, because the defect is in the generated shape.
-3. Land the change and regenerate.
-4. Run the trading suite, then the other components' suites the template reaches.
+1. List every FX column whose name reads as continuous, and its domain type.
+2. Move =strike= with the mirror mode of =scripts/convert_money_column_to_decimal.py=.
+3. Regenerate the SQL and the C++, and recreate the database.
+4. Run the trading suite and the ORE round-trip tests.
 
 * Measurements
 
@@ -70,8 +66,8 @@ task and name that file in the Command column.
 
 * Notes
 
-- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 4. Measured there: 21 per-key read loops across the seven services.
-- The batch query already exists at =fx_forward_instrument_repository.hpp:108-109= and its siblings.
+- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 3.
+- The money check cannot see this column in either direction, so this unit is found by reading the model, not by a gate.
 
 * Test Scenarios
 

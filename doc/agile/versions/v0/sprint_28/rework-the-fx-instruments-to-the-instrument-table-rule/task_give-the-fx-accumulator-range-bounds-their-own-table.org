@@ -5,7 +5,7 @@
 #+description: Finding 2 of the FX review. fx_accumulator_instrument.range_bounds_json holds the ORE RangeBounds list as JSON text in a column, because the list has no child table. Give the child its own model and table keyed by the trade, map it in both directions, and delete the column.
 #+type: task
 #+level: s1
-#+filetags: :instruments-fx:next:product_backlog:
+#+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch:
 #+pr:

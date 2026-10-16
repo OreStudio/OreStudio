@@ -5,7 +5,7 @@
 #+description: Finding 1 of the FX review. Every FX money leaf in the ORE binding is a plain float, so the document's digits are lost before the mapper runs and all 35 exact_decimal call sites fall back to from_double. Make the family's money members lexical leaves through scripts/reapply_ore_lexical_form.py, write them back with set_exact, and prove the digits survive.
 #+type: task
 #+level: s1
-#+filetags: :instruments-fx:next:product_backlog:
+#+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch:
 #+pr:

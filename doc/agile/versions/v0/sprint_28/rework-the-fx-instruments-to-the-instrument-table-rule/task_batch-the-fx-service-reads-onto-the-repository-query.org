@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: 7EB271C8-E40C-42E1-BD14-5C32F8C97DA1
+:ID: EB58810C-13FC-4464-A4B5-9981B6AB63E9
 :END:
-#+title: Task: Turn the FX soft references into foreign keys
-#+description: Finding 5 of the FX review. The seven FX tables declare no foreign key. Twenty columns carry a soft reference to a named table, deferred to PR 4 by the models' own prose. Tighten them into real keys, or record the reason each one stays soft.
+#+title: Task: Batch the FX service reads onto the repository query
+#+description: Finding 4 of the FX review. The seven FX services issue 21 per-key single reads where the repository already declares a batch read by key vector. The shape is seven of seven services, so decide whether the fix belongs on a shared service base or on each service, and land it for the family.
 #+type: task
 #+level: s1
-#+filetags: :instruments-fx:next:product_backlog:
+#+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch:
 #+pr:
@@ -20,10 +20,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Give the FX family the keys its models promise. The seven tables declare no
-foreign key, and twenty columns are labelled as a soft reference to a named
-table, each deferring the real key to "PR 4". The identity-by-key check asks for
-a key, not a text code that only a non-empty check defends.
+Stop the FX services reading one row per key when the repository already offers
+a batch read. Each of the seven services has three such loops: the =get_many=
+lookup, the =put_many= precondition check and the =put_many= read-back. The
+repository's batch read is a single query, and the services do not use it on
+these paths.
+
+The shape is seven of seven services, so the fix is a component decision, not
+an FX one. The family is where it lands first.
 
 * Status
 
@@ -33,22 +37,22 @@ a key, not a text code that only a non-empty check defends.
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Decide which references become keys and which stay soft. |
+| Next         | Decide whether the loop lives in a shared service base. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
 
-- Every one of the twenty soft references is either a real foreign key or carries a recorded reason that it stays soft.
-- A reference that becomes a key keeps its existing rows: the unit states how the existing codes map to keys, and no row is lost.
-- The closed vocabularies keep one home. A column that becomes a key to a type table must not also restate the closed set in its own check.
-- The trade anchor keeps its trigger-enforced key, or gains a declared one.
+- No FX service issues a per-key read on a path that reads a collection. The reply stays positional: one entry per requested key, in the order asked for.
+- A =put_many= call reads the written set once, not once per element.
+- The decision — shared service base, codegen template, or per service — is recorded, with the reason.
+- The same defect is reported on the other components the base or the template reaches, so it is fixed once, not seven times.
 
 * Plan
 
-1. List the twenty references with their target table and the code values in the corpus.
-2. Split them: the closed trading vocabularies become keys; a currency code becomes a key to =ores_refdata_currencies_tbl=; an FX index code has no target table yet and stays soft with a reason.
-3. Add the keys in the models, regenerate, and recreate the database.
-4. Import the corpus again and compare the stored rows with the document.
+1. Read the generated service template and count the loops the whole component carries, not just the FX ones.
+2. Decide the seam. A shared base or the template is preferred, because the defect is in the generated shape.
+3. Land the change and regenerate.
+4. Run the trading suite, then the other components' suites the template reaches.
 
 * Measurements
 
@@ -66,8 +70,8 @@ task and name that file in the Command column.
 
 * Notes
 
-- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 5. Measured there: 0 declared foreign keys and 20 soft-reference claims across the seven models.
-- =fx_index= and =underlying_code= name an FX index that no =ores.refdata= entity holds. If that entity is not scaffolded in this unit, record the gap rather than inventing a key.
+- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 4. Measured there: 21 per-key read loops across the seven services.
+- The batch query already exists at =fx_forward_instrument_repository.hpp:108-109= and its siblings.
 
 * Test Scenarios
 

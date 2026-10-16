@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,45 +26,44 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                               |
 
 * Acceptance
 
--
+Met: no trade duplicated and no trade's version advanced across two
+provisions. Every count and both runs are in
+=evidence/population_convergence_counts.txt=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Verification. Take the baseline after a clean recreate and one provision,
+run the generation again, and compare the same counts.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trades after one provision, current rows | 32, sum(version) 160, max version 5 | =evidence/population_convergence_counts.txt= | 5d0fa921e8 |
+| Trades after the second generation, current rows | 32, sum(version) 160, max version 5 | =evidence/population_convergence_counts.txt= | 5d0fa921e8 |
+| Trade rows, all versions | 160 before, 160 after | =evidence/population_convergence_counts.txt= | 5d0fa921e8 |
+| Bond instruments | 32 before, 32 after, 8 per party over 4 parties | =evidence/population_convergence_counts.txt= | 5d0fa921e8 |
+| Internal trade identifiers | 32 before, 32 after | =evidence/population_convergence_counts.txt= | 5d0fa921e8 |
+| Second generation, per config | planned 8, wrote 0, already present 8, for each of 4 configs | =synthetic generate-trades --config …= | 5d0fa921e8 |
+| =ores.synthetic.core= suite | 1288 assertions, 56 test cases, all passed | =ores.synthetic.core.tests= | 5d0fa921e8 |
 
 * Notes
 
-* Test Scenarios
+The trades table is write-version. Every count above states whether it
+counts current rows and filters =valid_to =
+ores_utility_infinity_timestamp_fn()=, or counts every row. The two numbers
+differ: the population is 32 trades over 160 rows.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -83,3 +82,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The population converges. A second run of the generation wrote nothing and
+moved nothing.
+
+Baseline: services stopped, =compass db recreate -y -k=, =compass services
+restart=, then one provision with =bootstrap setup … --profile acme_demo=.
+The tenant reached =active= about four minutes later.
+
+One provision produced 32 trades, every one at version 5, so
+=sum(version)= is 160 over 160 rows; 32 bond instruments at 8 per party
+over the four parties; and 32 Internal identifiers.
+
+The second run used the same step the profile runs:
+
+    synthetic generate-trades --config c5359a84… --config 27dcb076… \
+        --config 01ad8f0a… --config 34f07898…
+
+Each of the four configs reported =planned 8, wrote 0, already present 8=,
+and every one of the 32 trade lines read ="version 5 (already present)"=.
+Planned 32, wrote 0, already present 32.
+
+After the run the counts are identical: 32 trades, =sum(version)= 160, max
+version 5, 160 rows in total, 32 bond instruments, 32 identifiers. No trade
+duplicated and no trade's version advanced.
+
+Nothing in the acceptance was missed.

@@ -8,7 +8,7 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3407
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -73,7 +73,7 @@ differ: the population is 32 trades over 160 rows.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3407][#3407]] | [trading] Prove the three ACME population acceptances |
 
 * Review
 

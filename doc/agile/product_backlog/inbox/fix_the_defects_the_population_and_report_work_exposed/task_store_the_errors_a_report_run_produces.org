@@ -20,28 +20,53 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A report run carries its own errors in a table, each one saying what it is
+about, so that a reader opening the report sees them and a screen can place
+each one: a trade-scoped error on that trade, an analytic-scoped error on that
+analytic, a report-scoped error on the run itself.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
-| Now          | Not yet started.                       |
+| Now          | The table, the model and both capture points are in; the screen that shows the errors is a later task. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Build the screen that places an error by its scope and subject. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
 
--
+- A run that fails records errors at the scopes the engine states.
+- A run that succeeds records none, or records only what the engine itself
+  called a warning.
+- An error carries the scope and the target that lets a screen place it.
+- The rows are read back from a real database.
+- A clean =compass db recreate -y -k=, a restart and one provision still
+  produce a working report.
+- Build green, suites passing.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The model is a second entity in =ores.reporting=,
+=ores.reporting.report_error=, with =ores.reporting.report_error_scope= as its
+scope vocabulary. The pattern is the associated entity: an error has its own
+key and its own lifecycle, and it does not bump the run's version, because a
+run's version says which facts about the run are current and an error is not
+one — bumping it would move =completed_at= to the moment of collection. The
+neighbouring pattern it is mistaken for is the composite parent-and-parts
+(bump_parent_version, list_by, list_by_as_of), which is for facts that change
+with the entity they belong to. The target is a discriminator and a value
+(=subject=, =subject_id=) rather than one column, because the ids are of
+different kinds; and the scope is a lookup rather than a code, because the
+engine's group names are a closed vocabulary that a screen also enumerates.
+
+The engine's log is read out of the output archive in the collect step, and a
+platform failure is written in =mark_instance_failed=. Both go through
+=report_error_recorder=, so a reader has one place.
+
+The screen is out of scope for this task.
 
 * Measurements
 
@@ -55,7 +80,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Engine groups in the repository corpus | 4: Trade, Analytics, Curve, Configuration | python3 over every =log_structured.json= and =log.txt= in =build/= and =doc/= | 896e20863e |
+| Structured messages in that corpus | 222 (144 Trade, 68 Analytics, 12 Curve, 9 Configuration) | as above | 896e20863e |
+| Baseline failing run's messages | 19 (16 Trade, 3 Analytics, one of them a warning) | =build/bonds/baseline/log_structured.json= | 896e20863e |
+| Scope vocabulary rows after recreate | 5 | =select count(*) from ores_reporting_report_error_scopes_tbl= | c759acec1f |
+| Database recreation | 43s | =compass db recreate -y -k= | c759acec1f |
 
 * Notes
 
@@ -83,3 +112,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done. A report run now carries its own errors in
+=ores_reporting_report_errors_tbl=, each row stating a severity, the engine's
+own group as its scope, the message, and a subject and subject id that name
+what the error is about.
+
+The engine emits four groups, established from every structured message in the
+repository rather than from one run: =Trade= (144 messages, with =tradeId= and
+=tradeType=), =Analytics= (68, with =analyticType=, and a =tradeId= when the
+failure was one trade's), =Curve= (12, with =curveId=) and =Configuration= (9
+warnings, with =configurationType=). The scope vocabulary is those four codes
+verbatim plus =Report=, the one code the model states rather than copies,
+because a run can fail for a reason no engine saw.
+
+Both sources reach the one recorder:
+- the engine's =log_structured.json=, read out of the output archive in the
+  =collect_compute_results= step, immediately after the archive is stored
+  against the instance;
+- the platform's own reason, written in =mark_instance_failed=, on the branch
+  that runs once for the first writer.
+
+A run that succeeded records nothing: the reader states no error for a message
+that names no group, and a run with no such message produces no rows.
+

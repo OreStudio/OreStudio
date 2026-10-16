@@ -13,7 +13,7 @@
       <BarrierData>
         <Type>UpAndOut</Type>
         <Levels>
-          <Level>0.0500000007</Level>
+          <Level>0.05</Level>
         </Levels>
       </BarrierData>
       <BarrierStartDate>2027-05-03</BarrierStartDate>

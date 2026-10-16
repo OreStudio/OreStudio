@@ -115,6 +115,18 @@ void set_money(xsd::optional<Leaf>& field,
         set_money(field, *value);
 }
 
+/**
+ * @brief Appends a money value to a binding list, digits and all.
+ *
+ * @details A barrier's levels are a list in the binding, and the list element
+ * is the same lexical float the other money leaves are.
+ */
+template <typename Vector>
+void push_money(Vector& levels, const ores::utility::decimal::decimal& value) {
+    levels.emplace_back();
+    set_exact(levels.back(), value);
+}
+
 }
 
 #endif

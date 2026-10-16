@@ -114,7 +114,8 @@ public:
     static trade reverse_fx_tarf(const ores::trading::domain::fx_asian_forward_instrument& instr);
 
 private:
-    static barrierData make_barrier(const std::string& type, double level);
+    static barrierData make_barrier(const std::string& type,
+                                    const ores::utility::decimal::decimal& level);
 
     static barrierData
     make_barrier_group(const std::string& type,

@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: feature/audit-the-equity-instrument-family-against-dod
-#+pr: 3389
+#+pr: 3405
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
@@ -78,6 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3405][#3405]] | [agile] Close the equity analysis task |
 | [[https://github.com/OreStudio/OreStudio/pull/3389][#3389]] | [trading] Analyse the equity instrument family against data-oriented design |
 
 * Review
@@ -108,11 +109,27 @@ rendered yet; design.org names the command.
 
 What the analysis found, in brief: the catalogue holds 32 codes of product
 type equity, 19 are routed, 17 of those to an equity table, and 13 have no
-instrument table at all. Nine routed models and one child table hold 218
-columns, 17 to 26 per table, of which 32 have no writer and 4 more are
-written and never read. The family has no header. Regime 2 scores 1 of 5 and
-Regime 3 scores 1 of 5, both debt High.
+instrument table at all. Nine routed models and one child table hold 222
+columns, 17 to 26 per table, of which 17 of the 45 distinct business columns
+are assigned by no ORE import mapper. The family has no header. Regime 2
+scores 1 of 5 and Regime 3 scores 1 of 5, both debt High.
 
-Two follow-ups this task does not take. The design is not yet reviewed with
-the data-model review skill, so its findings are unaccepted. =design_er.png=
-is not rendered.
+The design was reviewed with the data-model review skill; its comments are in
+the Review table. It was re-measured after the rebase onto PR #3384, which
+added five equity columns, and the review corrected the finding count from 33
+to 16 and declined three claims.
+
+Merged as PR #3389.
+
+Three follow-ups this task does not take.
+
+- Ten staged units are named in the design and none is scaffolded as a task
+  yet, so the story stays STARTED.
+- =design_er.png= is not rendered; design.org names the command.
+- Running the build and the suites for the analysis turned up a defect
+  outside this family: =to_iso8601_utc= formats through =to_time_t= and
+  ="%Y-%m-%d %H:%M:%S"=, so it drops the whole fractional second, and
+  =parse_utc_timestamp= parses with the same seconds-only format and silently
+  discards a fraction. A market observation therefore loses up to a second of
+  its timestamp. The test that caught it is
+  =ores.marketdata.service.tests=. Taken as its own unit.

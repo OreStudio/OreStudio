@@ -20,7 +20,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Replace =fx_instrument_variant= with one typed array per product. The variant is
+an aggregate that carries an entity, and the family this story is reworking is
+the one place it survives on the FX path: every other family already returns a
+carrier struct. The array an element sits in states its type, so nothing needs
+a discriminator, and the range bounds unit has one more array to add rather
+than a field to push into an aggregate.
 
 * Status
 
@@ -28,20 +33,26 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | The family carries typed arrays; the variant is gone. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. The unit is complete. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
 
--
+- =fx_instrument_variant= is deleted, and no source names it.
+- The carrier is one typed array per product in =fx_instrument_data=, joined by trade id, with no discriminator and no aggregate holding an entity.
+- Each =forward_fx_*= function returns its own concrete domain type, so a caller names the product it asked for.
+- The import handler and the exporter drive the arrays through one shared visitor rather than an inner =std::visit=.
+- No behaviour change: the ORE core suite passes unchanged.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Add =fx_instrument_data= beside the other family carriers in =instrument.hpp=, with the seven instrument arrays and a =stamp_ids= overload.
+2. Change the fifteen =forward_fx_*= functions to return their own product type, and have =map_fx_instrument= push into the array the product belongs to.
+3. Add one visitor, =visit_fx_products=, that walks the arrays in order and returns whatever the visitor returns, so both the importer and the exporter keep their existing per-product bodies.
+4. Swap the alternative in =trade_instrument=, delete the variant header, and join the arrays in =instrument_batch_mapper=.
+5. Convert the tests that unwrapped the variant.
 
 * Measurements
 
@@ -55,9 +66,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Sources naming the variant | 0 | =grep -rn fx_instrument_variant projects/ --include=*.cpp --include=*.hpp= | the PR head |
+| Forward mappers returning their own type | 15 | the =forward_fx_*= declarations in =fx_instrument_mapper.hpp= | the PR head |
+| Test files converted | 5 | =xml_fx_mapper_roundtrip_tests.cpp=, =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =xml_remaining_phases_mapper_roundtrip_tests.cpp=, =planner_import_planner_tests.cpp=, =xml_trade_import_tests.cpp= | the PR head |
+| ORE core suite | 669 cases, 483,181 assertions, all pass | =ores.ore.core.tests= with the =.env= loaded | the PR head |
+| ORE service builds | yes | =compass build ores.ore.service= | the PR head |
 
 * Notes
+
+- The evidence for this task is the parent story's decision and [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity]]: the wire carries one typed array per part, and the array an element sits in states its type.
+- The bond family carries its variation with =std::optional= fact rows beside a header, so it needs no variant. FX has no header, which is why the variant stood in for one; typed arrays answer the same question without inventing a header. The story records why the header was not taken.
+- The equalities are not lost: a caller that needs to know which product it holds asks the array, and the routing by =trade_type_code= stays where the catalogue puts it, in the mapper and the exporter.
+- The equity, credit and rates variants are untouched. They are the same defect in other families and want their own story.
 
 * Test Scenarios
 

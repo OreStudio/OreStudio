@@ -8,7 +8,7 @@
 #+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps:sprint_28:v0:
 #+owner: marco
 #+branch: feature/resolve-a-tenor-over-the-wire
-#+pr:
+#+pr: 3413
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
@@ -199,7 +199,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3413][#3413]] | [refdata] Resolve a tenor over the wire, with the refusal it carries |
 
 * Review
 

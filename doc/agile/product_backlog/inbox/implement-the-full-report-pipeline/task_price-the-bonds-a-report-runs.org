@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4D3A5630-0398-4763-B44C-BDAFD012C267][Implement the full report pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A bond report run completes with its bonds priced. Today it builds no curve and 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:4D3A5630-0398-4763-B44C-BDAFD012C267][Implement the full report pipeline]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
@@ -85,3 +85,40 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A bond report run prices its bonds. Verified end to end on a clean `compass db
+recreate`, a restart and one `bootstrap setup --profile acme_demo`, with nothing
+run by hand: all eight bonds show `NumberOfPricings=2` in `pricingstats.csv`, the
+log carries no `Failed to run analytics` and no `did not find object`, and the
+exported portfolio carries `ReferenceCurveId=GBP-SONIA` on each bond.
+
+Four independent causes had to fall, and only the first was expected.
+
+The curve series did not exist. A tenant held 271 market series and not one
+expressed a curve, so a bond could name nothing and the soft key had no target.
+The curve's definer now publishes its series, keyed by the oresmd URI of the
+curve's own coordinates and scoped by party.
+
+The market feed and the curve configuration spelled the same pillar two ways, and
+the configuration asked for a `1Y` tenor the market's convention does not define
+and a money-market segment the feed cannot produce. The one-year tenor is `12M`
+and the segment is gone, because an overnight RFR curve is OIS throughout.
+
+A live feed gave a fresh environment no close for the valuation date an
+end-of-day report asks for. The ingest loop now records each observation under
+the last completed business day's close as well as the day it arrived.
+
+And the trade named no curve. `bond_issue.reference_curve_id` holds an oresmd URI,
+a translator turns it into the ORE index name on export, and the name must be the
+market's own forwarding key, which direct engine runs confirmed: `GBP-SONIA`
+prices, while `GBP1D`, `Yield/GBP/GBP1D` and empty all reproduce the failure.
+
+The validator is projection-independent on purpose. The identity projection is
+written only on the C++ path, so a series inserted by SQL has no identity row
+until a backfill runs; a validator joining it would have refused every trade
+naming a freshly published curve.
+
+Left for a reviewer. The new column appears as a position on the generated shell
+command surface. `find_reference_curve_id` skips a party's curve whose URI carries
+no `curve_id`. And the commit trails a task in the product backlog whose story
+owns the wider pipeline rather than this arc's story.

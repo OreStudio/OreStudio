@@ -8,7 +8,7 @@
 #+filetags: :replace_the_deprecated_sscanf_calls:sprint_28:v0:
 #+owner: marco
 #+branch: feature/replace-the-deprecated-sscanf-calls
-#+pr:
+#+pr: 3377
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3377][#3377]] | [reporting] Parse the run date with the platform's ISO 8601 reader |
 
 * Review
 

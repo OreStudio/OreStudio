@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "domain/business_day_calendar_set.cpp"
+    "domain/calendar_rule.cpp"
     "domain/date_convention.cpp"
     "domain/process_parameter_validation.cpp"
     "domain/tenor_resolution.cpp"

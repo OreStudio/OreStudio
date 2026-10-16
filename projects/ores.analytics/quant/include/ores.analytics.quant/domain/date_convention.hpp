@@ -52,11 +52,14 @@ enum class business_day_convention {
     half_month_modified_following,
 };
 
-/// A length in calendar units. QuantLib's @c TimeUnit, restricted to the
-/// units a tenor or an offset may carry: @c once is absent because this
-/// engine has no zero-length period -- @c none stands in its place and means
-/// "no period at all", which every call site must treat as its own case
-/// rather than as a length of zero.
+/**
+ * @brief A length in calendar units.
+ *
+ * QuantLib's @c TimeUnit, restricted to the units a tenor or an offset may
+ * carry: @c once is absent because this engine has no zero-length period --
+ * @c none stands in its place and means "no period at all", which every call
+ * site must treat as its own case rather than as a length of zero.
+ */
 enum class period_unit {
     /// Denominated in days. In QuantLib's @c Calendar::advance a day-counted
     /// period walks *business* days, while in @c Date::advance it does not;
@@ -69,8 +72,12 @@ enum class period_unit {
     none,
 };
 
-/// A signed count of calendar units. The unit is always stated, so a period
-/// can never mean "however many of whatever was assumed".
+/**
+ * @brief A signed count of calendar units.
+ *
+ * The unit is always stated, so a period can never mean "however many of
+ * whatever was assumed".
+ */
 struct date_period final {
     period_unit unit = period_unit::none;
     int multiplier = 0;

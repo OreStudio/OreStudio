@@ -523,3 +523,59 @@ TEST_CASE("rolling an already business day leaves it where it is", tags) {
               business_day);
     }
 }
+
+TEST_CASE("an ASX date is the second Friday of a quarter month", tags) {
+    CHECK(calendar_arithmetic::asx_date(March, year{2015}) == year{2015} / March / 13);
+    CHECK(calendar_arithmetic::asx_date(June, year{2020}) == year{2020} / June / 12);
+
+    CHECK(calendar_arithmetic::is_asx_date(year{2015} / March / 13));
+    // A Friday, but before the eighth, so not a second Friday.
+    CHECK_FALSE(calendar_arithmetic::is_asx_date(year{2015} / March / 6));
+    // The third Friday, which is past the window a second Friday falls in.
+    CHECK_FALSE(calendar_arithmetic::is_asx_date(year{2015} / March / 20));
+    // A second Friday, but not in a quarter month.
+    CHECK(calendar_arithmetic::is_asx_date(year{2020} / January / 10, false));
+    CHECK_FALSE(calendar_arithmetic::is_asx_date(year{2020} / January / 10, true));
+}
+
+TEST_CASE("the next ASX date is strictly after the one asked about", tags) {
+    // QuantLib's own invariant, over the same decade it states it for.
+    for (auto day = sys_days{year{2015} / January / 1}; day <= sys_days{year{2025} / December / 31};
+         day += days{1}) {
+        const year_month_day counter{day};
+        const auto serial = calendar_arithmetic::next_asx_date(counter, false);
+        const auto main = calendar_arithmetic::next_asx_date(counter, true);
+
+        CAPTURE(counter);
+        CHECK(serial > counter);
+        CHECK(calendar_arithmetic::is_asx_date(serial, false));
+        CHECK(main > counter);
+        CHECK(calendar_arithmetic::is_asx_date(main, true));
+        CHECK(serial <= main);
+    }
+}
+
+TEST_CASE("the main ASX cycle steps a quarter at a time", tags) {
+    auto asx = calendar_arithmetic::asx_date(March, year{2020});
+    CHECK(asx == year{2020} / March / 13);
+
+    asx = calendar_arithmetic::next_asx_date(asx, true);
+    CHECK(asx == year{2020} / June / 12);
+    asx = calendar_arithmetic::next_asx_date(asx, true);
+    CHECK(asx == year{2020} / September / 11);
+    asx = calendar_arithmetic::next_asx_date(asx, true);
+    CHECK(asx == year{2020} / December / 11);
+    asx = calendar_arithmetic::next_asx_date(asx, true);
+    CHECK(asx == year{2021} / March / 12);
+}
+
+TEST_CASE("an ASX date and an IMM date are different dates on the same cycle", tags) {
+    // The two exchanges standardise on different weekdays, and a reader who
+    // treats them as one convention gets the other's contracts.
+    for (unsigned month_index : {3u, 6u, 9u, 12u}) {
+        const auto m = std::chrono::month{month_index};
+        CAPTURE(month_index);
+        CHECK(calendar_arithmetic::asx_date(m, year{2020}) !=
+              calendar_arithmetic::imm_date(m, year{2020}));
+    }
+}

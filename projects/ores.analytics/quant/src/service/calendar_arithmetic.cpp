@@ -246,4 +246,29 @@ year_month_day calendar_arithmetic::next_imm_date(year_month_day date, bool main
     }
 }
 
+year_month_day calendar_arithmetic::asx_date(month m, year y) {
+    return nth_weekday(2, Friday, m, y);
+}
+
+bool calendar_arithmetic::is_asx_date(year_month_day date, bool main_cycle) {
+    const auto w = weekday{sys_days{date}};
+    const auto d = static_cast<unsigned>(date.day());
+    if (w != Friday || d < 8 || d > 14)
+        return false;
+    if (!main_cycle)
+        return true;
+
+    const auto m = static_cast<unsigned>(date.month());
+    return m == 3 || m == 6 || m == 9 || m == 12;
+}
+
+year_month_day calendar_arithmetic::next_asx_date(year_month_day date, bool main_cycle) {
+    auto candidate = date;
+    for (;;) {
+        candidate = year_month_day{sys_days{candidate} + days{1}};
+        if (is_asx_date(candidate, main_cycle))
+            return candidate;
+    }
+}
+
 } // namespace ores::analytics::quant::service

@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.analytics.quant/domain/calendar_rule.hpp"
 #include "ores.analytics.quant/domain/date_convention.hpp"
 #include "ores.analytics.quant/domain/tenor_resolution.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -24,7 +25,9 @@
 namespace {
 
 using ores::analytics::quant::domain::business_day_convention;
+using ores::analytics::quant::domain::observance_shift;
 using ores::analytics::quant::domain::parse_business_day_convention_code;
+using ores::analytics::quant::domain::parse_observance_shift_code;
 using ores::analytics::quant::domain::parse_period_unit_code;
 using ores::analytics::quant::domain::parse_resolution_algorithm_code;
 using ores::analytics::quant::domain::parse_tenor_anchor_code;
@@ -35,6 +38,7 @@ using ores::analytics::quant::domain::resolution_status;
 using ores::analytics::quant::domain::tenor_anchor;
 using ores::analytics::quant::domain::tenor_kind;
 using ores::analytics::quant::domain::to_business_day_convention_code;
+using ores::analytics::quant::domain::to_observance_shift_code;
 using ores::analytics::quant::domain::to_period_unit_code;
 using ores::analytics::quant::domain::to_resolution_algorithm_code;
 using ores::analytics::quant::domain::to_string;
@@ -158,4 +162,19 @@ TEST_CASE("every resolution status spells itself for a refusal message", tags) {
     }
 
     CHECK(to_string(resolution_status::unsupported_anchor) == "unsupported_anchor");
+}
+
+TEST_CASE("every observance shift code the database holds parses, and no other", tags) {
+    // The codes ores_refdata_calendar_rules_tbl.shift carries. The last two
+    // differ only on a Saturday, and the persisted spelling is owned here so
+    // the materialiser does not restate it.
+    CHECK(parse_observance_shift_code("none") == observance_shift::none);
+    CHECK(parse_observance_shift_code("nearest_weekday") == observance_shift::nearest_weekday);
+    CHECK(parse_observance_shift_code("roll_forward_to_monday") ==
+          observance_shift::roll_forward_to_monday);
+    CHECK(parse_observance_shift_code("sunday_to_monday") == observance_shift::sunday_to_monday);
+
+    CHECK(to_observance_shift_code(observance_shift::sunday_to_monday) == "sunday_to_monday");
+    CHECK_THROWS_AS(parse_observance_shift_code("next_monday"), std::invalid_argument);
+    CHECK_THROWS_AS(parse_observance_shift_code(""), std::invalid_argument);
 }

@@ -6839,6 +6839,13 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     # comes out as an INTERFACE library instead.
     c["header_only"] = str(fm.get("header_only", "")).strip().lower() in (
         "true", "yes", "1")
+    # A component's test main links ores.testing for the logging listener, the
+    # database lifecycle listener and the OpenSSL cleanup. A component whose
+    # tests link none of it -- ores.analytics/quant has no database and no
+    # fixture -- says #+test_fixture: none, and the test main stays the bare
+    # Catch2 session its CMake can actually compile.
+    c["has_test_fixture"] = (
+        str(fm.get("test_fixture", "")).strip().lower() != "none")
     # Paste points: a component model splices hand-written C++ into a generated
     # service file the same way an entity model does, through the
     # <<paste:KIND_UUID>> markers its template carries. A service that has

@@ -11,6 +11,7 @@
 #+name: analytics.quant
 #+full_name: ores.analytics.quant
 #+brief: Quant math library: CRM topology, rate engine, stochastic processes
+#+test_fixture: none
 
 * Diagram
 

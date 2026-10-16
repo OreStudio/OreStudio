@@ -19,3 +19,5 @@
  */
 
 \ir ./geo_ip2country_drop.sql
+
+\ir ./geo_ip2country_functions_drop.sql

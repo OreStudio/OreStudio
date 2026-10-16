@@ -49,6 +49,21 @@ do not edit them by hand:
 | ~create/iam/iam_service_db_grants_create.sql~ | Table DML grants |
 | ~service_vars.sh~ | ~SERVICE_NAMES~ array used by shell scripts |
 
+The service registry is not a component model, so the grants file is not reached
+by =compass codegen regenerate --component=. Regenerate it by facet address
+against the registry itself:
+
+#+begin_src sh
+compass codegen generate \
+  --model projects/modeling/service_registry.org \
+  --address ores.sql.service
+#+end_src
+
+A service that reads another component's tables needs those prefixes in its
+=select_prefixes= list. A missing one is not a startup failure: the read is
+refused at run time with =permission denied for table=, which reads like a policy
+defect and is not one.
+
 * 3. IAM Permissions (manual)
 
 Add component wildcard and per-entity CRUD permissions to

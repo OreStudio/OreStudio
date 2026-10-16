@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: B3BDBA4D-EF2D-462B-8BA0-38A48DF62D9D
+:END:
+#+title: Task: Split the doc-only preset off the compiler variables and fix the plist version
+#+description: Initial task for: Silence the configure warnings on the site and macOS builds
+#+type: task
+#+level: s1
+#+filetags: :silence_the_configure_warnings:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:40CC49C7-405B-472D-93A7-BDEB09991C39][Silence the configure warnings on the site and macOS builds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The site configure and the macOS configure report no warning that the repository causes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:40CC49C7-405B-472D-93A7-BDEB09991C39][Silence the configure warnings on the site and macOS builds]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- A fresh cmake --preset linux-doc-only reports no unused-cli warning.
+- Info.plist renders the project version instead of an empty string.
+- Every compiling preset still receives the compiler and vcpkg cache variables.
+
+* Plan
+
+For the site warning, stop handing the doc-only configure variables that
+nothing there reads. CMake presets cannot remove an inherited cache variable,
+so the split is structural: the five compiler and vcpkg entries move out of
+=base-configuration= into a hidden =compiler-configuration= mixin, which the
+eighteen compiling presets inherit, and =linux-doc-only= does not. The doc-only
+preset also stops inheriting the =make= mixin, whose =CMAKE_COLOR_DIAGNOSTICS=
+is read only when diagnostics are emitted, and names its generator directly.
+
+For the macOS warning, correct the variable names in =Info.plist.in= to the
+ones =project(... VERSION ...)= actually sets.
+
+Verify both by configuring, not by reading the preset file: a fresh doc-only
+configure for the first, and a =configure_file= probe on cmake 4.4.4 for the
+second, because the local cmake does not report uninitialized variables in this
+position.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Unused-cli warnings on a fresh doc-only configure, before | 6 | =cmake --preset linux-doc-only= | b841204b38 |
+| Unused-cli warnings on a fresh doc-only configure, after | 0 | same | working tree |
+| Presets still receiving the five compiler variables | 18 of 18 | preset inheritance walk | working tree |
+| Uninitialized =PROJECT_*_VERSION= warnings, before | 3 | =cmake -Wuninitialized --check-system-vars= on cmake 4.4.4, probe | b841204b38 |
+| Uninitialized =PROJECT_*_VERSION= warnings, after | 0 | same | working tree |
+| Version the probe's plist rendered, before / after | =..= / =0.0.28= | same probe | b841204b38 and working tree |
+
+* Notes
+
+The doc-only configure previously printed the same "Generating done (0.0s)"
+line as the report, which is how the site build was identified as its source:
+the configure is fast because =ORES_VCPKG_ENABLED=OFF= installs no
+dependencies.
+
+The two vcpkg warnings are not fixed here. The boost-system one asks for a
+shorter vcpkg root on Windows; the libarchive one wants
+=CMAKE_REQUIRE_FIND_PACKAGE_MbedTLS= added to its own
+=MAYBE_UNUSED_VARIABLES= list. Both live in the pinned vcpkg submodule.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A fresh =cmake --preset linux-doc-only= reports no warning of any kind, where
+it previously reported six unused-cli entries. The five compiler and vcpkg
+variables moved to a new hidden =compiler-configuration= mixin, and all
+eighteen compiling presets still receive them; the make lane keeps
+=CMAKE_COLOR_DIAGNOSTICS= and the ninja lane never had it. The doc-only preset
+names =Unix Makefiles= directly, so it still uses the generator CTestSite.cmake
+derives from its name.
+
+The macOS plist probe goes from three uninitialized warnings to none, and the
+rendered bundle version goes from =..= to =0.0.28=. The old template had the
+two words of each variable transposed, so nothing had ever set them.

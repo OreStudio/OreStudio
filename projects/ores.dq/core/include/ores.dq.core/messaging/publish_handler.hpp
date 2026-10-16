@@ -28,6 +28,7 @@
 #include "ores.dq.core/service/publish_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/correlation.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -277,9 +278,11 @@ private:
         start_msg.correlation_id = correlation_id;
         start_msg.instance_id = instance_id;
 
-        nats_.js_publish(ores::workflow::messaging::start_workflow_message::nats_subject,
-                         ores::nats::default_wire_codec().encode(start_msg),
-                         ores::nats::service::forwarded_caller_headers(msg));
+        nats_.js_publish(
+            ores::workflow::messaging::start_workflow_message::nats_subject,
+            ores::nats::default_wire_codec().encode(start_msg),
+            ores::nats::headers::with_publish_identity(
+                ores::nats::service::forwarded_caller_headers(msg), start_msg.instance_id));
         return instance_id;
     }
 

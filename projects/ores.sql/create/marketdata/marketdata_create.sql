@@ -24,6 +24,12 @@
 \ir ./marketdata_market_series_notify_trigger_create.sql
 \ir ./marketdata_market_series_asset_class_create.sql
 \ir ./marketdata_market_series_identity_create.sql
+-- The curve identity a trade's reference curve names; it reads the series
+-- table, which precedes it here.
+\ir ./marketdata_validate_curve_series_fn_create.sql
+-- The series a published curve configuration states, which is what the
+-- validator above reads.
+\ir ./marketdata_curve_series_create.sql
 \ir ./marketdata_series_axes_create.sql
 \ir ./marketdata_series_axis_values_create.sql
 \ir ./marketdata_series_identity_views_create.sql

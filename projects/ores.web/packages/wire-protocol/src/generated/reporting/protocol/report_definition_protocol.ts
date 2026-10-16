@@ -65,7 +65,9 @@ export interface ReportDefinitionLookup {
 }
 
 export interface ReportDefinitionsFilter {
+    party_id: string | null;
     id_one_of: string[] | null;
+    party_id_one_of: string[] | null;
 }
 
 export interface ReportDefinitionEvent {

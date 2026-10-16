@@ -49,6 +49,7 @@ create table if not exists "ores_trading_equity_accumulator_instruments_tbl" (
     "fixing_frequency" text not null,
     "long_short" text not null,
     "knock_out_level" numeric(38, 12) null,
+    "range_bounds_json" text null,
     "target_amount" numeric(38, 12) null,
     "target_type" text null,
     "payoff_type" text not null,

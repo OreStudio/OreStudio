@@ -1,0 +1,331 @@
+:PROPERTIES:
+:ID: 080B3871-8BAA-4AAA-A98F-3E79F4B83BAA
+:END:
+#+title: ores.reporting.report_error
+#+description: Codegen entity model for the reporting =report_error= table. The errors a report run produced, each one carrying what it is about so a screen can place it.
+#+type: ores.codegen.entity
+#+component: reporting
+#+filetags: :model:entity:reporting:
+#+brief: An error a report run produced, and what it is about.
+#+entity_singular: report_error
+#+entity_plural: report_errors
+#+entity_title: Report Error
+#+created: 2026-10-16
++#+updated: 2026-10-16
+
+One error a report run produced, held against the run. A report run is one
+execution of a report definition, and a run whose analytics fail is still a run
+that completed: the engine finished, wrote its report, and said in its own log
+that a trade would not build. Those errors are facts about the run, they belong
+to it, and they are what this table holds.
+
+A row says four things: how bad the error is, what it is about, what it said,
+and which subject it names. The first is =severity=. The second is =scope_code=,
+drawn from the engine's own vocabulary, and it is what places the error:
+=Trade= on the trade, =Analytics= on the analytic, =Curve= on the curve, and
+=Report= on the run itself. The third is =message=, the engine's own words.
+
+The fourth is =subject= and =subject_id=, a discriminator and a value, holding
+the identifier of the thing the error names: =trade= and a trade id,
+=analytic= and an analytic type, =curve= and a curve id. It is a discriminator
+and a value rather than one column because the ids are of different kinds — a
+trade id is a UUID the portfolio builder minted, a curve id is a free-text name
+such as =[IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)]= — and one column holding
+both would be a text column no reader can key on. It is not a database foreign
+key for the same reason: the engine names trades by its own ids and curves by
+their ORE names, and neither is a key any table here holds. The pair is stored
+so that a screen can find every error about one subject, and it is a
+discriminator rather than a fixed column per kind because the engine adds
+sub-fields to the groups it already has, as the corpus shows it doing when an
+=Analytics= error grew a =tradeId=.
+
+=scope_code= and =subject= are not the same question. The scope is the group the
+engine emitted, which is what the error is about at the level the engine named
+it; the subject is the particular thing, and it can be narrower than the scope.
+An =Analytics= error that names a =tradeId= is about that trade and not about
+the analytic as a whole, and its subject says so.
+
+A run that fails before the engine sees it, because a workflow step did not
+complete, produces a row too, with scope =Report=. That is why the table is one
+table rather than two: a reader opening a report wants its errors in one place.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     reporting
+:profile:       fk-scoped-child
+:END:
+
+* Columns
+
+** report_instance_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The run the error belongs to. It is a column and not part of the key: a run's
+errors are its own rows, and the id of an error is what addresses one.
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key:  true
+:uuid_check_fn: ores_utility_nil_uuid_fn()
+:END:
+
+UUID uniquely identifying this error row.
+
+** scope_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  Report
+:default_value: "Report"
+:END:
+
+What the error is about, as the engine grouped it. Refers to
+ores_reporting_report_error_scopes_tbl by its code. The column is
+=scope_code= rather than =scope= because =scope= is a reserved query parameter
+of the generated list read, and a filterable member may not take its name.
+
+A synthetic row states the one scope that needs no subject, because a subject
+cannot be synthesized: the run a trade id belongs to is not a thing a fixture
+can invent.
+
+#+begin_src cpp :name generator
+std::string("Report")
+#+end_src
+
+** severity
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:default:  error
+:default_value: "error"
+:filterable: true
+:END:
+
+How bad the error is: =error= or =warning=. The engine states this per message
+as its =category=, and an =ALERT= the engine wrote is an =error= here. A warning
+is an error the engine chose to continue past, which is why it is the same
+table: the repair is the reader's to judge, and hiding it would be the mistake
+that produced this task.
+
+A synthetic row is a warning rather than an error: the severity is a closed set
+the store checks, and a fixture that drew one at random would be refused.
+
+#+begin_src cpp :name generator
+std::string("warning")
+#+end_src
+
+** message
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The engine's own words for the error, unaltered.
+
+** subject
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+What kind of thing =subject_id= names: =trade=, =analytic=, =curve= or
+=configuration=. Absent when the error is about the run as a whole, which the
+database enforces: an absent subject is admitted only under the =Report= scope.
+
+** subject_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Identifier of the subject, in the kind =subject= states. Absent with =subject=.
+
+** detail
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The engine's remaining sub-fields for the message, as a JSON object, when it
+emitted any: the =exceptionType= that says which failure this is, and the
+=warningType= on a warning. The message alone does not carry them, and they are
+what tells two errors of one scope apart, so they are kept rather than dropped.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_reporting_report_errors_tbl
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| ("subject" is null) = ("subject_id" is null) |
+| "severity" in ('error', 'warning') |
+
+The first is the invariant that matters to a reader: a row names a subject in
+full or names none, and never half of one, so a screen that looks a row up by
+its subject either finds it or is told the row is about the run. That a row
+naming no subject is a row about the run is what the scope says, and the writer
+that reads the engine's log is where the two are kept in step.
+
+** Indexes
+
+| name    | columns                        | unique | current_only | where_extra |
+|---------+--------------------------------+--------+--------------+-------------|
+| subject | tenant_id, subject, subject_id | false  | true         |             |
+
+* Foreign keys
+
+** report_instance_id
+:PROPERTIES:
+:table:    ores_reporting_report_instances_tbl
+:error_message: Invalid report_instance_id: %. No active report instance found with this id.
+:nullable: false
+:list_by:  true
+:END:
+
+A database foreign key, because the run is written before its errors are: the
+errors are collected from the run's own output, which exists only once the run
+has been admitted. The column is on the parent's key and not a value beside it,
+so the cascade reaches the errors when the run goes.
+
+The version is not bumped. A report instance's version says which facts about
+the run are current, and an error is not one of them: the run completed at the
+instant =completed_at= records, and bumping the parent on every collected error
+would move that instant to the moment of collection.
+
+** scope_code
+:PROPERTIES:
+:table:             ores_reporting_report_error_scopes_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid scope: %. No active report error scope found with this code.
+:END:
+
+The scope vocabulary is system reference data, so the check reads that tenant
+whatever tenant owns the error.
+
+* Delete cascade
+
+No table. A real foreign key is what the run's own delete reaches, and the
+errors are not children the run must close itself: the store holds the
+constraint, and the delete rule that closes a row already runs.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: error
+:entity_plural_short:   errors
+:entity_singular_words: report error
+:entity_plural_words:   report errors
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: re
+:END:
+
+** Table display
+
+| column          | header          |
+|-----------------+-----------------|
+| report_instance_id | Report Instance |
+| scope_code      | Scope           |
+| severity        | Severity        |
+| subject         | Subject         |
+| subject_id      | Subject Id      |
+| message         | Message         |
+| modified_by     | Modified By     |
+| version         | Version         |
+
+** Presentation
+:PROPERTIES:
+:domain_include:         ores.reporting.api/domain/report_error.hpp
+:domain_class:           reporting::domain::report_error
+:protocol_include:       ores.reporting.api/messaging/report_error_protocol.hpp
+:collection_name:        report_errors
+:key_field:              id
+:get_request_class:      reporting::messaging::get_report_errors_request
+:get_response_class:     reporting::messaging::get_report_errors_response
+:get_message_type:       get_report_errors_request
+:save_request_class:     reporting::messaging::save_report_error_request
+:save_response_class:    reporting::messaging::save_report_error_response
+:save_message_type:      save_report_error_request
+:delete_request_class:   reporting::messaging::delete_report_error_request
+:delete_response_class:  reporting::messaging::delete_report_error_response
+:delete_message_type:    delete_report_error_request
+:parent_entity_singular:  report_instance
+:parent_id_field:         report_instance_id
+:END:
+
+*** Detail fields
+
+| field         | label       | type      | is_key | is_required | placeholder          |
+|---------------+-------------+-----------+--------+-------------+----------------------|
+| scope_code    | Scope       | line_edit |        | true        | Error scope          |
+| severity      | Severity    | line_edit |        | true        | error or warning     |
+| subject       | Subject     | line_edit |        |             | trade, analytic, ... |
+| subject_id    | Subject Id  | line_edit |        |             | Identifier of the subject |
+| message       | Message     | text_edit |        | true        | The engine's own words |
+
+*** Columns
+
+| enum_name        | field            | header          | type   | width |
+|------------------+------------------+-----------------+--------+-------|
+| ReportInstanceId | report_instance_id | Report Instance | uuid   | 200   |
+| ScopeCode        | scope_code       | Scope           | string | 140   |
+| Severity         | severity         | Severity        | string | 100   |
+| Subject          | subject          | Subject         | string | 140   |
+| SubjectId        | subject_id       | Subject Id      | string | 250   |
+| Message          | message          | Message         | string | 400   |
+| Version          | version          | Version         | int    | 60    |
+| ModifiedBy       | modified_by      | Modified By     | string | 120   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:FF774B04-12E6-4BDF-B94C-222095651C4F][ores.reporting.report_error_scope]] — the scope vocabulary.
+- [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] — the run these errors belong to.
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.

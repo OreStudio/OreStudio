@@ -61,6 +61,34 @@ struct equity_swap_instrument final {
     std::string basket_json;
 
     /**
+     * @brief JSON array of numbers: the ORE InitialPrices for EquityWorstOfBasketSwap, in the same
+     * order as basket_json; empty when the document states none.
+     *
+     * The entity has no child table for a per-underlying list, so the list lives as JSON text
+     * beside basket_json. The ORE schema requires at least one InitialPrice, so an export that
+     * drops the list cannot be read back.
+     */
+    std::string initial_prices_json;
+
+    /**
+     * @brief JSON array of numbers: the ORE KnockOutLevels for EquityWorstOfBasketSwap, one per
+     * determination date; empty when the document states none.
+     *
+     * Stored as JSON text for the same reason as initial_prices_json: no child table exists, and
+     * the ORE schema requires at least one KnockOutLevel.
+     */
+    std::string knock_out_levels_json;
+
+    /**
+     * @brief JSON array of numbers: the ORE FixedTriggerLevels for EquityWorstOfBasketSwap, one per
+     * determination date; empty when the document states none.
+     *
+     * Stored as JSON text for the same reason as initial_prices_json: no child table exists, and
+     * the ORE schema requires at least one FixedTriggerLevel.
+     */
+    std::string fixed_trigger_levels_json;
+
+    /**
      * @brief ISO 4217 currency code.
      *
      * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
@@ -134,6 +162,9 @@ struct equity_swap_instrument final {
 inline constexpr std::string_view equity_swap_instrument_economic_fields[] = {
     "underlying_name",
     "basket_json",
+    "initial_prices_json",
+    "knock_out_levels_json",
+    "fixed_trigger_levels_json",
     "currency",
     "notional",
     "return_type",

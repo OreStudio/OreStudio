@@ -23,6 +23,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting.core/export.hpp"
+#include "ores.reporting.core/service/report_run_grant_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -50,6 +51,10 @@ namespace ores::reporting::service {
  * The service does not check permissions, read the definition or apply the
  * definition's concurrency policy. A caller does that before it admits, because
  * the refusal is the caller's to report.
+ *
+ * The run's consent to act is the definition's, and the caller settles it
+ * before it builds the plan: see @ref report_run_grant_service, which both
+ * acts that need a consent call.
  *
  * The table is =:read_only:=, which suppresses the generated write verb, so
  * this service writes the trigger through the generated repository by hand, as

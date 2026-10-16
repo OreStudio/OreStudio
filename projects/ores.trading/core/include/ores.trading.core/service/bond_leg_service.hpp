@@ -134,6 +134,22 @@ public:
 
 
     /**
+     * @brief Lists bond legs filtered by trade_id that were live at
+     * any point during a parent version's own [valid_from, valid_to) window.
+     * See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param trade_id The trade_id to filter by.
+     * @param valid_from_bound The parent version's own valid_from.
+     * @param valid_to_bound The parent version's own valid_to.
+     * @return Vector of matching bond legs.
+     */
+    std::vector<domain::bond_leg>
+    list_bond_legs_by_trade_id_as_of(const std::string& trade_id,
+                                     std::chrono::system_clock::time_point valid_from_bound,
+                                     std::chrono::system_clock::time_point valid_to_bound);
+
+
+    /**
      * @brief Retrieves a single bond leg as it stood at a specific
      * version. See the "Temporal composite entity versioning" architecture doc.
      *

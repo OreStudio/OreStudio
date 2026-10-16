@@ -40,9 +40,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     auto handler = std::make_shared<http_info_handler>(nats, std::move(verifier), base_url);
 
     std::vector<ores::nats::service::subscription> subs;
+    // A request/reply subject, so it is queue-subscribed: with more than one
+    // server replica, a fan-out subscription would have every replica answer
+    // the same request and the caller would take whichever reply arrived first.
+    constexpr auto queue_group = "ores.http.server";
     subs.push_back(
-        nats.subscribe(std::string(http::messaging::get_http_info_request::nats_subject),
-                       [handler](ores::nats::message msg) { handler->get(std::move(msg)); }));
+        nats.queue_subscribe(std::string(http::messaging::get_http_info_request::nats_subject),
+                             queue_group,
+                             [handler](ores::nats::message msg) { handler->get(std::move(msg)); }));
 
     BOOST_LOG_SEV(registrar_lg(), info)
         << "Registered NATS handler for " << http::messaging::get_http_info_request::nats_subject

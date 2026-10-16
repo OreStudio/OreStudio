@@ -369,7 +369,16 @@ scripted_instrument_mapper::forward_performance_option_01(const trade& t) {
                              std::string(d.ValuationDate) + "\"" + ",\"SettlementDate\":\"" +
                              std::string(d.SettlementDate) + "\"" + ",\"Position\":\"" +
                              to_string(d.Position) + "\"" + ",\"PayCcy\":\"" + to_string(d.PayCcy) +
-                             "\"" + "}";
+                             "\"";
+    // The schema requires at least one StrikePrice; the flat scripted
+    // instrument holds them as a comma-separated parameter.
+    std::string strike_prices;
+    for (const auto& sp : d.StrikePrices.StrikePrice) {
+        if (!strike_prices.empty())
+            strike_prices += ",";
+        strike_prices += std::to_string(sp);
+    }
+    result.parameters_json += ",\"StrikePrices\":\"" + strike_prices + "\"}";
     return result;
 }
 
@@ -452,6 +461,19 @@ trade scripted_instrument_mapper::reverse_performance_option_01(const scripted_i
             static_cast<std::string&>(d.SettlementDate) = val;
         else if (key == "Position")
             d.Position = (val == "Short") ? longShort::Short : longShort::Long;
+        else if (key == "StrikePrices") {
+            std::size_t start = 0;
+            while (start < val.size()) {
+                const auto comma = val.find(',', start);
+                const auto length = comma == std::string::npos ? comma : comma - start;
+                const auto token = val.substr(start, length);
+                if (!token.empty())
+                    d.StrikePrices.StrikePrice.push_back(std::stof(token));
+                if (comma == std::string::npos)
+                    break;
+                start = comma + 1;
+            }
+        }
     }
     // Reconstruct underlyings from underlyings_json
     for (const auto& name : parse_json_string_array(instr.underlyings_json)) {

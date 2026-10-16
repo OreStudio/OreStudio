@@ -1,0 +1,726 @@
+Raw output: the credit corpus round trip and the ores.ore core suite
+======================================================================
+
+Command: compass test run -- -R ores.ore.core.tests -VV
+Preset:  linux-clang-release-ninja
+Commit:  71ab465278
+
+The credential environment block ctest prints is dropped below; every
+other line is as ctest wrote it.
+
+----------------------------------------------------------------------
+
+$ ctest --preset linux-clang-release-ninja -R ores.ore.core.tests -VV
+UpdateCTestConfiguration  from :/home/marco/Development/OreStudio/ores_dev_jolly_knuth/DartConfiguration.tcl
+Test project /home/marco/Development/OreStudio/ores_dev_jolly_knuth/build/output/linux-clang-release-ninja
+Constructing a list of tests
+Done constructing a list of tests
+Updating test list for fixtures
+Added 0 tests to meet fixture requirements
+Checking test dependency graph...
+Checking test dependency graph end
+test 72
+    Start 72: ores.ore.core.tests
+
+Test command: /home/marco/Development/OreStudio/ores_dev_jolly_knuth/build/output/linux-clang-release-ninja/publish/bin/ores.ore.core.tests "--allow-running-no-tests" "--durations" "yes" "--filenames-as-tags" "-r" "compact" "-r" "xml::out=/home/marco/Development/OreStudio/ores_dev_jolly_knuth/build/output/linux-clang-release-ninja/publish/bin/test-results-ores.ore.core.tests.xml"
+Working Directory: /home/marco/Development/OreStudio/ores_dev_jolly_knuth/build/output/linux-clang-release-ninja/publish/bin
+Environment variables: [omitted: credentials]
+Test timeout computed to be: 10000000
+RNG seed: 1525749001
+0.023 s: bond_option_mapper_roundtrip_bond_trs
+0.002 s: golden_roundtrip_scripted_moving_maximum_yyiis
+0.007 s: an FX volatility with a parametric smile round trips
+0.001 s: pricingengines_roundtrip_ore_api
+0.004 s: mapper_roundtrip_knock_out_swap_forward
+0.001 s: read_currency_config_from_example_1
+0.073 s: roundtrip_harness_reports_a_mapper_that_loses_the_document
+0.002 s: golden_roundtrip_equity_swap_indexed_funding_leg
+0.265 s: a party sees only its own stress test library
+0.002 s: equity_mapper_roundtrip_touch_option
+0.000 s: golden_roundtrip_fx_digital_option
+0.000 s: validate_currency_with_multiple_errors
+0.893 s: swaption and cap and floor proxies and smiles round trip through the database
+0.000 s: build_two_level_subdirectory_creates_nested_portfolios
+0.001 s: a report configuration that writes no curve family is refused
+0.210 s: conventions_zero_inflation_index_round_trips
+0.002 s: mapper_roundtrip_callable_swap_reverse
+0.001 s: mapper_roundtrip_flexi_swap_reverse
+0.001 s: golden_roundtrip_commodity_basis_swap_nymex_cl
+0.000 s: parse_data_level_maps_to_debug
+0.001 s: a_forward_bond_without_a_premium_omits_the_element
+0.000 s: parse_unknown_level_returns_nullopt
+0.001 s: convertible_conversion_ratios_become_rows
+0.009 s: stresstesting_roundtrip_market_risk
+0.005 s: mapper_roundtrip_bond_reverse
+0.004 s: credit_mapper_holds_the_option_block_of_an_index_option
+0.002 s: contract_for_difference_forward
+0.000 s: a value the document wrote is written back as it was
+0.000 s: equity_mapper_roundtrip_variance_swap
+0.250 s: conventions_bma_basis_swap_round_trips
+0.000 s: map_currency_vector_with_multiple_currencies
+0.000 s: parse_market_data_reports_duplicate_as_error_when_requested
+0.000 s: nettingsetdefinitions_roundtrip_exposure_with_collateral
+0.000 s: parse_fixings_skips_blank_and_comment_lines
+0.000 s: mapper_roundtrip_swaption_exercise_price_children
+1.963 s: a party imports the same run twice
+0.000 s: build_strips_excluded_intermediate_segment
+0.000 s: golden_roundtrip_exotic_double_digital_option
+0.001 s: simulation_roundtrip_xva_risk
+0.000 s: golden_roundtrip_equity_one_touch_option
+0.000 s: crossassetmodel_roundtrip_hw_historical_calibration
+0.000 s: parse_missing_source_parens_returns_nullopt
+0.500 s: every_ore_netting_document_roundtrips_through_the_entities
+0.000 s: mapper_roundtrip_capfloor_reverse
+0.000 s: fx_european_barrier_option_forward
+0.000 s: contract_for_difference_reverse
+0.000 s: mapper_roundtrip_balance_guaranteed_swap_forward
+0.201 s: a yield curve naming a day counter ORE does not spell is refused
+0.187 s: conventions_files_using_only_modelled_categories_round_trip
+0.000 s: golden_roundtrip_fx_double_barrier_option
+0.000 s: mapper_roundtrip_swaption_european_forward
+0.000 s: fx_double_barrier_option_reverse
+0.000 s: parse_whitespace_only_line_returns_nullopt
+0.001 s: fx_exotic_mapper_roundtrip_tarf
+0.013 s: fx_exotic_mapper_roundtrip_variance_swap
+0.025 s: roundtrip_market_XvaRisk_market_20160205_eur6m_200bp_up
+0.000 s: scan_empty_directory_produces_empty_results
+0.000 s: ascot_row_option_type_and_swap_leg_survive
+0.000 s: golden_roundtrip_equity_asian_option
+0.003 s: curveconfig_roundtrip_main_xml
+0.000 s: export_portfolio_empty_items_produces_valid_xml
+0.000 s: parse_other_warning_mentioning_memory_stays_warn
+0.000 s: mapper_roundtrip_callable_swap_forward
+0.000 s: conventions_roundtrip_minimal_setup
+0.001 s: creditsimulation_mapper_roundtrip_credit_portfolio_model_100
+0.030 s: stress_test_library_and_scenarios_round_trip_over_the_corpus
+0.001 s: golden_roundtrip_ir_ois_capped_floored
+0.001 s: scripted_mapper_roundtrip_average_strike_basket_option
+0.053 s: roundtrip_market_OREPython_Example_2_market
+0.000 s: double_digital_option_forward
+0.000 s: a_fixed_legs_rate_and_notional_lists_survive_the_round_trip
+0.000 s: a commodity volatility with an APO future surface is refused
+0.000 s: read_currency_config_from_example_41
+0.000 s: mapper_flexi_swap_keeps_each_lower_bound_block_and_its_currency
+0.001 s: plan_rejects_a_flat_upload_with_no_parent_portfolio
+0.000 s: parse_fixings_dedupes_repeated_index_keeping_last_value
+0.000 s: currency_config_roundtrip_multiple_currencies
+0.000 s: credit_mapper_writes_the_premium_leg_of_a_cds
+0.000 s: portfolio_roundtrip_with_portfolio_ids
+0.000 s: equity_mapper_roundtrip_tarf
+0.000 s: composite_mapper_components_populate_legs
+0.002 s: mapper_roundtrip_swap_vanilla_forward
+0.338 s: an equity curve naming a calendar ORE does not accept is refused
+0.000 s: map_domain_currency_with_invalid_rounding_type_throws
+0.052 s: conventions_cms_spread_option_round_trips
+0.000 s: golden_roundtrip_bond_ascot
+0.000 s: golden_roundtrip_hybrid_generic_trs_bond_position
+0.000 s: validate_currency_with_missing_rounding_type
+0.000 s: fx_exotic_mapper_roundtrip_digital_option
+0.000 s: golden_roundtrip_ir_flexi_swap
+0.000 s: the archive puts the run document in Input and the rest in the run's input path
+0.000 s: mapper_roundtrip_swaption_option_block
+0.000 s: a_floating_legs_rate_group_survives_the_round_trip
+0.000 s: equity_mapper_roundtrip_barrier_option
+0.000 s: golden_roundtrip_exotic_fx_tarf
+0.000 s: golden_roundtrip_fx_kiko_barrier_option
+0.000 s: golden_roundtrip_ir_swap_cny_repofix
+0.000 s: todaysmarket_load_file_save_file_roundtrip
+0.000 s: golden_roundtrip_ir_swap_amortising_amortizations_accretion
+0.000 s: mapper_roundtrip_swap_vanilla_reverse
+0.081 s: conventions_average_ois_round_trips
+0.000 s: creditsimulation_mapper_roundtrip_legacy_example_43_1
+0.000 s: credit_mapper_roundtrip_synthetic_cdo
+0.000 s: bond_option_mapper_roundtrip_bond_option_strike
+0.000 s: golden_roundtrip_ir_ois_swap
+0.000 s: roundtrip_market_MarketRisk_Input_Pnl_market
+0.004 s: plan_trade_defaults_override_parsed_values
+0.000 s: golden_roundtrip_inflation_yoy_floor_aucpi
+0.000 s: golden_roundtrip_scripted_basket_option3
+0.000 s: golden_roundtrip_scripted_basket_option
+0.000 s: nettingsetdefinitions_roundtrip_xva_risk
+0.000 s: a credit money member written in a document is written back as it was
+0.000 s: currency_config_roundtrip_all_rounding_types
+0.000 s: a_legs_payment_terms_survive_the_round_trip
+0.001 s: export_portfolio_fx_forward_roundtrip
+0.159 s: conventions_cross_currency_fix_float_round_trips
+0.000 s: roundtrip_harness_first_difference_names_the_byte_and_the_line
+0.000 s: parse_zero_microseconds_is_accepted
+0.000 s: export_portfolio_swap_roundtrip
+0.000 s: parse_missing_colon_separator_returns_nullopt
+0.002 s: golden_roundtrip_fx_digital_barrier_option
+0.000 s: golden_roundtrip_commodity_apo_nymex_cl
+0.000 s: simulation_load_file_save_file_roundtrip
+0.001 s: scan_excludes_multiple_exclusion_directories
+0.000 s: map_domain_currency_without_optional_fields
+0.191 s: every pricing engine document round trips through the entities
+0.000 s: creditsimulation_mapper_roundtrip_legacy_example_43
+0.000 s: the_option_exercise_schedule_survives_the_round_trip
+0.396 s: an import whose document does not parse is refused before it writes
+0.002 s: parse_notice_level_maps_to_info
+0.006 s: golden_roundtrip_fx_option_american
+0.033 s: reference_currencies_round_trip
+0.000 s: a_bonds_second_leg_survives_the_round_trip
+0.000 s: creditsimulation_mapper_roundtrip_legacy_example_43_3
+0.000 s: equity_double_barrier_option_forward
+0.000 s: total_return_swap_forward
+0.002 s: plan_trades_have_book_id_and_portfolio_id_stamped
+0.000 s: golden_roundtrip_exotic_knock_out_swap
+0.000 s: golden_roundtrip_ir_cap_ibor_amortising
+0.000 s: roundtrip_market_InitialMargin_Input_Simm_simm_market
+0.000 s: golden_roundtrip_exotic_fx_worst_of_basket_swap
+0.000 s: golden_roundtrip_fx_no_touch_option
+0.000 s: rows that share a position come back in id order
+0.001 s: roundtrip_market_Legacy_Example_19_market_20160205_smile
+0.000 s: an equity volatility with a solver configuration is refused
+0.001 s: mapper_roundtrip_bond_forward
+0.001 s: golden_roundtrip_inflation_cpi_swap_zero_coupon
+0.000 s: golden_roundtrip_credit_rpa_vanilla_swap
+0.000 s: a leaf set in code is written as its float
+0.000 s: golden_roundtrip_commodity_apo_strip_nymex_csx
+0.276 s: two parties each hold conventions with the same ids
+0.000 s: parse_market_data_accepts_tab_separated_line
+1.276 s: a second import into the same report definition is refused
+0.000 s: netting_set_details_carry_call_type_and_initial_margin_type
+0.164 s: conventions_bond_yield_round_trips
+0.014 s: roundtrip_market_Legacy_Example_48_market
+0.000 s: equity_mapper_roundtrip_forward
+0.053 s: conventions_cross_currency_basis_round_trips
+0.003 s: golden_roundtrip_bond_credit_bond_trs_indexings
+0.001 s: the run document names the data files the package places
+0.000 s: export_portfolio_bond_future_roundtrip
+0.000 s: an_entity_name_is_matched_exactly_not_by_prefix
+0.001 s: roundtrip_fixings_OREPython_Example_5_fixings
+0.000 s: export_multiple_currencies_to_xml
+0.000 s: parse_market_data_comment_only_file_returns_empty
+0.000 s: golden_roundtrip_fx_barrier_option
+0.000 s: element_text_decodes_every_predefined_and_numeric_reference
+0.000 s: credit_mapper_numbers_the_agreement_legs_across_both_groups
+0.002 s: plan_includes_all_currencies_when_mode_is_all
+0.002 s: import_portfolio_from_minimal_swap
+0.000 s: performance_option_01_forward
+0.000 s: golden_roundtrip_commodity_swap_nymex_a7q
+0.000 s: golden_roundtrip_ir_swap_amortising
+0.000 s: element_text_leaves_cdata_content_undecoded
+0.000 s: golden_roundtrip_credit_index_cds_bespoke_basket
+0.000 s: stresstesting_roundtrip_xva_risk
+0.000 s: a_csa_with_one_margining_frequency_is_refused_on_export
+0.000 s: golden_roundtrip_credit_linked_swap
+0.000 s: mapper_roundtrip_balance_guaranteed_swap_reverse
+0.001 s: roundtrip_fixings_AmericanMonteCarlo_Input_fixings
+0.000 s: golden_roundtrip_exotic_performance_option_com
+0.000 s: mapper_roundtrip_knock_out_swap_reverse
+0.008 s: roundtrip_harness_finds_no_files_for_a_kind_the_corpus_does_not_hold
+0.001 s: import_portfolio_with_context_bond_has_instrument
+0.000 s: validate_currency_with_negative_rounding_precision
+0.000 s: an empty output directory is refused
+0.180 s: a party sees only its own today's market configuration
+0.000 s: equity_european_barrier_option_reverse
+0.000 s: read_currency_config_from_example_62
+0.000 s: commodity_mapper_roundtrip_option_strip
+0.000 s: credit_mapper_leaves_the_exercise_dates_unset_without_exercise_dates
+0.000 s: equity_mapper_roundtrip_asian_option
+0.000 s: golden_roundtrip_fx_double_touch_option
+0.000 s: a repeated parameter name in one scope keeps its order
+0.875 s: another party cannot export a run it does not own
+0.000 s: fx_kiko_barrier_option_reverse
+0.000 s: golden_roundtrip_ir_basis_swap
+0.002 s: golden_roundtrip_bond_cash_bond_repo
+0.003 s: golden_roundtrip_irfx_ccs_non_rebalancing
+0.007 s: golden_roundtrip_ir_swap_zero_coupon_fixed
+0.000 s: creditsimulation_mapper_roundtrip_credit_portfolio_model_3
+0.001 s: curveconfig_roundtrip_sabr
+0.192 s: a segment of a type the vocabulary does not hold is refused
+0.000 s: bond_repo_reverse
+0.000 s: mapper_roundtrip_capfloor_shared_children
+0.000 s: the_six_issue_fields_survive_the_round_trip
+0.000 s: element_text_survives_any_number_of_save_and_load_cycles
+0.000 s: mapper_reverse_swap_carries_the_digits_of_a_stored_rate
+0.000 s: exact_decimal falls back for INF and NaN instead of throwing
+0.028 s: roundtrip_fixings_OREPython_Example_9_fixings_20160205
+1.142 s: todays_market_roundtrip_through_the_database
+0.000 s: roundtrip_harness_names_the_difference_when_one_document_is_a_prefix
+0.000 s: total_return_swap_reverse
+0.000 s: envelope_forward_maps_every_member
+0.000 s: bond_product_coverage_names_every_code
+0.000 s: parse_market_data_handles_mixed_delimiter_file
+0.000 s: golden_roundtrip_equity_double_barrier_option
+0.000 s: currency_config_roundtrip_simple_xml
+0.000 s: currency codes are matched exactly (case-sensitive)
+0.061 s: every credit trade in the corpus comes back as the same family rows
+0.004 s: currency_config_roundtrip_ore_api
+0.000 s: creditsimulation_mapper_roundtrip_legacy_example_43_2
+0.000 s: creditsimulation_mapper_roundtrip_credit_portfolio_model_4
+0.000 s: golden_roundtrip_ir_capfloor_fedfunds
+0.000 s: an_amortization_block_survives_the_round_trip
+0.001 s: currency_config_roundtrip_example_41
+0.000 s: roundtrip_market_MarketRisk_Input_Curvealgebra_market
+0.000 s: commodity_mapper_roundtrip_forward
+0.000 s: a_number_below_the_sixth_decimal_keeps_its_value
+0.000 s: parse_market_data_accepts_yyyy_mm_dd_date
+0.000 s: an optional attribute left out is stored as null, and one written empty is not
+0.000 s: credit_mapper_writes_the_basket_names_of_a_bespoke_index_cds
+0.000 s: build_strips_excluded_path_components
+0.000 s: golden_roundtrip_hybrid_generic_trs_bond
+0.019 s: roundtrip_fixings_OREAPI_Input_fixings_20160205
+0.000 s: golden_roundtrip_ir_cap_cms
+0.000 s: ore_roundtrip_ore_api
+0.000 s: parse_market_data_preserves_integer_value
+0.000 s: netting_set_details_naming_an_agreement_type_are_refused
+0.000 s: a run that wrote analytics is accepted
+0.018 s: roundtrip_market_Legacy_Example_55_market
+0.049 s: every_example_trade_round_trips_through_a_golden
+0.000 s: build_empty_file_list_produces_no_nodes
+0.000 s: parse_empty_line_returns_nullopt
+0.000 s: equity_option_position_roundtrip_rebuilds_the_entries
+0.000 s: portfolio_roundtrip_simple_trades
+0.000 s: a quote on a yield curve entry is refused on export
+0.221 s: a party sees only its own credit simulation configuration
+0.000 s: mapper_roundtrip_fra_forward
+0.001 s: conventions_roundtrip_ore_api
+0.001 s: currency_config_load_file_save_file_roundtrip
+0.000 s: scan_classifies_currency_config_by_root_element
+0.000 s: golden_roundtrip_inflation_cpi_swap
+0.000 s: empty known-pairs set never corrects anything
+0.000 s: golden_roundtrip_ir_swap_custom_fixings
+0.000 s: fx_european_barrier_option_reverse
+0.089 s: roundtrip_market_MarketRisk_Input_HistSimVar_market
+0.120 s: conventions_inflation_swap_round_trips
+0.000 s: the_three_strike_spellings_survive_the_round_trip
+0.000 s: envelope_absent_maps_to_nothing
+0.000 s: pricingengines_roundtrip_minimal_setup
+0.234 s: a party sees only its own curve configuration
+0.001 s: golden_roundtrip_exotic_equity_worst_of_basket_swap
+0.000 s: golden_roundtrip_ir_swap_amortising_amortizations
+0.000 s: ore_roundtrip_minimal_setup
+0.000 s: golden_roundtrip_bond_convertible
+0.000 s: golden_roundtrip_credit_index_cds
+0.000 s: roundtrip_fixings_Legacy_Example_48_fixings
+0.000 s: commodity_mapper_roundtrip_option
+0.000 s: mapper_fra_holds_the_digits_of_its_strike_and_notional
+0.000 s: mapper_roundtrip_swaption_bermudan_forward
+0.000 s: fx_exotic_mapper_roundtrip_digital_barrier_option
+0.016 s: roundtrip_market_OREPython_Example_9_market_20160205
+0.000 s: validate_currency_with_missing_iso_code
+0.000 s: an_empty_schedule_element_survives_the_round_trip
+0.000 s: both orders present in known set: first-listed order wins as canonical
+0.000 s: mapper_roundtrip_fx_swap_forward
+0.000 s: calendaradjustment_roundtrip_input
+0.000 s: calendaradjustment_roundtrip_ore_api
+0.000 s: composite_mapper_roundtrip_composite_trade
+0.000 s: parse_fixings_throws_on_fewer_than_three_tokens
+0.000 s: golden_roundtrip_inflation_cpi_floor
+0.000 s: golden_roundtrip_ir_swaption_bermudan
+0.000 s: a_forward_bonds_income_curve_survives_the_round_trip
+0.283 s: a party sees only its own pricing engine configuration
+0.000 s: golden_roundtrip_hybrid_generic_trs_equity_position
+0.424 s: a CDS volatility's terms and strike surface round trip through the database
+0.145 s: conventions_intraday_power_load_round_trips
+0.000 s: roundtrip_market_OREPython_Example_6_market
+0.000 s: golden_roundtrip_ir_swap_zero_coupon_floating
+0.000 s: scan_excludes_files_in_excluded_directory
+0.003 s: golden_roundtrip_fx_swap
+0.000 s: golden_roundtrip_fx_variance_swap
+0.000 s: golden_roundtrip_hybrid_generic_trs_mixed_basket
+0.000 s: a global parameter belongs to no product and comes back
+0.000 s: creditsimulation_mapper_roundtrip_credit_portfolio_model_3_ts
+0.000 s: commodity_mapper_roundtrip_swap
+0.000 s: a value more precise than a float is written as the document wrote it
+2.166 s: an export from a session with no party reads the definition's party
+0.000 s: a binding set in code falls back to its value and a computed double too
+0.393 s: a context without a party does not inherit a pooled connection's party
+0.001 s: golden_roundtrip_bond_cash_bonds
+0.053 s: conventions_future_round_trips
+0.000 s: golden_roundtrip_inflation_yoy_cap
+0.000 s: golden_roundtrip_ir_balance_guaranteed_swap
+0.000 s: parse_alert_level_maps_to_error
+0.000 s: golden_roundtrip_commodity_option_strip_nymex_ng
+0.000 s: build_multiple_flat_files_produce_multiple_books
+0.000 s: golden_roundtrip_credit_default_swap
+0.000 s: mapper_roundtrip_ccs_forward
+0.000 s: validate_currency_with_all_required_fields
+0.000 s: map_currency_config_with_multiple_currencies
+0.000 s: unmapped_trade_type_is_monostate
+0.001 s: fx_convention_roundtrip_duplicate_pair_collision_is_documented
+0.000 s: envelope_keeps_a_stated_empty_envelope
+0.000 s: creditsimulation_roundtrip_credit_portfolio_model
+0.075 s: conventions_commodity_forward_round_trips
+0.000 s: golden_roundtrip_ir_collar_ibor
+0.000 s: plan_with_parent_portfolio_has_one_extra_portfolio
+0.000 s: export_portfolio_unmapped_trade_keeps_its_type_and_envelope
+0.000 s: parse_fixings_accepts_a_semicolon_separated_line
+0.000 s: simulation_roundtrip_american_mc
+0.002 s: import_portfolio_from_example_1
+0.000 s: scripted_mapper_roundtrip_asian_basket_option
+0.083 s: ore_run_document_setup_round_trips_over_the_corpus
+0.000 s: golden_roundtrip_equity_option_european_isin_ccy_mic
+0.000 s: commodity_mapper_basket_option_carries_constituents
+0.000 s: roundtrip_fixings_Legacy_Example_46_fixings
+0.000 s: a parameter row the document has no place for is an error
+0.053 s: roundtrip_market_Input_market_20160205_flat
+0.000 s: the_datum_payer_and_credit_risk_survive_the_round_trip
+0.000 s: golden_roundtrip_hybrid_generic_trs_equity_option_position
+0.000 s: golden_roundtrip_equity_swap
+0.120 s: a collection naming a kind ORE does not have is refused
+0.000 s: parse_fixings_accepts_yyyy_mm_dd_date
+0.000 s: parse_market_data_accepts_yyyymmdd_date
+0.000 s: parse_market_data_empty_stream_returns_empty
+0.000 s: a log with no error in it says so
+0.107 s: conventions_swap_index_round_trips
+0.000 s: golden_roundtrip_commodity_forward
+0.000 s: parse_microseconds_fewer_than_six_digits_are_scaled_to_microseconds
+0.000 s: golden_roundtrip_credit_rpa_callable_swap
+0.000 s: the mapper keeps the document's float digits, not the nearest float
+0.019 s: reference_calendar_adjustments_round_trip
+0.000 s: fx_convention_roundtrip_synthetic_eom_and_business_day_convention
+0.000 s: commodity_mapper_roundtrip_apo
+0.343 s: every curve configuration document round trips
+0.003 s: bond_trs_carries_the_price_type_and_the_funding_schedule
+0.000 s: parse_missing_timestamp_brackets_returns_nullopt
+0.022 s: roundtrip_market_OREPython_Example_9_market_20160205_flat
+0.010 s: roundtrip_harness_round_trips_every_credit_simulation_in_the_corpus
+0.001 s: import_export_roundtrip_preserves_currency_fields
+0.000 s: golden_roundtrip_ir_swap_amortising_notionals
+0.000 s: credit_mapper_keeps_the_schedule_of_each_underlying_leg
+0.000 s: map_empty_currency_vector_to_empty_config
+0.000 s: golden_roundtrip_equity_forward
+0.000 s: fx_exotic_mapper_roundtrip_double_touch_option
+0.000 s: import_portfolio_leaves_the_ids_to_the_planner
+0.000 s: parse_market_data_preserves_trailing_zeros_in_value
+0.000 s: parse_market_data_preserves_negative_value
+0.000 s: the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold
+0.000 s: credit_mapper_holds_the_required_elements_of_an_agreement
+0.000 s: golden_roundtrip_hybrid_generic_trs_portfolio_index_trade_data
+0.000 s: parse_market_data_error_message_contains_line_number
+0.000 s: golden_roundtrip_ir_swap_bma
+0.001 s: curveconfig_roundtrip_inflation
+0.000 s: golden_roundtrip_equity_barrier_option
+0.000 s: mapper_roundtrip_fx_forward_reverse
+0.000 s: credit_mapper_roundtrip_index_cds_option
+0.000 s: element_text_decodes_entity_references_as_attributes_do
+0.000 s: a_forward_bonds_coupon_leg_keeps_its_own_schedule
+0.000 s: parse_market_data_skips_comment_lines
+0.139 s: an actor holding a quote reaches a pooled session
+0.001 s: fx_convention_roundtrip_real_example_file_field_values
+0.000 s: golden_roundtrip_ir_swap_ndirs_non_xccy
+0.009 s: roundtrip_market_OREPython_Example_3_market
+0.000 s: fx_exotic_mapper_roundtrip_touch_option
+0.000 s: commodity_mapper_roundtrip_swaption
+0.000 s: an_inactive_csa_keeps_its_terms
+0.000 s: golden_roundtrip_hybrid_generic_trs_bond_forward_futures
+0.000 s: a document without global parameters comes back without them
+0.000 s: credit_mapper_holds_the_digits_of_the_option_strike
+0.000 s: a_row_set_with_no_legs_keeps_the_coupon_terms_out_of_the_issue
+0.000 s: golden_roundtrip_ir_swap_cms_spread_option
+0.000 s: fx_exotic_mapper_roundtrip_generic_barrier_option
+0.000 s: bond_option_keeps_every_exercise_date
+0.000 s: mapper_roundtrip_fx_forward_forward
+0.005 s: curveconfig_roundtrip_ore_api
+0.000 s: creditsimulation_mapper_roundtrip_credit_portfolio_model_2
+0.000 s: golden_roundtrip_bond_credit_bond_trs
+0.000 s: forward_swaption_leaves_dates_unset_without_a_schedule
+0.062 s: roundtrip_market_Input_market_20160205
+0.004 s: a document with every collection and every binding round trips
+0.000 s: mapper_roundtrip_fx_option_forward
+0.000 s: the run document refuses a data file that leaves the package
+0.007 s: roundtrip_fixings_MarketRisk_Input_HistSimVar_fixings
+0.000 s: golden_roundtrip_fx_option_european
+0.000 s: build_single_flat_file_produces_one_book
+0.000 s: equity_european_barrier_option_forward
+0.545 s: equity and commodity volatility configurations and the report configuration round trip through the database
+0.000 s: a CDS volatility with a constant volatility is refused
+0.039 s: roundtrip_market_Legacy_Example_61_market
+0.040 s: roundtrip_market_Legacy_Example_56_market
+0.000 s: credit_mapper_roundtrip_cds
+0.000 s: golden_roundtrip_ir_swap_vanilla
+0.000 s: golden_roundtrip_ir_swap_cms
+0.000 s: golden_roundtrip_commodity_option
+1.394 s: an FX volatility's report configuration round trips through the database
+0.000 s: map_currency_definition_all_rounding_types
+0.000 s: mapper_roundtrip_convertible_bond_forward
+0.000 s: bond_trs_price_type_and_payer_come_from_the_document
+0.000 s: map_domain_currency_with_non_numeric_code_ignores_it
+0.184 s: a shift naming a shift type ORE does not have is refused
+0.000 s: equity_mapper_roundtrip_option
+0.000 s: parse_error_level_maps_to_error
+0.137 s: roundtrip mirrors every portfolio in the ORE example corpus
+0.000 s: equity_mapper_roundtrip_swap
+0.100 s: conventions_tenor_basis_two_swap_round_trips
+0.000 s: golden_roundtrip_hybrid_composite_trade
+0.000 s: parse_market_data_accepts_comma_separated_line
+0.000 s: currency_config_roundtrip_example_1
+0.000 s: equity_option_position_forward_carries_every_entry
+0.000 s: a base correlation with a recovery grid is refused
+0.000 s: golden_roundtrip_exotic_fx_accumulator
+0.000 s: parse_market_data_parses_multiple_entries_in_order
+0.000 s: map_domain_currency_to_definition_with_all_fields
+0.000 s: a run that wrote only its log is refused
+0.000 s: todaysmarket_roundtrip_minimal_setup
+0.000 s: reversed pair is swapped back to canonical order
+0.007 s: plan_skips_existing_iso_codes_when_mode_is_missing_only
+0.000 s: the engine's own error reaches the refusal
+0.000 s: golden_roundtrip_irfx_ccs_ndirs
+0.000 s: roundtrip_fixings_Legacy_Example_45_fixings
+0.000 s: a_bonds_calendar_curves_and_notional_survive_the_round_trip
+0.000 s: golden_roundtrip_ir_swaption_european
+0.000 s: currency_config_roundtrip_example_62
+0.000 s: unrecognised pair is left unchanged and reported unknown
+0.000 s: golden_roundtrip_credit_synthetic_cdo
+0.001 s: roundtrip_market_Legacy_Example_46_market
+0.000 s: parse_invalid_timestamp_returns_nullopt
+0.000 s: roundtrip_market_OREPython_Example_7_market
+0.000 s: golden_roundtrip_ir_cap_ibor_mxntiie
+0.000 s: golden_roundtrip_fx_average_forward
+0.000 s: golden_roundtrip_scripted_floored_average_cpi_zc_yyiis
+0.004 s: roundtrip_market_Legacy_Example_45_market
+0.000 s: credit_mapper_roundtrip_rpa
+0.000 s: ore_run_document_setup_splits_choices_from_file_names
+0.001 s: import_currency_config_maps_all_fields
+0.000 s: the credit family rows change when a stored field changes
+0.000 s: mapper_roundtrip_flexi_swap_forward
+0.000 s: golden_roundtrip_inflation_cpi_cap
+0.002 s: roundtrip classifies a mixed ORE input directory
+0.000 s: export_portfolio_keeps_a_cross_currency_swap_apart_from_a_swap
+0.083 s: roundtrip_market_XvaRisk_market_20160205_eonia_200bp_up
+0.001 s: sensitivityanalysis_roundtrip_exposure
+0.000 s: credit_mapper_holds_the_digits_of_the_protection_fee
+0.112 s: conventions_tenor_basis_swap_round_trips
+0.006 s: roundtrip_fixings_OREPython_Example_3_fixings
+0.000 s: validate_currency_with_missing_name
+0.185 s: credit_simulation_roundtrip_through_the_database
+0.034 s: roundtrip_market_OREPython_Example_5_market
+0.000 s: golden_roundtrip_ir_cap_ibor
+0.000 s: golden_roundtrip_equity_margin_trade_trs
+0.000 s: golden_roundtrip_hybrid_cfd
+0.000 s: equity_mapper_roundtrip_digital_option
+0.000 s: plan_into_a_sandbox_creates_only_sandbox_portfolios_and_virtual_books
+0.454 s: curve_configuration_roundtrip_through_the_database
+0.000 s: a segment of an unknown type is refused on export
+0.001 s: sensitivityanalysis_roundtrip_market_risk
+0.001 s: import_portfolio_from_minimal_swaptions
+0.000 s: import_currency_config_from_example_1
+0.000 s: netting_set_details_naming_a_legal_entity_are_refused
+0.000 s: an_ascot_carries_the_option_block
+0.264 s: stress_test_roundtrip_through_the_database
+0.000 s: build_deduplicates_shared_portfolio_parent
+0.000 s: roundtrip_fixings_Exposure_Input_fixings_inflation
+0.000 s: golden_roundtrip_bond_credit_bond_forward
+0.000 s: golden_roundtrip_equity_option_european
+0.000 s: a rate with more significant digits than a float holds survives intact
+0.000 s: fx_exotic_mapper_roundtrip_average_forward
+0.000 s: golden_roundtrip_equity_outperformance_option
+0.126 s: conventions_commodity_future_round_trips
+1.337 s: default, equity and inflation curves and securities round trip through the database
+0.000 s: callable_bond_call_dates_become_rows
+0.000 s: mapper_reverse_capfloor_carries_the_digits_of_a_stored_strike
+0.000 s: a repeated product type keeps the order the document wrote
+0.000 s: a CDS volatility with price information is refused
+0.000 s: credit_mapper_holds_the_dropped_elements_of_a_credit_linked_swap
+0.130 s: every rates trade in the corpus comes back as the same family rows
+0.059 s: roundtrip_market_AmericanMonteCarlo_Input_market
+0.000 s: map_currency_roundtrip_preserves_fields
+0.346 s: every seeded configuration type the binding can save names its root element
+0.000 s: build_one_level_subdirectory_creates_portfolio_and_book
+0.000 s: golden_roundtrip_commodity_variance_swap
+0.000 s: golden_roundtrip_exotic_formula_based_coupon
+0.000 s: parse_warning_level_maps_to_warn
+0.000 s: todaysmarket_roundtrip_ore_api
+0.000 s: creditsimulation_mapper_roundtrip_legacy_example_43_4
+0.000 s: an error does not fail a run that still wrote analytics
+0.000 s: collateralbalances_roundtrip_exposure_with_collateral
+0.000 s: golden_roundtrip_irfx_ccs_rebalancing
+0.000 s: nettingsetdefinitions_roundtrip_minimal_setup
+0.015 s: roundtrip_market_Legacy_Example_73_market
+0.000 s: fx_exotic_mapper_roundtrip_barrier_option
+0.026 s: roundtrip_market_AmericanMonteCarlo_Input_market_flat_fixed_fxfwd
+0.000 s: fx_exotic_mapper_roundtrip_accumulator
+0.000 s: parse_message_with_colon_inside_is_preserved
+0.001 s: read_currency_config_from_currencies_xml
+0.024 s: ore_run_document_market_bindings_round_trip_over_the_corpus
+0.000 s: golden_roundtrip_exotic_performance_option_fx
+0.000 s: golden_roundtrip_exotic_equity_tarf
+0.000 s: parse_message_with_leading_whitespace_after_colon
+0.000 s: collateralbalances_roundtrip_xva_risk
+0.000 s: parse_market_data_skips_blank_lines
+0.000 s: todaysmarket_roundtrip_main_xml
+0.000 s: mapper_roundtrip_fra_reverse
+0.000 s: parse_market_data_throws_on_two_token_line
+0.000 s: simulation_roundtrip_minimal_setup
+0.000 s: currency_config_roundtrip_optional_fields_missing
+0.000 s: golden_roundtrip_inflation_cpi_cap_leg
+0.000 s: export_empty_currency_list_to_xml
+0.000 s: parse_market_data_dedupes_repeated_key_keeping_last_value
+0.002 s: envelope_keeps_an_element_the_document_states_empty
+0.001 s: the archive refuses a path that leaves the package
+0.029 s: roundtrip_fixings_Legacy_Example_54_fixings_20160205
+0.000 s: golden_roundtrip_ir_callable_swap_bermudan
+0.000 s: scan_excluded_currency_file_is_ignored
+0.000 s: bond_repo_leg_keeps_the_tenor_the_issue_does_not_take
+0.000 s: credit_mapper_groups_the_legs_of_a_credit_linked_swap
+0.000 s: read_currency_config_from_simple_xml
+0.000 s: golden_roundtrip_inflation_cpi_swap_fixed_non_infl_leg
+0.004 s: roundtrip_fixings_MarketRisk_Input_Pnl_fixings
+0.000 s: commodity_mapper_roundtrip_variance_swap
+0.297 s: a shift naming a family ORE does not have is refused
+0.000 s: equity_mapper_roundtrip_cliquet_option
+0.000 s: golden_roundtrip_ir_swap_capped_amortising
+0.000 s: golden_roundtrip_credit_index_cds_option
+0.000 s: mapper_roundtrip_inflation_swap_reverse
+0.000 s: parse_market_data_same_key_different_date_is_not_a_duplicate
+0.000 s: golden_roundtrip_inflation_zc_cap_aucpi
+0.000 s: credit_mapper_holds_the_option_block_of_an_agreement_underlying
+0.001 s: roundtrip_market_CurveBuilding_Input_market_20160205
+0.000 s: double_digital_option_reverse
+0.001 s: creditsimulation_mapper_roundtrip_legacy_example_43_100
+0.387 s: import_portfolio_all_ore_example_files_can_be_parsed
+0.001 s: mapper_roundtrip_forward_bond_forward
+0.052 s: every today's market document round trips through the entities
+0.000 s: roundtrip_fixings_Legacy_Example_47_fixings
+0.000 s: counterpartyinformation_roundtrip_market_risk
+0.000 s: scan_ignores_unrecognised_xml_files
+0.000 s: export_portfolio_ascot_roundtrip
+0.000 s: bond_option_mapper_roundtrip_bond_option
+0.000 s: assigning a party stamps every row of a mapped document
+0.000 s: pair already in canonical order is unchanged
+0.002 s: scan_recurses_into_subdirectories
+0.001 s: scan_classifies_portfolio_xml_by_root_element
+0.000 s: golden_roundtrip_hybrid_generic_trs_derivative
+0.000 s: mapper_roundtrip_fx_swap_reverse
+0.002 s: read_currency_config_from_ore_api
+0.935 s: pricing_engines_roundtrip_through_the_database
+0.038 s: bond_source_documents_reload_to_their_own_canonical_form
+0.000 s: export_currency_without_optional_fields
+0.000 s: golden_roundtrip_fx_european_barrier_option
+0.000 s: a scenario with no date keeps no date
+0.001 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: a document with no scenarios is refused by the schema
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: the library setting is absent, and stays absent
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: the library setting is true, and stays true
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: the library setting is false, and stays false
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: a ParConversion keeps every sub-field
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: a ShiftScheme keeps every scheme and key
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: a CurveType travels with the yield curve
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: IsRelative true stays true
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: IsRelative false stays false
+0.000 s: stress_test_mapper_keeps_the_shapes_the_corpus_lacks
+0.000 s: bond_future_maps_the_trade_level_facts
+0.000 s: golden_roundtrip_exotic_fx_generic_barrier_option
+0.000 s: fx_kiko_barrier_option_forward
+0.000 s: golden_roundtrip_fx_worst_of_basket_swap
+0.000 s: map_empty_currency_config_to_empty_vector
+0.000 s: mapper_roundtrip_convertible_bond_reverse
+0.005 s: creditsimulation_mapper_roundtrip_credit_portfolio_model_1
+0.000 s: golden_roundtrip_fx_one_touch_option
+0.000 s: degenerate same-currency pair does not crash
+0.000 s: golden_roundtrip_equity_european_barrier_option
+0.000 s: plan_without_a_sandbox_creates_official_portfolios_and_books
+0.000 s: simulation_roundtrip_ore_api
+0.000 s: creditsimulation_mapper_roundtrip_legacy_example_43_3_ts
+0.000 s: an_active_csa_flag_without_details_is_refused
+0.000 s: golden_roundtrip_fx_forward
+0.000 s: golden_roundtrip_exotic_rainbow_option
+0.004 s: roundtrip_market_Legacy_Example_47_market
+0.003 s: plan_instrument_trade_id_matches_minted_trade_id
+0.000 s: parse_market_data_throws_on_unrecognised_date_format
+0.000 s: nettingsetdefinitions_roundtrip_ore_api
+0.000 s: map_currency_definition_to_domain_with_all_fields
+0.000 s: equity_mapper_roundtrip_worst_of_basket_swap
+0.000 s: performance_option_01_reverse
+0.000 s: credit_mapper_holds_the_dropped_elements_of_a_synthetic_cdo
+0.001 s: mapper_roundtrip_forward_bond_reverse
+0.000 s: scan_nonexistent_directory_returns_empty_result
+0.000 s: golden_roundtrip_exotic_equity_accumulator_single_name
+0.029 s: roundtrip_market_Academy_TA001_Equity_Option_marketdata
+0.000 s: parse_fixings_preserves_trailing_zeros_in_value
+0.000 s: conventions_cross_currency_fix_float_optional_fields_survive
+1.081 s: a run's configuration imports and exports as the same files
+0.000 s: golden_roundtrip_hybrid_generic_trs_convertible_bond
+0.000 s: parse_market_data_throws_on_one_token_line
+0.002 s: currency_config_roundtrip_currencies_xml
+0.000 s: a yield curve with every segment element round trips
+0.000 s: creditsimulation_mapper_roundtrip_credit_portfolio_model
+0.000 s: credit_mapper_roundtrip_index_cds
+0.001 s: conventions_roundtrip_main_conventions_xml
+0.022 s: roundtrip_market_Academy_FC003_Reporting_Currency_marketdata
+0.000 s: golden_roundtrip_bond_credit_bond_option
+0.000 s: counterpartyinformation_roundtrip_sa_ccr
+0.000 s: the trailing zeros of a document value survive the export
+0.072 s: conventions_fx_option_round_trips
+0.027 s: roundtrip_fixings_Input_fixings_20160205
+0.000 s: golden_roundtrip_ir_fra
+0.000 s: crossassetmodel_roundtrip_hw_historical_calibration_pca
+0.003 s: roundtrip_market_OREPython_Example_8_Example_62_market
+0.000 s: parse_fixings_accepts_yyyymmdd_date
+0.000 s: validate_currency_with_zero_fractions_per_unit
+0.000 s: equity_mapper_roundtrip_accumulator
+0.000 s: map_currency_definition_without_optional_fields
+0.000 s: credit_mapper_roundtrip_credit_linked_swap
+0.000 s: golden_roundtrip_bond_credit_callable_bond
+0.000 s: bond_repo_forward
+0.049 s: ore_run_document_analytics_round_trip_over_the_corpus
+0.000 s: export_portfolio_unknown_type_is_skipped
+0.000 s: equity_double_barrier_option_reverse
+0.000 s: pricingengines_roundtrip_main_xml
+0.000 s: a refusal says how many errors it left out
+0.008 s: roundtrip_market_Exposure_Input_market_inflation
+0.002 s: import_currency_config_from_currencies_xml
+0.000 s: golden_roundtrip_scripted_irregular_yyiis
+0.000 s: golden_roundtrip_ir_dur_adjusted_cms
+0.000 s: fx_double_barrier_option_forward
+0.000 s: equity_mapper_roundtrip_outperformance_option
+0.042 s: roundtrip_harness_walks_only_the_kind_it_is_given
+0.000 s: envelope_roundtrip_reproduces_the_generated_envelope
+0.000 s: import_portfolio_with_context_swap_has_instrument
+0.000 s: nettingsetdefinitions_roundtrip_initial_margin_dim
+0.000 s: mapper_roundtrip_swaption_european_reverse
+0.000 s: mapper_roundtrip_fx_option_reverse
+0.000 s: roundtrip_harness_first_difference_is_empty_for_equal_documents
+0.000 s: credit_mapper_holds_the_dropped_elements_of_a_cds
+0.000 s: conventions_zero_inflation_index_rebasing_events_are_counted
+0.000 s: ore_run_document_setup_refuses_what_it_cannot_hold
+0.000 s: export_all_rounding_types
+0.379 s: a segment naming a convention the tenant does not hold is refused
+0.000 s: a collection or a binding the mapper does not know is an error
+0.003 s: import_portfolio_gives_every_trade_an_ore_id_and_type
+0.267 s: an import naming a file the input lacks is refused before it writes
+0.000 s: a_forward_bonds_settlement_premium_and_flag_survive_the_round_trip
+0.000 s: parse_memory_report_sent_as_warning_maps_to_debug
+0.003 s: plan_creates_portfolios_and_books_from_portfolio_files
+0.000 s: export_single_currency_to_xml
+0.000 s: golden_roundtrip_ir_swap_digital_cms_spread_option
+0.000 s: import_portfolio_with_context_fx_forward_has_instrument
+0.002 s: roundtrip_fixings_Legacy_Example_61_fixings
+0.385 s: an equity curve naming a joined calendar ORE accepts is stored
+0.000 s: golden_roundtrip_bond_option_strike_price_strike_yield
+0.000 s: multiple known pairs: each checked independently
+0.345 s: a party sees only its own run settings
+0.000 s: golden_roundtrip_equity_variance_swap
+0.000 s: golden_roundtrip_exotic_equity_cliquet_option
+0.000 s: golden_roundtrip_commodity_swap_lme_al_avg_alt
+0.000 s: mapper_roundtrip_capfloor_forward
+0.000 s: golden_roundtrip_commodity_swaption_nymex_ng
+0.002 s: roundtrip_market_Academy_TA002_IR_Swap_market
+0.000 s: parse_market_data_reports_duplicate_as_warning_by_default
+0.000 s: credit_mapper_holds_the_dropped_elements_of_an_index_cds
+0.000 s: golden_roundtrip_equity_digital_option
+0.000 s: golden_roundtrip_scripted_basket_option2
+0.000 s: the_option_block_survives_the_round_trip
+0.140 s: roundtrip_market_Exposure_Input_market_flipview
+All tests passed (483161 assertions in 667 test cases)
+
+
+1/1 Test #72: ores.ore.core.tests ..............   Passed   28.98 sec
+
+The following tests passed:
+	ores.ore.core.tests
+
+100% tests passed, 0 tests failed out of 1
+
+Total Test time (real) =  29.07 sec

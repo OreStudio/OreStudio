@@ -119,18 +119,20 @@ public:
      * @brief Build, on this machine, the packages the compute grid would receive for a
      * report, and unpack them.
      *
-     * Runs a temporary report instance of the package kind for the definition. The
-     * instance runs the real steps that prepare the engine's input and stops before the
-     * grid, so the packages are the ones a production run would send. The command waits
-     * for the instance to finish, then downloads every package it stored and unpacks
-     * each into its own folder under @p out_dir.
+     * Runs a temporary report instance of the package kind for the definition, which is
+     * named rather than identified: the name is resolved within the party the session is
+     * signed in to. The instance runs the real steps that prepare the engine's input and
+     * stops before the grid, so the packages are the ones a production run would send.
+     * The command waits for the instance to finish, then downloads every package it
+     * stored and unpacks each into its own folder under @p out_dir.
      *
-     * Marks command failure when no session is established, when the trigger is
-     * refused, when the instance fails or when the wait times out.
+     * Marks command failure when no session is established, when the name resolves to no
+     * definition or to more than one, when the trigger is refused, when the instance
+     * fails or when the wait times out.
      */
     static void process_build_packages(std::ostream& out,
                                        ores::nats::service::nats_client& session,
-                                       const std::string& report_definition_id,
+                                       const std::string& report_definition_name,
                                        const std::string& out_dir,
                                        std::chrono::seconds timeout);
 

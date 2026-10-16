@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 44B275EC-DC37-4961-80EF-9D79D4C186FB
+:END:
+#+title: Task: Migrate FPML, crypto, flags and ip2country onto the org dataset pipeline
+#+description: Bring the four remaining populate pipelines onto the ores.codegen.dataset archetypes now that the populate archetypes are generic.
+#+type: task
+#+level: s1
+#+filetags: :finish-moving-the-hand-written-sql-onto-models:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:95848D5B-B353-4633-BEB7-A8B6D26A03C3][Finish moving the hand-written SQL onto models]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move the crypto, flags, ip2country and FPML populate SQL onto the
+org dataset pipeline, now that the ores.sql.populate archetypes are
+generic.
+
+Four datasets still come from the old pipeline:
+=sql_dataset_refdata.mustache=, =sql_populate_refdata.mustache=, and
+the bespoke =images_generate_sql.py= and =fpml_parser.py= generators.
+None of them reads a dataset model.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:95848D5B-B353-4633-BEB7-A8B6D26A03C3][Finish moving the hand-written SQL onto models]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+* Promoted from capture
+
+Captured 2026-09-18 in the product backlog; promoted preserving the UUID.
+
+** What
+
+Move the crypto, flags, ip2country and FPML populate SQL onto the
+org dataset pipeline, now that the ores.sql.populate archetypes are
+generic.
+
+Four datasets still come from the old pipeline:
+=sql_dataset_refdata.mustache=, =sql_populate_refdata.mustache=, and
+the bespoke =images_generate_sql.py= and =fpml_parser.py= generators.
+None of them reads a dataset model.
+
+** Why
+
+The generic pipeline has no consumers, so nothing exercises it. Every
+dataset name in the archetypes now comes from the dataset model
+itself ({{model_name}}, {{flags_dataset}}), which was proven by
+rendering a synthetic dataset end to end. Moving the four live
+datasets across gives the pipeline its real users back and lets the
+old templates and generators be deleted.
+
+** Work
+
+1. Give each dataset a =dataset_overview.org= with
+   =#+type: ores.codegen.dataset=, =#+name:=, =#+prefix:= and a
+   =:ores.sql.populate.enabled: true= drawer.
+2. Translate each =manifest.json= into the payload the archetypes read
+   (=catalogs.json=, =datasets.json=, =tags.json=,
+   =methodologies.json=; dependencies ride on =datasets.json=). Names
+   differ: =subject_area= vs =subject_area_name=, =catalog= vs
+   =catalog_name=, =coding_scheme= vs =coding_scheme_code=,
+   =source_system= vs =source_system_id=, =license= vs
+   =license_info=, =artefact_type= vs =asset_type=.
+3. The missing archetypes are [[id:9B900D8C-8F98-4733-96AF-2C838370ED9C][Add the dataset archetypes the
+   four-dataset migration needs]]: image artefacts, the ip2country
+   artefact plus TSV import, and FPML per-entity refdata. This capture
+   depends on that task and does not repeat its work.
+4. Delete the old templates, the four generators and the stale
+   =ores.codegen/models/= references once the new output is
+   byte-identical.
+
+** References
+
+- =projects/ores.codegen/library/templates/ores.sql.populate.*.org= —
+  the generic archetypes.
+- [[id:7917CA28-A69D-4FA5-A95B-B0346C73272A][Decommission the legacy ores.codegen bash scripts]] — the task that
+  made the archetypes generic.
+
+** See also
+
+- [[id:69796171-66F4-4459-913D-01523FC27E54][Codegen recipes]]

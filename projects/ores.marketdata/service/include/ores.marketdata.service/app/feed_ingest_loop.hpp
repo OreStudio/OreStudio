@@ -64,6 +64,29 @@ make_feed_series(const domain::feed_binding& binding,
                  const std::string& service_account);
 
 /**
+ * @brief The dates one tick is recorded under: the day it was published, and the close
+ * of the last completed business day.
+ *
+ * A report that values at the previous business day's close asks ORE for a market data
+ * date, and ORE reads a time series by the date each observation carries. A live
+ * producer holds only the value it has now, so a deployment whose feeds started today
+ * would have no close for yesterday and every end-of-day report would fail on a
+ * valuation date with no quotes. Recording each observation under the close as well
+ * gives the series a valuation date's worth of history from the producer's first tick,
+ * so a fresh environment can value a report at the close it values at without anyone
+ * backfilling dates by hand.
+ *
+ * One business day is as far back as this reaches: one is what an end-of-day report
+ * asks for, and a longer lookback would be history the producer has no state for. The
+ * time of day is kept, so one date's rows stay in the order they arrived and a reader
+ * that takes the last one takes the newest close. A producer that publishes at the
+ * weekend records no second date, because the close already carries the last business
+ * day's ticks.
+ */
+ORES_MARKETDATA_SERVICE_EXPORT std::vector<std::chrono::system_clock::time_point>
+observation_dates(std::chrono::system_clock::time_point published_at);
+
+/**
  * @brief The ingest loop: one subscription over every producer's ticks, and one
  * path for every tick, whatever its asset class.
  *

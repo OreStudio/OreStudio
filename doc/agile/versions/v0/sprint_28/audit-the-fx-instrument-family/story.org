@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: CB068089-426F-4F08-AE58-0CAAD36DC43A
+:END:
+#+title: Story: Audit the FX instrument family against the data-oriented design guidelines
+#+description: Review the seven FX instrument models and their generated artefacts against the Regime 2 data-oriented design checklist, and record what holds and what does not.
+#+type: story
+#+level: s2
+#+filetags: :audit-the-fx-instrument-family:sprint_28:v0:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Establish, with evidence, whether the FX instrument family's persisted data
+model meets the data-oriented design guidelines, and record the findings so the
+remediations can be planned.
+
+Bonds were reviewed this way first and were the method's pilot. FX was never
+reworked to the method, so the question here is different: not whether the tree
+still holds up, but whether it was ever built to the rules.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The review is done and written up. It is not yet agreed. |
+| Waiting on    | Nothing.                               |
+| Next          | Agree the review and decide the remediations. |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+- Every Regime 2 decision check is walked over the family's seven entity models, with the evidence for each result.
+- The invariant checks are spot-checked once, with what was read stated.
+- Each finding is mapped to a criterion and carries file-and-line evidence.
+- The review separates a defect from a recorded decision.
+- The review states what it did not check.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9F5AE053-FBD3-4E4C-BE77-FB261E60A0A7][Review the FX family's data model]] | DONE | 2026-10-16 | 2026-10-16 | Walk the Regime 2 checklist over the seven FX instrument models, their generated tables and C++, and the ORE import and export seam, and record the findings as [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]]. |
+
+* Decisions
+
+- The review is read-only. Filing the remediations is a separate decision, taken
+  through the backlog once the findings are agreed.
+- The remediations are staged as seven units under
+  [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the
+  instrument table rule]], which the review narrowed to the deviations it
+  found.
+
+* Out of scope
+
+- The FX reference data: =currency_pair=, =currency_pair_convention=,
+  =fx_option_convention= and =fx_volatility_config=. The family's links to them
+  are reviewed, the entities themselves are not.
+- The ORE binding generator. The review records that the FX bindings lack the
+  lexical form; changing the generator is a different work item.
+- The ten FX trade-type codes that route to no instrument table.

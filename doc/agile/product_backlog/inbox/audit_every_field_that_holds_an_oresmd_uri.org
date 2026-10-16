@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 97A5488A-358F-4DD4-91DC-7DEA810B9778
+:END:
+#+title: Audit every field that holds an oresmd URI
+#+description: One validator was written for one column. The same URI vocabulary appears in other fields that nothing validates, so the same defect can exist unnoticed elsewhere. Find every column that holds an oresmd URI, give each the validation or a reason it does not have one, and pin what each field is allowed to name rather than only that the URI parses.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Find every column that holds an oresmd URI, and see that each either carries the
+validation or records why it does not. Where a field names something, pin what it
+is allowed to name, not only that the URI parses.
+
+The vocabulary appears in more places than the one that prompted this. The market
+series `oresmd_uri`. The synthetic feed configs' target URI. The vintage series URI
+on the IR curve generation config. The reference curve on a bond issue, which now
+has a validator. Any curve or index reference on trades, credit, volatility and the
+rest. Search the models and the schema rather than working from memory, because the
+list above is what one person happened to notice.
+
+* Why
+
+`ores_marketdata_validate_curve_series_fn` was written for a single column,
+`bond_issue.reference_curve_id`, and wired into that model's generated insert
+trigger. One column is not the class.
+
+The defect that started this was possible because the ORE key parser takes the
+curve segment of `ZERO/RATE/ccy/curve/daycounter/tenor` verbatim and nothing checks
+what it may contain, so a producer that spelled it as an internal identifier and a
+producer that spelled it as a symbolic name both succeeded. A validator that only
+proves the URI parses would have accepted the bad one, which is why the grammar has
+to say what each field names.
+
+Two properties found while fixing that one column will shape every validator here.
+Market series are party-scoped, so a key that ignores the party can match another
+party's series. And retiring a tenant leaves its market data current, so a stale
+tenant's rows stay visible to anything that reads series without scoping on a
+current tenant.
+
+* References
+
+- The bond issue field and its validator, added while pricing a report run's bonds.
+- `ores_marketdata_validate_curve_series_fn`, which reads the series URI rather
+  than joining the identity projection, because a series inserted by SQL has no
+  projection row until a backfill runs.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what an inbox capture is.

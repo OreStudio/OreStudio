@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: 93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF
+:END:
+#+title: Story: Fix the defects the population and report work exposed
+#+description: Defects found while populating the ACME books and proving a report runs over them. None is about the trade population itself, and each was filed against that story because that is where it surfaced.
+#+type: story
+#+level: s2
+#+filetags: :inbox:product_backlog:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C0ECCF7D-1D5C-4367-9C6E-A9A062BA4F89][Give the as-of read microsecond precision]] | BACKLOG | | | datetime::to_db_string formats to the second while parts written in one transaction land microseconds apart, so a bound taken from one version row can fall inside its neighbour's window. The composite versioning test widens each bound by a second to compensate, which is a test hiding a defect rather than proving the code. |
+| [[id:37A9FCA1-EB22-4DAB-9B6E-FA58F4CB01F6][Stop the infinity sentinel losing its value through a time_point]] | BACKLOG | | | datetime::from_iso8601_utc("9999-12-31 23:59:59+00") round-trips to 1816-03-30. The infinity sentinel marks the current row everywhere, so any code that round-trips it through a time_point silently produces 1816. Establish whether this is confined to the as-of read or is a general fault. |
+| [[id:43641A03-D2F3-4156-8DF7-CAEB08F2DA83][Make a stream overlap visible rather than fatal]] | BACKLOG | | | ensure_stream treats JSStreamSubjectOverlapErr as fatal, so one stale stream that claims a subject a service now wants stops that service booting and takes the whole fleet target down. The only diagnostic is one ERROR line. A stale stream should be reported and reconciled, not an environment-wide outage. |
+| [[id:B14B058D-6EBF-453B-90A5-F635B4E253D4][Make the environment reset clear the broker]] | BACKLOG | | | compass db recreate is the clean-slate reset everyone reaches for, and it leaves JetStream untouched. compass nats purge is the command that clears it, and it matches only streams whose names start with the lowercase environment prefix, so a hand-made stream is invisible to it. Ten streams and 398 messages survived a recreate. |
+| [[id:74BE7F11-9B64-4000-9D79-9DA3C3F1C4EA][Tell the caller the tenant is still provisioning]] | BACKLOG | | | bootstrap setup prints 'System provisioned. Tenant ready to work in.' and exits after 2 steps, while the tenant's own 7-step workflow runs for about four more minutes as a separate instance the command does not follow. Two agents misdiagnosed the system from that output; one published reference data by hand to work around a fault that did not exist. |
+| [[id:C56065A2-FB59-4B46-A35E-0D0D1A635433][Let a second tenant setup complete]] | BACKLOG | | | A second tenant_setup_workflow run cannot finish. publish_bundle fails at marketdata.fx_driver_rates_2026 with 'p_params.party_id is required to publish market data observations', because the step resolves the actor's default party, which is now a trading party, instead of the tenant's system party its own comment says it acts as. |
+| [[id:FC5C30B2-CE58-4189-84FC-F971EC127142][Explain why the standalone trade step converges for one party and not three]] | BACKLOG | | | Re-running generate_trades as a standalone workflow start converges for ACMCOR and then fails for the other three with 'The party holds no account that may trade'. The same configs converge when driven from the shell, and all four converged inside the provisioning run. The empty answer comes from the account read under that token. |
+| [[id:2C115655-2E32-41D8-A19D-09AD7A43724D][Store the errors a report run produces]] | DONE | | 2026-10-16 | A run whose analytics fail is recorded as completed, and the failure survives only in the engine's log inside the output tarball. The report should carry its own errors in a table, so a reader opening the report sees them: trade-level errors such as a trade that would not build, report-level errors such as an analytic that failed, and whatever further level the engine distinguishes. |
+| [[id:0349A777-2F79-4DC2-BCFB-002E1D7E04D1][Stamp a workflow's completion and activity]] | BACKLOG | | | completed_at and last_event_at are never written. All 50 workflow instances and all 828 steps have both NULL, while 25 instances sit in the completed FSM state with a populated result_json, and the tenant_setup instance that provisioned ACME is completed with its result and no timestamp. So a finished run and a hung run are indistinguishable to anything that polls, which is how a completed provision was twice reported as a stall at publish_bundle. Write the completion and the last event, and log every step transition so a reader can see where a run is. |
+
+* Decisions
+
+* Out of scope
+
+-

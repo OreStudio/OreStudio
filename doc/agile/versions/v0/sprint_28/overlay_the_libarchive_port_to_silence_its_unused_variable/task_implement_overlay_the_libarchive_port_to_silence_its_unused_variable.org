@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: F63D7737-362D-4A58-826B-D45A32A40EB7
+:END:
+#+title: Task: Add the libarchive overlay port
+#+description: Initial task for: Overlay the libarchive port to silence its unused variable
+#+type: task
+#+level: s1
+#+filetags: :overlay_the_libarchive_port_to_silence_its_unused_variable:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C06A524E-2551-40CD-B8C5-B4927749FB0D][Overlay the libarchive port to silence its unused variable]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The macOS vcpkg install reports no unused-variable warning from the libarchive port, and libarchive still builds.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C06A524E-2551-40CD-B8C5-B4927749FB0D][Overlay the libarchive port to silence its unused variable]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- An overlay port for libarchive lists CMAKE_REQUIRE_FIND_PACKAGE_MbedTLS in MAYBE_UNUSED_VARIABLES.
+- The overlay differs from the pinned port by that entry and a comment only.
+- vcpkg selects the overlay and the port rebuilds.
+
+* Plan
+
+Copy the pinned port into =build/cmake/overlays/common/libarchive= and add
+=CMAKE_REQUIRE_FIND_PACKAGE_MbedTLS= to =MAYBE_UNUSED_VARIABLES=. The overlay
+directory is already on =VCPKG_OVERLAY_PORTS= (CMakeLists.txt:30), so nothing
+else needs to point at it.
+
+Copy rather than patch, because the change is to the portfile and the overlay
+is the portfile. Keep the copy byte-identical apart from the one entry and a
+comment, so that a reviewer can diff it against the submodule and a future bump
+is a straight re-copy.
+
+Verify by building, not by reading: diff the copy against the pinned port for
+the first two acceptance items, then reconfigure so vcpkg installs from the
+overlay and rebuilds the port.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Overlay files | 6 (portfile, vcpkg.json, usage, wrapper, 2 patches) | =ls build/cmake/overlays/common/libarchive= | d89b3c0a53 |
+| Lines differing from the pinned port | 14 added: 13 comment, 1 variable | =diff -u vcpkg/ports/libarchive/portfile.cmake build/cmake/overlays/common/libarchive/portfile.cmake= | working tree |
+| Files byte identical to the pinned port | 5 of 6 | =cmp= on each | working tree |
+| Port version the overlay declares | 3.8.9, matching the baseline | =grep version build/cmake/overlays/common/libarchive/vcpkg.json= | d89b3c0a53 |
+| libarchive package ABI after the overlay | ae79bd3af120dde78cc32a7ac1dcd501677552779c117d1aed52148130eb1e55 | configure log | working tree |
+
+* Notes
+
+macOS is the only platform that reaches the warning: the variable is passed
+behind =VCPKG_TARGET_IS_OSX=, so a Linux run cannot reproduce the warning or
+prove it gone. The Linux configure can only prove that the overlay is selected
+and that the portfile still runs.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The overlay is in place at =build/cmake/overlays/common/libarchive=, with =
+CMAKE_REQUIRE_FIND_PACKAGE_MbedTLS= added to =MAYBE_UNUSED_VARIABLES=, which is
+the remedy vcpkg's own message names.
+
+It differs from the pinned port by fourteen added lines: thirteen of comment
+explaining why it exists and when to drop it, and the one variable. The other
+five files are byte identical to =vcpkg/ports/libarchive=.
+
+Reconfiguring picks it up and rebuilds the port, so the overlay is both
+selected and valid: vcpkg reports
+=libarchive[bzip2,core,crypto,lz4,lzma,xar,zstd]:x64-linux@3.8.9 -- .../build/cmake/overlays/common/libarchive=,
+logs =installing overlay port from here=, and the configure completes with the
+project linking the rebuilt package.
+
+The macOS warning itself is not reproduced here, because the variable is only
+passed on OSX. What the Linux evidence establishes is that the overlay is used
+and that the portfile runs; silencing the warning follows from the entry being
+in the list the check consults.

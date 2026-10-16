@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: F387B1AA-B374-5926-AB3E-A604924FFFD7
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the trade_generation_configs commands from the shell?
+#+description: Every command the trade_generation_configs submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:trade_generation_configs:
+
+This file documents the trade_generation_configs resource at the shell, one section per command. Every command is a subcommand of =trade_generation_configs=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: B1E83E8D-D7CB-5922-8C33-4360B36F051E
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs.list=.
+
+#+name: trade_generation_configs-list
+#+begin_src ores-shell :tangle trade_generation_configs-list.ores :exports none
+trade_generation_configs list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 46F59550-4551-51EF-B6E1-9546BBBD3CE7
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs get <id>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs.get=.
+
+#+name: trade_generation_configs-get
+#+begin_src ores-shell :tangle trade_generation_configs-get.ores :exports none
+trade_generation_configs get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 84F84C1A-3EFF-59DE-93CB-F99056BFD833
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs get-many <id>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs.get_many=.
+
+#+name: trade_generation_configs-get-many
+#+begin_src ores-shell :tangle trade_generation_configs-get-many.ores :exports none
+trade_generation_configs get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: 922C8117-72F3-5C84-89DE-51F7BD9C73D7
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs add <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs.put=.
+
+#+name: trade_generation_configs-add
+#+begin_src ores-shell :tangle trade_generation_configs-add.ores :exports none
+trade_generation_configs add __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: 95998DDF-C29B-5954-9D54-65E184A80268
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs set <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs.put=.
+
+#+name: trade_generation_configs-set
+#+begin_src ores-shell :tangle trade_generation_configs-set.ores :exports none
+trade_generation_configs set 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: DB07F854-70F8-59C3-8AC4-4ED7DD2775E8
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs put-many --count <n> <id> <name> <description> <asset_class_code> <min_tenor_code> <max_tenor_code> <min_notional> <max_notional> <as_of_date> <seed> <enabled> <reference_curve_id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs.put_many=.
+
+#+name: trade_generation_configs-put-many
+#+begin_src ores-shell :tangle trade_generation_configs-put-many.ores :exports none
+trade_generation_configs put-many --count 1 00000000-0000-0000-0000-000000000000 __none__ __none__ __none__ __none__ __none__ 1 1 1970-01-01 0 false __none__ system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 45063D10-8C98-55A2-8A1B-4DC3A9FE6F80
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs delete <id> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs.delete=.
+
+#+name: trade_generation_configs-delete
+#+begin_src ores-shell :tangle trade_generation_configs-delete.ores :exports none
+trade_generation_configs delete 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 7EBF325B-AE10-52B5-8BA2-80F6468108EB
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs delete-many <id> <reason> <commentary>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs.delete_many=.
+
+#+name: trade_generation_configs-delete-many
+#+begin_src ores-shell :tangle trade_generation_configs-delete-many.ores :exports none
+trade_generation_configs delete-many 00000000-0000-0000-0000-000000000000 system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: D4659174-895F-53F8-B230-2D9431B091D2
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs versions <id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs_versions.list=.
+
+#+name: trade_generation_configs-versions
+#+begin_src ores-shell :tangle trade_generation_configs-versions.ores :exports none
+trade_generation_configs versions 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: 8F6739E4-4D98-5F4F-9E91-29966C86116E
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+trade_generation_configs version <id> --version <n>
+#+end_example
+
+It is addressed at =synthetic.v1.trade_generation_configs_versions.get=.
+
+#+name: trade_generation_configs-version
+#+begin_src ores-shell :tangle trade_generation_configs-version.ores :exports none
+trade_generation_configs version 00000000-0000-0000-0000-000000000000 --version 1
+#+end_src
+

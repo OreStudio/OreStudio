@@ -111,6 +111,10 @@ public:
      * Deletes the scheduler job and clears scheduler_job_id on the definition.
      * Skips definitions that are not currently scheduled.
      *
+     * The definition keeps the run grant it holds. Consent to run belongs to
+     * the report and serves an on-demand run as well as a schedule, so
+     * unscheduling withdraws the schedule and not the consent.
+     *
      * @param def      The definition to unschedule.
      * @param actor    Authenticated username. See schedule_one.
      * @return true  — job was removed.
@@ -158,7 +162,8 @@ private:
     std::expected<boost::uuids::uuid, std::string> grant_runs(const domain::report_definition& def);
 
     /**
-     * @brief Asks IAM, on behalf of the person unscheduling, to revoke a grant.
+     * @brief Asks IAM, on behalf of the person scheduling, to take back a grant
+     * a schedule that was not recorded would have acted under.
      */
     std::expected<void, std::string> revoke_runs(const boost::uuids::uuid& grant_id);
 

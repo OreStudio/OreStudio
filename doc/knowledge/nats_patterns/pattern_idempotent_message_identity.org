@@ -97,9 +97,36 @@ Three rules:
 
 * In ORE Studio
 
-Workflow step commands carry the step id, which is the run's own record of the
-work, and the completion path is keyed by it. The engine's dispatch headers
-carry the step and instance identity on every `js_publish`.
+Both mechanisms are in use, on the messages that have an identity of their own.
+
+*The publisher side.* `ores::nats::headers::with_publish_identity()` adds the
+`Nats-Msg-Id` header, and does nothing when handed an empty identity, so a
+message with no identity of its own is published without one rather than under
+a shared value. It is set from the work's own identifier:
+
+| Message | Identity |
+|---------+----------|
+| A workflow step command | The step id |
+| A step completion (the workflow helper, the compute batch bridge) | The step id |
+| A workflow start (the shell, IAM, DQ, inbox, ORE, reporting) | The run's instance id |
+
+A market tick and a liveness notice carry none: two ticks are genuinely two
+messages, and deduplicating them would discard real data.
+
+*The receiver side.* Each durable consumer already holds its own guard, which
+is the authoritative one because the stream's window is finite:
+
+- IAM's provisioning step reads the step's recorded outcome before doing the
+  work and replays it rather than repeating it.
+- The engine's step-completed handler treats an event for a step that is no
+  longer in progress as a duplicate and keeps the state it recorded.
+- The engine's start handler recognises a start for a run that already exists
+  and leaves the run alone.
+
+One limit is worth stating: a guard that reads and then writes is not atomic
+against two deliveries running at once on different replicas, so a redelivery
+that overlaps the original is still possible. Closing that needs a claim in the
+store rather than a header, and the step's own record is the natural place.
 
 * Related patterns
 

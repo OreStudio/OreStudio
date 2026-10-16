@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The menu structure now has a Bindings entry in Market data beside the Synthetic 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -58,7 +58,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web suite, packages/web | 1566 passed | =cd projects/ores.web/packages/web && npx vitest run= | 0e047ec801 |
 
 * Notes
 
@@ -86,3 +86,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The Market data area draws the *Bindings* card after *Synthetic*, for a person who holds =marketdata::feed_bindings:read=, and it opens =/market-data/bindings= with the area's trail. The words exist in all three languages: *Bindings*, *Liaisons*, *Vínculos*, and the card's title is held equal to the screen's title by the card test. The Market data menu entry now asks the same read, which the menu test requires so the area is offered to a person who holds only the bindings read.
+
+The one acceptance bullet still open is the French and Portuguese review: the words are written, and no speaker has read them yet.

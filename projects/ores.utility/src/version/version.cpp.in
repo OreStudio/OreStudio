@@ -25,7 +25,6 @@
  */
 #include "ores.utility/version/version.hpp"
 
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -33,6 +32,7 @@
 #include <utility>
 #include <vector>
 
+#include "ores.platform/environment/environment.hpp"
 #include "ores.platform/process/executable.hpp"
 
 namespace ores::utility::version {
@@ -82,9 +82,14 @@ manifest_fields parse_manifest(const std::string& text) {
  */
 std::vector<std::filesystem::path> manifest_candidates() {
     std::vector<std::filesystem::path> candidates;
-    if (const char* from_env = std::getenv("ORES_VERSION_MANIFEST"))
-        if (*from_env != '\0')
-            candidates.emplace_back(from_env);
+    // environment::get_value rather than std::getenv: the MSVC STL deprecates
+    // the latter in favour of _dupenv_s, which breaks this file on Windows
+    // Clang under -Werror=deprecated-declarations.
+    if (const auto from_env =
+            ores::platform::environment::environment::get_value("ORES_VERSION_MANIFEST");
+        from_env && !from_env->empty()) {
+        candidates.emplace_back(*from_env);
+    }
     const auto executable = ores::platform::process::executable_path();
     if (!executable.empty())
         candidates.push_back(executable.parent_path() / manifest_filename);

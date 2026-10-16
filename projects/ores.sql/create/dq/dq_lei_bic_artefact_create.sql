@@ -46,23 +46,3 @@ on ores_dq_lei_bic_artefact_tbl (lei);
 
 create index if not exists dq_lei_bic_artefact_bic_idx
 on ores_dq_lei_bic_artefact_tbl (bic);
-
--- Function to insert lei_bic into the artefact table
-create or replace function ores_dq_lei_bic_artefact_insert_fn(
-    p_dataset_id uuid,
-    p_tenant_id uuid,
-    p_lei text,
-    p_version integer,
-    p_bic text
-) returns void as $$
-begin
-    insert into ores_dq_lei_bic_artefact_tbl (
-        dataset_id, tenant_id, lei, version,
-        bic
-    )
-    values (
-        p_dataset_id, p_tenant_id, p_lei, p_version,
-        p_bic
-    );
-end;
-$$ language plpgsql;

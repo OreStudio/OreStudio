@@ -262,9 +262,15 @@ TEST_CASE("equity_mapper_roundtrip_accumulator", tags) {
     CHECK(!inst.underlying_name.empty());
     CHECK(inst.fixing_amount.to_double() > 0.0);
     CHECK(inst.knock_out_level.value_or(ores::utility::decimal::decimal{}).to_double() > 0.0);
+    CHECK(!inst.range_bounds_json.empty());
 
     const auto rt = equity_instrument_mapper::reverse_equity_accumulator(inst);
     REQUIRE(rt.EquityAccumulatorData);
+    REQUIRE(rt.EquityAccumulatorData->RangeBounds.RangeBound.size() == 2);
+    CHECK(rt.EquityAccumulatorData->RangeBounds.RangeBound[0].RangeTo == 4000.0f);
+    CHECK(rt.EquityAccumulatorData->RangeBounds.RangeBound[0].Leverage == 1.0f);
+    CHECK(rt.EquityAccumulatorData->RangeBounds.RangeBound[1].RangeFrom == 4000.0f);
+    CHECK(rt.EquityAccumulatorData->RangeBounds.RangeBound[1].Leverage == 2.0f);
 
     BOOST_LOG_SEV(lg, info) << "EquityAccumulator roundtrip passed. Amount: " << inst.fixing_amount;
 }
@@ -308,9 +314,19 @@ TEST_CASE("equity_mapper_roundtrip_worst_of_basket_swap", tags) {
     CHECK(!inst.currency.empty());
     CHECK(inst.notional.to_double() > 0.0);
     CHECK(!inst.basket_json.empty());
+    CHECK(!inst.initial_prices_json.empty());
+    CHECK(!inst.knock_out_levels_json.empty());
+    CHECK(!inst.fixed_trigger_levels_json.empty());
 
     const auto rt = equity_instrument_mapper::reverse_equity_worst_of_basket_swap(inst);
     REQUIRE(rt.EquityWorstOfBasketSwapData);
+    REQUIRE(rt.EquityWorstOfBasketSwapData->InitialPrices.InitialPrice.size() == 2);
+    CHECK(rt.EquityWorstOfBasketSwapData->InitialPrices.InitialPrice[0] == 3481.44f);
+    CHECK(rt.EquityWorstOfBasketSwapData->InitialPrices.InitialPrice[1] == 3714.24f);
+    REQUIRE(rt.EquityWorstOfBasketSwapData->KnockOutLevels.KnockOutLevel.size() == 4);
+    CHECK(rt.EquityWorstOfBasketSwapData->KnockOutLevels.KnockOutLevel[0] == 1.0f);
+    REQUIRE(rt.EquityWorstOfBasketSwapData->FixedTriggerLevels.FixedTriggerLevel.size() == 4);
+    CHECK(rt.EquityWorstOfBasketSwapData->FixedTriggerLevels.FixedTriggerLevel[0] == 0.75f);
 
     BOOST_LOG_SEV(lg, info) << "EquityWorstOfBasketSwap roundtrip passed. Basket: "
                             << inst.basket_json;

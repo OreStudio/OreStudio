@@ -81,6 +81,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            party_currency_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::party_currencies:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -121,6 +123,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            party_currency_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::party_currencies:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -161,6 +165,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            party_currency_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::party_currencies:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -201,6 +207,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            party_currency_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::party_currencies:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -241,6 +249,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            party_currency_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::party_currencies:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -281,6 +291,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            party_currency_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::party_currencies:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -321,6 +333,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            party_currency_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::party_currencies:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -361,6 +375,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            party_currency_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "refdata::party_currencies:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

@@ -140,10 +140,12 @@ public:
      * instead of through a subject that would answer it.
      */
     template <typename Message>
-    void publish(std::string_view subject, const Message& msg) {
+    void publish(std::string_view subject, const Message& msg, std::string_view identity = {}) {
         const auto& codec = ores::nats::default_wire_codec();
         const auto bytes = codec.encode(msg);
-        nats_.js_publish(subject, std::span<const std::byte>(bytes), headers());
+        nats_.js_publish(subject,
+                         std::span<const std::byte>(bytes),
+                         ores::nats::headers::with_publish_identity(headers(), identity));
     }
 
     /**

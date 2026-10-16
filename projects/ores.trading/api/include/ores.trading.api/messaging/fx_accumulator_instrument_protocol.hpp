@@ -50,6 +50,7 @@ struct fx_accumulator_instrument_write {
     std::string long_short;
     std::chrono::year_month_day start_date;
     std::optional<ores::utility::decimal::decimal> knock_out_barrier;
+    std::string range_bounds_json;
     std::string description;
 };
 

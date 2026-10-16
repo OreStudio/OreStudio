@@ -20,6 +20,8 @@
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
+#include "ores.synthetic.api/domain/step_subjects.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
@@ -40,10 +42,14 @@
 #include "ores.synthetic.core/messaging/market_data_provider_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/market_data_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/publish_from_dq_handler.hpp"
+#include "ores.synthetic.core/messaging/trade_generation_book_registrar.hpp"
+#include "ores.synthetic.core/messaging/trade_generation_config_registrar.hpp"
+#include "ores.synthetic.core/messaging/trade_generation_counterparty_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_parameter_definition_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_type_history_provider_registrar.hpp"
 #include "ores.synthetic.core/messaging/yield_curve_process_type_registrar.hpp"
+#include <array>
 #include <memory>
 #include <optional>
 
@@ -131,18 +137,51 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }
 
     // ----------------------------------------------------------------
+    // Trade generation configs and their two scope lists. The generator
+    // reads them through these subjects, so a service that omits them
+    // serves the configuration to nobody.
+    // ----------------------------------------------------------------
+    {
+        auto s = register_trade_generation_config_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
+        auto s = register_trade_generation_book_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+    {
+        auto s = register_trade_generation_counterparty_handlers(nats, ctx, verifier);
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
+    }
+
+    // ----------------------------------------------------------------
     // Publish-from-DQ workflow step handler
     // ----------------------------------------------------------------
     {
+        // The engine dispatches each step as a JetStream message on the stream
+        // the service ensures at start, so the subscription is durable on it
+        // and acknowledges only once the dataset has been published. A step
+        // dispatched while this service was restarting waits on the server
+        // instead of being discarded, and a step whose publish failed is
+        // redelivered rather than lost. The publish itself is an idempotent
+        // upsert, so a repeat changes nothing.
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
-        subs.push_back(
-            nats.queue_subscribe("synthetic.v1.ops.publish_feeds_from_dq",
-                                 "ores.synthetic.service",
-                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
-        subs.push_back(
-            nats.queue_subscribe("synthetic.v1.ops.publish_market_data_providers_from_dq",
-                                 "ores.synthetic.service",
-                                 [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        static constexpr std::array publish_subjects{
+            ores::synthetic::domain::publish_feeds_from_dq_step_subject,
+            ores::synthetic::domain::publish_market_data_providers_from_dq_step_subject};
+        const auto step_stream = ores::service::messaging::ensure_step_stream(
+            nats, "ores.synthetic.service", publish_subjects);
+        for (const auto subject : publish_subjects) {
+            subs.push_back(ores::service::messaging::subscribe_step_command(
+                nats,
+                subject,
+                "ores.synthetic.service",
+                step_stream,
+                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+        }
     }
 
     // ----------------------------------------------------------------

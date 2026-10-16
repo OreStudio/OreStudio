@@ -8,7 +8,7 @@
 #+filetags: :bring_the_service_code_onto_the_nats_patterns:sprint_28:v0:
 #+owner: marco
 #+branch: feature/bring-the-service-code-onto-the-nats-patterns
-#+pr:
+#+pr: 3355
 #+blocked_on:
 +#+blocked_since:
 +#+created: 2026-10-14
@@ -89,9 +89,18 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Consumer call sites | 3871 queue, 19 fan-out, 338 buffered, 3 durable | balanced-paren extraction over projects/ | =4fcab4aeed= |
+| Generated handler headers | 400, every one with a try/catch | scan for the AUTO-GENERATED marker | =4fcab4aeed= |
+| Hand-written handler headers with no catch | 30 of 89 | same scan, hand-written subset | =4fcab4aeed= |
+| Files calling log_handler_entry | 23 | grep -rl | =4fcab4aeed= |
+| Acknowledgment settings anywhere | 0 (=AckPolicy=, =AckWait=, =MaxDeliver=, =ManualAck=) | grep over projects/ | =4fcab4aeed= |
+| =Nats-Msg-Id= uses | 0 | grep over projects/ | =4fcab4aeed= |
 
 * Notes
+
+The inventory is at =evidence/inventory_nats_call_sites.org= beside this
+task. It classifies every call site against the library and names eight
+deviations (D1–D8) with the fix each needs.
 
 A starting lead from the pattern library's own reconnaissance, each to be
 re-derived and confirmed by the audit rather than trusted:
@@ -127,7 +136,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3355][#3355]] | [nats,service] Stream the remaining step-command subjects |
+| [[https://github.com/OreStudio/OreStudio/pull/3350][#3350]] | [nats,service] Cover every step-command subject with a stream |
 
 * Review
 

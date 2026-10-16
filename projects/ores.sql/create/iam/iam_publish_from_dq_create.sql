@@ -40,6 +40,15 @@
  * per legal entity, same as business units/portfolios/books). Idempotent
  * by (tenant_id, username): an account that already exists is skipped.
  *
+ * The target party is also written as the account's default party. A
+ * dataset is published once, against the one entity that employs the
+ * staff it carries -- acme.acme_uk.accounts against the UK party, and so
+ * on -- so the employing entity is a fact the publish already holds and
+ * not a choice to make. Left null, the account had a party only through
+ * ores_iam_account_parties_tbl, which for the ACME staff lists three of
+ * the four entities for everyone, so "which party does this person trade
+ * for" was unanswerable from the data.
+ *
  * An account's email is its sign-in address, and every address inside a
  * tenant names the tenant: the domain is the target tenant's hostname, the
  * name the sign-in path resolves the tenant by, not the corporate domain the
@@ -112,7 +121,7 @@ begin
 
         insert into ores_iam_accounts_tbl (
             id, tenant_id, version, account_type, username, full_name, email,
-            job_title, picture_code, modified_by, performed_by,
+            job_title, picture_code, default_party_id, modified_by, performed_by,
             change_reason_code, change_commentary, valid_from, valid_to
         ) values (
             v_account_id, p_target_tenant_id, 0, r.account_type, r.username, r.full_name,
@@ -121,7 +130,7 @@ begin
                     then split_part(r.email, '@', 1) || '@' || v_target_hostname
                 else r.username || '@' || v_target_hostname
             end,
-            r.job_title, nullif(r.photo_key, ''),
+            r.job_title, nullif(r.photo_key, ''), v_target_party_id,
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from organisation dataset',
             current_timestamp, ores_utility_infinity_timestamp_fn()

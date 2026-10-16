@@ -212,6 +212,34 @@ describe('the feed bindings of the party', () => {
         });
     });
 
+    it('narrows a page by the kind of its binding, named in the address', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [LIST]: { result: ok, feed_bindings: [], total: 0 },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/feed-bindings?offset=0&limit=15&f.producer_kind=VENDOR',
+        );
+        expect(response.statusCode).toBe(200);
+        expect(calls[0]?.body).toMatchObject({
+            filter: { party_id: PARTY, producer_kind: 'VENDOR', search: null },
+        });
+    });
+
+    it('refuses a narrowing by a member the resource does not offer', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/synthetic/feed-bindings?offset=0&limit=15&f.party_id=x',
+        );
+        expect(response.statusCode).toBe(400);
+        expect(calls).toEqual([]);
+    });
+
     it('refuses a ordering by a field the model did not make sortable', async () => {
         const { server, sessionId } = buildTestServer({});
         const response = await send(

@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 9624AACE-78F5-4094-A35E-2E2C3DDC2261
+:END:
+#+title: Task: Price the bonds a report run carries
+#+description: Task for: Implement the full report pipeline
+#+type: task
+#+level: s1
+#+filetags: :implement-the-full-report-pipeline:inbox:product_backlog:
+#+owner: marco
+#+branch: fix/price-bonds-in-report-runs
+#+pr: 3388
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4D3A5630-0398-4763-B44C-BDAFD012C267][Implement the full report pipeline]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A bond report run completes with its bonds priced. Today it builds no curve and no trade: the curve configuration names quote identifiers no producer publishes, so ORE cannot bootstrap the discount curves, and every bond then fails to resolve one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4D3A5630-0398-4763-B44C-BDAFD012C267][Implement the full report pipeline]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- The Acme curve configurations name only quotes the deployment's synthetic feeds publish
+- Every OIS pillar publishes under the tenor its curve configuration names
+- pricingstats.csv reports a non-zero NumberOfPricings per bond
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3388][#3388]] | [agile] Capture the audit of every field holding an oresmd URI |
+| [[https://github.com/OreStudio/OreStudio/pull/3382][#3382]] | [marketdata] Give a curve pillar the tenor its template names, and record a valuation-date close |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A bond report run prices its bonds. Verified end to end on a clean `compass db
+recreate`, a restart and one `bootstrap setup --profile acme_demo`, with nothing
+run by hand: all eight bonds show `NumberOfPricings=2` in `pricingstats.csv`, the
+log carries no `Failed to run analytics` and no `did not find object`, and the
+exported portfolio carries `ReferenceCurveId=GBP-SONIA` on each bond.
+
+Four independent causes had to fall, and only the first was expected.
+
+The curve series did not exist. A tenant held 271 market series and not one
+expressed a curve, so a bond could name nothing and the soft key had no target.
+The curve's definer now publishes its series, keyed by the oresmd URI of the
+curve's own coordinates and scoped by party.
+
+The market feed and the curve configuration spelled the same pillar two ways, and
+the configuration asked for a `1Y` tenor the market's convention does not define
+and a money-market segment the feed cannot produce. The one-year tenor is `12M`
+and the segment is gone, because an overnight RFR curve is OIS throughout.
+
+A live feed gave a fresh environment no close for the valuation date an
+end-of-day report asks for. The ingest loop now records each observation under
+the last completed business day's close as well as the day it arrived.
+
+And the trade named no curve. `bond_issue.reference_curve_id` holds an oresmd URI,
+a translator turns it into the ORE index name on export, and the name must be the
+market's own forwarding key, which direct engine runs confirmed: `GBP-SONIA`
+prices, while `GBP1D`, `Yield/GBP/GBP1D` and empty all reproduce the failure.
+
+The validator is projection-independent on purpose. The identity projection is
+written only on the C++ path, so a series inserted by SQL has no identity row
+until a backfill runs; a validator joining it would have refused every trade
+naming a freshly published curve.
+
+Left for a reviewer. The new column appears as a position on the generated shell
+command surface. `find_reference_curve_id` skips a party's curve whose URI carries
+no `curve_id`. And the commit trails a task in the product backlog whose story
+owns the wider pipeline rather than this arc's story.

@@ -50,14 +50,24 @@ publish_from_dq_handler::publish_from_dq_handler(ores::nats::service::client& na
     , ctx_(std::move(ctx)) {}
 
 void publish_from_dq_handler::handle(ores::nats::message msg) {
+    // A durable consumer answers every delivery, so the handler states the
+    // outcome on each path. The guard retries anything that returns without
+    // deciding, which is the one thing that must not happen silently.
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        // Not a step command at all, so there is no step to fail and nothing
+        // a second delivery would achieve.
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<ores::dq::messaging::publish_from_dq_command>(sv);
     if (!parsed) {
         wf->fail("Failed to decode publish_from_dq_command: " + std::string(parsed.error().what()));
+        ack.accept();
         return;
     }
     const auto& cmd = *parsed;
@@ -65,6 +75,7 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
     const auto fn_name = service::publish_from_dq_function(msg.subject);
     if (fn_name.empty()) {
         wf->fail("Cannot derive SQL function from subject: " + std::string(msg.subject));
+        ack.accept();
         return;
     }
 
@@ -103,11 +114,15 @@ void publish_from_dq_handler::handle(ores::nats::message msg) {
                                   << " updated=" << result.records_updated;
 
         wf->complete(rfl::json::write(result));
+        ack.accept();
 
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "publish_from_dq failed: fn=" << fn_name << " error=" << e.what();
         wf->fail(e.what());
+        // The failure reaches the engine, so the delivery is done with;
+        // redelivering would only report the same failure again.
+        ack.accept();
     }
 }
 

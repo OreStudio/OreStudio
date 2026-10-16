@@ -145,7 +145,6 @@ TEST_CASE("write_calendar_event_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto calendar_code_parent = ores::refdata::generators::generate_synthetic_calendar(ctx);
-    calendar_code_parent.change_reason_code = "system.test";
     // The parent calendar's insert trigger validates country_code
     // against the countries table for the write tenant, and the
     // synthetic calendar generator always emits the ZZ sentinel --
@@ -163,7 +162,6 @@ TEST_CASE("write_calendar_event_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto diary_entry_type_parent =
         ores::refdata::generators::generate_synthetic_diary_entry_type(ctx);
-    diary_entry_type_parent.change_reason_code = "system.test";
     ores::refdata::repository::diary_entry_type_repository diary_entry_type_repo;
     diary_entry_type_repo.write(party_ctx, diary_entry_type_parent);
     v.diary_entry_type = diary_entry_type_parent.code;

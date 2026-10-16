@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 8A68D53D-05A4-4C33-80E1-A0B24650045D
+:END:
+#+title: Task: Add the 320-minute cap to the Nightly Build step
+#+description: Initial task for: Cap the Nightly Build step below the six-hour job limit
+#+type: task
+#+level: s1
+#+filetags: :cap_the_nightly_build_step:sprint_28:v0:
+#+owner: marco
+#+branch: feature/cap-the-nightly-build-step
+#+pr: 3332
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3C3AF829-0A9F-434B-BF5D-5A3606CA8B57][Cap the Nightly Build step below the six-hour job limit]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A Nightly Build whose compile overruns stops with enough of the job left to persist its compiler cache.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3C3AF829-0A9F-434B-BF5D-5A3606CA8B57][Cap the Nightly Build step below the six-hour job limit]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- The Run CTest workflow step in nightly-linux.yml has timeout-minutes 320.
+- The remaining job budget covers the cache guard, delete and save.
+- A warm Nightly Build run is unaffected.
+
+* Plan
+
+Add =timeout-minutes: 320= to the Run CTest workflow step in
+nightly-linux.yml, the value continuous-linux.yml already uses.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Nightly Build clang-debug, 2026-10-15 | stopped at exactly 6h0m0s, the job maximum | =gh run view 38674811593= annotations | 6b76b8de89 |
+| Nightly Build gcc-debug, same run | exit 143 after 3h13m39s of a 6h limit | =gh run view 38674811593 --json jobs= | 6b76b8de89 |
+| Steps reached by gcc-debug before the shutdown | 3,419 of 7,383 | the job log | 6b76b8de89 |
+| =continuous-linux.yml= step cap | 320 minutes | =grep -n timeout-minutes .github/workflows/continuous-linux.yml= | cff0512898 |
+
+* Notes
+
+** Two failures in one run, only one of them a build problem
+
+The gcc job's exit 143 is a runner shutdown after 3h13m of a 6h limit, so it
+is infrastructure rather than a timeout, and no disk error appears in it.
+The clang job is different: it reached 6h0m0s to the second and was killed.
+
+** Why this is the job that overruns
+
+It is the heaviest configuration the repository builds -- linux-clang debug
+with both code coverage and memcheck, the two things every other job drops.
+
+** The same cap, for the same reason
+
+The earlier change added 320 minutes to =continuous-linux.yml= because an
+uncapped step runs to the 360-minute job limit and the job is then torn
+down about thirty seconds later, which cannot upload a compiler cache.
+=nightly-linux.yml= never got that cap.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3332][#3332]] | [ci] Cap the Nightly Build step below the six-hour limit |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The Run CTest workflow step in nightly-linux.yml is capped at 320 minutes,
+so a run whose compile overruns stops with roughly thirty minutes of job
+left for the cache guard and save.
+
+The gate passes 7 of 7 (classes =ci=, =docs=).
+
+Not verified here: no Nightly Build run has been cut by the new cap yet.
+The next run that overruns is the proof, and its compiler cache growing is
+the signal. The gcc job's runner shutdown in the same run is left alone:
+that is infrastructure, and no cap addresses it.

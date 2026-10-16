@@ -106,6 +106,8 @@ filter_condition(const std::optional<messaging::feed_bindings_filter>& filter) {
     std::vector<sqlgen::dynamic::Condition> r;
     if (filter->party_id)
         r.push_back(equals("party_id", filter_value(*filter->party_id)));
+    if (filter->producer_kind)
+        r.push_back(equals("producer_kind", filter_value(*filter->producer_kind)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
@@ -117,6 +119,12 @@ filter_condition(const std::optional<messaging::feed_bindings_filter>& filter) {
         for (const auto& v : *filter->party_id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("party_id", std::move(values)));
+    }
+    if (filter->producer_kind_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->producer_kind_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("producer_kind", std::move(values)));
     }
     if (filter->search && !filter->search->empty())
         r.push_back(contains_any({"source_name"}, *filter->search));

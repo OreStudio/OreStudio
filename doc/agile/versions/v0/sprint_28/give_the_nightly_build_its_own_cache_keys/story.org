@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: FC9DEEA3-58F1-4E00-985A-6DB12AA45DAF
+:END:
+#+title: Story: Give the Nightly Build its own cache keys
+#+description: The clang cache prefix is shared by continuous-linux.yml and nightly-linux.yml, but the two build the same variant with different flags: the nightly's debug jobs carry code coverage, so sccache keys those objects differently and the two caches hold objects the other cannot use. Restore takes the newest match, so whichever workflow ran last can hand the other a useless cache, and the prune step actively deletes the other's entry. Scope the compiler cache keys to the workflow, and lower the nightly ceiling so all six variants fit the 10 GB repository cap.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:sccache:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Each workflow restores only a cache built with its own flags, and all six Linux variants fit the cache cap.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- The continuous and nightly cache keys are disjoint.
+- Restore, save and prune all use the workflow-scoped key in both workflows.
+- The sum of the ceilings fits the 10 GB repository cap.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E5224AFE-5F63-4C2C-A035-FB9026889B81][Scaffold story: Give the Nightly Build its own cache keys]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:FCF997E8-0296-4F3A-B150-2F9F54DCC9DA][Scope the cache keys to the workflow]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Give the Nightly Build its own cache keys |
+
+* Decisions
+
+- *The cache key carries the workflow name.* A shared prefix is harmful because
+  the two workflows do not build the same objects for the two variants they
+  share. The Nightly debug jobs pass =code_coverage=1=, which adds
+  =-fprofile-arcs -ftest-coverage= to every compile line, and sccache hashes the
+  compile line. Continuous Linux would therefore restore a nightly entry it
+  cannot use, and the per-workflow prune step would delete the other workflow's
+  newest entry.
+- *One transitional legacy prefix stays in Continuous Linux.* The entries that
+  exist under the old prefix were built by the continuous jobs, so that workflow
+  restores them once while the scoped cache is cold. Remove the line after the
+  first warm continuous run.
+- *The Nightly ceiling falls to 1000M per variant.* Four nightly variants and
+  two continuous variants share one 10 GB repository cap, and the sum of the
+  ceilings must fit it.
+
+* Out of scope
+
+-

@@ -1300,6 +1300,8 @@ const fr: SourceCatalogue = {
                 'Placer les livres dans des portefeuilles, les classer et lire qui peut les voir.',
             conventions: "Définir les conventions d'instruments",
             conventionsBody: "Rédiger les termes qu'ORE utilise pour un instrument.",
+            tenors: 'Définir la résolution des ténors',
+            tenorsBody: 'Rédiger les ténors et les conventions qui les résolvent.',
             rescue: "Récupération d'accès",
             rescueBody: 'Aider quelqu’un qui ne peut pas se connecter, ou bloquer un compte.',
             audit: 'Connexions',
@@ -2766,6 +2768,136 @@ const fr: SourceCatalogue = {
             },
         },
 
+        tenors: {
+            new: 'nouveau',
+            none: "Choisissez d'abord un ténor ou une convention.",
+            pickFailed: "Les listes de sélection n'ont pas pu être lues. {message}",
+            choose: {
+                title: 'Choisir',
+                lead: "Ouvrez un ténor pour le corriger, ouvrez une convention pour corriger son ensemble, ou commencez l'un ou l'autre.",
+                search: 'Rechercher des ténors et des conventions',
+                startTenor: 'Nouveau ténor',
+                startConvention: 'Nouvelle convention',
+                tenors: 'Ténors',
+                conventions: 'Conventions',
+                emptyTenors: 'Aucun ténor ne correspond.',
+                emptyConventions: 'Aucune convention ne correspond.',
+                readFailed: "Le catalogue n'a pas pu être lu. {message}",
+                columns: {
+                    code: 'Code',
+                    kind: 'Type',
+                    unit: 'Unité',
+                    algorithm: 'Algorithme',
+                    version: 'Version',
+                },
+            },
+            tenor: {
+                title: 'Ténor',
+                lead: "Le code qu'une personne lit et la période qu'il nomme.",
+                open: "Ouvrez ou commencez d'abord un ténor.",
+                fields: {
+                    code: 'Code',
+                    displayName: 'Nom affiché',
+                    description: 'Description',
+                    sortOrder: 'Ordre de tri',
+                    kind: 'Type',
+                    unit: 'Unité',
+                    multiplier: 'Multiplicateur',
+                },
+            },
+            convention: {
+                title: 'Convention',
+                lead: "La règle qui transforme un libellé de ténor en date, et les ténors qu'elle résout.",
+                open: "Ouvrez ou commencez d'abord une convention.",
+                fields: {
+                    code: 'Code',
+                    description: 'Description',
+                    measuredFrom: 'Mesuré à partir de',
+                    resolutionAlgorithm: 'Algorithme de résolution',
+                    rollRule: 'Règle de report',
+                    oresmdUri: 'URI de données de marché',
+                },
+                members: "Ténors de l'ensemble",
+                memberNote:
+                    "Un ténor hors de l'ensemble n'est pas résolu par cette convention. La dérogation d'ancrage nomme le point à partir duquel cette convention compte ce ténor.",
+                anchorOverride: "Dérogation d'ancrage",
+                inSet: "Dans l'ensemble",
+                notInSet: "Hors de l'ensemble",
+                anchorNone: 'La valeur par défaut de la convention',
+            },
+            schedule: {
+                title: 'Le calendrier',
+                lead: 'Un axe de calendrier se déploie en échéances datées : celles dont un swap a besoin, chacune ajustée sur un calendrier.',
+                open: 'Ouvrez ou démarrez d’abord une convention.',
+                note: 'L’axe sur lequel la convention est reportée. Le déployer en échéances datées exige l’opération qui résout un ténor en date, que le serveur ne fournit pas encore.',
+                empty: 'Aucun axe de calendrier n’est servi.',
+                inUse: 'Utilisé par un ténor ici',
+            },
+            review: {
+                title: 'Revue',
+                lead: "Rien n'est écrit avant votre confirmation.",
+                nothing: "Rien n'a encore changé.",
+                count: '{count} changements diffèrent de la version lue.',
+                columns: {
+                    change: 'Changement',
+                    before: 'Avant',
+                    after: 'Après',
+                },
+                reason: 'Motif',
+                commentary: 'Commentaire',
+                commentaryRequired: 'Ce motif exige un commentaire.',
+                confirm: 'Enregistrer',
+                absent: 'Aucun',
+                what: {
+                    newTenor: 'Nouveau ténor',
+                    newConvention: 'Nouvelle convention',
+                    tenor: 'Ténor {part}',
+                    convention: 'Convention {part}',
+                    member: 'Appartenance',
+                },
+                stepLabel: {
+                    choose: 'Choisir',
+                    tenor: 'Ténor',
+                    convention: 'Convention',
+                    review: 'Revue',
+                    terms: 'Termes',
+                    schedule: 'Le calendrier',
+                },
+            },
+            problems: {
+                nameTenor: 'Nommez le ténor : un code et un nom affiché.',
+                chooseKindAndUnit: 'Choisissez le type et l’unité du ténor.',
+                sortOrderWhole: 'L’ordre de tri est un nombre entier.',
+                multiplierWhole: 'Le multiplicateur est un nombre entier.',
+                nameConvention: 'Nommez la convention.',
+                chooseAnchorAlgorithmRoll:
+                    'Choisissez l’ancrage, l’algorithme et la règle de report.',
+                header: 'Encore nécessaire :',
+            },
+            refusal: {
+                heading: 'Le serveur a refusé le changement.',
+                atStep: 'L’étape qui a refusé est {step}.',
+                kept: 'Ce qui était déjà écrit est conservé. Vos changements sont conservés.',
+                walkBack: "Aller à l'étape",
+            },
+            outcome: {
+                title: 'Résultat',
+                lead: 'Les changements sont enregistrés.',
+                written: 'Les changements sont enregistrés.',
+                reads: 'Une transaction qui choisit ce ténor lit ces termes.',
+                history: "Voir l'historique",
+                list: 'Retour à la liste',
+                another: 'Un autre ténor',
+                done: 'Quitter les ténors',
+            },
+            history: {
+                title: 'Historique',
+                lead: 'Chaque version enregistrée et ce qui a changé dans chacune.',
+                none: 'Ouvrez un ténor pour voir son historique.',
+                note: "Le serveur n'a pas de version brouillon, donc l'historique ne montre que les versions enregistrées.",
+            },
+        },
+
         books: {
             noName: 'Pas encore de nom',
             noStatus: 'Aucun statut',
@@ -3148,6 +3280,9 @@ const fr: SourceCatalogue = {
         'Start the market feeds': 'Démarrer les flux de marché',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             'Démarre les données de marché synthétiques à partir desquelles les courbes et les prix du locataire sont construits.',
+        'Generate the trades': 'Générer les transactions',
+        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
+            "Enregistre une configuration de génération de transactions pour chaque partie que le point de départ nomme, et écrit la population qu'il indique dans les livres propres de cette partie.",
         'Hand the tenant to its administrator': 'Remettre le locataire à son administrateur',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Démarre la propre exécution de configuration du locataire, qui s'exécute en tant qu'administrateur du locataire et termine le locataire.",
@@ -3360,6 +3495,7 @@ const fr: SourceCatalogue = {
         },
         fields: {
             image_id: 'Drapeau',
+            producer_kind: 'Type',
             version: 'Version',
             modified_by: 'Modifié par',
             performed_by: 'Effectué par',
@@ -3464,6 +3600,7 @@ const fr: SourceCatalogue = {
             component_index: 'Indice',
         },
         choices: {
+            producer_kind: { SYNTHETIC: 'Synthétique', VENDOR: 'Fournisseur' },
             process_type: {
                 geometric: 'Géométrique',
                 arithmetic: 'Arithmétique',
@@ -3696,6 +3833,27 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        bindings: {
+            title: 'Liaisons',
+            lead: "Les flux qui écrivent des données de marché pour cette partie : la source que chacun nomme, la série qu'il écrit et s'il tourne.",
+            allKinds: 'Tous les types',
+            series: 'Série',
+            status: 'Statut',
+            lastTick: 'Dernier tick',
+            feed: 'Flux',
+            folder: 'Dossier',
+            ticksPerHour: 'Ticks par heure',
+            seriesHint: "La série dans laquelle cette liaison écrit, et l'URL oresmd qui la nomme.",
+            vendorNote:
+                'Une liaison de flux réel est en lecture seule ici. Seule une liaison de flux synthétique peut changer.',
+            statuses: {
+                running: 'En cours',
+                stopped: 'Arrêté',
+                disabled: 'Désactivé',
+                quiet: 'Silencieux',
+                unsupported: 'Non pris en charge',
+            },
+        },
         feeds: {
             targetUri:
                 'La série dans laquelle ce flux écrit. Chaque tick du flux est stocké comme une observation de la série que nomme cette URI.',
@@ -3707,6 +3865,9 @@ const fr: SourceCatalogue = {
                 synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
+                bindings: 'Liaisons',
+                bindingsBody:
+                    'Les flux qui écrivent des données de marché pour cette partie : la série que chacun écrit et s’il tourne.',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },

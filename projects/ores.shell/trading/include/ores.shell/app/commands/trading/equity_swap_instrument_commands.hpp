@@ -88,8 +88,9 @@ public:
 
     /**
      * @brief add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <basket_json>
-     * <currency> <notional> <return_type> <start_date> <maturity_date> <long_short>
-     * <payment_frequency_code> <description> <reason> <commentary>
+     * <initial_prices_json> <knock_out_levels_json> <fixed_trigger_levels_json> <currency>
+     * <notional> <return_type> <start_date> <maturity_date> <long_short> <payment_frequency_code>
+     * <description> <reason> <commentary>
      */
     static void process_add(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -97,8 +98,9 @@ public:
 
     /**
      * @brief set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <basket_json>
-     * <currency> <notional> <return_type> <start_date> <maturity_date> <long_short>
-     * <payment_frequency_code> <description> <reason> <commentary> [--version <n>]
+     * <initial_prices_json> <knock_out_levels_json> <fixed_trigger_levels_json> <currency>
+     * <notional> <return_type> <start_date> <maturity_date> <long_short> <payment_frequency_code>
+     * <description> <reason> <commentary> [--version <n>]
      */
     static void process_set(std::ostream& out,
                             ores::nats::service::nats_client& session,
@@ -106,8 +108,9 @@ public:
 
     /**
      * @brief put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id>
-     * <underlying_name> <basket_json> <currency> <notional> <return_type> <start_date>
-     * <maturity_date> <long_short> <payment_frequency_code> <description> <reason> <commentary>
+     * <underlying_name> <basket_json> <initial_prices_json> <knock_out_levels_json>
+     * <fixed_trigger_levels_json> <currency> <notional> <return_type> <start_date> <maturity_date>
+     * <long_short> <payment_frequency_code> <description> <reason> <commentary>
      */
     static void process_put_many(std::ostream& out,
                                  ores::nats::service::nats_client& session,

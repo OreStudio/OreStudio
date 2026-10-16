@@ -130,7 +130,6 @@ TEST_CASE("write_workflow_step_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto workflow_id_parent = ores::workflow::generators::generate_synthetic_workflow_instance(ctx);
-    workflow_id_parent.change_reason_code = "system.test";
     ores::workflow::repository::workflow_instance_repository workflow_id_repo;
     workflow_id_repo.write(party_ctx, workflow_id_parent);
     v.workflow_id = workflow_id_parent.id;

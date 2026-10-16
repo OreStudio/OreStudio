@@ -143,7 +143,6 @@ TEST_CASE("write_csa_eligible_currency_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto csa_id_parent = ores::refdata::generators::generate_synthetic_csa(ctx);
-    csa_id_parent.change_reason_code = "system.test";
     // csa's own mandatory party_id FK (session-set in
     // production) needs an active party too: seed one, attached under the
     // tenant's root party like the direct-party branch below.
@@ -162,7 +161,6 @@ TEST_CASE("write_csa_eligible_currency_publishes_an_event", tags) {
     csa_id_parent.party_id = csa_id_party.id;
     auto csa_id_parent_netting_set_parent =
         ores::refdata::generators::generate_synthetic_netting_set(ctx);
-    csa_id_parent_netting_set_parent.change_reason_code = "system.test";
     // netting_set carries a mandatory party_id FK of its own
     // (session-set in production), so seed a party for it before its write,
     // exactly as the direct-parent branch does.

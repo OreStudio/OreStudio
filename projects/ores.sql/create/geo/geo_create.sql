@@ -19,3 +19,5 @@
  */
 
 \ir ./geo_ip2country_create.sql
+
+\ir ./geo_ip2country_functions_create.sql

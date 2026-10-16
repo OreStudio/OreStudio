@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: F8DF1A62-3405-436E-96C6-56D6BAC8775E
+:END:
+#+title: Story: Run code coverage on the Continuous debug builds
+#+description: Continuous Linux builds linux-clang-debug without code coverage, so the 3-hourly CI reports no coverage to CDash and the coverage trend has a sample once a day at best. The build is now fast enough to afford the instrumentation: after the compiler cache warmed, clang-debug fell from 5h03m30s to 4h08m39s and clang-release from 2h59m27s to 2h24m15s. Turn code_coverage on for the Continuous debug jobs, so that Continuous and Nightly measure the same thing on the same configuration.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:coverage:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Continuous Linux debug build collects code coverage and submits it to the Continuous track on CDash.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- continuous-linux.yml passes code_coverage=1 when the build type is debug.
+- The Continuous debug job still fits inside the 320-minute step cap.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E457BBD2-3740-43B9-8BE8-5EB799748CBC][Scaffold story: Run code coverage on the Continuous debug builds]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A15EBCD7-9EEA-46C4-B7C0-0EAC4B212B36][Turn on coverage for the Continuous debug job]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Run code coverage on the Continuous debug builds |
+
+* Decisions
+
+- *Coverage runs on the debug builds of both tiers.* The Nightly Build already
+  collects coverage and memcheck on its debug jobs, and Continuous now collects
+  coverage on its debug job. The same configuration is therefore measured on
+  both tiers, and CDash carries a coverage sample every three hours instead of
+  once a day.
+- *Memcheck stays on the Nightly Build.* Valgrind is the heaviest cost in the
+  suite and it needs the extra dev packages. Coverage alone is the part that
+  belongs on every debug build.
+- *The first Continuous run after this change starts cold.* The coverage flags
+  enter the compile line, so sccache hashes the objects differently and the
+  stored clang-debug entry no longer matches.
+
+* Out of scope
+
+- The memcheck pass, which stays on the Nightly Build alone.
+- The cron interval. The debug job now runs longer than the three-hour
+  interval, so the next interval must be derived from a measured run of the
+  covered build rather than from the pre-coverage figures.

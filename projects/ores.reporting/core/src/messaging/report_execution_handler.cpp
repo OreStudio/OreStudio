@@ -29,7 +29,9 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.reporting.core/service/engine_error_log.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
+#include "ores.reporting.core/service/report_error_recorder.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
@@ -42,6 +44,7 @@
 #include <chrono>
 #include <format>
 #include <rfl/json.hpp>
+#include <span>
 #include <string_view>
 
 namespace ores::reporting::messaging {
@@ -115,6 +118,14 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
             inst->completed_at = std::chrono::system_clock::now();
             inst->output_message = error_message;
             inst_svc.save_instance(*inst);
+            // The failure is recorded against the run in the same place the
+            // engine's own errors go, so a reader sees one answer to what went
+            // wrong rather than two. This branch runs once, for the first
+            // writer, so the run's error is written once.
+            service::report_error_recorder recorder(tenant_ctx);
+            const auto failure = recorder.record_run_failure(instance_id, error_message);
+            if (!failure.empty())
+                BOOST_LOG_SEV(lg(), error) << failure;
             BOOST_LOG_SEV(lg(), info)
                 << "Marked report instance " << instance_id << " as failed: " << error_message;
         }
@@ -431,6 +442,35 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
     }
 }
 
+void report_execution_handler::record_engine_errors(const std::string& tenant_id,
+                                                    const std::string& instance_id,
+                                                    std::span<const std::byte> archive) {
+    try {
+        const auto read = service::read_engine_errors_from_archive(archive);
+        if (!read.ok()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "The errors of report instance " << instance_id << " were not read: "
+                << read.error;
+            return;
+        }
+        if (read.errors.empty())
+            return;
+
+        service::report_error_recorder recorder(
+            ores::database::service::tenant_context::with_tenant(ctx_, tenant_id));
+        const auto failure = recorder.record_engine_errors(instance_id, read.errors);
+        if (!failure.empty()) {
+            BOOST_LOG_SEV(lg(), error) << failure;
+            return;
+        }
+        BOOST_LOG_SEV(lg(), info) << "Recorded " << read.errors.size() << " engine error(s) for "
+                                  << "report instance " << instance_id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Recording the errors of report instance " << instance_id
+                                   << " failed: " << e.what();
+    }
+}
+
 void report_execution_handler::collect_results(ores::nats::message msg) {
     auto wf = workflow_step_context::from_message(nats_, msg);
     if (!wf)
@@ -549,6 +589,14 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
         }
         instance->output_storage_key = key;
         inst_svc.save_instance(*instance);
+
+        // The errors the run produced belong to the run, and the account of them
+        // is the archive that has just been fetched: the engine wrote its own
+        // log into that output. Reading it here is what makes a run that failed
+        // its analytics distinguishable from one that did not.
+        record_engine_errors(req.tenant_id,
+                             req.report_instance_id,
+                             std::as_bytes(std::span(body.data(), body.size())));
 
         collect_compute_results_result result;
         result.success = true;

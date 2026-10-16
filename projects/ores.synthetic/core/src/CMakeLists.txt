@@ -42,6 +42,7 @@ target_include_directories(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.synthetic.api.lib
+        ores.trading.api.lib
         ores.nats.lib
         ores.dq.api.lib
         ores.iam.api.lib

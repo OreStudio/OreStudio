@@ -1,0 +1,405 @@
+:PROPERTIES:
+:ID: 0CD68B09-6EBC-4180-A298-0CC386590F31
+:END:
+#+title: ores.synthetic.trade_generation_config
+#+description: Codegen entity model for the synthetic trade_generation_config table; a named, party-scoped recipe for generating a synthetic trade population.
+#+type: ores.codegen.entity
+#+component: synthetic
+#+filetags: :model:entity:synthetic:
+#+entity_singular: trade_generation_config
+#+entity_plural: trade_generation_configs
+#+entity_title: Trade Generation Config
+#+brief: A named, party-scoped recipe for generating a synthetic trade population.
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+A named recipe for the trades one party's books receive. It is the
+population as configuration: a reviewer reads the row and the two scope
+lists rather than a command.
+
+The row names the booking party, the instrument family, the tenor and
+notional bands, the as-of anchor and the seed. The book scope and the
+counterparty scope are the two multi-valued field sets and live in child
+tables, one row per book and one row per counterparty, the same
+one-config-many-children shape =fx_spot_generation_config= uses for its
+=gmm_component= rows and =ir_curve_generation_config= for its
+=ir_curve_template_entry= rows.
+
+The booking party is the row's own =party_id=. The writer sets
+=app.current_party_id= to it before each trade, because the trading
+insert triggers overwrite the instrument's party from session state.
+
+The two scope lists are the child tables =trade_generation_book= and
+=trade_generation_counterparty=, one row per book and one row per
+counterparty. Both are edited from this configuration's detail dialog.
+
+The population is a function of the pair (seed, as-of anchor). The seed
+pins the shape of the population and not the identity of its rows. The
+same pair emits the same rows; a later anchor moves the population
+forward rather than repeating it. See
+[[id:6E648B05-2ADB-4E03-89CB-D4670CB72FC3][Investigation: Populating ACME
+with a trade population]], "What makes a seed deterministic".
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     synthetic
+:profile:       uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:      uuid
+:cpp_type:  boost::uuids::uuid
+:primary_key: true
+:END:
+
+Surrogate UUID uniquely identifying this configuration.
+
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:natural_key: true
+:server_owned: true
+:END:
+
+Owning party (legal entity) this configuration belongs to. It is also
+the booking party: the party whose books the population is booked into,
+and the party the writer sets =app.current_party_id= from. A reference
+to =ores_refdata_parties_tbl=, held as a plain uuid as every
+neighbouring synthetic generation config holds its party.
+
+#+begin_src cpp :name generator
+uuid_gen()
+#+end_src
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:natural_key: true
+:sortable: true
+:searchable: true
+:END:
+
+Stable name for this configuration, unique per tenant and party.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun())
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Free-text description of the configuration.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** asset_class_code
+:PROPERTIES:
+:type:          text
+:cpp_type:      std::string
+:nullable:      false
+:default_value: "interest_rates"
+:END:
+
+Instrument family this configuration populates, as an asset class
+(references =asset_class_code.code=: =interest_rates=, =fx=, =equity=,
+=credit=, =commodity=, =inflation= or =bond=). It is a reference to the refdata catalogue
+rather than a parallel vocabulary, and it is validated at insert time by
+the generated asset-class validator. One configuration carries one
+family, so covering the book takes one configuration per family.
+
+#+begin_src cpp :name generator
+std::string("interest_rates")
+#+end_src
+
+** min_tenor_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Short end of the tenor band this configuration draws from (references
+=tenor.code=, e.g. "1Y"). A soft FK resolved at the application layer
+through =ores.refdata.api/domain/tenor_resolution.hpp=, not a DB trigger:
+=tenor.org= emits no single-argument validator to reuse, matching the
+precedent =ir_curve_template_entry='s own tenor columns set.
+
+#+begin_src cpp :name generator
+std::string("1Y")
+#+end_src
+
+** max_tenor_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Long end of the tenor band (references =tenor.code=, e.g. "10Y"). Its
+order against =min_tenor_code= is not checkable in SQL, because a tenor
+is a label the refdata catalogue resolves; the generator resolves both
+and refuses a band whose ends do not order.
+
+#+begin_src cpp :name generator
+std::string("10Y")
+#+end_src
+
+** min_notional
+:PROPERTIES:
+:type:          numeric(38, 12)
+:cpp_type:      ores::utility::decimal::decimal
+:nullable:      false
+:END:
+
+Smallest notional a generated trade may carry, in the trade's own
+currency. An exact decimal, per the exact-numbers rule; the floor and
+the ceiling of the band bound a draw, they do not describe one trade.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("100000").value()
+#+end_src
+
+** max_notional
+:PROPERTIES:
+:type:          numeric(38, 12)
+:cpp_type:      ores::utility::decimal::decimal
+:nullable:      false
+:END:
+
+Largest notional a generated trade may carry. Must be at least
+=min_notional=, which the SQL check on this table enforces.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("10000000").value()
+#+end_src
+
+** as_of_date
+:PROPERTIES:
+:type:        date
+:cpp_type:    std::chrono::year_month_day
+:nullable:    false
+:filterable:  true
+:END:
+
+The as-of anchor every generated trade date is an offset from. It is an
+input, never a read of the clock inside a field generator, so a
+re-provision at a later anchor moves the population instead of shifting
+stored rows. The population is a function of this column and =seed=
+together.
+
+#+begin_src cpp :name generator
+std::chrono::year_month_day{std::chrono::year{2026}/1/2}
+#+end_src
+
+** seed
+:PROPERTIES:
+:type:          bigint
+:cpp_type:      std::uint64_t
+:nullable:      false
+:default_value: 1
+:END:
+
+Seed for the generator's random engine. Two runs at the same (seed,
+as-of) pair emit the same population, which makes a review a rebuild and
+a diff. It pins the shape of the population, not the identity of rows: a
+moved anchor deliberately moves the population, and a stable trade
+identifier is derived from stable inputs rather than from this number
+alone.
+
+#+begin_src cpp :name generator
+std::uint64_t{1}
+#+end_src
+
+** enabled
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+Whether the configuration is active and eligible for generation.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
+** reference_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+The curve the population's bonds are discounted on, as the oresmd URI of
+the market series that curve is. An ORE bond resolves its discount curve
+by the index the trade names and the market's own forwarding decides which
+curve that index is, so the trade states a curve and the market decides the
+rest.
+
+The population is kept in one currency, the first book's own, so one curve
+serves every trade it emits. A population whose book keeps no currency a
+curve exists for states none, and its bonds then name no curve and are
+refused by the engine's builder rather than priced on a guess.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_synthetic_trade_generation_configs_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+Both policies are emitted into this table's own create script by the model
+flags above, the shape =ores.analytics.credit_simulation_config= uses. The
+sibling synthetic configs instead carry hand-written policies in
+=synthetic_rls_policies_create.sql=, which they need because their policies
+hop through a parent container's scope; this configuration is scoped to one
+party and needs no hop.
+
+** Checks
+
+The bands are constrained for order and for non-negativity. The tenor
+band is not: a tenor is a label, and only the refdata catalogue can say
+which of two labels is longer.
+
+| expression                                  |
+|---------------------------------------------|
+| "name" <> ''                                |
+| "min_tenor_code" <> ''                      |
+| "max_tenor_code" <> ''                      |
+| "min_notional" >= 0                         |
+| "max_notional" >= "min_notional"            |
+| "seed" > 0                                  |
+
+* Insert trigger
+** Validations
+
+| column           | validation_function                       |
+|------------------+-------------------------------------------|
+| asset_class_code | ores_refdata_validate_asset_class_code_fn |
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: both
+:order_by:     id
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_generation_config
+:entity_plural_short:   trade_generation_configs
+:entity_singular_words: trade generation config
+:entity_plural_words:   trade generation configs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <cstdint>
+#include <string>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column           | header       |
+|------------------+--------------|
+| name             | Name         |
+| asset_class_code | Asset Class  |
+| as_of_date       | As Of        |
+| seed             | Seed         |
+| enabled          | Enabled      |
+| modified_by      | Modified By  |
+| version          | Version      |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.synthetic.api/domain/trade_generation_config.hpp
+:domain_class:            synthetic::domain::trade_generation_config
+:protocol_include:        ores.synthetic.api/messaging/trade_generation_config_protocol.hpp
+:collection_name:         trade_generation_configs
+:key_field:               id
+:get_request_class:       synthetic::messaging::get_trade_generation_configs_request
+:get_response_class:      synthetic::messaging::get_trade_generation_configs_response
+:get_message_type:        get_trade_generation_configs_request
+:save_request_class:      synthetic::messaging::save_trade_generation_config_request
+:save_response_class:     synthetic::messaging::save_trade_generation_config_response
+:save_message_type:       save_trade_generation_config_request
+:save_request_item_field: data
+:delete_request_class:    synthetic::messaging::delete_trade_generation_config_request
+:delete_response_class:   synthetic::messaging::delete_trade_generation_config_response
+:delete_message_type:     delete_trade_generation_config_request
+:END:
+
+*** Detail fields
+
+| field            | label            | widget                   | type      | is_key | is_required | placeholder                       |
+|------------------+------------------+--------------------------+-----------+--------+-------------+-----------------------------------|
+| name             | Name             | nameEdit                 | line_edit |        | true        | Enter config name                 |
+| description      | Description      | descriptionEdit          | line_edit |        |             | Enter description                 |
+| asset_class_code | Asset Class      | assetClassCodeEdit       | line_edit |        | true        | interest_rates, fx, equity, credit, commodity, inflation, or bond |
+| min_tenor_code   | Min Tenor        | minTenorCodeEdit         | line_edit |        | true        | Short end of the band, e.g. 1Y    |
+| max_tenor_code   | Max Tenor        | maxTenorCodeEdit         | line_edit |        | true        | Long end of the band, e.g. 10Y    |
+| min_notional     | Min Notional     | minNotionalEdit          | line_edit |        | true        | Smallest notional to draw         |
+| max_notional     | Max Notional     | maxNotionalEdit          | line_edit |        | true        | Largest notional to draw          |
+| as_of_date       | As Of            | asOfDateEdit             | line_edit |        | true        | Anchor date, YYYY-MM-DD           |
+| seed             | Seed             | seedEdit                 | line_edit |        | true        |                                   |
+| enabled          | Enabled          | enabledCheck             | check_box |        |             |                                   |
+
+*** Columns
+
+| enum_name         | field            | header       | type      | width |
+|-------------------+------------------+--------------+-----------+-------|
+| Name              | name             | Name         | string    | 200   |
+| AssetClassCode    | asset_class_code | Asset Class  | string    | 110   |
+| MinTenorCode      | min_tenor_code   | Min Tenor    | string    | 100   |
+| MaxTenorCode      | max_tenor_code   | Max Tenor    | string    | 100   |
+| AsOfDate          | as_of_date       | As Of        | date      | 110   |
+| Seed              | seed             | Seed         | int       | 100   |
+| Enabled           | enabled          | Enabled      | bool      | 80    |
+| Version           | version          | Version      | int       | 80    |
+| ModifiedBy        | modified_by      | Modified By  | string    | 120   |
+| RecordedAt        | recorded_at      | Recorded At  | timestamp | 150   |
+
+* See also
+
+- [[id:96AB808A-DF49-410F-8A90-D1065A3716AC][ores.synthetic]] — component group overview.
+- [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][FX Spot Generation Config]] — the sibling sub-configuration, and the shape this one follows.
+- [[id:A1310399-0ACD-4FA1-9645-AB24B3C8BEB8][Trade Population Weights]] — the product mix a population is sized against.

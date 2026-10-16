@@ -187,7 +187,6 @@ TEST_CASE("write_book_change_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto functional_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
-    functional_currency_parent.change_reason_code = "system.test";
     ores::refdata::repository::currency_repository functional_currency_repo;
     functional_currency_repo.write(party_ctx, functional_currency_parent);
     v.functional_currency = functional_currency_parent.iso_code;
@@ -195,7 +194,6 @@ TEST_CASE("write_book_change_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto party_id_parent = ores::refdata::generators::generate_synthetic_party(ctx);
-    party_id_parent.change_reason_code = "system.test";
     // Only one root party (parent_party_id null) is allowed per tenant:
     // attach to the existing root party instead of creating a second one.
     auto party_id_existing = ores::refdata::repository::party_repository().read_latest(party_ctx);
@@ -212,7 +210,6 @@ TEST_CASE("write_book_change_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto parent_portfolio_id_parent = ores::refdata::generators::generate_synthetic_portfolio(ctx);
-    parent_portfolio_id_parent.change_reason_code = "system.test";
     // The book_change and this portfolio belong to the same
     // party, so the portfolio carries the party already seeded for
     // the book_change: under any other party the stored row would belong to a

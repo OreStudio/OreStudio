@@ -78,7 +78,7 @@ ir_curve_feed::ir_curve_feed(
     // codec refuses fails when the feed is built and not on the first tick.
     for (const auto& e : entries_) {
         const auto key = ores::marketdata::core::make_pillar_quote_key(
-            currency_code_, index_tenor, e.start_tenor_code, e.start_date, e.end_date);
+            currency_code_, index_tenor, e.start_tenor_code, e.start_date, e.end_date, e.point_id);
         datum_uris_.push_back(ores::marketdata::core::pillar_datum_uri(key));
         auto series = ores::marketdata::core::pillar_series_uri(key);
         if (std::ranges::find(series_uris_, series) == series_uris_.end())

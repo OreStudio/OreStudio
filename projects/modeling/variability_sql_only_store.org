@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 5B0A3DD1-A705-439B-9FA8-E5FEB9C1B267
+:END:
+#+title: Profile: SQL-only store
+#+description: Enablement-only profile: the table is generated, the client surface is not -- for a store whose only reader is a SQL function, so no C++, no TypeScript and no shell recipe is emitted.
+#+type: profile
+#+level: cross
+#+filetags: :codegen:variability:profile:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+This page is a named element-scope [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD profile]] instantiating [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE
+Studio Variability Model]] § "Profiles: naming a recurring configuration point". A model file binds to
+this profile (rather than authoring each feature individually) to
+guarantee the exact feature combination below, with no ad hoc variation.
+
+* Purpose
+
+Some tables are read by a SQL function and by nothing else. The country of an
+IP address is one: =ores_geo_ip2country_lookup_fn= answers it inside the
+database, and the service that wants the answer calls the function rather than
+a repository. Generating the usual client surface for such a table produces a
+domain class, a repository, a service, a protocol, a shell command and a
+TypeScript twin that no caller ever reaches.
+
+The table is still worth generating. Structure is what this profile leaves
+alone: the store comes from the same model, with the same columns, checks and
+indexes as any other entity. What goes is the surface around it.
+
+* Reference entity
+
+[[id:A6CA5E44-D28C-498A-911E-AD426B74B57D][ores.geo.ip2country]] — IPv4
+ranges and the country they resolve to, written by the dq publish path and read
+by =ores_geo_ip2country_lookup_fn=. Its key is an =int8range=, which no C++
+type maps, so the client surface could not be generated for it even if a caller
+wanted one.
+
+* Assignments
+
+This profile carries no feature Assignments -- see Purpose. Its only effect is
+the Physical space table below.
+
+* Physical space
+
+One row per physical-space address this profile fixes admission for -- any
+address not listed here is left to whatever else resolves it (a more
+specific/general override on the binding entity, or the node's
+own =#+default:=). An address here is a *technical space*, not a leaf: the
+enablement lookup walks from the node up through its facet and space, so
+disabling =ores.cpp= withdraws every C++ facet the entity would otherwise claim,
+and the same for the two spaces beside it. =ores.sql= is left alone, so the
+store and its artefact table are still generated.
+
+| Address | Enabled |
+|---------------------------------------+---------|
+| ores.cpp                              | false   |
+| ores.doc                              | false   |
+| ores.ts                               | false   |
+| ores.sql.schema.notify_trigger        | false   |
+| ores.sql.schema.notify_trigger_drop   | false   |
+
+The notify trigger goes with the surface it feeds. Its subscriber is the C++
+eventing pipeline, which this profile withdraws, so the trigger would raise a
+=pg_notify= per row into an empty room -- and the tables this profile serves are
+loaded in bulk, where a notification per row is the publish path's whole cost.
+A store that gains a consumer takes a profile that keeps the trigger.
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the axis definitions and feature bundles this profile composes.
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] — the catalogue this profile is listed in.

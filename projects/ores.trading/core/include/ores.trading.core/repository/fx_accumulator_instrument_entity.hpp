@@ -55,6 +55,7 @@ struct fx_accumulator_instrument_entity {
     std::string long_short;
     std::string start_date;
     std::optional<std::string> knock_out_barrier;
+    std::optional<std::string> range_bounds_json;
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

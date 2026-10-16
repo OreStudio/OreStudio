@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: CD448C32-785F-48D9-8DB5-31C9FBC60566
+:END:
+#+title: Story: Fix the deprecated getenv in the build stamp
+#+description: The build-stamp change reads ORES_VERSION_MANIFEST with std::getenv. The MSVC STL deprecates it in favour of _dupenv_s, so every Windows job fails under -Werror=deprecated-declarations and all four Nightly Windows configurations are red. The codebase provides an environment provider that wraps this for exactly that reason; use it, and keep the utility component free of raw std::getenv.
+#+type: story
+#+level: s2
+#+filetags: :ores.utility:windows:build:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Windows build compiles version.cpp under -Werror, and no component reads the environment with std::getenv directly.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- version.cpp.in calls the platform environment provider instead of std::getenv.
+- The heading <cstdlib> include goes with it.
+- ores.utility.lib builds and links.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D4E7E57C-3451-4848-9D91-CC7BD17976EE][Scaffold story: Fix the deprecated getenv in the build stamp]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F7C3FA80-ED8C-498B-98F4-0CC0E7A2644F][Read the version manifest variable through the environment provider]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Fix the deprecated getenv in the build stamp |
+
+* Decisions
+
+- The fix goes through the existing environment provider rather than
+  defining =_CRT_SECURE_NO_WARNINGS=. The provider exists for this reason
+  and says so in its own header, so suppressing the warning here would
+  leave the next caller to trip over it.
+- The manifest variable is read as an =optional<string>=, so the emptiness
+  check moves with the type.
+- The project has hit this exact deprecation before, in the compute
+  commands, so the rule is not new: read the environment through the
+  provider, never with =std::getenv=.
+
+* Out of scope
+
+- The stale generated shell scripts, the missing =report_trigger_types=
+  directory and the stale backlog index the gate reported. They are
+  unrelated drift and belong to the change that produced them.
+- The Nightly Build clang job's six-hour timeout, which is a separate
+  failure in the same run.

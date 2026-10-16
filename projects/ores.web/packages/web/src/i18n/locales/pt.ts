@@ -1291,6 +1291,8 @@ const pt: SourceCatalogue = {
                 'Colocar livros em carteiras, classificá-los e ler quem os pode ver.',
             conventions: 'Definir convenções de instrumentos',
             conventionsBody: 'Redigir os termos que o ORE usa para um instrumento.',
+            tenors: 'Definir a resolução dos prazos',
+            tenorsBody: 'Redigir os prazos e as convenções que os resolvem.',
             rescue: 'Recuperação de acesso',
             rescueBody: 'Ajudar quem não consegue entrar, ou impedir que uma conta seja usada.',
             audit: 'Inícios de sessão',
@@ -2757,6 +2759,135 @@ const pt: SourceCatalogue = {
             },
         },
 
+        tenors: {
+            new: 'novo',
+            none: 'Escolha primeiro um prazo ou uma convenção.',
+            pickFailed: 'As listas de seleção não puderam ser lidas. {message}',
+            choose: {
+                title: 'Escolher',
+                lead: 'Abra um prazo para o corrigir, abra uma convenção para corrigir o seu conjunto, ou comece um dos dois.',
+                search: 'Pesquisar prazos e convenções',
+                startTenor: 'Novo prazo',
+                startConvention: 'Nova convenção',
+                tenors: 'Prazos',
+                conventions: 'Convenções',
+                emptyTenors: 'Nenhum prazo corresponde.',
+                emptyConventions: 'Nenhuma convenção corresponde.',
+                readFailed: 'O catálogo não pôde ser lido. {message}',
+                columns: {
+                    code: 'Código',
+                    kind: 'Tipo',
+                    unit: 'Unidade',
+                    algorithm: 'Algoritmo',
+                    version: 'Versão',
+                },
+            },
+            tenor: {
+                title: 'Prazo',
+                lead: 'O código que uma pessoa lê e o período que nomeia.',
+                open: 'Abra ou comece primeiro um prazo.',
+                fields: {
+                    code: 'Código',
+                    displayName: 'Nome a apresentar',
+                    description: 'Descrição',
+                    sortOrder: 'Ordem de ordenação',
+                    kind: 'Tipo',
+                    unit: 'Unidade',
+                    multiplier: 'Multiplicador',
+                },
+            },
+            convention: {
+                title: 'Convenção',
+                lead: 'A regra que transforma um rótulo de prazo numa data, e os prazos que resolve.',
+                open: 'Abra ou comece primeiro uma convenção.',
+                fields: {
+                    code: 'Código',
+                    description: 'Descrição',
+                    measuredFrom: 'Medido a partir de',
+                    resolutionAlgorithm: 'Algoritmo de resolução',
+                    rollRule: 'Regra de reporte',
+                    oresmdUri: 'URI de dados de mercado',
+                },
+                members: 'Prazos do conjunto',
+                memberNote:
+                    'Um prazo fora do conjunto não é resolvido por esta convenção. A substituição de âncora nomeia o ponto a partir do qual esta convenção conta esse prazo.',
+                anchorOverride: 'Substituição de âncora',
+                inSet: 'No conjunto',
+                notInSet: 'Fora do conjunto',
+                anchorNone: 'A predefinição da convenção',
+            },
+            schedule: {
+                title: 'O calendário',
+                lead: 'Um eixo de calendário expande-se em datas de rolagem: as que um swap precisa, cada uma ajustada num calendário.',
+                open: 'Abra ou inicie primeiro uma convenção.',
+                note: 'O eixo em que a convenção rola. Expandí-lo em datas exige a operação que resolve um prazo numa data, que o servidor ainda não fornece.',
+                empty: 'Nenhum eixo de calendário é servido.',
+                inUse: 'Em uso por um prazo aqui',
+            },
+            review: {
+                title: 'Revisão',
+                lead: 'Nada é escrito antes de confirmar.',
+                nothing: 'Ainda nada mudou.',
+                count: '{count} alterações diferem da versão lida.',
+                columns: {
+                    change: 'Alteração',
+                    before: 'Antes',
+                    after: 'Depois',
+                },
+                reason: 'Motivo',
+                commentary: 'Comentário',
+                commentaryRequired: 'Este motivo exige um comentário.',
+                confirm: 'Guardar',
+                absent: 'Nenhum',
+                what: {
+                    newTenor: 'Novo prazo',
+                    newConvention: 'Nova convenção',
+                    tenor: 'Prazo {part}',
+                    convention: 'Convenção {part}',
+                    member: 'Pertinência',
+                },
+                stepLabel: {
+                    choose: 'Escolher',
+                    tenor: 'Prazo',
+                    convention: 'Convenção',
+                    review: 'Revisão',
+                    terms: 'Termos',
+                    schedule: 'O calendário',
+                },
+            },
+            problems: {
+                nameTenor: 'Nomeie o prazo: um código e um nome apresentado.',
+                chooseKindAndUnit: 'Escolha o tipo e a unidade do prazo.',
+                sortOrderWhole: 'A ordem de ordenação é um número inteiro.',
+                multiplierWhole: 'O multiplicador é um número inteiro.',
+                nameConvention: 'Nomeie a convenção.',
+                chooseAnchorAlgorithmRoll: 'Escolha a âncora, o algoritmo e a regra de reporte.',
+                header: 'Ainda necessário:',
+            },
+            refusal: {
+                heading: 'O servidor recusou a alteração.',
+                atStep: 'O passo que recusou é {step}.',
+                kept: 'O que já estava escrito é mantido. As suas alterações são mantidas.',
+                walkBack: 'Ir para o passo',
+            },
+            outcome: {
+                title: 'Resultado',
+                lead: 'As alterações estão guardadas.',
+                written: 'As alterações estão guardadas.',
+                reads: 'Uma operação que escolhe este prazo lê estes termos.',
+                history: 'Ver o histórico',
+                list: 'Voltar à lista',
+                another: 'Outro prazo',
+                done: 'Sair dos prazos',
+            },
+            history: {
+                title: 'Histórico',
+                lead: 'Cada versão guardada e o que mudou em cada uma.',
+                none: 'Abra um prazo para ver o seu histórico.',
+                note: 'O servidor não tem versão rascunho, por isso o histórico mostra só versões guardadas.',
+            },
+        },
+
         books: {
             noName: 'Ainda sem nome',
             noStatus: 'Sem estado',
@@ -3134,6 +3265,9 @@ const pt: SourceCatalogue = {
         'Start the market feeds': 'Iniciar os fluxos de mercado',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             'Inicia os dados de mercado sintéticos a partir dos quais as curvas e os preços do inquilino são construídos.',
+        'Generate the trades': 'Gerar as transações',
+        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
+            'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',
         'Hand the tenant to its administrator': 'Entregar o inquilino ao seu administrador',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             'Inicia a execução de configuração do próprio inquilino, que corre como o administrador do inquilino e conclui o inquilino.',
@@ -3339,6 +3473,7 @@ const pt: SourceCatalogue = {
         },
         fields: {
             image_id: 'Bandeira',
+            producer_kind: 'Tipo',
             version: 'Versão',
             modified_by: 'Modificado por',
             performed_by: 'Executado por',
@@ -3443,6 +3578,7 @@ const pt: SourceCatalogue = {
             component_index: 'Índice',
         },
         choices: {
+            producer_kind: { SYNTHETIC: 'Sintético', VENDOR: 'Fornecedor' },
             process_type: {
                 geometric: 'Geométrico',
                 arithmetic: 'Aritmético',
@@ -3672,6 +3808,27 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        bindings: {
+            title: 'Vínculos',
+            lead: 'Os feeds que escrevem dados de mercado para esta parte: a fonte que cada um nomeia, a série que escreve e se está em execução.',
+            allKinds: 'Todos os tipos',
+            series: 'Série',
+            status: 'Estado',
+            lastTick: 'Último tick',
+            feed: 'Feed',
+            folder: 'Pasta',
+            ticksPerHour: 'Ticks por hora',
+            seriesHint: 'A série em que este vínculo escreve e o URL oresmd que a nomeia.',
+            vendorNote:
+                'Um vínculo de feed real é só de leitura aqui. Só um vínculo de feed sintético pode mudar.',
+            statuses: {
+                running: 'Em execução',
+                stopped: 'Parado',
+                disabled: 'Desativado',
+                quiet: 'Silencioso',
+                unsupported: 'Não suportado',
+            },
+        },
         feeds: {
             targetUri:
                 'A série em que este feed escreve. Cada tick do feed é guardado como uma observação da série que este URI nomeia.',
@@ -3683,6 +3840,9 @@ const pt: SourceCatalogue = {
                 synthetic: 'Sintético',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',
+                bindings: 'Vínculos',
+                bindingsBody:
+                    'Os feeds que escrevem dados de mercado para esta parte: a série que cada um escreve e se está em execução.',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },

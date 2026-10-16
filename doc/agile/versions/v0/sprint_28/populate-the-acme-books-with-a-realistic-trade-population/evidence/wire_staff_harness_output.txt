@@ -1,0 +1,69 @@
+BEGIN
+           set_config            
+---------------------------------
+ ores_bright_faraday_iam_service
+(1 row)
+
+ set_config 
+------------
+ 
+(1 row)
+
+INSERT 0 2
+INSERT 0 5
+SELECT 1
+SELECT 4
+
+=== BEFORE: the publisher as HEAD states it ===
+              set_config              
+--------------------------------------
+ aaaa0000-0000-4000-8000-000000000001
+(1 row)
+
+CREATE FUNCTION
+  action  | record_count 
+----------+--------------
+ inserted |           19
+(1 row)
+
+ accounts | with_default_party | distinct_defaults 
+----------+--------------------+-------------------
+       19 |                  0 |                 0
+(1 row)
+
+
+=== AFTER: the edited publisher ===
+              set_config              
+--------------------------------------
+ aaaa0000-0000-4000-8000-000000000002
+(1 row)
+
+CREATE FUNCTION
+CREATE FUNCTION
+INSERT 0 29
+DO
+ accounts | with_default_party | distinct_defaults 
+----------+--------------------+-------------------
+       58 |                 58 |                 4
+(1 row)
+
+
+=== AFTER: every account, grouped by the party it resolves to ===
+ party  | accounts 
+--------+----------
+ ACCOHK |       19
+ ACCOUS |       19
+ ACMCOR |        1
+ ACMEUK |       19
+(4 rows)
+
+
+=== AFTER: the Trading role holders, by party (the population's writers) ===
+ party  | trading_staff 
+--------+---------------
+ ACCOHK |            10
+ ACCOUS |            10
+ ACMEUK |            10
+(3 rows)
+
+ROLLBACK

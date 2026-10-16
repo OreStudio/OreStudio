@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 3C9FF46E-E842-4D60-B3B9-4154E904D460
+:END:
+#+title: Story: Re-tangle the shell scripts the report trigger work left behind
+#+description: Commit 96c4be8625 modelled the report trigger and regenerated the report_instances recipe, which added a trigger_id column and a new report_trigger_types recipe, but it never ran the shell tangle. Three committed scripts still render the old uuid placeholder for trigger_id as 0 instead of the empty uuid, and the whole report_trigger_types script library is absent from the repository. The tangle-shell check is therefore red on main, and it rewrites the three scripts as a side effect, which in turn makes component-drift fail because those rewritten files look like changed components.
+#+type: story
+#+level: s2
+#+filetags: :shell:reporting:codegen:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The shell script library matches what the recipes tangle to, and the tangle-shell check passes on main.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- Every recipe under doc/recipes/shell has its tangled output committed.
+- compass check --only tangle-shell passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3E7EC73F-B911-43F7-8329-81424362671B][Scaffold story: Re-tangle the shell scripts the report trigger work left behind]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8B4A05F1-FCC7-4AC2-B91A-F31ED775C268][Re-tangle the shell scripts]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Re-tangle the shell scripts the report trigger work left behind |
+
+* Decisions
+
+- *Regenerate, do not hand-edit.* The three stale scripts carry the generated
+  header, so the repair is the tangle that the header names, and nothing else.
+  Only thirteen files changed content: three of the 3740 regenerated scripts,
+  plus ten new ones.
+- *The regenerated placeholder is the correct one.* The stale scripts wrote =0=
+  for =trigger_id=, and the model types that column as a uuid
+  (projects/ores.reporting/modeling/ores.reporting.report_instance.org line 356,
+  and =boost::uuids::uuid trigger_id= in the generated domain header). Every
+  other uuid parameter in the same scripts already rendered as the empty uuid,
+  so the committed =0= was the outlier.
+
+* Out of scope
+
+- The recipe and the model themselves. This story only re-syncs the tangled
+  output with the recipes that main already carries.

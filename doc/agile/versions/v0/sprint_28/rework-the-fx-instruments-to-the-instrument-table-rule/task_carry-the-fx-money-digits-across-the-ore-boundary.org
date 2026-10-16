@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 64E2FF71-5AE6-4F32-A9FA-22306BD21E36
+:END:
+#+title: Task: Carry the FX money digits across the ORE boundary
+#+description: Finding 1 of the FX review. Every FX money leaf in the ORE binding is a plain float, so the document's digits are lost before the mapper runs and all 35 exact_decimal call sites fall back to from_double. Make the family's money members lexical leaves through scripts/reapply_ore_lexical_form.py, write them back with set_exact, and prove the digits survive.
+#+type: task
+#+level: s1
+#+filetags: :instruments-fx:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make every FX money value keep the digits the ORE document wrote. Today each
+FX money leaf is a plain =float= in the binding, so the XML parse discards the
+text and the mapper's =exact_decimal= call takes the =from_double= overload.
+The stored decimal is therefore the binary float's spelling, not the document's
+number.
+
+This unit comes first because it moves the goldens.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Extend the reapply script for required members, then patch the FX money leaves. |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- Every FX money leaf in the binding is a lexical leaf, and each one is patched by =scripts/reapply_ore_lexical_form.py=, never by hand.
+- The script handles a required plain =float= member, or it refuses the shape with a stated reason. Today it handles =xsd::optional<float>= only, and most FX money members are required.
+- Every FX money field that has a continuous sibling stays a binary float. A variance strike, a ratio and a quantity are not money.
+- The forward mapping reads each money leaf with the =xsd::base<T>= overload of =exact_decimal=, and the reverse mapping writes each one with =set_exact=.
+- A mapper test holds the digits of each money member: a value with more significant digits than a float carries survives the round trip.
+- No golden that changes has a non-numeric change.
+
+* Plan
+
+1. Classify every FX binding member as money or continuous, with the exact-money rule of the data-oriented design page.
+2. Extend =scripts/reapply_ore_lexical_form.py= to a required member, with a self-test for the new shape.
+3. Add the FX money members to the script's table and run it. Check the diff by hand: the struct, the getter, the element info and the serializer of each member.
+4. Replace the reverse casts with =set_exact=.
+5. Add the digit tests, then regenerate the goldens and read every changed line.
+6. Run the ORE core and trading core suites, and the codegen tests.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 1. Measured there: 35 =exact_decimal= call sites in =fx_instrument_mapper.cpp=, 0 =set_exact= sites, and 6 money leaves carrying the lexical form in the whole tree.
+- The credit task [[id:C5829235-D255-4C13-9EC1-6658CA518B02][Carry the credit instruments' digits]] is the template for the shape of this unit.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

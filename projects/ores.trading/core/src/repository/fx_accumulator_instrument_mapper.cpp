@@ -65,6 +65,7 @@ fx_accumulator_instrument_mapper::map(const fx_accumulator_instrument_entity& v)
             std::optional(
                 ores::utility::decimal::decimal::from_string(*v.knock_out_barrier).value()) :
             std::nullopt;
+    r.range_bounds_json = v.range_bounds_json.value_or("");
     r.description = v.description.value_or("");
     r.audit.modified_by = v.modified_by;
     r.audit.performed_by = v.performed_by;
@@ -96,6 +97,8 @@ fx_accumulator_instrument_mapper::map(const domain::fx_accumulator_instrument& v
     r.knock_out_barrier = v.knock_out_barrier.has_value() ?
                               std::optional(v.knock_out_barrier->to_string()) :
                               std::nullopt;
+    r.range_bounds_json =
+        v.range_bounds_json.empty() ? std::nullopt : std::optional(v.range_bounds_json);
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.audit.modified_by;
     r.performed_by = v.audit.performed_by;

@@ -70,6 +70,32 @@ inline std::string log_handler_entry(Logger& lg, const ores::nats::message& msg)
 }
 
 /**
+ * @brief Logs the receipt line for a request whose tenant is now known.
+ *
+ * The same line as the single-argument form, plus the tenant the request acts
+ * for. Call it once the request context has been built, so a failure line
+ * later in the handler can be attributed to a tenant and not only to a subject.
+ * The correlation id is the same one the entry form returns, so a handler that
+ * needs to thread it onward calls this and keeps the result.
+ *
+ * @return the correlation id, for outbound calls that must carry it.
+ */
+template <typename Logger>
+inline std::string
+log_handler_entry(Logger& lg, const ores::nats::message& msg, std::string_view tenant_id) {
+    using namespace ores::logging;
+    auto cid = ores::nats::extract_or_generate_correlation_id(msg);
+    const auto sid_it = msg.headers.find(std::string(ores::nats::headers::nats_session_id));
+    if (sid_it != msg.headers.end() && !sid_it->second.empty())
+        BOOST_LOG_SEV(lg, info) << msg.subject << " correlation_id=" << cid
+                                << " session_id=" << sid_it->second << " tenant=" << tenant_id;
+    else
+        BOOST_LOG_SEV(lg, info) << msg.subject << " correlation_id=" << cid
+                                << " tenant=" << tenant_id;
+    return cid;
+}
+
+/**
  * @brief Default change reason codes for server-stamped writes.
  */
 namespace change_reasons {

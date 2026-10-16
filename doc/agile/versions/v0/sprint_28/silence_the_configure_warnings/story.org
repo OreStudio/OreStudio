@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: 40CC49C7-405B-472D-93A7-BDEB09991C39
+:END:
+#+title: Story: Silence the configure warnings on the site and macOS builds
+#+description: The doc-only site configure prints six unused-cli warnings, because the linux-doc-only preset inherits vcpkg and compiler variables that a configure with ORES_VCPKG_ENABLED=OFF never reads: without the toolchain there is no dependency discovery, and without the C++ build configuration there are no compile rules. The macOS configure prints six uninitialized warnings from build/cpack, because Info.plist.in reads PROJECT_MAJOR_VERSION, PROJECT_MINOR_VERSION and PROJECT_PATCH_VERSION, which nothing sets; the project() call sets PROJECT_VERSION_MAJOR and its siblings, so the bundle plist has rendered an empty version. Two further warnings come from vcpkg's own ports and are out of scope.
+#+type: story
+#+level: s2
+#+filetags: :cmake:ci:macos:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The site configure and the macOS configure report no warning that the repository causes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- A fresh cmake --preset linux-doc-only reports no unused-cli warning.
+- Info.plist renders the project version instead of an empty string.
+- Every compiling preset still receives the compiler and vcpkg cache variables.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:F69ECE5A-9FC7-4915-BB16-E73D9E530746][Scaffold story: Silence the configure warnings on the site and macOS builds]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B3BDBA4D-EF2D-462B-8BA0-38A48DF62D9D][Split the doc-only preset off the compiler variables and fix the plist version]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Silence the configure warnings on the site and macOS builds |
+
+* Decisions
+
+- *A doc-only configure must not inherit the compiler variables.* CMake reports
+  a variable as unused when nothing reads it. With =ORES_VCPKG_ENABLED=OFF= the
+  toolchain file is never loaded (CMakeLists.txt:29) and the C++ build
+  configuration is skipped entirely (CMakeLists.txt:308), so the four vcpkg and
+  find-path entries have no reader, and with no compile rules the generator has
+  no use for =CMAKE_EXPORT_COMPILE_COMMANDS=. The five move to a hidden
+  =compiler-configuration= mixin that the eighteen compiling presets inherit.
+- *The doc-only preset also drops the make mixin.* =CMAKE_COLOR_DIAGNOSTICS= is
+  read only when diagnostics are emitted, so a configure that compiles nothing
+  reports it as unused too. The preset names its generator directly instead, so
+  the make mixin keeps its colour settings for the presets that compile.
+- *The plist variable names were simply wrong.* =Info.plist.in= read
+  =PROJECT_MAJOR_VERSION=, =PROJECT_MINOR_VERSION= and =PROJECT_PATCH_VERSION=.
+  CMake sets =PROJECT_VERSION_MAJOR= and its siblings from
+  =project(OreStudio VERSION 0.0.28 ...)=. Nothing set the names the template
+  used, so both version fields in the macOS bundle plist rendered as =..=.
+
+* Out of scope
+
+- The vcpkg port warnings: boost-system's build-path length warning on Windows
+  and libarchive's unused =CMAKE_REQUIRE_FIND_PACKAGE_MbedTLS= on macOS. Both
+  are emitted by ports inside the pinned vcpkg submodule.

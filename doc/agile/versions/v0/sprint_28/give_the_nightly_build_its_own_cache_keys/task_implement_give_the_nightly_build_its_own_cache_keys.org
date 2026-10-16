@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: FCF997E8-0296-4F3A-B150-2F9F54DCC9DA
+:END:
+#+title: Task: Scope the cache keys to the workflow
+#+description: Initial task for: Give the Nightly Build its own cache keys
+#+type: task
+#+level: s1
+#+filetags: :give_the_nightly_build_its_own_cache_keys:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FC9DEEA3-58F1-4E00-985A-6DB12AA45DAF][Give the Nightly Build its own cache keys]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Each workflow restores only a cache built with its own flags, and all six Linux variants fit the cache cap.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FC9DEEA3-58F1-4E00-985A-6DB12AA45DAF][Give the Nightly Build its own cache keys]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- The continuous and nightly cache keys are disjoint.
+- Restore, save and prune all use the workflow-scoped key in both workflows.
+- The sum of the ceilings fits the 10 GB repository cap.
+
+* Plan
+
+Prefix the cache key in each workflow with the workflow name. The Continuous
+Linux key becomes =sccache-continuous-<family>-<buildtype>-...= and the Nightly
+Build key becomes =sccache-nightly-<family>-<buildtype>-...=. Change the restore
+key, the =restore-keys= prefix, the save key and the prune prefix together, so
+that no step keeps an unscoped key.
+
+Keep one transitional legacy prefix in the Continuous Linux workflow only. The
+entries that exist in the cache today were built by the continuous jobs, so the
+continuous job must keep restoring them. Remove that prefix after the first
+warm continuous run.
+
+Lower the Nightly Build ceiling from 2000M to 1000M, because four nightly
+variants draw on the same 10 GB repository cap as two continuous variants.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Continuous ceilings (clang debug 2500M, clang release 2400M) | 4.9 GB | =grep -n 'max-size' .github/workflows/continuous-linux.yml= | 628d475445 |
+| Nightly ceilings (4 variants x 1000M) | 3.9 GB | =grep -n 'max-size' .github/workflows/nightly-linux.yml= | 628d475445 |
+| Total | 8.8 GB of 10 GB | (sum of the two rows) | 628d475445 |
+
+* Notes
+
+The guard in =sccache_worth= stays as it is. It already reads the cache it is
+about to save, and it is unaffected by the key name.
+
+The transitional legacy prefix is the only unscoped string left in either
+workflow, and it appears in the continuous =restore-keys= list alone.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All six keys are scoped. The continuous workflow uses
+=sccache-continuous-${{matrix.family}}-...= on restore, restore-keys, save and
+prune; the nightly workflow uses =sccache-nightly-${{matrix.family}}-...= on the
+same four places. The only remaining unscoped prefix is the transitional legacy
+=restore-keys= entry in the continuous workflow.
+
+The sum of the ceilings is 8.8 GB, which leaves about 1.2 GB of the 10 GB
+repository cap for the non-sccache entries.
+
+Local checks pass: 7 of 7.

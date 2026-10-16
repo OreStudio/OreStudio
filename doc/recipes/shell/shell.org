@@ -1649,3 +1649,23 @@ tangled into the runnable script library
 * Convention Kinds
 
 - [[id:F32D2B7E-31F1-5983-9ECF-FEFC74F9EEB5][How do I run the convention_kinds commands from the shell?]]
+
+* Report Error Scopes
+
+- [[id:4BBF63E0-B3D4-50B8-B68B-A1B8EE1EB94C][How do I run the report_error_scopes commands from the shell?]]
+
+* Report Errors
+
+- [[id:7D92028C-53AC-5741-9B7F-5E12AA94474A][How do I run the report_errors commands from the shell?]]
+
+* Trade Generation Books
+
+- [[id:B8022ED0-4756-530A-A27B-6A042827FC84][How do I run the trade_generation_books commands from the shell?]]
+
+* Trade Generation Configs
+
+- [[id:F387B1AA-B374-5926-AB3E-A604924FFFD7][How do I run the trade_generation_configs commands from the shell?]]
+
+* Trade Generation Counterparties
+
+- [[id:54F7F5A4-AD02-5637-9D98-562E462520EB][How do I run the trade_generation_counterparties commands from the shell?]]

@@ -34,6 +34,7 @@ export const PATHS = {
     onboardCounterparty: '/refdata/counterparties/onboard',
     bookStructure: '/refdata/books/structure',
     conventions: '/refdata/conventions',
+    tenors: '/refdata/tenors',
     organisation: '/organisation',
     people: '/organisation/people',
     hierarchy: '/organisation/hierarchy',
@@ -44,6 +45,7 @@ export const PATHS = {
     synthetic: '/market-data/synthetic',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
+    bindings: '/market-data/bindings',
 } as const;
 
 /** The address of one person's page. */

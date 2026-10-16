@@ -28,7 +28,7 @@ No artefact table comes from the lookup template, and the template is retired.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:4880D5CD-A7EE-4B30-87FA-A9C7F3633DD9][Move the lookup artefact tables and settle the remaining DQ artefact models]] |
-| Now          | Done. The build, the suites and the SQL tests are green. |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing.                               |
 | Last touched | 2026-10-14                               |

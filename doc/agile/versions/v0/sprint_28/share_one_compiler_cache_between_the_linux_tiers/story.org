@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: C2EAFE9F-65EE-4C06-AA6F-14EBBFE51461
+:END:
+#+title: Story: Share one compiler cache between the Linux tiers
+#+description: The continuous and nightly Linux jobs compile the same variants with the same settings: both pass code_coverage=1 on the two debug variants and neither passes anything extra on release, and the differences between the two workflows cannot change a compile line. The memory check adds valgrind to the test step, the build group only names the CDash track, and the package flag only picks between the all and package build targets. The cache keys were scoped per workflow when the flags did differ, and that now stores the same objects twice: the same four Linux variants cost up to eight entries, and the 10 GB cap pays for the duplicates instead of for the gcc variants. Remove the workflow scope so both tiers restore and replace one entry per variant.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:sccache:sprint_28:v0:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+One compiler cache entry serves each Linux variant, restored and replaced by either tier.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+- Both workflows use the same cache key for a given variant, with no workflow prefix.
+- The prune leaves one entry per variant whichever tier runs it.
+- Every remaining difference between the tiers is stated and shown not to change a compile line.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:9ABED26A-BE4C-405A-8826-F95A04647532][Scaffold story: Share one compiler cache between the Linux tiers]] | DONE | 2026-10-16 | 2026-10-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:6B498035-DC65-4FA8-B651-D0E12D040FE1][Drop the workflow scope from the Linux cache keys]] | DONE | 2026-10-16 | 2026-10-16 | Initial task for: Share one compiler cache between the Linux tiers |
+
+* Decisions
+
+- *The scope was added for a difference that no longer exists.* The two tiers
+  were scoped apart because the Nightly debug builds passed =code_coverage= and
+  the Continuous ones did not, so a shared entry held objects the other could
+  not use. Continuous now passes coverage on debug too, so the difference is
+  gone and the two compile the same variant identically.
+- *Only =code_coverage= can move a compile line, and it now matches.* The
+  remaining differences between the tiers are the CDash =build_group=, which
+  names a track; =with_memcheck=, which sets up valgrind for the test step and
+  appears nowhere in the build; and =package=, which chooses between the =all=
+  and =package= build targets and so compiles the same objects. =code_coverage=
+  is on for debug and absent for release in both workflows.
+- *Pruning to this run's key is still right when the prefix is shared.* Both
+  tiers prune the same prefix, so whichever runs last leaves the newest entry
+  and the other tier's entry is replaced rather than lost. One entry per variant
+  is the goal, not one per variant per tier.
+- *The legacy entries become the live cache again.* Reverting the prefix makes
+  =sccache-linux-clang-debug-ninja-38745724092= and its release sibling match
+  the primary restore key, so they are used once more and then replaced by the
+  first save that lands. That is why nothing had to be deleted to free space.

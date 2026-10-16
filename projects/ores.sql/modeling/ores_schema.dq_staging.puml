@@ -1870,8 +1870,7 @@ package "dq_staging" #F3E5F5 {
     }
 
     note right of ores_dq_ip2country_artefact_tbl
-    Staging table for IPv4 to country mapping data from iptoasn.com.
-    Data is imported here first, then promoted to geo_ip2country_tbl.
+    An IPv4 address range and the country code it resolves to, one row per range per tenant. The ranges are found by containment -- ip_range @> address -- so the range is the key and the index over it is a GiST index; a btree cannot answer a containment test. The store holds no history. A publish truncates it and loads the ranges the dataset carries, because ip2country reissues its whole table rather than amending rows. - Artefact Table
     end note
 
     entity ores_dq_ir_curve_generation_configs_artefact_tbl  #F7E5FF {

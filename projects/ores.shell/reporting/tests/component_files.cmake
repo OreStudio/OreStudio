@@ -33,6 +33,8 @@ set(files
     "parameter_value_domain_commands_tests.cpp"
     "report_configuration_commands_tests.cpp"
     "report_definition_commands_tests.cpp"
+    "report_error_commands_tests.cpp"
+    "report_error_scope_commands_tests.cpp"
     "report_instance_commands_tests.cpp"
     "report_instance_kind_commands_tests.cpp"
     "report_operations_operations_commands_tests.cpp"

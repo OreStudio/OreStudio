@@ -561,6 +561,7 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
     // unavailable in words, and the identity stays on the form to read or change.
     const [search] = useSearchParams();
     const uri = search.get('uri') ?? '';
+    const seriesId = search.get('series') ?? '';
     const parsed = useQuery({ ...oresmdQueries.parse(uri), enabled: uri !== '' });
     const schema = useQuery({ ...oresmdQueries.schema(), enabled: uri !== '' });
     const [unavailable, setUnavailable] = useState<string | null>(null);
@@ -568,6 +569,37 @@ export function EvolutionPage({ partyId }: { readonly partyId: string }): ReactN
     // The URL and the party together say what was opened, so a change of either opens again.
     const opened = useRef('');
     const openedKey = `${partyId}|${uri}`;
+    // A series id in the address opens that series, when the party holds it and it has an axis.
+    const openedById = useRef('');
+    useEffect(() => {
+        const key = `${partyId}|${seriesId}`;
+        if (seriesId === '' || openedById.current === key || series.data === undefined) return;
+        openedById.current = key;
+        const listed = series.data.series.find((one) => one.series_id === seriesId);
+        if (listed === undefined) {
+            setUnavailable(t('market.evolution.errors.notListed'));
+            return;
+        }
+        const form = formFrom(listed);
+        setForm(form);
+        if (!canBeShown(listed)) {
+            setUnavailable(
+                t('market.evolution.errors.noShape', {
+                    series: titleOrRaw(schema.data, listed.identity),
+                }),
+            );
+            return;
+        }
+        setUnavailable(null);
+        setPicked(listed.series_id);
+        const identity = identityOf(form);
+        const span = rangeOf(from, to);
+        if (identity.ok && span.ok) {
+            setReads((count) => count + 1);
+            setAsked({ identity: identity.identity, range: span.range, provenance });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [seriesId, partyId, series.data]);
     // The effect lists the form values it reads. The ref stops it opening twice, so
     // a change to them while the data loads only runs the guard.
     useEffect(() => {

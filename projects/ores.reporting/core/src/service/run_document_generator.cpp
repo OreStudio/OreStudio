@@ -18,10 +18,10 @@
  *
  */
 #include "ores.reporting.core/service/run_document_generator.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include <algorithm>
 #include <chrono>
-#include <cstdio>
 #include <format>
 #include <optional>
 #include <stdexcept>
@@ -96,17 +96,13 @@ void name_default_files(const std::vector<file_type>& types,
 
 // The weekday before a date. Holiday calendars are not consulted.
 std::string previous_weekday(const std::string& iso_date) {
-    int y = 0;
-    unsigned m = 0, d = 0;
-    char tail = 0;
-    if (std::sscanf(iso_date.c_str(), "%d-%u-%u%c", &y, &m, &d, &tail) != 3)
+    std::chrono::year_month_day ymd;
+    try {
+        ymd = platform::time::datetime::from_iso8601_date(iso_date);
+    } catch (const std::invalid_argument&) {
         throw std::invalid_argument(
             std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
-    const std::chrono::year_month_day ymd{
-        std::chrono::year{y}, std::chrono::month{m}, std::chrono::day{d}};
-    if (!ymd.ok())
-        throw std::invalid_argument(
-            std::format("The run date '{}' is not an ISO 8601 date.", iso_date));
+    }
     std::chrono::sys_days day{ymd};
     do {
         day -= std::chrono::days{1};

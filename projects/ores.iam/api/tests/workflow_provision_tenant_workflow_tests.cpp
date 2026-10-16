@@ -245,6 +245,34 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
     CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 7);
 }
 
+TEST_CASE("the trade generation waits for the books, the staff and the feeds", tags) {
+    const auto def = setup_definition();
+    const auto steps = def.build_steps(request_json({declared("publish_bundle"),
+                                                     declared("provision_party"),
+                                                     declared("load_staff"),
+                                                     declared("start_market_feeds"),
+                                                     declared("generate_trades")}),
+                                       tenant_id,
+                                       correlation_id);
+
+    const auto inputs_of = [&](const std::string& name) {
+        for (const auto& step : steps)
+            if (step.name == name)
+                return step.consumes;
+        return std::vector<std::string>{};
+    };
+
+    // A trade names a book, a counterparty and the person who entered it, so
+    // the population waits for the staff; it is booked against the market the
+    // feeds have started, so it waits for those too.
+    CHECK(inputs_of("generate_trades") ==
+          (std::vector<std::string>{"load_staff", "start_market_feeds"}));
+    CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 5);
+    CHECK(steps.front().name == "publish_bundle");
+    CHECK(steps[steps.size() - 2].name == "generate_trades");
+    CHECK(steps.back().name == complete_provisioning_step_kind);
+}
+
 TEST_CASE("a need the run did not order is answered by the step that did", tags) {
     const auto def = setup_definition();
     // A run that orders no import step still waits for whatever published the
@@ -390,6 +418,7 @@ TEST_CASE("every kind the catalogue declares has a runner in this build", tags) 
     CHECK(is_executed_step_kind("set_staff_passwords"));
     CHECK(is_executed_step_kind("attach_photos"));
     CHECK(is_executed_step_kind("start_market_feeds"));
+    CHECK(is_executed_step_kind("generate_trades"));
 
     CHECK_FALSE(is_executed_step_kind(complete_provisioning_step_kind));
     CHECK_FALSE(is_executed_step_kind(start_tenant_setup_step_kind));

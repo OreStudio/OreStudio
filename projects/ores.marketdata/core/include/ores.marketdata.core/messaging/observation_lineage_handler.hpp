@@ -81,6 +81,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -128,6 +130,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -175,6 +179,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -222,6 +228,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -269,6 +277,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -316,6 +326,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -363,6 +375,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -410,6 +424,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -457,6 +473,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            observation_lineage_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "marketdata::observation_lineages:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

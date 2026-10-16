@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 65083A85-AB8C-4A9E-BF09-18E85FAD080E
+:END:
+#+title: Task: Replace both sscanf call sites
+#+description: Initial task for: Replace the deprecated sscanf calls
+#+type: task
+#+level: s1
+#+filetags: :replace_the_deprecated_sscanf_calls:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E489D08-BEB5-45EB-99E4-7C99F38B5BF4][Replace the deprecated sscanf calls]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+No translation unit calls a C runtime function that MSVC's STL deprecates, so the Windows clang build compiles with -Werror.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8E489D08-BEB5-45EB-99E4-7C99F38B5BF4][Replace the deprecated sscanf calls]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- run_document_generator.cpp parses the run date through datetime::from_iso8601_date.
+- process_executable_tests.cpp reads the build timestamp without std::sscanf.
+- The reporting core and platform tests still pass.
+
+* Plan
+
+Replace both call sites rather than suppress the diagnostic, and reach for the
+platform primitive that already does the job. The reporting service hands its
+parse to =platform::time::datetime::from_iso8601_date=, keeps the run-date
+wording of the error by catching =std::invalid_argument= and rethrowing with the
+message the callers already see, and drops =<cstdio>=, which existed only for
+the =sscanf=.
+
+The timestamp test hands its parse to
+=platform::time::datetime::from_utc_format= with the format the string is
+written in. That parser throws unless the whole string matches, so the case
+proves the format by parsing it, and it then derives the calendar fields and the
+time of day from the instant for the range checks that were already there.
+
+Verify by building and running both test suites, because the reporting suite
+already covers the changed function on both paths: an end-of-day run whose run
+date is a Monday, and one whose run date is not a date at all.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| std::sscanf call sites removed | 2 | =grep -rn 'sscanf' projects/ --include=*.cpp= | working tree |
+| Tests covering previous_weekday | 2 | =service_run_document_generator_tests.cpp= lines 237 and 259 | fc4c07153b |
+| Deprecated C runtime calls left in projects/ | 0 | same sweep as the scaffold task | working tree |
+| Reporting core suite | 404 assertions in 91 cases, pass | =ores.reporting.core.tests= | working tree |
+| Platform suite | 338 assertions in 147 cases, pass | =ores.platform.tests= | working tree |
+
+* Notes
+
+The two existing reporting cases are the whole behavioural contract for the
+changed function: =eod= with =run_date= = "2026-10-12" expects =2026-10-09=,
+which is the Friday before, and =run_date= = "yesterday" expects
+=std::invalid_argument=. The rewrite keeps both, and the second is why the
+service catches the parser's exception rather than letting it escape: the parser
+throws the same type, so the test would still pass, but its message names the
+date rather than the run.
+
+The two platform date readers are not interchangeable and the choice matters
+here. =datetime::from_iso8601_date= is the ISO 8601 reader the estate uses
+everywhere else; =time_utils::parse_date= exists for ORE's market-data text and
+accepts =30.09.2025=, =30-09-2025= and =30.09.25= as well, which its own tests
+pin. The run date must be ISO 8601 and is refused in those words, so the wider
+reader would widen what the check accepts rather than preserve it.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both call sites now go through an =ores.platform= primitive, and the tree
+carries no call to a function MSVC's STL deprecates. Neither site needed a
+suppression, and neither added one: =_CRT_SECURE_NO_WARNINGS= stays where it
+was, in the environment provider whose whole job is to wrap =getenv=.
+
+- =run_document_generator.cpp= parses the run date with
+  =datetime::from_iso8601_date=, and catches =std::invalid_argument= to rethrow
+  the run-date wording the callers already saw. It no longer includes
+  =<cstdio>=.
+- =process_executable_tests.cpp= parses the build timestamp with
+  =datetime::from_utc_format= against the format the string is written in, and
+  derives the calendar fields and time of day from the instant for the range
+  checks that were already there.
+
+Both suites pass. The reporting core suite runs 404 assertions in 91 cases,
+including the end-of-day case that expects the Friday before a Monday run date
+and the case that expects a run date of "yesterday" to be refused. The platform
+suite runs 338 assertions in 147 cases, including the four build-time cases.
+
+The Windows diagnostic itself cannot be reproduced here: clang against
+libstdc++ does not deprecate =std::sscanf=, only MSVC's STL does. What is shown
+is that both calls are gone and that the code that replaced them is exercised
+and green.

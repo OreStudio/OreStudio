@@ -26,6 +26,8 @@
 #include "ores.refdata.service/messaging/book_proposal_handler.hpp"
 #include "ores.refdata.service/messaging/counterparty_apply_step_handler.hpp"
 #include "ores.refdata.service/messaging/counterparty_proposal_handler.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
+#include <array>
 #include <memory>
 #include <string_view>
 #include <utility>
@@ -45,24 +47,41 @@ std::vector<ores::nats::service::subscription> book_proposal_registrar::register
     std::vector<ores::nats::service::subscription> subs;
     // The apply workflow's commands come from the engine, which has proved
     // them, so the step handler takes no verifier.
+    // These are workflow step commands, which the engine commits to a stream,
+    // so this service declares the coverage and reads them durably.
+    static constexpr std::array step_subjects{workflow::recheck_book_changes_subject,
+                                              workflow::apply_book_changes_subject,
+                                              workflow::recheck_counterparty_changes_subject,
+                                              workflow::apply_counterparty_changes_subject};
+    const auto step_stream =
+        ores::service::messaging::ensure_step_stream(nats, queue_group, step_subjects, "apply");
+
     auto steps = std::make_shared<book_apply_step_handler>(nats, ctx);
-    subs.push_back(
-        nats.queue_subscribe(std::string(workflow::recheck_book_changes_subject),
-                             queue_group,
-                             [steps](ores::nats::message msg) { steps->recheck(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(std::string(workflow::apply_book_changes_subject),
-                             queue_group,
-                             [steps](ores::nats::message msg) { steps->apply(std::move(msg)); }));
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        workflow::recheck_book_changes_subject,
+        queue_group,
+        step_stream,
+        [steps](ores::nats::message msg) { steps->recheck(std::move(msg)); }));
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        workflow::apply_book_changes_subject,
+        queue_group,
+        step_stream,
+        [steps](ores::nats::message msg) { steps->apply(std::move(msg)); }));
 
     auto cp_steps = std::make_shared<counterparty_apply_step_handler>(nats, ctx);
-    subs.push_back(nats.queue_subscribe(
-        std::string(workflow::recheck_counterparty_changes_subject),
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        workflow::recheck_counterparty_changes_subject,
         queue_group,
+        step_stream,
         [cp_steps](ores::nats::message msg) { cp_steps->recheck(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        std::string(workflow::apply_counterparty_changes_subject),
+    subs.push_back(ores::service::messaging::subscribe_step_command(
+        nats,
+        workflow::apply_counterparty_changes_subject,
         queue_group,
+        step_stream,
         [cp_steps](ores::nats::message msg) { cp_steps->apply(std::move(msg)); }));
 
     auto cp = std::make_shared<counterparty_proposal_handler>(nats, ctx, verifier);

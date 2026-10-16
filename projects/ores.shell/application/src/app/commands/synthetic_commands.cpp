@@ -19,6 +19,7 @@
  */
 #include "ores.shell/app/commands/synthetic_commands.hpp"
 #include "ores.dq.api/domain/change_reason_constants.hpp"
+#include "ores.iam.api/messaging/account_operations_protocol.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.shell/app/command_args.hpp"
@@ -36,8 +37,11 @@
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
+#include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
+#include "ores.synthetic.core/service/trade_population_service.hpp"
+#include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -855,6 +859,14 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                            },
                            "Stop feeds under a folder or an individual feed",
                            {"folder <folder-id|folder-name> | feed <feed-id|ore-key|source-name>"});
+
+    synthetic_menu->Insert("generate-trades",
+                           [&session](std::ostream& out, std::vector<std::string> args) {
+                               process_generate_trades(std::ref(out), std::ref(session), args);
+                           },
+                           "Generate a trade generation config's population, acting as the "
+                           "party it books for",
+                           {"--config <trade-generation-config-id> [--config <id>...]"});
 
     synthetic_menu->Insert("validate-vintage",
                            [&session](std::ostream& out, std::vector<std::string> args) {
@@ -1979,6 +1991,132 @@ void synthetic_commands::process_setup(std::ostream& out,
 
     out << "✓ feed " << source_name << " (" << kind << ") is authored under " << instrument_folder
         << "." << std::endl;
+}
+
+namespace {
+
+/**
+ * @brief Issues @p request carrying @p token, so the server acts as the party
+ * the token names rather than as the caller.
+ *
+ * The trading write path takes the party from the session, so a client cannot
+ * state it on the row. The token is the one =iam.v1.ops.select_party= answers
+ * with, and it travels as the delegated authorization header, which the
+ * request context reads before the caller's own.
+ */
+template <typename Request>
+std::optional<typename Request::response_type>
+delegated_request(std::ostream& out,
+                  ores::nats::service::nats_client& session,
+                  const std::string& token,
+                  const Request& request) {
+    auto delegated = session.with_delegation(token);
+    try {
+        auto result =
+            ores::nats::service::authenticated_request_and_decode<typename Request::response_type>(
+                delegated, Request::nats_subject, request);
+        if (!result) {
+            fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
+            return std::nullopt;
+        }
+        return *result;
+    } catch (const std::exception& e) {
+        fail(out) << "Request failed: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+}
+
+void synthetic_commands::process_generate_trades(std::ostream& out,
+                                                 nats_client& session,
+                                                 const std::vector<std::string>& args) {
+    auto parsed = parse_args(
+        args,
+        {flag_spec{
+            .name = "config", .requires_value = true, .default_value = "", .repeatable = true}});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+    const auto config_tokens = parsed->values("config");
+    if (config_tokens.empty()) {
+        fail(out) << "Usage: synthetic generate-trades --config <id> [--config <id>...]"
+                  << std::endl;
+        return;
+    }
+
+    using namespace ores::synthetic::service;
+
+    for (const auto& token : config_tokens) {
+        synthetic_ms::list_trade_generation_configs_request config_req;
+        config_req.limit = 100;
+        synthetic_ms::trade_generation_configs_filter config_filter;
+        try {
+            config_filter.id_one_of =
+                std::vector<boost::uuids::uuid>{boost::lexical_cast<boost::uuids::uuid>(token)};
+        } catch (const std::exception&) {
+            fail(out) << "Not a config id: " << token << std::endl;
+            return;
+        }
+        config_req.filter = config_filter;
+
+        const auto configs = do_auth_request<synthetic_ms::list_trade_generation_configs_response>(
+            out,
+            session,
+            synthetic_ms::list_trade_generation_configs_request::nats_subject,
+            config_req);
+        if (!configs)
+            return;
+        if (configs->trade_generation_configs.empty()) {
+            fail(out) << "No trade generation config " << token << "." << std::endl;
+            return;
+        }
+        const auto& config = configs->trade_generation_configs.front();
+        const auto party_id = boost::uuids::to_string(config.party_id);
+
+        /*
+         * The party scoped token, which is what makes the run act as the
+         * config's own legal entity. A party the account may not act as is
+         * refused here, before a trade is written against it.
+         */
+        const auto selected = do_auth_request<iam::messaging::select_party_response>(
+            out,
+            session,
+            iam::messaging::switch_party_request::nats_subject,
+            iam::messaging::switch_party_request{.party_id = party_id});
+        if (!selected || !selected->success || selected->token.empty()) {
+            fail(out) << "Cannot act as party " << party_id << " of config " << config.name
+                      << (selected ? ": " + selected->message : "") << std::endl;
+            return;
+        }
+
+        auto delegated = session.with_delegation(selected->token);
+        trading_trade_population_writer writer(delegated);
+        trade_population_service service(writer);
+
+        trade_population_run run;
+        try {
+            run = service.run(config.id);
+        } catch (const std::exception& e) {
+            fail(out) << "Generating " << config.name << " failed: " << e.what() << std::endl;
+            return;
+        }
+
+        out << "config " << config.id << " (" << config.name << ") party " << party_id << " as "
+            << selected->party_name << ": planned " << run.planned << ", wrote " << run.written
+            << ", already present " << run.already_present << std::endl;
+        for (const auto& outcome : run.outcomes) {
+            out << "  trade " << boost::uuids::to_string(outcome.trade_id) << " "
+                << outcome.internal_identifier << " in book "
+                << boost::uuids::to_string(outcome.book_id) << " version " << outcome.version
+                << (outcome.already_present ? " (already present)" : "") << std::endl;
+        }
+    }
 }
 
 }

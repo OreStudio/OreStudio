@@ -86,9 +86,22 @@ public:
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        const auto resp = registry_.dispatch(*req, *req_ctx_expected);
-        BOOST_LOG_SEV(history_handler_lg(), debug) << "Completed " << msg.subject;
-        reply(nats_, msg, resp);
+        // The dispatcher reads the store, so it can throw. An exception leaving
+        // this handler reaches the transport, which contains it but sends no
+        // reply, and the caller waits out its deadline for an answer this
+        // handler could have given.
+        using response_type = get_entity_history_request::response_type;
+        try {
+            const auto resp = registry_.dispatch(*req, *req_ctx_expected);
+            BOOST_LOG_SEV(history_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(history_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            response_type failure;
+            failure.success = false;
+            failure.message = e.what();
+            reply(nats_, msg, failure);
+        }
     }
 
 private:

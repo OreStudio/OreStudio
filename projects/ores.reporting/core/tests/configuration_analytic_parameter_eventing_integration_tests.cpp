@@ -182,14 +182,12 @@ TEST_CASE("write_configuration_analytic_parameter_publishes_an_event", tags) {
     // active row, so the parent must be written first.
     auto configuration_analytic_id_parent =
         ores::reporting::generators::generate_synthetic_configuration_analytic(ctx);
-    configuration_analytic_id_parent.change_reason_code = "system.test";
     // The configuration_analytic is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.
     configuration_analytic_id_parent.party_id = *party_ctx.party_id();
     auto configuration_analytic_id_parent_configuration_parent =
         ores::reporting::generators::generate_synthetic_configuration(ctx);
-    configuration_analytic_id_parent_configuration_parent.change_reason_code = "system.test";
     // configuration_type is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, as the direct-parent
     // system-tenant branch does.

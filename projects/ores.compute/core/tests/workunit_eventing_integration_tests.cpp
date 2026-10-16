@@ -165,7 +165,6 @@ TEST_CASE("write_workunit_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto batch_id_parent = ores::compute::generators::generate_synthetic_batch(ctx);
-    batch_id_parent.change_reason_code = "system.test";
     ores::compute::repository::batch_repository batch_id_repo;
     batch_id_repo.write(party_ctx, batch_id_parent);
     v.batch_id = batch_id_parent.id;
@@ -173,9 +172,7 @@ TEST_CASE("write_workunit_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto app_version_id_parent = ores::compute::generators::generate_synthetic_app_version(ctx);
-    app_version_id_parent.change_reason_code = "system.test";
     auto app_version_id_parent_app_parent = ores::compute::generators::generate_synthetic_app(ctx);
-    app_version_id_parent_app_parent.change_reason_code = "system.test";
     // Seed the active app row ores_compute_apps_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.

@@ -182,8 +182,10 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             return;
         }
 
-        const auto portfolio =
-            ores::ore::xml::exporter::export_portfolio(rows->items, rows->instruments);
+        const auto reference_curves =
+            ores::ore::service::messaging::reference_curve_names_of(owners, req.definition_id);
+        const auto portfolio = ores::ore::xml::exporter::export_portfolio(
+            rows->items, rows->instruments, reference_curves);
         {
             const auto target = stage_dir / places.portfolio;
             std::filesystem::create_directories(target.parent_path());

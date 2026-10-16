@@ -48,6 +48,14 @@
 # (see iam_account_party_create.sql).
 - ores_refdata_
 
+# The login path resolves the caller's country through
+# ores_geo_ip2country_lookup_fn (auth_handler.hpp), which selects from
+# ores_geo_ip2country_tbl on the invoker's own behalf. Without the grant the
+# lookup is refused with "permission denied for table
+# ores_geo_ip2country_tbl", the sign-in logs it and continues, and every
+# session loses the country it would have carried.
+- ores_geo_
+
 ** Execute prefixes
 
 # Security-definer function that reads the system-tenant template image

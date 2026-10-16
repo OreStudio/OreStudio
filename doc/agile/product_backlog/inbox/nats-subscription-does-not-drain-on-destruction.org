@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: F90A83A8-9B1A-4337-9E60-07CF972E5FE6
+:END:
+#+title: A NATS subscription does not drain on destruction
+#+description: Destroying a subscription while the dispatch thread is inside its callback is a use-after-free of the subscription's own storage, so keeping a callback's captures alive is not enough.
+#+type: capture
+#+level: cross
+#+filetags: :nats:lifetime:concurrency:tests:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A subscription does not wait for delivery to finish when it is destroyed. The
+NATS dispatch thread runs a callback through =on_msg=, and if the subscription
+is destroyed while that call is in flight, the thread is executing storage that
+has already been freed. The callback's *captures* are then beside the point:
+keeping them alive fixes what the callback touches, not where it is standing.
+
+=ores.scheduler.core.tests= segfaulted intermittently under a full ctest run,
+and the core shows the shape:
+
+#+begin_example
+#6  ores::nats::service::client::publish(...)
+#7  std::_Function_handler<void (ores::nats::message), CATCH2_INTERNAL_TEST_8()::$_0>::_M_invoke(...)
+#8  ores::nats::service::(anonymous namespace)::on_msg(...)
+#9  nats_dispatchThreadOwn
+#+end_example
+
+Both stand-in responders there captured the test's client by reference, so the
+publish ran against a client whose frame had ended. Holding the client in a
+=shared_ptr= and capturing it by value fixes that instance -- done in
+[[https://github.com/OreStudio/OreStudio/pull/3327][#3327]] -- and leaves the
+class alone.
+
+* Why
+
+Two reasons this wants a task rather than a note on one test.
+
+- *It is silent by construction.* The race needs the dispatch thread to win a
+  narrow window, so the suite passes alone in 2.3 s and died under load at
+  1.4 s. Then it misdirects: Catch2's signal handler faults in
+  =XmlReporter::sectionEnded=, so the report names a =CHECK= line and not the
+  fault. Anyone reading the failure is pointed at the assertion rather than at
+  the lifetime.
+- *The dangerous shape is everywhere in tests.* 308 test files capture
+  =[&nats]= in a callback. Most are generated eventing-integration tests, and
+  the shape is safe in a service, where the client is a long-lived member that
+  outlives its subscriptions by construction. It is unsafe when the client is a
+  stack local with a responder, which is what a test builds. So the services hide
+  the defect that the tests find, and bringing the tests onto a safe shape is a
+  template change and a regeneration, not a sweep.
+
+* What to do
+
+- Make unsubscribe wait for delivery to drain, so destroying a subscription
+  cannot leave the dispatch thread inside it. This closes the class rather than
+  an instance.
+- Or state the rule -- a subscription and everything its callback touches must
+  outlive the dispatch thread -- and give tests a helper that enforces it, so no
+  test has to reason about destruction order. A responder whose client and
+  subscription are owned by one object that drains when it is destroyed would do.
+- Check the nats client's own tests. A real service member outlives its
+  subscriptions by construction and would never show this, so the client's own
+  suite is where the defect stays hidden.
+
+* References
+
+- =projects/ores.scheduler/core/tests/service_nats_publish_action_handler_tests.cpp= -- the instance, fixed in [[https://github.com/OreStudio/OreStudio/pull/3327][#3327]].
+- =projects/ores.nats/service/= -- =client::subscribe=, =on_msg=, the dispatch thread.
+- The core is held locally: =coredumpctl= entry for =ores.scheduler.core.tests=, 2026-10-15 01:31, SIGSEGV.
+
+* See also
+
+-

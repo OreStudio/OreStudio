@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,9 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/*
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_drop.mustache
+ * To modify, update the template and regenerate.
+ */
 
-drop function if exists ores_geo_ip2country_lookup_fn(uuid, inet);
-drop function if exists ores_geo_ip2country_lookup_fn(inet);
-drop function if exists ores_geo_inet_to_bigint_fn(inet);
-drop index if exists ip2country_range_idx;
-drop table if exists ores_geo_ip2country_tbl;
+drop rule if exists ores_geo_ip2country_delete_rule on "ores_geo_ip2country_tbl";
+drop trigger if exists ores_geo_ip2country_insert_trg on "ores_geo_ip2country_tbl";
+drop function if exists ores_geo_ip2country_insert_fn;
+drop table if exists "ores_geo_ip2country_tbl";

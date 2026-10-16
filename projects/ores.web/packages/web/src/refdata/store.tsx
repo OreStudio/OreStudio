@@ -57,6 +57,8 @@ export interface RecordStore {
             readonly search: string;
             readonly sort: string;
             readonly descending: boolean;
+            /** The filters set, by id. A store that has none ignores them. */
+            readonly filters?: Readonly<Record<string, string>>;
         },
     ) => Promise<{ readonly rows: readonly RecordRow[]; readonly total: number }>;
     readonly records: (resource: string, parent?: string) => Promise<readonly RecordRow[]>;

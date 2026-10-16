@@ -43,7 +43,6 @@ allows, and to the number of legs the template states for that role.
 :cpp_type:    boost::uuids::uuid
 :primary_key: true
 :parent_entity: trade
-:bump_parent_version: true
 :END:
 
 The trade that is a leg of the deal. Keying the table on it is the rule that
@@ -169,6 +168,7 @@ drop function if exists ores_trading_validate_structure_member_fn;
 :table:    ores_trading_trades_tbl
 :error_message: Invalid trade_id: %. No active trade found with this id.
 :nullable: false
+:bump_parent_version: true
 :END:
 
 A database foreign key: the anchor is immutable.

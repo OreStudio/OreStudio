@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: C06A524E-2551-40CD-B8C5-B4927749FB0D
+:END:
+#+title: Story: Overlay the libarchive port to silence its unused variable
+#+description: The macOS vcpkg install prints a warning from libarchive's portfile: it passes -DCMAKE_REQUIRE_FIND_PACKAGE_MbedTLS=ON for the OSX crypto backend, but libarchive's CMakeLists.txt never reads that variable in this configuration, so vcpkg_cmake_configure reports a manually specified variable that went unused and asks for it to be listed in MAYBE_UNUSED_VARIABLES. Upstream still omits it, so the pinned submodule cannot be bumped to fix it. Add an overlay port that lists the variable, and record why the other vcpkg warning, boost-system's build-path length warning on Windows, does not get one.
+#+type: story
+#+level: s2
+#+filetags: :vcpkg:cmake:macos:sprint_28:v0:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The macOS vcpkg install reports no unused-variable warning from the libarchive port, and libarchive still builds.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+- An overlay port for libarchive lists CMAKE_REQUIRE_FIND_PACKAGE_MbedTLS in MAYBE_UNUSED_VARIABLES.
+- The overlay differs from the pinned port by that entry and a comment only.
+- vcpkg selects the overlay and the port rebuilds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E4650DF3-EC2C-4710-AC36-16C0F93229F5][Scaffold story: Overlay the libarchive port to silence its unused variable]] | DONE | 2026-10-16 | 2026-10-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:F63D7737-362D-4A58-826B-D45A32A40EB7][Add the libarchive overlay port]] | DONE | 2026-10-16 | 2026-10-16 | Initial task for: Overlay the libarchive port to silence its unused variable |
+
+* Decisions
+
+- *An overlay port is the only lever short of touching the submodule.* The
+  unused-variable check lives in =vcpkg_cmake_configure= and runs
+  unconditionally; there is no global switch, and =MAYBE_UNUSED_VARIABLES= is
+  per-call, so it can only be fixed in the portfile. The alternatives are a
+  dirty submodule, which the next bump discards, or an overlay.
+- *Upstream cannot be bumped to fix it.* The master libarchive portfile still
+  passes =CMAKE_REQUIRE_FIND_PACKAGE_MbedTLS= without listing it, so the entry
+  is missing at every version rather than at the pinned one.
+- *The overlay vendors the pinned port and changes one line.* It copies
+  portfile.cmake, vcpkg.json, usage, vcpkg-cmake-wrapper.cmake.in and the two
+  patches, and adds the missing variable to MAYBE_UNUSED_VARIABLES. Everything
+  except that line and a comment is byte identical, which is what makes the
+  copy reviewable. The cost is a re-sync on every vcpkg bump, and the overlay
+  must be dropped once upstream lists the variable.
+- *boost-system gets no overlay.* That port warns through
+  =vcpkg_buildpath_length_warning(37)= when the buildtrees path exceeds 37
+  characters, and the warning is correct: our Windows path is about 68
+  characters. Deleting the call would hide a real MAX_PATH advisory rather than
+  fix it, so the story records the options instead of taking that one.
+
+* Out of scope
+
+- The boost-system build-path warning. It is fixed by a shorter vcpkg root on
+  the Windows runner, not by a port.
+- Reporting either warning upstream.

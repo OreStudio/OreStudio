@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 3C3AF829-0A9F-434B-BF5D-5A3606CA8B57
+:END:
+#+title: Story: Cap the Nightly Build step below the six-hour job limit
+#+description: The Nightly Build's linux-clang-debug job is the heaviest configuration in the repository, debug with coverage and memcheck, and on 2026-10-15 it hit exactly 6h0m0s and was killed. An uncapped step runs to the job limit, and the job is then torn down about thirty seconds later, which is not enough for the cache steps to finish. continuous-linux.yml has been capped at 320 minutes since the same thing happened there; nightly-linux.yml has no cap at all.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:cdash:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A Nightly Build whose compile overruns stops with enough of the job left to persist its compiler cache.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- The Run CTest workflow step in nightly-linux.yml has timeout-minutes 320.
+- The remaining job budget covers the cache guard, delete and save.
+- A warm Nightly Build run is unaffected.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CC1E5839-6EF2-4E56-9563-C7923BE2FDCA][Scaffold story: Cap the Nightly Build step below the six-hour job limit]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8A68D53D-05A4-4C33-80E1-A0B24650045D][Add the 320-minute cap to the Nightly Build step]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Cap the Nightly Build step below the six-hour job limit |
+
+* Decisions
+
+- The cap is 320 minutes, the same value =continuous-linux.yml= uses, so the
+  two workflows explain the same arithmetic in one place rather than two.
+- The cap is on the step, not the job. The job limit is already 360 minutes
+  and cannot be raised on a hosted runner, so the only way to keep room for
+  the cache steps is to stop the build early.
+- The gcc job's runner shutdown is left alone. It is infrastructure, it
+  happened at 3h13m, and no timeout change affects it.
+
+* Out of scope
+
+- Diagnosing why the runner shut down. That is GitHub's, and the same
+  signature has hit Linux jobs repeatedly this month.

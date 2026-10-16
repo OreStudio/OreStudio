@@ -80,6 +80,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            permission_handler_lg(), msg, req_ctx.tenant_id().to_string());
         auto req = decode<list_permissions_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(permission_handler_lg(), warn) << "Failed to decode: " << msg.subject;
@@ -121,6 +123,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            permission_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "iam::permissions:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -166,6 +170,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            permission_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "iam::permissions:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -211,6 +217,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            permission_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "iam::permissions:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -256,6 +264,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            permission_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "iam::permissions:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -301,6 +311,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            permission_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "iam::permissions:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -346,6 +358,8 @@ public:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            permission_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "iam::permissions:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;

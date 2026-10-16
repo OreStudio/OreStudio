@@ -43,6 +43,8 @@ import { CounterpartyJourney } from './journeys/CounterpartyJourney.js';
 import { useCounterpartyServer } from './journeys/counterpartyServer.js';
 import { ConventionJourney } from './journeys/ConventionJourney.js';
 import { useConventionsServer } from './journeys/conventionsServer.js';
+import { TenorJourney } from './journeys/TenorJourney.js';
+import { useTenorsServer } from './journeys/tenorsServer.js';
 import { BookStructureJourney } from './journeys/BookStructureJourney.js';
 import { useBooksServer } from './journeys/booksServer.js';
 import { SignUpJourney } from './journeys/SignUpJourney.js';
@@ -93,6 +95,8 @@ import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
 import { FxFeedPage } from './marketdata/synthetic/fxFeeds.js';
 import { IrFeedPage } from './marketdata/synthetic/irFeeds.js';
+import { BindingPage } from './marketdata/bindings/BindingPage.js';
+import { BindingsPage } from './marketdata/bindings/BindingsPage.js';
 import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
@@ -189,6 +193,11 @@ export interface AppRoutesProps {
      */
     readonly conventionJourney: ReactNode;
     /**
+     * The tenor resolution screen, which a person who maintains reference data
+     * runs to author the tenors and the conventions that resolve them.
+     */
+    readonly tenorJourney: ReactNode;
+    /**
      * The registration door, which a visitor with no account runs.
      *
      * It is a route rather than a gate for the same reason the other two are:
@@ -232,6 +241,7 @@ export function AppRoutes({
     counterpartyJourney,
     bookStructureJourney,
     conventionJourney,
+    tenorJourney,
     signUpJourney,
     journeyInProgress,
     self,
@@ -804,6 +814,30 @@ export function AppRoutes({
                 )}
             />
             <Route
+                path={PATHS.bindings}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <BindingsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.bindings}/:id`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <BindingPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
                 path="/refdata/classifications"
                 element={signedIn(
                     gate.version,
@@ -1033,6 +1067,12 @@ export function AppRoutes({
                     <CardScreen card="conventions">{conventionJourney}</CardScreen>
                 ))}
             />
+            <Route
+                path={PATHS.tenors}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="tenors">{tenorJourney}</CardScreen>
+                ))}
+            />
             {MOVED.map(([from, to]) => (
                 <Route key={from} path={from} element={<Moved to={to} />} />
             ))}
@@ -1059,6 +1099,7 @@ export function ConnectedApp(): ReactNode {
     const counterpartyServer = useCounterpartyServer();
     const booksServer = useBooksServer();
     const conventionsServer = useConventionsServer();
+    const tenorsServer = useTenorsServer();
     const navigate = useNavigate();
     const [journeyInProgress, setJourneyInProgress] = useState(false);
     const username = session.status === 'authenticated' ? session.session.username : '';
@@ -1224,6 +1265,9 @@ export function ConnectedApp(): ReactNode {
                             server={conventionsServer}
                             onFinished={() => navigate('/')}
                         />
+                    }
+                    tenorJourney={
+                        <TenorJourney server={tenorsServer} onFinished={() => navigate('/')} />
                     }
                     journeyInProgress={journeyInProgress}
                     onSignIn={signIn}

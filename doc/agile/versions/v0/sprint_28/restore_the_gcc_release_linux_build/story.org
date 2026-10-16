@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: FAF6498F-8AC1-48D3-B3BA-8369569CA789
+:END:
+#+title: Story: Restore the linux gcc release build
+#+description: The tier rebalance made Continuous Linux clang-only and left the gcc configurations to the Nightly Build, but the nightly matrix carries debug alone. linux-gcc-release is therefore built nowhere: the repository no longer compiles its gcc release configuration in CI at all, and nothing reports it to CDash. Add release to the nightly matrix and keep coverage and memcheck on the debug jobs, where they belong.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:build:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every Linux configuration the repository builds is built somewhere: gcc and clang, debug and release.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-15                               |
+
+* Acceptance
+
+- linux-gcc-release is built by the Nightly Build.
+- Coverage and memcheck run on the debug jobs only.
+- Every Linux configuration reports to CDash.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:ECE0A314-7653-478F-8398-2A8A1B7C735D][Scaffold story: Restore the linux gcc release build]] | DONE | 2026-10-15 | 2026-10-15 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:2B01F697-FA39-4914-B83D-7C42B8501E00][Add release to the Nightly Build matrix]] | DONE | 2026-10-15 | 2026-10-15 | Initial task for: Restore the linux gcc release build |
+
+* Decisions
+
+- Release joins the Nightly Build rather than Continuous. The rebalance
+  exists to keep the continuous compiler-cache working set inside the 10 GB
+  repository cap, and a third variant there works against it.
+- Coverage and memcheck follow the buildtype. They are added to the nightly
+  arguments only when the build is debug.
+- The four configurations are the coverage target: gcc and clang, debug and
+  release. Anything less leaves a configuration that nothing compiles.
+
+* Out of scope
+
+- Moving valgrind's installation off the release jobs. It is one package
+  step and does not change what the job builds.

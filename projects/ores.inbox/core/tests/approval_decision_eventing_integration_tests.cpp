@@ -162,9 +162,7 @@ TEST_CASE("write_approval_decision_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto request_id_parent = ores::inbox::generators::generate_synthetic_approval_request(ctx);
-    request_id_parent.change_reason_code = "system.test";
     auto request_id_parent_account_parent = ores::iam::generators::generate_synthetic_account(ctx);
-    request_id_parent_account_parent.change_reason_code = "system.test";
     // approval_kind is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, as the direct-parent
     // system-tenant branch does.
@@ -215,7 +213,6 @@ TEST_CASE("write_approval_decision_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto decided_by_parent = ores::iam::generators::generate_synthetic_account(ctx);
-    decided_by_parent.change_reason_code = "system.test";
     ores::iam::repository::account_repository decided_by_repo;
     decided_by_repo.write(party_ctx, decided_by_parent);
     v.decided_by = decided_by_parent.id;

@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: D7F7AB28-1CED-4F0F-9CAF-E62A8CA17B37
+:END:
+#+title: Task: Scaffold story: Cut the continuous build time
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :cut_the_continuous_build_time:sprint_28:v0:
+#+owner: marco
+#+branch: feature/cut-the-continuous-build-time
+#+pr: 3352
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:9D908DC5-72C6-4F92-9B06-9A99AA1D639A][Cut the continuous build time]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the story and wire it into Sprint 28. The work task waits on the
+dispatched Continuous Linux run 38560750280, which decides whether the
+lever is needed at all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:9D908DC5-72C6-4F92-9B06-9A99AA1D639A][Cut the continuous build time]] |
+| Now          | Closed. |
+| Waiting on   | Nothing. |
+| Next         | None. |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- The story, the scaffold task, and the work task exist and are wired into Sprint 28.
+- The scaffold rides the story's work pull request.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3352][#3352]] | [agile] Close the continuous build-time story with its findings |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story, its scaffold task, and its work task exist and are wired into
+Sprint 28. The scaffold rides the story's work pull request once the
+dispatched run says whether the work is needed.

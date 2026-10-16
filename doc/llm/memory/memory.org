@@ -101,6 +101,7 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:9EEF7590-86C3-449F-8387-A21B5B62EF87][Regen byproduct hygiene]] — every phase that regenerates code must sweep for unexpected untracked files and account for each one; the drift check runs in two modes only; blocked deletions dispose via tagged stash and drop.
 - [[id:34F5490D-DC57-4B87-961D-3E4920FEBEBF][Load .env before running test binaries]] — =set -a && source .env && set +a= before test runs.
 - [[id:C3B499F6-2E41-4E1C-A724-7524EAC24B8E][gh CLI requires dangerouslyDisableSandbox]] — keyring socket blocked by sandbox; always disable.
+- [[id:31D70680-0CBB-4C54-96A6-DD1EF5F65979][Run open-as outside the DSH sandbox]] — =open-as= needs the sandbox disabled: =--die-with-parent= kills its Chrome when the command returns, and the private =/tmp= hides the X11 socket. Do not pass =--workspace= unless the window must move.
 - [[id:5FF87481-1FF7-4AAA-A4CC-12BC3A5DE166][Never amend commits — always create new ones]] — even when fixing the immediately prior commit.
 - [[id:40003D46-DAEB-41DF-B4EE-947E223A8B8F][Do not push automatically after commits]] — stop after commit; only push when user explicitly asks.
 - [[id:1B24F0CD-E100-45D9-BED6-06A2D8CDA26B][No forwarding headers when moving code between components]] — delete the original; update all consumers to the new path.
@@ -127,6 +128,7 @@ of these exclusions, push back: the right home is somewhere else.
 - [[id:1E6E9374-E57D-4D3D-BAF7-16FC23651F19][Split hot and cold data by usage]] — main-path fields stay in the header and fact table, rarely read data gets its own table, and a column no mapper writes leaves the model.
 - [[id:E47BAF35-066F-4EF2-BA3D-522AED44FF33][Use exact decimals for rates, amounts and every money value]] — decimal in the domain type and numeric(38, 12) in the column; a double never enters the persisted domain; keep the document's digits at the ORE boundary.
 - [[id:97786EC5-123C-45AA-9CB9-5BCCC218FF78][Gate a change with compass check, not a bare site page]] — a bare =compass site page= republishes every stale page and gates nothing; =compass check= runs only the checks the change class needs and publishes just the changed pages.
+- [[id:B83064E5-6357-4FC6-A8BE-395DD429ED2A][Run the checks the affected code needs before merging]] — there is no separate validation job; run =compass check= for every class the change belongs to, heavy tier included, and merge only on a green report.
 
 ** User
 

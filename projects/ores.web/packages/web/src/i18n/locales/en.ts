@@ -1283,6 +1283,8 @@ export const en: SourceCatalogue = {
                 'Place books in portfolios, classify them and read who may see them.',
             conventions: 'Define instrument conventions',
             conventionsBody: 'Author the terms ORE uses for one instrument.',
+            tenors: 'Define how tenors resolve',
+            tenorsBody: 'Author the tenors and the conventions that resolve them.',
             rescue: 'Rescue access',
             rescueBody: 'Help someone who cannot sign in, or stop an account from being used.',
             audit: 'Sign-ins',
@@ -2732,6 +2734,135 @@ export const en: SourceCatalogue = {
             },
         },
 
+        tenors: {
+            new: 'new',
+            none: 'Choose a tenor or a convention first.',
+            pickFailed: 'The pick lists could not be read. {message}',
+            choose: {
+                title: 'Choose',
+                lead: 'Open a tenor to correct it, open a convention to correct its set, or start either.',
+                search: 'Search tenors and conventions',
+                startTenor: 'New tenor',
+                startConvention: 'New convention',
+                tenors: 'Tenors',
+                conventions: 'Conventions',
+                emptyTenors: 'No tenor matches.',
+                emptyConventions: 'No convention matches.',
+                readFailed: 'The catalogue could not be read. {message}',
+                columns: {
+                    code: 'Code',
+                    kind: 'Kind',
+                    unit: 'Unit',
+                    algorithm: 'Algorithm',
+                    version: 'Version',
+                },
+            },
+            tenor: {
+                title: 'Tenor',
+                lead: 'The code a person reads and the period it names.',
+                open: 'Open or start a tenor first.',
+                fields: {
+                    code: 'Code',
+                    displayName: 'Display name',
+                    description: 'Description',
+                    sortOrder: 'Sort order',
+                    kind: 'Kind',
+                    unit: 'Unit',
+                    multiplier: 'Multiplier',
+                },
+            },
+            convention: {
+                title: 'Convention',
+                lead: 'The rule that turns a tenor label into a date, and the tenors it resolves.',
+                open: 'Open or start a convention first.',
+                fields: {
+                    code: 'Code',
+                    description: 'Description',
+                    measuredFrom: 'Measured from',
+                    resolutionAlgorithm: 'Resolution algorithm',
+                    rollRule: 'Roll rule',
+                    oresmdUri: 'Market data URI',
+                },
+                members: 'Tenors in the set',
+                memberNote:
+                    'A tenor outside the set is not resolved by this convention. The anchor override names the point this convention counts that tenor from.',
+                anchorOverride: 'Anchor override',
+                inSet: 'In the set',
+                notInSet: 'Not in the set',
+                anchorNone: 'The convention default',
+            },
+            schedule: {
+                title: 'The schedule',
+                lead: 'A schedule axis expands into dated rolls: the rolls a swap needs, each one adjusted on a calendar.',
+                open: 'Open or start a convention first.',
+                note: 'The axis a convention rolls on. Expanding it into dated rolls needs the operation that resolves a tenor to a date, which the server does not serve yet.',
+                empty: 'No schedule axis is served.',
+                inUse: 'In use by a tenor here',
+            },
+            review: {
+                title: 'Review',
+                lead: 'Nothing is written until you confirm.',
+                nothing: 'Nothing has changed yet.',
+                count: '{count} changes differ from the version read.',
+                columns: {
+                    change: 'Change',
+                    before: 'Before',
+                    after: 'After',
+                },
+                absent: 'None',
+                what: {
+                    newTenor: 'New tenor',
+                    newConvention: 'New convention',
+                    tenor: 'Tenor {part}',
+                    convention: 'Convention {part}',
+                    member: 'Membership',
+                },
+                reason: 'Reason',
+                commentary: 'Commentary',
+                commentaryRequired: 'This reason needs a commentary.',
+                confirm: 'Save',
+                stepLabel: {
+                    choose: 'Choose',
+                    tenor: 'Tenor',
+                    convention: 'Convention',
+                    review: 'Review',
+                    terms: 'Terms',
+                    schedule: 'The schedule',
+                },
+            },
+            problems: {
+                nameTenor: 'Name the tenor: a code and a display name.',
+                chooseKindAndUnit: 'Choose the tenor kind and unit.',
+                sortOrderWhole: 'The sort order is a whole number.',
+                multiplierWhole: 'The multiplier is a whole number.',
+                nameConvention: 'Name the convention.',
+                chooseAnchorAlgorithmRoll: 'Choose the anchor, the algorithm and the roll rule.',
+                header: 'Still needed:',
+            },
+            refusal: {
+                heading: 'The server refused the change.',
+                atStep: 'The step that refused is {step}.',
+                kept: 'What was already written is kept. Your changes are kept.',
+                walkBack: 'Go to the step',
+            },
+            outcome: {
+                title: 'Outcome',
+                lead: 'The changes are saved.',
+                written: 'The changes are saved.',
+                reads: 'A trade that picks this tenor reads these terms.',
+                history: 'See the history',
+                list: 'Back to the list',
+                another: 'Another tenor',
+                done: 'Leave tenors',
+            },
+            history: {
+                title: 'History',
+                lead: 'Every saved version and what changed in each.',
+                none: 'Open a tenor to see its history.',
+                note: 'The server has no draft version, so the history shows saved versions only.',
+            },
+        },
+
         books: {
             noName: 'No name yet',
             noStatus: 'No status',
@@ -3109,6 +3240,9 @@ export const en: SourceCatalogue = {
         'Start the market feeds': 'Start the market feeds',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             "Starts the synthetic market data the tenant's curves and prices are built from.",
+        'Generate the trades': 'Generate the trades',
+        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
+            "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.",
         'Hand the tenant to its administrator': 'Hand the tenant to its administrator',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.",
@@ -3313,6 +3447,7 @@ export const en: SourceCatalogue = {
         },
         fields: {
             image_id: 'Flag',
+            producer_kind: 'Kind',
             version: 'Version',
             modified_by: 'Modified by',
             performed_by: 'Performed by',
@@ -3417,6 +3552,7 @@ export const en: SourceCatalogue = {
             component_index: 'Index',
         },
         choices: {
+            producer_kind: { SYNTHETIC: 'Synthetic', VENDOR: 'Vendor' },
             process_type: {
                 geometric: 'Geometric',
                 arithmetic: 'Arithmetic',
@@ -3646,6 +3782,27 @@ export const en: SourceCatalogue = {
     },
 
     marketdata: {
+        bindings: {
+            title: 'Bindings',
+            lead: 'The feeds that write market data for this party: which source each one names, the series it writes and whether it runs.',
+            allKinds: 'All kinds',
+            series: 'Series',
+            status: 'Status',
+            lastTick: 'Last tick',
+            feed: 'Feed',
+            folder: 'Folder',
+            ticksPerHour: 'Ticks per hour',
+            seriesHint: 'The series this binding writes to, and the oresmd URL that names it.',
+            vendorNote:
+                'A binding of a real feed is read only here. Only a binding of a synthetic feed can change.',
+            statuses: {
+                running: 'Running',
+                stopped: 'Stopped',
+                disabled: 'Disabled',
+                quiet: 'Quiet',
+                unsupported: 'Not supported',
+            },
+        },
         feeds: {
             targetUri:
                 'The series this feed writes to. Each tick the feed makes is stored as an observation of the series that this URI names.',
@@ -3657,6 +3814,9 @@ export const en: SourceCatalogue = {
                 synthetic: 'Synthetic',
                 syntheticBody:
                     'The feeds the platform generates: what runs by provider, and every feed to start and stop.',
+                bindings: 'Bindings',
+                bindingsBody:
+                    'The feeds that write market data for this party: the series each one writes and whether it runs.',
                 evolutionBody:
                     'Read a curve or surface over a range of instants, and as it stands now.',
             },

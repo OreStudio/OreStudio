@@ -160,7 +160,6 @@ TEST_CASE("write_credit_simulation_entity_config_publishes_an_event", tags) {
     // active row, so the parent must be written first.
     auto credit_simulation_config_id_parent =
         ores::analytics::generators::generate_synthetic_credit_simulation_config(ctx);
-    credit_simulation_config_id_parent.change_reason_code = "system.test";
     // The credit_simulation_config is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.
@@ -175,7 +174,6 @@ TEST_CASE("write_credit_simulation_entity_config_publishes_an_event", tags) {
     // first.
     auto transition_matrix_id_parent =
         ores::analytics::generators::generate_synthetic_credit_simulation_matrix_config(ctx);
-    transition_matrix_id_parent.change_reason_code = "system.test";
     // The credit_simulation_matrix_config is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.

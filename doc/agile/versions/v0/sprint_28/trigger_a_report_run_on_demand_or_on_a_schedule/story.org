@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:reporting:scheduler:iam:
 #+created: 2026-10-14
 #+updated: 2026-10-14
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -29,12 +29,12 @@ and it cannot work until the trigger exists.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The design is settled; no code is written. |
+| Now           | Complete. All three tasks merged. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-14                               |
+| Next          | Nothing. The workflow step stream gap this exposed is captured in the product backlog, and the package carrying no trades belongs to a data task rather than this story. |
+| Last touched  | 2026-10-15                               |
 
 * Acceptance
 
@@ -62,8 +62,9 @@ and it cannot work until the trigger exists.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | BACKLOG | | | Create the report's consent at admission rather than only at schedule time |
-|      |       |       |     |             |
+| [[id:DDCC55F1-9A4B-4335-99D1-56A78D781224][Grant a run when a person triggers one]] | DONE | 2026-10-15 | 2026-10-15 | Create the report's consent at admission rather than only at schedule time |
+| [[id:C4DE51A9-9892-4F17-A549-6B3BCED95E0A][Prove ore build-packages end to end]] | DONE | | 2026-10-15 | The command has never run end to end. Its parts are tested and merged, but no run has gone from a report definition name through a live workflow service and JetStream stream to a package on disk. |
+| [[id:600681D4-21D2-498D-A9A0-F740B35E57FC][Guard the trigger contract against silent drops]] | DONE | | 2026-10-15 | The scheduler keeps a hand-written copy of the reporting trigger request. When the contract gained a fourth field the copy was not updated, and every scheduled firing was silently dropped for a day. The copy is still there and the test that guards it mirrors the struct rather than calling production code. |
 
 * Decisions
 

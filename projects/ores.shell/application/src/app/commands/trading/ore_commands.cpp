@@ -23,6 +23,7 @@
 #include "ores.ore.api/net/ore_storage.hpp"
 #include "ores.ore.core/planner/import_choices.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.shell/app/command_args.hpp"
@@ -77,6 +78,68 @@ parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
 constexpr std::chrono::seconds default_build_packages_timeout(600);
 constexpr std::chrono::seconds package_poll_interval(2);
 constexpr std::chrono::seconds list_request_timeout(30);
+
+/**
+ * @brief The id of the report definition @p name names within the session's party.
+ *
+ * A name is unique within a party, not within a tenant, so the party the session
+ * selected is what scopes the lookup and the caller supplies none. A name that
+ * resolves to nothing, or to more than one definition, is refused by name rather
+ * than guessed at.
+ *
+ * @return the definition id, or nothing when the name did not resolve. The failure
+ * is reported through @p out.
+ */
+std::optional<boost::uuids::uuid>
+resolve_report_definition(std::ostream& out, nats_client& session, const std::string& name) {
+    const auto& party_id = session.auth().default_party_id;
+    if (party_id.empty()) {
+        fail(out) << "This session holds no party, and a report definition is resolved "
+                     "within one. Sign in again, or run 'accounts set-default-party "
+                     "<party-id-or-full-name>' first."
+                  << std::endl;
+        return std::nullopt;
+    }
+
+    ores::reporting::messaging::list_report_definitions_request req;
+    req.limit = 100;
+    req.filter = ores::reporting::messaging::report_definitions_filter{
+        .party_id_one_of =
+            std::vector<boost::uuids::uuid>{boost::uuids::string_generator()(party_id)}};
+
+    const auto listing =
+        do_auth_request<ores::reporting::messaging::list_report_definitions_response>(
+            out, session, req.nats_subject, req, list_request_timeout);
+    if (!listing)
+        return std::nullopt;
+    if (listing->result.outcome != ores::utility::domain::outcome::ok) {
+        fail(out) << "Cannot list the report definitions: " << listing->result.message << std::endl;
+        return std::nullopt;
+    }
+
+    std::vector<ores::reporting::domain::report_definition> matches;
+    for (const auto& definition : listing->definitions) {
+        if (definition.name == name)
+            matches.push_back(definition);
+    }
+    if (matches.empty()) {
+        fail(out) << "No report definition named '" << name << "' in party " << party_id
+                  << ". A definition is resolved within the party the session is signed in to, so "
+                     "one that belongs to another party is invisible here."
+                  << std::endl;
+        return std::nullopt;
+    }
+    if (matches.size() > 1) {
+        fail(out) << "Ambiguous report definition name '" << name << "': " << matches.size()
+                  << " definitions in party " << party_id << " answer to it:" << std::endl;
+        for (const auto& match : matches)
+            out << "    " << boost::uuids::to_string(match.id) << "  " << match.report_type
+                << std::endl;
+        return std::nullopt;
+    }
+    return matches.front().id;
+}
+
 
 /**
  * @brief The folder a package unpacks into: its file name without the archive suffix.
@@ -229,9 +292,8 @@ bool remove_instance(std::ostream& out, nats_client& session, const std::string&
     request.intent.commentary =
         "Remove a package instance, and the packages it stored, once they are old enough.";
 
-    const auto reply =
-        do_auth_request<ores::reporting::messaging::delete_report_instance_response>(
-            out, session, request.nats_subject, request, import_request_timeout);
+    const auto reply = do_auth_request<ores::reporting::messaging::delete_report_instance_response>(
+        out, session, request.nats_subject, request, import_request_timeout);
     if (!reply)
         return false;
     if (reply->result.outcome != ores::utility::domain::outcome::ok) {
@@ -401,7 +463,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                 return;
             }
             if (parsed->positionals.size() != 2) {
-                fail(out) << "Usage: ore build-packages <report_definition_id> <out_dir> "
+                fail(out) << "Usage: ore build-packages <report_definition_name> <out_dir> "
                              "[--timeout <seconds>]"
                           << std::endl;
                 return;
@@ -419,7 +481,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                                    *timeout);
         },
         "Build the packages the compute grid would receive for a report, and unpack them",
-        {"report_definition_id out_dir [--timeout <seconds>]"});
+        {"report_definition_name out_dir [--timeout <seconds>]"});
 
     ore_menu->Insert("fetch-packages",
                      [&session](std::ostream& out, std::vector<std::string> args) {
@@ -726,14 +788,14 @@ void ore_commands::process_fetch_packages(std::ostream& out,
 
 void ore_commands::process_build_packages(std::ostream& out,
                                           nats_client& session,
-                                          const std::string& report_definition_id,
+                                          const std::string& report_definition_name,
                                           const std::string& out_dir,
                                           std::chrono::seconds timeout) {
     if (!session.is_logged_in()) {
         fail(out) << "Not logged in." << std::endl;
         return;
     }
-    const auto definition = parse_uuid(out, report_definition_id, "report definition id");
+    const auto definition = resolve_report_definition(out, session, report_definition_name);
     const auto tenant = parse_uuid(out, session.auth().tenant_id, "tenant id of the session");
     if (!definition || !tenant)
         return;

@@ -5,6 +5,7 @@
 #+name: variability.api
 #+full_name: ores.variability.api
 #+description: Domain types and NATS protocol schemas for the variability component.
+#+brief: Variability domain types and NATS protocol schemas
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :variability:api:component:

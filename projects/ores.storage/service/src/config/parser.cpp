@@ -53,8 +53,8 @@ void print_help(const options_description& od, std::ostream& info) {
 void version(std::ostream& info) {
     info << product_version << std::endl
          << "Copyright (C) 2026 Marco Craveiro." << std::endl
-         << "License GPLv3: GNU GPL version 3 or later " << "<http://gnu.org/licenses/gpl.html>."
-         << std::endl
+         << "License GPLv3: GNU GPL version 3 or later "
+         << "<http://gnu.org/licenses/gpl.html>." << std::endl
          << "This is free software: you are free to change and redistribute it." << std::endl
          << "There is NO WARRANTY, to the extent permitted by law." << std::endl;
 
@@ -68,12 +68,6 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
                                        std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    // Add any app-specific options here and pass them as the second
-    // argument to make_options_description, e.g.:
-    //   options_description my_opts("My options");
-    //   my_opts.add_options()(...);
-    //   const auto od(standard_service_options::make_options_description(
-    //       "ores.storage.service.log", my_opts));
     options_description sod("Object storage");
     sod.add_options()("storage-dir",
                       boost::program_options::value<std::string>()->default_value(

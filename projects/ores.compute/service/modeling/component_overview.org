@@ -5,6 +5,7 @@
 #+name: compute.service
 #+full_name: ores.compute.service
 #+description: NATS service entrypoint for the compute domain.
+#+brief: Compute orchestrator service entrypoint
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:service:component:

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: CAA1115A-0217-45C6-AA30-CF3E74D04642
+:END:
+#+title: projects/ores.sql/test/trading_trade_envelope_names_test.sql…
+#+description: projects/ores.sql/test/trading_trade_envelope_names_test.sql fails 5 of its 10 subtests, and it fails on main. Failures 1 to 4 and 7, all about a recorded identifier naming the counterparty and netting set: the results are (CP,NS), (CP), (CPTY_7,CPTY_B), (CPTY_A,) and (CPTY) where the test expects NULL or (CPTY). The pgtap gate check is the only local check that fails for this reason. The branch that found it changes no SQL file and does not touch the test, so the failure predates it: projects/ores.sql/create/trading/ last changed 2026-10-15 15:42, the test last changed 2026-10-11.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

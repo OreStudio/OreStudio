@@ -14,6 +14,24 @@
 
 Service wiring: config → dependencies → run loop. =component-service= profile.
 
+A service starts as the stub below, which logs that it is not yet implemented.
+A service that has been implemented keeps its code in its own model rather
+than in the generated file, through three paste points. Provide each as a
+=#+begin_src cpp :name <name> :implements <kind>= block on the service's
+=component_overview.org=. A kind that no model implements collapses to
+nothing, so the stub still renders for a service that supplies none.
+
+- =<<paste:2A6D90B3-5EA2-48FA-BAC2-472EB4388B6C>>= — extra includes, emitted
+  after the standard ones. Block name =service_app_includes=.
+- =<<paste:729726C6-96A1-438C-8663-2CF919C72941>>= — namespace-scope
+  preamble, emitted after =using namespace ores::logging=. Block name
+  =service_app_preamble=.
+- =<<paste:2CD994C9-83FF-4C41-8909-5AD2BF3DECCC>>= — the body of =run()=.
+  Block name =service_app_run_body=. Supplying it suppresses the stub, so a
+  stub and a real body never appear together.
+
+=ores.storage/service= uses all three.
+
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
@@ -24,7 +42,7 @@ The full template source. Edit here and re-tangle with
 =library/templates/cpp_service_app_application.cpp.mustache=.
 
 #+begin_src mustache :tangle cpp_service_app_application.cpp.mustache
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.service-app.application_impl.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include "{{full_name}}/app/application.hpp"
@@ -33,10 +51,13 @@ The full template source. Edit here and re-tangle with
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include "{{full_name}}/app/application_exception.hpp"
+<<paste:2A6D90B3-5EA2-48FA-BAC2-472EB4388B6C>>
 
 namespace {{namespace}}::app {
 
 using namespace ores::logging;
+
+<<paste:729726C6-96A1-438C-8663-2CF919C72941>>
 
 ores::database::context application::make_context(
     const ores::database::database_options& db_opts) {
@@ -56,18 +77,23 @@ ores::database::context application::make_context(
 application::application() = default;
 
 boost::asio::awaitable<void>
-application::run(boost::asio::io_context& /*io_ctx*/,
+application::run(boost::asio::io_context& io_ctx,
     const config::options& cfg) const {
+
+{{^has_app_run_body}}
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "{{full_name}}", 0, 1);
 
     auto ctx = make_context(cfg.database);
     (void)ctx;
+    (void)io_ctx;
 
     // TODO: register domain handlers and run NATS server
     BOOST_LOG_SEV(lg(), warn) << "{{full_name}} service is not yet implemented.";
     co_return;
+{{/has_app_run_body}}
+<<paste:2CD994C9-83FF-4C41-8909-5AD2BF3DECCC>>
 }
 
 }

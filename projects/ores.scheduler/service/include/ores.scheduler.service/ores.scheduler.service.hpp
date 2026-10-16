@@ -17,15 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_SCHEDULER_SERVICE_HPP
 #define ORES_SCHEDULER_SERVICE_HPP
 
 /**
  * @brief Scheduler service
  *
- * Standalone NATS microservice hosting scheduler handlers and running the in-process scheduler loop
- * with SQL and message queue action handlers.
+ * NATS service entrypoint for the scheduler domain — wires job handlers and runs the cron loop.
  */
-namespace ores::scheduler.service {}
+namespace ores::scheduler::service {}
 
 #endif

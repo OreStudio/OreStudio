@@ -7,6 +7,7 @@
 #+output: projects/{component_dir}/tests/component_files.cmake
 #+facet: ores.cmake.component
 #+component_kind: flat api core service adapter
+#+default: disabled
 #+level: cross
 #+filetags: :codegen:templates:literate:archetype:
 #+created: 2026-07-29
@@ -26,6 +27,14 @@ variables and their semantics. This archetype adds one more:
 computed by a filesystem scan at render time
 (=projects/ores.codegen/src/codegen/core.py='s =_COMPONENT_FILES_TEMPLATES=
 branch), not sourced from the model like every other field.
+
+The archetype is =#+default: disabled=, so =compass codegen regenerate=
+never emits it and =regenerate_cmake_component_files.py= is its only author.
+The list is a scan of the render's own output directory, so a run that
+renders anywhere but the real tree cannot reproduce it:
+=check_component_drift.py --sweep= renders into a temporary root, and would
+read every list as emptied. One author per generated file is also why the
+gate that owns this file is =cmake-sources=.
 
 * Template
 

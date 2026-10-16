@@ -17,14 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_MARKETDATA_SERVICE_HPP
 #define ORES_MARKETDATA_SERVICE_HPP
 
 /**
  * @brief Market data ingestion and query service
  *
- * Standalone NATS microservice hosting market data handlers: series management, observation and
- * fixing ingestion, and import of ORE market.txt and fixings.txt files.
+ * NATS service entrypoint for the market-data domain.
  */
 namespace ores::marketdata::service {}
 

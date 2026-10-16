@@ -5,6 +5,7 @@
 #+name: sql
 #+full_name: ores.sql
 #+description: PostgreSQL schema, role provisioning, and database lifecycle management for ORE Studio. Schema changes are applied by recreating the database from scratch — there is no incremental migration runner.
+#+brief: PostgreSQL schema and lifecycle scripts
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :sql:database:schema:component:

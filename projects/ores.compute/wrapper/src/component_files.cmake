@@ -39,4 +39,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.wrapper/ores.compute.wrapper.hpp"
 )

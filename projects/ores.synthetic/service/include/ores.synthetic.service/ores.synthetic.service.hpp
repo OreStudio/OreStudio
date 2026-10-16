@@ -17,15 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_SYNTHETIC_SERVICE_HPP
 #define ORES_SYNTHETIC_SERVICE_HPP
 
 /**
- * @brief Synthetic data generation service
+ * @brief Synthetic data service entrypoint
  *
- * Standalone NATS microservice hosting synthetic data handlers: generation of realistic test data
- * for development and QA purposes.
+ * NATS service entrypoint for the synthetic data component.
  */
-namespace ores::synthetic.service {}
+namespace ores::synthetic::service {}
 
 #endif

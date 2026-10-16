@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -9,16 +9,21 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_test_main.cpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #include "ores.testing/database_lifecycle_listener.hpp"
 #include "ores.testing/logging_listener.hpp"
-#include "ores.testing/test_timeout_listener.hpp"
 #include <boost/scope_exit.hpp>
 #include <catch2/catch_session.hpp>
 #include <catch2/reporters/catch_reporter_registrars.hpp>
@@ -26,7 +31,6 @@
 
 CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
 CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
-CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
 
 int main(int argc, char* argv[]) {
     BOOST_SCOPE_EXIT(void) {
@@ -34,6 +38,6 @@ int main(int argc, char* argv[]) {
     }
     BOOST_SCOPE_EXIT_END
 
-    ores::testing::logging_listener::set_test_module_name("ores.ore.tests");
+    ores::testing::logging_listener::set_test_module_name("ores.ore.core.tests");
     return Catch::Session().run(argc, argv);
 }

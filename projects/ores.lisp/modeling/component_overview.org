@@ -5,6 +5,7 @@
 #+name: lisp
 #+full_name: ores.lisp
 #+description: Emacs Lisp developer tooling for ORE Studio — dashboard, database browser, shell integration, and org-roam export.
+#+brief: Emacs Lisp developer tooling layer
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :lisp:tooling:emacs:component:

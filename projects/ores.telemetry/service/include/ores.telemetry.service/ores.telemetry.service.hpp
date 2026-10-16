@@ -17,15 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_TELEMETRY_SERVICE_HPP
 #define ORES_TELEMETRY_SERVICE_HPP
 
 /**
  * @brief Telemetry and metrics streaming service
  *
- * Standalone NATS microservice hosting telemetry handlers: system metrics collection, distributed
- * tracing, and log record streaming to clients.
+ * NATS service entrypoint for the telemetry domain — receives and persists log records.
  */
-namespace ores::telemetry.service {}
+namespace ores::telemetry::service {}
 
 #endif

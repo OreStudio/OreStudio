@@ -5,6 +5,7 @@
 #+name: logging
 #+full_name: ores.logging
 #+description: Core logging library on Boost.Log — severity levels, logger factory, and lifecycle management for all ORE Studio components.
+#+brief: Boost.Log core logging library
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :logging:infrastructure:component:

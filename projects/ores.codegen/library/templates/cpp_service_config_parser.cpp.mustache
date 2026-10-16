@@ -48,13 +48,10 @@ std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     using ores::service::config::standard_service_options;
 
-    // Add any app-specific options here and pass them as the second
-    // argument to make_options_description, e.g.:
-    //   options_description my_opts("My options");
-    //   my_opts.add_options()(...);
-    //   const auto od(standard_service_options::make_options_description(
-    //       "{{full_name}}.log", my_opts));
+{{^has_app_config_decl}}
     const auto od(standard_service_options::make_options_description("{{full_name}}.log"));
+{{/has_app_config_decl}}
+<<paste:F98CC722-3E53-4B86-90E7-69EC5D25702E>>
     const auto vm(standard_service_options::parse(od, arguments, "{{name_upper}}"));
 
     if (standard_service_options::wants_help(vm)) {
@@ -72,6 +69,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = std_opts.logging;
     r.nats = std_opts.nats;
     r.database = std_opts.database;
+<<paste:691CE3AB-6788-4E1C-8E8A-948CE6534C75>>
     return r;
 }
 

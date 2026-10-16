@@ -6791,9 +6791,17 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     fm = doc.frontmatter
 
     c: dict[str, Any] = {}
-    for k in ("name", "full_name", "brief", "description"):
+    for k in ("name", "full_name", "brief"):
         if k in fm:
             c[k] = fm[k]
+    # The umbrella header puts this inside a /** ... */ block and lets
+    # clang-format wrap it, which the formatter only does for a line that is
+    # too long. A description that arrives already broken stays broken, and
+    # every break lands after the " * " prefix, so the continuation lines stop
+    # being comment lines at all. Collapse it here, so the template always
+    # receives the one line clang-format is expecting.
+    if fm.get("description"):
+        c["description"] = " ".join(str(fm["description"]).split())
     # Component kind (flat | api | core | service | composite | adapter)
     # selects the scaffolding variant set via the graph's kind discriminator;
     # defaults to "flat". A composite has sub-components and no code of its
@@ -6831,6 +6839,22 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     # comes out as an INTERFACE library instead.
     c["header_only"] = str(fm.get("header_only", "")).strip().lower() in (
         "true", "yes", "1")
+    # A component's test main links ores.testing for the logging listener, the
+    # database lifecycle listener and the OpenSSL cleanup. A component whose
+    # tests link none of it -- ores.analytics/quant has no database and no
+    # fixture -- says #+test_fixture: none, and the test main stays the bare
+    # Catch2 session its CMake can actually compile.
+    c["has_test_fixture"] = (
+        str(fm.get("test_fixture", "")).strip().lower() != "none")
+    # Paste points: a component model splices hand-written C++ into a generated
+    # service file the same way an entity model does, through the
+    # <<paste:KIND_UUID>> markers its template carries. A service that has
+    # outgrown the stub -- ores.storage/service wires a local store and a real
+    # run loop -- keeps that code in its model here, so regenerating the file
+    # cannot delete it.
+    implementations = _collect_implementations(doc.root)
+    if implementations:
+        c["implementations"] = implementations
     return {"component": c}
 
 

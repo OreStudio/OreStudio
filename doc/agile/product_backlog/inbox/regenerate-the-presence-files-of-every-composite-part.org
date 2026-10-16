@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 110DBD58-BD49-41A0-90F4-701116517965
+:END:
+#+title: A composite's parts were never enumerated by codegen discove…
+#+description: A composite's parts were never enumerated by codegen discovery. manifest.discover_models globs the composite's modeling_dir one level deep, so ores.<comp>/{api,core,service,client,adapter}/modeling/component_overview.org was never rendered. Their export.hpp, tests/main.cpp and umbrella headers therefore carry every template change since the part was last generated: at ores.iam/api those files were last written 2026-06-05, while the templates changed 2026-08-02. A full regeneration flushes about 250 files -- the generated-file banner (114), licence rewrapping, the OpenSSL test-main cleanup (22), the database lifecycle listener (20), and test_timeout_listener removal (14). Discovery now reaches the parts; the flush, and each component's reconciliation, are the separate work.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

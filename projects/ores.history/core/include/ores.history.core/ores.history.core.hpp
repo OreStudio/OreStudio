@@ -17,6 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_HISTORY_CORE_HPP
 #define ORES_HISTORY_CORE_HPP
 
@@ -26,6 +31,6 @@
  * Server-side generic history dispatch: registry, NATS handler and registrar wiring the shared
  * history.v1.get subject to per-entity providers.
  */
-namespace ores::history {}
+namespace ores::history::core {}
 
 #endif

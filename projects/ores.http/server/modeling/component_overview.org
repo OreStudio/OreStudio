@@ -5,6 +5,7 @@
 #+name: http.server
 #+full_name: ores.http.server
 #+description: HTTP server entrypoint — wires HTTP routes and runs the Boost.Asio event loop.
+#+brief: HTTP server process entrypoint
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :http:server:component:

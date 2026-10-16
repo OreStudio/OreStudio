@@ -5,6 +5,7 @@
 #+name: iam.client
 #+full_name: ores.iam.client
 #+description: Client-side IAM library — session management and authentication helper for UI and service consumers.
+#+brief: IAM client session management library
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:client:component:

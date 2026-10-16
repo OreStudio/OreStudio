@@ -41,6 +41,106 @@ checks the operation's permission code before it acts, and calls
 - =ores.service= — the domain service runner every service shares.
 - =ores.nats= — the transport.
 
+* Implementation
+
+=ores.storage/service= is the first service past the =ores.cpp.service-app=
+stub, so its implementation lives in its own model rather than in the generated
+=src/app/application.cpp=. Each block below fills one paste point of
+=ores.cpp.service-app.application_impl=; the run body suppresses the stub.
+
+** Extra includes
+
+#+begin_src cpp :name service_app_includes :implements 2A6D90B3-5EA2-48FA-BAC2-472EB4388B6C
+#include "ores.nats/service/client.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
+#include "ores.storage.core/filesystem/local_store.hpp"
+#include "ores.storage.service/messaging/registrar.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <memory>
+#+end_src
+
+** Namespace preamble
+
+#+begin_src cpp :name service_app_preamble :implements 729726C6-96A1-438C-8663-2CF919C72941
+namespace {
+constexpr std::string_view service_name = "ores.storage.service";
+constexpr std::string_view service_version = ORES_VERSION;
+}
+#+end_src
+
+** Run body
+
+The store is the one the HTTP routes are given: two front doors onto the same
+tree, which is what makes a put over the bus and a put over HTTP leave the
+same object.
+
+#+begin_src cpp :name service_app_run_body :implements 2CD994C9-83FF-4C41-8909-5AD2BF3DECCC
+BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
+    "ores.storage.service", 0, 1);
+
+ores::nats::service::client nats(cfg.nats);
+nats.connect();
+
+// The store is the one the HTTP routes are given: two front doors onto the
+// same tree, which is what makes a put over the bus and a put over HTTP
+// leave the same object.
+ores::storage::filesystem::local_store store(cfg.storage_dir);
+
+co_await ores::service::service::run(
+    io_ctx,
+    nats,
+    make_context(cfg.database),
+    "ores.storage.service",
+    [store](auto& n, auto c, auto v) {
+        return ores::storage::service::messaging::registrar::register_handlers(
+            n, std::move(c), std::move(v), store);
+    },
+    [&nats](boost::asio::io_context& ioc) {
+        auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+            std::string(service_name), std::string(service_version), nats);
+        boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
+    });
+co_return;
+#+end_src
+
+** Config option member
+
+The member the =--storage-dir= option fills. It must be the same directory the
+HTTP storage routes are given, because the two interfaces serve the same
+objects through the same store.
+
+#+begin_src cpp :name service_app_config_option :implements 0B222F2C-B8B6-41AE-AF03-C61D76AF6833
+    /**
+     * @brief Root directory the buckets live under.
+     *
+     * It must be the same directory the HTTP storage routes are given, because
+     * the two interfaces serve the same objects through the same store.
+     */
+    std::string storage_dir;
+#+end_src
+
+** Config option declaration
+
+#+begin_src cpp :name service_app_config_option_decl :implements F98CC722-3E53-4B86-90E7-69EC5D25702E
+    options_description sod("Object storage");
+    sod.add_options()("storage-dir",
+                      boost::program_options::value<std::string>()->default_value(
+                          "/var/ores/http-server/storage"),
+                      "Root directory the buckets live under. It must match the HTTP "
+                      "server's --storage-dir, because both interfaces serve the same "
+                      "objects through the same store.");
+    const auto od(
+        standard_service_options::make_options_description("ores.storage.service.log", sod));
+#+end_src
+
+** Config assignment
+
+#+begin_src cpp :name service_app_config_assignment :implements 691CE3AB-6788-4E1C-8E8A-948CE6534C75
+    r.storage_dir = vm["storage-dir"].as<std::string>();
+#+end_src
+
 * See also
 
 - [[id:ED632650-BFB1-4904-BE34-CFA4B6170B8B][ores.storage]] — the component group overview.

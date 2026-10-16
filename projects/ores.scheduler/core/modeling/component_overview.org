@@ -5,6 +5,7 @@
 #+name: scheduler.core
 #+full_name: ores.scheduler.core
 #+description: Job scheduling infrastructure — cron-based job definitions, execution, and scheduling for periodic operations.
+#+brief: Cron job scheduling core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :scheduler:core:component:

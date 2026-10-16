@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/carry-the-missing-ore-values-in-the-domain
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,16 +26,24 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+- The five documents that still fail to re-read now round trip, so
+  =known_export_gaps()= in =xml_exporter_directory_roundtrip_tests.cpp= is the
+  empty set.
+- Every value the export writes is the value the source document carried. No
+  placeholder stands in for a value the domain does not hold.
+- The new fields are model-driven: they live in the =ores.trading= codegen
+  models and the component's drift check is clean, so no generated file is
+  hand-edited.
+- No document that already re-read stops re-reading.
 
 * Plan
 
@@ -55,7 +63,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Documents that fail to re-read | 0, down from 5 | =compass test run -- -R ores.ore.core.tests= (the case "roundtrip mirrors every portfolio in the ORE example corpus"); =known_export_gaps()= is empty | dd1780dbe6 |
+| ORE core suite | 667 cases, 0 failures | the same command | dd1780dbe6 |
+| Trading codegen drift | clean | =python3 projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp= | dd1780dbe6 |
 
 * Notes
 
@@ -83,3 +93,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+No document in the example corpus fails to re-read any more, so
+=known_export_gaps()= is empty and the defect the previous task could only
+shrink is gone.
+
+The five values the schema required now live in the domain. The equity and fx
+accumulators carry their range bounds, and the equity swap instrument carries
+the worst-of-basket swap's initial prices, knock-out levels and fixed trigger
+levels. Each is a nullable JSON text column beside the established
+=basket_json=, so the change is model-driven end to end: the domain class,
+mapper, repository, service, SQL schema, shell commands and wire protocol all
+come from the =ores.trading= models, and the component's drift check is clean.
+
+Every value written back is the value the source document carried. No
+placeholder stands in for a value the domain does not hold, which is what the
+previous task refused to ship.
+
+Acceptance met: the five documents round trip, every value is real, the fields
+are model-driven with a clean drift check, and nothing that re-read before
+stopped re-reading.

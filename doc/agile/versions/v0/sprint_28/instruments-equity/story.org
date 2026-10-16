@@ -39,7 +39,7 @@ Rework options, forwards, swaps, variance swaps, barriers, digitals, Asians, acc
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:D65A593A-AE06-4EBD-981E-EDAAF5AF1138][Analyse the equity family against data-oriented design]] | STARTED | 2026-10-16 | | Walk the equity family's models, SQL, tests and round trip against the data-oriented design criteria and the instrument table rule, and propose the target model. |
+| [[id:D65A593A-AE06-4EBD-981E-EDAAF5AF1138][Analyse the equity family against data-oriented design]] | DONE | 2026-10-16 | 2026-10-16 | Walk the equity family's models, SQL, tests and round trip against the data-oriented design criteria and the instrument table rule, and propose the target model. |
 
 * Decisions
 

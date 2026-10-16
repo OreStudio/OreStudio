@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-the-fx-accumulator-range-bounds-their-own-table
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,7 +29,7 @@ rows, and the Regime 3 check forbids an encoded string field.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

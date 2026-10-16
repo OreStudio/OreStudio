@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: D65A593A-AE06-4EBD-981E-EDAAF5AF1138
+:END:
+#+title: Task: Analyse the equity family against data-oriented design
+#+description: Walk the equity family's models, SQL, tests and round trip against the data-oriented design criteria and the instrument table rule, and propose the target model.
+#+type: task
+#+level: s1
+#+filetags: :instruments-equity:sprint_28:v0:
+#+owner: marco
+#+branch: feature/audit-the-equity-instrument-family-against-dod
+#+pr: 3389
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- =design.org= states the family, its surfaces, the findings with the command behind every number, the proposed target model, the mapping from the current columns, and the staged units.
+- =design_er.puml= draws the proposed target model.
+- Every finding carries a severity, an effort and the data-oriented criterion it maps to.
+- Each staged unit names the check that ends it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Equity codes in the catalogue, and how many are routed | 32 total, 19 routed, 13 with no table | the awk in =evidence/equity_catalogue_counts.txt= | d52d9b927e |
+| Columns across the nine routed equity tables and their child | 218, from 17 to 26 per table | the per-table awk in the Measurements section of design.org | d52d9b927e |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3389][#3389]] | [trading] Analyse the equity instrument family against data-oriented design |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Is =variance_strike= money or a continuous quantity? It is the only column whose classification the analysis left open. | design.org, finding E3 | Accept as money | Ruled by the operator 2026-10-16. A variance strike is a level the parties agree and it settles a cash amount, so it is =decimal= and =numeric(38,12)=. Recorded as a decision in design.org. |
+| 2 | E5's "116 member names are reachable from one tagged write" is not what the number measures; it is the sum over all nine alternatives, and the M10 grep also counts each header's =_economic_fields= line. | design.org, E5 and M10 | accept | Corrected: the nine alternatives declare 107 members; a tagged write reaches one alternative. M10 states how the 116 lines arise. |
+| 3 | M15 names =BOOST_AUTO_TEST_CASE=, which returns 0; the 36 core cases are Catch2 =TEST_CASE= macros. | design.org, M15 | accept | Command corrected. The 36 core, 172 shell and 29 ORE cases reproduce with =TEST_CASE=. |
+| 4 | E14 says the positions have no top-level corpus document and appear only under a =TotalReturnSwap=. | design.org, E14 | accept | =Products/Input/referencedata.xml= holds two top-level =EquityPosition= trades, and =Hybrid_CFD.xml= nests one under a =ContractForDifference=. E14 corrected. |
+| 5 | M17's =<SubTradeType>Equity== command returns 0, and its "2 nested" does not reproduce. | design.org, M17 | accept | Corrected to 2 top-level, 5 files nesting =EquityPosition= and 3 nesting =EquityOptionPosition=. The corrected commands hold no pipe. |
+| 6 | "32 columns are written by no mapper" ignores the generated synthetic-data generators under =ores.trading.api/src/generators=. | design.org, E1, E7 and the use table | accept | A repo-wide search finds a generator writer for 20 of the 32 (all eight =long_short=, one =settlement_type=, =rebate=, =payout_amount=, =price=, four accumulator fields, the position =currency=, three Asian fields). The claim is scoped to the import mapper and the generators are named as a change surface. |
+| 7 | The equity ORE round-trip gaps are owned by another story, so the design claims a gap it does not own. | design.org, the ORE-shape table and unit 10 | accept | =Exotic_EquityAccumulator_single_name.xml=, =Exotic_EquityWorstOfBasketSwap.xml=, =Exotic_FXWorstOfBasketSwap.xml= and =FX_WorstOfBasketSwap.xml= sit in =known_export_gaps()=. The missing range bounds and initial prices are owned by task 6605CCA2 in =close-the-credit-loose-ends=. Noted; unit 10 cannot pass until they close. |
+| 8 | The hand-written import dispatcher and carrier builder are not named as surfaces the rework must touch. | design.org, "What each surface must change" | accept | =ore_import_execute_handler.cpp= copies every equity field into the NATS writes in a hand-written =if constexpr= chain, and =instrument_batch_mapper.cpp= builds the carrier. Both added. |
+| 9 | The position fact table keeps =currency=, but the mapping drops it as writer-less. | design.org, the fact tables and the mapping; design_er.puml | accept | No mapper sets =equity_position_instruments.currency=, and the design's own rule lands only mapper-written columns. The fact table now matches the mapping; the diagram still lists it and needs the same fix. |
+| 10 | The child header calls =weight= a money-role value and the column an exact numeric. | equity_position_option_underlying.hpp | decline | The design is right: a weight is continuous per the knowledge doc and the operator's ruling, and the column is =double precision=. The stale D11 comment is corrected in the code rework, not in the design. |
+| 11 | The Result says the design records 33 findings. | the task page | accept | The findings table holds 16, E1 to E16. Result corrected. |
+
+* Result
+
+The analysis of the equity family is written and the story is promoted from
+the product backlog into sprint 28.
+
+=design.org= states the family, inventories its surfaces, records 16 findings
+with the command behind each number, proposes the target model and stages the
+rework into ten units. =design_er.puml= draws the proposal. The PNG is not
+rendered yet; design.org names the command.
+
+What the analysis found, in brief: the catalogue holds 32 codes of product
+type equity, 19 are routed, 17 of those to an equity table, and 13 have no
+instrument table at all. Nine routed models and one child table hold 218
+columns, 17 to 26 per table, of which 32 have no writer and 4 more are
+written and never read. The family has no header. Regime 2 scores 1 of 5 and
+Regime 3 scores 1 of 5, both debt High.
+
+Two follow-ups this task does not take. The design is not yet reviewed with
+the data-model review skill, so its findings are unaccepted. =design_er.png=
+is not rendered.

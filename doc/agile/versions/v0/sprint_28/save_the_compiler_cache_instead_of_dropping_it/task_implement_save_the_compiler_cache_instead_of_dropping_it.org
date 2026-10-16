@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: E4613706-DE96-498F-A609-163618626B88
+:END:
+#+title: Task: Stop the cache server before saving and guard the prune on the save
+#+description: Initial task for: Save the compiler cache instead of silently dropping it
+#+type: task
+#+level: s1
+#+filetags: :save_the_compiler_cache_instead_of_dropping_it:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D21D0B36-81FF-4E04-9E1D-470CC82EDF1D][Save the compiler cache instead of silently dropping it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A run that builds enough to be worth saving really stores its compiler cache, and no run deletes an entry its own save did not replace.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D21D0B36-81FF-4E04-9E1D-470CC82EDF1D][Save the compiler cache instead of silently dropping it]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- The sccache server is stopped before actions/cache tars the directory.
+- The prune runs only when the run's own key is present in the cache.
+- The statistics step still reports the run's numbers.
+
+* Plan
+
+Three changes, in both =continuous-linux.yml= and =nightly-linux.yml=:
+
+- Move =Show sccache statistics= above the save, because the next change stops
+  the server and a stopped server reports nothing. Those numbers are the only
+  evidence of whether the cache is warming, so they must be read while the build
+  is still in the server's memory.
+- Add a =Stop the compiler cache= step that runs =sccache --stop-server= before
+  the archive, guarded the same way the save is.
+- Verify the run's key in the cache service before pruning, and report an error
+  and delete nothing when it is absent.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Debug job hit rate on the legacy entry | 20.85 % | sccache --show-stats in run 38839412716 | 36c34061db |
+| Compile requests / hits / misses | 8013 / 1596 / 6057 | same | 36c34061db |
+| Local cache the worth-check saw | 3946 MB | =local compiler cache= in the same log | 36c34061db |
+| Cache ceiling for the variant | 2500M | =grep max-size .github/workflows/continuous-linux.yml= | 36c34061db |
+| Workflows changed | 2 | =git diff --name-only= | working tree |
+
+* Notes
+
+The guard is on the key existing rather than on =steps.save_sccache.outcome=,
+because that outcome cannot distinguish a store from a tar that raced the cache:
+actions/cache emits the failure as a warning and exits zero. Asking the cache
+service is the only signal that separates the two.
+
+The tar race is worse for the debug job than the release one because the debug
+job is killed by the 320-minute cap mid-build, so it reaches the save with
+compiles still finishing. The release job saves successfully and its entry is in
+the cache, which is why only the debug variant was stuck.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both Linux workflows now read the statistics while the server is alive, stop the
+server before archiving, and verify the run's key before pruning anything. The
+same three changes went into the continuous workflow and the nightly one, which
+share the shape.
+
+The evidence for the diagnosis is in the task's measurements: the debug job
+reported a 20.85 per cent hit rate against the legacy entry, 6057 misses of 8013
+compiles, and a local cache of 3946 MB against a 2500M ceiling, while the jobs
+API called its save a success. There is no continuous debug entry in the
+repository at all, which is what a save that never stored anything looks like
+from outside.
+
+Whether the ceiling is now the next constraint is left to the next run, and the
+story says so. The first save that really lands measures the working set.

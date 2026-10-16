@@ -339,7 +339,26 @@ jobs:
             echo "worth_saving=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Show sccache statistics
+        # Read before the cache is stopped: a stopped server reports nothing,
+        # and these numbers are what says whether the cache is warming.
+        # ccache-action installs sccache. If no build ran, it is absent, and
+        # the statistics are not worth a second red step.
+        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
+        run: sccache --show-stats
+
+      - name: Stop the compiler cache
+        # actions/cache tars the cache directory, and a tar that reads a file
+        # while sccache writes it exits non-zero. actions/cache reports that tar
+        # failure as a warning and still exits zero, so the Save step below
+        # passes while storing nothing: the debug cache was not stored once in a
+        # day of runs, and every step reported success. Stop the server first,
+        # which flushes it and leaves the directory still.
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
+        run: sccache --stop-server || true
+
       - name: Save sccache
+        id: save_sccache
         # The key is unique per run, so the save never collides, and it happens
         # before any pruning. A save that fails leaves the stored entries
         # untouched, where deleting first would have destroyed them.
@@ -353,24 +372,28 @@ jobs:
         # Saves use a run-unique key, so entries accumulate: two clang-debug runs
         # cost 5 GB of the 10 GB repository cap, and the gcc cache was evicted
         # for want of room. Drop every older entry of this variant now that the
-        # new one is stored. This delete runs only after a successful save, so
-        # it cannot destroy the cache the way deleting first did.
+        # new one is stored. This delete runs only after the new entry is really
+        # there, so it cannot destroy the cache the way deleting first did.
+        #
+        # The save step cannot be trusted for that: actions/cache turns a tar
+        # that raced the cache into a warning and exits zero, so the step
+        # reports success while storing nothing. Ask the cache service whether
+        # this run's key exists instead, and prune nothing when it does not.
         if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           prefix="sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
           keep="${prefix}${{ github.run_id }}"
+          stored=$(gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
+            --jq '.actions_caches[].key' | grep -cxF "${keep}" || true)
+          if [ "${stored}" -eq 0 ]; then
+            echo "::error::${keep} was not stored, so the older entries are left alone."
+            exit 1
+          fi
           gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
             --jq ".actions_caches[] | select(.key | startswith(\"${prefix}\")) | select(.key != \"${keep}\") | .id" \
           | while read -r id; do
               [ -n "$id" ] && gh api --method DELETE \
                 "/repos/${{ github.repository }}/actions/caches/${id}" || true
             done
-
-      - name: Show sccache statistics
-        # ccache-action installs sccache. If no build ran, it is absent, and
-        # the statistics are not worth a second red step.
-        if: ${{ always() && steps.ctest.outcome != 'skipped' }}
-        run: sccache --show-stats
-

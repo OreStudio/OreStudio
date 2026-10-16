@@ -8,7 +8,7 @@
 #+filetags: :rework-the-fx-instruments-to-the-instrument-table-rule:sprint_28:v0:
 #+owner: marco
 #+branch: feature/carry-the-barrier-levels-digits
-#+pr:
+#+pr: 3402
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -95,7 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3402][#3402]] | [ore] Carry the barrier levels' digits |
 
 * Review
 

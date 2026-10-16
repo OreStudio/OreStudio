@@ -8,7 +8,7 @@
 #+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch: feature/grant-the-report-error-permissions
-#+pr:
+#+pr: 3412
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -76,7 +76,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3412][#3412]] | [agile] Raise the report error screen and the role grants |
 
 * Review
 

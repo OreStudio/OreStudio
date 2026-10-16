@@ -36,6 +36,7 @@ using ores::iam::messaging::parse_market_feed_arguments;
 using ores::iam::messaging::parse_photo_arguments;
 using ores::iam::messaging::parse_provision_party_arguments;
 using ores::iam::messaging::parse_publish_bundle_arguments;
+using ores::iam::messaging::parse_set_staff_passwords_arguments;
 using ores::iam::messaging::parse_staff_assignments;
 using ores::iam::messaging::parse_step_bundles;
 using ores::iam::messaging::provision_step_action;
@@ -54,6 +55,8 @@ TEST_CASE("the executor classifies each kind it executes into its own action", t
           provision_step_action::import_lei_hierarchy);
     CHECK(classify_step_kind("provision_party") == provision_step_action::provision_party);
     CHECK(classify_step_kind("load_staff") == provision_step_action::load_staff);
+    CHECK(classify_step_kind("set_staff_passwords") ==
+          provision_step_action::set_staff_passwords);
     CHECK(classify_step_kind("attach_photos") == provision_step_action::attach_photos);
     CHECK(classify_step_kind("start_market_feeds") == provision_step_action::start_market_feeds);
     CHECK(classify_step_kind("complete_provisioning") ==
@@ -237,6 +240,22 @@ TEST_CASE("a market feed step that names no dataset is refused", tags) {
                       "The step names no 'dataset' argument.");
     CHECK_THROWS_WITH(parse_market_feed_arguments(R"({"dataset": 7})"),
                       "The step's argument 'dataset' is not a string.");
+}
+
+TEST_CASE("a password step reads the password its profile states", tags) {
+    const auto arguments =
+        parse_set_staff_passwords_arguments(R"({"password": "Secure-Password-123"})");
+
+    CHECK(arguments.password == "Secure-Password-123");
+}
+
+TEST_CASE("a password step that names no password is refused", tags) {
+    CHECK_THROWS_WITH(parse_set_staff_passwords_arguments(R"({})"),
+                      "The step names no 'password' argument.");
+    CHECK_THROWS_WITH(parse_set_staff_passwords_arguments(R"({"password": ""})"),
+                      "The step names no 'password' argument.");
+    CHECK_THROWS_WITH(parse_set_staff_passwords_arguments(R"({"password": 7})"),
+                      "The step's argument 'password' is not a string.");
 }
 
 TEST_CASE("a publish step reads the datasets its profile opts in", tags) {

@@ -3139,6 +3139,9 @@ const fr: SourceCatalogue = {
         'Load the staff': 'Charger le personnel',
         'Creates an account for each person the starting point lists, each in its own party.':
             'Crée un compte pour chaque personne que le point de départ liste, chacune dans sa propre entité.',
+        'Set the staff passwords': 'Définir les mots de passe du personnel',
+        "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.":
+            "Définit le mot de passe de chaque compte du personnel via l'API de mot de passe du serveur, afin que le personnel du locataire de démonstration puisse se connecter.",
         'Attach the photographs': 'Joindre les photographies',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Donne aux comptes leurs photographies et à l'entité du locataire son logo.",

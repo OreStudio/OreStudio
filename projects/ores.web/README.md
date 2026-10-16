@@ -159,16 +159,27 @@ compass services start
 npm run verify:first-run
 ```
 
-## The test account
+## Signing in to the ACME demo tenant
 
-Row level security restricts every read to the tenant the service runs in. A
-seeded account must therefore live in that tenant. The password hash has to come
-from the project's own hasher, so `scripts/make-test-hash.cpp` links the real
-`libores.security` rather than reimplementing scrypt.
+Provision the ACME demo tenant (`compass` provisioning, or the web client's
+first-run screen with the *ACME demo* profile), then sign in as any of its
+staff. Every ACME account shares the development password `Secure-Password-123`.
 
-```sh
-npm run seed:account -- ores_web_probe 'Secure-Password-123'
-```
+The accounts are published without credentials, and the provisioning step
+`set_staff_passwords` gives each staff account that password through the
+server's own password API, which hashes it and gives each account its own salt.
+No password hash is stored in the seed data. The password is development data,
+stated in one place, the `set_staff_passwords` row of the `acme_demo` profile in
+`projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql`; a production
+tenant never uses it, and deleting that row leaves the accounts unpublished with
+a password. Sign in with the staff username qualified by the tenant hostname,
+for example `adrian.vance@acme_corporation`, and the password
+`Secure-Password-123`. The username alone does not name a tenant, so it does not
+resolve the account.
+
+`npm run verify:login` walks this path against the running fleet, and
+`compass open-as name 'Adrian Vance'` opens the web already signed in as a
+persona.
 
 ## Local desktop packaging
 

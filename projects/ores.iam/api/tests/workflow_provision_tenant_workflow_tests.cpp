@@ -213,6 +213,8 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
                                       declared("import_lei_hierarchy"),
                                       declared("provision_party"),
                                       declared("load_staff"),
+                                      declared("set_staff_passwords",
+                                               R"({"password":"Secure-Password-123"})"),
                                       declared("attach_photos"),
                                       declared("start_market_feeds")}),
                         tenant_id,
@@ -231,6 +233,8 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
     CHECK(inputs_of("import_lei_hierarchy") == std::vector<std::string>{"publish_bundle"});
     CHECK(inputs_of("provision_party") == std::vector<std::string>{"import_lei_hierarchy"});
     CHECK(inputs_of("load_staff") == std::vector<std::string>{"provision_party"});
+    // The passwords are set on the accounts load_staff created.
+    CHECK(inputs_of("set_staff_passwords") == std::vector<std::string>{"load_staff"});
     CHECK(inputs_of("attach_photos") ==
           (std::vector<std::string>{"load_staff", "provision_party"}));
     // The feeds bind every party the tenant holds, so they wait for the party
@@ -239,7 +243,7 @@ TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
     CHECK(inputs_of("start_market_feeds") ==
           (std::vector<std::string>{"provision_party", "publish_bundle"}));
     // Nothing is finished before everything is, so the last step reads them all.
-    CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 6);
+    CHECK(inputs_of(std::string(complete_provisioning_step_kind)).size() == 7);
 }
 
 TEST_CASE("a need the run did not order is answered by the step that did", tags) {
@@ -384,6 +388,7 @@ TEST_CASE("every kind the catalogue declares has a runner in this build", tags) 
     CHECK(is_executed_step_kind("import_lei_hierarchy"));
     CHECK(is_executed_step_kind("provision_party"));
     CHECK(is_executed_step_kind("load_staff"));
+    CHECK(is_executed_step_kind("set_staff_passwords"));
     CHECK(is_executed_step_kind("attach_photos"));
     CHECK(is_executed_step_kind("start_market_feeds"));
 

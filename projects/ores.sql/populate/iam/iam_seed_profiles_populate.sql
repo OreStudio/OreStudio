@@ -140,6 +140,12 @@ cross join (values
         {"name": "ACME Corporation US Inc", "bundles": ["acme_us", "ore_samples"]},
         {"name": "ACME Corporation HK Ltd", "bundles": ["acme_hk", "ore_samples"]}
     ]}'::jsonb),
+    -- DEVELOPMENT DATA, NOT A PRODUCTION CREDENTIAL. The accounts the step
+    -- above loads are published without a password; this row is the one place
+    -- the Acme demonstration password is stated, and the step sets it through
+    -- the server's own password API, which hashes it and gives each account
+    -- its own salt. To change or remove it, edit this row alone.
+    ('acme_demo', 'set_staff_passwords', 45, '{"password": "Secure-Password-123"}'::jsonb),
     ('acme_demo', 'attach_photos', 50, '{"party_logo": "acme_party_logo", "parties": [
         {"name": "Acme Corporation Plc", "dataset": "acme.acme_group.accounts"},
         {"name": "ACME Corporation UK plc", "dataset": "acme.acme_uk.accounts"},

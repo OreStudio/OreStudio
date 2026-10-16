@@ -730,6 +730,12 @@ def generate_accounts_populate(company, accounts):
  * business_unit_code is a natural-key code, resolved to a business unit
  * id by the publish function (see the server-side-orchestration
  * follow-up task). This script is idempotent.
+ *
+ * DEVELOPMENT DATA, NOT A PRODUCTION CREDENTIAL. No password is staged here:
+ * every account is published without a credential, and the provisioning step
+ * that follows load_staff sets each one through the server's own password API.
+ * See the set_staff_passwords row of the acme_demo seed profile for the one
+ * place the demonstration password is stated.
  */
 
 DO $$

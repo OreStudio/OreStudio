@@ -707,6 +707,9 @@ private:
         std::vector<std::string> bundles;
         std::string root_lei;
         std::vector<std::string> parties;
+        /// The account usernames a step acted on, for the kinds whose work is
+        /// per account rather than per party.
+        std::vector<std::string> accounts;
         std::vector<std::string> images;
         std::vector<std::string> datasets;
         std::string tenant_id;
@@ -822,6 +825,9 @@ private:
                 return;
             case provision_step_action::load_staff:
                 load_staff_step(wf, command, resolve_step_actor(command));
+                return;
+            case provision_step_action::set_staff_passwords:
+                set_staff_passwords_step(wf, command, resolve_step_actor(command));
                 return;
             case provision_step_action::attach_photos:
                 attach_photos_step(wf, command, resolve_step_actor(command));
@@ -1068,6 +1074,77 @@ private:
 
         wf.complete(
             rfl::json::write(provision_step_result{.kind = command.kind, .parties = parties}));
+    }
+
+    /**
+     * @brief Gives every staff account the password the starting point states.
+     *
+     * The accounts are published without credentials, so the person the tenant
+     * is demonstrated to cannot sign in until this runs. Each password is set
+     * through the account service's own reset-password operation, which
+     * validates and hashes it exactly as it hashes any other password and gives
+     * each account its own salt; no hash is computed here or stored in the
+     * seed data.
+     *
+     * The run's own administrator is left alone: its password is the one the
+     * caller stated on the provisioning form, and this step must not overwrite
+     * the credential the operator chose. The account service refuses a password
+     * equal to the one an account already holds, and that answer means the
+     * account is already as the step wants it, so a repeated run leaves it
+     * unchanged rather than failing.
+     */
+    void set_staff_passwords_step(const ores::service::messaging::workflow_step_context& wf,
+                                  const ores::iam::workflow::provision_tenant_step_command& command,
+                                  const step_actor& actor) {
+        const auto arguments = parse_set_staff_passwords_arguments(command.arguments_json);
+        auto client =
+            make_step_client(command.tenant_id, actor.account_id, actor.party_id, actor.username);
+
+        iam::messaging::list_accounts_request accounts_req;
+        accounts_req.limit = 10'000;
+        const auto accounts = client.request(accounts_req).accounts;
+
+        std::vector<std::string> account_ids;
+        std::vector<std::string> usernames;
+        for (const auto& account : accounts) {
+            if (account.account_type != "user")
+                continue;
+            const auto account_id = boost::uuids::to_string(account.id);
+            if (account_id == command.admin_account_id)
+                continue;
+            account_ids.push_back(account_id);
+            usernames.push_back(account.username);
+        }
+
+        if (account_ids.empty()) {
+            wf.complete(rfl::json::write(provision_step_result{.kind = command.kind}));
+            return;
+        }
+
+        iam::messaging::reset_password_request req;
+        req.account_ids = account_ids;
+        req.new_password = arguments.password;
+        const auto resp = client.request(req);
+
+        if (resp.results.size() != account_ids.size()) {
+            throw std::runtime_error("The staff passwords were not set: the response named " +
+                                     std::to_string(resp.results.size()) + " of " +
+                                     std::to_string(account_ids.size()) + " accounts.");
+        }
+
+        std::vector<std::string> set;
+        for (std::size_t i = 0; i < account_ids.size(); ++i) {
+            if (resp.results[i].success ||
+                resp.results[i].message == service::password_unchanged_message) {
+                set.push_back(usernames[i]);
+                continue;
+            }
+            throw std::runtime_error("The password of '" + usernames[i] +
+                                     "' was not set: " + resp.results[i].message);
+        }
+
+        wf.complete(
+            rfl::json::write(provision_step_result{.kind = command.kind, .accounts = set}));
     }
 
     /// Attaches each named party's staff photos, read from the dataset that

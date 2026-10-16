@@ -31,10 +31,13 @@
  *
  * Prerequisites:
  *   compass services start             (the fleet, in another shell)
- *   scripts/seed-test-account.sh       (creates the login used below)
+ *   a provisioned ACME demo tenant     (every ACME account signs in with
+ *                                       Secure-Password-123; see the README)
  *
  * Run:
  *   npx tsx scripts/verify-login.ts
+ *
+ * Override ORES_PRINCIPAL and ORES_PASSWORD to check another account.
  *
  * Exit code 0 means every assertion held.
  */
@@ -71,7 +74,7 @@ const SUBJECT_PREFIX = setting('ORES_NATS_SUBJECT_PREFIX');
 const TLS_CA = setting('ORES_NATS_TLS_CA') ?? resolve(KEYS_DIR, 'ca.crt');
 const TLS_CERT = setting('ORES_NATS_TLS_CERT') ?? resolve(KEYS_DIR, 'ores.shell.crt');
 const TLS_KEY = setting('ORES_NATS_TLS_KEY') ?? resolve(KEYS_DIR, 'ores.shell.key');
-const PRINCIPAL = process.env['ORES_PRINCIPAL'] ?? 'ores_web_probe';
+const PRINCIPAL = process.env['ORES_PRINCIPAL'] ?? 'adrian.vance@acme_corporation';
 const PASSWORD = process.env['ORES_PASSWORD'] ?? 'Secure-Password-123';
 
 let failures = 0;

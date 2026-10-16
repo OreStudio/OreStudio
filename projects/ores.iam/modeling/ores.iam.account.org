@@ -273,7 +273,7 @@ shared row, and the seed is the only writer of the flag.
 
 * Artefact columns
 
-The import carries =business_unit_code=, =role=, =reports_to_username=, =photo_key= and =password_hash=, all five written by the Acme populate and only =password_hash= absent from the store in that form: =business_unit_code= is informational only today because =ores_iam_accounts_tbl= has no business-unit FK, and =reports_to_username= is resolved to =reports_to_account_id= at publish. The staged hash is the one credential the import carries, so the publish writes it into [[id:59A90BD6-3B23-41BD-92E5-0FFF9875B3D3][ores.iam.account_credential]] rather than into the account. The service password hash and the TOTP secret are deliberately absent: staging is not where those belong.
+The import carries =business_unit_code=, =role=, =reports_to_username=, =photo_key= and =password_hash=, all five written by the Acme populate. =business_unit_code= is informational only today because =ores_iam_accounts_tbl= has no business-unit FK, and =reports_to_username= is resolved to =reports_to_account_id= at publish. =password_hash= is empty in the Acme data: the publish still writes the account's credential row, but with no hash, and the =set_staff_passwords= provisioning step that follows sets the password through the server's own API, so no password material is staged. The service password hash and the TOTP secret are deliberately absent: staging is not where those belong.
 
 ** id
 :PROPERTIES:

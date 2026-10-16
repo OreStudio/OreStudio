@@ -62,6 +62,7 @@ on 2026-10-05; its eight remaining tasks moved here.
 | [[id:2FF71147-6F1C-42F3-8566-8A208598653C][Prove the full pipeline against live data]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:8C2D973B-5D85-4FFC-8322-3603DD385E96][Prove the pipeline with both ends substituted]] | BACKLOG | | | Task for: Run a full report: scheduling, reporting and compute |
 | [[id:4171EE8C-47A0-4641-A26A-510B29689BAE][Use the engine's idempotency check in the reporting handlers]] | BACKLOG | | | No reporting handler checks whether the step it is answering has already run, so a run recovered after a restart repeats the work of every phase it re-dispatches. |
+| [[id:9624AACE-78F5-4094-A35E-2E2C3DDC2261][Price the bonds a report run carries]] | BACKLOG | | | Task for: Implement the full report pipeline |
 
 * Decisions
 

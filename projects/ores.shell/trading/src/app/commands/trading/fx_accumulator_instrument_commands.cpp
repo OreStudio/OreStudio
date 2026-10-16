@@ -143,8 +143,8 @@ void fx_accumulator_instrument_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <currency> <fixing_amount> <strike> "
-        "<underlying_code> <long_short> <start_date> <knock_out_barrier> <description> <reason> "
-        "<commentary>");
+        "<underlying_code> <long_short> <start_date> <knock_out_barrier> <range_bounds_json> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -152,8 +152,8 @@ void fx_accumulator_instrument_commands::register_commands(cli::Menu& root_menu,
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <currency> <fixing_amount> <strike> "
-        "<underlying_code> <long_short> <start_date> <knock_out_barrier> <description> <reason> "
-        "<commentary> [--version <n>]");
+        "<underlying_code> <long_short> <start_date> <knock_out_barrier> <range_bounds_json> "
+        "<description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -162,7 +162,7 @@ void fx_accumulator_instrument_commands::register_commands(cli::Menu& root_menu,
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <currency> "
         "<fixing_amount> <strike> <underlying_code> <long_short> <start_date> <knock_out_barrier> "
-        "<description> <reason> <commentary>");
+        "<range_bounds_json> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +357,8 @@ void fx_accumulator_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -376,6 +376,8 @@ void fx_accumulator_instrument_commands::process_add(std::ostream& out,
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(
             req.change.write.knock_out_barrier, parsed->positionals[next++], "knock_out_barrier");
+        read_token(
+            req.change.write.range_bounds_json, parsed->positionals[next++], "range_bounds_json");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -419,8 +421,8 @@ void fx_accumulator_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 11 + 2) {
-            fail(out) << "Expected " << (11 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 12 + 2) {
+            fail(out) << "Expected " << (12 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -438,6 +440,8 @@ void fx_accumulator_instrument_commands::process_set(std::ostream& out,
         read_token(req.change.write.start_date, parsed->positionals[next++], "start_date");
         read_token(
             req.change.write.knock_out_barrier, parsed->positionals[next++], "knock_out_barrier");
+        read_token(
+            req.change.write.range_bounds_json, parsed->positionals[next++], "range_bounds_json");
         read_token(req.change.write.description, parsed->positionals[next++], "description");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
@@ -493,8 +497,8 @@ void fx_accumulator_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 11 + 2) {
-            fail(out) << "Expected " << (change_count * 11 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 12 + 2) {
+            fail(out) << "Expected " << (change_count * 12 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -514,6 +518,8 @@ void fx_accumulator_instrument_commands::process_put_many(std::ostream& out,
             read_token(change.write.start_date, parsed->positionals[next++], "start_date");
             read_token(
                 change.write.knock_out_barrier, parsed->positionals[next++], "knock_out_barrier");
+            read_token(
+                change.write.range_bounds_json, parsed->positionals[next++], "range_bounds_json");
             read_token(change.write.description, parsed->positionals[next++], "description");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));

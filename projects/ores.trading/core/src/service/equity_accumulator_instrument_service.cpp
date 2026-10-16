@@ -115,6 +115,7 @@ to_domain(const messaging::equity_accumulator_instrument_write& write) {
     v.fixing_frequency = write.fixing_frequency;
     v.long_short = write.long_short;
     v.knock_out_level = write.knock_out_level;
+    v.range_bounds_json = write.range_bounds_json;
     v.target_amount = write.target_amount;
     v.target_type = write.target_type;
     v.payoff_type = write.payoff_type;

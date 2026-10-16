@@ -106,6 +106,9 @@ domain::equity_swap_instrument to_domain(const messaging::equity_swap_instrument
     v.identity.trade_activity_id = write.trade_activity_id;
     v.underlying_name = write.underlying_name;
     v.basket_json = write.basket_json;
+    v.initial_prices_json = write.initial_prices_json;
+    v.knock_out_levels_json = write.knock_out_levels_json;
+    v.fixed_trigger_levels_json = write.fixed_trigger_levels_json;
     v.currency = write.currency;
     v.notional = write.notional;
     v.return_type = write.return_type;

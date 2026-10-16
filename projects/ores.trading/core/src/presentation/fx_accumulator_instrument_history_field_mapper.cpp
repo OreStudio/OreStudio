@@ -53,6 +53,7 @@ render_fx_accumulator_instrument_fields(const domain::fx_accumulator_instrument&
     fields.push_back(
         {.name = "Knock Out Barrier",
          .value = v.knock_out_barrier ? v.knock_out_barrier->to_string() : std::string{}});
+    fields.push_back({.name = "Range Bounds Json", .value = v.range_bounds_json});
     fields.push_back({.name = "Description", .value = v.description});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});

@@ -57,6 +57,7 @@ struct equity_accumulator_instrument_entity {
     std::string fixing_frequency;
     std::string long_short;
     std::optional<std::string> knock_out_level;
+    std::optional<std::string> range_bounds_json;
     std::optional<std::string> target_amount;
     std::optional<std::string> target_type;
     std::string payoff_type;

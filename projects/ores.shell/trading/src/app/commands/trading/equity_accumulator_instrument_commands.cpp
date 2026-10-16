@@ -144,8 +144,8 @@ void equity_accumulator_instrument_commands::register_commands(cli::Menu& root_m
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<strike> <fixing_amount> <start_date> <expiry_date> <fixing_frequency> <long_short> "
-        "<knock_out_level> <target_amount> <target_type> <payoff_type> <description> <reason> "
-        "<commentary>");
+        "<knock_out_level> <range_bounds_json> <target_amount> <target_type> <payoff_type> "
+        "<description> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -154,8 +154,8 @@ void equity_accumulator_instrument_commands::register_commands(cli::Menu& root_m
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <currency> "
         "<strike> <fixing_amount> <start_date> <expiry_date> <fixing_frequency> <long_short> "
-        "<knock_out_level> <target_amount> <target_type> <payoff_type> <description> <reason> "
-        "<commentary> [--version <n>]");
+        "<knock_out_level> <range_bounds_json> <target_amount> <target_type> <payoff_type> "
+        "<description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -164,8 +164,8 @@ void equity_accumulator_instrument_commands::register_commands(cli::Menu& root_m
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
         "<currency> <strike> <fixing_amount> <start_date> <expiry_date> <fixing_frequency> "
-        "<long_short> <knock_out_level> <target_amount> <target_type> <payoff_type> <description> "
-        "<reason> <commentary>");
+        "<long_short> <knock_out_level> <range_bounds_json> <target_amount> <target_type> "
+        "<payoff_type> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -359,8 +359,8 @@ void equity_accumulator_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -381,6 +381,8 @@ void equity_accumulator_instrument_commands::process_add(std::ostream& out,
         read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
         read_token(
             req.change.write.knock_out_level, parsed->positionals[next++], "knock_out_level");
+        read_token(
+            req.change.write.range_bounds_json, parsed->positionals[next++], "range_bounds_json");
         read_token(req.change.write.target_amount, parsed->positionals[next++], "target_amount");
         read_token(req.change.write.target_type, parsed->positionals[next++], "target_type");
         read_token(req.change.write.payoff_type, parsed->positionals[next++], "payoff_type");
@@ -427,8 +429,8 @@ void equity_accumulator_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 17 + 2) {
+            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -449,6 +451,8 @@ void equity_accumulator_instrument_commands::process_set(std::ostream& out,
         read_token(req.change.write.long_short, parsed->positionals[next++], "long_short");
         read_token(
             req.change.write.knock_out_level, parsed->positionals[next++], "knock_out_level");
+        read_token(
+            req.change.write.range_bounds_json, parsed->positionals[next++], "range_bounds_json");
         read_token(req.change.write.target_amount, parsed->positionals[next++], "target_amount");
         read_token(req.change.write.target_type, parsed->positionals[next++], "target_type");
         read_token(req.change.write.payoff_type, parsed->positionals[next++], "payoff_type");
@@ -506,8 +510,8 @@ void equity_accumulator_instrument_commands::process_put_many(
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 16 + 2) {
-            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 17 + 2) {
+            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -530,6 +534,8 @@ void equity_accumulator_instrument_commands::process_put_many(
             read_token(change.write.long_short, parsed->positionals[next++], "long_short");
             read_token(
                 change.write.knock_out_level, parsed->positionals[next++], "knock_out_level");
+            read_token(
+                change.write.range_bounds_json, parsed->positionals[next++], "range_bounds_json");
             read_token(change.write.target_amount, parsed->positionals[next++], "target_amount");
             read_token(change.write.target_type, parsed->positionals[next++], "target_type");
             read_token(change.write.payoff_type, parsed->positionals[next++], "payoff_type");

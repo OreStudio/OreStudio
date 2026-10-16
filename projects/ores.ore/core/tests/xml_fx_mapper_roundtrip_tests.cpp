@@ -188,3 +188,58 @@ TEST_CASE("mapper_roundtrip_fx_option_reverse", tags) {
           "2033-02-20");
     BOOST_LOG_SEV(lg, info) << "FxOption reverse-mapper test passed";
 }
+
+// =============================================================================
+// Money-digit fidelity
+// =============================================================================
+
+namespace {
+
+// An amount a float cannot carry. A float keeps about seven significant
+// digits, so these last places survive the boundary only if the binding keeps
+// the document's own text beside the parsed float.
+constexpr std::string_view precise_bought = "1000000.123456789";
+constexpr std::string_view precise_sold = "1100000.987654321";
+
+using ores::ore::domain::trade;
+
+trade load_inline_trade(const std::string& xml) {
+    portfolio p;
+    ores::ore::domain::load_data(xml, p);
+    REQUIRE(!p.Trade.empty());
+    return p.Trade.front();
+}
+
+std::string precise_fx_forward_document() {
+    return "<?xml version='1.0' encoding='UTF-8'?>\n"
+           "<Portfolio><Trade id=\"FXFWD_EURUSD_PRECISE\">"
+           "<TradeType>FxForward</TradeType>"
+           "<FxForwardData>"
+           "<ValueDate>2033-02-20</ValueDate>"
+           "<BoughtCurrency>EUR</BoughtCurrency>"
+           "<BoughtAmount>1000000.123456789</BoughtAmount>"
+           "<SoldCurrency>USD</SoldCurrency>"
+           "<SoldAmount>1100000.987654321</SoldAmount>"
+           "</FxForwardData>"
+           "</Trade></Portfolio>";
+}
+
+} // namespace
+
+TEST_CASE("mapper_holds_fx_money_digits", tags) {
+    auto lg(make_logger(test_suite));
+    const auto t = load_inline_trade(precise_fx_forward_document());
+
+    const auto result = fx_instrument_mapper::forward_fx_forward(t);
+    const auto& instr = std::get<fx_forward_instrument>(result);
+    CHECK(instr.bought_amount ==
+          ores::utility::decimal::decimal::from_string(precise_bought).value());
+    CHECK(instr.sold_amount == ores::utility::decimal::decimal::from_string(precise_sold).value());
+
+    const auto reconstructed = fx_instrument_mapper::reverse_fx_forward(instr);
+    REQUIRE(reconstructed.FxForwardData.operator bool());
+    const auto& fwd = *reconstructed.FxForwardData;
+    CHECK(fwd.BoughtAmount.lexical() == precise_bought);
+    CHECK(fwd.SoldAmount.lexical() == precise_sold);
+    BOOST_LOG_SEV(lg, info) << "FxForward money-digit test passed";
+}

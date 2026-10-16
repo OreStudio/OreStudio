@@ -26,7 +26,7 @@
           <Level>1.20000005</Level>
         </Levels>
       </BarrierData>
-      <Strike>1.10000002</Strike>
+      <Strike>1.1</Strike>
       <PayoffAmount>100</PayoffAmount>
       <PayoffCurrency>USD</PayoffCurrency>
       <ForeignCurrency>EUR</ForeignCurrency>

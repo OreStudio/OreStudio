@@ -970,7 +970,7 @@ trade equity_instrument_mapper::reverse_equity_variance_swap(
     d.underlyingTypes = make_underlying_type(instr.underlying_name);
     static_cast<std::string&>(d.LongShort) = "Long";
     d.Strike = static_cast<float>(instr.variance_strike);
-    d.Notional = static_cast<float>(instr.notional.to_double());
+    set_exact(d.Notional, instr.notional);
     static_cast<std::string&>(d.Calendar) = "USD";
     t.EquityVarianceSwapData = std::move(d);
     return t;
@@ -1138,9 +1138,9 @@ trade equity_instrument_mapper::reverse_equity_accumulator(
     t.TradeType = oreTradeType::EquityAccumulator;
     accumulatorData d;
     d.Currency = parse_currency_code(instr.currency);
-    d.FixingAmount = static_cast<float>(instr.fixing_amount.to_double());
+    set_exact(d.FixingAmount, instr.fixing_amount);
     if (!instr.strike.is_zero())
-        d.Strike = static_cast<float>(instr.strike.to_double());
+        set_money(d.Strike, instr.strike);
     static_cast<std::string&>(d.Underlying.Name) = instr.underlying_name;
     static_cast<std::string&>(d.Underlying.Type) = "Equity";
     static_cast<std::string&>(d.OptionData.LongShort) = "Long";
@@ -1172,9 +1172,9 @@ trade equity_instrument_mapper::reverse_equity_tarf(
     t.TradeType = oreTradeType::EquityTaRF;
     tarfData2 d;
     d.Currency = parse_currency_code(instr.currency);
-    d.FixingAmount = static_cast<float>(instr.fixing_amount.to_double());
+    set_exact(d.FixingAmount, instr.fixing_amount);
     if (!instr.strike.is_zero())
-        d.Strike = static_cast<float>(instr.strike.to_double());
+        set_money(d.Strike, instr.strike);
     static_cast<std::string&>(d.Underlying.Name) = instr.underlying_name;
     static_cast<std::string&>(d.Underlying.Type) = "Equity";
     static_cast<std::string&>(d.OptionData.LongShort) = "Long";

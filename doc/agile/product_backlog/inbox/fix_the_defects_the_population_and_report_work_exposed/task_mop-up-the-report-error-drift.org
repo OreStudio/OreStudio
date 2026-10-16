@@ -8,7 +8,7 @@
 #+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch: mop-up/the-report-error-drift
-#+pr:
+#+pr: 3408
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3408][#3408]] | [housekeeping] Mop up the drift the report error work left on main |
 
 * Review
 

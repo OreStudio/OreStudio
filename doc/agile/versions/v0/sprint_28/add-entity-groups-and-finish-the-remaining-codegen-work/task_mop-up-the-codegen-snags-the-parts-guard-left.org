@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/mop-up-the-codegen-snags-the-parts-guard-left
 #+pr: 3400
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Delete the guard in generate.py that keeps the codegen graph out of a sub-compon
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

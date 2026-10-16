@@ -34,6 +34,11 @@
  * a change here moves the writer and the reader together, and the expected values are
  * spelled out rather than recomputed, so a change that moves only one of them fails.
  *
+ * A curve template names the tenor its pillar matures at, and a curve configuration
+ * names the same pillar by that tenor, so a named pillar is keyed by the tenor and
+ * not by the days its end date happens to lie beyond spot: the two dates a run picks
+ * move with the valuation date, the tenor a configuration wrote down does not.
+ *
  * The end date is the observation's point, so it leaves the identity. That is what
  * lets the reader ask for a series by its key without already knowing which of the
  * series' points it wants.
@@ -115,4 +120,40 @@ TEST_CASE("the index tenor is the tenor field of the series, so two index tenors
           "oresmd://ir/EUR?type=series&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=6M");
     CHECK(pillar_series_uri(six_month) != pillar_series_uri(three_month));
     CHECK(pillar_series_uri(six_month) != pillar_series_uri(overnight));
+}
+
+TEST_CASE("a_pillar_whose_template_names_a_tenor_is_keyed_by_that_tenor",
+          "[oresmd][pillar]") {
+    // 2026-01-28 to 2026-03-19 is the 50 days the same pillar keys without a tenor,
+    // so the date the run resolved does not reach the key.
+    const auto key = make_pillar_quote_key("GBP", "1D", "SPOT", spot_start, first_end, "1M");
+
+    CHECK(key.qualifier == "GBP/0D/1D");
+    CHECK(key.point == "1M");
+    CHECK(pillar_datum_uri(key) ==
+          "oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=1M");
+}
+
+TEST_CASE("a_pillar_that_starts_on_a_date_ends_on_its_end_date",
+          "[oresmd][pillar]") {
+    // ORE refuses a swap that starts on a date and ends on a period, so a named tenor
+    // cannot reach a dated pillar's point even when its template has one.
+    const auto key =
+        make_pillar_quote_key("USD", "1D", "1F", spot_start, first_end, "3M");
+
+    CHECK(key.qualifier == "USD/20260128/1D");
+    CHECK(key.point == "20260319");
+    CHECK(pillar_datum_uri(key) ==
+          "oresmd://ir/USD?type=quote&instrument=ir_swap&quote=rate&fwd_start=20260128"
+          "&tenor=1D&term=20260319");
+}
+
+TEST_CASE("a_named_tenor_and_the_days_to_the_same_end_are_two_quotes_one_series",
+          "[oresmd][pillar]") {
+    const auto named = make_pillar_quote_key("GBP", "1D", "SPOT", spot_start, first_end, "1M");
+    const auto counted = make_pillar_quote_key("GBP", "1D", "SPOT", spot_start, first_end);
+
+    CHECK(named.point != counted.point);
+    CHECK(pillar_datum_uri(named) != pillar_datum_uri(counted));
+    CHECK(pillar_series_uri(named) == pillar_series_uri(counted));
 }

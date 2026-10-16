@@ -48,12 +48,20 @@ struct pillar_quote_key final {
  *
  * ORE reads a swap's start and end as two periods or two dates. The pillar that
  * starts at spot -- which the config spells by setting its start tenor code to
- * SPOT -- holds 0D in the start slot and, as its point, the number of days its
- * end date lies after @p start_date, such as 50D. Every other pillar holds its
- * start date and, as its point, its end date. The index tenor is =1D= for an
- * overnight index such as SOFR, which is what every dated OIS quote in the corpus
- * carries, and a period such as =6M= for a term index. It is the =tenor= identity
- * field of the series, so curves of two index tenors are two series.
+ * SPOT -- holds 0D in the start slot. Every other pillar holds its start date.
+ * The index tenor is =1D= for an overnight index such as SOFR, which is what every
+ * dated OIS quote in the corpus carries, and a period such as =6M= for a term
+ * index. It is the =tenor= identity field of the series, so curves of two index
+ * tenors are two series.
+ *
+ * @p point_tenor_code is the tenor the pillar matures at, named the way the curve
+ * template names it, and it decides the point. A pillar whose template names one
+ * takes that tenor: a 1M pillar ends at =1M=, so its quote is
+ * =IR_SWAP/RATE/GBP/0D/1D/1M= and not =IR_SWAP/RATE/GBP/0D/1D/31D=. A curve
+ * configuration names its pillars by those same tenors, so the quote a reader asks
+ * for is the quote the writer published. A pillar whose template names none instead
+ * takes the days its end date lies after @p start_date -- 50D -- or, when it starts
+ * on a meeting rather than at spot, its end date as a date.
  *
  * Both the feed that publishes the pillar and the bootstrap that reads it call this,
  * so the series one writes is the series the other looks for.
@@ -63,7 +71,8 @@ make_pillar_quote_key(const std::string& ccy,
                       const std::string& index_tenor,
                       const std::string& start_tenor_code,
                       std::chrono::year_month_day start_date,
-                      std::chrono::year_month_day end_date);
+                      std::chrono::year_month_day end_date,
+                      const std::string& point_tenor_code = {});
 
 /**
  * @brief The series identity the key above projects to.

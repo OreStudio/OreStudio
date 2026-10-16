@@ -49,6 +49,7 @@ using ores::marketdata::repository::feed_binding_repository;
 using ores::marketdata::repository::market_observation_repository;
 using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::service::app::feed_ingest_loop;
+using ores::marketdata::service::app::observation_dates;
 using ores::marketdata::service::app::tick_drop;
 using ores::refdata::repository::party_repository;
 using ores::testing::scoped_database_helper;
@@ -167,6 +168,39 @@ market_tick tick_from(const std::string& source, const std::string& oresmd_uri) 
 
 }
 
+TEST_CASE("a_tick_is_recorded_under_its_own_day_and_the_last_business_day_that_closed",
+          "[app][feed_ingest_loop][observation_dates]") {
+    using namespace std::chrono;
+
+    // Wednesday 2026-10-14 16:30 and Monday 2026-10-19 09:00, both business days, so the
+    // close is the day before the first and the Friday before the second.
+    const auto wednesday = sys_days{year{2026} / 10 / 14} + hours{16} + minutes{30};
+    const auto monday = sys_days{year{2026} / 10 / 19} + hours{9};
+
+    const auto midweek = observation_dates(system_clock::time_point{wednesday});
+    REQUIRE(midweek.size() == 2);
+    CHECK(midweek.front() == system_clock::time_point{wednesday});
+    CHECK(midweek.back() == system_clock::time_point{sys_days{year{2026} / 10 / 13} + hours{16} +
+                                                     minutes{30}});
+
+    const auto after_the_weekend = observation_dates(system_clock::time_point{monday});
+    REQUIRE(after_the_weekend.size() == 2);
+    CHECK(after_the_weekend.back() ==
+          system_clock::time_point{sys_days{year{2026} / 10 / 16} + hours{9}});
+}
+
+TEST_CASE("a_weekend_tick_records_only_its_own_day", "[app][feed_ingest_loop][observation_dates]") {
+    using namespace std::chrono;
+
+    // Saturday 2026-10-17: the last business day closed on the Friday, whose ticks already
+    // recorded it, so a weekend observation adds no close of its own.
+    const auto saturday = sys_days{year{2026} / 10 / 17} + hours{11};
+    const auto dates = observation_dates(system_clock::time_point{saturday});
+
+    REQUIRE(dates.size() == 1);
+    CHECK(dates.front() == system_clock::time_point{saturday});
+}
+
 TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) {
     fixture f;
     const auto bound_source = bound_prefix + run_tag();
@@ -180,7 +214,8 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) 
     feed_ingest_loop loop(f.nats, f.h.context());
     loop.refresh();
 
-    const auto outcome = loop.handle_tick(tick_from(bound_source, quote_uri));
+    const auto tick = tick_from(bound_source, quote_uri);
+    const auto outcome = loop.handle_tick(tick);
     REQUIRE_FALSE(outcome.has_value());
 
     const auto series = f.series_for(quote_uri);
@@ -193,13 +228,17 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) 
 
     market_observation_repository obs_repo;
     const auto observations = obs_repo.read_latest_for_series(f.h.context(), series.front().id);
-    REQUIRE(observations.size() == 1);
-    CHECK(observations.front().series_id == series.front().id);
-    CHECK(observations.front().oresmd_uri == quote_uri);
-    CHECK(observations.front().source == bound_source);
-    CHECK(observations.front().value == tick_value);
-    CHECK(boost::uuids::to_string(observations.front().party_id) ==
-          boost::uuids::to_string(f.party_id));
+    const auto recorded_at = observation_dates(tick.observation_time);
+    REQUIRE(observations.size() == recorded_at.size());
+    for (std::size_t i = 0; i < observations.size(); ++i) {
+        CHECK(observations[i].observation_datetime == recorded_at[i]);
+        CHECK(observations[i].series_id == series.front().id);
+        CHECK(observations[i].oresmd_uri == quote_uri);
+        CHECK(observations[i].source == bound_source);
+        CHECK(observations[i].value == tick_value);
+        CHECK(boost::uuids::to_string(observations[i].party_id) ==
+              boost::uuids::to_string(f.party_id));
+    }
 }
 
 TEST_CASE("a_tick_from_a_source_with_no_enabled_binding_is_dropped_and_writes_nothing", tags) {

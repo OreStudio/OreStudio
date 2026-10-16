@@ -29,23 +29,31 @@ pillar_quote_key make_pillar_quote_key(const std::string& ccy,
                                        const std::string& index_tenor,
                                        const std::string& start_tenor_code,
                                        std::chrono::year_month_day start_date,
-                                       std::chrono::year_month_day end_date) {
+                                       std::chrono::year_month_day end_date,
+                                       const std::string& point_tenor_code) {
     pillar_quote_key key;
     key.series_type = "IR_SWAP";
     key.metric = "RATE";
-    // ORE reads a swap's start and end as two periods or two dates, never one of
-    // each: a spot pillar is 0D to the days its end date lies after spot, and a
-    // dated pillar is its start date to its end date.
+    // ORE reads a swap's start and end as two periods or two dates, never one of each,
+    // so a pillar that starts at spot takes 0D in its start slot and one that starts
+    // anywhere else takes its start date -- and a dated pillar must then end on a date.
     if (start_tenor_code == "SPOT") {
         key.qualifier = ccy + "/0D/" + index_tenor;
-        const auto days = std::chrono::sys_days{end_date} - std::chrono::sys_days{start_date};
-        if (days.count() <= 0)
-            throw std::invalid_argument(
-                std::format("pillar key: a spot pillar must end after spot, but {:%Y-%m-%d} is not "
-                            "after {:%Y-%m-%d}",
-                            std::chrono::sys_days{end_date},
-                            std::chrono::sys_days{start_date}));
-        key.point = std::format("{}D", days.count());
+        // A spot pillar's point is the tenor its template names, so the key is the one a
+        // curve configuration writes down rather than the days this run's dates happen to
+        // span. A pillar the template names no tenor for still counts them.
+        if (!point_tenor_code.empty()) {
+            key.point = point_tenor_code;
+        } else {
+            const auto days = std::chrono::sys_days{end_date} - std::chrono::sys_days{start_date};
+            if (days.count() <= 0)
+                throw std::invalid_argument(std::format(
+                    "pillar key: a spot pillar must end after spot, but {:%Y-%m-%d} is not "
+                    "after {:%Y-%m-%d}",
+                    std::chrono::sys_days{end_date},
+                    std::chrono::sys_days{start_date}));
+            key.point = std::format("{}D", days.count());
+        }
     } else {
         key.qualifier = ccy + "/" + std::format("{:%Y%m%d}", start_date) + "/" + index_tenor;
         key.point = std::format("{:%Y%m%d}", end_date);

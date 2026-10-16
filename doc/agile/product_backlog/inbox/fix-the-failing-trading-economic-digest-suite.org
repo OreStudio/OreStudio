@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 9B6E1734-DC96-407F-98F0-E00140CC5B55
+:END:
+#+title: ores.trading.core.digest.tests fails: 4 of its 5 test cases,…
+#+description: ores.trading.core.digest.tests fails: 4 of its 5 test cases, 48 of 177 assertions, in projects/ores.trading/core/digest_tests/trade_economic_digest_write_tests.cpp. The assertions read '!(after.front().economic_digest.empty())' and 'after.front().economic_digest != before.front().economic_digest', so the digest comes back empty for most families -- FxOption, FxVarianceSwap, Swap, ScriptedTrade among them. It is the only suite of 93 that fails: 99% tests passed. The branch that found it changes no digest file and no SQL: its only trading changes are the presence files and a component brief, and the test file was last changed on main on 2026-10-11 by 7998cd1956 [trading] Observe the rate header and test the digest for every family.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

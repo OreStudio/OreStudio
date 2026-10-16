@@ -1,0 +1,768 @@
+:PROPERTIES:
+:ID: 14A4A5D1-693A-486F-AB55-B22FA452E12E
+:END:
+#+title: Design: A relational model for the equity family
+#+description: The argument from nine wide routed equity instrument tables and their child to the instrument table rule of the trade shape investigation: what the equity family is, what the current surfaces hold, the findings with their measurements, and the proposed header, product facts and shared children.
+#+type: design
+#+level: s2
+#+filetags: :trading:data_model:data_oriented_design:codegen:instrument:equity:design:instruments_equity:sprint_28:v0:
+#+created: 2026-10-15
+#+updated: 2026-10-16
+#+todo: DRAFT STARTED | LANDED SUPERSEDED ABANDONED
+#+outcome:
+
+#+begin_note
+*This document describes a transition, not the current state.* It argues
+from the equity tables as they are today to the model we intend, and it
+expires when the work lands. It is scoped to the
+[[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the
+instrument table rule]] story and lives with it, so it leaves the default
+grounding path when the story leaves the backlog.
+
+Do not link to it from durable documentation. The link runs one way, from
+here to the durable document this produces, never back.
+#+end_note
+
+* Summary
+
+The equity family is 32 trade type codes of product type =equity=. The
+catalogue routes 19 of them, of which 17 route to nine =equity_*=
+instrument tables and two route to =composite_instrument=. The other 13
+codes have an empty =instrument=, so no table holds them.
+
+Nine routed tables and one child table hold 218 columns together, 17 to
+26 per table. Each is the union of a shared option shape and one product's
+own fields. 32 of those columns are written by no mapper. Four more are
+written and never read. The mapper keeps every product's money value in a
+bare float, and one money column, =variance_strike=, is stored =double
+precision=. The family has no header, so it has no common-date mapping and
+the blotter cannot read its dates.
+
+The proposal follows the bond pilot and the credit rework:
+
+- one *family header*, =equity_instruments=, holding what the 17 routed
+  codes share: the trade, the party, the trade type, the two common dates
+  and the description;
+- *product fact tables*, each keyed by the trade, one per ORE product or
+  per group of codes that share one ORE binding struct;
+- *shared children* that already exist, reused: =swap_legs= with its
+  amounts and rates for the swap's legs, =instrument_options=,
+  =instrument_strikes= and =instrument_schedules= for the option block;
+- one new child, =equity_basket_constituents=, for the names and weights
+  of a basket, which today live in a JSON string column;
+- exact decimals for every money column, and the digits kept at the ORE
+  boundary, as the rates and credit reworks did.
+
+The rework is staged into ten units; the last proves the corpus over the
+round trip.
+
+* Detail
+
+** Context: the bond pilot, the credit rework and the instrument table rule
+
+Three bodies of prior work bound this one, and their conclusions are
+assumed.
+
+- Section 14 of
+  [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]]
+  states the instrument table rule: a family header names the rows it owns,
+  every instrument is keyed by its trade, and the family's trade types
+  route through the catalogue.
+- The bond pilot, then the rates rework and the credit rework, settled the
+  shape: a header, product facts keyed by the trade, trade-owned legs, and
+  the shared =instrument_*= children for the list shapes.
+- The credit analysis is the proven template for this page and for the
+  staging below.
+
+The question this page asks is the one the credit page asked: *what does a
+family header hold?* For equity the answer is short. The products share
+the two common dates and nothing else: the underlying is singular for some
+codes and a basket for others, and the currency is present on most but not
+on the positions.
+
+** What counts as the equity family
+
+The trade type catalogue is
+=projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org=.
+Every row whose =product_type= is =equity=:
+
+| Code | Description | Instrument |
+|------+-------------+------------|
+| EquityOption | Equity Option | =equity_option_instrument= |
+| EquityAsianOption | Equity Asian Option | =equity_asian_option_instrument= |
+| EquityBarrierOption | Equity Barrier Option | =equity_barrier_option_instrument= |
+| EquityDoubleBarrierOption | Equity Double Barrier Option | =equity_barrier_option_instrument= |
+| EquityEuropeanBarrierOption | Equity European Barrier Option | =equity_barrier_option_instrument= |
+| EquityTouchOption | Equity Touch Option | =equity_digital_option_instrument= |
+| EquityDigitalOption | Equity Digital Option | =equity_digital_option_instrument= |
+| EquityForward | Equity Forward | =equity_forward_instrument= |
+| EquitySwap | Equity Swap | =equity_swap_instrument= |
+| EquityVarianceSwap | Equity Variance Swap | =equity_variance_swap_instrument= |
+| EquityCliquetOption | Equity Cliquet Option | =equity_option_instrument= |
+| EquityAccumulator | Equity Accumulator | =equity_accumulator_instrument= |
+| EquityTaRF | Equity Target Redemption Forward | =equity_accumulator_instrument= |
+| EquityWorstOfBasketSwap | Equity Worst-Of Basket Swap | =equity_swap_instrument= |
+| EquityOutperformanceOption | Equity Outperformance Option | =equity_option_instrument= |
+| EquityPosition | Equity Position | =equity_position_instrument= |
+| EquityOptionPosition | Equity Option Position | =equity_position_instrument= |
+| TotalReturnSwap | Total Return Swap | =composite_instrument= |
+| ContractForDifference | Contract for Difference | =composite_instrument= |
+| EquityAutoDeltaHedgedOption | Equity Auto Delta Hedged Option | (empty) |
+| EquityForwardVolatilityAgreement | Equity Forward Volatility Agreement | (empty) |
+| EquityFutureOption | Equity Future Option | (empty) |
+| EquityWindowBarrierOption | Equity Window Barrier Option | (empty) |
+| EquityGenericBarrierOption | Equity Generic Barrier Option | (empty) |
+| EquityDoubleTouchOption | Equity Double Touch Option | (empty) |
+| EquityPairwiseVarianceSwap | Equity Pairwise Variance Swap | (empty) |
+| EquityBasketVarianceSwap | Equity Basket Variance Swap | (empty) |
+| EquityBestEntryOption | Equity Best Entry Option | (empty) |
+| EquityBasketOption | Equity Basket Option | (empty) |
+| EquityRainbowOption | Equity Rainbow Option | (empty) |
+| EquityStrikeResettableOption | Equity Strike Resettable Option | (empty) |
+| CashPosition | Cash Position | (empty) |
+
+Exact counts, by command: *32 equity codes in total*, *19 routed* and
+*13 unrouted*. Of the 19 routed, *17 route to an =equity_*= table and two
+(=TotalReturnSwap=, =ContractForDifference=) route to
+=composite_instrument=. The earlier reading of "about 31 codes with about
+17 unrouted" is corrected here: the 17 is the equity-table route count, and
+the unrouted count is 13.
+
+Two of the unrouted codes, =EquityFutureOption= and
+=EquityAutoDeltaHedgedOption=, have ORE binding structs of their own. The
+other eleven have no importer, so the catalogue rule keeps their
+=instrument= empty until a mapper writes them.
+
+** Findings for the family
+
+Severity, effort and the data-oriented-design criterion are per
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE
+Studio]]. Every evidence cell names a command from *Measurements*.
+
+| # | Sev | Finding | DOD criterion | Effort | Evidence |
+|---+-----+---------+---------------+--------+----------|
+| E1 | Critical | The family has no header. Nine wide tables hold the variation; the code/cold split is absent, and 32 of 218 columns are written by no mapper. | Core/cold split | Large | M2, M3 |
+| E2 | Critical | The equity money leaves are bare floats in the ORE binding. Only the option strike keeps the document's digits (it is an =xsd::string=). Every other money leaf is read with the =double= overload of =exact_decimal=, and the mapper never calls =set_exact=. | Exact money at rest; One-way numeric conversion | Medium | M6, M7 |
+| E3 | Critical | =variance_strike= is money stored =double precision= in the column and =double= in the domain type. Both are wrong. | Exact money at rest | Small | M4, M5 |
+| E4 | Critical | The equity swap keeps one leg's worth of terms (currency, notional, dates, frequency) on the instrument row. The ORE document's legs have no rows, and the export rebuilds one equity leg and one floating leg. | Table-shaped children | Large | M8, M9 |
+| E5 | Critical | The family travels as a nested =std::variant=. =trade_instrument= holds =equity_instrument_data=, which holds =equity_instrument_variant= of nine structs; 116 member names are reachable from one tagged write, and the export selects an alternative with a hand-written =if constexpr= chain. | Flat value messages; No polymorphic payload fields | Large | M10, M11 |
+| E6 | Critical | A =TotalReturnSwap= that wraps an =EquityPosition= is routed by the catalogue to =composite_instrument=, but the importer writes an =equity_position_instrument= row whose =trade_type_code= is =EquityPosition=. The routing and the stored type disagree. | Explicit variation; Identity by key | Medium | M12 |
+| E7 | Important | 32 columns are written by no mapper, on every table but the underlying child: =long_short= on eight tables and =description= on nine, =settlement_type= on two, and one each of =upper_barrier_type=, =rebate=, =payout_amount=, =price=, =expiry_date= (accumulator), =fixing_frequency=, =target_amount=, =target_type=, =payoff_type=, =currency= (position), =exercise_type= (Asian), =average_type= and =averaging_end_date=. | Core/cold split | Medium | M3 |
+| E8 | Important | Four columns are written and never read: =equity_swap.start_date=, =equity_swap.maturity_date=, =equity_swap.payment_frequency_code= and =equity_asian_option.averaging_start_date=. | Core/cold split | Small | M3 |
+| E9 | Important | =equity_digital_option.notional= holds the ORE =PayoffAmount=, and the column named =payout_amount= has no writer. The schema and the mapper disagree on what the money is. | Exact money at rest; Explicit variation | Medium | M3, M8 |
+| E10 | Important | =Reverse_equity_digital_option= never writes =PayoffCurrency=, so a digital option loses its currency on export. The forward reads it, so the round trip does not return the document. | Codec drift (round trip) | Small | M8 |
+| E11 | Important | The worst-of basket swap stores its basket as a JSON string in =basket_json= and its weights nowhere. | Table-shaped children | Medium | M8 |
+| E12 | Important | The family declares no =:common_date:=, so the blotter cannot read the family's dates and neither common date is on the home for a view. | Core/cold split; Explicit variation | Small | M13 |
+| E13 | Important | =EquityTouchOption= routes to =equity_digital_option_instrument=, whose shape is the digital's. The touch's payoff currency and barrier live in the digital's columns. | Explicit variation | Medium | M1, M2 |
+| E14 | Important | =EquityPosition= and =EquityOptionPosition= have no top-level corpus document. They appear only as a sub-trade of a =TotalReturnSwap=, so the family's position branch is reachable only through the composite anchor. | Identity by key | Medium | M14 |
+| E15 | Minor | =equity_position_option_underlying= has no eventing test and no repository test, though it has a table, a history field mapper and an event registrar. | (test coverage) | Small | M15 |
+| E16 | Minor | Two corpus files named for FX worst-of baskets carry =EquityWorstOfBasketSwap= as their trade type. The corpus is named inconsistently. | (corpus) | Small | M14 |
+
+** The current model, surface by surface
+
+*** The instrument tables
+
+Nine routed tables plus one child table. Per-table column count, by
+command (M2):
+
+| Table | Columns | Business columns (total − 12 key/audit) |
+|-------+---------+------------------------------------------|
+| =ores_trading_equity_accumulator_instruments_tbl= | 25 | 13 |
+| =ores_trading_equity_barrier_option_instruments_tbl= | 26 | 14 |
+| =ores_trading_equity_asian_option_instruments_tbl= | 24 | 12 |
+| =ores_trading_equity_digital_option_instruments_tbl= | 23 | 11 |
+| =ores_trading_equity_option_instruments_tbl= | 23 | 11 |
+| =ores_trading_equity_swap_instruments_tbl= | 22 | 10 |
+| =ores_trading_equity_forward_instruments_tbl= | 20 | 8 |
+| =ores_trading_equity_variance_swap_instruments_tbl= | 20 | 8 |
+| =ores_trading_equity_position_instruments_tbl= | 17 | 5 |
+| =ores_trading_equity_position_option_underlyings_tbl= | 18 | 7 |
+| *Total* | *218* | *99* |
+
+The earlier figures for =equity_option= (23), =equity_forward= (20),
+=equity_accumulator= (25) and =equity_variance_swap= (20) reproduce
+exactly. The reworked =trading_bond_instruments= is 14 columns and
+=trading_credit_instruments= is 16. All three counts use the same method:
+every line of the =create table= block that starts with a quoted column
+name, so keys, =version=, the audit columns and the validity window are
+in. There is no discrepancy to correct; the family's tables are wide
+because each is a union of products, not because of the counting method.
+
+*** The use table
+
+For each business column, the code that writes it and the code that reads
+it back. *=W=* is a forward mapper, =*R=* a reverse mapper. A column with
+no writer is a column to drop. Evidence for the whole table is M3.
+
+=equity_option_instruments= (EquityOption, EquityCliquetOption,
+EquityOutperformanceOption):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name= | all three | all three |
+| =currency= | all three | all three |
+| =notional= | all three | all three |
+| =option_type= | all three | all three |
+| =strike= | EquityOption, EquityOutperformanceOption | EquityOption, EquityOutperformanceOption |
+| =expiry_date= | EquityOption, EquityCliquetOption (date-schedule branch only) | EquityOption, EquityOutperformanceOption (not Cliquet) |
+| =exercise_type= | EquityOption | EquityOption |
+| =cliquet_frequency= | EquityCliquetOption | EquityCliquetOption |
+| =long_short= | none | none |
+| =settlement_type= | none | none |
+| =description= | none | none |
+
+=equity_forward_instruments= (EquityForward):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =currency=, =quantity=, =forward_price=, =expiry_date= | EquityForward | EquityForward |
+| =long_short=, =settlement_type=, =description= | none | none |
+
+=equity_swap_instruments= (EquitySwap, EquityWorstOfBasketSwap):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =currency=, =notional= | both | both |
+| =return_type= | EquitySwap | EquitySwap |
+| =basket_json= | EquityWorstOfBasketSwap | EquityWorstOfBasketSwap |
+| =start_date=, =maturity_date=, =payment_frequency_code= | EquitySwap | none |
+| =long_short=, =description= | none | none |
+
+=equity_variance_swap_instruments= (EquityVarianceSwap):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =currency=, =notional=, =variance_strike=, =start_date=, =maturity_date= | EquityVarianceSwap | EquityVarianceSwap |
+| =long_short=, =description= | none | none |
+
+=equity_barrier_option_instruments= (EquityBarrierOption,
+EquityDoubleBarrierOption, EquityEuropeanBarrierOption):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =currency=, =notional=, =option_type=, =strike=, =expiry_date=, =exercise_type=, =lower_barrier_type=, =lower_barrier=, =upper_barrier= | the three barrier codes | the three barrier codes |
+| =upper_barrier_type= | none | none |
+| =rebate= | none | none |
+| =long_short=, =description= | none | none |
+
+=equity_accumulator_instruments= (EquityAccumulator, EquityTaRF):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =currency=, =strike=, =fixing_amount= | both | both |
+| =start_date= | EquityAccumulator | EquityAccumulator |
+| =knock_out_level= | both | EquityTaRF only |
+| =expiry_date=, =fixing_frequency=, =target_amount=, =target_type=, =payoff_type=, =long_short=, =description= | none | none |
+
+=equity_digital_option_instruments= (EquityDigitalOption,
+EquityTouchOption):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =notional=, =option_type=, =strike=, =expiry_date= | both | both |
+| =currency= | both | EquityTouchOption (EquityDigitalOption drops it on export, E10) |
+| =barrier_level=, =barrier_type= | EquityTouchOption | EquityTouchOption |
+| =payout_amount= | none | none |
+| =long_short=, =description= | none | none |
+
+=equity_asian_option_instruments= (EquityAsianOption):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =currency=, =notional=, =option_type=, =strike=, =expiry_date= | EquityAsianOption | EquityAsianOption |
+| =averaging_start_date= | EquityAsianOption | none |
+| =exercise_type=, =average_type=, =averaging_end_date=, =long_short=, =description= | none | none |
+
+=equity_position_instruments= (EquityPosition, EquityOptionPosition):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =quantity= | both | both |
+| =currency=, =price=, =description= | none | none |
+
+=equity_position_option_underlyings= (child):
+
+| Column | Writer | Reader |
+|--------+--------+--------|
+| =underlying_name=, =strike=, =weight=, =long_short=, =option_type=, =exercise_type=, =settlement_type= | EquityOptionPosition | EquityOptionPosition |
+
+So *32 columns are written by no mapper* and *4 columns are written and
+never read*. The 19 columns the mapper never names at all are counted by
+M3b.
+
+*** The shared children
+
+The tree already has the shapes this family needs, and every one is keyed
+by the trade:
+
+- =swap_legs=, =swap_leg_amounts=, =swap_leg_rates=: the equity swap's
+  legs, its notional amounts and its fixed or floating rates.
+- =instrument_options=, =instrument_option_premiums=,
+  =instrument_option_exercise_fees=, =instrument_option_payment_dates=,
+  =instrument_option_exercise_prices=: the option block, the premium and
+  the exercise rules.
+- =instrument_strikes=: the strike, including the second strike of a
+  cliquet or a worst-of.
+- =instrument_schedules=, =instrument_schedule_dates=: the observation,
+  averaging and settlement schedules the accumulator, the Asian option and
+  the worst-of state.
+
+The equity mapper writes none of them today. It keeps the strike on the
+instrument row and drops the schedules.
+
+*** The ORE shape the tables have to hold
+
+The ORE binding is the in-tree schema
+(=projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp=). The
+elements below are in the binding and in no column. Evidence is M8.
+
+| Product | Elements in the schema and in no column |
+|---------+------------------------------------------|
+| EquityOption | =StrikeCurrency=, =OptionData.Style= beyond one value, every exercise date after the first, the premium and the settlement block |
+| EquityForward | =LongShort=, =StrikeCurrency=, =SettlementData= |
+| EquitySwap (ORE =swapData=) | every leg after the first, each leg's =ScheduleData=, =Amortizations=, =DayCounter=, =PaymentDates=, =PaymentCalendar=, =FXTerms=, =InitialPrice=, =DividendFactor=, the floating spread |
+| EquityVarianceSwap | =MomentType=, =AddPastDividends=, the calendar |
+| EquityBarrierOption / Double / European | =StartDate=, =Calendar=, =EQIndex=, =BarrierData.StrictComparison=, =Style=, =Rebate=, =RebateCurrency=, =RebatePayTime=, =OverrideTriggered= |
+| EquityDigitalOption | =PayoffCurrency= (dropped on export), =Quantity= |
+| EquityTouchOption | =StartDate=, =Calendar=, =EQIndex= |
+| EquityCliquetOption | =Moneyness= (hardcoded 1.0), =LocalCap=, =LocalFloor=, =GlobalCap=, =GlobalFloor=, =Premium=, =PremiumCurrency=, =PremiumPaymentDate=, =SettlementDays=, =ScheduleData= beyond the first tenor |
+| EquityAccumulator | =ObservationDates=, =PricingDates=, =SettlementDates=, =SettlementLag=, =SettlementCalendar=, =SettlementConvention=, =NakedOption=, =KnockOutSettlementAtPeriodEnd=, =KnockOutFixingAtKOSettlement=, =FxIndex=, =RangeBounds=, every barrier but the first knock-out |
+| EquityTaRF | =TargetAmount=, =TargetPoints=, =Strikes=, =ScheduleData=, =SettlementLag=, =RangeBounds=, =RangeBoundSet= |
+| EquityWorstOfBasketSwap | =InitialFixedRate=, =InitialPrices=, =KnockOutLevels=, =FixedTriggerLevels=, =KnockInLevel=, =FloatingSpread=, =FloatingIndex=, every schedule, basket weights |
+| EquityOutperformanceOption | =InitialPrice1=, =InitialPrice2=, =KnockInPrice=, =KnockOutPrice=, =InitialPriceCurrency1/2=, =InitialPriceFXTerms1/2= |
+| EquityPosition | =Underlying.Weight= when the position is a basket |
+
+The export drops more than the schema. Reverse mappers rebuild a minimal
+document: the swap writes two legs with no schedule, the accumulator writes
+a one-row =1D= observation schedule, the TaRF writes a one-row =1Y=
+schedule and rebuilds one =FixingCap= barrier, the cliquet writes
+=Moneyness = 1.0= and =LongShort = Long=, and the digital drops its payoff
+currency. The corpus proof must pin these.
+
+*** The ORE binding
+
+The money members that are bare floats. A bare float has no lexical form,
+so =exact_decimal= falls back to the nearest binary value and the digits
+are lost. Evidence is M7.
+
+| Struct | Bare-float money member |
+|--------+--------------------------|
+| =equityOptionData= | =Quantity= (notional) |
+| =equityForwardData= | =Strike=, =Quantity= |
+| =equityVarianceSwapData= | =Strike=, =Notional= |
+| =eqDigitalOptionData= | =Strike=, =PayoffAmount= |
+| =eqTouchOptionData= | =PayoffAmount= |
+| =eqBarrierOptionData= | =Quantity= |
+| =barrierData= | =Levels.Level= (vector of float), =Rebate= |
+| =accumulatorData= | =FixingAmount=, =Strike= |
+| =tarfData2= | =FixingAmount=, =Strike=, =TargetAmount= |
+| =cliquetOptionData= | =Notional=, =Moneyness=, =LocalCap=, =LocalFloor=, =GlobalCap=, =GlobalFloor=, =Premium= |
+| =eqOutperformanceOptionData= | =Notional=, =InitialPrice1=, =InitialPrice2=, =StrikeReturn=, =KnockInPrice=, =KnockOutPrice= |
+| =singleUnderlyingAsianOptionData= | =Quantity=, =StrikeData.Value= |
+| =worstOfBasketSwapData2= | =InitialFixedRate=, =FixedRate=, =FloatingSpread=, =Strike=, =KnockInLevel= |
+| =_EquityLegData_t= | =Quantity=, =InitialPrice=, =DividendFactor= |
+| =equityOptionUnderlyingData= | =Strike= |
+| =equityPositionData=, =equityOptionPositionData= | =Quantity= (a unit quantity, so it stays a float) |
+
+Two leaves already keep their digits and are the model for the rest:
+=strikeGroup.Strike= is an =xsd::string= (=_Strike_t=), and
+=legData_Notionals_t_Notional_t= is an =xsd::base<float>=, so
+=exact_decimal= reads its lexical form. The reapply script makes every
+money member above an =xsd::base<float>= and the mapper writes the reverse
+with =set_exact=.
+
+*** The exact-money check
+
+Every numeric column of the equity tables, classified as MONEY (exact
+decimal required) or CONTINUOUS (binary float). Evidence M4 and M5.
+
+| Table.column | Class | SQL type | C++ type | Agree |
+|--------------+-------+----------+----------+-------|
+| =equity_option.notional= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_option.strike= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_forward.forward_price= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_forward.quantity= | CONTINUOUS | =double precision= | =double= | yes |
+| =equity_variance_swap.notional= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_variance_swap.variance_strike= | MONEY | =double precision= | =double= | *no* |
+| =equity_accumulator.strike= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_accumulator.fixing_amount= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_accumulator.knock_out_level= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_accumulator.target_amount= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_digital_option.notional= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_digital_option.strike= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_digital_option.barrier_level= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_digital_option.payout_amount= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_barrier_option.notional= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_barrier_option.strike= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_barrier_option.lower_barrier= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_barrier_option.upper_barrier= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_barrier_option.rebate= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_asian_option.notional= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_asian_option.strike= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_swap.notional= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_position.price= | MONEY | =numeric(38,12)= | =optional<decimal>= | yes |
+| =equity_position.quantity= | CONTINUOUS | =double precision= | =double= | yes |
+| =equity_position_option_underlying.strike= | MONEY | =numeric(38,12)= | =decimal= | yes |
+| =equity_position_option_underlying.weight= | CONTINUOUS | =double precision= | =optional<double>= | yes |
+
+*23 columns are money and 3 are continuous.* The domain type and the
+column type disagree in *one* case: =variance_strike= is money in a
+=double=. Every other money column is already =numeric(38,12)= and its
+domain type a =decimal=, so the column work is the single variance-strike
+change plus the digits the =set_exact= path restores.
+
+*** The programming surface
+
+The table has a full generated surface. Counts by command (M16):
+
+| Surface | Files |
+|---------+-------|
+| Codegen models (9 routed instruments, 1 child) | 10 |
+| Generated SQL (=create table= plus a notify trigger) | 20 |
+| Generated SQL drop | 20 |
+| Domain C++ under =ores.trading.api/domain= | 41 |
+| Eventing headers | 10 |
+| Generator headers | 10 |
+| Messaging protocols | 10 |
+| Core messaging handlers and registrars | 33 |
+| Core presentation history field mappers | 20 |
+| Core repository entity, mapper and repository (headers + sources) | 60 |
+| Core service (headers + sources) | 20 |
+| Trading service event registrars | 20 |
+| Shell commands (headers + sources) | 20 |
+| Shell command tests | 10 |
+| TypeScript wire protocol under =ores.web= (trading equity) | 20 |
+
+The hand-written code is the ORE mapper,
+=equity_instrument_mapper.cpp= (1447 lines), the dispatch in
+=trade_mapper.cpp= and =exporter.cpp=, and the variant aggregate
+=equity_instrument_variant.hpp= (48 lines). The family has *no*
+=equity_instrument= header type: =equity_instrument_data= in
+=instrument.hpp= is the carrier, and it holds the variant.
+
+*** Test coverage
+
+| Suite | Files | Test cases |
+|-------+-------+------------|
+| Core eventing integration | 9 | counted in the 36 |
+| Core repository | 9 | counted in the 36 |
+| Core =test_data= JSON | 9 | — |
+| Shell command tests | 10 | 172 |
+| ORE mapper and golden round trip | 2 | 29 |
+
+The 18 core test files hold 36 test cases (M15). The position option
+underlying child has no eventing test and no repository test.
+
+** The proposed entity-relationship model
+
+The shape follows
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row
+and its parts]]: one keyed central row for the family, one part per product,
+and no aggregate type or row that holds the whole instrument. A part is
+reached by the central key and by nothing else.
+
+The diagram source is in =design_er.puml= beside this page.
+
+#+begin_note
+The PNG is *pending*. The project renders a diagram with:
+
+#+begin_src sh
+plantuml -tpng doc/agile/product_backlog/next/instruments-equity/design_er.puml
+#+end_src
+
+This produces =design_er.png= beside the source. The recipe is
+[[id:EADD51F7-9F3E-4B03-8750-D7ABC995FE46][How do I add a PlantUML diagram?]].
+#+end_note
+
+*** The family header
+
+=equity_instruments= (new table). It holds the columns every routed code
+shares:
+
+| Column | Why it is on the header |
+|--------+-------------------------|
+| =tenant_id=, =trade_id= | the key; the trade is the instrument |
+| =version=, =trade_activity_id= | the audit and the optimistic-concurrency token |
+| =trade_type_code= | the check lists the 17 codes the importer writes |
+| =party_id= | the owner |
+| =start_date=, =maturity_date= | the common dates; every product states one or both |
+| =description= | the family's free text |
+
+No economic field is common to all 17 codes. The underlying is singular for
+most and a basket for two, so it stays on the facts and in the new basket
+child.
+
+*** The product facts
+
+One table per ORE product, or per group of codes that share one ORE
+binding struct. Each is keyed by =(tenant_id, trade_id)= and pinned to the
+header by the generated delete cascade. Codes that share a binding struct
+share a table; codes that do not get their own.
+
+| Fact table | Codes | Holds |
+|------------+-------+-------|
+| =equity_option_instruments= | EquityOption | underlying, currency, notional, option type, strike, expiry, exercise type |
+| =equity_cliquet_option_instruments= | EquityCliquetOption | underlying, currency, notional, option type, moneyness, the local and global caps and floors, premium and settlement |
+| =equity_outperformance_option_instruments= | EquityOutperformanceOption | the two underlyings, currency, notional, strike return, the initial prices and knock prices |
+| =equity_barrier_option_instruments= | EquityBarrierOption, EquityDoubleBarrierOption, EquityEuropeanBarrierOption | underlying, currency, notional, option type, strike, expiry, exercise type, the lower and upper barrier with their types and comparison, the rebate |
+| =equity_asian_option_instruments= | EquityAsianOption | underlying, currency, notional, option type, strike, expiry, averaging start and end, average type |
+| =equity_digital_option_instruments= | EquityDigitalOption | underlying (the underlying types group), strike, payoff amount, payoff currency |
+| =equity_touch_option_instruments= | EquityTouchOption | underlying, payoff currency, payoff amount, the barrier |
+| =equity_forward_instruments= | EquityForward | underlying, currency, quantity, forward price, settlement data |
+| =equity_swap_instruments= | EquitySwap | underlying, currency, return type; the legs are rows in =swap_legs= |
+| =equity_worst_of_basket_swap_instruments= | EquityWorstOfBasketSwap | currency, quantity, the fixed rate and spread, the knock-in and knock-out levels; the basket is rows in =equity_basket_constituents= |
+| =equity_variance_swap_instruments= | EquityVarianceSwap | underlying, currency, notional, strike, start and end date, moment type, the calendar |
+| =equity_accumulator_instruments= | EquityAccumulator | underlying, currency, fixing amount, strike, start date, naked option and knock-out flags; the schedules are =instrument_schedules= rows and the barriers are strikes |
+| =equity_tarf_instruments= | EquityTaRF | underlying, currency, fixing amount, target amount and points, strike; the schedules and the barrier as above |
+| =equity_position_instruments= | EquityPosition | underlying, currency, quantity |
+| =equity_option_position_instruments= | EquityOptionPosition | quantity; the per-underlying rows are =equity_position_option_underlyings= |
+
+Every money column is =numeric(38,12)=. A continuous quantity (the unit
+quantity, the basket weight) is =double precision=. A column lands in a
+fact table only when a mapper writes it, so the tables hold the columns
+the mapper reads today, and a later unit adds the rest with their writers.
+
+*** The shared children
+
+Reused as they are, because every one is already keyed by the trade:
+
+- =swap_legs=, =swap_leg_amounts=, =swap_leg_rates=: the equity swap's
+  legs. The leg's currency, day counter and payment frequency are columns
+  of the leg, its notional an amount row and its fixed or floating rate a
+  rate row.
+- =instrument_options=, =instrument_option_premiums=,
+  =instrument_option_exercise_fees=, =instrument_option_payment_dates=,
+  =instrument_option_exercise_prices=: the option block of the six option
+  products.
+- =instrument_strikes= and =instrument_schedules= with
+  =instrument_schedule_dates=: the second strike and every observation,
+  averaging and settlement schedule.
+
+One child table is new. =equity_basket_constituents= is keyed by the trade
+and a sequence number and holds the name of a basket member and its
+weight. It serves the worst-of basket swap and the two variance-swap codes
+the corpus does not yet write. The weight is a continuous quantity, so it
+is =double precision=.
+
+*** Rejected alternatives
+
+| Alternative | Why it is rejected |
+|-------------+--------------------|
+| Keep one wide =equity_instruments= table with a =trade_type= check and nullable product columns | The union is 99 business columns and 32 of them have no writer. A nullable column that only one product fills is cold data on the hot row, and the check cannot keep a column and a code in step. This is the shape E1 measures. |
+| Route every equity code to one header and put all facts on it | The facts differ per product, so the header would be the wide table again with extra joins. The credit rework rejected this for the same reason. |
+| A second leg table for the equity swap | The swap legs have the same shape as the rates and credit legs, and =swap_legs= is already keyed by the trade. A second table repeats it. The credit rework added =leg_group= instead. |
+| A JSON column for the basket | =basket_json= is the current state and E11 measures its cost: no key, no weight, no query. A basket is a list, so it is rows in a child table. |
+| A nested =std::variant= carrier for the wire | This is the current shape and E5 measures it. The data-oriented rule carries one typed array per concrete type, joined by the trade id, and a list read carries the central row alone. |
+| A header column for the underlying | Not every code states one, and two state a basket. A header column must hold for every code. |
+| A =leg_group= column now | The equity family has one leg group (the swap's). It is not needed until a second product reuses =swap_legs= with groups of its own. |
+| Withdraw the 13 unrouted codes from the catalogue | The catalogue's =product_type= is the refdata taxonomy and the code is a valid ORE trade type. Only the routing stays empty, which is the catalogue rule. |
+
+** The blotter's common-date view
+
+The header maps =start_date= and =maturity_date= to the common names with
+=:common_date:=. No equity product states both, so each code maps the one
+it has and the view reads the other as null. The option's =expiry_date= is
+a third date and moves to =instrument_options=, which the view does not
+read yet, so the option expiry stays out of the view until that child maps
+its date. This matches the credit decision.
+
+** Mapping the current model onto the target
+
+| Today | Becomes |
+|-------+---------|
+| =equity_option_instruments.underlying_name=, =currency=, =notional=, =option_type=, =strike=, =expiry_date=, =exercise_type= | the option fact table and the shared option and strike children |
+| =equity_option_instruments.cliquet_frequency= | the cliquet fact table, plus an =instrument_schedules= row |
+| =equity_option_instruments.long_short=, =settlement_type=, =description= | dropped: no mapper writes them (E7) |
+| =equity_forward_instruments.*= | the forward fact table; =long_short=, =settlement_type=, =description= dropped |
+| =equity_swap_instruments.currency=, =notional=, =return_type= | the swap fact table; the legs become =swap_legs= rows with amounts and rates |
+| =equity_swap_instruments.start_date=, =maturity_date=, =payment_frequency_code= | dropped: written and never read (E8); the dates move to the leg schedule |
+| =equity_swap_instruments.basket_json= | the worst-of fact table and =equity_basket_constituents= rows |
+| =equity_swap_instruments.long_short=, =description= | dropped: no writer |
+| =equity_variance_swap_instruments.variance_strike= | the variance fact table, as =numeric(38,12)= (E3) |
+| =equity_variance_swap_instruments.long_short=, =description= | dropped: no writer |
+| =equity_barrier_option_instruments.upper_barrier_type=, =rebate=, =long_short=, =description= | dropped: no writer |
+| =equity_barrier_option_instruments.*= else | the barrier fact table, with =instrument_strikes= for the levels |
+| =equity_accumulator_instruments.expiry_date=, =fixing_frequency=, =target_amount=, =target_type=, =payoff_type=, =long_short=, =description= | dropped: no writer; the TaRF target amount returns with its writer in unit 7 |
+| =equity_accumulator_instruments.knock_out_level= | an =instrument_strikes= row |
+| =equity_digital_option_instruments.payout_amount=, =long_short=, =description= | dropped: no writer |
+| =equity_digital_option_instruments.notional= | renamed to =payoff_amount= in the digital fact table (E9) |
+| =equity_digital_option_instruments.barrier_level=, =barrier_type= | the touch fact table |
+| =equity_asian_option_instruments.exercise_type=, =average_type=, =averaging_end_date=, =long_short=, =description= | dropped: no writer |
+| =equity_asian_option_instruments.averaging_start_date= | an =instrument_schedules= row (E8) |
+| =equity_position_instruments.currency=, =price=, =description= | dropped: no writer |
+| =equity_position_option_underlyings= | kept as the option position's child |
+| =equity_instrument_variant= and =equity_instrument_data= | retired: one typed array per fact table and child |
+| the =exporter.cpp= and =trade_mapper.cpp= =if constexpr= chains | replaced by the catalogue routing and the generated batch |
+
+No migration is written. The project recreates the database.
+
+** What each surface must change
+
+- *Models.* One header model and the fact models are new; nine routed
+  instrument models and the underlying child model are removed or rewritten
+  as facts; =equity_basket_constituents= is new; the shared children are
+  reused unchanged.
+- *Catalogue.* The 17 routed equity codes keep their routing to
+  =equity_instrument= (the header); the two composite codes keep
+  =composite_instrument=; the position sub-trade routing is repaired
+  (E6); the 13 unrouted codes stay unrouted.
+- *Mapper.* The 17 forward mappings write the header, the fact row and the
+  children. The reverse mappings write every required element. The
+  =if constexpr= chains give way to the generated dispatch.
+- *ORE binding.* Every bare-float money member becomes a lexical leaf
+  through =scripts/reapply_ore_lexical_form.py=, and the mapper writes them
+  back with =set_exact=.
+- *Generated surface.* The repository, service, messaging, eventing, shell
+  commands, history mapper and TypeScript protocol of the new entities are
+  generated, and the retired ones are deleted.
+- *Tests.* The mapper suite, the goldens and the corpus proof hold the
+  family.
+
+** Staging
+
+The units follow Phase 2 of
+[[id:774A5408-AED2-4A69-8F52-4860D1B80B4C][the runbook]], with the
+digits first because they change the goldens. Each ends in a check, and
+none depends on a later one.
+
+| Unit | Task | Check |
+|------+------+-------|
+| 1 | Analyse the equity family and propose its relational data model | this page |
+| 2 | Repair the equity routing: the catalogue's 17 equity codes to the header, the position sub-trade off the composite anchor, the 13 unrouted codes left empty | the generated routing matches the catalogue; a position-only TRS routes to one table |
+| 3 | Carry the equity digits: lexical leaves for the money members of the equity binding structs, =set_exact= in the reverse mapper, and =variance_strike= to =numeric(38,12)= | a mapper test per money member; the changed goldens are numeric text |
+| 4 | Write the equity legs and children: the swap's legs and amounts and rates, the option block, the strikes and the schedules, and the new =equity_basket_constituents= | the corpus documents' legs, strikes and schedules come back as rows |
+| 5 | Author the equity family header and its fact tables, with the header's common dates | codegen drift clean; the generated eventing tests pass; a trade comes back through the header |
+| 6 | Close the option round trip: the six option products and the ORE elements the schema requires | the mapper round trip per option product |
+| 7 | Close the swap and accumulator round trip: the equity swap, the worst-of basket, the accumulator and the TaRF | the mapper round trip per product; the export is valid ORE |
+| 8 | Close the forward, variance and position round trip: the forward, the variance swap, both position codes and the nested TRS sub-trade | the mapper round trip per product |
+| 9 | Prove the equity dates in the common-date view (unit 5 declared them) | a probe across an option, a swap and a position |
+| 10 | Prove the equity round trip over the corpus | 19 documents in =Example_Trades=, 20 trades, equal family rows |
+
+Unit 2 lands before the tables because a routing that disagrees with the
+stored type (E6) makes every later round-trip test ambiguous. The children
+land before the header for the same reason the credit rework gives: the
+legs and schedules are keyed by the trade alone, and the header unit
+removes the columns that carry their data.
+
+** Measurements
+
+Every number this page claims, with the command that produced it, at
+commit =d52d9b927e= (level with =origin/main=). Where the number is a
+derived classification, the command produces the input and the method is
+stated.
+
+| ID | What | Value | Command |
+|----+------+-------+---------|
+| M1 | Equity codes total / routed / unrouted | 32 / 19 / 13 | =awk -F'\174' '$1=="" && $2 ~ /^ [A-Za-z]/ { pt=$4; inst=$7; sub(/^ +/,"",pt); sub(/ +$/,"",pt); sub(/^ +/,"",inst); sub(/ +$/,"",inst); if (pt=="equity") { t++; if (inst=="") unrouted++; else routed++ } } END { printf "equity_total=%d routed=%d unrouted=%d\n", t, routed, unrouted }' projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org= |
+| M1b | Codes routed to an =equity_*= table | 17 | the =awk= of M1 with =inst ~ /^equity_/= in place of the routing test |
+| M2 | Equity table column count (matches bond 14, credit 16) | 218 (option 23, forward 20, accumulator 25, variance 20) | =awk '/^create table if not exists/,/^\);/' projects/ores.sql/create/trading/trading_equity_*_create.sql= then =grep -oE '^\s+"[a-z_]+"'= |
+| M3 | Per-column writer and reader | the use table | =awk= over =projects/ores.ore/core/src/domain/equity_instrument_mapper.cpp= printing =inst.<field> = and =instr.<field>= per =forward_*=/=reverse_*= function |
+| M3b | Columns the mapper never names | 19 | =for c in <business columns>; do grep -c "\b$c\b" .../equity_instrument_mapper.cpp; done=, counting the zeros |
+| M4 | Numeric column SQL types | the exact-money table | the =create table= block of M2, then =grep -nE 'numeric'= and =grep -nE 'double precision'= |
+| M5 | Numeric member C++ types | the exact-money table | =grep -nE 'decimal'=, =grep -nE 'double'=, =grep -nE 'float'= and =grep -nE 'year_month'= over =projects/ores.trading/api/include/ores.trading.api/domain/equity_*_instrument.hpp= |
+| M6 | =set_exact= calls in the equity mapper | 0 | =grep -c set_exact .../equity_instrument_mapper.cpp= |
+| M7 | Bare-float money members in the ORE binding | the binding table | =awk=/=grep= over the =equity*Data=, =eq*Data=, =accumulatorData=, =tarfData2=, =cliquetOptionData=, =singleUnderlyingAsianOptionData=, =worstOfBasketSwapData2=, =barrierData= and =_EquityLegData_t= structs in =projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp= |
+| M8 | ORE elements with no column, and export drops | the ORE-shape table | the binding structs of M7 compared with the columns of M2, and the =d.<Element> == assignments in each =reverse_*= function |
+| M9 | Mapper length | 1447 lines | =wc -l .../equity_instrument_mapper.cpp= |
+| M10 | Reachable member names in the equity variant | 116 | =for f in <9 equity structs>; do awk '/^struct /{p=1} p' .../$f.hpp= then =grep -cE '^    [A-Za-z_][A-Za-z0-9_:<>, ]*[a-z_][A-Za-z0-9_]*;'=; done= and sum |
+| M11 | Variant shape | =trade_instrument= (9 alternatives) holds =equity_instrument_data= holds =equity_instrument_variant= (9 alternatives) | =read projects/ores.trading/api/include/ores.trading.api/domain/trade_instrument.hpp=, =instrument.hpp=, =equity_instrument_variant.hpp= |
+| M12 | Position routing disagreement | =TotalReturnSwap= → =composite_instrument=, stored =EquityPosition= | =read projects/ores.ore/core/src/domain/trade_mapper.cpp= lines 168-175 and 329-346; the catalogue row for =TotalReturnSwap= |
+| M13 | =:common_date:= in the equity models | 0 | =grep -rn common_date projects/ores.trading/modeling/*equity*= |
+| M14 | Equity corpus documents | 19 files in =Example_Trades=, 20 trades; 41 files and 123 occurrences across =external/ore/examples= | =grep -lE "<TradeType>Equity[A-Za-z]+</TradeType>" external/ore/examples/Products/Example_Trades/*.xml= then =wc -l=; =grep -hoE ...= then =wc -l= for the trades; =grep -rlE ... external/ore/examples --include='*.xml'= then =wc -l= |
+| M15 | Equity test cases | 36 core, 172 shell, 29 ORE; the underlying child has 0 eventing and 0 repository tests | =find projects/ores.trading/core/tests -iname '*equity*' -name '*.cpp'= then =grep -c BOOST_AUTO_TEST_CASE=, and the shell and ORE trees likewise |
+| M16 | Files per surface | the programming-surface table | =find <dir> -iname '*equity*'= then =wc -l= per directory |
+| M17 | Positions appear only nested in the corpus | 0 top-level, 2 nested | =grep -hoE "<TradeType>EquityPosition</TradeType>" .../Example_Trades/*.xml= then =wc -l== returns 0 (likewise =EquityOptionPosition=); =grep -l "<SubTradeType>Equity="= returns 2 |
+
+** Data-oriented-design score
+
+The family is *Regime 2 — persisted domain data*: the database owns the
+storage layout and the C++ types are the in-memory shape. The decision
+surface is the one that fails. The invariant surface (value semantics, no
+shared-ownership webs, codec drift) is a codegen guarantee and holds; the
+hand-written =equity_instrument_variant.hpp= is the one exception and it
+is reported under Regime 3.
+
+| Check | Verdict |
+|-------+---------|
+| Identity by key | passes: every table is keyed by =(tenant_id, trade_id)=, but E6 shows the key is written with two different trade types for one trade |
+| Table-shaped children | fails: the swap's legs (E4) and the basket (E11) are not rows |
+| Core/cold split | fails: no header, and 32 columns with no writer (E1, E7) |
+| Batched collection access | passes: the nine instrument models declare =has_batch_read= |
+| Explicit variation | fails: nine per-type tables plus a =std::variant= carrier, and two codes routed to the composite table (E1, E5, E13) |
+| Exact money at rest | fails: =variance_strike= (E3), and the binding loses the digits (E2) |
+| One-way numeric conversion | fails: the ORE money leaves are read through a =double= (E2) |
+
+*Regime 2 score: 1 of 5. Debt band: High.* The worst evidence is systemic,
+not local: the family has no core/cold split at all, and the money-leaves
+defect touches every product. The anchored table's row 1 names exactly
+this shape. Regime 3 also applies and is separately defective.
+
+| Regime | Score | Debt | Reason |
+|--------+-------+------+--------|
+| 2 — persisted domain data | 1 | High | Critical findings on the core/cold split and on exact money, across the whole family |
+| 3 — wire and messaging | 1 | High | the family travels as a nested tagged =std::variant=, which the rule forbids outright (E5) |
+| 1 — numerical kernels | unscored | — | the family holds no numeric loop |
+
+** Open questions
+
+- *The barrier fact table's shape.* The three barrier codes share one ORE
+  binding struct but state one or two levels. The proposal keeps one table
+  with an optional second barrier and moves the levels to
+  =instrument_strikes=. If unit 5 finds the strike child cannot carry a
+  barrier type, the table takes its own two level columns. The check is the
+  round trip of the double barrier, which is the only corpus document with
+  two levels.
+- *Whether the accumulator and the TaRF share a table or split.* They share
+  a table today. The proposal splits them because their binding structs
+  differ (=accumulatorData= against =tarfData2=) and the common columns are
+  four. Unit 7 decides on the round trip.
+- *Whether the two variance-swap codes the corpus does not write
+  (=EquityPairwiseVarianceSwap=, =EquityBasketVarianceSwap=) get a fact
+  table now.* They are unrouted, so the proposal leaves them out until a
+  mapper and a corpus document exist.
+
+* Decisions
+
+- *The family header holds the two common dates and the description.* No
+  economic field holds for every code. Reason: a header column must hold
+  for every code, and only the dates do.
+- *One fact table per ORE binding struct, not per routed code.* Three
+  barrier codes share =eqBarrierOptionData=, so they share a table.
+  Reason: one binding struct means one shape and one writer.
+- *Equity reuses the swap leg, option, strike and schedule tables.*
+  Reason: they are already keyed by the trade, and a second table would
+  repeat them.
+- *The basket is a child table, not a JSON column.* Reason: a list is rows,
+  and the JSON column loses the weight and the query (E11).
+- *Every money column is an exact decimal and a continuous quantity stays a
+  binary float.* Reason: the rates and credit reworks showed a float column
+  stores an artifact of a money value; a unit quantity and a basket weight
+  are continuous.
+- *The 13 unrouted codes stay unrouted.* Reason: the catalogue rule says a
+  type with no importer has no table.
+- *The two composite codes stay on =composite_instrument=.* Reason: their
+  bodies are a container over sub-trades, not one equity product. Only the
+  position sub-trade routing is repaired.
+
+* Out of scope
+
+- The composite family's own rework: =TotalReturnSwap= and
+  =ContractForDifference= as containers. This page changes only the
+  position sub-trade routing.
+- An importer for the 13 unrouted codes. They need a mapper and a corpus
+  document first.
+- The equity refdata surfaces: equity curves and equity volatility
+  (=equity_curve_config.ts=, =equity_volatility_config.ts=), which are
+  reference data and not instruments.
+- The equity simulation suites, which concern the simulation part of ORE.
+- =CashPosition=, which the catalogue classifies as equity but which is not
+  an equity product.
+
+* See also
+
+- [[id:FDC35F65-CBF0-40A0-96D0-EA180F2237EE][Investigation: the trade shape]], section 14.
+- [[id:774A5408-AED2-4A69-8F52-4860D1B80B4C][Rework an instrument family to the instrument table rule]].
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]].
+- [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]].
+- The credit design, =sprint_27/instruments-credit/design.org=, the
+  template this one copies.

@@ -1,0 +1,299 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Equity family — proposed relational model (target)
+
+hide circle
+skinparam linetype ortho
+
+package "The anchor" {
+  entity ores_trading_trades_tbl #E8E8E8 {
+    * tenant_id : uuid <<PK>>
+    * id : uuid <<PK>>
+    --
+    * party_id : uuid
+    * trade_type_code : text
+  }
+}
+
+package "The family header" {
+  entity ores_trading_equity_instruments_tbl #D6EAF8 {
+    * tenant_id : uuid <<PK>>
+    * trade_id : uuid <<PK>>
+    --
+    * version : integer
+    * trade_type_code : text <<17 codes routed>>
+    * party_id : uuid
+    * trade_activity_id : uuid
+    start_date : date <<common date>>
+    maturity_date : date <<common date>>
+    description : text
+  }
+}
+
+package "Product facts (one row per trade, keyed by trade_id)" {
+  entity equity_option_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    notional : numeric(38,12)
+    option_type : text
+    expiry_date : date
+    exercise_type : text
+  }
+  entity equity_cliquet_option_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    notional : numeric(38,12)
+    option_type : text
+    moneyness : numeric(38,12)
+    local_cap : numeric(38,12)
+    global_cap : numeric(38,12)
+    local_floor : numeric(38,12)
+    global_floor : numeric(38,12)
+    expiry_date : date
+  }
+  entity equity_outperformance_option_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name_1 : text
+    underlying_name_2 : text
+    currency : text
+    notional : numeric(38,12)
+    strike_return : numeric(38,12)
+    initial_price_1 : numeric(38,12)
+    initial_price_2 : numeric(38,12)
+  }
+  entity equity_barrier_option_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    notional : numeric(38,12)
+    option_type : text
+    exercise_type : text
+    expiry_date : date
+    lower_barrier_type : text
+    lower_barrier : numeric(38,12)
+    upper_barrier_type : text
+    upper_barrier : numeric(38,12)
+    barrier_style : text
+    rebate : numeric(38,12)
+  }
+  entity equity_asian_option_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    notional : numeric(38,12)
+    option_type : text
+    exercise_type : text
+    average_type : text
+    averaging_start_date : date
+    averaging_end_date : date
+  }
+  entity equity_digital_option_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    payoff_currency : text
+    payoff_amount : numeric(38,12)
+    strike : numeric(38,12)
+  }
+  entity equity_touch_option_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    payoff_currency : text
+    payoff_amount : numeric(38,12)
+    barrier_level : numeric(38,12)
+    barrier_type : text
+  }
+  entity equity_forward_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    quantity : double precision <<continuous>>
+    forward_price : numeric(38,12)
+    expiry_date : date
+    settlement_type : text
+  }
+  entity equity_swap_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    return_type : text
+  }
+  entity equity_worst_of_basket_swap_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    currency : text
+    quantity : double precision <<continuous>>
+    fixed_rate : numeric(38,12)
+    floating_spread : numeric(38,12)
+    knock_in_level : numeric(38,12)
+    knock_out_level : numeric(38,12)
+    strike : numeric(38,12)
+  }
+  entity equity_variance_swap_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    notional : numeric(38,12)
+    variance_strike : numeric(38,12)
+    start_date : date
+    maturity_date : date
+    moment_type : text
+  }
+  entity equity_accumulator_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    fixing_amount : numeric(38,12)
+    strike : numeric(38,12)
+    start_date : date
+    naked_option : boolean
+  }
+  entity equity_tarf_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    fixing_amount : numeric(38,12)
+    strike : numeric(38,12)
+    target_amount : numeric(38,12)
+    target_points : integer
+  }
+  entity equity_position_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    underlying_name : text
+    currency : text
+    quantity : double precision <<continuous>>
+  }
+  entity equity_option_position_instruments #FCF3CF {
+    * trade_id : uuid <<PK>>
+    --
+    quantity : double precision <<continuous>>
+  }
+}
+
+package "Shared children, keyed by trade_id (already in the tree)" {
+  entity swap_legs #D5F5E3 {
+    * trade_id : uuid <<PK>>
+    * leg_number : integer <<PK>>
+    --
+    payer : boolean
+    leg_type_code : text
+    currency : text
+    day_count_fraction_code : text
+    payment_frequency_code : text
+    leg_group : text
+  }
+  entity swap_leg_amounts #D5F5E3
+  entity swap_leg_rates #D5F5E3
+  entity instrument_options #D5F5E3
+  entity instrument_option_premiums #D5F5E3
+  entity instrument_option_exercise_fees #D5F5E3
+  entity instrument_option_payment_dates #D5F5E3
+  entity instrument_option_exercise_prices #D5F5E3
+  entity instrument_strikes #D5F5E3
+  entity instrument_schedules #D5F5E3
+  entity instrument_schedule_dates #D5F5E3
+}
+
+package "Existing equity child, keyed by trade_id" {
+  entity equity_position_option_underlyings #D5F5E3 {
+    * trade_id : uuid <<PK>>
+    * sequence_number : integer <<PK>>
+    --
+    underlying_name : text
+    strike : numeric(38,12)
+    weight : double precision <<continuous>>
+    long_short : text
+    option_type : text
+    exercise_type : text
+    settlement_type : text
+  }
+}
+
+package "New equity child" {
+  entity equity_basket_constituents #FADBD8 {
+    * trade_id : uuid <<PK>>
+    * sequence_number : integer <<PK>>
+    --
+    * name : text
+    weight : double precision <<continuous>>
+  }
+}
+
+ores_trading_trades_tbl ||--o| ores_trading_equity_instruments_tbl
+ores_trading_equity_instruments_tbl ||--o| equity_option_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_cliquet_option_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_outperformance_option_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_barrier_option_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_asian_option_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_digital_option_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_touch_option_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_forward_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_swap_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_worst_of_basket_swap_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_variance_swap_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_accumulator_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_tarf_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_position_instruments
+ores_trading_equity_instruments_tbl ||--o| equity_option_position_instruments
+ores_trading_trades_tbl ||--o{ swap_legs
+swap_legs ||--o{ swap_leg_amounts
+swap_legs ||--o{ swap_leg_rates
+ores_trading_trades_tbl ||--o| instrument_options
+instrument_options ||--o{ instrument_option_premiums
+instrument_options ||--o{ instrument_option_exercise_fees
+instrument_options ||--o{ instrument_option_payment_dates
+instrument_options ||--o{ instrument_option_exercise_prices
+ores_trading_trades_tbl ||--o{ instrument_strikes
+ores_trading_trades_tbl ||--o{ instrument_schedules
+instrument_schedules ||--o{ instrument_schedule_dates
+ores_trading_trades_tbl ||--o{ equity_position_option_underlyings
+ores_trading_trades_tbl ||--o{ equity_basket_constituents
+
+note bottom of ores_trading_equity_instruments_tbl
+  32 catalogue codes have product_type equity.
+  17 route to this header; 2 route to composite_instrument;
+  13 stay unrouted until an importer writes them.
+end note
+
+note bottom of equity_swap_instruments
+  The legs are swap_legs rows. The instrument row
+  holds only what no leg states.
+end note
+
+note bottom of equity_basket_constituents
+  Serves EquityWorstOfBasketSwap and the two
+  variance-swap codes the corpus does not write.
+end note
+
+@enduml

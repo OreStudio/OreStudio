@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: DB269522-BDE6-4BDC-BC9C-60288CCA844D
+:END:
+#+title: Story: Carry six-digit microseconds in every timestamp the platform writes
+#+description: The platform formatter drops the whole fractional second and the parser silently discards a fraction, so a market observation loses up to a second of its timestamp.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every timestamp the platform writes carries six digits of microseconds, and the parser reads them back, so a time_point survives a round trip through the database or the wire to the microsecond.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+- to_iso8601_utc writes six fractional digits and parse_utc_timestamp reads one to six back.
+- A time_point survives to_iso8601_utc then from_iso8601_utc to the microsecond.
+- The market observation test asserts the round trip and passes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4B610900-1CBA-4C96-A3CE-5B5CEE56E8E5][Scaffold story: Carry six-digit microseconds in every timestamp the platform writes]] | STARTED | 2026-10-16 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:12498CD8-0BA1-481C-AE57-1C368074995C][Add six-digit microseconds to the formatter and its parser]] | STARTED | 2026-10-16 | | Initial task for: Carry six-digit microseconds in every timestamp the platform writes |
+
+* Decisions
+
+* Out of scope
+
+-

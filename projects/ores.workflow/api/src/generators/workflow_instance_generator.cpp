@@ -23,29 +23,27 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workflow.api/generators/workflow_instance_generator.hpp"
-
+#include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
 #include <unordered_set>
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::workflow::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::workflow_instance generate_synthetic_workflow_instance(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        std::string(generation_keys::modified_by), "system");
-    const auto tid_str = ctx.env().get_or(
-        std::string(generation_keys::tenant_id), std::string("system"));
+domain::workflow_instance
+generate_synthetic_workflow_instance(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::workflow_instance r;
     r.version = 0;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tid_str)
-        .value_or(utility::uuid::tenant_id::system());
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.type = std::string(faker::word::noun());
     r.state_id = ctx.generate_uuid();
@@ -61,8 +59,7 @@ domain::workflow_instance generate_synthetic_workflow_instance(
 }
 
 std::vector<domain::workflow_instance>
-generate_synthetic_workflow_instances(std::size_t n,
-    utility::generation::generation_context& ctx) {
+generate_synthetic_workflow_instances(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::workflow_instance> r;
     r.reserve(n);
     while (r.size() < n)

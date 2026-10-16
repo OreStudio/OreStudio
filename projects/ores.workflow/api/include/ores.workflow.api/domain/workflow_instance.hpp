@@ -25,11 +25,11 @@
 #ifndef ORES_WORKFLOW_API_DOMAIN_WORKFLOW_INSTANCE_HPP
 #define ORES_WORKFLOW_API_DOMAIN_WORKFLOW_INSTANCE_HPP
 
-#include <optional>
-#include <string>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
-#include "ores.utility/uuid/tenant_id.hpp"
+#include <optional>
+#include <string>
 #include <string_view>
 
 namespace ores::workflow::domain {
@@ -64,16 +64,24 @@ struct workflow_instance final {
     std::string type;
 
     /**
-     * @brief What the run acts on, named by the caller: 'tenant' for a run that provisions a tenant. The engine stores it and never interprets it, so a component states its own kind without the engine learning that component's vocabulary.
+     * @brief What the run acts on, named by the caller: 'tenant' for a run that provisions a
+     * tenant. The engine stores it and never interprets it, so a component states its own kind
+     * without the engine learning that component's vocabulary.
      *
      * A run that acts on no entity leaves it empty.
      */
     std::string target_kind;
 
     /**
-     * @brief Identity of the entity the run acts on, in the kind target_kind states. It is not a foreign key: the engine cannot hold one to every component's tables, so it is a soft reference, the way a status row names its badge.
+     * @brief Identity of the entity the run acts on, in the kind target_kind states. It is not a
+     * foreign key: the engine cannot hold one to every component's tables, so it is a soft
+     * reference, the way a status row names its badge.
      *
-     * The target is not the owner. tenant_id states the tenant whose work the run is, which scopes the run and governs who reads it. The target states what the run works on, which may be a different tenant entirely. Provisioning is the case that makes the difference plain: the run belongs to the tenant that asked for it, so that tenant can follow its own work, and it acts on the tenant it creates, which cannot read the run because its session does not exist yet.
+     * The target is not the owner. tenant_id states the tenant whose work the run is, which scopes
+     * the run and governs who reads it. The target states what the run works on, which may be a
+     * different tenant entirely. Provisioning is the case that makes the difference plain: the run
+     * belongs to the tenant that asked for it, so that tenant can follow its own work, and it acts
+     * on the tenant it creates, which cannot read the run because its session does not exist yet.
      */
     boost::uuids::uuid target_id;
 
@@ -108,7 +116,10 @@ struct workflow_instance final {
     std::string created_by;
 
     /**
-     * @brief How many steps the run's chain holds, fixed when the run starts. Nothing advances it, and a run's chain never changes, so this is a fact about the run rather than a cursor over it. It is stored so that a list of runs can say how long each one is without reading every chain.
+     * @brief How many steps the run's chain holds, fixed when the run starts. Nothing advances it,
+     * and a run's chain never changes, so this is a fact about the run rather than a cursor over
+     * it. It is stored so that a list of runs can say how long each one is without reading every
+     * chain.
      */
     int step_count = 0;
 

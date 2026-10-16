@@ -25,25 +25,24 @@
 #ifndef ORES_WORKFLOW_API_GENERATORS_WORKFLOW_INSTANCE_GENERATOR_HPP
 #define ORES_WORKFLOW_API_GENERATORS_WORKFLOW_INSTANCE_GENERATOR_HPP
 
-#include <vector>
-#include "ores.workflow.api/export.hpp"
-#include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.utility/generation/generation_context.hpp"
+#include "ores.workflow.api/domain/workflow_instance.hpp"
+#include "ores.workflow.api/export.hpp"
+#include <vector>
 
 namespace ores::workflow::generators {
 
 /**
  * @brief Generates a synthetic workflow_instance.
  */
-ORES_WORKFLOW_API_EXPORT domain::workflow_instance generate_synthetic_workflow_instance(
-    utility::generation::generation_context& ctx);
+ORES_WORKFLOW_API_EXPORT domain::workflow_instance
+generate_synthetic_workflow_instance(utility::generation::generation_context& ctx);
 
 /**
  * @brief Generates N synthetic workflow_instances.
  */
 ORES_WORKFLOW_API_EXPORT std::vector<domain::workflow_instance>
-generate_synthetic_workflow_instances(std::size_t n,
-    utility::generation::generation_context& ctx);
+generate_synthetic_workflow_instances(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

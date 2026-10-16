@@ -25,10 +25,10 @@
 #ifndef ORES_WORKFLOW_API_DOMAIN_WORKFLOW_INSTANCE_TABLE_HPP
 #define ORES_WORKFLOW_API_DOMAIN_WORKFLOW_INSTANCE_TABLE_HPP
 
-#include <string>
-#include <vector>
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/export.hpp"
+#include <string>
+#include <vector>
 
 namespace ores::workflow::domain {
 

@@ -36,8 +36,8 @@ namespace ores::workflow::messaging {
 
 std::vector<ores::nats::service::subscription>
 register_workflow_instance_handlers(ores::nats::service::client& nats,
-                                       ores::database::context ctx,
-                                       std::optional<ores::security::jwt::jwt_authenticator> verifier);
+                                    ores::database::context ctx,
+                                    std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
 }
 

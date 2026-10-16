@@ -23,7 +23,6 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workflow.api/domain/workflow_instance_table.hpp"
-
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 

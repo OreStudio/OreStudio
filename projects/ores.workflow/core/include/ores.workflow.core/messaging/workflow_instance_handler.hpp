@@ -25,23 +25,23 @@
 #ifndef ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_INSTANCE_HANDLER_HPP
 #define ORES_WORKFLOW_CORE_MESSAGING_WORKFLOW_INSTANCE_HANDLER_HPP
 
-#include <optional>
+#include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.workflow.api/messaging/workflow_instance_protocol.hpp"
 #include "ores.workflow.core/service/workflow_instance_service.hpp"
+#include <optional>
 
 namespace ores::workflow::messaging {
 
 namespace {
 inline auto& workflow_instance_handler_lg() {
-    static auto instance = ores::logging::make_logger(
-        "ores.workflow.messaging.workflow_instance_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.workflow.messaging.workflow_instance_handler");
     return instance;
 }
 }
@@ -58,9 +58,11 @@ using namespace ores::logging;
 class workflow_instance_handler {
 public:
     workflow_instance_handler(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+                              ores::database::context ctx,
+                              std::optional<ores::security::jwt::jwt_authenticator> verifier)
+        : nats_(nats)
+        , ctx_(std::move(ctx))
+        , verifier_(std::move(verifier)) {}
 
     /**
      * @brief Serves workflow.v1.workflow_instances.list.
@@ -73,16 +75,14 @@ public:
      */
     void list_workflow_instances(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -97,8 +97,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.list_workflow_instances(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
@@ -125,16 +124,14 @@ public:
      */
     void get_workflow_instance(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -149,8 +146,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.get_workflow_instance(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
@@ -177,16 +173,14 @@ public:
      */
     void get_many_workflow_instances(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -201,8 +195,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.get_many_workflow_instances(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
@@ -229,16 +222,14 @@ public:
      */
     void put_workflow_instance(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -253,8 +244,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.put_workflow_instance(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
@@ -281,16 +271,14 @@ public:
      */
     void put_many_workflow_instances(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -305,8 +293,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.put_many_workflow_instances(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
@@ -333,16 +320,14 @@ public:
      */
     void delete_workflow_instance(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -357,8 +342,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.delete_workflow_instance(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
@@ -385,16 +369,14 @@ public:
      */
     void delete_many_workflow_instances(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -409,8 +391,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.delete_many_workflow_instances(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
@@ -437,16 +418,14 @@ public:
      */
     void list_workflow_instance_versions(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -461,8 +440,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.list_workflow_instance_versions(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an
@@ -489,16 +467,14 @@ public:
      */
     void get_workflow_instance_version(ores::nats::message msg) {
         BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req_ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!req_ctx_expected) {
             error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
-        [[maybe_unused]] const auto correlation_id =
-            ores::service::messaging::log_handler_entry(
-                workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            workflow_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
         if (!has_permission(req_ctx, "workflow::workflow_instances:read")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
@@ -513,8 +489,7 @@ public:
         service::workflow_instance_service svc(req_ctx);
         try {
             auto response = svc.get_workflow_instance_version(*req);
-            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug)
-                << "Completed " << msg.subject;
+            BOOST_LOG_SEV(workflow_instance_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, response);
         } catch (const std::exception& e) {
             // The service reports what it decided in the response; an

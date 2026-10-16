@@ -25,17 +25,18 @@
 #ifndef ORES_WORKFLOW_API_DOMAIN_WORKFLOW_INSTANCE_TABLE_IO_HPP
 #define ORES_WORKFLOW_API_DOMAIN_WORKFLOW_INSTANCE_TABLE_IO_HPP
 
-#include <iosfwd>
-#include <vector>
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/export.hpp"
+#include <iosfwd>
+#include <vector>
 
 namespace ores::workflow::domain {
 
 /**
  * @brief Dumps the workflow_instance objects to a stream in table format.
  */
-ORES_WORKFLOW_API_EXPORT std::ostream& operator<<(std::ostream& s, const std::vector<workflow_instance>& v);
+ORES_WORKFLOW_API_EXPORT std::ostream& operator<<(std::ostream& s,
+                                                  const std::vector<workflow_instance>& v);
 
 }
 

@@ -25,9 +25,9 @@
 #ifndef ORES_WORKFLOW_API_DOMAIN_WORKFLOW_INSTANCE_JSON_IO_HPP
 #define ORES_WORKFLOW_API_DOMAIN_WORKFLOW_INSTANCE_JSON_IO_HPP
 
-#include <iosfwd>
 #include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.workflow.api/export.hpp"
+#include <iosfwd>
 
 namespace ores::workflow::domain {
 

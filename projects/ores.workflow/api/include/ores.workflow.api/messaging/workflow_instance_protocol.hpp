@@ -25,13 +25,13 @@
 #ifndef ORES_WORKFLOW_API_MESSAGING_WORKFLOW_INSTANCE_PROTOCOL_HPP
 #define ORES_WORKFLOW_API_MESSAGING_WORKFLOW_INSTANCE_PROTOCOL_HPP
 
+#include "ores.utility/domain/protocol.hpp"
+#include "ores.workflow.api/domain/workflow_instance.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
-#include "ores.utility/domain/protocol.hpp"
-#include "ores.workflow.api/domain/workflow_instance.hpp"
 
 namespace ores::workflow::messaging {
 

@@ -26,8 +26,8 @@
 #define ORES_WORKFLOW_CORE_PRESENTATION_WORKFLOW_INSTANCE_HISTORY_FIELD_MAPPER_HPP
 
 #include "ores.diff/domain/field_value.hpp"
-#include "ores.workflow.core/export.hpp"
 #include "ores.workflow.api/domain/workflow_instance.hpp"
+#include "ores.workflow.core/export.hpp"
 #include <vector>
 
 namespace ores::workflow::presentation {

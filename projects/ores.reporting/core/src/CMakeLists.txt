@@ -53,6 +53,7 @@ target_link_libraries(${lib_target_name}
         ores.iam.api.lib
         ores.iam.client.lib
         ores.marketdata.api.lib
+        ores.platform.lib
         ores.storage.api.lib
         ores.storage.core.lib
         ores.trading.api.lib
@@ -62,7 +63,8 @@ target_link_libraries(${lib_target_name}
         sqlgen::sqlgen
         faker-cxx::faker-cxx
         libfort::fort
-        Boost::boost)
+        Boost::boost
+        Boost::json)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

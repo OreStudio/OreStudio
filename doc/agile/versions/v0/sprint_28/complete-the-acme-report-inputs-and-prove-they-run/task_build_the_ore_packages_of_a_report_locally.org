@@ -8,7 +8,7 @@
 #+filetags: :complete-the-acme-report-inputs-and-prove-they-run:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-ore-packages-of-a-report-locally
-#+pr: 3380
+#+pr: 3391
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3391][#3391]] | [agile] File the eight defects against their own story |
 | [[https://github.com/OreStudio/OreStudio/pull/3380][#3380]] | [agile] Raise the intraday reports task |
 | [[https://github.com/OreStudio/OreStudio/pull/3378][#3378]] | [agile] Raise the report errors table |
 | [[https://github.com/OreStudio/OreStudio/pull/3376][#3376]] | [synthetic] Add the trade generation config source to the cmake list |

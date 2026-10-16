@@ -1,11 +1,11 @@
 :PROPERTIES:
-:ID: B14B058D-6EBF-453B-90A5-F635B4E253D4
+:ID: C0ECCF7D-1D5C-4367-9C6E-A9A062BA4F89
 :END:
-#+title: Task: Make the environment reset clear the broker
-#+description: compass db recreate is the clean-slate reset everyone reaches for, and it leaves JetStream untouched. compass nats purge is the command that clears it, and it matches only streams whose names start with the lowercase environment prefix, so a hand-made stream is invisible to it. Ten streams and 398 messages survived a recreate.
+#+title: Task: Give the as-of read microsecond precision
+#+description: datetime::to_db_string formats to the second while parts written in one transaction land microseconds apart, so a bound taken from one version row can fall inside its neighbour's window. The composite versioning test widens each bound by a second to compensate, which is a test hiding a defect rather than proving the code.
 #+type: task
 #+level: s1
-#+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
+#+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch:
 #+pr:
@@ -16,7 +16,7 @@
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -27,7 +27,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 | Field        | Value                                  |
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
-| Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
+| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |

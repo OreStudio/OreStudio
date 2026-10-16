@@ -18,16 +18,30 @@ ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "build/output/linux-clang-release-ninja/compile_commands.json"
 
 
-def changed_cpp():
-    out = subprocess.run(
-        ["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True, check=True
-    ).stdout
-    files = []
-    for line in out.splitlines():
-        path = line[3:].strip()
-        if path.endswith(".cpp"):
-            files.append(str((ROOT / path).resolve()))
-    return files
+def changed_cpp(base="origin/main"):
+    """Changed .cpp files, committed or not.
+
+    Measured against a base ref rather than against the working tree alone. The
+    first version read `git status`, which sees nothing once the work is
+    committed, so it reported "no changed .cpp files" instead of checking them.
+    """
+    files = set()
+    for args in (
+        ["git", "diff", "--name-only", "--diff-filter=ACMR", f"{base}...HEAD"],
+        ["git", "diff", "--name-only", "--diff-filter=ACMR"],
+        ["git", "ls-files", "--others", "--exclude-standard"],
+    ):
+        out = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, check=False).stdout
+        files.update(line.strip() for line in out.splitlines() if line.strip())
+
+    found = []
+    for name in sorted(files):
+        if not name.endswith(".cpp"):
+            continue
+        path = (ROOT / name).resolve()
+        if path.exists():
+            found.append(str(path))
+    return found
 
 
 def syntax_only_argv(command: str):

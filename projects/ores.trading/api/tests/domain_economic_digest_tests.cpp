@@ -245,12 +245,12 @@ TEST_CASE("economic_digest_treats_a_sequence_as_ordered_elements", tags) {
     auto lg(make_logger(test_suite));
 
     bond_fixed_leg_data ascending;
-    ascending.rates = {bond_float_data{0.01, std::string("2026-01-01")},
-                       bond_float_data{0.02, std::string("2026-07-01")}};
+    ascending.rates = {bond_float_data{decimal_of("0.01"), std::string("2026-01-01")},
+                       bond_float_data{decimal_of("0.02"), std::string("2026-07-01")}};
 
     bond_fixed_leg_data descending;
-    descending.rates = {bond_float_data{0.02, std::string("2026-07-01")},
-                        bond_float_data{0.01, std::string("2026-01-01")}};
+    descending.rates = {bond_float_data{decimal_of("0.02"), std::string("2026-07-01")},
+                        bond_float_data{decimal_of("0.01"), std::string("2026-01-01")}};
 
     BOOST_LOG_SEV(lg, info) << "Ascending:  " << economic_digest(ascending);
     BOOST_LOG_SEV(lg, info) << "Descending: " << economic_digest(descending);

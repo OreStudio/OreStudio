@@ -58,6 +58,10 @@ namespace {
 const std::string tags("[repository]");
 
 using ores::testing::database_helper;
+
+ores::utility::decimal::decimal decimal_of(std::string_view text) {
+    return ores::utility::decimal::decimal::from_string(text).value();
+}
 using ores::trading::domain::bond_forward;
 using ores::trading::domain::bond_instrument;
 using ores::trading::domain::bond_issue;
@@ -591,18 +595,18 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
     CHECK(rebuilt.settlement->fixing_date == "2024-04-15");
 
     REQUIRE(rebuilt.notionals.size() == 1);
-    CHECK(rebuilt.notionals[0].value == 1000.0);
+    CHECK(rebuilt.notionals[0].value == decimal_of("1000.0"));
 
     REQUIRE(rebuilt.rate.has_value());
     REQUIRE(rebuilt.rate->fixed.has_value());
     CHECK(!rebuilt.rate->floating.has_value());
     REQUIRE(rebuilt.rate->fixed->rates.size() == 2);
-    CHECK(rebuilt.rate->fixed->rates[0].value == 4.0);
-    CHECK(rebuilt.rate->fixed->rates[1].value == 5.0);
+    CHECK(rebuilt.rate->fixed->rates[0].value == decimal_of("4.0"));
+    CHECK(rebuilt.rate->fixed->rates[1].value == decimal_of("5.0"));
 
     REQUIRE(rebuilt.amortizations.size() == 1);
     CHECK(rebuilt.amortizations[0].type == "FixedAmount");
-    CHECK(rebuilt.amortizations[0].value == 100.0);
+    CHECK(rebuilt.amortizations[0].value == decimal_of("100.0"));
     CHECK(rebuilt.amortizations[0].end_date == "2030-01-15");
 
     REQUIRE(rebuilt.schedule.rules.size() == 1);
@@ -683,8 +687,8 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
     CHECK(floating.fixing_days == 2);
     CHECK(floating.observation_shift == true);
     CHECK(floating.spreads.size() == 2);
-    CHECK(floating.spreads[0].value == 0.5);
-    CHECK(floating.spreads[1].value == 0.75);
+    CHECK(floating.spreads[0].value == decimal_of("0.5"));
+    CHECK(floating.spreads[1].value == decimal_of("0.75"));
     CHECK(floating.caps.size() == 1);
     CHECK(floating.floors.size() == 1);
     CHECK(floating.gearings.size() == 1);
@@ -956,7 +960,7 @@ TEST_CASE("read_instruments_rebuilds_a_strike_and_a_forward", tags) {
           ores::utility::decimal::decimal::from_string("250000.0").value());
     CHECK(rebuilt.forward_settlement->lock_rate ==
           ores::utility::decimal::decimal::from_string("2.5").value());
-    CHECK(rebuilt.forward_settlement->dv01 == 12.75);
+    CHECK(rebuilt.forward_settlement->dv01 == decimal_of("12.75"));
     CHECK(!rebuilt.forward_settlement->forward_settlement_date.has_value());
 
     REQUIRE(rebuilt.forward_premium.has_value());

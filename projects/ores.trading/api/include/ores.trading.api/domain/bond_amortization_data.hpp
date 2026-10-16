@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_AMORTIZATION_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_AMORTIZATION_DATA_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <span>
 #include <string>
@@ -46,7 +47,7 @@ struct bond_amortization_data {
     /**
      * @brief The amount the step moves the notional by, when the document states one.
      */
-    std::optional<double> value;
+    std::optional<ores::utility::decimal::decimal> value;
 
     /**
      * @brief The date the step starts on, when the document states one.

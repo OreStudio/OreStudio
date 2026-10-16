@@ -363,7 +363,7 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
 template <typename Row>
 bond_float_data map_number(const Row& row) {
     bond_float_data result;
-    result.value = static_cast<double>(row);
+    result.value = exact_decimal(row);
     if (row.startDate)
         result.start_date = std::string(*row.startDate);
     return result;
@@ -372,7 +372,7 @@ bond_float_data map_number(const Row& row) {
 template <typename Row>
 Row reverse_number(const bond_float_data& row) {
     Row result;
-    static_cast<float&>(result) = static_cast<float>(row.value);
+    set_exact(result, row.value);
     if (row.start_date)
         result.startDate = *row.start_date;
     return result;
@@ -390,7 +390,7 @@ bond_amortization_data map_amortization(const amortizationData& a) {
     bond_amortization_data result;
     result.type = to_string(a.Type);
     if (a.Value)
-        result.value = static_cast<double>(*a.Value);
+        result.value = exact_decimal(*a.Value);
     if (a.StartDate)
         result.start_date = std::string(*a.StartDate);
     if (a.EndDate)
@@ -406,7 +406,7 @@ amortizationData reverse_amortization(const bond_amortization_data& row) {
     amortizationData result;
     result.Type = parse_code(row.type, amortization_type_count, amortizationType::FixedAmount);
     if (row.value)
-        result.Value = static_cast<float>(*row.value);
+        result.Value = static_cast<float>(row.value->to_double());
     set_present_text(result.StartDate, row.start_date);
     set_present_text(result.EndDate, row.end_date);
     set_present_text(result.Frequency, row.frequency);
@@ -450,7 +450,7 @@ bond_forward_settlement map_forward_settlement(const settlementData& s) {
     if (s.LockRate)
         result.lock_rate = exact_decimal(*s.LockRate);
     if (s.dv01)
-        result.dv01 = static_cast<double>(*s.dv01);
+        result.dv01 = exact_decimal(*s.dv01);
     if (s.LockRateDayCounter)
         result.lock_rate_day_counter = std::string(*s.LockRateDayCounter);
     if (s.SettlementDirty)
@@ -468,7 +468,7 @@ settlementData reverse_forward_settlement(const bond_forward_settlement& row) {
     if (row.lock_rate)
         result.LockRate = static_cast<float>(row.lock_rate->to_double());
     if (row.dv01)
-        result.dv01 = static_cast<float>(*row.dv01);
+        result.dv01 = static_cast<float>(row.dv01->to_double());
     set_present_text(result.LockRateDayCounter, row.lock_rate_day_counter);
     set_present_text(result.SettlementDirty, row.settlement_dirty);
     return result;
@@ -1023,7 +1023,7 @@ bond_strike_data map_strike_data(const _StrikeData_t& sd) {
             result.yield_compounding = to_string(*sd.StrikeYield->Compounding);
     }
     if (sd.Value)
-        result.bare_value = static_cast<double>(*sd.Value);
+        result.bare_value = exact_decimal(*sd.Value);
     if (sd.Currency)
         result.bare_currency = std::string(*sd.Currency);
     return result;
@@ -1049,7 +1049,7 @@ _StrikeData_t reverse_strike_data(const bond_strike_data& row) {
         result.StrikeYield = std::move(yield);
     }
     if (row.bare_value)
-        result.Value = static_cast<float>(*row.bare_value);
+        result.Value = static_cast<float>(row.bare_value->to_double());
     if (row.bare_currency)
         result.Currency = *row.bare_currency;
     return result;

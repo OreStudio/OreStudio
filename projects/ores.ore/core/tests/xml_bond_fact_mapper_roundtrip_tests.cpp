@@ -523,7 +523,7 @@ TEST_CASE("an_amortization_block_survives_the_round_trip", tags) {
     REQUIRE(mapped.size() == 2);
     CHECK(mapped.front().type == "RelativeToInitialNotional");
     REQUIRE(mapped.front().value);
-    CHECK(*mapped.front().value == Approx(0.25));
+    CHECK(mapped.front().value->to_double() == Approx(0.25));
     REQUIRE(mapped.front().start_date);
     CHECK(*mapped.front().start_date == "2027-01-01");
     REQUIRE(mapped.front().end_date);
@@ -601,9 +601,9 @@ TEST_CASE("a_floating_legs_rate_group_survives_the_round_trip", tags) {
     REQUIRE(mapped.fixing_days);
     CHECK(*mapped.fixing_days == 2);
     REQUIRE(mapped.spreads.size() == 1);
-    CHECK(mapped.spreads.front().value == Approx(0.02));
+    CHECK(mapped.spreads.front().value.to_double() == Approx(0.02));
     REQUIRE(mapped.floors.size() == 1);
-    CHECK(mapped.floors.front().value == Approx(0.001));
+    CHECK(mapped.floors.front().value.to_double() == Approx(0.001));
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
     REQUIRE(rt.BondData);
@@ -659,13 +659,13 @@ TEST_CASE("a_fixed_legs_rate_and_notional_lists_survive_the_round_trip", tags) {
     const auto r = map_inline(xml);
     REQUIRE(r.bond_legs.size() == 1);
     REQUIRE(r.bond_legs.front().notionals.size() == 2);
-    CHECK(r.bond_legs.front().notionals.front().value == Approx(1000000.0));
-    CHECK(r.bond_legs.front().notionals.back().value == Approx(500000.0));
+    CHECK(r.bond_legs.front().notionals.front().value.to_double() == Approx(1000000.0));
+    CHECK(r.bond_legs.front().notionals.back().value.to_double() == Approx(500000.0));
     REQUIRE(r.bond_legs.front().rate);
     REQUIRE(r.bond_legs.front().rate->fixed);
     REQUIRE(r.bond_legs.front().rate->fixed->rates.size() == 2);
-    CHECK(r.bond_legs.front().rate->fixed->rates.front().value == Approx(0.03));
-    CHECK(r.bond_legs.front().rate->fixed->rates.back().value == Approx(0.04));
+    CHECK(r.bond_legs.front().rate->fixed->rates.front().value.to_double() == Approx(0.03));
+    CHECK(r.bond_legs.front().rate->fixed->rates.back().value.to_double() == Approx(0.04));
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
     REQUIRE(rt.BondData);
@@ -1496,7 +1496,7 @@ TEST_CASE("the_three_strike_spellings_survive_the_round_trip", tags) {
     CHECK_FALSE(b.strike_data->price_value);
     CHECK_FALSE(b.strike_data->yield_value);
     REQUIRE(b.strike_data->bare_value);
-    CHECK(*b.strike_data->bare_value == Approx(98.75));
+    CHECK(b.strike_data->bare_value->to_double() == Approx(98.75));
     CHECK(b.strike_data->bare_currency == "GBP");
 
     const auto b_rt = bond_instrument_mapper::reverse_bond_option(b);
@@ -1942,7 +1942,7 @@ TEST_CASE("a_forward_bonds_settlement_premium_and_flag_survive_the_round_trip", 
     REQUIRE(r.forward_settlement->lock_rate);
     CHECK(r.forward_settlement->lock_rate->to_double() == Approx(0.025));
     REQUIRE(r.forward_settlement->dv01);
-    CHECK(*r.forward_settlement->dv01 == Approx(123.45));
+    CHECK(r.forward_settlement->dv01->to_double() == Approx(123.45));
     REQUIRE(r.forward_settlement->lock_rate_day_counter);
     CHECK(*r.forward_settlement->lock_rate_day_counter == "A360");
     REQUIRE(r.forward_settlement->settlement_dirty);

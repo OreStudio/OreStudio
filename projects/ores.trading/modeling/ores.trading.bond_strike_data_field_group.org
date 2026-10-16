@@ -23,6 +23,7 @@ document.
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #+end_src
@@ -59,7 +60,7 @@ The compounding the yield strike is stated under.
 
 ** bare_value
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :END:
 
 The strike as a bare number, when the document states one.

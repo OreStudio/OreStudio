@@ -21,6 +21,7 @@ unengaged start date is the only presence question here.
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #+end_src
@@ -29,7 +30,7 @@ unengaged start date is the only presence question here.
 
 ** value
 :PROPERTIES:
-:cpp_type: double
+:cpp_type: ores::utility::decimal::decimal
 :default_value: {}
 :economic: true
 :END:

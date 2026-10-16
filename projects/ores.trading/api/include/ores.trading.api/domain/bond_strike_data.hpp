@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_STRIKE_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_STRIKE_DATA_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 
@@ -63,7 +64,7 @@ struct bond_strike_data {
     /**
      * @brief The strike as a bare number, when the document states one.
      */
-    std::optional<double> bare_value;
+    std::optional<ores::utility::decimal::decimal> bare_value;
 
     /**
      * @brief The currency the bare strike is stated in, when the document states one.

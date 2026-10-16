@@ -8,12 +8,12 @@
 #+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch:
-#+pr: 3393
+#+pr: 3394
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,9 +31,9 @@ analytic, a report-scoped error on the run itself.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
-| Now          | The table, the model and both capture points are in; the screen that shows the errors is a later task. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build the screen that places an error by its scope and subject. |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
@@ -103,6 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3394][#3394]] | [agile] Close the task that stores a report run's errors |
 | [[https://github.com/OreStudio/OreStudio/pull/3393][#3393]] | [reporting] Store the errors a report run produces |
 
 * Review

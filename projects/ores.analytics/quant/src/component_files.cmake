@@ -21,9 +21,12 @@
 # To modify, update the template and regenerate.
 set(files
     "domain/business_day_calendar_set.cpp"
+    "domain/date_convention.cpp"
     "domain/process_parameter_validation.cpp"
+    "domain/tenor_resolution.cpp"
     "math/psd_matrix.cpp"
     "math/rate_tree.cpp"
+    "service/calendar_arithmetic.cpp"
     "service/calendar_rule_engine.cpp"
     "service/curve_bootstrap_engine.cpp"
     "service/curve_health_checker.cpp"
@@ -49,6 +52,7 @@ set(files
     "service/rate_engine.cpp"
     "service/rate_reciprocator.cpp"
     "service/risk_recentering.cpp"
+    "service/tenor_resolution_engine.cpp"
     "service/topology_builder.cpp"
 )
 
@@ -62,6 +66,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/crm_rate_view.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/crm_topology.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/currency_id.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/date_convention.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/derived_rate.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/driver_quote.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/i_stochastic_process.hpp"
@@ -70,6 +75,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/rate_snapshot.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/rate_status.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/staleness_policy.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/tenor_resolution.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/topology_build_error.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/topology_error.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/domain/vertex_state.hpp"
@@ -77,6 +83,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/math/psd_matrix.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/math/rate_tree.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/ores.analytics.quant.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/calendar_arithmetic.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/calendar_rule_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/curve_bootstrap_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/curve_health_checker.hpp"
@@ -113,5 +120,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/rate_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/rate_reciprocator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/risk_recentering.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/tenor_resolution_engine.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.quant/service/topology_builder.hpp"
 )

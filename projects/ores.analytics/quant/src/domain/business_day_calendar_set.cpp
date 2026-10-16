@@ -44,32 +44,34 @@ business_day_calendar_set::from_rows(std::span<const calendar_date_row> rows,
         std::move(holidays), std::move(offsets), std::move(weekend_masks)};
 }
 
+bool business_day_calendar_set::is_business_day(std::size_t calendar_index,
+                                                std::chrono::year_month_day date) const noexcept {
+    if (calendar_index < weekend_masks_.size()) {
+        const std::chrono::sys_days d{date};
+        const std::chrono::weekday w{d};
+        if (weekend_masks_[calendar_index].test(w.c_encoding()))
+            return false;
+    }
+
+    if (calendar_index + 1 < calendar_offsets_.size()) {
+        const auto begin = holidays_.cbegin() +
+                           static_cast<std::ptrdiff_t>(calendar_offsets_[calendar_index]);
+        const auto end = holidays_.cbegin() +
+                         static_cast<std::ptrdiff_t>(calendar_offsets_[calendar_index + 1]);
+        if (std::binary_search(begin, end, date))
+            return false;
+    }
+
+    return true;
+}
+
 std::vector<bool>
 business_day_calendar_set::is_business_day_batch(std::span<const calendar_query> queries) const {
     std::vector<bool> result;
     result.reserve(queries.size());
 
-    for (const auto& q : queries) {
-        bool is_business_day = true;
-
-        if (q.calendar_index < weekend_masks_.size()) {
-            const std::chrono::sys_days d{q.date};
-            const std::chrono::weekday w{d};
-            if (weekend_masks_[q.calendar_index].test(w.c_encoding()))
-                is_business_day = false;
-        }
-
-        if (is_business_day && q.calendar_index + 1 < calendar_offsets_.size()) {
-            const auto begin = holidays_.cbegin() +
-                               static_cast<std::ptrdiff_t>(calendar_offsets_[q.calendar_index]);
-            const auto end = holidays_.cbegin() +
-                             static_cast<std::ptrdiff_t>(calendar_offsets_[q.calendar_index + 1]);
-            if (std::binary_search(begin, end, q.date))
-                is_business_day = false;
-        }
-
-        result.push_back(is_business_day);
-    }
+    for (const auto& q : queries)
+        result.push_back(is_business_day(q.calendar_index, q.date));
 
     return result;
 }

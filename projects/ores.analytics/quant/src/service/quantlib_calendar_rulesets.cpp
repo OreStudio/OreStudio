@@ -162,4 +162,71 @@ domain::calendar_ruleset quantlib_calendar_rulesets::united_states_settlement() 
     return cal;
 }
 
+domain::calendar_ruleset quantlib_calendar_rulesets::south_africa() {
+    calendar_ruleset cal;
+    cal.rules = {
+        // New Year's Day (moved to the Monday when it falls on a Sunday)
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = January,
+                      .day = 1u,
+                      .shift = observance_shift::sunday_to_monday},
+        // Good Friday (Easter Sunday - 2 days)
+        calendar_rule{.kind = calendar_rule_kind::easter_offset, .day_offset = -2},
+        // Family Day (Easter Monday)
+        calendar_rule{.kind = calendar_rule_kind::easter_offset, .day_offset = 1},
+        // Human Rights Day, March 21st
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = March,
+                      .day = 21u,
+                      .shift = observance_shift::sunday_to_monday},
+        // Freedom Day, April 27th
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = April,
+                      .day = 27u,
+                      .shift = observance_shift::sunday_to_monday},
+        // Workers' Day, May 1st
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = May,
+                      .day = 1u,
+                      .shift = observance_shift::sunday_to_monday},
+        // Youth Day, June 16th
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = June,
+                      .day = 16u,
+                      .shift = observance_shift::sunday_to_monday},
+        // National Women's Day, August 9th
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = August,
+                      .day = 9u,
+                      .shift = observance_shift::sunday_to_monday},
+        // Heritage Day, September 24th
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = September,
+                      .day = 24u,
+                      .shift = observance_shift::sunday_to_monday},
+        // Day of Reconciliation, December 16th
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = December,
+                      .day = 16u,
+                      .shift = observance_shift::sunday_to_monday},
+        // Christmas
+        calendar_rule{.kind = calendar_rule_kind::fixed_date, .month = December, .day = 25u},
+        // Day of Goodwill, December 26th
+        calendar_rule{.kind = calendar_rule_kind::fixed_date,
+                      .month = December,
+                      .day = 26u,
+                      .shift = observance_shift::sunday_to_monday},
+    };
+    cal.exceptions = {
+        // One-shot election days and the 2022 substitute for a Sunday
+        // Christmas: each is a closing the recurring rules do not state.
+        calendar_exception{.date = year{2004} / April / 14, .is_business_day = false},
+        calendar_exception{.date = year{2009} / April / 22, .is_business_day = false},
+        calendar_exception{.date = year{2016} / August / 3, .is_business_day = false},
+        calendar_exception{.date = year{2021} / November / 1, .is_business_day = false},
+        calendar_exception{.date = year{2022} / December / 27, .is_business_day = false},
+    };
+    return cal;
+}
+
 } // namespace ores::analytics::quant::service

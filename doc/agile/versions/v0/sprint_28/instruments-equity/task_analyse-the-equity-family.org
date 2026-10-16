@@ -35,7 +35,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =design.org= states the family, its surfaces, the findings with the command behind every number, the proposed target model, the mapping from the current columns, and the staged units.
+- =design_er.puml= draws the proposed target model.
+- Every finding carries a severity, an effort and the data-oriented criterion it maps to.
+- Each staged unit names the check that ends it.
 
 * Plan
 
@@ -55,7 +58,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Equity codes in the catalogue, and how many are routed | 32 total, 19 routed, 13 with no table | the awk in =evidence/equity_catalogue_counts.txt= | d52d9b927e |
+| Columns across the nine routed equity tables and their child | 218, from 17 to 26 per table | the per-table awk in the Measurements section of design.org | d52d9b927e |
 
 * Notes
 
@@ -80,6 +84,25 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Is =variance_strike= money or a continuous quantity? It is the only column whose classification the analysis left open. | design.org, finding E3 | Accept as money | Ruled by the operator 2026-10-16. A variance strike is a level the parties agree and it settles a cash amount, so it is =decimal= and =numeric(38,12)=. Recorded as a decision in design.org. |
 
 * Result
+
+The analysis of the equity family is written and the story is promoted from
+the product backlog into sprint 28.
+
+=design.org= states the family, inventories its surfaces, records 33 findings
+with the command behind each number, proposes the target model and stages the
+rework into ten units. =design_er.puml= draws the proposal. The PNG is not
+rendered yet; design.org names the command.
+
+What the analysis found, in brief: the catalogue holds 32 codes of product
+type equity, 19 are routed, 17 of those to an equity table, and 13 have no
+instrument table at all. Nine routed models and one child table hold 218
+columns, 17 to 26 per table, of which 32 have no writer and 4 more are
+written and never read. The family has no header. Regime 2 scores 1 of 5 and
+Regime 3 scores 1 of 5, both debt High.
+
+Two follow-ups this task does not take. The design is not yet reviewed with
+the data-model review skill, so its findings are unaccepted. =design_er.png=
+is not rendered.

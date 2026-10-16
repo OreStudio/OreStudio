@@ -738,6 +738,11 @@ this shape. Regime 3 also applies and is separately defective.
   binary float.* Reason: the rates and credit reworks showed a float column
   stores an artifact of a money value; a unit quantity and a basket weight
   are continuous.
+- *The variance strike is money.* =equity_variance_swap.variance_strike= is
+  a level the two parties agree, and it settles a cash amount. Reason: the
+  operand of a settlement is a money value, so it is =decimal= in the domain
+  and =numeric(38,12)= in the column, exactly as a strike price is. The
+  quantity and weight columns stay continuous.
 - *The 13 unrouted codes stay unrouted.* Reason: the catalogue rule says a
   type with no importer has no table.
 - *The two composite codes stay on =composite_instrument=.* Reason: their

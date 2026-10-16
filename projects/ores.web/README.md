@@ -162,7 +162,7 @@ npm run verify:first-run
 ## Signing in to the ACME demo tenant
 
 Provision the ACME demo tenant (`compass` provisioning, or the web client's
-first-run screen with the *ACME demo* profile), then sign in as any of its
+first-run screen with the _ACME demo_ profile), then sign in as any of its
 staff. Every ACME account shares the development password `Secure-Password-123`.
 
 The accounts are published without credentials, and the provisioning step

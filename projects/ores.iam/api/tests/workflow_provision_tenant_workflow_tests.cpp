@@ -207,18 +207,17 @@ TEST_CASE("the setup run's kinds become steps in order, with the completing step
 
 TEST_CASE("the setup run's steps declare which steps must answer first", tags) {
     const auto def = setup_definition();
-    const auto steps =
-        def.build_steps(request_json({declared("system_provision"),
-                                      declared("publish_bundle", R"({"bundles":["acme_group"]})"),
-                                      declared("import_lei_hierarchy"),
-                                      declared("provision_party"),
-                                      declared("load_staff"),
-                                      declared("set_staff_passwords",
-                                               R"({"password":"Secure-Password-123"})"),
-                                      declared("attach_photos"),
-                                      declared("start_market_feeds")}),
-                        tenant_id,
-                        correlation_id);
+    const auto steps = def.build_steps(
+        request_json({declared("system_provision"),
+                      declared("publish_bundle", R"({"bundles":["acme_group"]})"),
+                      declared("import_lei_hierarchy"),
+                      declared("provision_party"),
+                      declared("load_staff"),
+                      declared("set_staff_passwords", R"({"password":"Secure-Password-123"})"),
+                      declared("attach_photos"),
+                      declared("start_market_feeds")}),
+        tenant_id,
+        correlation_id);
 
     const auto inputs_of = [&](const std::string& name) {
         for (const auto& step : steps)

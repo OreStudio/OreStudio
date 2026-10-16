@@ -1143,8 +1143,7 @@ private:
                                      "' was not set: " + resp.results[i].message);
         }
 
-        wf.complete(
-            rfl::json::write(provision_step_result{.kind = command.kind, .accounts = set}));
+        wf.complete(rfl::json::write(provision_step_result{.kind = command.kind, .accounts = set}));
     }
 
     /// Attaches each named party's staff photos, read from the dataset that

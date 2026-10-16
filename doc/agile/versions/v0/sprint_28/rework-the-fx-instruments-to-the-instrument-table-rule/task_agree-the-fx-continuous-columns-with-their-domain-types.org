@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 336BB8B7-8E44-4CA1-A2AE-CAAC4275D666
+:END:
+#+title: Task: Agree the FX continuous columns with their domain types
+#+description: Finding 3 of the FX review. fx_variance_swap_instrument.strike is numeric(38, 12) at rest with a double in the domain and the entity. A variance strike is a continuous quantity, so move the column to double precision and check every other FX continuous column agrees with its domain type.
+#+type: task
+#+level: s1
+#+filetags: :instruments-fx:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make every FX continuous quantity agree with its column. A variance strike is
+volatility, which is continuous, so the domain type =double= is right and the
+=numeric(38, 12)= column is wrong. A value that is exact at rest and lossy in
+the domain is the shape the exact-numbers rule exists to end.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Move the variance strike, then sweep the family. |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- =fx_variance_swap_instrument.strike= is =double precision= in every column declaration.
+- Every other FX column that holds a continuous quantity agrees with its domain type. Record the sweep, including the columns that already agree.
+- Nothing that is money moves to a float in this unit.
+- The models, the generated SQL and the generated C++ regenerate together, and =check_model_sql_types.py= passes.
+
+* Plan
+
+1. List every FX column whose name reads as continuous, and its domain type.
+2. Move =strike= with the mirror mode of =scripts/convert_money_column_to_decimal.py=.
+3. Regenerate the SQL and the C++, and recreate the database.
+4. Run the trading suite and the ORE round-trip tests.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 3.
+- The money check cannot see this column in either direction, so this unit is found by reading the model, not by a gate.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

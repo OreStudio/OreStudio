@@ -3237,6 +3237,9 @@ export const en: SourceCatalogue = {
         'Start the market feeds': 'Start the market feeds',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             "Starts the synthetic market data the tenant's curves and prices are built from.",
+        'Generate the trades': 'Generate the trades',
+        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
+            "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.",
         'Hand the tenant to its administrator': 'Hand the tenant to its administrator',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.",

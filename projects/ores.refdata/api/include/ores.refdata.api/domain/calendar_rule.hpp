@@ -128,12 +128,8 @@ struct calendar_rule final {
     /**
      * @brief How this holiday is re-observed when it falls on a weekend, if at all.
      *
-     * Soft-enum: none | nearest_weekday | roll_forward_to_monday |
-     * sunday_to_monday, matching
-     * ores::analytics::quant::domain::observance_shift. The last two differ
-     * only on a Saturday: roll_forward_to_monday moves it to the Monday,
-     * sunday_to_monday leaves it where it is, which is what SouthAfrica's
-     * "possibly moved to Monday" holidays do.
+     * Soft-enum: none | nearest_weekday | roll_forward_to_monday, matching
+     * ores::analytics::quant::domain::observance_shift.
      */
     std::string shift;
 

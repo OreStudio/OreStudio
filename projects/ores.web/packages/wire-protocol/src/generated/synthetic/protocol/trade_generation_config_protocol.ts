@@ -44,6 +44,7 @@ export interface TradeGenerationConfigWrite {
     as_of_date: string;
     seed: number;
     enabled: boolean;
+    reference_curve_id: string;
 }
 
 export interface TradeGenerationConfigChange {

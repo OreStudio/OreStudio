@@ -180,8 +180,8 @@ TEST_CASE("a_tick_is_recorded_under_its_own_day_and_the_last_business_day_that_c
     const auto midweek = observation_dates(system_clock::time_point{wednesday});
     REQUIRE(midweek.size() == 2);
     CHECK(midweek.front() == system_clock::time_point{wednesday});
-    CHECK(midweek.back() == system_clock::time_point{sys_days{year{2026} / 10 / 13} + hours{16} +
-                                                     minutes{30}});
+    CHECK(midweek.back() ==
+          system_clock::time_point{sys_days{year{2026} / 10 / 13} + hours{16} + minutes{30}});
 
     const auto after_the_weekend = observation_dates(system_clock::time_point{monday});
     REQUIRE(after_the_weekend.size() == 2);
@@ -230,11 +230,20 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) 
     const auto observations = obs_repo.read_latest_for_series(f.h.context(), series.front().id);
     const auto recorded_at = observation_dates(tick.observation_time);
     REQUIRE(observations.size() == recorded_at.size());
+
+    // The store returns the rows oldest first, which is the order the design
+    // asks for: a reader that takes the last row takes the newest close. The
+    // dates the loop records come newest first, so the two are compared in one
+    // order rather than by position.
+    auto expected = recorded_at;
+    std::sort(expected.begin(), expected.end());
     for (std::size_t i = 0; i < observations.size(); ++i) {
-        // The column keeps microseconds, so the microsecond of a tick is what the
-        // round trip may lose.
-        const auto delta = observations[i].observation_datetime - recorded_at[i];
-        CHECK(std::chrono::abs(delta) < std::chrono::milliseconds(1));
+        // The canonical storage format is ISO 8601 to the second
+        // (ores::platform::time::datetime::to_iso8601_utc), so a whole second
+        // is what the round trip may lose. The column is a microsecond
+        // timestamptz; the precision is the write format's, not the column's.
+        const auto delta = observations[i].observation_datetime - expected[i];
+        CHECK(std::chrono::abs(delta) < std::chrono::seconds(1));
         CHECK(observations[i].series_id == series.front().id);
         CHECK(observations[i].oresmd_uri == quote_uri);
         CHECK(observations[i].source == bound_source);

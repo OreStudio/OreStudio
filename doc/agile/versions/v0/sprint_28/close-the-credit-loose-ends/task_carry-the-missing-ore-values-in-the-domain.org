@@ -63,9 +63,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Documents that fail to re-read | 0, down from 5 | =compass test run -- -R ores.ore.core.tests= (the case "roundtrip mirrors every portfolio in the ORE example corpus"); =known_export_gaps()= is empty | dd1780dbe6 |
-| ORE core suite | 667 cases, 0 failures | the same command | dd1780dbe6 |
-| Trading codegen drift | clean | =python3 projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp= | dd1780dbe6 |
+| Documents that fail to re-read | 0, down from 5 | =compass test run -- -R ores.ore.core.tests= (the case "roundtrip mirrors every portfolio in the ORE example corpus"); =known_export_gaps()= is empty | 25bd87137d |
+| ORE core suite | 667 cases, 0 failures | the same command | 25bd87137d |
+| Trading codegen drift | clean | =python3 projects/ores.codegen/scripts/check_component_drift.py --component trading-cpp= | 25bd87137d |
 
 * Notes
 

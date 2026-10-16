@@ -8,7 +8,7 @@
 #+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps:sprint_28:v0:
 #+owner: marco
 #+branch: feature/build-the-pure-tenor-resolution-engine
-#+pr: 3399
+#+pr: 3406
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -142,6 +142,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3406][#3406]] | [agile] Close the pure batch tenor resolution engine |
 | [[https://github.com/OreStudio/OreStudio/pull/3399][#3399]] | [analytics] Resolve tenors to dates in a pure batch engine |
 
 * Review

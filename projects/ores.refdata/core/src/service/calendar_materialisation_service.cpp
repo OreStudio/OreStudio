@@ -75,6 +75,8 @@ quant_domain::observance_shift parse_shift(const std::string& s) {
         return quant_domain::observance_shift::nearest_weekday;
     if (s == "roll_forward_to_monday")
         return quant_domain::observance_shift::roll_forward_to_monday;
+    if (s == "sunday_to_monday")
+        return quant_domain::observance_shift::sunday_to_monday;
     throw std::runtime_error("Unknown observance_shift: " + s);
 }
 

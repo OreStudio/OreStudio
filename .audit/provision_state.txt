@@ -1,0 +1,8 @@
+           type            |    state    | instances 
+---------------------------+-------------+-----------
+ bundle_publish_workflow   | completed   |        23
+ provision_tenant_workflow | completed   |         1
+ report_execution_workflow | compensated |         1
+ tenant_setup_workflow     | completed   |         1
+(4 rows)
+

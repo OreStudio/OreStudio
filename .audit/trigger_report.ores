@@ -1,0 +1,6 @@
+# Trigger one report instance for the Acme tenant, to exercise the reporting
+# execution step family end to end on the rebuilt services.
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+report_operations trigger-report-instance 993bcb7f-13b4-485f-87ed-dfc882c6ddad aa92d9c9-16a4-49bd-9138-39005c991a41
+logout

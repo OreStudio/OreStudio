@@ -13,35 +13,48 @@
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Carry the barrier levels' digits. A barrier's levels are the one money page the
+digits unit left as bulk floats: =barrierData_Levels_t.Level= is an
+=xsd::vector<float>=, so every barrier level, in every family, crosses the ORE
+boundary as the nearest float rather than the number the document wrote.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
 
--
+- The level list's element is a lexical leaf, patched by =scripts/reapply_ore_lexical_form.py=, never by hand.
+- Every writer appends the decimal, not a =float=, so the digits reach the list.
+- Every reader that took the level through a =double= cast reads the leaf's own digits instead.
+- The goldens that move carry numeric text only.
+- The ORE core suite passes.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Teach =scripts/reapply_ore_lexical_form.py= the vector shape: the member, its
+   element info and its per-element serializer.
+2. Share one =push_money= helper from the boundary header, so a writer appends a
+   decimal rather than formatting a float by hand.
+3. Convert the three mappers that write a level: FX, equity and the rates
+   knock-out swap. =make_barrier= takes a decimal rather than a =double=.
+4. Read the level with the lexical overload of =exact_decimal= where a reader
+   took it through a cast.
+5. Move the drifted goldens aside, bootstrap them, and read every changed line.
 
 * Measurements
 
@@ -55,9 +68,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Level writers converted | 11 | =grep -rn 'Levels\.Level\.push_back' projects/ores.ore/core/src/domain/*.cpp= returns nothing | the PR head |
+| Goldens changed | 12, one to four =Level= lines each | =git diff --numstat -- assets= | the PR head |
+| Changed golden lines that are not a =Level= | 0 | =git diff -- assets \| grep -E '^[-+]' \| grep -vE '^(\+\+\+\|---)' \| grep -vc '<Level>'= | the PR head |
+| ORE core suite | 669 cases, 483,180 assertions, all pass | =ores.ore.core.tests= with the =.env= loaded | the PR head |
+| Reapply script self-tests | both pass | =scripts/reapply_ore_lexical_form.py --self-test= and =--self-test-missing-anchor= | the PR head |
 
 * Notes
+
+- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 1, second half. The digits unit's Result names the vector as left over.
+- The list is shared, so the work reaches three families. The rates knock-out swap writes a level too, and the equity barrier mappers write six. Their goldens move with the FX ones.
+- The regenerated values show what was lost: =3500.00=, =1.0=, =0.00800=, =1.21000= and =0.009= are the documents' own spellings, where the serializer had written =3500=, =1=, =0.00800000038=, =1.21000004= and =0.00899999961=.
 
 * Test Scenarios
 
@@ -83,3 +104,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A barrier's levels now carry the digits their documents state, in every family
+that states a barrier. The list element is a lexical leaf, eleven writers
+append a decimal through one shared helper, and the two readers that took a
+level through a cast read the leaf instead. The ORE core suite passes: 669
+cases, 483,180 assertions.
+
+Twelve goldens change, twenty lines in total, and every one of them is a
+=Level= line. The new values are the documents' own spellings, which is the
+proof the digits survive: =3500.00=, =1.0=, =0.00800=, =1.21000= and =0.009=,
+where the serializer had written =3500=, =1=, =0.00800000038=, =1.21000004= and
+=0.00899999961=.
+
+With this unit every money page the FX mappers read is a lexical leaf. The
+remaining half of finding 1 is the accumulator's range bounds, which its own
+unit removes when it gives them a child table.

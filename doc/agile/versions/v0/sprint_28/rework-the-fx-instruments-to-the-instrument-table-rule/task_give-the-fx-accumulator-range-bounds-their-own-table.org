@@ -31,9 +31,9 @@ rows, and the Regime 3 check forbids an encoded string field.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Scoped. The work is split in two, and the first half is the carrier. |
 | Waiting on   | Nothing.                               |
-| Next         | Define the child model.                |
+| Next         | Land the carrier, then the child table. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
@@ -46,11 +46,22 @@ rows, and the Regime 3 check forbids an encoded string field.
 
 * Plan
 
-1. Classify the six =rangeBound= fields as money or continuous.
-2. Write the child entity model beside =fx_accumulator_instrument=, with the trade as its key.
-3. Regenerate, and map the child in both directions. Delete the JSON helpers, =range_bound_to_json= and =parse_json_range_bounds=.
-4. Regenerate the database and run the trading suite.
-5. Add the round-trip test, then import the accumulator corpus document and compare the stored rows with the document.
+The unit is two changes, because the FX family has nowhere to carry a child
+today and the second change cannot be made without the first.
+
+1. *The carrier.* Every other family returns a =*_instrument_data= struct that
+   holds the instrument beside its children: =commodity_instrument_data=,
+   =swap_instrument_data=, =bond_instrument_data= and so on. The FX family is
+   the exception: =map_fx_instrument= returns a bare =fx_instrument_variant=, so
+   a range bound has no way out of the mapper. Introduce =fx_instrument_data=
+   and route the family through it. No behaviour change and no schema change.
+2. *The child.* Author the child model, remove =range_bounds_json= from the
+   accumulator model, regenerate, and map the child in both directions. Delete
+   the JSON helpers, =range_bound_to_json= and =parse_json_range_bounds=. Then
+   recreate the database and run the trading and ORE suites.
+
+The first change is a mechanical refactor over ten production files and the
+tests that unwrap the variant. The second is the schema change.
 
 * Measurements
 
@@ -64,7 +75,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Files that name the FX carrier | 10 production, 9 test | =grep -rl -e fx_instrument_variant -e map_fx_instrument projects/ --include=*.cpp --include=*.hpp= | the branch base |
 
 * Notes
 

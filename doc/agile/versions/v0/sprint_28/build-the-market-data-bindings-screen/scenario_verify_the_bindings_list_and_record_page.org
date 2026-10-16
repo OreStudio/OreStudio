@@ -1,0 +1,196 @@
+:PROPERTIES:
+:ID: 42CD0D45-9401-4152-848E-591C94013269
+:END:
+#+title: Test Scenario: Verify the bindings list and record page
+#+description: Manually verify the market data Bindings list and record page in ores.web against the signed-off prototype: the columns, the search, the kind filter, the pager, the series link, and the record page with the access mark, status, last tick and the oresmd Inspect link.
+#+type: test_scenario
+#+level: s1
+#+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
+#+target_dialog:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: eager_maxwell
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:27E932EB-7079-49A6-B61B-7F2056882FBE][Build the bindings list and record page]] in [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- The services run. Confirm with =./compass.sh services status=: 24 services running and =nats: running=.
+- The web app serves this work tree. It listens on =ORES_WEB_PORT=, which is 21402, so the site is at =http://127.0.0.1:21402=.
+- The database holds the Acme Corporation tenant with a party that owns feed bindings. The bindings are created by the =start_market_feeds= seed step (dataset =synthetic.feeds.bloomberg=), which runs during provisioning:
+  #+begin_src sh
+  ./compass.sh shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
+  #+end_src
+- The party holds 55 feed bindings when provisioning finishes, and every one is a synthetic source, enabled and set to auto start.
+- The source names read =synthetic.bloomberg.<pair>= for an FX spot, such as =synthetic.bloomberg.usdcad=, and =synthetic.bloomberg.<index>= for an interest rate curve, such as =synthetic.bloomberg.audaonia=. The feeds tick, so the series column and the last tick carry values.
+- The Market data menu has no *Bindings* card yet: the card is a separate task (*Put Bindings in the Market data menu*). Open the list by its address, not from the menu. This is expected and is not a failure of this scenario.
+- Provisioning was blocked on 2026-10-15 by a missing JetStream stream for the =refdata.v1.ops.*= step subjects. The rebase onto main carries the fix (D9, =[nats,service] Cover every step-command subject with a stream=), and tenant setup now finishes and creates the bindings. If provisioning stops again at =publish_bundle: refdata.currency_groups= with =JetStream publish failed: Timeout=, this build does not hold the fix.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:27E932EB-7079-49A6-B61B-7F2056882FBE][Build the bindings list and record page]] |
+| Parent story  | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]]   |
+| Target screen | Market data > Bindings, the list and the record page, in ores.web |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+** Open the Bindings list by address
+
+- In a terminal in this work tree, run =./compass.sh open-as tenant_admin=. Chrome opens on the sign-in page with the form filled in as =tenant_admin@acme_corporation=.
+- Press *Sign in*. The home page loads and shows the Acme Corporation tenant.
+- In the address bar, go to =http://127.0.0.1:21402/market-data/bindings=.
+- The page shows the title *Bindings* and the lead *The feeds that write market data for this party: which source each one names, the series it writes and whether it runs.*
+- The trail above the title reads *Home* then *Market data* then *Bindings*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Check the list columns and its rows
+
+- The list shows six columns, left to right: *Source name*, *Kind*, *Series*, *Enabled*, *Status*, *Last tick*.
+- *Source name* is drawn in a monospace face and names a source, for example =synthetic.refinitiv.eurusd=.
+- *Kind* reads *Synthetic* for these rows.
+- *Series* draws the series title as a link, and not the whole oresmd URL. The URL stays on the record page.
+- *Enabled* reads *Yes*, and *Status* shows a tag, one of *Running*, *Stopped*, *Disabled* or *Quiet*.
+- *Last tick* shows a time relative to now, such as *2 minutes ago*. A source with no tick yet shows a dash.
+- If the list is empty, the page says so instead of drawing the table. Record which state you saw.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Search the list by source name
+
+- In the *Search* box, type =refinitiv= and press Enter.
+- The list narrows to the rows whose source name holds that text, and the total count follows the search.
+- Clear the box and press Enter. Every row of the party comes back.
+- Now search for =zzzz=. The list says *No bindings match the search.* and offers *Clear the search*. Press *Clear the search*: the full list returns.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Filter the list by kind
+
+- The kind filter sits beside the search box and reads *All kinds* to begin with.
+- Choose *Synthetic*. Every row shows *Synthetic* in the *Kind* column.
+- Choose *Vendor*. The list is empty in this environment, because the seed makes only synthetic sources. That is the expected result, not a failure.
+- Choose *All kinds* again. Every row returns.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Page through the long list
+
+- The pager shows *First*, *Previous*, *Next* and *Last*, and a count of the form *Page 1 of N*.
+- With more rows than one page, press *Next*. Page 2 shows, the row set changes, and *Page 1 of N* becomes *Page 2 of N*.
+- Press *Previous* to come back to page 1, and *First* to stay on it.
+- Change the *Page size*. The number of rows on the page changes and the page count follows.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Open a binding record page
+
+- Click a row, or press Enter on it. The address ends in =/market-data/bindings/= and the record's id.
+- The record page opens on its *Details* tab and draws the record as the record screen standard draws it.
+- The main rows read *Source name*, *Kind* and *Enabled*, with the values of the row you opened.
+- Under them, the extra rows read *Status*, *Last tick*, *Feed*, *Folder*, *Ticks per hour* and *Series*.
+- *Feed* is a link to the feed behind the source; press it and the feed page opens. Return to the binding with *Back*.
+- *Series* draws the series title as a link and, under it, the oresmd URL as the product ships it.
+- The hint under *Series* reads *The series this binding writes to, and the oresmd URL that names it.*
+- The last line of the record says who changed the binding last, when, and why.
+- The header carries the access mark only for a person who may change a synthetic binding. You are =tenant_admin=, so it shows.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Follow the series link and inspect it
+
+- On the record page, click the series title in the *Series* row. The series page opens for that series: the Evolution page when the series has an axis, and the series page otherwise.
+- The page names the same series and does not say that the party does not hold it.
+- Go back to the binding with the browser *Back*, or by joining =/market-data/bindings=<id> to the site address.
+- Press the *Inspect* button beside the oresmd URL. The read only view of the URL's parts opens, showing the parts as a table.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Confirm a vendor binding is read only
+
+- This step needs a binding whose *Kind* is *Vendor*. The seed makes only synthetic sources, so if the list holds no vendor row, record that and skip the rest of the step.
+- A vendor row shows the kind *Vendor* and the status *Not supported*.
+- Open it. The header shows no *Edit*, and it shows *Delete* only for a person who may delete.
+- The *Details* tab carries one notice: *A binding of a real feed is read only here. Only a binding of a synthetic feed can change.*
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+| Notes  |       |
+
+** Confirm Edit and Delete are absent
+
+- This task draws the list and the record page only. The add, edit and delete dialogs belong to the next task, *Add, edit and delete a binding*.
+- On the list, the *Add* control is absent.
+- On a synthetic binding's record page, no *Edit* or *Delete* opens a dialog. If either is drawn, the task drew more than it was asked for and this step fails.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+** Return to the list and leave
+
+- Press the *Bindings* crumb above the record, or go to =http://127.0.0.1:21402/market-data/bindings=.
+- The list comes back with the same search, kind filter and page you left in steps 3 to 5, or on page 1 if it does not hold them.
+- Go back to the *Market data* area, and make sure nothing on the way asks a question about unsaved work.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status |       |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+- The scenario verifies the list and the record page of task *Build the bindings list and record page*. The add, edit, delete and history dialogs of the story are out of scope here and belong to their own tasks.
+- The menu card for Bindings is out of scope here, and the tester opens the list by address.
+- The environment was verified on 2026-10-15: the Acme tenant is active, the party holds 55 enabled synthetic bindings, and the feeds tick. The list states in steps 2 to 5 therefore show rows, not the empty state.
+- Only synthetic sources exist in the seed, so the vendor row in step 8 is absent and that step records the absence.

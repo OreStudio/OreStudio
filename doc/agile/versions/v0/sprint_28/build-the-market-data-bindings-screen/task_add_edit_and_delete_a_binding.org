@@ -38,6 +38,7 @@ Add and Edit are one dialog of the record standard. Add states the new record re
 - Add, Edit and Delete follow the prototype and the record screen standard, with the shared dialogs.
 - A source whose series a running feed writes is refused before the write, and a stale version is refused with the offer to reload.
 - Only the roles the prototype shows may add, edit and delete.
+- Edit and Delete are drawn only for a person who may take them, and Edit is not drawn for a vendor binding.
 
 * Plan
 

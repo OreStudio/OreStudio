@@ -22,7 +22,13 @@
 import { describe, expect, it } from 'vitest';
 import type { CurveSeriesList, ListedSeries, OresmdParseResult } from '@ores/contracts';
 import type { IdentityForm } from '../market/evolutionView.js';
-import { evolutionRoute, seriesOfUrl, seriesRoute, seriesVerdict } from './identity.js';
+import {
+    evolutionRoute,
+    seriesOfUrl,
+    seriesPageOf,
+    seriesRoute,
+    seriesVerdict,
+} from './identity.js';
 import { SCHEMA } from './testSchema.js';
 
 const parts = (over: Partial<OresmdParseResult> = {}): OresmdParseResult => ({
@@ -181,5 +187,29 @@ describe('seriesRoute', () => {
         expect(seriesRoute('oresmd://fx/EUR?type=quote&ccy=USD')).toBe(
             '/market-data/series?uri=oresmd%3A%2F%2Ffx%2FEUR%3Ftype%3Dquote%26ccy%3DUSD',
         );
+    });
+});
+
+describe('seriesPageOf', () => {
+    const base = {
+        series_id: 'a b/c',
+        identity: {
+            asset: 'EUR',
+            scope: 'fx',
+            instrument_type: 'fx_spot',
+            quote_type: 'rate',
+            fields: [],
+        },
+        observations: 0,
+    } as unknown as ListedSeries;
+
+    it('sends a series with an axis to the Evolution page by its id', () => {
+        expect(seriesPageOf({ ...base, axes: ['term'] })).toBe(
+            '/market-data/evolution?series=a%20b%2Fc',
+        );
+    });
+
+    it('sends a series with no axis to the series page by its id', () => {
+        expect(seriesPageOf({ ...base, axes: [] })).toBe('/market-data/series?series=a%20b%2Fc');
     });
 });

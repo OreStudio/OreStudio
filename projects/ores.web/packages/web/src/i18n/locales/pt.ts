@@ -3262,6 +3262,9 @@ const pt: SourceCatalogue = {
         'Start the market feeds': 'Iniciar os fluxos de mercado',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             'Inicia os dados de mercado sintéticos a partir dos quais as curvas e os preços do inquilino são construídos.',
+        'Generate the trades': 'Gerar as transações',
+        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
+            'Registra uma configuração de geração de transações para cada parte que o ponto de partida nomeia, e escreve a população que indica nos livros próprios dessa parte.',
         'Hand the tenant to its administrator': 'Entregar o inquilino ao seu administrador',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             'Inicia a execução de configuração do próprio inquilino, que corre como o administrador do inquilino e conclui o inquilino.',
@@ -3467,6 +3470,7 @@ const pt: SourceCatalogue = {
         },
         fields: {
             image_id: 'Bandeira',
+            producer_kind: 'Tipo',
             version: 'Versão',
             modified_by: 'Modificado por',
             performed_by: 'Executado por',
@@ -3571,6 +3575,7 @@ const pt: SourceCatalogue = {
             component_index: 'Índice',
         },
         choices: {
+            producer_kind: { SYNTHETIC: 'Sintético', VENDOR: 'Fornecedor' },
             process_type: {
                 geometric: 'Geométrico',
                 arithmetic: 'Aritmético',
@@ -3800,6 +3805,27 @@ const pt: SourceCatalogue = {
     },
 
     marketdata: {
+        bindings: {
+            title: 'Vínculos',
+            lead: 'Os feeds que escrevem dados de mercado para esta parte: a fonte que cada um nomeia, a série que escreve e se está em execução.',
+            allKinds: 'Todos os tipos',
+            series: 'Série',
+            status: 'Estado',
+            lastTick: 'Último tick',
+            feed: 'Feed',
+            folder: 'Pasta',
+            ticksPerHour: 'Ticks por hora',
+            seriesHint: 'A série em que este vínculo escreve e o URL oresmd que a nomeia.',
+            vendorNote:
+                'Um vínculo de feed real é só de leitura aqui. Só um vínculo de feed sintético pode mudar.',
+            statuses: {
+                running: 'Em execução',
+                stopped: 'Parado',
+                disabled: 'Desativado',
+                quiet: 'Silencioso',
+                unsupported: 'Não suportado',
+            },
+        },
         feeds: {
             targetUri:
                 'A série em que este feed escreve. Cada tick do feed é guardado como uma observação da série que este URI nomeia.',
@@ -3811,6 +3837,9 @@ const pt: SourceCatalogue = {
                 synthetic: 'Sintético',
                 syntheticBody:
                     'Os feeds que a plataforma gera: o que corre por fornecedor, e cada feed para iniciar e parar.',
+                bindings: 'Vínculos',
+                bindingsBody:
+                    'Os feeds que escrevem dados de mercado para esta parte: a série que cada um escreve e se está em execução.',
                 evolutionBody:
                     'Ler uma curva ou superfície ao longo de um intervalo de instantes, e como está agora.',
             },

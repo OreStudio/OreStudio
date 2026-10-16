@@ -56,6 +56,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:06C289CA-29DF-415B-BC9D-CAF61B94695C][Populate sprint 28 with the carried stories]] | DONE | 2026-10-13 | 2026-10-13 | Move sprint 27's carried stories and their successors from the product backlog inbox into sprint 28, and wire them into the sprint table. |
 | [[id:822CEF08-980C-4548-9C7B-04CFF433CEFB][Trigger a report run on demand or on a schedule]] | DONE | 2026-10-14 | 2026-10-15 | Make a trigger the only way a run is admitted, so a person can run a report without a schedule and both paths share one handler. |
 | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] | BACKLOG | | | Generate a stable, present-relative trade population into ACME books from ores.synthetic, referencing its own books, counterparties and staff, starting with bonds. |
+| [[id:63B65A47-B7F8-4ABB-95C8-C5B747BF0EA9][Bring the FX spot conventions onto the market standard]] | BACKLOG | | | Correct the FX spot conventions where they disagree with the market: the pair's spot lag, the quote precision, the spot tick size and the end-of-month roll, and record the evidence behind each. |
 
 ** Hotfixes
 

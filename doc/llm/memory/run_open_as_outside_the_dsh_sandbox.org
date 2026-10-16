@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 31D70680-0CBB-4C54-96A6-DD1EF5F65979
+:END:
+#+title: Run open-as outside the DSH sandbox
+#+description: compass open-as needs a process that outlives the command and an unmasked display; the DSH sandbox gives it neither
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+Run open-as with the DSH sandbox disabled (sandbox_permissions: danger-full-access). It cannot work inside the sandbox.
+
+*Why:* The harness runs each command under bwrap with --die-with-parent, so the Chrome that open-as starts dies the moment the command returns and the window never stays. The sandbox also mounts a private /tmp, which hides /tmp/.X11-unix, so the inherited DISPLAY=:0 sends Chrome down the X11 path where no window can open. Unsetting DISPLAY does not help, because the process still dies with the sandbox.
+
+*How to apply:* Escalate every open-as call. Do not pass --workspace <n> unless the window must land on that workspace: it forces X11 and moves the window there, so a tester on another workspace sees nothing. Use 'compass open-as tenant_admin --fresh' for a window on the current workspace. The persona profile lives under <checkout>/.cache/ores-personas, so no writable home is needed.

@@ -164,6 +164,12 @@ export interface SyntheticResource {
     /** The permission namespace, when the rows belong to another service than the synthetic one. */
     readonly namespace?: 'refdata' | 'marketdata';
     readonly search?: true;
+    /**
+     * The filter members a page may be narrowed by, named in the address as `f.<member>`.
+     * A member outside this list is refused, so a screen cannot reach a filter the model
+     * did not make filterable.
+     */
+    readonly filters?: readonly string[];
     readonly sortable?: readonly string[];
     readonly parentField?: string;
 }
@@ -547,6 +553,25 @@ function writableFor(
         throw notPermitted(`${resource.key} is read only here. ${because ?? ''}`);
     }
     return { resource, writes: resource.writes };
+}
+
+/** The filter members a page request names as `f.<member>`, refused unless the resource allows them. */
+function narrowingOf(
+    resource: SyntheticResource,
+    query: Record<string, unknown>,
+): Record<string, string> {
+    const narrowed: Record<string, string> = {};
+    for (const [name, value] of Object.entries(query)) {
+        if (!name.startsWith('f.')) {
+            continue;
+        }
+        const member = name.slice(2);
+        if (!(resource.filters ?? []).includes(member)) {
+            throw invalidRequest(`${resource.key} cannot be narrowed by ${member}.`);
+        }
+        narrowed[member] = input(z.string().trim().min(1).max(100), value);
+    }
+    return narrowed;
 }
 
 function keySchema(resource: SyntheticResource): z.ZodType<string> {
@@ -1046,6 +1071,7 @@ export function registerSyntheticRoutes(
         if (page.search !== '' && resource.search !== true) {
             throw invalidRequest(`${resource.key} cannot be searched.`);
         }
+        const narrowed = narrowingOf(resource, query);
         const reply = await session.client.callAuthenticated(
             resource.subjects.list,
             {
@@ -1053,11 +1079,14 @@ export function registerSyntheticRoutes(
                 limit: page.limit,
                 order: { field: page.sort, descending: page.descending },
                 filter:
-                    page.search === '' && resource.scope === undefined
+                    page.search === '' &&
+                    resource.scope === undefined &&
+                    Object.keys(narrowed).length === 0
                         ? null
                         : {
                               ...resource.filter,
                               ...resource.scope?.(session),
+                              ...narrowed,
                               ...(page.search === '' ? {} : { search: page.search }),
                           },
                 as_of: null,

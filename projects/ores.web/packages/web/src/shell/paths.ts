@@ -45,6 +45,7 @@ export const PATHS = {
     synthetic: '/market-data/synthetic',
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
+    bindings: '/market-data/bindings',
 } as const;
 
 /** The address of one person's page. */

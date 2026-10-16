@@ -150,6 +150,14 @@ export const CARDS = {
         ],
         screenTitleKey: 'marketdata.synthetic.title',
     },
+    bindings: {
+        titleKey: 'marketdata.area.screens.bindings',
+        bodyKey: 'marketdata.area.screens.bindingsBody',
+        to: PATHS.bindings,
+        icon: 'chart',
+        permission: 'marketdata::feed_bindings:read',
+        screenTitleKey: 'marketdata.bindings.title',
+    },
     curveEvolution: {
         titleKey: 'market.evolution.title',
         bodyKey: 'marketdata.area.screens.evolutionBody',
@@ -281,7 +289,7 @@ export const AREA_CARDS = {
         'tenors',
     ],
     organisation: ['people', 'hierarchy', 'roles', 'rescue'],
-    marketdata: ['synthetic', 'curveEvolution'],
+    marketdata: ['synthetic', 'bindings', 'curveEvolution'],
     operations: ['services', 'grid', 'bus', 'logs', 'signIns', 'versions'],
     tenants: ['tenants'],
 } as const satisfies Record<string, readonly CardId[]>;

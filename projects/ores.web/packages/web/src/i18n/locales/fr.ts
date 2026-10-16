@@ -3277,6 +3277,9 @@ const fr: SourceCatalogue = {
         'Start the market feeds': 'Démarrer les flux de marché',
         "Starts the synthetic market data the tenant's curves and prices are built from.":
             'Démarre les données de marché synthétiques à partir desquelles les courbes et les prix du locataire sont construits.',
+        'Generate the trades': 'Générer les transactions',
+        "Records a trade generation config for each party the starting point names and writes the population it states into that party's own books.":
+            "Enregistre une configuration de génération de transactions pour chaque partie que le point de départ nomme, et écrit la population qu'il indique dans les livres propres de cette partie.",
         'Hand the tenant to its administrator': 'Remettre le locataire à son administrateur',
         "Starts the tenant's own setup run, which runs as the tenant administrator and finishes the tenant.":
             "Démarre la propre exécution de configuration du locataire, qui s'exécute en tant qu'administrateur du locataire et termine le locataire.",
@@ -3489,6 +3492,7 @@ const fr: SourceCatalogue = {
         },
         fields: {
             image_id: 'Drapeau',
+            producer_kind: 'Type',
             version: 'Version',
             modified_by: 'Modifié par',
             performed_by: 'Effectué par',
@@ -3593,6 +3597,7 @@ const fr: SourceCatalogue = {
             component_index: 'Indice',
         },
         choices: {
+            producer_kind: { SYNTHETIC: 'Synthétique', VENDOR: 'Fournisseur' },
             process_type: {
                 geometric: 'Géométrique',
                 arithmetic: 'Arithmétique',
@@ -3825,6 +3830,27 @@ const fr: SourceCatalogue = {
     },
 
     marketdata: {
+        bindings: {
+            title: 'Liaisons',
+            lead: "Les flux qui écrivent des données de marché pour cette partie : la source que chacun nomme, la série qu'il écrit et s'il tourne.",
+            allKinds: 'Tous les types',
+            series: 'Série',
+            status: 'Statut',
+            lastTick: 'Dernier tick',
+            feed: 'Flux',
+            folder: 'Dossier',
+            ticksPerHour: 'Ticks par heure',
+            seriesHint: "La série dans laquelle cette liaison écrit, et l'URL oresmd qui la nomme.",
+            vendorNote:
+                'Une liaison de flux réel est en lecture seule ici. Seule une liaison de flux synthétique peut changer.',
+            statuses: {
+                running: 'En cours',
+                stopped: 'Arrêté',
+                disabled: 'Désactivé',
+                quiet: 'Silencieux',
+                unsupported: 'Non pris en charge',
+            },
+        },
         feeds: {
             targetUri:
                 'La série dans laquelle ce flux écrit. Chaque tick du flux est stocké comme une observation de la série que nomme cette URI.',
@@ -3836,6 +3862,9 @@ const fr: SourceCatalogue = {
                 synthetic: 'Synthétique',
                 syntheticBody:
                     'Les flux que la plateforme génère : ce qui tourne par fournisseur, et chaque flux à démarrer et à arrêter.',
+                bindings: 'Liaisons',
+                bindingsBody:
+                    'Les flux qui écrivent des données de marché pour cette partie : la série que chacun écrit et s’il tourne.',
                 evolutionBody:
                     'Lire une courbe ou une surface sur une plage d’instants, et telle qu’elle est maintenant.',
             },

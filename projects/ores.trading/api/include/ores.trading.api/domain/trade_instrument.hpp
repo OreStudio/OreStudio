@@ -24,7 +24,6 @@
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
-#include "ores.trading.api/domain/fx_instrument_variant.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
 #include <variant>
@@ -42,7 +41,7 @@ namespace ores::trading::domain {
  */
 using trade_instrument = std::variant<std::monostate,
                                       swap_instrument_data,
-                                      fx_instrument_variant,
+                                      fx_instrument_data,
                                       bond_instrument_data,
                                       credit_instrument_data,
                                       equity_instrument_data,

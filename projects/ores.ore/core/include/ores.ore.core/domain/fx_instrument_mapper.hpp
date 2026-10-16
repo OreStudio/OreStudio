@@ -28,7 +28,6 @@
 #include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
-#include "ores.trading.api/domain/fx_instrument_variant.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 
@@ -67,22 +66,26 @@ private:
 
 public:
     // Forward mappings (ORE XSD → typed domain object)
-    static trading::domain::fx_instrument_variant forward_fx_forward(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_swap(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_barrier_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_double_barrier_option(const trade& t);
-    static trading::domain::fx_instrument_variant
+    static trading::domain::fx_forward_instrument forward_fx_forward(const trade& t);
+    static trading::domain::fx_forward_instrument forward_fx_swap(const trade& t);
+    static trading::domain::fx_vanilla_option_instrument forward_fx_option(const trade& t);
+    static trading::domain::fx_barrier_option_instrument forward_fx_barrier_option(const trade& t);
+    static trading::domain::fx_barrier_option_instrument
+    forward_fx_double_barrier_option(const trade& t);
+    static trading::domain::fx_barrier_option_instrument
     forward_fx_european_barrier_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_kiko_barrier_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_generic_barrier_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_digital_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_digital_barrier_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_touch_option(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_variance_swap(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_average_forward(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_accumulator(const trade& t);
-    static trading::domain::fx_instrument_variant forward_fx_tarf(const trade& t);
+    static trading::domain::fx_barrier_option_instrument
+    forward_fx_kiko_barrier_option(const trade& t);
+    static trading::domain::fx_barrier_option_instrument
+    forward_fx_generic_barrier_option(const trade& t);
+    static trading::domain::fx_digital_option_instrument forward_fx_digital_option(const trade& t);
+    static trading::domain::fx_digital_option_instrument
+    forward_fx_digital_barrier_option(const trade& t);
+    static trading::domain::fx_digital_option_instrument forward_fx_touch_option(const trade& t);
+    static trading::domain::fx_variance_swap_instrument forward_fx_variance_swap(const trade& t);
+    static trading::domain::fx_asian_forward_instrument forward_fx_average_forward(const trade& t);
+    static trading::domain::fx_accumulator_instrument forward_fx_accumulator(const trade& t);
+    static trading::domain::fx_asian_forward_instrument forward_fx_tarf(const trade& t);
 
     // Reverse mappings (typed domain object → ORE XSD)
     static trade reverse_fx_forward(const ores::trading::domain::fx_forward_instrument& instr);

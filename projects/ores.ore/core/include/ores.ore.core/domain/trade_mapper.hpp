@@ -89,7 +89,7 @@ public:
      * Returns a populated result for FxForward, FxSwap, and FxOption.
      * Returns empty for all other types.
      */
-    static std::optional<trading::domain::fx_instrument_variant> map_fx_instrument(const trade& v);
+    static std::optional<trading::domain::fx_instrument_data> map_fx_instrument(const trade& v);
 
     /**
      * @brief Dispatches a credit-family trade to credit_instrument_mapper.

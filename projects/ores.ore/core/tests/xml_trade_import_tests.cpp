@@ -49,7 +49,7 @@ std::filesystem::path example_path(const std::string& filename) {
 using ores::ore::xml::importer;
 using ores::ore::xml::trade_import_item;
 using ores::trading::domain::swap_instrument_data;
-using ores::trading::domain::fx_instrument_variant;
+using ores::trading::domain::fx_instrument_data;
 using ores::trading::domain::fx_forward_instrument;
 using ores::trading::domain::bond_instrument_data;
 using namespace ores::logging;
@@ -248,7 +248,7 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
 
     auto& item = items.front();
     INFO("Trade type: " << item.anchor.trade_type);
-    REQUIRE(std::holds_alternative<fx_instrument_variant>(item.instrument));
+    REQUIRE(std::holds_alternative<fx_instrument_data>(item.instrument));
 
     // Mint the id as the planner would; the trade id is the instrument's key,
     // and the test verifies the wiring.
@@ -256,8 +256,9 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
     item.anchor.id = gen();
     ores::trading::domain::stamp_ids(item.instrument, item.anchor.id);
 
-    const auto& r = std::get<fx_instrument_variant>(item.instrument);
-    const auto& instr = std::get<fx_forward_instrument>(r);
+    const auto& r = std::get<fx_instrument_data>(item.instrument);
+    REQUIRE(r.forwards.size() == 1);
+    const auto& instr = r.forwards.front();
     CHECK(instr.identity.trade_id == item.anchor.id);
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());

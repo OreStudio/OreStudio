@@ -48,6 +48,11 @@ namespace ores::reporting::messaging {
  *  reporting.v1.ops.ignore_compute_results  — post-processing, substituted
  *  reporting.v1.ops.finalise_report                — marks instance as completed
  *  reporting.v1.ops.fail_report                    — marks instance as failed (compensation)
+ *
+ * One durable consumer carries the whole family, so each method answers its own
+ * delivery: @c ack.accept() once it has recorded the step's outcome, @c
+ * ack.reject() for a delivery that carries no step context, and no answer on
+ * any other exit, which leaves the delivery to be retried.
  */
 class ORES_REPORTING_CORE_EXPORT report_execution_handler {
 private:

@@ -550,14 +550,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "refdata.v1.ops.publish_supervisory_bodies_from_dq",
             "refdata.v1.ops.publish_tenor_schedules_from_dq",
         };
-        const auto step_stream =
-            ores::service::messaging::ensure_step_stream(nats, queue_group, publish_subjects);
-        for (const auto subject : publish_subjects) {
-            subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats, subject, queue_group, step_stream, [h](ores::nats::message msg) {
-                    h->handle(std::move(msg));
-                }));
-        }
+        ores::service::messaging::step_routes routes;
+        for (const auto subject : publish_subjects)
+            routes.on(subject, [h](ores::nats::message msg) { h->handle(std::move(msg)); });
+
+        subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
 
     // ----------------------------------------------------------------

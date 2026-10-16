@@ -46,12 +46,26 @@ inline constexpr int step_max_deliver = 10;
  * @brief How long the server keeps a step command that nobody acknowledged.
  *
  * A command only has to outlive the service being restarted or redeployed, so
- * this is a day rather than the seven a stream keeps by default. A longer
- * retention would accumulate the payload of every step ever dispatched - which
- * for a gather-trades step is a trade population - long after the run that
- * asked for it had failed or finished.
+ * this is a day rather than the seven a stream keeps by default. It is a
+ * backstop, not the main rule: under @c step_stream_retention a command is
+ * removed as soon as the consumer has it, and this bound only decides how long
+ * a command survives when no consumer can take it.
  */
 inline constexpr int step_stream_max_age_days = 1;
+
+/**
+ * @brief What removes a step command once a consumer has it.
+ *
+ * A step command is work rather than data. Once the service has served it and
+ * acknowledged it there is nothing left to keep, so @c interest says exactly
+ * that, and the stream does not accumulate a day of every step ever dispatched
+ * - which for a gather-trades step is a trade population. The cost is that a
+ * command published while no consumer filters its subject is dropped instead of
+ * held, so every step subject has to be declared before anything publishes to
+ * it.
+ */
+inline constexpr ores::nats::service::stream_retention step_stream_retention =
+    ores::nats::service::stream_retention::interest;
 
 namespace detail {
 
@@ -157,8 +171,9 @@ private:
  * @brief Serves a family of step commands on one durable consumer.
  *
  * Declares the stream that covers the family, then subscribes one durable
- * consumer carrying the whole family as its filter set. Call it once per
- * family, during startup.
+ * consumer carrying the whole family as its filter set, then prunes the
+ * consumers this service no longer declares. Call it once per family, during
+ * startup.
  *
  * A consumer per subject is what this replaces. One consumer per subject means
  * a service owns one server-side object per subject it serves - forty-five of
@@ -167,14 +182,18 @@ private:
  * publishes to, and, when the name is reused, a consumer whose stored filter
  * the subscribe that follows will not attach.
  *
+ * The stream removes a command once the consumer has it, so it does not grow
+ * into a day-long archive of every step ever dispatched.
+ *
  * The handler answers the delivery itself, with @c ores::nats::ack_guard, so
  * that a handler which records no outcome is redelivered. Passing a handler
  * that cannot answer is what makes at-least-once delivery a promise the code
  * does not keep.
  *
- * @throws std::runtime_error when the stream cannot be created, or when the
- *         service declares no subjects. For a service whose steps are its work,
- *         either is fatal: no step can then be delivered.
+ * @throws std::invalid_argument when the service declares no subjects, and
+ *         std::runtime_error when the stream cannot be created. For a service
+ *         whose steps are its work, either is fatal: no step can then be
+ *         delivered.
  */
 [[nodiscard]] inline ores::nats::service::subscription serve_step_commands(
     ores::nats::service::client& nats, std::string_view service_name, const step_routes& routes) {
@@ -185,8 +204,9 @@ private:
         throw std::invalid_argument("A service must serve at least one step-command subject.");
 
     const std::string stream = step_stream_name(nats, service_name, routes.group());
-    nats.make_admin().ensure_stream(
-        stream, nats.covering_subjects(subjects), step_stream_max_age_days);
+    auto admin = nats.make_admin();
+    admin.ensure_stream(
+        stream, nats.covering_subjects(subjects), step_stream_max_age_days, step_stream_retention);
 
     // The consumer filters relative subjects; a delivery names the fully
     // prefixed one, so the dispatch table is built on the same prefixing.
@@ -202,12 +222,14 @@ private:
     for (const auto& subject : subjects)
         filters.push_back(subject);
 
-    BOOST_LOG_SEV(detail::lg(), info) << "Serving " << subjects.size() << " step command(s) on '"
-                                      << stream << "' as '" << step_durable_name(stream) << "'";
+    const std::string durable = step_durable_name(stream);
 
-    return nats.js_queue_subscribe_multi(
+    BOOST_LOG_SEV(detail::lg(), info) << "Serving " << subjects.size() << " step command(s) on '"
+                                      << stream << "' as '" << durable << "'";
+
+    auto sub = nats.js_queue_subscribe_multi(
         filters,
-        step_durable_name(stream),
+        durable,
         service_name,
         [by_subject](ores::nats::message msg) {
             for (const auto& [subject, handler] : *by_subject) {
@@ -227,6 +249,18 @@ private:
         },
         stream,
         step_max_deliver);
+
+    // The consumer that serves the whole family now exists, so the consumers
+    // this service used to declare one subject at a time are dead weight: they
+    // filter subjects the new consumer already covers, and under interest
+    // retention an unconsumed filter is what pins a message in the stream.
+    //
+    // Prune after subscribing, never before. Between the two the stream would
+    // have no consumer at all, and a command published in that window would be
+    // dropped on the spot rather than held for this service.
+    admin.prune_consumers(stream, durable);
+
+    return sub;
 }
 
 }

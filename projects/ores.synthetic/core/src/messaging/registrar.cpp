@@ -172,16 +172,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         static constexpr std::array publish_subjects{
             ores::synthetic::domain::publish_feeds_from_dq_step_subject,
             ores::synthetic::domain::publish_market_data_providers_from_dq_step_subject};
-        const auto step_stream = ores::service::messaging::ensure_step_stream(
-            nats, "ores.synthetic.service", publish_subjects);
-        for (const auto subject : publish_subjects) {
-            subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats,
-                subject,
-                "ores.synthetic.service",
-                step_stream,
-                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
-        }
+        ores::service::messaging::step_routes routes;
+        for (const auto subject : publish_subjects)
+            routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+        subs.push_back(
+            ores::service::messaging::serve_step_commands(nats, "ores.synthetic.service", routes));
     }
 
     // ----------------------------------------------------------------

@@ -39,7 +39,6 @@
 #include "ores.reporting.core/messaging/run_document_handler.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
-#include <array>
 #include <memory>
 #include <optional>
 #include <string>
@@ -285,108 +284,32 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [cph](ores::nats::message msg) { cph->get_concurrency_policy_version(std::move(msg)); }));
 
     // ----------------------------------------------------------------
-    // Report execution workflow step handlers
+    // Report execution workflow step handlers. One durable consumer
+    // carries the whole family, and each handler answers its own
+    // delivery.
     // ----------------------------------------------------------------
     auto reh = std::make_shared<report_execution_handler>(
         nats, ctx, svc_nats, instance_states, std::move(http_base_url));
-    static constexpr std::array step_subjects{gather_trades_request::nats_subject,
-                                              gather_market_data_request::nats_subject,
-                                              assemble_bundle_request::nats_subject,
-                                              resolve_prepared_input_request::nats_subject,
-                                              collect_compute_results_request::nats_subject,
-                                              ignore_compute_results_request::nats_subject,
-                                              finalise_report_request::nats_subject,
-                                              fail_report_request::nats_subject};
-    const auto step_stream =
-        ores::service::messaging::ensure_step_stream(nats, group, step_subjects, "execution");
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(gather_trades_request::nats_subject),
-        group,
-        step_stream,
-        [reh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            reh->gather_trades(std::move(msg));
-            ack.accept();
-        }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(gather_market_data_request::nats_subject),
-        group,
-        step_stream,
-        [reh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            reh->gather_market_data(std::move(msg));
-            ack.accept();
-        }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(assemble_bundle_request::nats_subject),
-        group,
-        step_stream,
-        [reh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            reh->assemble_bundle(std::move(msg));
-            ack.accept();
-        }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(collect_compute_results_request::nats_subject),
-        group,
-        step_stream,
-        [reh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            reh->collect_results(std::move(msg));
-            ack.accept();
-        }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(resolve_prepared_input_request::nats_subject),
-        group,
-        step_stream,
-        [reh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            reh->resolve_prepared_input(std::move(msg));
-            ack.accept();
-        }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(ignore_compute_results_request::nats_subject),
-        group,
-        step_stream,
-        [reh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            reh->ignore_compute_results(std::move(msg));
-            ack.accept();
-        }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(finalise_report_request::nats_subject),
-        group,
-        step_stream,
-        [reh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            reh->finalise(std::move(msg));
-            ack.accept();
-        }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(fail_report_request::nats_subject),
-        group,
-        step_stream,
-        [reh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            reh->fail(std::move(msg));
-            ack.accept();
-        }));
+    ores::service::messaging::step_routes execution_routes{"execution"};
+    execution_routes
+        .on(gather_trades_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->gather_trades(std::move(msg)); })
+        .on(gather_market_data_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->gather_market_data(std::move(msg)); })
+        .on(assemble_bundle_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->assemble_bundle(std::move(msg)); })
+        .on(resolve_prepared_input_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->resolve_prepared_input(std::move(msg)); })
+        .on(collect_compute_results_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->collect_results(std::move(msg)); })
+        .on(ignore_compute_results_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->ignore_compute_results(std::move(msg)); })
+        .on(finalise_report_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->finalise(std::move(msg)); })
+        .on(fail_report_request::nats_subject,
+            [reh](ores::nats::message msg) { reh->fail(std::move(msg)); });
+    subs.push_back(
+        ores::service::messaging::serve_step_commands(nats, queue_group, execution_routes));
 
     // ----------------------------------------------------------------
     // Publish-from-DQ workflow step handlers. One handler serves every
@@ -400,16 +323,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_report_definitions_from_dq_request::nats_subject,
             publish_risk_report_configs_from_dq_request::nats_subject,
         };
-        const auto step_stream =
-            ores::service::messaging::ensure_step_stream(nats, group, publish_subjects);
-        for (const auto subject : publish_subjects) {
-            subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats, subject, group, step_stream, [pdq](ores::nats::message msg) {
-                    ores::nats::ack_guard ack(msg);
-                    pdq->handle(std::move(msg));
-                    ack.accept();
-                }));
-        }
+        ores::service::messaging::step_routes routes;
+        for (const auto subject : publish_subjects)
+            routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+        subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
 
     // ----------------------------------------------------------------

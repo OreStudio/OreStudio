@@ -328,6 +328,23 @@ private:
     void stamp_command_published(const boost::uuids::uuid& step_id);
 
     /**
+     * @brief Settles the forward steps a rollback has abandoned.
+     *
+     * A run rolls back when one of its steps reported a failure. The steps it
+     * had dispatched beside that one are still in flight and will never be
+     * waited on again, so leaving them =in_progress= has a compensated run
+     * read as unfinished and report a step that is still running. They are
+     * failed here, which is the only terminal state the step machine reaches
+     * from =in_progress=, and the reason says why.
+     *
+     * Called as the run decides to roll back rather than when the rollback
+     * ends, so a sibling that answers late is a duplicate rather than an
+     * answer that could advance a run already on its way out.
+     */
+    void settle_abandoned_forward_steps(const boost::uuids::uuid& instance_id,
+                                        const std::string& reason);
+
+    /**
      * @brief One step the engine is waiting on an answer for.
      *
      * Enough to find the step and to judge it. When the step was dispatched is

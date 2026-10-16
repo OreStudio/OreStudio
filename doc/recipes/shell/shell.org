@@ -1649,3 +1649,11 @@ tangled into the runnable script library
 * Trade Generation Counterparties
 
 - [[id:54F7F5A4-AD02-5637-9D98-562E462520EB][How do I run the trade_generation_counterparties commands from the shell?]]
+
+* Report Error Scopes
+
+- [[id:4BBF63E0-B3D4-50B8-B68B-A1B8EE1EB94C][How do I run the report_error_scopes commands from the shell?]]
+
+* Report Errors
+
+- [[id:7D92028C-53AC-5741-9B7F-5E12AA94474A][How do I run the report_errors commands from the shell?]]

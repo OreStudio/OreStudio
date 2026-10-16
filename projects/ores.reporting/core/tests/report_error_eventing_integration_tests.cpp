@@ -156,8 +156,10 @@ TEST_CASE("write_report_error_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto report_instance_id_parent =
         ores::reporting::generators::generate_synthetic_report_instance(ctx);
+    report_instance_id_parent.change_reason_code = "system.test";
     auto report_instance_id_parent_report_trigger_event_parent =
         ores::reporting::generators::generate_synthetic_report_trigger_event(ctx);
+    report_instance_id_parent_report_trigger_event_parent.change_reason_code = "system.test";
     // report_instance_kind is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, as the direct-parent
     // system-tenant branch does.

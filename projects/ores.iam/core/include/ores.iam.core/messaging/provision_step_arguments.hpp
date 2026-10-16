@@ -515,8 +515,8 @@ parse_trade_generation_assignments(const std::string& arguments_json) {
      * checks below name the one that is missing rather than reporting a
      * positional parse failure against the whole object.
      */
-    auto parsed = rfl::json::read<trade_generation_step_arguments, rfl::DefaultIfMissing>(
-        arguments_json);
+    auto parsed =
+        rfl::json::read<trade_generation_step_arguments, rfl::DefaultIfMissing>(arguments_json);
     if (!parsed)
         throw std::runtime_error("The step's arguments are not a trade generation recipe: " +
                                  parsed.error().what());

@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.service/messaging/registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.api/messaging/ore_import_protocol.hpp"
 #include "ores.ore.api/messaging/run_configuration_protocol.hpp"
@@ -27,6 +26,7 @@
 #include "ores.ore.service/messaging/report_package_handler.hpp"
 #include "ores.ore.service/messaging/run_configuration_handler.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include <array>
 #include <memory>
 

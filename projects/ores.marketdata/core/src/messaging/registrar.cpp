@@ -18,7 +18,6 @@
  *
  */
 #include "ores.marketdata.core/messaging/registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
@@ -47,6 +46,7 @@
 #include "ores.marketdata.core/messaging/series_identity_handler.hpp"
 #include "ores.marketdata.core/messaging/series_slice_handler.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include <array>
 #include <functional>
 #include <memory>
@@ -230,11 +230,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ores::service::messaging::ensure_step_stream(nats, queue, publish_subjects);
         for (const auto subject : publish_subjects) {
             subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats,
-                subject,
-                queue,
-                step_stream,
-                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
+                nats, subject, queue, step_stream, [pdq](ores::nats::message msg) {
+                    pdq->handle(std::move(msg));
+                }));
         }
     }
 

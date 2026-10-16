@@ -17,9 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <array>
 #include "ores.analytics.core/messaging/registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.analytics.api/messaging/publish_operation_protocol.hpp"
 #include "ores.analytics.core/messaging/configuration_document_registrar.hpp"
 #include "ores.analytics.core/messaging/pricing_engine_type_history_provider_registrar.hpp"
@@ -33,6 +31,8 @@
 #include "ores.analytics.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
+#include <array>
 
 // Function-local static: must outlive the history.v1.get subscription.
 ores::history::service::dispatch_registry& history_registry() {
@@ -73,8 +73,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_pricing_engines_from_dq_request::nats_subject,
             publish_todays_market_from_dq_request::nats_subject,
         };
-        const auto step_stream =
-            ores::service::messaging::ensure_step_stream(nats, "ores.analytics.service", publish_subjects);
+        const auto step_stream = ores::service::messaging::ensure_step_stream(
+            nats, "ores.analytics.service", publish_subjects);
         for (const auto subject : publish_subjects) {
             subs.push_back(ores::service::messaging::subscribe_step_command(
                 nats,

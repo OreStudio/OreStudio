@@ -18,7 +18,6 @@
  *
  */
 #include "ores.refdata.service/messaging/book_proposal_registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.refdata.api/messaging/book_proposal_operations_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_proposal_operations_protocol.hpp"
 #include "ores.refdata.api/workflow/book_apply_workflow.hpp"
@@ -27,6 +26,7 @@
 #include "ores.refdata.service/messaging/book_proposal_handler.hpp"
 #include "ores.refdata.service/messaging/counterparty_apply_step_handler.hpp"
 #include "ores.refdata.service/messaging/counterparty_proposal_handler.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include <array>
 #include <memory>
 #include <string_view>
@@ -49,11 +49,10 @@ std::vector<ores::nats::service::subscription> book_proposal_registrar::register
     // them, so the step handler takes no verifier.
     // These are workflow step commands, which the engine commits to a stream,
     // so this service declares the coverage and reads them durably.
-    static constexpr std::array step_subjects{
-        workflow::recheck_book_changes_subject,
-        workflow::apply_book_changes_subject,
-        workflow::recheck_counterparty_changes_subject,
-        workflow::apply_counterparty_changes_subject};
+    static constexpr std::array step_subjects{workflow::recheck_book_changes_subject,
+                                              workflow::apply_book_changes_subject,
+                                              workflow::recheck_counterparty_changes_subject,
+                                              workflow::apply_counterparty_changes_subject};
     const auto step_stream =
         ores::service::messaging::ensure_step_stream(nats, queue_group, step_subjects, "apply");
 

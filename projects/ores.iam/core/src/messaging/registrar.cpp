@@ -18,7 +18,6 @@
  *
  */
 #include "ores.iam.core/messaging/registrar.hpp"
-#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.core/service/cache/partition_token_cache.hpp"
 #include "ores.iam.api/messaging/account_contact_information_protocol.hpp"
@@ -77,6 +76,7 @@
 #include "ores.iam.core/messaging/tenant_session_handler.hpp"
 #include "ores.iam.core/messaging/tenant_status_registrar.hpp"
 #include "ores.iam.core/messaging/tenant_type_registrar.hpp"
+#include "ores.service/messaging/step_command_stream.hpp"
 #include "ores.variability.api/messaging/system_setting_protocol.hpp"
 
 // Generic history.v1.get subject.
@@ -684,11 +684,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
             ores::service::messaging::ensure_step_stream(nats, qg, publish_subjects, "from_dq");
         for (const auto subject : publish_subjects) {
             subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats,
-                subject,
-                qg,
-                step_stream,
-                [h](ores::nats::message msg) { h->handle(std::move(msg)); }));
+                nats, subject, qg, step_stream, [h](ores::nats::message msg) {
+                    h->handle(std::move(msg));
+                }));
         }
     }
 

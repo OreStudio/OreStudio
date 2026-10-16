@@ -37,8 +37,8 @@
 #include "ores.synthetic.api/messaging/ir_curve_template_entry_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
-#include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.synthetic.api/messaging/trade_generation_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.synthetic.api/messaging/yield_curve_process_type_protocol.hpp"
 #include "ores.synthetic.core/service/trade_population_service.hpp"
 #include "ores.synthetic.core/trading/trading_trade_population_writer.hpp"
@@ -2012,8 +2012,9 @@ delegated_request(std::ostream& out,
                   const Request& request) {
     auto delegated = session.with_delegation(token);
     try {
-        auto result = ores::nats::service::authenticated_request_and_decode<
-            typename Request::response_type>(delegated, Request::nats_subject, request);
+        auto result =
+            ores::nats::service::authenticated_request_and_decode<typename Request::response_type>(
+                delegated, Request::nats_subject, request);
         if (!result) {
             fail(out) << "Failed to parse response: " << result.error().what() << std::endl;
             return std::nullopt;
@@ -2030,7 +2031,10 @@ delegated_request(std::ostream& out,
 void synthetic_commands::process_generate_trades(std::ostream& out,
                                                  nats_client& session,
                                                  const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {flag_spec{.name = "config", .requires_value = true, .default_value = "", .repeatable = true}});
+    auto parsed = parse_args(
+        args,
+        {flag_spec{
+            .name = "config", .requires_value = true, .default_value = "", .repeatable = true}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -2062,7 +2066,9 @@ void synthetic_commands::process_generate_trades(std::ostream& out,
         config_req.filter = config_filter;
 
         const auto configs = do_auth_request<synthetic_ms::list_trade_generation_configs_response>(
-            out, session, synthetic_ms::list_trade_generation_configs_request::nats_subject,
+            out,
+            session,
+            synthetic_ms::list_trade_generation_configs_request::nats_subject,
             config_req);
         if (!configs)
             return;

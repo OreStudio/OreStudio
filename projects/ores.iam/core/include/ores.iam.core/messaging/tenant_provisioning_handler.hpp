@@ -1216,8 +1216,8 @@ private:
         return ores::nats::service::nats_client(
             nats_, [this, token, tenant_id, account_id, party_id, username](bool force) {
                 if (force)
-                    *token = impersonation_.mint_token(
-                        ctx_, tenant_id, account_id, party_id, username);
+                    *token =
+                        impersonation_.mint_token(ctx_, tenant_id, account_id, party_id, username);
                 return *token;
             });
     }
@@ -1256,8 +1256,8 @@ private:
         request.limit = 10000;
 
         const auto response = client.request(request);
-        require_read(response.result, "the counterparty links of party " +
-                                          boost::uuids::to_string(party_id));
+        require_read(response.result,
+                     "the counterparty links of party " + boost::uuids::to_string(party_id));
 
         std::vector<boost::uuids::uuid> result;
         for (const auto& link : response.party_counterparties)
@@ -1273,9 +1273,8 @@ private:
     scoped_counterparties(internal_request_client& client, const boost::uuids::uuid& config_id) {
         ores::synthetic::messaging::list_trade_generation_counterparties_request request;
         request.limit = 10000;
-        request.filter =
-            ores::synthetic::messaging::trade_generation_counterparties_filter{.config_id =
-                                                                                  config_id};
+        request.filter = ores::synthetic::messaging::trade_generation_counterparties_filter{
+            .config_id = config_id};
 
         const auto response = client.request(request);
         require_read(response.result, "the scope of config " + boost::uuids::to_string(config_id));
@@ -1296,7 +1295,8 @@ private:
         request.filter =
             ores::synthetic::messaging::trade_generation_books_filter{.config_id = config_id};
         const auto response = client.request(request);
-        require_read(response.result, "the book scope of config " + boost::uuids::to_string(config_id));
+        require_read(response.result,
+                     "the book scope of config " + boost::uuids::to_string(config_id));
         for (const auto& row : response.trade_generation_books)
             if (row.book_id == book_id)
                 return true;
@@ -1398,8 +1398,7 @@ private:
 
         ores::synthetic::messaging::put_many_trade_generation_books_request book_request;
         ores::synthetic::messaging::trade_generation_book_change book_change;
-        book_change.write.id =
-            ores::synthetic::service::book_scope_id_for(config_id, book->id);
+        book_change.write.id = ores::synthetic::service::book_scope_id_for(config_id, book->id);
         book_change.write.config_id = config_id;
         book_change.write.book_id = book->id;
         book_change.precondition = {ores::utility::domain::precondition_kind::must_not_exist,

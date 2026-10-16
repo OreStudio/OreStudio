@@ -137,3 +137,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Remaining
+
+The CMake content is now covered. Two paste points, =cmake_prologue= before
+the library target and =cmake_finalize= before its install rule, are in every
+src archetype and in both branches of the header-only ones. The seven places
+that lost content declare it, and =ores.trading/core= declares
+=#+win32_static_library: true= because its WIN32 =STATIC= choice replaces the
+template's =add_library= rather than adding to it.
+
+What still blocks the task:
+
+1. =test_handler_permissions= fails two tests. Both are about permission codes
+   that are not seeded. Adding =#+component_kind:= to 47 parts changes which
+   archetypes render for them, and that reaches past CMake into the generated
+   source, protocols and shells. Measure that blast radius before going
+   further: it is bigger than this task assumed, and it may want its own task.
+2. The whole-tree build has not been run. It is the only thing that can prove
+   the link lists, the compile options and the includes all still hold.
+3. =ores.telemetry/database= lost two =target_include_directories= entries that
+   are now redeclared; whether they were needed at all, given the linked
+   targets, was not established.

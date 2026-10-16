@@ -41,6 +41,13 @@ void require_known_calendar(const business_day_calendar_set& calendars,
     }
 }
 
+/// The last calendar day of @p date's month -- QuantLib's
+/// @c Date::endOfMonth, which is what a clamped period lands on and what the
+/// last business day is found from.
+year_month_day last_calendar_day(year_month_day date) {
+    return year_month_day{year_month_day_last{date.year() / date.month() / last}};
+}
+
 } // namespace
 
 year_month_day calendar_arithmetic::add_period(year_month_day date, date_period period) {
@@ -57,13 +64,13 @@ year_month_day calendar_arithmetic::add_period(year_month_day date, date_period 
             // the total, so 31 January plus two months is 31 March.
             const auto shifted = date + months{n};
             if (!shifted.ok())
-                return year_month_day{year_month_day_last{shifted.year() / shifted.month() / last}};
+                return last_calendar_day(shifted);
             return shifted;
         }
         case period_unit::year: {
             const auto shifted = date + years{n};
             if (!shifted.ok())
-                return year_month_day{year_month_day_last{shifted.year() / shifted.month() / last}};
+                return last_calendar_day(shifted);
             return shifted;
         }
         case period_unit::none:
@@ -202,8 +209,7 @@ year_month_day calendar_arithmetic::last_business_day(year_month_day date,
                                                       business_day_convention convention,
                                                       std::size_t calendar_index,
                                                       const business_day_calendar_set& calendars) {
-    const auto last_day = year_month_day{year_month_day_last{date.year() / date.month() / last}};
-    return adjust(last_day, convention, calendar_index, calendars);
+    return adjust(last_calendar_day(date), convention, calendar_index, calendars);
 }
 
 year_month_day calendar_arithmetic::nth_weekday(unsigned nth, weekday w, month m, year y) {

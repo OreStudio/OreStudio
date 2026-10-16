@@ -158,6 +158,9 @@ via its "Verifies task" field.
 | 8 | Scope creep: SouthAfrica, =end_of_month=, the schedule machinery, the refdata edits | several | Accepted, recorded | Each is load-bearing. The SouthAfrica ruleset *is* this component's own calendar rule data, which acceptance 1 names, and it is what lets QuantLib's convention cases be replayed. =end_of_month= is part of the =advance= semantics acceptance 1 names. The schedule rows are already persisted, so an engine that could not walk them could not express what the database stores. The refdata edits are the consequence of widening a vocabulary it parses. |
 | 9 | The parse and =to_code= table scan is duplicated across eight functions | domain/date_convention.cpp, domain/tenor_resolution.cpp | Declined | Noted as a judgement call by the reviewer. Extracting a shared template would hide the code-string literal from the enum it belongs to, which is the one thing a reader checks these tables for; each loop is three lines over a table of three to seven rows. Worth revisiting if a fifth list lands. |
 | 10 | =special_tenor_without_offset= is unreachable and the step-count clause is subsumed | service/tenor_resolution_engine.cpp | Rejected | Both statuses fire: a PERIOD tenor takes its own period and a SPECIAL one takes the rule's offset, so the two branches are told apart by =tenor.kind=, and the tests exercise both. The clause is load-bearing too: a negative step count gives =has_axis == has_step_count=, so without it =step_count = -1= would walk one step instead of refusing. |
+| 11 | Month-end construction is duplicated between =add_period= and =last_business_day= | service/calendar_arithmetic.cpp | Accepted | Fixed. One file-local =last_calendar_day= now carries all three sites, which is also QuantLib's =Date::endOfMonth= and the thing =last_business_day= is found from. |
+| 12 | =south_africa()= is used in only one test file, so the claimed replay never landed | service/quantlib_calendar_rulesets.hpp | Rejected | The replay is what =service_calendar_arithmetic_tests.cpp= is: a =south_africa()= holiday-list case plus the thirty-five QuantLib convention cases driven through it. The claim and the test are the same thing. |
+| 13 | Test cases carry no =BOOST_LOG_SEV(lg, info) << sut=, which =unit_test_conventions.org= asks for | tests/ | Declined | No test in =ores.analytics.quant= carries one -- a suite that needs no database has nothing to log -- so adding them to three files would set them apart from their siblings rather than bring the component to the standard. Worth doing as a component-wide pass, not as a corner of this one. |
 
 * Result
 
@@ -168,7 +171,7 @@ own expected values or its own invariants. RESOLUTION: a flat batch that
 answers every row, reports a malformed one instead of throwing, and refuses
 what it cannot know rather than inventing a date.
 
-Ten review findings: seven accepted and fixed or recorded, three rejected with
-the QuantLib source quoted against them. One acceptance bullet was amended
-after the review, and the amendment is stated above rather than folded in
-silently.
+Thirteen review findings: six accepted and fixed or recorded, one partly
+accepted, two declined with a reason, and four rejected with the QuantLib
+source quoted against them. One acceptance bullet was amended after the
+review, and the amendment is stated above rather than folded in silently.

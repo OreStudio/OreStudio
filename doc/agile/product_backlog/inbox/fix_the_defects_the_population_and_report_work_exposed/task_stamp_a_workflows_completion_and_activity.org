@@ -154,3 +154,12 @@ Left for another task: rows written before this change still carry no times,
 including the runs the test suites leave in progress in a tenant they then
 drop. Nothing can recover the instant a past run finished, and the newer
 capture on those leftovers is the place to decide what to do with them.
+
+Also left: =workflow_instance_summary=, the message the shell's =workflow list=
+reads, carries =completed_at= but not =last_event_at=, so the abandoned-run
+answer is available on the database and on the entity read but not yet on that
+summary. Adding it means a model change in
+=ores.workflow.workflow_messages.org= and the codegen run that follows it,
+which is more than this task was asked for. =ores.workflow.workflow_instance=
+already carries both, so a reader that needs the activity time has a path
+today.

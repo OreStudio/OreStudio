@@ -264,7 +264,8 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
 
     BOOST_LOG_SEV(lg(), info) << "Publishing step command:" << " workflow=" << inst_id_str
                               << " step_index=" << step.step_index << " step_name=" << step.name
-                              << " step_id=" << step_id_str << " subject=" << step.command_subject;
+                              << " step_id=" << step_id_str << " subject=" << step.command_subject
+                              << " via stream";
 
     const auto data = std::as_bytes(std::span{step.command_json.data(), step.command_json.size()});
 

@@ -1,0 +1,152 @@
+Atomic step claim — live run evidence
+=====================================
+Date: 2026-10-16
+Branch: feature/give-at-least-once-its-structure
+Database: ores_dev_brave_hopper, fingerprint 8416fa11a736f85e (matches the checkout)
+Fleet: 24/24 running, plus a second ores.reporting.service replica as a managed job
+
+Scripts, all under .audit/ and re-runnable:
+  start_second_reporting_replica.sh   starts the second reporting process
+  run_duplicate_claim_test3.sh        the duplicate that survives the window
+  run_busy_path_test.sh               the loser answered busy, deterministically
+  run_delivery_count_test.sh          how many copies the consumer really delivers
+  msgpack_encode.py                   packs a request record (the wire format is msgpack)
+
+--------------------------------------------------------------------------------
+1. The two replicas are on one consumer
+--------------------------------------------------------------------------------
+Both processes log the same durable and the same queue group:
+
+  second replica: Serving 8 step command(s) on
+    'ores_dev_brave_hopper_reporting_execution_steps'
+    as 'ores_dev_brave_hopper_reporting_execution_steps_consumer'
+
+  consumer info: Deliver Queue Group: ores.reporting.service
+                 Active Interest: Active using Queue Group ores.reporting.service
+                 Ack Wait: 30.00s   Maximum Deliveries: 10
+
+The claim rows also name both, which is the stronger proof: the duplicate run
+saw owner `ores.reporting.service/2` (the managed replica), and the compensation
+traffic in the same window was claimed by `ores.reporting.service/932740` (the
+systemd one).
+
+--------------------------------------------------------------------------------
+2. A correction the runs forced: the duplicate window
+--------------------------------------------------------------------------------
+The engine publishes a step command with `Nats-Msg-Id = <step id>` and the
+stream carries a 2m Duplicate Window. So:
+
+  * a copy that carries that header and is published within two minutes of the
+    first is dropped by the server and never delivered;
+  * the same applies to the step-completed event, so a second completion for one
+    step inside two minutes never reaches the engine and the claim is never
+    released.
+
+The first two duplicate attempts were contaminated by exactly this: each
+produced one delivery, not two, which is why no loser ever appeared. Both copies
+of the run that counts go WITHOUT the dedup header, which is the only way to get
+two stored messages for one step.
+
+--------------------------------------------------------------------------------
+3. The duplicate that counts (run_duplicate_claim_test3.sh)
+--------------------------------------------------------------------------------
+Step: 2003e140-7273-4396-a13f-bc44ecffd8d9 (gather_trades), same step id on both
+copies, in the X-Workflow-Step-Id header. Two copies published at 15:33:12.978,
+neither carrying Nats-Msg-Id.
+
+Claim table sampled inside PostgreSQL every 10 ms for 25 s:
+
+  step_id                               | owner                   | attempts | samples | first_seen   | last_seen
+  --------------------------------------+-------------------------+----------+---------+--------------+-------------
+  2003e140-7273-4396-a13f-bc44ecffd8d9  | ores.reporting.service/2|        1 |       9 | 15:33:12.983 | 15:33:13.064
+
+  distinct owners: 1      max attempts: 1
+
+(This is grouped by step. Grouping by owner alone over the whole window shows two
+owners, because the sampler records every claim row in the table and the
+compensation traffic of the same window claimed other steps. Filtering to this
+step id is what makes the answer one owner.)
+
+Handler runs for this step, second replica's log:
+  15:33:12.983086 gather_trades starting
+  15:33:13.023887 gather_trades failed: report_instance 29f70300 cannot move
+                  from completed to running: no such transition
+One run.
+
+Busy answers for this step: 0, in either replica.
+
+What the loser got, and how it is known: the delivered sequence of the consumer
+grew across the two publishes, so both copies were delivered, but the first had
+already finished and the engine had written the step away from in_progress
+before the second was handled. The claim handler's not_in_progress branch answers
+`ack.accept()` and logs nothing, so a silent absence of a line is the expected
+shape of that answer, not evidence that no delivery happened. The lease is only
+120 s; the step's own state is what refused the second delivery, which is the
+second half of the design.
+
+--------------------------------------------------------------------------------
+4. The loser answered busy (run_busy_path_test.sh)
+--------------------------------------------------------------------------------
+A fast step cannot show this: the claim is released the moment the engine writes
+the step away from in_progress, so with a step that reports in under 100 ms the
+live-claim window is that same 100 ms. The identity fixture declares
+delay_seconds for exactly this purpose. Run started 15:35:48, one step
+`hold_the_claim`, delay 8 s; a second copy of its command published at
+15:35:56.310 while the claim was live.
+
+Workflow service journal, verbatim:
+
+  15:35:48.376246 [INFO] [ores.workflow.messaging.identity_step_handler]
+    Identity step 'hold_the_claim' waiting 8s so the run can be observed.
+  15:35:56.376302 [INFO] [ores.workflow.messaging.identity_step_handler]
+    Identity step 'hold_the_claim' reporting completion.
+  15:35:56.376597 [INFO] [ores.workflow.service.workflow_engine]
+    Step-completed event received: workflow=80d72f56-... step=3f72a396-...
+    outcome=completed
+  15:35:56.393059 [INFO] [ores.service.messaging.step_command_stream]
+    Step 3f72a396-70cf-4329-826c-baf596866d88 is held by another delivery;
+    retrying ores.dev.brave_hopper.workflow.v1.ops.identity_step in 30000ms
+  15:35:56.403293 [INFO] [ores.workflow.service.workflow_engine]
+    Workflow COMPLETED: type=identity_workflow workflow=80d72f56-... steps=1
+
+Counts: handler runs 1, completions reported 1, busy answers 1. Claim row for the
+step afterwards: none, released when the engine wrote the step away from
+in_progress. Step state: completed.
+
+That is all three assertions: attempts stayed at one, the work ran once, and the
+delivery that lost was answered rather than run — with the answer being
+`retry_after(30 s)`, the 30 s hold off that matches the consumer's ack wait.
+
+--------------------------------------------------------------------------------
+5. The handler error the second replica's log shows
+--------------------------------------------------------------------------------
+  gather_trades failed: Repository error: Executing INSERT failed: ERROR:
+    report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from
+    completed to running: no such transition
+
+and, one line later, the same run trying to mark the instance failed:
+
+  Failed to mark instance 29f70300-... as failed: ... cannot move from completed
+    to failed: no such transition
+
+Both come from ONE handler run, on step 2003e140, in the first duplicate attempt.
+The step was a real reporting step whose report run had already finished; the
+command I published was for that step, so the handler re-attempted the work on a
+finished run and the report instance's own state machine refused both
+transitions. It is not a duplicate re-running a step: the claim admitted exactly
+one delivery, and the run that failed is the one delivery that held the claim.
+
+--------------------------------------------------------------------------------
+6. Live runs not done
+--------------------------------------------------------------------------------
+The kill-mid-step run was not performed. Two reasons, both worth recording:
+
+  * A reporting step reports in about 80 ms, so a SIGKILL has to land inside an
+    80 ms window to catch the claim held.
+  * The identity fixture holds a claim open deliberately, but its step deadline
+    is `write_step_timeout`, not the 900 s a reporting step carries, so it is not
+    the stage the prediction was written for.
+
+Everything the prediction is about — AckWait 30 s, max deliver 10, hold off 30 s,
+lease 120 s — is confirmed by the consumer's own configuration and by the busy
+answer's "retrying ... in 30000ms".

@@ -32,30 +32,46 @@ namespace ores::workflow::messaging {
  * @brief How long one delivery holds the claim on a step before another may
  *        take it over.
  *
- * The bound is read off the transport it guards. A step command is delivered at
- * least once, and the server redelivers one that is not answered after its
- * ack wait, which is 30 seconds. The longest step observed in this environment
- * runs in under 3 seconds.
+ * The claim is built from four numbers: this lease, the hold off a delivery
+ * takes before asking again, the number of deliveries a step command gets, and
+ * the deadline the engine fails the step at. They are not free of each other,
+ * and this constant carries the burden of all three constraints:
  *
- * So the lease is ten times the redelivery timer and far longer than any
- * healthy step. A shorter lease would let a second delivery take work that the
- * first is still running, and both would then do it. A longer one would keep a
- * claim whose holder crashed until the engine's own step deadline failed the
- * run, rather than letting the next delivery pick the work up and finish it.
+ *  - The hold off times the deliveries, less one, must exceed the lease. A
+ *    step command is delivered at most ten times, and a delivery that finds the
+ *    step held comes back after @c step_claim_hold_off, so a holder that dies
+ *    leaves its deliveries arriving at about 30, 60, 90 and 120 seconds. If the
+ *    last of them arrived before this lease ended, nothing would be left to
+ *    take the claim over and the step would be lost to the engine's deadline.
+ *    So hold off x (deliveries - 1) must be greater than the lease: here
+ *    30 x 9 = 270 seconds against 120.
+ *  - The lease must outlast a healthy step, or a second delivery takes work the
+ *    first is still running and both do it. The longest step observed in this
+ *    environment runs in under 3 seconds, so 120 seconds is forty times the
+ *    slowest healthy step, and four times the ack wait.
+ *  - The lease must sit under the shortest step deadline, or the engine fails
+ *    the step before a redelivery can take the claim over. The shortest
+ *    deadline this deployment declares is 900 seconds, for a reporting step, so
+ *    120 seconds is inside it by a factor of seven.
+ *
+ * Each constraint fails a step in its own way, and raising this number means
+ * checking all three rather than only the one that prompted the change.
  */
-inline constexpr std::chrono::seconds step_claim_lease{300};
+inline constexpr std::chrono::seconds step_claim_lease{120};
 
 /**
  * @brief How long a delivery that lost the claim waits before asking again.
  *
  * A delivery that finds the step held comes back rather than spinning. The
- * holder is working a step measured in seconds, so a short pause is enough for
- * the step to leave in_progress; the redelivery then finds it terminal and is
- * answered not_in_progress, and the work is done once. Asking again at once
- * would land the delivery on the same live lease, lose the same race, and spend
- * the whole delivery budget in a loop.
+ * pause matches the consumer's ack wait, 30 seconds, because that is already
+ * the rate at which an unanswered delivery is redelivered: asking again sooner
+ * only spends the step's remaining deliveries faster.
+ *
+ * This is the number that decides how many deliveries a takeover costs, so it
+ * is bound to the lease -- see @c step_claim_lease for the invariant, and mind
+ * it if this changes.
  */
-inline constexpr std::chrono::milliseconds step_claim_hold_off{1000};
+inline constexpr std::chrono::milliseconds step_claim_hold_off{std::chrono::seconds{30}};
 
 /**
  * @brief The identity a claim records as its holder.

@@ -8,7 +8,7 @@
 #+filetags: :share_one_compiler_cache_between_the_linux_tiers:sprint_28:v0:
 #+owner: marco
 #+branch: feature/share-one-compiler-cache-between-the-linux-tiers
-#+pr:
+#+pr: 3383
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3383][#3383]] | [ci] Share one compiler cache between the Linux tiers |
 
 * Review
 

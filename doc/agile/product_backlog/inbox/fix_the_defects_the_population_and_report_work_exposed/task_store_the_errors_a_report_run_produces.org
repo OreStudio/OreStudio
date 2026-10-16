@@ -8,7 +8,7 @@
 #+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
 #+owner: marco
 #+branch:
-#+pr: 3393
+#+pr: 3394
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -103,6 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3394][#3394]] | [agile] Close the task that stores a report run's errors |
 | [[https://github.com/OreStudio/OreStudio/pull/3393][#3393]] | [reporting] Store the errors a report run produces |
 
 * Review

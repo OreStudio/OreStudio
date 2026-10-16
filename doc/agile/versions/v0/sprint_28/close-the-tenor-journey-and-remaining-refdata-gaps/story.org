@@ -48,7 +48,7 @@ The tenor resolution journey and the remaining refdata gaps are built: the tenor
 | [[id:808FFD73-439E-427E-BBAC-B9360B80BC7D][Filter a record list on the server]] | BACKLOG | | | Let a record list offer a type and a status filter that the server applies, starting with the party list. |
 | [[id:EC75DEEE-A08C-4ED0-8238-CF65C2C854D2][List the parts a party removed]] | BACKLOG | | | Add a history read by parent for party identifiers, contacts and business units, so the party timeline shows the ones that were removed. |
 | [[id:8F4FD36A-3EAA-44EA-B424-25ACB382C2D8][Window the party timeline]] | BACKLOG | | | Read a party's history a window at a time with a load-older control, and replace the read for each part row with one read for the party. |
-| [[id:648AF672-D173-45D9-9C62-42C46503824C][Build the pure batch tenor resolution engine]] | STARTED | 2026-10-16 | | Task for: Close the tenor journey and the remaining refdata gaps |
+| [[id:648AF672-D173-45D9-9C62-42C46503824C][Build the pure batch tenor resolution engine]] | DONE | 2026-10-16 | 2026-10-16 | Task for: Close the tenor journey and the remaining refdata gaps |
 
 * Decisions
 

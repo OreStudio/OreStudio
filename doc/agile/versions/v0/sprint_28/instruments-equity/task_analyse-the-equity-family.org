@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: feature/audit-the-equity-instrument-family-against-dod
-#+pr:
+#+pr: 3389
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3389][#3389]] | [trading] Analyse the equity instrument family against data-oriented design |
 
 * Review
 

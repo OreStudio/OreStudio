@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: 553F8B23-3912-4AA6-8542-99B55719433B
+:END:
+#+title: Task: Give the step commands one consumer per service
+#+description: Replace the per-subject durable consumers with one consumer per service, own and prune those consumers, make the handler answer the delivery, claim a step atomically, reconcile the entity mirrors and bound the stream retention.
+#+type: task
+#+level: s1
+#+filetags: :bring_the_service_code_onto_the_nats_patterns:sprint_28:v0:
+#+owner: marco
+#+branch: feature/give-at-least-once-its-structure
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6B5E348B-6B7A-46BF-AB56-33E4D5327AE4][Bring the service code onto the NATS patterns]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the step commands the three things at-least-once delivery needs around a
+durable consumer, as [[id:CE441C28-5ED0-45BF-B442-708AE4EFB1C5][At Least Once
+Prerequisites]] states them.
+
+- The work survives a repeat. The handler answers its own delivery, so a path
+  that records no outcome is redelivered rather than acknowledged as done.
+- One service owns the consumer. A service declares its whole family of step
+  commands in one =step_routes= table, serves it on one durable consumer, and
+  prunes the consumers it no longer declares.
+- The retention matches the message. A step-command stream removes a command as
+  soon as the consumer has acknowledged it, with a one-day age limit as the
+  backstop for a command no consumer can take.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6B5E348B-6B7A-46BF-AB56-33E4D5327AE4][Bring the service code onto the NATS patterns]] |
+| Now          | Implementation landed on the branch; the full build and the live end-to-end run are outstanding. |
+| Waiting on   | Nothing.                               |
+| Next         | Build, then restart the fleet and compare the consumer shape against the baseline. |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- Every service that serves workflow step commands serves them on one durable
+  consumer per stream, declared from one =step_routes= table.
+- A consumer this service no longer declares is deleted at start, so the
+  pre-change per-subject consumers are gone after the first restart.
+- Every step handler answers its own delivery: =ack.accept()= where the step's
+  outcome is recorded, =ack.reject()= for a delivery nothing can ever serve, and
+  no answer on any other exit.
+- A step-command stream uses =interest= retention with a one-day backstop.
+- The pattern library and the JetStream architecture page describe the shipped
+  state.
+- A fresh database provision and a report run complete end to end.
+
+* Plan
+
+Five units, each with its own check.
+
+1. Reconcile a durable by updating its stored configuration in place, so a
+   filter change keeps the consumer's position instead of replaying the stream.
+   Check: =ores.nats.lib= builds, and a live probe shows the position preserved.
+2. Declare a family once. Add =step_routes= and =serve_step_commands= to
+   =ores.service=, subscribe one consumer for the whole family, and delete the
+   single-subject API. Check: the first service builds.
+3. Move the ack into the handler for every step family the registrar used to
+   answer for, and rewire the remaining registrars. Check: each service builds.
+4. Own and prune the consumers, then bound the retention. Check: the consumer
+   shape check flips from FAIL to PASS across all step streams.
+5. Write the pattern page and refresh the architecture catalogue. Check:
+   =compass lint=.
+
+Deferred, and why. The atomic claim for step completion stays out of this
+change. The step handlers already survive a repeat, because the publish
+functions are upserts and the engine ignores a completion for a step that is no
+longer in progress, and a claim needs a new table and a schema change of its
+own. The entity-mirror reconciliation also stays out: it is a separate defect
+in event delivery, not in the step-command path.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Step-command streams | 15 | =bash .audit/verify_step_consumers.sh=, output in =evidence/step_consumer_shape_before.txt= | =8780512557=, services on the pre-change build |
+| Consumers on those streams, before | 88, none named after its stream | =bash .audit/verify_step_consumers.sh=, output in =evidence/step_consumer_shape_before.txt= | =8780512557=, services on the pre-change build |
+| Largest family | =refdata_steps=, 50 consumers for one stream | =bash .audit/verify_step_consumers.sh=, output in =evidence/step_consumer_shape_before.txt= | =8780512557=, services on the pre-change build |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

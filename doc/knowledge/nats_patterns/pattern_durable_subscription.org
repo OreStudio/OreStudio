@@ -110,6 +110,7 @@ consumers]].
 - [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]] — the load-sharing half.
 - [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] — the stream that has to exist first.
 - [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — what a durable consumer must do.
+- [[id:CE441C28-5ED0-45BF-B442-708AE4EFB1C5][At Least Once Prerequisites]] — what has to be true around this consumer before its delivery is safe.
 
 * Sources
 

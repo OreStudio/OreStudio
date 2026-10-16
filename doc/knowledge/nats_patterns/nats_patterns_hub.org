@@ -116,7 +116,8 @@ subject in the groups below is written in its terms.
 /How does a service receive a message exactly once per intended reader?/ Every
 subscription is a queue group so replicas share the load. A message that must
 survive the service being down is read from a durable consumer, and a durable
-consumer acknowledges what it handled. Read this group before writing any
+consumer acknowledges what it handled. A durable consumer is safe to rely on
+only when the three things around it hold. Read this group before writing any
 handler.
 
 | Pattern | Source |
@@ -125,6 +126,7 @@ handler.
 | [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] | NATS documentation, JetStream Consumers |
 | [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] | NATS documentation, JetStream Streams |
 | [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] | NATS documentation, Ack responses and redelivery |
+| [[id:CE441C28-5ED0-45BF-B442-708AE4EFB1C5][At Least Once Prerequisites]] | NATS documentation, Retention policies; Hohpe and Woolf |
 
 ** The publication group
 

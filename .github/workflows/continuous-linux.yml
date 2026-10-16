@@ -186,14 +186,14 @@ jobs:
           # Saves use a run-unique key, pruned to the newest entry per variant,
           # so restore by prefix and take that entry.
           #
-          # The second prefix is transitional. The keys were shared with the
-          # Nightly Build until the workflow scope was added, and the entries
-          # under the old prefix were built by this workflow, so they are worth
-          # restoring once while the scoped cache is cold. Drop that line once
-          # the scoped entries exist, and let the old ones age out.
-          key: sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          # The key is deliberately not scoped to this workflow. Continuous and
+          # the Nightly Build compile the same variant with the same settings —
+          # both pass code_coverage=1 on debug and neither passes anything on
+          # release — so one entry serves both, and scoping it would store the
+          # same objects twice. See nightly-linux.yml for the differences
+          # between the two tiers and why none of them reaches a compile line.
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
           restore-keys: |
-            sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
             sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
 
       - name: Ccache for gh actions
@@ -366,7 +366,7 @@ jobs:
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
-          key: sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
+          key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
 
       - name: Prune older sccache entries
         # Saves use a run-unique key, so entries accumulate: two clang-debug runs
@@ -374,6 +374,11 @@ jobs:
         # for want of room. Drop every older entry of this variant now that the
         # new one is stored. This delete runs only after the new entry is really
         # there, so it cannot destroy the cache the way deleting first did.
+        #
+        # One entry per variant is the goal, and the Nightly Build prunes the
+        # same prefix, so whichever tier runs last leaves the newest entry for
+        # both. Keeping only this run's key is therefore right even though the
+        # other tier may have stored the entry this one restored.
         #
         # The save step cannot be trusted for that: actions/cache turns a tar
         # that raced the cache into a warning and exits zero, so the step
@@ -383,7 +388,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          prefix="sccache-continuous-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
+          prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
           keep="${prefix}${{ github.run_id }}"
           stored=$(gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
             --jq '.actions_caches[].key' | grep -cxF "${keep}" || true)

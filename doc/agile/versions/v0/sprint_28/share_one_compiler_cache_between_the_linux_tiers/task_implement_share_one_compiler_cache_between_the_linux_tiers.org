@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 6B498035-DC65-4FA8-B651-D0E12D040FE1
+:END:
+#+title: Task: Drop the workflow scope from the Linux cache keys
+#+description: Initial task for: Share one compiler cache between the Linux tiers
+#+type: task
+#+level: s1
+#+filetags: :share_one_compiler_cache_between_the_linux_tiers:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C2EAFE9F-65EE-4C06-AA6F-14EBBFE51461][Share one compiler cache between the Linux tiers]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One compiler cache entry serves each Linux variant, restored and replaced by either tier.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C2EAFE9F-65EE-4C06-AA6F-14EBBFE51461][Share one compiler cache between the Linux tiers]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- Both workflows use the same cache key for a given variant, with no workflow prefix.
+- The prune leaves one entry per variant whichever tier runs it.
+- Every remaining difference between the tiers is stated and shown not to change a compile line.
+
+* Plan
+
+Drop the scope in all four places a key appears in each workflow: the restore
+key, the restore-keys prefix, the save key and the prune prefix. Remove the
+transitional legacy restore-key from Continuous, because with the scope gone it
+is the same string as the primary prefix and would be a duplicate.
+
+Then prove the two workflows agree by resolving them rather than by reading them:
+parse both files, substitute one matrix value, and compare the resulting keys.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Key strings changed per workflow | 4 | =grep -n 'sccache-' .github/workflows/continuous-linux.yml= | working tree |
+| Workflow-scoped sccache keys left | 0 | =grep -rn 'sccache-continuous\|sccache-nightly' .github/workflows/= | working tree |
+| Keys identical between the two tiers | yes, all four | resolved-key comparison | working tree |
+| Concrete debug key after the change | =sccache-linux-clang-debug-ninja-<run_id>= | same | working tree |
+| Reusable legacy entries freed into the live prefix | 2, 1.93 GB and 1.19 GB | =gh api .../actions/caches= | 4bf4405fe6 |
+
+* Notes
+
+The transitional line had to go rather than stay: it existed only because the
+scoped prefix was new and the old entries were worth one last restore. With the
+scope removed, the primary restore key *is* that old prefix, so keeping both
+would list the same string twice.
+
+Nothing was deleted to make room. Reverting the prefix re-adopts the two legacy
+entries as the variant caches, and the first save that lands replaces them
+through the prune.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Both Linux workflows now use one key per variant, with no workflow scope in the
+restore key, the restore-keys prefix, the save key or the prune prefix. The
+transitional legacy restore-key is gone, because the primary prefix is now the
+same string.
+
+The two tiers were proven to agree by resolving the keys from the parsed YAML
+with one matrix value substituted: restore key, save key, restore-keys and prune
+prefix are identical, and the debug key resolves to
+=sccache-linux-clang-debug-ninja-<run_id>=. The one setting that can move a
+compile line, =code_coverage=, is on for debug and absent for release in both.
+
+The four duplicate caches that scoping created are gone by construction: there
+is now one entry per Linux variant rather than one per variant per tier, which
+is the space that pays for the gcc variants when they move into continuous.

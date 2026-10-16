@@ -231,7 +231,10 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) 
     const auto recorded_at = observation_dates(tick.observation_time);
     REQUIRE(observations.size() == recorded_at.size());
     for (std::size_t i = 0; i < observations.size(); ++i) {
-        CHECK(observations[i].observation_datetime == recorded_at[i]);
+        // The column keeps microseconds, so the microsecond of a tick is what the
+        // round trip may lose.
+        const auto delta = observations[i].observation_datetime - recorded_at[i];
+        CHECK(std::chrono::abs(delta) < std::chrono::milliseconds(1));
         CHECK(observations[i].series_id == series.front().id);
         CHECK(observations[i].oresmd_uri == quote_uri);
         CHECK(observations[i].source == bound_source);

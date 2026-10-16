@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :rework-the-fx-instruments-to-the-instrument-table-rule:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/give-the-fx-family-typed-arrays
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,11 +31,11 @@ than a field to push into an aggregate.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | The family carries typed arrays; the variant is gone. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. The unit is complete. |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
@@ -103,3 +103,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The FX family carries typed arrays. =fx_instrument_variant= is deleted, no
+source names it, and the family's carrier is =fx_instrument_data=: seven typed
+arrays joined by trade id, with no discriminator anywhere. The fifteen
+=forward_fx_*= functions return their own product type, =map_fx_instrument=
+chooses the array, and one shared visitor walks the arrays so the importer and
+the exporter keep their per-product bodies.
+
+No behaviour change. The ORE core suite passes at 669 cases and 483,181
+assertions, and both =ores.ore.core.tests= and =ores.ore.service= build.
+
+The range bounds unit now has its place: one more array on the carrier, and one
+more branch in the visitor.

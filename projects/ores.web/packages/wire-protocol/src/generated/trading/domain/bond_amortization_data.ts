@@ -30,7 +30,7 @@
  */
 export interface BondAmortizationData {
     type: string;
-    value: number | null;
+    value: string | null;
     start_date: string | null;
     end_date: string | null;
     frequency: string | null;

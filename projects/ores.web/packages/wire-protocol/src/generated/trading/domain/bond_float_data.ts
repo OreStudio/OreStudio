@@ -29,6 +29,6 @@
  * writes. Renaming them breaks the wire silently, so they are not renamed.
  */
 export interface BondFloatData {
-    value: number;
+    value: string;
     start_date: string | null;
 }

@@ -34,7 +34,7 @@ export interface BondForwardSettlement {
     settlement: string | null;
     amount: string | null;
     lock_rate: string | null;
-    dv01: number | null;
+    dv01: string | null;
     lock_rate_day_counter: string | null;
     settlement_dirty: string | null;
 }

@@ -480,13 +480,12 @@ domain::bond_leg_data build_leg(const Rows& rows, const LegRow& row) {
     for (const auto& amortization : rows.amortizations) {
         if (leg_role_of(amortization) != leg_role || amortization.leg_number != leg_number)
             continue;
-        leg.amortizations.push_back(
-            {amortization.amortization_type,
-             amortization.value,
-             amortization.start_date,
-             amortization.end_date,
-             amortization.frequency,
-             amortization.underflow});
+        leg.amortizations.push_back({amortization.amortization_type,
+                                     amortization.value,
+                                     amortization.start_date,
+                                     amortization.end_date,
+                                     amortization.frequency,
+                                     amortization.underflow});
     }
 
     leg.schedule =
@@ -655,13 +654,12 @@ void apply_strike(domain::bond_instrument_data& data, const instrument_rows& row
     if (!rows.strike)
         return;
     const auto& row = *rows.strike;
-    data.strike_data = domain::bond_strike_data{
-        row.price_value,
-        row.price_currency,
-        row.yield_value,
-        row.yield_compounding,
-        row.bare_value,
-        row.bare_currency};
+    data.strike_data = domain::bond_strike_data{row.price_value,
+                                                row.price_currency,
+                                                row.yield_value,
+                                                row.yield_compounding,
+                                                row.bare_value,
+                                                row.bare_currency};
 }
 
 void apply_forward(domain::bond_instrument_data& data, const instrument_rows& rows) {

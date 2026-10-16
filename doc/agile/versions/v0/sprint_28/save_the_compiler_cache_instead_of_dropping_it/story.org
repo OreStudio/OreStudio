@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: D21D0B36-81FF-4E04-9E1D-470CC82EDF1D
+:END:
+#+title: Story: Save the compiler cache instead of silently dropping it
+#+description: actions/cache tars the cache directory, and a tar that reads a file while sccache is still writing it exits non-zero. actions/cache reports that failure as a warning and still exits zero, so the Save step reports success while storing nothing. The debug job has therefore never stored a cache: the only linux-clang-debug entry is the legacy one built before coverage changed every compile line, so every run restores it, misses 79 per cent of its compiles, hits the 320-minute cap and saves nothing again. The prune step makes it worse, because it is gated on the cache being worth saving rather than on the save having landed, so it would delete the entry the failed save was meant to replace. Stop the sccache server before archiving so the directory is still, and prune only once the run's key is really in the cache.
+#+type: story
+#+level: s2
+#+filetags: :ci:linux:sccache:sprint_28:v0:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A run that builds enough to be worth saving really stores its compiler cache, and no run deletes an entry its own save did not replace.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+- The sccache server is stopped before actions/cache tars the directory.
+- The prune runs only when the run's own key is present in the cache.
+- The statistics step still reports the run's numbers.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:00BEC23C-9475-4D31-B9AF-C45ED4E4CB02][Scaffold story: Save the compiler cache instead of silently dropping it]] | DONE | 2026-10-16 | 2026-10-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E4613706-DE96-498F-A609-163618626B88][Stop the cache server before saving and guard the prune on the save]] | DONE | 2026-10-16 | 2026-10-16 | Initial task for: Save the compiler cache instead of silently dropping it |
+
+* Decisions
+
+- *The save was failing silently, and that is why the cache never warmed.*
+  actions/cache archives the directory with tar. sccache's server was still
+  running and still writing, so tar exited 1 with "file changed as we read it",
+  and actions/cache turned that into a warning on a step that exits zero. Every
+  debug run since the coverage change restored the stale entry, missed 79 per
+  cent of its compiles, hit the cap and stored nothing, while the run reported
+  that the save had succeeded.
+- *Stop the server before archiving.* =sccache --stop-server= flushes it and
+  leaves the directory still, which is what makes tar able to read it. The
+  statistics step moves above it, because a stopped server reports nothing and
+  those numbers are the only evidence of whether the cache is warming.
+- *Prune on the entry existing, not on the step exiting zero.* The prune is what
+  turns a failed save into a lost cache: it deletes the entry the save was meant
+  to replace. It now asks the cache service whether the run's key is there, and
+  when it is not it reports an error and deletes nothing. A step that cannot be
+  trusted to say it failed must not be the gate for a delete.
+- *The ceiling is left alone for now.* The debug job reported its local cache at
+  3946 MB against a =max-size: 2500M=, so the working set may not fit once the
+  save works. That is a capacity question for the 10 GB repository cap, and the
+  next successful save measures the real size rather than guessing at it.
+
+* Out of scope
+
+- Raising =max-size=, and rebalancing the ceilings between the six Linux
+  variants. The evidence for the right number is the size of the first cache
+  that is really stored.

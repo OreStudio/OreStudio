@@ -4,6 +4,7 @@
 #+title: ores.workflow.api
 #+description: Domain types and NATS protocol schemas for the workflow component.
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :workflow:api:component:
 #+created: 2026-05-19

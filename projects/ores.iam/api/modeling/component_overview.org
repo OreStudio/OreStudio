@@ -7,6 +7,7 @@
 #+description: Domain types, JSON/table I/O, and NATS protocol schemas for the IAM component.
 #+brief: IAM domain types and NATS protocol schemas
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :iam:api:component:
 #+created: 2026-05-19
@@ -48,6 +49,20 @@ the domain tables, JSON I/O, generators, and the session auth service.
 
 - =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.security.lib
+    PRIVATE
+        ores.rfl.pch)
+#+end_src
 
 * See also
 

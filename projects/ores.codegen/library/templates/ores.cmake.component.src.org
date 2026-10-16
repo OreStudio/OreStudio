@@ -30,6 +30,22 @@ The full template source. Edit here and re-tangle with
 set(name "{{full_name}}")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
+{{#header_only}}
+# Headers only: component_files.cmake lists no source, so the part is an
+# INTERFACE library that carries its include path and no compiled body.
+add_library(${lib_target_name} INTERFACE)
+
+target_include_directories(${lib_target_name} INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+# A header-only part still declares what the profile cannot know: the
+# libraries its interface headers need in their consumers.
+
+{{{extra_dependencies}}}
+
+install(TARGETS ${lib_target_name})
+{{/header_only}}
+{{^header_only}}
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
@@ -59,7 +75,10 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
+{{{extra_dependencies}}}
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+{{/header_only}}
 {{/component}}
 #+end_src
 

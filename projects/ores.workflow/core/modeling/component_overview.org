@@ -7,6 +7,7 @@
 #+description: Workflow orchestration — workflow definitions, execution, and state tracking for multi-step operations.
 #+brief: Workflow definition and execution core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :workflow:core:component:
 #+created: 2026-05-19
@@ -50,6 +51,29 @@ such as report generation pipelines that span multiple services.
 - =rfl= — JSON serialisation.
 - =soci= — SQL ORM.
 - =nats.c= — NATS messaging client.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        Boost::boost
+        ores.database.lib
+        ores.dq.api.lib
+        ores.dq.core.lib
+        ores.history.core.lib
+        ores.iam.api.lib
+        ores.ore.api.lib
+        ores.refdata.api.lib
+        ores.reporting.api.lib
+        ores.rfl.pch
+        ores.telemetry.core.lib
+        sqlgen::sqlgen)
+#+end_src
 
 * See also
 

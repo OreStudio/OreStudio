@@ -46,6 +46,21 @@ persisting received records.
 - =ores.dq= — ORM base classes.
 - =soci= — SQL ORM for PostgreSQL persistence.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+        ores.telemetry.core.lib
+    PRIVATE
+        Boost::boost)
+#+end_src
+
 * See also
 
 - [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] — observability library that produces log records.

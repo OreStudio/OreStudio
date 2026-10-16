@@ -7,6 +7,7 @@
 #+description: Trade booking and lifecycle management — domain model, repositories, services, and NATS message handlers.
 #+brief: Trade booking and lifecycle core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :trading:core:component:
 #+created: 2026-05-19
@@ -66,6 +67,24 @@ component also ships synthetic-data generators for test and development use.
 - =fort= — formatted table output.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        Boost::boost
+        ores.database.lib
+        ores.diff.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        ores.storage.core.lib
+        sqlgen::sqlgen)
+#+end_src
 
 * See also
 

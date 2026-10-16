@@ -7,6 +7,7 @@
 #+description: Server-side implementation of the synthetic entities: repositories, services, NATS handlers, and the original catalog generators.
 #+brief: Synthetic entity repositories, services, and handlers
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :synthetic:core:component:
 #+created: 2026-05-19
@@ -55,6 +56,25 @@ produce synthetic test data for the DQ pipeline.
 - =ores.eventing= — change event publication.
 - =ores.database= — execution context and party scope.
 - =nats.c= — NATS messaging client.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+        ores.dq.api.lib
+        ores.iam.api.lib
+        ores.refdata.core.lib
+        ores.trading.api.lib
+    PRIVATE
+        Boost::boost
+        ores.history.core.lib)
+#+end_src
 
 * See also
 

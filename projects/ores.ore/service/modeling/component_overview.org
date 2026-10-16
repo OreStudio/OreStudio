@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.ore.service
 #+description: The runnable host for the ORE integration — configuration, the import worklist, execute and rollback handlers, and the report package handler.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :ore:service:component:
 #+created: 2026-05-19
@@ -60,6 +62,27 @@ and the report package handler that assembles an ORE run's inputs.
 - =ores.ore.core=, =ores.ore.api=, =ores.storage=, =ores.workflow.api=,
   =ores.iam.client=, =ores.refdata.api=, =ores.trading.api=,
   =ores.reporting.api= and Boost — linked privately.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib
+    PRIVATE
+        Boost::boost
+        ores.iam.client.lib
+        ores.ore.api.lib
+        ores.refdata.api.lib
+        ores.reporting.api.lib
+        ores.storage.core.lib
+        ores.trading.api.lib
+        ores.workflow.api.lib)
+#+end_src
 
 * See also
 

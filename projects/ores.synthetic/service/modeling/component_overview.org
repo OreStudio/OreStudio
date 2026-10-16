@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 702753E8-0E07-4690-AFAB-D75514ADE660
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.synthetic.service
 #+description: NATS service entrypoint for the synthetic data component.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :synthetic:service:component:
 #+created: 2026-05-19
@@ -59,6 +61,23 @@ simulate payload — so no handler branches on a kind.
 - =ores.synthetic.api= — shared protocol types and feeds.
 - =ores.logging= — structured logging infrastructure.
 - =nats.c= — NATS client for connection management.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.analytics.quant.lib
+        ores.eventing.core.lib
+        ores.iam.client.lib
+        ores.marketdata.api.lib
+        ores.marketdata.client.lib
+        ores.marketdata.core.lib)
+#+end_src
 
 * See also
 

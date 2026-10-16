@@ -4,6 +4,7 @@
 #+title: ores.refdata.client
 #+description: Consumer-side reference-data helpers: convention-aware FX rate formatting and the currency-pair-convention tenant cache.
 #+type: ores.codegen.component
+#+header_only: true
 #+level: cross
 #+filetags: :refdata:client:component:
 #+created: 2026-07-29
@@ -59,6 +60,23 @@ Bearer token when the producer checks authorisation; pass an
 - =ores.logging= — logger setup.
 - Optionally, an =ores.iam.client= token provider for authenticated
   loads.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    INTERFACE
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.logging.lib
+        ores.nats.lib
+        ores.refdata.api.lib
+        ores.utility.lib)
+#+end_src
 
 * See also
 

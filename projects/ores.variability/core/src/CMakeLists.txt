@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -9,12 +9,16 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_core_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.variability.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -24,34 +28,40 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_VARIABILITY_CORE_LIBRARY)
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${lib_target_name} PRIVATE
-        -fvisibility=hidden -fvisibility-inlines-hidden)
-endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.variability/core/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.variability.api.lib
-        ores.database.lib
-        ores.logging.lib
         ores.nats.lib
     PRIVATE
         ores.service.lib
+        ores.platform.lib
         ores.utility.lib
         ores.security.lib
-        ores.dq.api.lib
-        ores.history.core.lib
-        ores.diff.lib
-        ores.eventing.core.lib
         faker-cxx::faker-cxx
-        libfort::fort
-        Boost::boost)
+        libfort::fort)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+# Appending to the target rather than replacing the profile keeps the
+# baseline honest for every other component.
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+        ores.logging.lib
+    PRIVATE
+        Boost::boost
+        ores.diff.lib
+        ores.dq.api.lib
+        ores.eventing.core.lib
+        ores.history.core.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

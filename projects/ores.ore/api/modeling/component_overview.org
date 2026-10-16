@@ -4,6 +4,7 @@
 #+title: ores.ore.api
 #+description: The shared contract for the ORE integration component — the ORE import, saga-step and storage protocols.
 #+type: ores.codegen.component
+#+component_kind: api
 #+header_only: true
 #+level: cross
 #+filetags: :ore:api:component:
@@ -53,6 +54,23 @@ its include path and the libraries its headers name, with no compiled body.
 
 =ores.storage= is public because the import target helpers name a bucket,
 so every consumer of this part inherits the object-storage client.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    INTERFACE
+        ores.eventing.api.lib
+        ores.logging.lib
+        ores.platform.lib
+        ores.storage.api.lib
+        ores.utility.lib
+        ores.workflow.api.lib)
+#+end_src
 
 * See also
 

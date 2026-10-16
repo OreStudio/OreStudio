@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: DF0CAAB9-9DDB-4FEA-82D3-71FAC2177EEF
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.telemetry.service
 #+description: NATS service entrypoint for the telemetry domain — receives and persists log records.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :telemetry:service:component:
 #+created: 2026-05-19
@@ -47,6 +49,20 @@ records to =ores.telemetry.database= for storage.
 
 - =ores.telemetry.database=, =ores.telemetry.core=, =ores.service=, =ores.nats=,
   =ores.logging=, =nats.c=.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.telemetry.database.lib
+    PRIVATE
+        Boost::boost)
+#+end_src
 
 * See also
 

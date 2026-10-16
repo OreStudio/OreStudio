@@ -4,6 +4,7 @@
 #+title: ores.history.api
 #+description: Generic entity-history wire protocol and version-diffing glue, shared by every frontend and every server-side history_provider.
 #+type: ores.codegen.component
+#+header_only: true
 #+component_kind: api
 #+level: cross
 #+filetags: :history:api:component:
@@ -63,6 +64,18 @@ response without pulling in server-only machinery.
   =entity_history_version=.
 - std and =rfl= only beyond that — deliberately a leaf so every
   frontend and domain service depends on it without cycles.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    INTERFACE
+        ores.diff.lib)
+#+end_src
 
 * See also
 

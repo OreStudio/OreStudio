@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_core_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.compute.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -25,35 +28,40 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_COMPUTE_CORE_LIBRARY)
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${lib_target_name} PRIVATE
-        -fvisibility=hidden -fvisibility-inlines-hidden)
-endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.compute/core/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.compute.api.lib
-        ores.database.lib
         ores.nats.lib
-        ores.dq.api.lib
-        ores.diff.lib
-        ores.service.lib
     PRIVATE
-        ores.security.lib
-        ores.utility.lib
-        ores.logging.lib
+        ores.service.lib
         ores.platform.lib
-        ores.reporting.api.lib
-        ores.iam.client.lib
-        ores.history.core.lib
+        ores.utility.lib
+        ores.security.lib
         faker-cxx::faker-cxx
         libfort::fort)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+# Appending to the target rather than replacing the profile keeps the
+# baseline honest for every other component.
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+        ores.diff.lib
+        ores.dq.api.lib
+    PRIVATE
+        ores.history.core.lib
+        ores.iam.client.lib
+        ores.logging.lib
+        ores.reporting.api.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

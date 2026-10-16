@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_core_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.trading.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -23,26 +26,12 @@ set(lib_target_name ${name}.lib)
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
-# On Windows the DLL export table is capped at 65535 symbols. This library
-# instantiates enough rfl/Boost templates to exceed that limit, and it is
-# only consumed by executables, so no DLL boundary needs to be crossed.
-# Build it as a static library on Windows to avoid the limit.
-if(WIN32)
-    add_library(${lib_target_name} STATIC ${lib_files})
-else()
-    add_library(${lib_target_name} ${lib_files})
-endif()
+add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_TRADING_CORE_LIBRARY)
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${lib_target_name} PRIVATE
-        -fvisibility=hidden -fvisibility-inlines-hidden)
-endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
-if(NOT WIN32)
-    set_target_properties(${lib_target_name}
-        PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
-endif()
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
@@ -51,28 +40,27 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.trading.api.lib
         ores.nats.lib
-        ores.diff.lib
     PRIVATE
         ores.service.lib
-        ores.storage.core.lib
-        ores.database.lib
-        ores.dq.api.lib
-        ores.history.core.lib
-        ores.diff.lib
+        ores.platform.lib
         ores.utility.lib
         ores.security.lib
-        sqlgen::sqlgen
         faker-cxx::faker-cxx
-        libfort::fort
-        Boost::boost)
-# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+        libfort::fort)
 
-# On Windows ores.trading.core is a static archive (see above) whose Debug
-# build exceeds 2 GB — the WiX v3 single-file cabinet offset limit. The
-# archive is only consumed by our own executables at link time, so nothing
-# downstream needs to find it in the installer. Skip install on Windows.
-if(NOT WIN32)
-    install(TARGETS ${lib_target_name}
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
-endif()
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+# Appending to the target rather than replacing the profile keeps the
+# baseline honest for every other component.
+
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        Boost::boost
+        ores.database.lib
+        ores.diff.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        ores.storage.core.lib
+        sqlgen::sqlgen)
+
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

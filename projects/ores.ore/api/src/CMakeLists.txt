@@ -9,30 +9,36 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_api_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.ore.api")
+set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-
-# Headers only: the source glob has nothing to compile, so the part is an
-# INTERFACE library that carries its include path and the libraries its
-# headers name, with no compiled body.
+# Headers only: the source glob below has nothing to compile, so the part is an
+# INTERFACE library that carries its include path and no compiled body.
 add_library(${lib_target_name} INTERFACE)
 
 target_include_directories(${lib_target_name} INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
+# A header-only part still declares what the profile cannot know: the
+# libraries its interface headers need in their consumers.
+
 target_link_libraries(${lib_target_name}
     INTERFACE
+        ores.eventing.api.lib
+        ores.logging.lib
         ores.platform.lib
         ores.storage.api.lib
-        ores.logging.lib
-        ores.workflow.api.lib
-        ores.eventing.api.lib
-        ores.utility.lib)
+        ores.utility.lib
+        ores.workflow.api.lib)
 
 install(TARGETS ${lib_target_name})

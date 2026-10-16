@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: E5952F27-53BD-4C4D-85CD-556B6421B768
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.analytics.service
 #+description: NATS service entrypoint for the analytics domain.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :analytics:service:component:
 #+created: 2026-05-19
@@ -48,6 +50,18 @@ All business logic lives in =ores.analytics.core=.
 - =ores.analytics.api= — shared protocol types.
 - =ores.logging= — structured logging.
 - =nats.c= — NATS client.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib)
+#+end_src
 
 * See also
 

@@ -6,6 +6,7 @@
 #+full_name: ores.ore.core
 #+description: The ORE document engine — XSD-generated XML bindings, instrument mappers, the importer, exporter and round trip, the market data readers, and the import planner and scanner.
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :ore:core:component:
 #+created: 2026-05-19
@@ -71,6 +72,30 @@ produced by a generator outside the build. See
 
 XML parsing is the generated binding code, not a library: the component
 links neither =pugixml= nor =nats.c=.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.analytics.api.lib
+        ores.database.lib
+        ores.refdata.api.lib
+        ores.reporting.api.lib
+        ores.trading.api.lib
+    PRIVATE
+        Boost::boost
+        ores.analytics.core.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        ores.logging.lib
+        ores.refdata.core.lib
+        ores.reporting.core.lib)
+#+end_src
 
 * See also
 

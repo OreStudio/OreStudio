@@ -29,4 +29,9 @@ add_library(${lib_target_name} INTERFACE)
 target_include_directories(${lib_target_name} INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
+# A header-only part still declares what the profile cannot know: the
+# libraries its interface headers need in their consumers.
+
+
+
 install(TARGETS ${lib_target_name})

@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_api_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.analytics.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -25,10 +28,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_ANALYTICS_API_LIBRARY)
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(${lib_target_name} PRIVATE
-        -fvisibility=hidden -fvisibility-inlines-hidden)
-endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
@@ -43,11 +42,14 @@ target_link_libraries(${lib_target_name}
         ores.platform.lib
     PRIVATE
         ores.utility.lib
-        libfort::fort
-        faker-cxx::faker-cxx)
-# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+        faker-cxx::faker-cxx
+        libfort::fort)
 
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
 
-target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.rfl.pch)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

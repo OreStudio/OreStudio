@@ -7,6 +7,7 @@
 #+description: Job scheduling infrastructure — cron-based job definitions, execution, and scheduling for periodic operations.
 #+brief: Cron job scheduling core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :scheduler:core:component:
 #+created: 2026-05-19
@@ -80,6 +81,23 @@ job-instance repository.
   types, token validation, logging and time formatting.
 - =croncpp= — cron expression parsing and next-occurrence computation.
 - =libfort= — the table rendering of the domain types.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+    PRIVATE
+        croncpp::croncpp
+        ores.eventing.api.lib
+        ores.history.core.lib
+        ores.logging.lib)
+#+end_src
 
 * See also
 

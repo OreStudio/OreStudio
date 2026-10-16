@@ -9,32 +9,36 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.refdata.client")
+set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-
-# Header-only for now: currency_pair_convention_cache.hpp (nats-event-cache
-# facet) and its registrar wiring are fully-inline, like party_cache.hpp. If
-# this component grows a real request-facade class (e.g. a market_data_client
-# equivalent), switch to a STATIC/SHARED library with .cpp sources the way
-# ores.marketdata.client does -- the target name stays the same either way.
+# Headers only: component_files.cmake lists no source, so the part is an
+# INTERFACE library that carries its include path and no compiled body.
 add_library(${lib_target_name} INTERFACE)
 
 target_include_directories(${lib_target_name} INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
+# A header-only part still declares what the profile cannot know: the
+# libraries its interface headers need in their consumers.
+
 target_link_libraries(${lib_target_name}
     INTERFACE
-        ores.nats.lib
-        ores.refdata.api.lib
         ores.eventing.api.lib
         ores.eventing.core.lib
         ores.logging.lib
+        ores.nats.lib
+        ores.refdata.api.lib
         ores.utility.lib)
 
 install(TARGETS ${lib_target_name})

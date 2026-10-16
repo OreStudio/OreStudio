@@ -7,6 +7,7 @@
 #+description: HTTP server library — Boost.Beast server, JWT authentication, routing, and OpenAPI support.
 #+brief: HTTP server and JWT authentication library
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :http:api:component:
 #+created: 2026-05-19
@@ -52,6 +53,26 @@ exposed to external clients (web, mobile) alongside the NATS-based internal API.
 - Boost.Beast, Boost.Asio — async HTTP server.
 - =nlohmann/json= or =rfl= — JWT claim serialisation.
 - =ores.iam.api= — JWT claims types aligned with IAM sessions.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+find_package(Boost REQUIRED COMPONENTS json url)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        Boost::boost
+        Boost::json
+        Boost::url
+        ores.security.lib
+        ores.telemetry.core.lib
+    PRIVATE
+        OpenSSL::SSL)
+#+end_src
 
 * See also
 

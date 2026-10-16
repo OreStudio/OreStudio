@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.compute.client")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -39,10 +42,20 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.storage.core.lib
-        ores.compute.api.lib
+        sqlgen::sqlgen
+        ores.logging.lib
+        ores.platform.lib
     PRIVATE
-        ores.utility.lib
+        ores.utility.lib)
+
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.compute.api.lib
+        ores.storage.core.lib
+    PRIVATE
         Boost::boost
         Boost::json)
 

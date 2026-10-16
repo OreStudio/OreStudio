@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_service_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.variability.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -43,9 +46,15 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.database.lib
         ores.utility.lib
-        ores.telemetry.core.lib
-        ores.eventing.core.lib
-        ores.eventing.api.lib)
+        ores.telemetry.core.lib)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.api.lib
+        ores.eventing.core.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

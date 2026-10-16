@@ -4,6 +4,7 @@
 #+title: ores.dq.core
 #+description: Data-quality infrastructure — badges, datasets, FSM, ORM base classes, and NATS handlers for ORE Studio.
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :dq:core:component:
 #+created: 2026-05-19
@@ -59,6 +60,25 @@ persistence without depending on =ores.dq=.
 - =rfl= — JSON serialisation via reflection.
 - =sqlgen= — SQL ORM and query generator for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+        ores.diff.lib
+        ores.iam.api.lib
+    PRIVATE
+        Boost::boost
+        Boost::graph
+        ores.history.core.lib
+        sqlgen::sqlgen)
+#+end_src
 
 * See also
 

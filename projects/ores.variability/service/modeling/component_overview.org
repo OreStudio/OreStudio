@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 95D9E246-27ED-440F-B14A-481A546B7C4F
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.variability.service
 #+description: NATS service entrypoint for the variability domain.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :variability:service:component:
 #+created: 2026-05-19
@@ -49,6 +51,19 @@ All business logic lives in =ores.variability.core=.
 - =ores.variability.api= — shared protocol types.
 - =ores.logging= — structured logging infrastructure.
 - =nats.c= — NATS client for connection management.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.api.lib
+        ores.eventing.core.lib)
+#+end_src
 
 * See also
 

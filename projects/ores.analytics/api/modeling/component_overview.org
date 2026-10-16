@@ -4,6 +4,7 @@
 #+title: ores.analytics.api
 #+description: Domain types and NATS protocol schemas for the analytics component.
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :analytics:api:component:
 #+created: 2026-05-19
@@ -44,6 +45,18 @@ table I/O via =rfl=, and the NATS protocol schemas consumed by
 
 - =rfl= — JSON serialisation via reflection.
 - =fort= — formatted table rendering.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.rfl.pch)
+#+end_src
 
 * See also
 

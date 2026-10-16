@@ -60,10 +60,10 @@ find_package(Boost REQUIRED)
 
 target_link_libraries(${lib_target_name}
     PRIVATE
-        ores.database.lib
-        ores.iam.api.lib
+        Boost::boost
         LibArchive::LibArchive
-        Boost::boost)
+        ores.database.lib
+        ores.iam.api.lib)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

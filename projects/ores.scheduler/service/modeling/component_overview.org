@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 86B4ECD8-FF01-438A-99BB-55B4CA523AED
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.scheduler.service
 #+description: NATS service entrypoint for the scheduler domain — wires job handlers and runs the cron loop.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :scheduler:service:component:
 #+created: 2026-05-19
@@ -52,6 +54,21 @@ message handlers, and runs the event loop. All scheduling logic lives in
 - =ores.scheduler.api= — shared protocol types.
 - =ores.logging= — structured logging infrastructure.
 - =nats.c= — NATS client for connection management.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.iam.client.lib
+    PRIVATE
+        ores.eventing.api.lib
+        ores.eventing.core.lib)
+#+end_src
 
 * See also
 

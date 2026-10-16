@@ -7,6 +7,7 @@
 #+description: Protocol types, domain entities, JSON/table I/O, and NATS message schemas for the trading component.
 #+brief: Trading instrument and trade contract types
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :trading:api:component:
 #+created: 2026-05-19
@@ -52,6 +53,20 @@ server) and UI client components depend on this library.
 
 - =rfl= — JSON serialisation and table output via C++ reflection.
 - =fort= — formatted table rendering.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.dq.api.lib
+    PRIVATE
+        ores.rfl.pch)
+#+end_src
 
 * See also
 

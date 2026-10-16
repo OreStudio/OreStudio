@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 1AF4AEC8-70EC-496C-821E-4E2E1BB303E5
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.workflow.service
 #+description: NATS service entrypoint for the workflow domain.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :workflow:service:component:
 #+created: 2026-05-19
@@ -41,6 +43,18 @@ message handlers from =ores.workflow.core=, and runs the event loop.
 * Dependencies
 
 - =ores.workflow.core=, =ores.workflow.api=, =ores.logging=, =nats.c=.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib)
+#+end_src
 
 * See also
 

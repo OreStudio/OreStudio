@@ -78,6 +78,19 @@ auth-context threading.
 - =ores.nats= / =ores.service= / =ores.logging= — the NATS
   subscribe/decode/reply plumbing.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+        ores.logging.lib)
+#+end_src
+
 * See also
 
 - [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]] — the group overview.

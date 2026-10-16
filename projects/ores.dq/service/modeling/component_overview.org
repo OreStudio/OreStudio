@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: FA64A6DE-7010-4FD8-A1F8-D153B3CD96A9
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.dq.service
 #+description: NATS service entrypoint for the data-quality domain — wires handlers, repositories, and configuration.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :dq:service:component:
 #+created: 2026-05-19
@@ -51,6 +53,18 @@ bootstrap, dependency injection, and graceful shutdown.
 - =ores.dq.api= — shared protocol types.
 - =ores.logging= — structured logging infrastructure.
 - =nats.c= — NATS client for connection management.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib)
+#+end_src
 
 * See also
 

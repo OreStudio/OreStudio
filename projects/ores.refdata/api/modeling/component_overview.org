@@ -7,6 +7,7 @@
 #+description: Domain types, JSON/CSV/table I/O, and NATS protocol schemas for the reference-data component.
 #+brief: Reference data domain types and protocol schemas
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :refdata:api:component:
 #+created: 2026-05-19
@@ -48,6 +49,24 @@ depend on this library.
 
 - =rfl= — JSON serialisation and table output via C++ reflection.
 - =fort= — formatted table rendering.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.diff.lib
+        ores.iam.api.lib
+        ores.inbox.api.lib
+        ores.workflow.api.lib
+    PRIVATE
+        ores.dq.api.lib
+        ores.rfl.pch)
+#+end_src
 
 * See also
 

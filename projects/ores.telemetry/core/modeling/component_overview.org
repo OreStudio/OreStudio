@@ -53,6 +53,25 @@ sink writes it through =ores.telemetry.database=.
 
 - Boost.Log — structured logging sink infrastructure.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+        ores.nats.lib
+    INTERFACE
+        reflectcpp::reflectcpp
+    PRIVATE
+        Boost::boost
+        ores.security.lib
+        ores.service.lib)
+#+end_src
+
 * See also
 
 - [[id:DF0CAAB9-9DDB-4FEA-82D3-71FAC2177EEF][ores.telemetry.service]] — NATS service that receives and persists log records.

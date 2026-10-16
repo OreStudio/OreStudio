@@ -58,10 +58,9 @@ handlers use the shared request and reply helpers.
 #+begin_src cmake :name extra_dependencies
 target_link_libraries(${lib_target_name}
     PRIVATE
-        ores.history.core.lib
         ores.diff.lib
-        ores.iam.core.lib
-        ores.service.lib)
+        ores.history.core.lib
+        ores.iam.core.lib)
 #+end_src
 
 The generated eventing tests assemble the database-to-NATS chain by hand and

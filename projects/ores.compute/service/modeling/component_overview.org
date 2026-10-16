@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 152C4A5E-9947-4EE1-A5D4-893305D235B5
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.compute.service
 #+name: compute.service
@@ -7,6 +8,7 @@
 #+description: NATS service entrypoint for the compute domain.
 #+brief: Compute orchestrator service entrypoint
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :compute:service:component:
 #+created: 2026-05-19
@@ -40,6 +42,21 @@ handlers from =ores.compute.core=, and runs the event loop.
 * Dependencies
 
 - =ores.compute.core=, =ores.compute.api=, =ores.logging=, =nats.c=.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib
+    PRIVATE
+        ores.iam.client.lib
+        ores.workflow.api.lib)
+#+end_src
 
 * See also
 

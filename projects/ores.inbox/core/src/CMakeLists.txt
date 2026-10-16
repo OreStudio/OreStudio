@@ -23,10 +23,7 @@ set(name "ores.inbox.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
@@ -58,9 +55,8 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PRIVATE
-        ores.history.core.lib
         ores.diff.lib
-        ores.iam.core.lib
-        ores.service.lib)
+        ores.history.core.lib
+        ores.iam.core.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

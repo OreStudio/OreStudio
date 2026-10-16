@@ -47,6 +47,22 @@ login flow directly.
 - =ores.iam.api= — shared domain types and NATS protocol schemas.
 - =nats.c= — NATS messaging client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.iam.api.lib
+        ores.nats.lib
+        ores.service.lib
+    PRIVATE
+        Boost::boost)
+#+end_src
+
 * See also
 
 - [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.

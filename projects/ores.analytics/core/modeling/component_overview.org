@@ -4,6 +4,7 @@
 #+title: ores.analytics.core
 #+description: Pricing model and analytics configuration — model types, product parameters, and batch pricing.
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :analytics:core:component:
 #+created: 2026-05-19
@@ -52,6 +53,22 @@ exposes all CRUD operations to clients.
 - =rfl= — JSON serialisation via reflection.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        Boost::boost
+        ores.database.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        sqlgen::sqlgen)
+#+end_src
 
 * See also
 

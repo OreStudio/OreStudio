@@ -7,6 +7,7 @@
 #+description: Domain types and NATS protocol schemas for the market-data component.
 #+brief: Market data domain types and protocol schemas
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :marketdata:api:component:
 #+created: 2026-05-19
@@ -41,6 +42,18 @@ protocol schemas consumed by =ores.marketdata.core= and UI clients.
 * Dependencies
 
 - =rfl=, =fort=.
+
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.rfl.pch)
+#+end_src
 
 * See also
 

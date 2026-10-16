@@ -8,7 +8,7 @@
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
 #+branch: feature/carry-the-missing-ore-values-in-the-domain
-#+pr:
+#+pr: 3384
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3384][#3384]] | [ore,trading] Carry the ORE values the schema requires |
 
 * Review
 

@@ -18,15 +18,26 @@
  *
  */
 #include "ores.nats/service/jetstream_admin.hpp"
+#include "ores.logging/make_logger.hpp"
 #include <cstdint>
 #include <nats/nats.h>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::nats::service {
 
 namespace {
+
+using namespace ores::logging;
+
+inline std::string_view logger_name = "ores.nats.service.jetstream_admin";
+
+auto& lg() {
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
 
 /**
  * @brief Whether a stream's filter is already exactly the one asked for.
@@ -51,7 +62,8 @@ jetstream_admin::jetstream_admin(void* js_ctx) noexcept
 
 void jetstream_admin::ensure_stream(std::string_view name,
                                     std::vector<std::string> subjects,
-                                    int max_age_days) {
+                                    int max_age_days,
+                                    stream_retention retention) {
 
     auto* js = static_cast<jsCtx*>(js_ctx_);
     const std::string name_str(name);
@@ -60,17 +72,26 @@ void jetstream_admin::ensure_stream(std::string_view name,
     jsOptions_Init(&opts);
     auto jerr = jsErrCode(0);
 
+    const int64_t max_age_ns = static_cast<int64_t>(max_age_days) * 24LL * 3600LL * 1'000'000'000LL;
+    const jsRetentionPolicy wanted_retention =
+        retention == stream_retention::interest ? js_InterestPolicy : js_LimitsPolicy;
+
     // Check whether the stream already exists.
     jsStreamInfo* info = nullptr;
     natsStatus s = js_GetStreamInfo(&info, js, name_str.c_str(), &opts, &jerr);
 
     if (s == NATS_OK) {
-        // The stream exists. Its subject filter is the contract that decides
-        // which publishes it holds, and a subject renamed anywhere in the tree
-        // leaves a stream that no longer covers what its own service
-        // publishes: every publish then finds no stream and fails with no
-        // responders. Reconcile the filter rather than assume it still holds.
-        if (same_subjects(info->Config, subjects)) {
+        // The subject filter is the contract that decides which publishes the
+        // stream holds, and a subject renamed anywhere in the tree leaves a
+        // stream that no longer covers what its own service publishes: every
+        // publish then finds no stream and fails with no responders. The
+        // retention policy and the age limit are the other two halves of that
+        // contract, and a stream created by an earlier build carries neither.
+        // Reconcile all three rather than assume the stream still holds.
+        const bool current = info->Config != nullptr && same_subjects(info->Config, subjects) &&
+                             info->Config->Retention == wanted_retention &&
+                             info->Config->MaxAge == max_age_ns;
+        if (current) {
             jsStreamInfo_Destroy(info);
             return;
         }
@@ -80,11 +101,13 @@ void jetstream_admin::ensure_stream(std::string_view name,
         for (const auto& sub : subjects)
             updated_ptrs.push_back(sub.c_str());
 
-        // Copy the stream's own configuration and replace only the filter, so
+        // Copy the stream's own configuration and replace only what differs, so
         // a reconciliation changes nothing else about the stream.
         jsStreamConfig cfg = *info->Config;
         cfg.Subjects = updated_ptrs.data();
         cfg.SubjectsLen = static_cast<int>(updated_ptrs.size());
+        cfg.Retention = wanted_retention;
+        cfg.MaxAge = max_age_ns;
 
         jsStreamInfo* updated = nullptr;
         jerr = jsErrCode(0);
@@ -113,8 +136,6 @@ void jetstream_admin::ensure_stream(std::string_view name,
     for (const auto& sub : subjects)
         subject_ptrs.push_back(sub.c_str());
 
-    const int64_t max_age_ns = static_cast<int64_t>(max_age_days) * 24LL * 3600LL * 1'000'000'000LL;
-
     jsStreamConfig cfg;
     jsStreamConfig_Init(&cfg);
     cfg.Name = name_str.c_str();
@@ -122,6 +143,7 @@ void jetstream_admin::ensure_stream(std::string_view name,
     cfg.SubjectsLen = static_cast<int>(subject_ptrs.size());
     cfg.Storage = js_FileStorage;
     cfg.MaxAge = max_age_ns;
+    cfg.Retention = wanted_retention;
 
     info = nullptr;
     jerr = jsErrCode(0);
@@ -139,6 +161,57 @@ void jetstream_admin::ensure_stream(std::string_view name,
     throw std::runtime_error(std::string("ensure_stream '") + name_str +
                              "' create failed: " + natsStatus_GetText(s) + " (js err " +
                              std::to_string(static_cast<int>(jerr)) + ")");
+}
+
+void jetstream_admin::prune_consumers(std::string_view name, std::string_view keep) {
+    auto* js = static_cast<jsCtx*>(js_ctx_);
+    const std::string name_str(name);
+    const std::string keep_str(keep);
+
+    jsOptions opts;
+    jsOptions_Init(&opts);
+    auto jerr = jsErrCode(0);
+
+    jsConsumerNamesList* list = nullptr;
+    const natsStatus s = js_ConsumerNames(&list, js, name_str.c_str(), &opts, &jerr);
+    if (s != NATS_OK) {
+        if (list)
+            jsConsumerNamesList_Destroy(list);
+        // Not fatal: the consumer that serves this stream is not among the ones
+        // this call would have deleted.
+        BOOST_LOG_SEV(lg(), warn) << "Could not list the consumers of '" << name_str
+                                  << "' to prune them: " << natsStatus_GetText(s);
+        return;
+    }
+
+    std::vector<std::string> stale;
+    if (list != nullptr) {
+        for (int i = 0; i < list->Count; ++i) {
+            const char* consumer = list->List[i];
+            if (consumer != nullptr && keep_str != consumer)
+                stale.emplace_back(consumer);
+        }
+        jsConsumerNamesList_Destroy(list);
+    }
+
+    int pruned = 0;
+    for (const auto& consumer : stale) {
+        jsOptions del_opts;
+        jsOptions_Init(&del_opts);
+        jerr = jsErrCode(0);
+        const natsStatus ds =
+            js_DeleteConsumer(js, name_str.c_str(), consumer.c_str(), &del_opts, &jerr);
+        if (ds != NATS_OK) {
+            BOOST_LOG_SEV(lg(), warn) << "Could not prune consumer '" << consumer << "' on '"
+                                      << name_str << "': " << natsStatus_GetText(ds);
+            continue;
+        }
+        ++pruned;
+    }
+
+    if (pruned > 0)
+        BOOST_LOG_SEV(lg(), info) << "Pruned " << pruned << " consumer(s) on '" << name_str
+                                  << "' that the service no longer declares";
 }
 
 }

@@ -144,7 +144,16 @@ for byte.
 *Verified.* =check_component_drift --changed= reports no drift across the branch;
 =--component storage-cpp= reports none for storage; =drift-sweep=,
 =cmake-sources=, =paste-blocks= and the other 30 local checks pass; the codegen
-suite is 1431 passed. The whole-tree build and =ctest= were still running when
-this closed: the machine was at load average 21-30 from the other worktrees and
-the build had reached 6780 of 7293 targets. =pgtap= fails, and fails on =main=:
-the branch changes no SQL and does not touch the suite.
+suite is 1431 passed.
+
+The first whole-tree build then reached =ores.analytics.quant.tests= and failed:
+the regenerated test main installed the =ores.testing= listeners, and that
+component's tests deliberately link none of it. Its CMake says why -- "this
+component has no database, so its tests need no DB-backed test fixture" -- so
+the finding was real and the template was wrong to assume a fixture. A
+component now declares =#+test_fixture: none= and gets the bare Catch2 session;
+=ores.analytics/quant= declares it, and regenerating =iam= produces no diff at
+all, so every other component's test main is unchanged.
+
+=pgtap= fails, and fails on =main=: the branch changes no SQL and does not touch
+the suite.

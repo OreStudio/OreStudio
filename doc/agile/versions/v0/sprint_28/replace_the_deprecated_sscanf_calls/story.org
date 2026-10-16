@@ -43,6 +43,13 @@ No translation unit calls a C runtime function that MSVC's STL deprecates, so th
 
 * Decisions
 
+- *This is the sanction the memory already states.*
+  [[id:B4E38241-6AD1-4859-9610-033CC39C0AF4][Use ores.platform for cross-platform functionality]]
+  requires a platform primitive in place of a native one wherever ores.platform
+  has one, because Windows Clang compiles with =-Werror
+  -Wdeprecated-declarations= and MSVC's STL deprecates the native call. Both
+  sites here are that situation with =std::sscanf= rather than =std::getenv=,
+  and both are answered by the platform primitive rather than a suppression.
 - *Use the platform's ISO 8601 date primitive rather than suppressing the
   warning.* =datetime::from_iso8601_date= accepts the extended form and the
   basic form, validates the calendar date, and throws =std::invalid_argument=

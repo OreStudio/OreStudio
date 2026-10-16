@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ A person lists bindings, says what each source writes and when it last ticked, b
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -51,7 +51,7 @@ A person lists bindings, says what each source writes and when it last ticked, b
 | [[id:A52E345C-746B-4487-B860-31EB4B98A752][Move the series page state into a pure function]] | BACKLOG | | | The series page picks one of seven states by a chain of conditions in the component. Move the choice into a pure function that a test can cover. |
 | [[id:B2E5C70A-E1C1-493D-AA80-789C56B87D8C][Put Bindings in the Market data menu]] | DONE | | 2026-10-15 | Add the Bindings card to the Market data area with its route, its trail and its words in English, French and Portuguese. |
 | [[id:628D8369-F667-4254-80A2-2F8AC488616C][Run the series title test in CI]] | BACKLOG | | | The Catch2 case that every series title names only its own fields was built and never run, because the test binary needs the database of the environment. Run it in CI and make sure it is in a job. |
-| [[id:8690640A-1195-420B-87D6-8DA324DA820B][Say which sources a party may bind]] | BACKLOG | | | Add server reads for the synthetic sources a party does not consume yet, what each would write, and which running feed already writes a series. |
+| [[id:8690640A-1195-420B-87D6-8DA324DA820B][Say which sources a party may bind]] | STARTED | 2026-10-16 | | Add server reads for the synthetic sources a party does not consume yet, what each would write, and which running feed already writes a series. |
 | [[id:8B5BF9AD-4A3F-423D-BAE8-76DCB17A68B1][Scope a binding's history to its party]] | BACKLOG | | | The server reads a binding's history by source name and takes the newest row of any party that holds the name, so a party can be shown another party's history. Scope the read to the caller's party. |
 | [[id:4F0E896D-0C89-4698-B218-3D0C084C5AF0][Share one copy hook between the oresmd dialogs]] | BACKLOG | | | The editor and the read-only view of an oresmd URL each hold the same copy-to-clipboard code: a timer, an unmount cleanup and a try and catch. Move it into one hook. |
 | [[id:9044BB8A-1D69-4C59-89B6-4CE93DCE34E1][Show a binding's history as the timeline]] | BACKLOG | | | Draw the History tab of a binding as the shared timeline, with the revert dialog and the checks the prototype shows. |

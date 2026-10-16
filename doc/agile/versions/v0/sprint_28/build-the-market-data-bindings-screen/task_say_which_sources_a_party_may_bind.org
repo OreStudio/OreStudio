@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The Add dialog lists the synthetic sources the party does not consume, says whic
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -41,9 +41,44 @@ The Add dialog lists the synthetic sources the party does not consume, says whic
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The read splits in two, and only one half can be a server read.
+
+*The sources a party may bind* are its own generation configs, and its
+*bindings* belong to the marketdata service. No service user reads the other's
+tables: measured across =projects/ores.sql/create/=, marketdata reads no
+=ores_synthetic_*= table and synthetic reads no =ores_marketdata_*= table, and no
+cross-service function exists in either. The join therefore belongs in the BFF,
+which already reads both sides for the bindings screen and the activity route.
+That keeps the service-table isolation rule intact rather than widening a grant
+for one screen.
+
+*Which running feed holds a series* is the synthetic service's own to answer.
+The feed controller holds the running set, its =feeds_conflict()= decides that a
+series belongs to one feed at a time, and it already exposes
+=running_source_name_for_series()=. The feed overview handler already holds the
+controller as =ctrl_=. This is the answer the journey calls missing, and it is
+the read that has to be a new subject, because only the running service knows
+it.
+
+So the work is:
+
+1. A new synthetic read, =synthetic.v1.ops.resolve_series_owners=: given a list
+   of series, the source name of the running feed that holds each, empty where
+   none does. Declared in =ores.synthetic.feed_overview.org= beside
+   =list_folder_feeds=, so the C++ protocol and the TypeScript protocol are both
+   generated from it. Served from the controller through the feed overview
+   handler, registered in =registrar.cpp=.
+2. A BFF read, =GET /api/bindings/bindable-sources=: for the caller's party, the
+   synthetic sources with no binding, each with the series it would write, and
+   the running feed that already holds that series where there is one. Composed
+   from the feed overview read, the feed bindings read and the new read.
+3. Tests at both seams: the handler unit test for the controller answer, and the
+   BFF test for the composition, including a source that is already bound and a
+   source whose series a running feed holds.
+
+The Add dialog of the next task takes the BFF read. The handler read is what
+makes its refusal the controller's answer rather than a guess from the feed
+listing.
 
 * Measurements
 

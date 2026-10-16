@@ -33,9 +33,9 @@ mapper.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:CB068089-426F-4F08-AE58-0CAAD36DC43A][Audit the FX instrument family against the data-oriented design guidelines]] |
-| Now          | Nothing.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                       |
-| Next         | Nothing. The remediations are a separate decision. |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance

@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: C4FC0A39-B17F-4BF2-B3A3-FAC23CFC3AD8
+:END:
+#+title: Task: Scaffold story: Replace the deprecated sscanf calls
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :replace_the_deprecated_sscanf_calls:sprint_28:v0:
+#+owner: marco
+#+branch: feature/replace-the-deprecated-sscanf-calls
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8E489D08-BEB5-45EB-99E4-7C99F38B5BF4][Replace the deprecated sscanf calls]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Establish how many sites call a C runtime function that MSVC's STL deprecates,
+and wire the story into Sprint 28.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:8E489D08-BEB5-45EB-99E4-7C99F38B5BF4][Replace the deprecated sscanf calls]] |
+| Now          | Closed.                       |
+| Waiting on   | Nothing.                               |
+| Next         | None.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- The story is wired into Sprint 28 and the branch carries its documents.
+- Every deprecated C runtime call in projects/ is enumerated.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| std::sscanf call sites | 2 | =grep -rn 'sscanf' projects/ --include=*.cpp= | fc4c07153b |
+| getenv call sites | 4, all through the platform provider or its tests | same sweep | fc4c07153b |
+| Other deprecated C runtime functions | none found | sweep for scanf, sprintf, strcpy, strcat, strncpy, strncat, strtok, gets, fopen, freopen, putenv, asctime, ctime, localtime, gmtime, tmpnam | fc4c07153b |
+
+* Notes
+
+The two =sscanf= sites are the whole class. One is a reporting service, one is a
+platform test, and both parse a fixed-format timestamp. Nothing else in the tree
+calls a function on MSVC's deprecation list, so the failure the Windows job hit
+has no further siblings waiting behind it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story is scaffolded and wired into Sprint 28. This task carries the story
+documents, the sprint row and the branch, and closes after the scaffold PR
+merges.
+
+The sweep found two =std::sscanf= sites and no other call to a function MSVC's
+STL deprecates, so the class is bounded and both are in the work task.

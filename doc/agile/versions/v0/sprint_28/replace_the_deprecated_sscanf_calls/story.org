@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 8E489D08-BEB5-45EB-99E4-7C99F38B5BF4
+:END:
+#+title: Story: Replace the deprecated sscanf calls
+#+description: The Windows clang release job fails to compile projects/ores.reporting/core/src/service/run_document_generator.cpp, because MSVC's STL marks std::sscanf deprecated and the build passes -Werror. The function parses an ISO 8601 run date by hand, and the platform layer already provides time_utils::parse_date, which does the same job with std::from_chars and validates the result. A second site in the platform test suite parses the executable build timestamp the same way and would fail on the same flag. Replace both so the tree carries no deprecated C runtime call.
+#+type: story
+#+level: s2
+#+filetags: :windows:reporting:platform:sprint_28:v0:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No translation unit calls a C runtime function that MSVC's STL deprecates, so the Windows clang build compiles with -Werror.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Closed.                       |
+| Waiting on    | Nothing.                               |
+| Next          | None.            |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+- run_document_generator.cpp parses the run date through datetime::from_iso8601_date.
+- process_executable_tests.cpp reads the build timestamp without std::sscanf.
+- The reporting core and platform tests still pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C4FC0A39-B17F-4BF2-B3A3-FAC23CFC3AD8][Scaffold story: Replace the deprecated sscanf calls]] | DONE | 2026-10-16 | 2026-10-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:65083A85-AB8C-4A9E-BF09-18E85FAD080E][Replace both sscanf call sites]] | DONE | 2026-10-16 | 2026-10-16 | Initial task for: Replace the deprecated sscanf calls |
+
+* Decisions
+
+- *Use the platform's ISO 8601 date primitive rather than suppressing the
+  warning.* =datetime::from_iso8601_date= accepts the extended form and the
+  basic form, validates the calendar date, and throws =std::invalid_argument=
+  otherwise. =previous_weekday= hand-rolled exactly that with =std::sscanf= and
+  then repeated the =ok()= check, so the change removes the deprecated call and
+  a duplicate parser at once. It is also the primitive the estate already uses
+  for ISO dates, at twelve call sites.
+- *Not =time_utils::parse_date=, which is the wider reader.* That parser exists
+  for ORE's market-data text and deliberately accepts =30.09.2025=,
+  =30-09-2025= and =30.09.25= as well as both ISO forms; its own tests pin
+  those. The run date is required to be ISO 8601 and is refused in those words,
+  so the wider reader would silently accept shapes the check means to reject.
+- *Do not add =_CRT_SECURE_NO_WARNINGS= outside the platform wrapper.* The
+  repository already defines it in =real_environment_provider.cpp=, whose whole
+  job is to wrap =getenv=, and that is the pattern the =getenv= fix established.
+  A reporting service and a test are not that, so both call sites lose the
+  call instead of the warning.
+- *The timestamp test uses the platform's format parser.*
+  =datetime::from_utc_format= is the primitive for text that is not ISO 8601,
+  such as a log line. It throws unless the whole string matches the format
+  given, so the case proves the format by parsing it rather than by slicing
+  fixed widths.
+
+* Out of scope
+
+- The =getenv= calls. Those go through the platform provider already, which is
+  the sanctioned wrapper and carries the define.
+- Any other deprecated C runtime call. A sweep over =projects/= for the
+  functions MSVC's STL deprecates found no others.

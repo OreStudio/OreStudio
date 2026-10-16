@@ -83,13 +83,7 @@ struct scratch_dir {
  * defect is tracked as task 67277DBB-5ABD-4C36-934B-E97144E8910B.
  */
 const std::set<std::string>& known_export_gaps() {
-    static const std::set<std::string> gaps = {
-        "Exotic_EquityAccumulator_single_name.xml",
-        "Exotic_EquityWorstOfBasketSwap.xml",
-        "Exotic_FXWorstOfBasketSwap.xml",
-        "Exotic_FxAccumulator.xml",
-        "FX_WorstOfBasketSwap.xml",
-    };
+    static const std::set<std::string> gaps = {};
     return gaps;
 }
 

@@ -22,7 +22,10 @@
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <chrono>
+#include <iomanip>
+#include <limits>
 #include <map>
+#include <sstream>
 #include <stdexcept>
 
 namespace ores::ore::domain {
@@ -75,6 +78,141 @@ std::vector<std::string> parse_json_string_array(const std::string& json) {
         }
         result.push_back(std::move(name));
         ++pos;
+    }
+    return result;
+}
+
+// A level renders with every digit a float carries, so reading it back yields
+// the same float the document stated.
+std::string to_json_number(float v) {
+    std::ostringstream os;
+    os << std::setprecision(std::numeric_limits<float>::max_digits10) << v;
+    return os.str();
+}
+
+std::string numbers_to_json(const xsd::vector<float>& values) {
+    std::string json = "[";
+    for (std::size_t i = 0; i < values.size(); ++i) {
+        if (i != 0)
+            json += ",";
+        json += to_json_number(values[i]);
+    }
+    json += "]";
+    return json;
+}
+
+std::vector<float> parse_json_numbers(const std::string& json) {
+    std::vector<float> result;
+    std::size_t pos = 0;
+    while (pos < json.size()) {
+        const auto start = json.find_first_of("-0123456789.", pos);
+        if (start == std::string::npos)
+            break;
+        auto end = start;
+        while (end < json.size() &&
+               std::string("0123456789.eE+-").find(json[end]) != std::string::npos)
+            ++end;
+        result.push_back(std::stof(json.substr(start, end - start)));
+        pos = end;
+    }
+    return result;
+}
+
+// A range bound holds only the levels the document states, so each entry is a
+// JSON object carrying exactly those fields.
+std::string range_bound_to_json(const rangeBound& rb) {
+    std::vector<std::string> fields;
+    if (rb.startDate)
+        fields.push_back("\"StartDate\":\"" + json_escape(std::string(*rb.startDate)) + "\"");
+    if (rb.RangeFrom)
+        fields.push_back("\"RangeFrom\":" + to_json_number(*rb.RangeFrom));
+    if (rb.RangeTo)
+        fields.push_back("\"RangeTo\":" + to_json_number(*rb.RangeTo));
+    if (rb.Leverage)
+        fields.push_back("\"Leverage\":" + to_json_number(*rb.Leverage));
+    if (rb.Strike)
+        fields.push_back("\"Strike\":" + to_json_number(*rb.Strike));
+    if (rb.StrikeAdjustment)
+        fields.push_back("\"StrikeAdjustment\":" + to_json_number(*rb.StrikeAdjustment));
+
+    std::string json = "{";
+    for (std::size_t i = 0; i < fields.size(); ++i) {
+        if (i != 0)
+            json += ",";
+        json += fields[i];
+    }
+    json += "}";
+    return json;
+}
+
+std::string range_bounds_to_json(const xsd::vector<rangeBound>& bounds) {
+    std::string json = "[";
+    for (std::size_t i = 0; i < bounds.size(); ++i) {
+        if (i != 0)
+            json += ",";
+        json += range_bound_to_json(bounds[i]);
+    }
+    json += "]";
+    return json;
+}
+
+std::vector<rangeBound> parse_json_range_bounds(const std::string& json) {
+    std::vector<rangeBound> result;
+    std::size_t pos = 0;
+    while (true) {
+        const auto open = json.find('{', pos);
+        if (open == std::string::npos)
+            break;
+        const auto close = json.find('}', open);
+        if (close == std::string::npos)
+            break;
+        const auto body = json.substr(open + 1, close - open - 1);
+        rangeBound rb;
+        std::size_t p = 0;
+        while (p < body.size()) {
+            const auto key_open = body.find('"', p);
+            if (key_open == std::string::npos)
+                break;
+            const auto key_close = body.find('"', key_open + 1);
+            if (key_close == std::string::npos)
+                break;
+            const auto key = body.substr(key_open + 1, key_close - key_open - 1);
+            const auto colon = body.find(':', key_close);
+            if (colon == std::string::npos)
+                break;
+            if (key == "StartDate") {
+                const auto value_open = body.find('"', colon);
+                const auto value_close = value_open == std::string::npos ?
+                                             std::string::npos :
+                                             body.find('"', value_open + 1);
+                if (value_close == std::string::npos)
+                    break;
+                xsd::string s;
+                static_cast<std::string&>(s) =
+                    body.substr(value_open + 1, value_close - value_open - 1);
+                rb.startDate = std::move(s);
+                p = value_close + 1;
+                continue;
+            }
+            const auto value_end = body.find(',', colon);
+            const auto value = body.substr(colon + 1,
+                                           value_end == std::string::npos ? std::string::npos :
+                                                                            value_end - colon - 1);
+            const auto number = std::stof(value);
+            if (key == "RangeFrom")
+                rb.RangeFrom = number;
+            else if (key == "RangeTo")
+                rb.RangeTo = number;
+            else if (key == "Leverage")
+                rb.Leverage = number;
+            else if (key == "Strike")
+                rb.Strike = number;
+            else if (key == "StrikeAdjustment")
+                rb.StrikeAdjustment = number;
+            p = value_end == std::string::npos ? body.size() : value_end + 1;
+        }
+        result.push_back(std::move(rb));
+        pos = close + 1;
     }
     return result;
 }
@@ -619,6 +757,10 @@ equity_instrument_mapper::forward_equity_accumulator(const trade& t) {
             }
         }
     }
+    // The schema requires at least one range bound, so the list is what makes
+    // the exported accumulator readable.
+    if (!d.RangeBounds.RangeBound.empty())
+        inst.range_bounds_json = range_bounds_to_json(d.RangeBounds.RangeBound);
     return result;
 }
 
@@ -711,6 +853,11 @@ equity_instrument_mapper::forward_equity_worst_of_basket_swap(const trade& t) {
     inst.currency = to_string(d.Currency);
     inst.notional = exact_decimal(d.Quantity);
     inst.basket_json = underlyings_to_json(d.Underlyings);
+    // The schema requires at least one entry in each of these lists, so they
+    // are what make the exported basket swap readable.
+    inst.initial_prices_json = numbers_to_json(d.InitialPrices.InitialPrice);
+    inst.knock_out_levels_json = numbers_to_json(d.KnockOutLevels.KnockOutLevel);
+    inst.fixed_trigger_levels_json = numbers_to_json(d.FixedTriggerLevels.FixedTriggerLevel);
     if (!d.Underlyings.Underlying.empty())
         inst.underlying_name = std::string(d.Underlyings.Underlying.front().Name);
     return result;
@@ -1008,6 +1155,8 @@ trade equity_instrument_mapper::reverse_equity_accumulator(
         static_cast<std::string&>(rule.StartDate) = to_ore_date(instr.start_date);
     static_cast<std::string&>(rule.Tenor) = "1D";
     d.ObservationDates.Rules.push_back(std::move(rule));
+    for (const auto& rb : parse_json_range_bounds(instr.range_bounds_json))
+        d.RangeBounds.RangeBound.push_back(rb);
     t.EquityAccumulatorData = std::move(d);
     return t;
 }
@@ -1112,6 +1261,12 @@ trade equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
     static_cast<std::string&>(rule.Tenor) = "6M";
     d.FloatingPeriodSchedule.Rules.push_back(rule);
     d.FloatingPayDates.Rules.push_back(std::move(rule));
+    for (const auto value : parse_json_numbers(instr.initial_prices_json))
+        d.InitialPrices.InitialPrice.push_back(value);
+    for (const auto value : parse_json_numbers(instr.knock_out_levels_json))
+        d.KnockOutLevels.KnockOutLevel.push_back(value);
+    for (const auto value : parse_json_numbers(instr.fixed_trigger_levels_json))
+        d.FixedTriggerLevels.FixedTriggerLevel.push_back(value);
     t.EquityWorstOfBasketSwapData = std::move(d);
     return t;
 }

@@ -184,6 +184,24 @@ std::chrono::year_month_day{std::chrono::year{2024}/6/15}
 
 Primary UpAndOut knock-out barrier level. Absent when no barrier.
 
+** range_bounds_json
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:economic: true
+:END:
+
+JSON array of the ORE =RangeBounds= entries; empty when the document states
+none.
+
+A range bound is a =rangeBound=: an optional =startDate= plus the optional
+levels =RangeFrom=, =RangeTo=, =Leverage=, =Strike= and
+=StrikeAdjustment=. Each entry is a JSON object holding only the fields the
+document states. The list has no child table, so it lives in JSON text.
+The ORE schema requires at least one =RangeBound=, so an export that drops
+the list cannot be read back.
+
 ** description
 :PROPERTIES:
 :type:     text

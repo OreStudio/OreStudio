@@ -230,10 +230,16 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     CHECK(!instr.underlying_code.empty());
     CHECK(!instr.currency.empty());
     CHECK(instr.fixing_amount.to_double() > 0.0);
+    CHECK(!instr.range_bounds_json.empty());
 
     const auto rt = fx_instrument_mapper::reverse_fx_accumulator(instr);
     const bool has_data = rt.FxAccumulatorData.operator bool();
     REQUIRE(has_data);
+    REQUIRE(rt.FxAccumulatorData->RangeBounds.RangeBound.size() == 2);
+    CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[0].RangeTo == 122.0f);
+    CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[0].Leverage == 2.0f);
+    CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[1].RangeFrom == 122.0f);
+    CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[1].Leverage == 1.0f);
 
     BOOST_LOG_SEV(lg, info) << "FxAccumulator roundtrip passed. Amount: " << instr.fixing_amount;
 }

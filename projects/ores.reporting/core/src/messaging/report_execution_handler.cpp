@@ -477,9 +477,8 @@ void report_execution_handler::record_engine_errors(const std::string& tenant_id
     try {
         const auto read = service::read_engine_errors_from_archive(archive);
         if (!read.ok()) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "The errors of report instance " << instance_id << " were not read: "
-                << read.error;
+            BOOST_LOG_SEV(lg(), warn) << "The errors of report instance " << instance_id
+                                      << " were not read: " << read.error;
             return;
         }
         if (read.errors.empty())
@@ -495,8 +494,8 @@ void report_execution_handler::record_engine_errors(const std::string& tenant_id
         BOOST_LOG_SEV(lg(), info) << "Recorded " << read.errors.size() << " engine error(s) for "
                                   << "report instance " << instance_id;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Recording the errors of report instance " << instance_id
-                                   << " failed: " << e.what();
+        BOOST_LOG_SEV(lg(), error)
+            << "Recording the errors of report instance " << instance_id << " failed: " << e.what();
     }
 }
 

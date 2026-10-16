@@ -25,7 +25,6 @@
 #ifndef ORES_REFDATA_API_DOMAIN_BASE_CORRELATION_CONFIG_HPP
 #define ORES_REFDATA_API_DOMAIN_BASE_CORRELATION_CONFIG_HPP
 
-#include "ores.utility/decimal/decimal.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -136,10 +135,12 @@ struct base_correlation_config final {
     std::optional<std::string> index_term;
 
     /**
-     * @brief The credit index spread the surface calibrates to. The schema states it as a string
-     * and ORE parses it to a Real, so the column is decimal because a spread is money.
+     * @brief The credit index spread the surface calibrates to. The document writes the element
+     * empty when the surface does not set it, and the schema type must keep an empty element
+     * distinct from an absent one, so the column stays text. An exact decimal cannot carry an empty
+     * element, which is why the money check baselines this column.
      */
-    std::optional<ores::utility::decimal::decimal> index_spread;
+    std::optional<std::string> index_spread;
 
     /**
      * @brief The currency of the credit index.

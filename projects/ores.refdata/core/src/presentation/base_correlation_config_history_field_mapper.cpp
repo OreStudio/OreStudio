@@ -55,8 +55,7 @@ render_base_correlation_config_fields(const domain::base_correlation_config& v) 
     fields.push_back(
         {.name = "Adjust For Losses", .value = v.adjust_for_losses.value_or(std::string{})});
     fields.push_back({.name = "Index Term", .value = v.index_term.value_or(std::string{})});
-    fields.push_back({.name = "Index Spread",
-                      .value = v.index_spread ? v.index_spread->to_string() : std::string{}});
+    fields.push_back({.name = "Index Spread", .value = v.index_spread.value_or(std::string{})});
     fields.push_back({.name = "Currency", .value = v.currency.value_or(std::string{})});
     fields.push_back({.name = "Calibrate Constituents To Index Spread",
                       .value = v.calibrate_constituents_to_index_spread.value_or(std::string{})});

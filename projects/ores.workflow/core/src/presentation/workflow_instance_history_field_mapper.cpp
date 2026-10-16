@@ -23,13 +23,14 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workflow.core/presentation/workflow_instance_history_field_mapper.hpp"
+#include "ores.workflow.api/domain/workflow_instance.hpp"
 #include "ores.diff/domain/field_value.hpp"
 #include "ores.history.api/domain/provenance_fields.hpp"
-#include "ores.platform/time/datetime.hpp"
-#include "ores.workflow.api/domain/workflow_instance.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <string>
 #include <vector>
+#include <string>
+
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::workflow::presentation {
 
@@ -38,7 +39,8 @@ render_workflow_instance_fields(const domain::workflow_instance& v) {
     using ores::diff::domain::field_value;
     std::vector<field_value> fields;
 
-    fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
+    fields.push_back(
+        {.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Type", .value = v.type});
     fields.push_back({.name = "Target Kind", .value = v.target_kind});
     fields.push_back({.name = "Target ID", .value = boost::uuids::to_string(v.target_id)});
@@ -50,21 +52,19 @@ render_workflow_instance_fields(const domain::workflow_instance& v) {
     fields.push_back({.name = "Created By", .value = v.created_by});
     fields.push_back({.name = "Step Count", .value = std::to_string(v.step_count)});
     fields.push_back({.name = "Completed At",
-                      .value = v.completed_at ?
-                                   ores::platform::time::datetime::to_iso8601_utc(*v.completed_at) :
-                                   std::string{}});
+                      .value = v.completed_at ? ores::platform::time::datetime::to_iso8601_utc(*v.completed_at) : std::string{}});
     fields.push_back({.name = "Last Event At",
-                      .value = v.last_event_at ? ores::platform::time::datetime::to_iso8601_utc(
-                                                     *v.last_event_at) :
-                                                 std::string{}});
+                      .value = v.last_event_at ? ores::platform::time::datetime::to_iso8601_utc(*v.last_event_at) : std::string{}});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
     fields.push_back(
         {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
-    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
-    fields.push_back({.name = provenance_fields::recorded_at,
-                      .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
+    fields.push_back(
+        {.name = provenance_fields::change_commentary, .value = v.change_commentary});
+    fields.push_back(
+        {.name = provenance_fields::recorded_at,
+         .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
     return fields;
 }

@@ -25,11 +25,11 @@
 #ifndef ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_ENTITY_HPP
 #define ORES_WORKFLOW_CORE_REPOSITORY_WORKFLOW_INSTANCE_ENTITY_HPP
 
-#include "ores.database/repository/db_types.hpp"
-#include "sqlgen/PrimaryKey.hpp"
+#include <string>
 #include <optional>
 #include <ostream>
-#include <string>
+#include "ores.database/repository/db_types.hpp"
+#include "sqlgen/PrimaryKey.hpp"
 
 namespace ores::workflow::repository {
 

@@ -23,8 +23,9 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.workflow.api/domain/workflow_instance_table_io.hpp"
-#include "ores.workflow.api/domain/workflow_instance_table.hpp"
+
 #include <ostream>
+#include "ores.workflow.api/domain/workflow_instance_table.hpp"
 
 namespace ores::workflow::domain {
 

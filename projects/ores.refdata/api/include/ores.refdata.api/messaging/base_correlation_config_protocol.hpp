@@ -54,7 +54,7 @@ struct base_correlation_config_write {
     std::optional<std::string> rule;
     std::optional<std::string> adjust_for_losses;
     std::optional<std::string> index_term;
-    std::optional<ores::utility::decimal::decimal> index_spread;
+    std::optional<std::string> index_spread;
     std::optional<std::string> currency;
     std::optional<std::string> calibrate_constituents_to_index_spread;
     std::optional<std::string> use_assumed_recovery;

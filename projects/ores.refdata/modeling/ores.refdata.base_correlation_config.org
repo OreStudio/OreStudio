@@ -232,14 +232,16 @@ std::nullopt
 
 ** index_spread
 :PROPERTIES:
-:type:     numeric(38, 12)
-:cpp_type: std::optional<ores::utility::decimal::decimal>
+:type:     text
+:cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
-The credit index spread the surface calibrates to. The schema states it as a
-string and ORE parses it to a Real, so the column is decimal because a spread
-is money.
+The credit index spread the surface calibrates to. The document writes the
+element empty when the surface does not set it, and the schema type must keep
+an empty element distinct from an absent one, so the column stays text. An
+exact decimal cannot carry an empty element, which is why the money check
+baselines this column.
 
 #+begin_src cpp :name generator
 std::nullopt

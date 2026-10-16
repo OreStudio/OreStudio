@@ -31,10 +31,10 @@
 
 namespace ores::workflow::service::messaging {
 
-[[nodiscard]] ores::eventing::service::subscription register_workflow_instance_event_mapping(
-    ores::eventing::service::postgres_event_source& event_source,
-    ores::eventing::service::event_bus& event_bus,
-    ores::nats::service::client& nats);
+[[nodiscard]] ores::eventing::service::subscription
+register_workflow_instance_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                           ores::eventing::service::event_bus& event_bus,
+                                           ores::nats::service::client& nats);
 
 }
 

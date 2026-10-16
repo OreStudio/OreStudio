@@ -33,17 +33,17 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.workflow.api/domain/workflow_instance.hpp"
+#include "ores.workflow.api/domain/workflow_instance_json_io.hpp" // IWYU pragma: keep.
+#include "ores.workflow.api/eventing/workflow_instance_event.hpp"
+#include "ores.workflow.api/messaging/workflow_instance_protocol.hpp"
+#include "ores.workflow.api/generators/workflow_instance_generator.hpp"
+#include "ores.workflow.core/repository/workflow_instance_repository.hpp"
+#include "ores.workflow.core/service/workflow_instance_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.workflow.api/domain/workflow_instance.hpp"
-#include "ores.workflow.api/domain/workflow_instance_json_io.hpp" // IWYU pragma: keep.
-#include "ores.workflow.api/eventing/workflow_instance_event.hpp"
-#include "ores.workflow.api/generators/workflow_instance_generator.hpp"
-#include "ores.workflow.api/messaging/workflow_instance_protocol.hpp"
-#include "ores.workflow.core/repository/workflow_instance_repository.hpp"
-#include "ores.workflow.core/service/workflow_instance_service.hpp"
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -108,7 +108,8 @@ TEST_CASE("write_workflow_instance_publishes_an_event", tags) {
     // takes every action: the first write creates the row and a re-drive
     // updates it, and the chain is what is under test rather than which of
     // the three subjects carried it.
-    auto observer = nats.subscribe_buffered(ev::domain::event_subject_wildcard<event_type>(), 10);
+    auto observer =
+        nats.subscribe_buffered(ev::domain::event_subject_wildcard<event_type>(), 10);
 
     // The listener thread issues LISTEN asynchronously on its own
     // dedicated connection. Block until it has actually done so before
@@ -162,12 +163,12 @@ TEST_CASE("write_workflow_instance_publishes_an_event", tags) {
         // Exhausted the budget: report what the observer did see so a
         // genuinely broken chain is diagnosable, not a bare empty check.
         const auto final_snapshot = observer.snapshot();
-        BOOST_LOG_SEV(lg, error) << "No notification for workflow_instance " << id_str << " after "
-                                 << max_attempts << " writes; observer received "
+        BOOST_LOG_SEV(lg, error) << "No notification for workflow_instance " << id_str
+                                 << " after " << max_attempts << " writes; observer received "
                                  << final_snapshot.size() << " message(s) in total";
         for (const auto& msg : final_snapshot)
-            BOOST_LOG_SEV(lg, error) << "  unexpected message on subject '" << msg.subject << "', "
-                                     << msg.data.size() << " bytes";
+            BOOST_LOG_SEV(lg, error) << "  unexpected message on subject '" << msg.subject
+                                     << "', " << msg.data.size() << " bytes";
     }
     REQUIRE_FALSE(received.empty());
     // The envelope names the tenant that owns the row, so a relay can pass the

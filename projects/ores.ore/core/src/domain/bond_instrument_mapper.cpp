@@ -476,8 +476,8 @@ settlementData reverse_forward_settlement(const bond_forward_settlement& row) {
 
 bond_forward_premium map_forward_premium(const forwardBondData_PremiumData_t& p) {
     bond_forward_premium result;
-    result.amount = to_optional_decimal(std::string(p.Amount))
-                        .value_or(ores::utility::decimal::decimal{});
+    result.amount =
+        to_optional_decimal(std::string(p.Amount)).value_or(ores::utility::decimal::decimal{});
     result.date = std::string(p.Date);
     return result;
 }

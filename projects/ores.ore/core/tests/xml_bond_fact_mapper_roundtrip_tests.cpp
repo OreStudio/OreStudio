@@ -1300,8 +1300,7 @@ TEST_CASE("the_option_block_survives_the_round_trip", tags) {
     CHECK(o.settlement == "Cash");
     CHECK(o.settlement_method == "ParYieldCurve");
     CHECK(o.pay_off_at_expiry == "false");
-    CHECK(o.premium_amount ==
-          ores::utility::decimal::decimal::from_string("12500").value());
+    CHECK(o.premium_amount == ores::utility::decimal::decimal::from_string("12500").value());
     CHECK(o.premium_currency == "USD");
     CHECK(o.premium_pay_date == "2025-03-01");
     REQUIRE(o.premiums.size() == 1);

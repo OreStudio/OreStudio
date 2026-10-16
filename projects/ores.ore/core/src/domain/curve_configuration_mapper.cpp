@@ -198,24 +198,6 @@ void assign_optional_decimal(xsd::optional<T>& target,
         target = static_cast<T>(value->to_double());
 }
 
-/*
- * A money leaf the schema states as a string, which ORE itself parses to a
- * Real. The document's digits are the value; an absent or empty leaf stays
- * unengaged, and a spelling that is not a decimal is refused rather than
- * silently rounded to one.
- */
-template <typename T>
-std::optional<ores::utility::decimal::decimal> optional_decimal_text(const xsd::optional<T>& v) {
-    if (!v)
-        return std::nullopt;
-    const std::string value = text(*v);
-    if (value.empty())
-        return std::nullopt;
-    if (auto parsed = ores::utility::decimal::decimal::from_string(value))
-        return *parsed;
-    throw refusal("'" + value + "' is not a decimal");
-}
-
 template <typename T>
 std::optional<double> optional_double(const xsd::optional<T>& v) {
     if (!v)
@@ -724,7 +706,7 @@ void import_inflation_curve(ores::refdata::messaging::curve_configuration_docume
     r.day_counter = optional_enum_text(v.DayCounter);
     r.lag = text(v.Lag);
     r.frequency = to_string(v.Frequency);
-    r.base_rate = optional_decimal_text(v.BaseRate);
+    r.base_rate = optional_text(v.BaseRate);
     r.tolerance = optional_double(v.Tolerance);
     r.has_seasonality = static_cast<bool>(v.Seasonality);
     if (v.Seasonality) {
@@ -1121,7 +1103,7 @@ void import_base_correlation(ores::refdata::messaging::curve_configuration_docum
     r.rule = optional_enum_text(v.Rule);
     r.adjust_for_losses = optional_enum_text(v.AdjustForLosses);
     r.index_term = optional_text(v.IndexTerm);
-    r.index_spread = optional_decimal_text(v.IndexSpread);
+    r.index_spread = optional_text(v.IndexSpread);
     r.currency = optional_text(v.Currency);
     r.calibrate_constituents_to_index_spread =
         optional_enum_text(v.CalibrateConstituentsToIndexSpread);
@@ -2212,8 +2194,7 @@ inflationCurve export_inflation_curve(
     assign_optional_enum(r.DayCounter, v.day_counter, "day counter");
     assign_text(r.Lag, v.lag);
     r.Frequency = enum_from_text<frequencyType>(v.frequency, "frequency");
-    assign_optional_text(r.BaseRate,
-                         v.base_rate ? std::optional(v.base_rate->to_string()) : std::nullopt);
+    assign_optional_text(r.BaseRate, v.base_rate);
     assign_optional_double(r.Tolerance, v.tolerance);
     if (v.has_seasonality) {
         seasonalityType season;
@@ -2474,9 +2455,7 @@ baseCorrelation export_base_correlation(const refdata::domain::curve_definition&
     assign_optional_enum(r.Rule, v.rule, "date rule");
     assign_optional_enum(r.AdjustForLosses, v.adjust_for_losses, "ORE boolean");
     assign_optional_text(r.IndexTerm, v.index_term);
-    assign_optional_text(
-        r.IndexSpread,
-        v.index_spread ? std::optional(v.index_spread->to_string()) : std::nullopt);
+    assign_optional_text(r.IndexSpread, v.index_spread);
     assign_optional_text(r.Currency, v.currency);
     assign_optional_enum(r.CalibrateConstituentsToIndexSpread,
                          v.calibrate_constituents_to_index_spread,

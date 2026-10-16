@@ -344,7 +344,7 @@ package "trading" #E8F5E9 {
           dv01 : numeric(38, 12)
           lock_rate_day_counter : text
           settlement_dirty : text
-          premium_amount : text
+          premium_amount : numeric(38, 12)
           premium_date : text
         * modified_by : text
         * performed_by : text
@@ -443,7 +443,7 @@ package "trading" #E8F5E9 {
     Bond Instrument Table
     One row per bond trade, reshaped from the wide legacy table per the
     bond relational model deliverable
-    (doc/knowledge/architecture/trading_bond_relational_model.org). The
+    (doc/agile/versions/v0/sprint_25/data-oriented-trading-model/design_bond_relational_model.org). The
     row carries the instrument's identity only: trade_id, the trade that
     identifies both the trade and its instrument, trade_type_code over the
     ten bond codes, party_id, and issue_id, the NOT NULL foreign key to the
@@ -843,7 +843,7 @@ package "trading" #E8F5E9 {
           credit_group : text
           volatility_curve_id : text <<FK>>
           price_quote_method : text
-          price_quote_base_value : text
+          price_quote_base_value : numeric(38, 12)
           sub_type : text
           price_type : text
           payer : text
@@ -2659,7 +2659,7 @@ package "trading" #E8F5E9 {
         * version : integer
         * trade_activity_id : uuid <<FK>>
         * exercise_date : date
-        * price : numeric(28, 10)
+        * price : numeric(38, 12)
         * modified_by : text
         * performed_by : text
         * change_reason_code : text <<FK>>
@@ -2768,7 +2768,7 @@ package "trading" #E8F5E9 {
           settlement : text
           settlement_method : text
           pay_off_at_expiry : text
-          premium_amount : numeric(28, 10)
+          premium_amount : numeric(38, 12)
           premium_currency : text
           premium_pay_date : date
           exercise_fee_settlement_period : text

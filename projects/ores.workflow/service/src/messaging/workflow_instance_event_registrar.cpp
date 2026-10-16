@@ -24,8 +24,8 @@
  */
 #include "ores.workflow.service/messaging/workflow_instance_event_registrar.hpp"
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
-#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
+#include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.nats/service/client.hpp"
 // The event header specialises entity_event_traits, which the mapping and the
@@ -41,18 +41,17 @@ namespace ev = ores::eventing;
 
 [[nodiscard]] ev::service::subscription
 register_workflow_instance_event_mapping(ev::service::postgres_event_source& event_source,
-                                         ev::service::event_bus& event_bus,
-                                         ores::nats::service::client& nats) {
+                                           ev::service::event_bus& event_bus,
+                                           ores::nats::service::client& nats) {
     // The trigger publishes on the table's own channel, and the mapping turns
     // what it says into this entity's event.
     event_source.register_entity_event_mapping<workflow::messaging::workflow_instance_event>(
         "ores_workflow_workflow_instances");
 
-    return event_bus.subscribe<
-        ev::domain::published_entity_event<workflow::messaging::workflow_instance_event>>(
-        [&nats](
-            const ev::domain::published_entity_event<workflow::messaging::workflow_instance_event>&
-                published) {
+    return event_bus.subscribe<ev::domain::published_entity_event<
+        workflow::messaging::workflow_instance_event>>(
+        [&nats](const ev::domain::published_entity_event<
+                workflow::messaging::workflow_instance_event>& published) {
             // One payload is addressed by three subjects, so the subject is
             // the collection's prefix and the action the event reports. The
             // tenant and the party travel in the headers, not in the payload.

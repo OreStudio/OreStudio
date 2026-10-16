@@ -24,6 +24,7 @@
  */
 #include "ores.workflow.core/repository/workflow_instance_entity.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+
 #include <ostream>
 #include <rfl/json/write.hpp>
 
@@ -35,3 +36,4 @@ std::ostream& operator<<(std::ostream& s, const workflow_instance_entity& v) {
 }
 
 }
+

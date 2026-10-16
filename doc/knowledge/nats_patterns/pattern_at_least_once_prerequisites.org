@@ -155,6 +155,7 @@ durable consumers]].
 - [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — the consumer these prerequisites surround.
 - [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] — where the stream and its retention are set.
 - [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] — the identity a claim is keyed on.
+- [[id:7F0B8658-F96F-41E1-9938-C6B5FE63EDE2][Claim Before You Work]] — the claim itself, and the lease that gives it back.
 - [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — what each handler path answers.
 - [[id:C178293A-4B5C-40D7-82F9-011223344556][Own the Subscription Handle]] — the lifetime half of owning the consumer.
 - [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — the pattern-language page this one grounds.

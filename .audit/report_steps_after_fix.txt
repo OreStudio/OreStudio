@@ -1,0 +1,11 @@
+ step_index |          name           |   state   | err 
+------------+-------------------------+-----------+-----
+          0 | gather_trades           | completed | 
+          1 | gather_market_data      | completed | 
+          2 | assemble_bundle         | completed | 
+          3 | prepare_ore_package     | completed | 
+          4 | submit_compute          | completed | 
+          5 | collect_compute_results | completed | 
+          6 | finalise                | completed | 
+(7 rows)
+

@@ -1,6 +1,7 @@
 # Trigger one report instance for the Acme tenant, to exercise the reporting
-# execution step family end to end on the rebuilt services.
+# execution step family on the rebuilt services, and to prove that the run token
+# can now read the compute workunits and results it needs to collect.
 connect $ORES_NATS_URL
 login tenant_admin@acme_corporation Secure-Password-123
-report_operations trigger-report-instance 993bcb7f-13b4-485f-87ed-dfc882c6ddad aa92d9c9-16a4-49bd-9138-39005c991a41
+report_operations trigger-report-instance 26c90761-a658-47c5-9944-f103410a3e2e b0973dd8-2eac-49aa-9306-80f9a068eeea
 logout

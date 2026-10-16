@@ -55,7 +55,9 @@ export interface ConventionLookup {
 }
 
 export interface ConventionsFilter {
+    kind_code: string | null;
     id_one_of: string[] | null;
+    kind_code_one_of: string[] | null;
 }
 
 export interface ConventionEvent {

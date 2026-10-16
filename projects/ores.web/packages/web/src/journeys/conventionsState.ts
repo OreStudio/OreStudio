@@ -163,6 +163,35 @@ export function specsOf(family: string): readonly TermSpec[] {
     return TERM_SPECS[family] ?? [];
 }
 
+/**
+ * The columns a family's list summarises when its terms are not drawn. A
+ * composite family draws no editable terms, but its row carries the terms of
+ * whichever part is populated, so the list shows them without the person
+ * visiting the part screens. A family with neither spec shows its id.
+ */
+const SUMMARY_COLUMNS: Readonly<Record<string, readonly string[]>> = {
+    'tenor-basis-swap': [
+        'name',
+        'pay_index',
+        'receive_index',
+        'spread_on_rec',
+        'long_index',
+        'short_index',
+        'spread_on_short',
+        'include_spread',
+        'sub_periods_coupon_type',
+    ],
+};
+
+/** The columns one row of a family is summarised by, in the order they are shown. */
+export function summaryColumnsOf(family: string): readonly string[] {
+    const specs = specsOf(family);
+    if (specs.length > 0) {
+        return specs.map((spec) => spec.column);
+    }
+    return SUMMARY_COLUMNS[family] ?? ['id'];
+}
+
 /** A term as the form holds it: the text of the value, empty for none. */
 export type Terms = Readonly<Record<string, string>>;
 

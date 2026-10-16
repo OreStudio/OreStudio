@@ -62,7 +62,9 @@ struct convention_lookup {
 };
 
 struct conventions_filter {
+    std::optional<std::string> kind_code;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<std::string>> kind_code_one_of;
 };
 
 struct convention_event {

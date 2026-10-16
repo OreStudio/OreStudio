@@ -101,11 +101,19 @@ filter_condition(const std::optional<messaging::conventions_filter>& filter) {
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->kind_code)
+        r.push_back(equals("kind_code", filter_value(*filter->kind_code)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->kind_code_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->kind_code_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("kind_code", std::move(values)));
     }
     return all_of(std::move(r));
 }

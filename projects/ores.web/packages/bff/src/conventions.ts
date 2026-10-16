@@ -24,6 +24,8 @@ import { z } from 'zod';
 import { recordResource } from '@ores/wire-protocol';
 import { subjects as businessDayConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/business_day_convention_type_protocol';
 import { subjects as calendarNameSubjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_name_protocol';
+import { subjects as conventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/convention_protocol';
+import { subjects as tenorBasisSwapConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_basis_swap_convention_protocol';
 import { subjects as dayCountSubjects } from '@ores/wire-protocol/generated/refdata/protocol/day_count_fraction_type_protocol';
 import { subjects as floatingIndexSubjects } from '@ores/wire-protocol/generated/refdata/protocol/floating_index_type_protocol';
 import { subjects as paymentFrequencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
@@ -79,6 +81,77 @@ const FAMILY_TABLE: readonly (readonly [string, string, boolean])[] = [
 export const CONVENTION_FAMILIES: readonly ConventionFamily[] = FAMILY_TABLE.map(
     ([key, entity, writable]) => ({ key, entity, prefix: `${entity}s`, writable }),
 );
+
+/**
+ * A family whose entity is a composite: one central convention row plus the
+ * mutually exclusive part entities it carries. The family protocol has no
+ * list, so the central row is listed through the convention entity filtered by
+ * its kind. The server therefore keeps the filter, the order, the page and the
+ * total, and the family's get_many answers the parts for exactly that page's
+ * keys, in the page's own order. The two are aligned, so the parts are zipped
+ * onto the central rows here rather than joining two unrelated result sets.
+ *
+ * A family absent from this table is a plain entity whose own list is the page.
+ */
+interface CompositeFamily {
+    /** The kind_code every central row of the family carries. */
+    readonly kindCode: string;
+    /** The family subject that answers a set of central keys with their parts. */
+    readonly getManySubject: string;
+}
+
+const COMPOSITE_FAMILIES: Readonly<Record<string, CompositeFamily>> = {
+    'tenor-basis-swap': {
+        kindCode: 'TENOR_BASIS_SWAP',
+        getManySubject:
+            tenorBasisSwapConventionSubjects.get_many_tenor_basis_swap_conventions_request,
+    },
+};
+
+/**
+ * The columns of a part that the central row owns: its own identity, its link
+ * to the centre, and its audit provenance. A zip takes only the terms and
+ * leaves these to the central row, so the row keeps the version the list's
+ * page was read at.
+ */
+const PART_LINK_FIELDS = new Set([
+    'id',
+    'version',
+    'tenant_id',
+    'convention_id',
+    'party_id',
+    'modified_by',
+    'performed_by',
+    'change_reason_code',
+    'change_commentary',
+    'recorded_at',
+]);
+
+const centralRow = z.looseObject({ id: z.string(), version: z.int() });
+const compositeItem = z.looseObject({ key: z.looseObject({ id: z.string() }) });
+
+/** One central row with whichever part is populated laid over its terms. */
+function zipParts(
+    central: Readonly<Record<string, unknown>>,
+    item: Readonly<Record<string, unknown>>,
+): Record<string, unknown> {
+    let merged = { ...central };
+    for (const value of Object.values(item)) {
+        if (!Array.isArray(value)) {
+            continue;
+        }
+        const part = value.find((member) => typeof member === 'object' && member !== null) as
+            Record<string, unknown> | undefined;
+        if (part === undefined) {
+            continue;
+        }
+        const terms = Object.fromEntries(
+            Object.entries(part).filter(([field]) => !PART_LINK_FIELDS.has(field)),
+        );
+        merged = { ...merged, ...terms };
+    }
+    return merged;
+}
 
 const MAX_ROWS = 500;
 
@@ -139,8 +212,10 @@ function familyOf(request: FastifyRequest): ConventionFamily {
  * The convention routes: the families with their counts, one family's rows, the
  * pick lists, and the write of a family whose terms the screen draws.
  *
- * The server's convention lists filter by id only, so a search is the client's,
- * over the rows this returns.
+ * A plain family's own list is the page. A composite family is listed through
+ * the convention entity filtered by kind, and its parts are read for that same
+ * page's keys. The server keeps the filter, the order, the page and the total
+ * in both cases, so a search is the client's, over the rows this returns.
  */
 export function registerConventionRoutes(
     server: FastifyInstance,
@@ -150,16 +225,26 @@ export function registerConventionRoutes(
         const session = requireSession(request);
         const families = [];
         for (const family of CONVENTION_FAMILIES) {
+            const composite = COMPOSITE_FAMILIES[family.key];
             // A count that cannot be read is null rather than a failed page: the family is still there to open.
             let count: number | null = null;
             try {
                 const reply = await session.client.callAuthenticated(
-                    `refdata.v1.${family.prefix}.list`,
+                    composite === undefined
+                        ? `refdata.v1.${family.prefix}.list`
+                        : conventionSubjects.list_conventions_request,
                     {
                         offset: 0,
                         limit: 1,
                         order: NO_ORDER,
-                        filter: { id_one_of: null },
+                        filter:
+                            composite === undefined
+                                ? { id_one_of: null }
+                                : {
+                                      kind_code: composite.kindCode,
+                                      kind_code_one_of: null,
+                                      id_one_of: null,
+                                  },
                         as_of: null,
                     },
                     z.looseObject({
@@ -202,22 +287,78 @@ export function registerConventionRoutes(
         const session = requireSession(request);
         const family = familyOf(request);
         const query = input(pageQuerySchema, request.query);
+        const composite = COMPOSITE_FAMILIES[family.key];
+        if (composite === undefined) {
+            const reply = await session.client.callAuthenticated(
+                `refdata.v1.${family.prefix}.list`,
+                {
+                    offset: query.offset,
+                    limit: query.limit,
+                    order: NO_ORDER,
+                    filter: { id_one_of: null },
+                    as_of: null,
+                },
+                z.looseObject({ result: resultSchema, total: z.int().nonnegative().default(0) }),
+            );
+            if (reply.result.outcome !== 'ok') {
+                throw invalidRequest(reply.result.message);
+            }
+            return {
+                rows: z.array(z.looseObject({})).default([]).parse(reply[family.prefix]),
+                total: reply.total,
+            };
+        }
+        // The family protocol has no list, so the central rows are listed
+        // through the convention entity filtered by kind. The server keeps the
+        // filter, the order, the page and the total.
         const reply = await session.client.callAuthenticated(
-            `refdata.v1.${family.prefix}.list`,
+            conventionSubjects.list_conventions_request,
             {
                 offset: query.offset,
                 limit: query.limit,
                 order: NO_ORDER,
-                filter: { id_one_of: null },
+                filter: {
+                    kind_code: composite.kindCode,
+                    kind_code_one_of: null,
+                    id_one_of: null,
+                },
                 as_of: null,
             },
-            z.looseObject({ result: resultSchema, total: z.int().nonnegative().default(0) }),
+            z.looseObject({
+                result: resultSchema,
+                conventions: z.array(centralRow).default([]),
+                total: z.int().nonnegative().default(0),
+            }),
         );
         if (reply.result.outcome !== 'ok') {
             throw invalidRequest(reply.result.message);
         }
+        if (reply.conventions.length === 0) {
+            return { rows: [], total: reply.total };
+        }
+        // The parts are read for exactly the page's keys and answer in the
+        // page's order, so only the terms are zipped onto the central rows.
+        const parts = await session.client.callAuthenticated(
+            composite.getManySubject,
+            { keys: reply.conventions.map((row) => ({ id: row.id })) },
+            z.looseObject({
+                result: resultSchema,
+                items: z.array(compositeItem).default([]),
+            }),
+        );
+        if (parts.result.outcome !== 'ok') {
+            throw invalidRequest(parts.result.message);
+        }
+        const items = new Map(
+            parts.items.map((item) => [item.key.id, item as Readonly<Record<string, unknown>>]),
+        );
         return {
-            rows: z.array(z.looseObject({})).default([]).parse(reply[family.prefix]),
+            rows: reply.conventions.map((row) => {
+                const item = items.get(row.id);
+                return item === undefined
+                    ? (row as Readonly<Record<string, unknown>>)
+                    : zipParts(row, item);
+            }),
             total: reply.total,
         };
     });

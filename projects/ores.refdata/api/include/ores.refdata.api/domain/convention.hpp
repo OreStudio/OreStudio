@@ -79,9 +79,13 @@ struct convention final {
 
     /**
      * @brief The kind of convention this row is, a code from the convention_kind lookup. It selects
-     * the family whose parts the row carries.
+the family whose parts the row carries.
      *
      * It is part of the convention's identity.
+
+It is filterable, because a screen that reads one family's conventions lists the central rows by
+this column; the parts are aligned with the page the list returns, so the screen zips the family
+read onto it rather than joining two result sets in the client.
      */
     std::string kind_code;
 

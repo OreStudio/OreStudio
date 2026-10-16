@@ -82,6 +82,7 @@ ctx.generate_uuid()
 :cpp_type:            std::string
 :nullable:            false
 :natural_key:         true
+:filterable:          true
 :no_generator_suffix: true
 :END:
 
@@ -89,6 +90,11 @@ The kind of convention this row is, a code from the =convention_kind= lookup.
 It selects the family whose parts the row carries.
 
 It is part of the convention's identity.
+
+It is filterable, because a screen that reads one family's conventions lists
+the central rows by this column; the parts are aligned with the page the list
+returns, so the screen zips the family read onto it rather than joining two
+result sets in the client.
 
 #+begin_src cpp :name generator
 std::string("TENOR_BASIS_SWAP")

@@ -78,12 +78,12 @@ and the commit it was measured at.
 
 | What                                            | Value                              | Command                                                                                                                     | Commit     |
 |-------------------------------------------------+------------------------------------+-----------------------------------------------------------------------------------------------------------------------------+------------|
-| Instances with a completion time, before        | 0 of 50                            | =select count(*), count(completed_at), count(last_event_at) from ores_workflow_workflow_instances_tbl=                        | d75b6c3d41 |
-| Steps with a completion time, before            | 0 of 828 (552 have a publish time) | =select count(*), count(started_at), count(completed_at), count(command_published_at) from ores_workflow_workflow_steps_tbl= | d75b6c3d41 |
-| Current instances after a clean acme provision  | 34, all completed, all stamped     | =build/stamp-verify/check_timestamps.sql=                                                                                    | branch     |
-| Current steps after a clean acme provision      | 415, all completed, all stamped    | =build/stamp-verify/check_timestamps.sql=                                                                                    | branch     |
-| Terminal rows without a completion time, after  | 0 instances, 0 steps               | =build/stamp-verify/check_timestamps.sql=                                                                                    | branch     |
-| Workflow core suite                             | 49 cases, 385 assertions, green    | =./compass.sh test run -- -R "ores.workflow"=                                                                                | branch     |
+| Instances with a completion time, before        | 0 of 50 rows (25 runs)             | =select count(*), count(completed_at), count(last_event_at) from ores_workflow_workflow_instances_tbl=                        | d75b6c3d41 |
+| Steps with a completion time, before            | 0 of 828 rows (552 with a publish) | =select count(*), count(started_at), count(completed_at), count(command_published_at) from ores_workflow_workflow_steps_tbl= | d75b6c3d41 |
+| Current instances after a clean acme provision  | 25, all completed, all stamped     | =build/stamp-verify/check_timestamps.sql=                                                                                    | 6f84397531 |
+| Current steps after a clean acme provision      | 276, all completed, all stamped    | =build/stamp-verify/check_timestamps.sql=                                                                                    | 6f84397531 |
+| Terminal rows without a completion time, after  | 0 instances, 0 steps               | =build/stamp-verify/check_timestamps.sql=                                                                                    | 6f84397531 |
+| Workflow core suite                             | 49 cases, 385 assertions, green    | =./compass.sh test run -- -R "ores.workflow"=                                                                                | 6f84397531 |
 
 * Notes
 
@@ -127,25 +127,29 @@ via its "Verifies task" field.
 Done on branch =chore/stamp-workflow-completion-and-activity=.
 
 A clean =compass db recreate -y -k=, a fleet restart and one =bootstrap
-setup ... --profile acme_demo= left 34 current instances, every one of them
-=completed=, every one with =completed_at= and =last_event_at=, and 415
+setup ... --profile acme_demo= left 25 current instances, every one of them
+=completed=, every one with =completed_at= and =last_event_at=, and 276
 current steps, every one =completed= with =started_at= and =completed_at=.
 None of the 50 instance rows or 828 step rows the defect was measured on
-carried any of those times. The tenant reached =active= at =19:13:09.352572+01= and its
-=tenant_setup_workflow= wrote =completed_at= at =19:13:09.541359+01=, so the
-completion signal and the timestamp agree to the same second. Neither is
-finer than that in the store as it stands: the generated mapper writes a
-whole-second =Timestamp=, so a microsecond part read back is a round hundred
-thousand, which is what the earlier claim of a fifth of a second got wrong.
-The engine's writer and every other writer share that truncation, and no
-reader can see past it.
+carried any of those times; those 50 rows are 25 runs and those 828 rows are
+552 steps, because both tables are write-version. The tenant's
+=tenant_setup_workflow= finished at =19:28:45.709675+01= by the log and wrote
+=completed_at 19:28:45+01=, the second it finished in, while the tenant row
+became =active= at =19:28:45.554809+01=, 155 milliseconds before the run's own
+last step answered. Neither time is finer than a second in the store as it
+stands: the generated mapper writes a whole-second =Timestamp=, so a
+microsecond part read back is a round hundred thousand. The engine's writer
+and every other writer share that truncation, and no reader can see past it.
 
-Fifteen lines like this one carried the run from its first dispatch to its
-close, one per transition, with the step, the instance, both states and the
-time:
+Twelve lines carried the run's eight steps from their first dispatch to its
+close -- a creation line for each of the four steps the graph is free to start
+with and a transition line for each state change -- and each names the step,
+the instance, the state it left, the state it entered and the time. The last
+two were:
 
 #+begin_example
-2026-10-16 19:12:02.156322 [INFO] [ores.workflow.service.workflow_engine] step 2 (provision_party) workflow=25e357c5-fb5a-4585-abcd-2b8d67970135 step_id=0893297f-f6ee-4be1-b2bd-747e58b129e8 state=in_progress->completed at=2026-10-16 18:12:02Z
+2026-10-16 19:28:45.705551 [INFO] [ores.workflow.service.workflow_engine] step 7 (complete_provisioning) workflow=c9ed737f-484d-4b62-8f1b-8270827a56ec step_id=098e1728-3744-4d3b-88f9-1a71b171bda5 state=in_progress->completed at=2026-10-16 18:28:45Z
+2026-10-16 19:28:45.709675 [INFO] [ores.workflow.service.workflow_engine] Workflow COMPLETED: type=tenant_setup_workflow workflow=c9ed737f-484d-4b62-8f1b-8270827a56ec steps=8
 #+end_example
 
 =./compass.sh test run -- -R "ores.workflow"= passed all three suites:

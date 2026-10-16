@@ -30,8 +30,8 @@
       <BarrierData>
         <Type>KnockOut</Type>
         <Levels>
-          <Level>1</Level>
-          <Level>1.29999995</Level>
+          <Level>1.0</Level>
+          <Level>1.3</Level>
         </Levels>
       </BarrierData>
       <BoughtCurrency>EUR</BoughtCurrency>

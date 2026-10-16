@@ -432,6 +432,8 @@ def _revert_edits(text: str, edits: list[tuple[str, str]]) -> str:
 # for a plain `float` member: the optional member's getter materialises its
 # default, so it needs its own edit, and the required member's getter already
 # returns the member's address.
+# The shape is "vector" for an `xsd::vector<float>` member, whose elements are
+# the money values.
 # A continuous quantity (a recovery rate, a tranche point, a participation
 # rate, a delta, a variance strike, a weight) stays a binary float: the
 # data-oriented design rule keeps those as floats, so they are not listed here.
@@ -464,6 +466,9 @@ MONEY_MEMBERS = [
     ("accumulatorData", "FixingAmount", "required"),
     ("accumulatorData", "Strike", "optional"),
     ("varianceSwapData", "Notional", "required"),
+    # A barrier's levels are a list, and every family that states a barrier
+    # reads the same list, so the leaf is shared the way barrierData is.
+    ("barrierData_Levels_t", "Level", "vector"),
 ]
 
 
@@ -507,6 +512,18 @@ def _member_forms(member: str, shape: str) -> dict[str, tuple[str, str] | None]:
         ser = (
             f'_serialize_float(w, "{member}", v.{member});',
             f'_serialize_moneyFloat(w, "{member}", v.{member});',
+        )
+        get = None
+    elif shape == "vector":
+        hpp = (
+            f"    xsd::vector<float> {member};\n",
+            f"    xsd::vector<domain::moneyFloat> {member};\n",
+        )
+        # A vector serializes one element at a time, so the anchor names the
+        # loop variable rather than a member.
+        ser = (
+            f'_serialize_float(w, "{member}", item);',
+            f'_serialize_moneyFloat(w, "{member}", item);',
         )
         get = None
     else:

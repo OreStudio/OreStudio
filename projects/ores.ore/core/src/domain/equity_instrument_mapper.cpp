@@ -411,14 +411,14 @@ std::string equity_instrument_mapper::barrier_type_str(const barrierData& bd) {
 ores::utility::decimal::decimal
 equity_instrument_mapper::first_barrier_level(const barrierData& bd) {
     if (!bd.Levels.Level.empty())
-        return exact_decimal(static_cast<double>(bd.Levels.Level.front()));
+        return exact_decimal(bd.Levels.Level.front());
     return ores::utility::decimal::decimal{};
 }
 
 ores::utility::decimal::decimal
 equity_instrument_mapper::second_barrier_level(const barrierData& bd) {
     if (bd.Levels.Level.size() >= 2)
-        return exact_decimal(static_cast<double>(bd.Levels.Level[1]));
+        return exact_decimal(bd.Levels.Level[1]);
     return ores::utility::decimal::decimal{};
 }
 
@@ -1013,7 +1013,7 @@ trade equity_instrument_mapper::reverse_equity_barrier_option(
             throw std::runtime_error("reverse_equity_barrier_option: unrecognized barrier type '" +
                                      instr.lower_barrier_type + "'");
         if (!instr.lower_barrier.is_zero())
-            bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier.to_double()));
+            push_money(bd.Levels.Level, instr.lower_barrier);
         d.BarrierData = std::move(bd);
     }
     t.EquityBarrierOptionData = std::move(d);
@@ -1092,7 +1092,7 @@ trade equity_instrument_mapper::reverse_equity_touch_option(
         else
             bd.Type = barrierType::DownAndOut;
         if (instr.barrier_level.has_value())
-            bd.Levels.Level.push_back(static_cast<float>(instr.barrier_level->to_double()));
+            push_money(bd.Levels.Level, *instr.barrier_level);
         d.BarrierData = std::move(bd);
     }
     t.EquityTouchOptionData = std::move(d);
@@ -1186,8 +1186,7 @@ trade equity_instrument_mapper::reverse_equity_tarf(
     // FixingCap level in knock_out_level, so export restores that barrier.
     barrierData bd;
     bd.Type = barrierType::FixingCap;
-    bd.Levels.Level.push_back(static_cast<float>(
-        instr.knock_out_level.value_or(ores::utility::decimal::decimal{}).to_double()));
+    push_money(bd.Levels.Level, instr.knock_out_level.value_or(ores::utility::decimal::decimal{}));
     d.Barriers.BarrierData.push_back(std::move(bd));
     t.EquityTaRFData = std::move(d);
     return t;
@@ -1375,9 +1374,9 @@ trade equity_instrument_mapper::reverse_equity_double_barrier_option(
                 "reverse_equity_double_barrier_option: unrecognized barrier type '" +
                 instr.lower_barrier_type + "'");
         if (!instr.lower_barrier.is_zero())
-            bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier.to_double()));
+            push_money(bd.Levels.Level, instr.lower_barrier);
         if (instr.upper_barrier.has_value())
-            bd.Levels.Level.push_back(static_cast<float>(instr.upper_barrier->to_double()));
+            push_money(bd.Levels.Level, *instr.upper_barrier);
         d.BarrierData = std::move(bd);
     }
     t.EquityDoubleBarrierOptionData = std::move(d);
@@ -1422,9 +1421,9 @@ trade equity_instrument_mapper::reverse_equity_european_barrier_option(
                 "reverse_equity_european_barrier_option: unrecognized barrier type '" +
                 instr.lower_barrier_type + "'");
         if (!instr.lower_barrier.is_zero())
-            bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier.to_double()));
+            push_money(bd.Levels.Level, instr.lower_barrier);
         if (instr.upper_barrier.has_value())
-            bd.Levels.Level.push_back(static_cast<float>(instr.upper_barrier->to_double()));
+            push_money(bd.Levels.Level, *instr.upper_barrier);
         d.BarrierData = std::move(bd);
     }
     t.EquityEuropeanBarrierOptionData = std::move(d);

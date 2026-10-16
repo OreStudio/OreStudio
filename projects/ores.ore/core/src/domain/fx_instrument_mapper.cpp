@@ -355,7 +355,8 @@ underlyingTypes_group_t make_underlying_type_name(const std::string& name) {
 // Private helper: make_barrier
 // ---------------------------------------------------------------------------
 
-barrierData fx_instrument_mapper::make_barrier(const std::string& type, double level) {
+barrierData fx_instrument_mapper::make_barrier(const std::string& type,
+                                               const ores::utility::decimal::decimal& level) {
     static const std::map<std::string, barrierType> bmap = {
         {"UpAndOut", barrierType::UpAndOut},
         {"UpAndIn", barrierType::UpAndIn},
@@ -373,7 +374,7 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type, double l
     if (it == bmap.end())
         throw std::runtime_error("make_barrier: unrecognized barrier type '" + type + "'");
     b.Type = it->second;
-    b.Levels.Level.push_back(static_cast<float>(level));
+    push_money(b.Levels.Level, level);
     return b;
 }
 
@@ -387,9 +388,9 @@ barrierData fx_instrument_mapper::make_barrier_group(
     const bool has_lower = lower.has_value() && *lower != ores::utility::decimal::decimal{};
     if (!has_lower && !upper.has_value())
         return {};
-    barrierData b = make_barrier(type, (has_lower ? *lower : *upper).to_double());
+    barrierData b = make_barrier(type, has_lower ? *lower : *upper);
     if (has_lower && upper.has_value())
-        b.Levels.Level.push_back(static_cast<float>(upper->to_double()));
+        push_money(b.Levels.Level, *upper);
     return b;
 }
 
@@ -977,11 +978,9 @@ trade fx_instrument_mapper::reverse_fx_kiko_barrier_option(
     set_exact(d.SoldAmount, instr.sold_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
     if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.lower_barrier.to_double()));
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
     if (instr.upper_barrier.has_value())
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.upper_barrier->to_double()));
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
     t.FxKIKOBarrierOptionData = std::move(d);
     return t;
 }
@@ -1003,11 +1002,9 @@ trade fx_instrument_mapper::reverse_fx_generic_barrier_option(
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
 
     if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.lower_barrier.to_double()));
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
     if (instr.upper_barrier.has_value())
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.upper_barrier->to_double()));
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
 
     t.FxGenericBarrierOptionData = std::move(d);
     return t;
@@ -1181,7 +1178,7 @@ trade fx_instrument_mapper::reverse_fx_accumulator(const fx_accumulator_instrume
     if (instr.knock_out_barrier.has_value())
         d.Barriers = [&]() {
             accumulatorData_Barriers_t b;
-            b.BarrierData.push_back(make_barrier("UpAndOut", instr.knock_out_barrier->to_double()));
+            b.BarrierData.push_back(make_barrier("UpAndOut", *instr.knock_out_barrier));
             return b;
         }();
 
@@ -1215,7 +1212,7 @@ trade fx_instrument_mapper::reverse_fx_tarf(const fx_asian_forward_instrument& i
     if (instr.target_amount.has_value()) {
         barrierData bd;
         bd.Type = barrierType::CumulatedProfitCap;
-        bd.Levels.Level.push_back(static_cast<float>(instr.target_amount->to_double()));
+        push_money(bd.Levels.Level, *instr.target_amount);
         d.Barriers.BarrierData.push_back(std::move(bd));
     }
 

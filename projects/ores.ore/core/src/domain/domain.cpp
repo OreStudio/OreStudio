@@ -20980,7 +20980,7 @@ xsdcpp::ChildElementInfo _barrierData_Levels_t_Children[] = {
     {"Level",
      0,
      (xsdcpp::get_field_t)&_get_barrierData_Levels_t_Level,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      4294967295},
     {nullptr}};
@@ -70655,7 +70655,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_barrierData_Levels_t(xsdcpp::XmlWriter& w,
                                                          const domain::barrierData_Levels_t& v) {
     w.startElement(name);
     for (const auto& item : v.Level)
-        _serialize_float(w, "Level", item);
+        _serialize_moneyFloat(w, "Level", item);
     w.endElement(name);
 }
 

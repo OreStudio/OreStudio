@@ -20,8 +20,8 @@
       <BarrierData>
         <Type>KnockIn</Type>
         <Levels>
-          <Level>0.00800000038</Level>
-          <Level>0.0102500003</Level>
+          <Level>0.00800</Level>
+          <Level>0.01025</Level>
         </Levels>
       </BarrierData>
       <ForeignCurrency>JPY</ForeignCurrency>
@@ -51,8 +51,8 @@
       <BarrierData>
         <Type>KnockOut</Type>
         <Levels>
-          <Level>1.21000004</Level>
-          <Level>1.30999994</Level>
+          <Level>1.21000</Level>
+          <Level>1.31000</Level>
         </Levels>
       </BarrierData>
       <ForeignCurrency>GBP</ForeignCurrency>

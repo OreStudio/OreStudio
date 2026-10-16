@@ -4473,7 +4473,7 @@ enum class barrierStyle {
 ORES_ORE_CORE_EXPORT std::string to_string(barrierStyle);
 
 struct barrierData_Levels_t {
-    xsd::vector<float> Level;
+    xsd::vector<domain::moneyFloat> Level;
 };
 
 enum class barrierData_RebatePayTime_t {

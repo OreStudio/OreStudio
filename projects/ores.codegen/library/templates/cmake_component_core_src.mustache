@@ -8,12 +8,34 @@ set(lib_target_name ${name}.lib)
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
+<<paste:E0158572-D743-43E2-B5CD-D93BF6223ABA>>
+{{#win32_static_library}}
+if(WIN32)
+    add_library(${lib_target_name} STATIC ${lib_files})
+else()
+    add_library(${lib_target_name} ${lib_files})
+endif()
+{{/win32_static_library}}
+{{^win32_static_library}}
 add_library(${lib_target_name} ${lib_files})
+{{/win32_static_library}}
 target_compile_definitions(${lib_target_name} PRIVATE {{full_name_upper}}_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
+{{#win32_static_library}}
+if(NOT WIN32)
+    set_target_properties(${lib_target_name}
+        PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+endif()
+{{/win32_static_library}}
+{{^win32_static_library}}
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+{{/win32_static_library}}
 
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
@@ -37,5 +59,6 @@ target_link_libraries(${lib_target_name}
 
 {{{extra_dependencies}}}
 
+<<paste:FDEE629F-F8BA-4940-AA1B-6671AF332D82>>
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 {{/component}}

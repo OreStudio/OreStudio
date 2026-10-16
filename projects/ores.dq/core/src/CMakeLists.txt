@@ -28,6 +28,10 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 set(lib_files ${files})
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_DQ_CORE_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
@@ -64,4 +68,7 @@ target_link_libraries(${lib_target_name}
         ores.history.core.lib
         sqlgen::sqlgen)
 
+if(MSVC)
+    target_compile_options(${lib_target_name} PUBLIC /bigobj)
+endif()
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

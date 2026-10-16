@@ -70,3 +70,17 @@ target_link_libraries(${lib_target_name}
 
 - [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]] — HTTP server library this entrypoint uses.
 - [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]] — all route implementations wired here.
+
+* CMake
+
+The key-generation helper the server's manual runbook uses is a script, not a
+compiled artefact, so it is copied into the runtime directory.
+
+#+begin_src cmake :name cmake_finalize :implements FDEE629F-F8BA-4940-AA1B-6671AF332D82
+# Copy development scripts to the runtime output directory.
+set(ores_http_scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+file(COPY_FILE
+    "${ores_http_scripts_dir}/generate_keys.sh"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/generate_keys.sh")
+#+end_src

@@ -58,4 +58,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         Boost::boost)
 
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/core/include
+    ${CMAKE_SOURCE_DIR}/projects/ores.logging/include)
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

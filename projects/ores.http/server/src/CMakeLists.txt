@@ -30,6 +30,10 @@ list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_HTTP_SERVER_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
@@ -60,6 +64,12 @@ target_link_libraries(${lib_target_name}
         ores.http.refdata.lib
         ores.iam.client.lib)
 
+# Copy development scripts to the runtime output directory.
+set(ores_http_scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+file(COPY_FILE
+    "${ores_http_scripts_dir}/generate_keys.sh"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/generate_keys.sh")
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 set(exe_binary_name ${name})

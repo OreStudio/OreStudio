@@ -8,6 +8,7 @@
 #+brief: Trade booking and lifecycle core
 #+type: ores.codegen.component
 #+component_kind: core
+#+win32_static_library: true
 #+level: cross
 #+filetags: :trading:core:component:
 #+created: 2026-05-19

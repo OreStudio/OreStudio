@@ -74,3 +74,17 @@ target_link_libraries(${lib_target_name}
 
 - [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]] — business logic, persistence, and NATS handlers.
 - [[id:0D9D09ED-2FD1-402A-9624-31E26D10812E][ores.trading Messaging Reference]] — full NATS subject and message catalogue.
+
+* CMake
+
+rfl's no_duplicate_field_names check is O(n^2) in constexpr recursion depth.
+The trade_instrument variant (8 alternatives, ~150 combined fields with
+rfl::AddTagsToVariants) needs a depth far past the default 512. PUBLIC so every
+consumer inherits it rather than setting it again.
+
+#+begin_src cmake :name cmake_finalize :implements FDEE629F-F8BA-4940-AA1B-6671AF332D82
+target_compile_options(${lib_target_name} PUBLIC
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:depth100000>
+    $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:steps10000000>
+    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<COMPILE_LANGUAGE:CXX>>:-fbracket-depth=1024>)
+#+end_src

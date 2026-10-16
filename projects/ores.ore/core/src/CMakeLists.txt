@@ -26,8 +26,29 @@ set(lib_target_name ${name}.lib)
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
+set(domain_cpp_warnings "")
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    list(APPEND domain_cpp_warnings "-Wno-unused-const-variable")
+    if(WIN32)
+        list(APPEND domain_cpp_warnings "-Wno-unused-function")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        list(APPEND domain_cpp_warnings
+            "-Wno-implicit-fallthrough"
+            "-Wno-unused-but-set-variable")
+    endif()
+elseif(MSVC)
+    list(APPEND domain_cpp_warnings "/wd4505")
+endif()
+set_source_files_properties(
+    ${CMAKE_CURRENT_SOURCE_DIR}/domain/domain.cpp
+    PROPERTIES COMPILE_OPTIONS "${domain_cpp_warnings}")
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_ORE_CORE_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
@@ -69,4 +90,7 @@ target_link_libraries(${lib_target_name}
         ores.refdata.core.lib
         ores.reporting.core.lib)
 
+if(MSVC)
+    target_compile_options(${lib_target_name} PUBLIC /bigobj)
+endif()
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -6888,6 +6888,13 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     # tests link none of it -- ores.analytics/quant has no database and no
     # fixture -- says #+test_fixture: none, and the test main stays the bare
     # Catch2 session its CMake can actually compile.
+    # A Windows DLL export table is capped at 65535 symbols, and a library that
+    # instantiates enough rfl and Boost templates exceeds it. One that no DLL
+    # boundary has to cross says so, and its template builds it STATIC on
+    # Windows and drops the version properties that a static archive cannot
+    # carry.
+    c["win32_static_library"] = str(fm.get("win32_static_library", "")).strip().lower() in (
+        "true", "yes", "1")
     c["has_test_fixture"] = (
         str(fm.get("test_fixture", "")).strip().lower() != "none")
     # Paste points: a component model splices hand-written C++ into a generated

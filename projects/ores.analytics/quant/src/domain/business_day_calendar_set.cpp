@@ -54,10 +54,10 @@ bool business_day_calendar_set::is_business_day(std::size_t calendar_index,
     }
 
     if (calendar_index + 1 < calendar_offsets_.size()) {
-        const auto begin = holidays_.cbegin() +
-                           static_cast<std::ptrdiff_t>(calendar_offsets_[calendar_index]);
-        const auto end = holidays_.cbegin() +
-                         static_cast<std::ptrdiff_t>(calendar_offsets_[calendar_index + 1]);
+        const auto begin =
+            holidays_.cbegin() + static_cast<std::ptrdiff_t>(calendar_offsets_[calendar_index]);
+        const auto end =
+            holidays_.cbegin() + static_cast<std::ptrdiff_t>(calendar_offsets_[calendar_index + 1]);
         if (std::binary_search(begin, end, date))
             return false;
     }

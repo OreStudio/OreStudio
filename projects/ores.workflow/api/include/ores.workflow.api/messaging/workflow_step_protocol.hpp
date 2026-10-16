@@ -51,12 +51,9 @@ struct workflow_step_write {
     std::string step_log_json;
     std::string command_subject;
     std::string command_json;
-    std::optional<std::chrono::system_clock::time_point> command_published_at;
     std::string idempotency_key;
     std::string compensation_subject;
     std::string compensation_json;
-    std::optional<std::chrono::system_clock::time_point> started_at;
-    std::optional<std::chrono::system_clock::time_point> completed_at;
 };
 
 struct workflow_step_change {

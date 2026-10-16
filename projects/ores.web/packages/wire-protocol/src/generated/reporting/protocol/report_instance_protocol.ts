@@ -43,8 +43,6 @@ export interface ReportInstanceWrite {
     trigger_id: string;
     output_message: string;
     output_storage_key: string;
-    started_at: string | null;
-    completed_at: string | null;
 }
 
 export interface ReportInstanceChange {

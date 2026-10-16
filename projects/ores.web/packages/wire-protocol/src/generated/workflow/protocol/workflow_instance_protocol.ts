@@ -44,8 +44,6 @@ export interface WorkflowInstanceWrite {
     correlation_id: string;
     created_by: string;
     step_count: number;
-    completed_at: string | null;
-    last_event_at: string | null;
 }
 
 export interface WorkflowInstanceChange {

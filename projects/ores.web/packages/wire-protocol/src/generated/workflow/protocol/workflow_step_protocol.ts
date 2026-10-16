@@ -45,12 +45,9 @@ export interface WorkflowStepWrite {
     step_log_json: string;
     command_subject: string;
     command_json: string;
-    command_published_at: string | null;
     idempotency_key: string;
     compensation_subject: string;
     compensation_json: string;
-    started_at: string | null;
-    completed_at: string | null;
 }
 
 export interface WorkflowStepChange {

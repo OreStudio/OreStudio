@@ -111,8 +111,6 @@ domain::workflow_instance to_domain(const messaging::workflow_instance_write& wr
     v.correlation_id = write.correlation_id;
     v.created_by = write.created_by;
     v.step_count = write.step_count;
-    v.completed_at = write.completed_at;
-    v.last_event_at = write.last_event_at;
     return v;
 }
 
@@ -371,6 +369,13 @@ workflow_instance_service::prepare_change(const messaging::workflow_instance_cha
             break;
         case precondition_kind::any:
             break;
+    }
+    // What the row already records about its own life is the row's to keep.
+    // The write carries no way to state these, so an edit that let them take
+    // a default would clear the stamps the service itself wrote.
+    if (!current.empty()) {
+        out.completed_at = current.front().completed_at;
+        out.last_event_at = current.front().last_event_at;
     }
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the

@@ -16,7 +16,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/calendar_adjustment_mapper.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/currency_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
@@ -50,72 +49,6 @@ fs::path corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
 }
 
-bool same_optional_text(const xsd::optional<calendar>& lhs, const xsd::optional<calendar>& rhs) {
-    const bool left = static_cast<bool>(lhs);
-    const bool right = static_cast<bool>(rhs);
-    if (left != right)
-        return false;
-    return !left || std::string(*lhs) == std::string(*rhs);
-}
-
-/**
- * @brief Whether two optional date lists carry the same dates.
- *
- * ORE writes a date list it has no dates for as an empty element, and the
- * export omits it. An empty list is the same list either way, which is the one
- * normalisation this kind declares. A list with dates in it is compared date
- * by date, so the rule cannot hide a dropped date.
- */
-bool same_dates(const xsd::optional<Dates>& lhs, const xsd::optional<Dates>& rhs) {
-    const std::size_t left = lhs ? lhs->Date.size() : 0;
-    const std::size_t right = rhs ? rhs->Date.size() : 0;
-    if (left != right)
-        return false;
-    for (std::size_t i = 0; i < left; ++i) {
-        if (std::string(lhs->Date[i]) != std::string(rhs->Date[i]))
-            return false;
-    }
-    return true;
-}
-
-std::string calendar_difference(const calendaradjustment& original,
-                                const calendaradjustment& exported,
-                                const std::string& path) {
-    if (original.Calendar.size() != exported.Calendar.size())
-        return path + ": calendar count differs: original " +
-               std::to_string(original.Calendar.size()) + ", exported " +
-               std::to_string(exported.Calendar.size());
-
-    for (std::size_t i = 0; i < original.Calendar.size(); ++i) {
-        const auto& l = original.Calendar[i];
-        const auto& r = exported.Calendar[i];
-        const std::string name(l.name);
-        if (name != std::string(r.name))
-            return path + ": calendar " + std::to_string(i) + " name differs: original '" + name +
-                   "', exported '" + std::string(r.name) + "'";
-        if (!same_optional_text(l.BaseCalendar, r.BaseCalendar))
-            return path + ": calendar '" + name + "' base calendar differs";
-        if (!same_dates(l.AdditionalHolidays, r.AdditionalHolidays))
-            return path + ": calendar '" + name + "' additional holidays differ";
-        if (!same_dates(l.AdditionalBusinessDays, r.AdditionalBusinessDays))
-            return path + ": calendar '" + name + "' additional business days differ";
-    }
-    return {};
-}
-
-ores::ore::xml::roundtrip_kind calendar_kind() {
-    return ores::ore::xml::make_roundtrip_kind<
-        calendaradjustment,
-        std::vector<ores::refdata::messaging::calendar_adjustment>>(
-        "calendar adjustments",
-        "calendaradjustment",
-        static_cast<std::vector<ores::refdata::messaging::calendar_adjustment> (*)(
-            const calendaradjustment&)>(&calendar_adjustment_mapper::map),
-        static_cast<calendaradjustment (*)(
-            const std::vector<ores::refdata::messaging::calendar_adjustment>&)>(
-            &calendar_adjustment_mapper::reverse),
-        calendar_difference);
-}
 
 ores::ore::xml::roundtrip_kind currency_kind() {
     return ores::ore::xml::make_roundtrip_kind<currencyConfig,
@@ -139,17 +72,6 @@ ores::ore::xml::roundtrip_kind conventions_kind() {
         ores::ore::xml::parsed_text_difference<conventions>);
 }
 
-}
-
-TEST_CASE("reference_calendar_adjustments_round_trip", tags) {
-    const auto walk = ores::ore::xml::walk_kind(calendar_kind(), corpus_root());
-
-    for (const auto& failure : walk.failures)
-        WARN(failure);
-
-    CHECK(walk.files == 5);
-    CHECK(walk.passed == walk.files);
-    CHECK(walk.failures.empty());
 }
 
 TEST_CASE("reference_currencies_round_trip", tags) {

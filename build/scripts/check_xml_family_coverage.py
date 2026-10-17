@@ -30,7 +30,7 @@ import sys
 FAMILIES = {
     # Supported: a generated table binds the root element and the harness
     # proves every value survives the writing.
-    "CalendarAdjustments": ("supported", "importer reads it"),
+    "CalendarAdjustments": ("supported", "importer and exporter read it through the codec"),
     "Conventions": ("supported", "importer reads it"),
     "CounterpartyInformation": ("supported", "table written and proved; nothing reads it yet"),
     "CurrencyConfig": ("supported", "importer reads it"),

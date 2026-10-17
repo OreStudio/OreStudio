@@ -1329,6 +1329,7 @@ const pt: SourceCatalogue = {
         cancel: 'Cancelar',
         copy: 'Copiar',
         copied: 'Copiado',
+        copyFailed: 'O navegador recusou a cópia. Selecione o URL e copie-o você mesmo.',
         apply: 'Aplicar',
         refused: 'O URL foi recusado: {message}',
         choose: 'Escolha um instrumento e um tipo de cotação.',

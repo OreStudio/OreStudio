@@ -8,12 +8,12 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/share-one-copy-hook-between-the-oresmd-dialogs
-#+pr:
+#+pr: 3494
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The two dialogs repeat about twelve lines for the Copy button. A shared hook rem
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3494][#3494]] | [web] Serve both oresmd dialogs from one copy hook |
 
 * Review
 

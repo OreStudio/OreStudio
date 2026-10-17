@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 80FDA733-60DC-45BA-80B8-068A635CA5B1
+:END:
+#+title: Append the task result under its existing heading
+#+description: Task scaffolds already carry a Result heading; record the outcome under it instead of adding a second.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :agile:compass:memory:feedback:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+A task scaffold already carries a '* Result' heading. Write the outcome prose under that heading and never add a second one.
+
+*Why:* Twice in sprint 28 the close appended a fresh '* Result' instead of filling the scaffold's, leaving two headings on one page. 'compass pr merge' warned both times and each needed a follow-up PR to collapse them.
+
+*How to apply:* When a script records a Result, replace the empty body under the existing heading rather than concatenating a new heading. Verify with grep -c '^\* Result' on the task file and expect exactly 1 before committing.

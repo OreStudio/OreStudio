@@ -84,8 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The worst-of basket now has a child table. =equity_basket_constituents= is
 keyed by =trade_id= and =sequence_number=, so a list is rows and the order
 the document stated is the order a read returns. One model declaration

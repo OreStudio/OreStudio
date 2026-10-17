@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -83,3 +83,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+No change was needed. Every durable step consumer already ensures its stream at startup through
+=serve_step_commands=, before it subscribes, and the pattern was implemented on main after this story
+was captured.
+
+Verified from an empty JetStream: all twenty streams were deleted, the database recreated, and the
+services alone recreated nineteen streams before provisioning ran. Provisioning then completed end to
+end, tenant setup nine steps of nine plus nineteen bundle publishes, with every step delivery acked,
+nothing pending and nothing redelivered. The step streams drained to zero messages, which is the proof
+each command was consumed rather than merely published.
+
+The overlap that stopped the IAM service starting was a legacy store from before main split the step
+streams, not a defect in the current code.

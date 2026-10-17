@@ -61,8 +61,10 @@ export interface ReportInstanceLookup {
 }
 
 export interface ReportInstancesFilter {
+    definition_id: string | null;
     kind: string | null;
     id_one_of: string[] | null;
+    definition_id_one_of: string[] | null;
     kind_one_of: string[] | null;
 }
 
@@ -179,6 +181,27 @@ export interface GetReportInstanceVersionResponse {
     version: ReportInstance | null;
 }
 
+/**
+ * @brief Reads the run of each named definition that started last.
+ *
+ * The caller asks once with the ids a read of the definitions returned, so it
+ * pays for one row per definition. The request names no party: the session
+ * scopes the answer through the row-level security on the table.
+ */
+export interface GetLatestReportInstancesByDefinitionRequest {
+    /** @brief The definitions to answer for, in any order. */
+    definition_ids: string[];
+}
+
+export interface GetLatestReportInstancesByDefinitionResponse {
+    result: Result;
+    /**
+     * @brief At most one run per definition asked for, and no entry for a
+     * definition that has never run.
+     */
+    instances: ReportInstance[];
+}
+
 export const subjects = {
     list_report_instances_request: 'reporting.v1.report_instances.list',
     get_report_instance_request: 'reporting.v1.report_instances.get',
@@ -189,6 +212,8 @@ export const subjects = {
     delete_many_report_instances_request: 'reporting.v1.report_instances.delete_many',
     list_report_instance_versions_request: 'reporting.v1.report_instances_versions.list',
     get_report_instance_version_request: 'reporting.v1.report_instances_versions.get',
+    get_latest_report_instances_by_definition_request:
+        'reporting.v1.report_instances.get_latest_by_definition',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -205,6 +230,7 @@ export const requiresSession = {
     delete_many_report_instances_request: true,
     list_report_instance_versions_request: true,
     get_report_instance_version_request: true,
+    get_latest_report_instances_by_definition_request: true,
 } as const;
 
 /**

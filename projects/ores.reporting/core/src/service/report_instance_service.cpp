@@ -130,6 +130,12 @@ messaging::list_report_instances_response report_instance_service::list_report_i
             refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->definition_id_one_of &&
+        request.filter->definition_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "definition_id_one_of", .limit = "1000"});
+        return response;
+    }
     if (request.filter && request.filter->kind_one_of &&
         request.filter->kind_one_of->size() > 1000) {
         response.result =
@@ -534,4 +540,18 @@ report_instance_service::get_instance_history(const std::string& key) {
     return repo_.read_all(ctx_, boost::uuids::to_string(row.id));
 }
 
+messaging::get_latest_report_instances_by_definition_response
+report_instance_service::get_latest_report_instances_by_definition(
+    const messaging::get_latest_report_instances_by_definition_request& request) {
+    messaging::get_latest_report_instances_by_definition_response response;
+    // The cap is the same one the generated filters state, so one caller
+    // cannot ask the store for more rows than the list reads allow.
+    if (request.definition_ids.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "definition_ids", .limit = "1000"});
+        return response;
+    }
+    response.instances = repo_.read_latest_by_definition_ids(ctx_, request.definition_ids);
+    return response;
+}
 }

@@ -1,0 +1,216 @@
+:PROPERTIES:
+:ID: 66B7603A-16EE-4B5E-8A73-24784A73AB38
+:END:
+#+title: Task: Close the gaps the reports a party runs screen records
+#+description: Close the fifteen server-side gaps the specification records, in three phases, starting with the reads and grants that unblock the screen.
+#+type: task
+#+level: s1
+#+filetags: :reporting:sql:codegen:web:manage-reports-from-the-list-a-party-runs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/manage-reports-from-the-list-a-party-runs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Close each gap the reports-a-party-runs specification records, in the three phases below, so that the server supplies every column the screen draws. The analysis and the reason for each gap are in the specification task; this task carries the work and does not restate them. Each phase ends in a tree that builds and passes its tests.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
+| Now          | Phase 1 is closed and on a branch: the five grants, the filter and the latest-run read. |
+| Waiting on   | Nothing.                               |
+| Next         | Phase 2, in a task of its own.         |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- Each gap G1 to G15 is closed, or is recorded with the reason it is blocked, and the rest of the tree stays green.
+- Phase 1 closes G6 to G9, G1 and G2, and each of those reads is reachable by a person role and scoped by row-level security.
+- The grants are seeded in the SQL under projects/ores.sql/ and are read back from a populated database verbatim.
+- The reporting tests pass and cover the new read: a party with two definitions and three runs gets two rows, each carrying that definition's latest run.
+
+* The gaps, by phase
+
+The gap numbers, and what each gap costs the screen, are in
+[[id:B15A20EA-29CD-4F01-9709-545BF9334A51][the specification task]]. Each line
+below states the read or the permission the gap needs and stops there. A line
+is discharged when its read answers from a populated database, or its grant is
+read back from one.
+
+** Phase 1 — unblock the screen
+
+- [X] *G6.* Grant =reporting::report_error_events:read= to the person roles,
+      so the errors of a run are readable. Read
+      =reporting.v1.report_error_events.list=.
+- [X] *G7.* Grant =reporting::report_definitions:read= and
+      =reporting::report_instances:read= to the person roles, so the screen's
+      two primary reads answer. Read =reporting.v1.report_definitions.list=
+      and =reporting.v1.report_instances.list=.
+- [X] *G8.* Grant =scheduler::job_instances:read= to the person roles, so the
+      next-fire read answers. Read =scheduler.v1.ops.get_scheduler_status=.
+- [X] *G9.* Grant =dq::fsm_states:read= to the person roles, so a run's state
+      id resolves to the name the health word is derived from. Read
+      =dq.v1.fsm_states.list=.
+- [X] *G1.* Add a read that returns the reports a party runs with each
+      definition's latest run, so the screen draws one row per definition in
+      one call. Party scope comes from the JWT through the existing row-level
+      security. Read =reporting::report_instances:read= and
+      =reporting::report_definitions:read=.
+- [X] *G2.* Add =definition_id= to the filter of
+      =reporting.v1.report_instances.list=, so the runs of the party's
+      definitions are asked for by id. Read =reporting::report_instances:read=.
+
+** Phase 2 — the row's meaning
+
+- [ ] *G3.* Add a per-run error count split into errors and warnings, so a run
+      with twenty errors costs one row. Today the count comes from
+      =reporting.v1.report_error_events.list= narrowed by
+      =report_instance_id_one_of=, and needs =reporting::report_error_events:read=.
+- [ ] *G4.* Add the health word, derived from the run's state and its error
+      count. Today it comes from =dq.v1.fsm_states.list= and needs
+      =dq::fsm_states:read=.
+- [ ] *G10.* Record an owner for a definition, so the Owner cell is drawn.
+      This needs a column that does not exist, so it is a schema change, and
+      the read that follows it is =reporting.v1.report_definitions.list= with
+      =reporting::report_definitions:read=.
+- [ ] *G5.* Add the next fire time of a definition's schedule. Today the only
+      source is =scheduler.v1.ops.get_scheduler_status=, and it needs
+      =scheduler::job_instances:read=.
+
+** Phase 3 — correctness and identity
+
+- [ ] *G13.* Add the definition id to a run's change event, so a screen that
+      hears a run change knows which row to update. The payload is built by
+      =reporting_report_instances_notify_trigger_create.sql= for
+      =reporting.v1.report_instances_events.*=, and no permission gates an
+      event.
+- [ ] *G12.* Decide the health word of a cancelled run and of a skipped run,
+      so neither reads as failed or as clean. The states come from
+      =dq.v1.fsm_states.list= and need =dq::fsm_states:read=.
+- [ ] *G14.* State "on demand" from =scheduler_job_id= being absent, rather than
+      from a null =schedule_expression=, and state "paused". Read
+      =reporting.v1.report_definitions.list= with
+      =reporting::report_definitions:read=.
+- [ ] *G15.* Reconcile the kinds the run list draws with the seeded kinds
+      (=production= and =package=). Read =reporting.v1.report_instance_kinds.list=
+      with =reporting::report_instance_kinds:read=. The prototype and the
+      journeys are not changed.
+- [ ] *G11.* Carry the party short code on the session, so the Party cell and
+      the header read without a second call. Today it comes from
+      =iam.v1.ops.get_my_parties=, which needs no permission and names only the
+      caller's own parties; =refdata.v1.parties.list= would need
+      =refdata::parties:read=.
+
+* Plan
+
+Phase 1 closes the grants first, because a read no person role may call is not a
+read. The grants go to =Member=, the role every person account holds: the
+journey's three actors all hold it, and a functional role adds nothing to a
+shared screen. Each grant is one line in
+=projects/ores.sql/populate/iam/iam_roles_populate.sql=, beside the section that
+already classifies the same kind of read.
+
+The latest-run read follows the codebase's own shape. The filter on
+=definition_id= is the model's own =:filterable:= knob, so the filter record,
+the repository condition and the TypeScript twin are generated rather than
+hand-written. The latest-run read is a custom message on the run entity: one
+request carrying the definition ids, one reply carrying one run per definition,
+a custom repository method, and a custom handler method and subscription. The
+generated files carry the paste points for all three, so nothing under
+=projects/ores.reporting= is hand-edited.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** What the tests call, and what they assert
+
+Both tests live in
+=projects/ores.reporting/core/tests/service_report_instance_listing_tests.cpp=
+and call the read through the service, which is the entry its NATS users reach.
+
+- =a list of runs answers only the definitions it is asked for= writes one run
+  of each of two definitions, then asks the list for the first definition and
+  for both definitions. It asserts the reply holds the runs asked for, and only
+  those.
+- =two definitions and three runs read as two rows, each the latest run= writes
+  two runs of one definition and one run of another, asks the latest-run read
+  for all three definitions, and asserts the reply has two rows: the newer run
+  of the first definition and the only run of the second, with no entry for the
+  definition that never ran.
+
+** Phase 1, gap by gap
+
+- *G6, G7, G8 and G9.* Five reads are granted to =Member= in
+  =projects/ores.sql/populate/iam/iam_roles_populate.sql=:
+  =reporting::report_definitions:read=, =reporting::report_instances:read=,
+  =reporting::report_error_events:read=, =dq::fsm_states:read= and
+  =scheduler::job_instances:read=. =Member= is the role every person account
+  holds, which is what reaches all three actors of the journey. No wildcard and
+  no write code is granted. The classification is stated in
+  [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]].
+- *G1.* One read answers for every definition named:
+  =reporting.v1.report_instances.get_latest_by_definition=, declared in
+  =ores.reporting.report_instance.org= under =* Messages= and carried through
+  the custom paste points of the repository, the service, the handler and the
+  sub-registrar. The store reduces, so the cost is one row per definition.
+  Party scope is the row-level security on the table; the request names no
+  party.
+- *G2.* =definition_id= is =:filterable: true= on the run entity, so the list
+  filter carries =definition_id= and =definition_id_one_of=, the repository
+  builds the condition, and the TypeScript twin states them. The model, not a
+  generated file, is the file that changed.
+
+The shape chosen for G1 is two reads, not one join: the definitions read, then
+one latest-run read keyed by the ids that read returned. Neither the definition
+nor the run has to grow a composite message, and each read stays the codegen's
+own artefact. The screen is one call per table, not the three reads and the BFF
+reduction the specification records.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

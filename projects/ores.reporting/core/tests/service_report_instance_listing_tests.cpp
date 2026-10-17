@@ -34,7 +34,9 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <chrono>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -142,4 +144,129 @@ TEST_CASE("a list shows production instances unless the caller asks for a kind",
     const auto only_packages = service.list_report_instances(packages);
     CHECK(lists(only_packages.instances, package.id));
     CHECK_FALSE(lists(only_packages.instances, production.id));
+}
+
+TEST_CASE("a list of runs answers only the definitions it is asked for", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+
+    // Two definitions a party owns, one run of each. The definition ids are
+    // stated by the test rather than generated, so the filter names them.
+    const auto first_definition = ctx.generate_uuid();
+    const auto second_definition = ctx.generate_uuid();
+
+    auto first = generate_synthetic_report_instance(ctx);
+    first.change_reason_code = "system.test";
+    first.party_id = *party_ctx.party_id();
+    first.definition_id = first_definition;
+
+    auto second = generate_synthetic_report_instance(ctx);
+    second.change_reason_code = "system.test";
+    second.party_id = *party_ctx.party_id();
+    second.definition_id = second_definition;
+
+    ores::reporting::tests::write_trigger_for(party_ctx, ctx, first);
+    ores::reporting::tests::write_trigger_for(party_ctx, ctx, second);
+
+    report_instance_repository repo;
+    repo.write(party_ctx, first);
+    repo.write(party_ctx, second);
+
+    report_instance_service service(party_ctx);
+
+    // The screen knows which definitions its party owns, so it asks for their
+    // runs by id rather than for the party's whole run history.
+    list_report_instances_request by_definition;
+    by_definition.limit = 1000;
+    by_definition.filter = report_instances_filter{};
+    by_definition.filter->definition_id = first_definition;
+    const auto only_first = service.list_report_instances(by_definition);
+    CHECK(lists(only_first.instances, first.id));
+    CHECK_FALSE(lists(only_first.instances, second.id));
+
+    // The one-of form carries every definition of the party in one call.
+    list_report_instances_request by_definitions;
+    by_definitions.limit = 1000;
+    by_definitions.filter = report_instances_filter{};
+    by_definitions.filter->definition_id_one_of =
+        std::vector<boost::uuids::uuid>{first_definition, second_definition};
+    const auto both = service.list_report_instances(by_definitions);
+    CHECK(lists(both.instances, first.id));
+    CHECK(lists(both.instances, second.id));
+}
+
+TEST_CASE("two definitions and three runs read as two rows, each the latest run", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+    auto party_ctx = write_test_party_and_scope_context(h, ctx);
+
+    // A party owns two definitions and has run one of them twice, so three runs
+    // in all. The third definition has never run.
+    const auto run_often = ctx.generate_uuid();
+    const auto run_once = ctx.generate_uuid();
+    const auto never_run = ctx.generate_uuid();
+
+    const auto now = std::chrono::system_clock::now();
+    const auto older_run = now - std::chrono::hours(24);
+    const auto latest_run = now - std::chrono::hours(1);
+    const auto only_run = now - std::chrono::hours(2);
+
+    auto first = generate_synthetic_report_instance(ctx);
+    first.change_reason_code = "system.test";
+    first.party_id = *party_ctx.party_id();
+    first.definition_id = run_often;
+    first.started_at = older_run;
+
+    auto second = generate_synthetic_report_instance(ctx);
+    second.change_reason_code = "system.test";
+    second.party_id = *party_ctx.party_id();
+    second.definition_id = run_often;
+    second.started_at = latest_run;
+
+    auto third = generate_synthetic_report_instance(ctx);
+    third.change_reason_code = "system.test";
+    third.party_id = *party_ctx.party_id();
+    third.definition_id = run_once;
+    third.started_at = only_run;
+
+    ores::reporting::tests::write_trigger_for(party_ctx, ctx, first);
+    ores::reporting::tests::write_trigger_for(party_ctx, ctx, second);
+    ores::reporting::tests::write_trigger_for(party_ctx, ctx, third);
+
+    report_instance_repository repo;
+    repo.write(party_ctx, first);
+    repo.write(party_ctx, second);
+    repo.write(party_ctx, third);
+
+    report_instance_service service(party_ctx);
+
+    // The screen asks once, with the definitions it drew, and reads one row per
+    // definition. A definition that has never run is absent from the reply, so
+    // the screen states it as never run rather than as clean.
+    ores::reporting::messaging::get_latest_report_instances_by_definition_request request;
+    request.definition_ids = std::vector<boost::uuids::uuid>{run_often, run_once, never_run};
+    const auto response = service.get_latest_report_instances_by_definition(request);
+    REQUIRE(response.instances.size() == 2);
+
+    const auto row_for = [&response](const boost::uuids::uuid& definition_id)
+        -> std::optional<ores::reporting::domain::report_instance> {
+        for (const auto& instance : response.instances) {
+            if (instance.definition_id == definition_id)
+                return instance;
+        }
+        return std::nullopt;
+    };
+
+    const auto often_row = row_for(run_often);
+    REQUIRE(often_row.has_value());
+    CHECK(often_row->id == second.id);
+
+    const auto once_row = row_for(run_once);
+    REQUIRE(once_row.has_value());
+    CHECK(once_row->id == third.id);
 }

@@ -68,8 +68,10 @@ struct report_instance_lookup {
 };
 
 struct report_instances_filter {
+    std::optional<boost::uuids::uuid> definition_id;
     std::optional<std::string> kind;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> definition_id_one_of;
     std::optional<std::vector<std::string>> kind_one_of;
 };
 
@@ -265,6 +267,37 @@ struct get_report_instance_version_request {
 struct get_report_instance_version_response {
     ores::utility::domain::result result;
     std::optional<ores::reporting::domain::report_instance> version;
+};
+
+/**
+ * @brief Reads the run of each named definition that started last.
+ *
+ * The caller asks once with the ids a read of the definitions returned, so it
+ * pays for one row per definition. The request names no party: the session
+ * scopes the answer through the row-level security on the table.
+ */
+struct get_latest_report_instances_by_definition_request {
+    using response_type = struct get_latest_report_instances_by_definition_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.report_instances.get_latest_by_definition";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The definitions to answer for, in any order. */
+    std::vector<boost::uuids::uuid> definition_ids;
+};
+
+struct get_latest_report_instances_by_definition_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief At most one run per definition asked for, and no entry for a
+     * definition that has never run.
+     */
+    std::vector<ores::reporting::domain::report_instance> instances;
 };
 
 /**

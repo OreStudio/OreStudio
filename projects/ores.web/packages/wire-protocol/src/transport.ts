@@ -203,8 +203,14 @@ export class NatsTransport implements Transport {
                     partyId: message.headers?.get(PARTY_HEADER) || undefined,
                 });
             }
-        })().catch(() => {
-            // A closed connection ends the loop, which is how this is meant to stop.
+        })().catch((error: unknown) => {
+            /*
+             * A closed connection ends the loop, which is how this is meant to
+             * stop. Any other failure is a subscriber that could not read what
+             * arrived, and it is logged rather than left to look like a quiet
+             * stream.
+             */
+            console.error('ores.wire-protocol: a subscription stopped on an error', error);
         });
 
         return () => {

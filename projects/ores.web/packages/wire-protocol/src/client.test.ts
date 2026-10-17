@@ -19,7 +19,7 @@
  *
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { OresClient } from './client.js';
 import { z } from 'zod';
 import { NotAuthenticatedError, OperationFailedError, SessionExpiredError } from './errors.js';
@@ -1202,6 +1202,42 @@ describe('listening to published events', () => {
             { at: '2026-10-10 12:00:03Z', tenantId: 't1', partyId: 'p1', key: {} },
             { at: '2026-10-10 12:00:03Z', tenantId: undefined, partyId: undefined, key: {} },
         ]);
+    });
+
+    it('logs and throws a change whose instant is not the wire shape', () => {
+        let deliver: ((payload: Uint8Array, envelope: MessageEnvelope) => void) | undefined;
+        const transport = {
+            async request(): Promise<Reply> {
+                throw new Error('not used');
+            },
+            async close(): Promise<void> {
+                return undefined;
+            },
+            subscribe(
+                _relative: string,
+                onMessage: (payload: Uint8Array, envelope: MessageEnvelope) => void,
+            ) {
+                deliver = onMessage;
+                return () => undefined;
+            },
+        } as unknown as Transport;
+        new OresClient({ transport }).subscribeToEvents('iam.v1.accounts_events.>', () => undefined);
+        const payload = new WireCodec('msgpack').encode({
+            occurred_at: '2026-10-10T12:00:03Z',
+            key: {},
+        });
+        const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        try {
+            expect(() => deliver?.(payload, { tenantId: 't1', partyId: undefined })).toThrow(
+                'Not a wire timestamp: "2026-10-10T12:00:03Z"',
+            );
+            expect(logged).toHaveBeenCalledWith(
+                'ores.wire-protocol: a change event did not parse',
+                expect.anything(),
+            );
+        } finally {
+            logged.mockRestore();
+        }
     });
 
     it('hands over the key of the record an event is about, as text', () => {

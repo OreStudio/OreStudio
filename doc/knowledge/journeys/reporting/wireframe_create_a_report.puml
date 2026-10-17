@@ -23,21 +23,50 @@ salt
   --
   New definition | Party ACMCOR | Tenant administrator
   --
-  <b>THE RAIL: EIGHT ENTRIES, ONE PER STEP, IN THE ORDER THE STEPS DECLARE</b>
+  <b>THE RAIL: COMPUTED FROM WHAT THE REPORT RUNS</b>
   {#
-    Step | State
-    Y  What it is | done
-    Y  The conventions it binds | done
-    Y  The pricing engines it binds | done
-    4  The market data it binds | current
-    5  The curve configuration it binds | ahead
-    6  The run settings it binds | ahead
-    7  What it runs | ahead
-    8  Review and save | ahead, final
+    Step | Entry | State
+    Y  | What it is | done
+    Y  | The conventions it binds | done
+    Y  | The pricing engines it binds | done
+    Y  | The market data it binds | done
+    Y  | The curve configuration it binds | done
+    Y  | The run settings it binds | done
+    7  | What it runs: the switchboard | current
+    | <b>the analytic steps: one per analytic that is on, in display_order</b> |
+    8  | Net present value | ahead
+    9  | Simulation | ahead
+    10 | Potential future exposure | ahead
+    | <b>the final step</b> |
+    11 | Review and save | ahead, final
   }
-  The current entry carries aria-current step. The last entry is final. The rail
-  is drawn from the step list, so the rail and the steps cannot disagree, and it
-  marks position only: it cannot say how many items a save would refuse.
+  Seven fixed steps, then one step for every analytic that is on, then the final
+  review. The rail is one list, so the rail, the step numbering and the step foot
+  agree at every moment: turning an analytic on adds its entry and renumbers the
+  ones after it, and turning one off removes it and renumbers them again.
+  --
+  <b>THE RAIL AT LENGTH</b>
+  --
+  Fifteen or more entries is a normal length, so the column sticks to the top of
+  the page and scrolls inside itself, the entries are denser, an analytic entry
+  carries its code, a divider opens the analytic run and another opens the
+  review, and a caption states the shape: "11 steps: 7 fixed, 3 analytics in
+  display order, and the final review". The current entry is scrolled into view
+  after every render. The grammar does not change: the same two-column grid, the
+  same done, current and ahead marks, the same step foot.
+  --
+  <b>DEEP LINKS</b>
+  --
+  {#
+    Link | Resolves to
+    ?step=7 | position 7 of the current rail
+    ?step=9&analytic=simulation | the same entry, named as well as numbered
+    ?analytic=pfe | that analytic's step, whatever its number
+  }
+  The number moves when an analytic before it is turned on or off; the code does
+  not. Navigation writes both into the URL, so a reload lands on the same step.
+  An analytic the configuration does not carry resolves to What it runs with its
+  row marked and the reason stated, never to a step that does not exist.
   --
   <b>STEP 1 - WHAT IT IS</b>
   --
@@ -143,35 +172,67 @@ salt
   chooses no portfolio. No operation in this journey's set writes the settings or
   the scope: both come from the seeder.
   --
-  <b>STEP 7 - WHAT IT RUNS</b>
+  <b>STEP 7 - WHAT IT RUNS: THE SWITCHBOARD, AND THE INDEX OF THE STEPS AFTER IT</b>
   --
   {#
-    On | Analytic | Order | Settings
-    Y | npv | 1 | discount curve
-    Y | simulation | 2 | paths, grid
-    Y | pfe | 3 | horizon, quantile
-    N | saccr | 4 | row kept
+    On | Analytic | Order | Step | One-line summary
+    Y | npv | 1 | 8 | one present value per trade, netted to book
+    Y | simulation | 2 | 9 | simulated paths, and the cube pfe reads
+    Y | pfe | 3 | 10 | an exposure profile per counterparty and date
+    N | saccr | 4 | -- | the row is kept at display_order 4
   }
-  Fourteen analytic types, each with an active toggle and a display_order, one
-  row each: the four above and eleven more. An analytic is turned off by setting
-  active false; nothing is deleted, and its settings stay readable.
+  Fourteen analytic types, one row each: the switch, the display order and a
+  one-line summary of what the analytic produces. This step is the index, not a
+  place to edit settings. A row that is on states the number of the step it owns
+  and carries a control that goes straight to it.
+  --
+  <b>TURNING ONE ON, AND TURNING ONE OFF</b>
+  --
+  The switch is how an analytic is added. Turning a type on writes its
+  configuration_analytic row with the default value of every parameter and gives
+  it a step in display_order. Turning one off asks first, because the settings
+  leave the rail with the step, and because the write is active false and not a
+  deletion: the row keeps its display_order and its parameter rows, so a later
+  reader can see the report used to produce it. Nothing on the page deletes a
+  row.
   {
-    [ Add an analytic ]
+    [ Turn simulation off?  Its 3 parameter values go with the step. The row is
+      set to active = false and is not deleted.  ( Turn simulation off ) ( Keep it on ) ]
   }
-  Adding one is the flow Change what a report runs carries: the list of the
-  fourteen types, then the detail with what the analytic is, how it is
-  calculated, and every parameter with a control chosen for its shape and a note
-  on what it means, then the effect of turning it on.
   --
-  <b>REFUSED: pfe WITHOUT simulation</b>
+  <b>ANALYTIC STEP 8 - NET PRESENT VALUE, ONE OF THREE SUCH STEPS</b>
   --
-  pfe reads the cube that simulation writes, so a definition that enables pfe
-  without simulation cannot work. The rule lives in the ACME seeder, in
-  check_exposure_needs_simulation, and not in the reporting service. Nothing
-  validates it when a definition is written: the flow refuses it, and the server
-  would accept it.
+  What net present value is: what the book is worth today, priced against today's
+  curves and added up the book tree.
+  How it is calculated: each trade's future cashflows are projected, discounted
+  at the discount curve and summed, and the sums roll up from trade to book to
+  portfolio.
+  {
+    Parameter | Control | Note
+    discount_curve | text | the curve the cashflows are discounted at
+    include_cashflows | switch | write each cashflow row as well as the total
+  }
+  Every parameter carries a control chosen for the shape of its value, a note on
+  what it means and what a normal value looks like. An analytic that takes no
+  parameter says so rather than showing an empty list.
+  <b>The settings below are rows of Exposure simulation - Group Treasury
+  Portfolio, not of this definition:</b> 6 definitions bind that configuration,
+  so a value changed here reaches their next run too.
+  {
+    [ Turn npv off ]  ...  ( Back ) ( Next: simulation )
+  }
   --
-  <b>STEP 8 - REVIEW AND SAVE</b>
+  <b>THE pfe AND simulation PAIR IS A STATE, NOT A BLOCKED CLICK</b>
+  --
+  Turning pfe on is allowed: its step appears, and the rule strip on step 7 marks
+  both the pfe row and the simulation row. The pfe step states that it cannot run,
+  and the save refuses the pair.
+  pfe reads the cube that simulation writes. The rule lives in the ACME seeder, in
+  generate_risk_config_data.py at check_exposure_needs_simulation, and nothing in
+  the reporting service validates it when a definition is written. The screen
+  refuses the pair itself, and a build would have to carry the rule again.
+  --
+  <b>FINAL STEP - REVIEW AND SAVE</b>
   --
   {#
     Written | Operation
@@ -185,24 +246,27 @@ salt
   Exposure, report_type risk, is_official true, concurrency_policy skip,
   schedule_expression none, scheduler_job_id none, fsm_state_id none,
   run_grant_id none, pre_processing execute, prepared_input_key null,
-  post_processing execute. Also the analytics with their active and
-  display_order, their parameter values, and the portfolio scope the bound
-  configuration carries.
+  post_processing execute. Also the analytic rows with their active and
+  display_order, which are the analytic steps of the rail in that order; their
+  parameter values; and the portfolio scope the bound configuration carries.
   {
     [ Save the report ]
   }
   The read-back states the stored row with report_definitions.get, that the
   definition is on demand, and that it has never run.
-  This step is final, so its foot carries no Back and the rail marks it final.
-  Going back is refused at the first step and at a final step.
+  This step is final, so its rail entry carries the final tag and its foot
+  carries no Back. Going back is refused at the first step and at a final step.
   --
   <b>WHAT THIS SCREEN CANNOT SHOW</b>
   --
   No operation answers what a report needs in order to run beyond the
   configuration types its report type requires. Nothing validates the
   pfe-needs-simulation rule on write. No operation writes the portfolio scope or
-  the run settings. Four of the five configuration types have no screen. No BFF
-  route serves reporting, and nothing in the application creates a report today.
+  the run settings. Four of the five configuration types have no screen. No
+  operation stages an analytic set for one definition, so the rail is a view over
+  rows already written to a shared configuration. The rail primitive cannot mark
+  an unfit step, group its entries or collapse them. No BFF route serves
+  reporting, and nothing in the application creates a report today.
 }
 
 @enduml

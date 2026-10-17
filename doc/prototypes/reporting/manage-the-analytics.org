@@ -1,0 +1,251 @@
+:PROPERTIES:
+:ID: 2b4c19d8-6f3a-4c52-9d7e-8a1f5b0c3e64
+:END:
+#+title: Manage the analytics prototype
+#+description: The one prototype that owns the analytic interaction of a run settings configuration: a switchboard of the fourteen types, a rail step for each analytic that is on in display_order, a final step that reads the set back, and three readings of the per-analytic step behind ?variant=A|B|C.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:manage-the-analytics/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype owns the whole analytic interaction of a run settings
+configuration: the switchboard, a step for each analytic that is on, and a final
+step that reads the set back. It is the one screen that manages analytics, and
+two prototypes that used to draw the same interaction hand the work here:
+
+- [[file:create-a-report/][Create a report]] reads the set on its step 7 and links here;
+- [[file:change-what-a-report-runs/][Change what a report runs]] reads the set on its
+  step 2 and links here.
+
+The analytics belong to the bound run settings configuration, not to a
+definition. A =configuration_analytic= row hangs off that configuration, so a
+change here reaches every definition bound to it, and a set that must differ
+belongs to a configuration of its own. The page says so on every step.
+
+The screen is the standard steps UI, the one the system bootstrap journey uses.
+The layout of the per-analytic step is the one open question, so the page carries
+three readings of that step and of nothing else, behind =?variant=A|B|C=.
+
+It is throwaway. It reads no service, and it states which parts of the
+interaction no operation supports.
+
+* Detail
+
+** The question the screen answers
+
+A run produces a set of measures, and six tables hold that set: the
+=configuration_analytic= rows, their =configuration_analytic_parameter= rows, the
+type vocabulary, the configuration itself, the definitions bound to it, and the
+parameters each analytic accepts. The person has one question — *is this the set
+this report should produce?* — and the screen answers it one analytic at a time.
+
+Configuring an analytic inline in a list is too busy, and the settings of one
+analytic deserve room. A wizard opened from a row removes the settings from the
+rail, so the person cannot walk back to them. One step per analytic that is on
+keeps both: the settings are a step, and the rail shows the whole set in the
+configuration's own order.
+
+** The standard steps UI, and where it is copied from
+
+The steps UI is not invented here. The rail, its marks and the step foot are
+copied from =doc/prototypes/setup/first-run/prototype.css= and
+=doc/prototypes/setup/first-run/prototype.js=, which copy =JourneyPage.tsx= and
+the journey runtime:
+
+- =.journey=, a grid of =14rem 1fr= with the rail left, and its 820px collapse;
+- =.railnav ol= and =.railentry= with its =.done=, =.current= and =.ahead=
+  states;
+- =.railmark= with the same three states, a tick once a step is behind the
+  person and its number otherwise;
+- =.stepfoot= with =.ml-auto= for the primary action.
+
+The rail is drawn from one computed list, so the rail, the step numbering and the
+step foot cannot disagree, as the runtime requires. A step is data: an id, a
+title, a lead sentence, a body and a final flag
+([[file:../../knowledge/ui/ux_language.org][UX Language]], sections *The rail*
+and *A step's body*). Going back is refused at the first step and at a step that
+is final. The last step is final, so it draws no Back, and its rail entry carries
+a *final* tag so the rail says so too.
+
+** The rail shape
+
+| Position | Step | What it draws |
+|----------+------+---------------|
+| 1 | The switchboard | The fourteen analytic types, one row each: the on/off control, the =display_order=, a one-line statement of what the type produces, and the state the row is in. A type the configuration carries no row for says so and offers to add it. The rule strip. |
+| 2 to 1 + n | One per analytic that is on, in =display_order= | Titled with the analytic's name. What it is, how it is calculated, every parameter with a control chosen for its shape and a note on what it means and what a normal value is, the reach, and the control that offers to turn it off. An analytic with no parameter says so. |
+| last | What the analytics are now | The set as it now reads, the rows kept off, every parameter value, what a write would be, the definitions that read it, and the way back to the report. It is =final=. |
+
+The rail is computed from state. Turning an analytic on adds its step and
+renumbers the ones after it; turning one off removes it and renumbers them again.
+Nothing stores a step number. A configuration that carries all fourteen draws a
+rail of sixteen entries, so the column sticks to the top of the page and scrolls
+inside itself, the entries are denser, a divider opens the analytic run and
+another opens the final step, and a caption above the rail states its shape:
+"the switchboard, 6 analytics in display order, and what the analytics are now ·
+8 steps".
+
+The standard rail knows position only: done, current or ahead. It cannot say how
+many analytics a write would refuse, so the rule strip and the refused toggle
+carry that state instead.
+
+** Deep links over a rail that moves
+
+=?step=N= is numeric over the *current* rail, which is what makes it readable and
+also what makes it unstable: the number of a step moves whenever an analytic
+before it is turned on or off. So the page also accepts =?analytic=<code>=, which
+resolves to that analytic's step whatever its number, and it writes both into the
+URL as the person navigates. A reload therefore lands on the same step. An
+analytic that is off has no step, so that link lands on the switchboard with the
+row marked and the reason stated, rather than on a step that does not exist.
+
+Three more parameters open a state without a click: =?variant=A|B|C= chooses the
+reading of the analytic step, =?guide=N= opens the setting variant C is showing,
+=?pfe=without-simulation= opens the broken pair, and =?refuse=<code>= opens the
+refusal a switch draws. =?from=create-a-report|change-what-a-report-runs= decides
+where *Return to the report* goes, so the page returns to the screen that opened
+it.
+
+** The switch is the add, and off is active false
+
+- Turning a type on writes its =configuration_analytic= row at the next
+  =display_order= with the default value of every parameter, and gives it a step.
+  A row that exists and is off is turned back on with the settings it kept.
+- Turning one off *asks first*, in the row and on the analytic's own step.
+  Because the settings leave the rail with the step, the confirmation says so,
+  and it states the write: =active = false=. The row keeps its =display_order=
+  and its parameter rows, so a later reader can see the configuration used to
+  produce it.
+- **No control on the page deletes a row.** The switch is the only control that
+  removes something from the rail, and it removes the step, not the row.
+
+** pfe without simulation is a state, and the toggle is refused
+
+=pfe= reads a cube that =simulation= writes, so =pfe= on without =simulation=
+cannot work. The page draws that as a state:
+
+- the rule strip names the rule, states where it lives and marks the set as one
+  that cannot run, with the write that repairs it beside it;
+- both rows of the pair are marked, each with the half of the rule that applies
+  to it;
+- **the toggle is refused.** A switch that would leave =pfe= on without
+  =simulation= draws a refusal where it stands, with the rule and the repair, and
+  writes nothing. In the broken state the pair's switches are refused until the
+  pair is repaired, and the repair — *Turn simulation on* — is offered beside
+  them;
+- the final step **refuses to read the set back**. Reading it back would state a
+  configuration as complete that would fail in the run.
+
+The rule lives in the ACME seeder, in =generate_risk_config_data.py= at
+=check_exposure_needs_simulation=, and in no service: nothing validates it when a
+configuration is written. The page refuses what the server would accept, and it
+says that is what it is doing.
+
+Refusing the toggle is a decision with a cost, and it is the one place where this
+page is stricter than the prototype it replaces, which let =pfe= on and showed
+the break. A person who wants the broken pair cannot build it here, so it must
+arrive from elsewhere — the seeder, or another client — and the page still draws
+it. That is the trade: no state this screen can reach is a state that cannot run,
+and a broken set written elsewhere is still visible and still repairable.
+
+** Three readings of the analytic step
+
+=?variant=A|B|C= changes the per-analytic step and nothing else. The switchboard
+and the rail are identical across the three, so the comparison is of one screen.
+
+- *A, document.* The explanation as a short page, with the parameters in one
+  column below it, each with its control and its note.
+- *B, two columns.* Explanation and calculation left, settings and reach right,
+  so a person reads and sets at the same time.
+- *C, guided.* One parameter at a time with the explanation beside it, a list of
+  the settings left, and a summary at the end that states every value with a
+  control back to it. An analytic with no parameter goes straight to the summary.
+
+Variant C holds a cursor, and =?guide=N= is that cursor in the URL, so a reload
+lands on the same setting.
+
+** The final step reads the set back
+
+The last step states what the set is now, and it names the rows rather than
+counting them: each active analytic with its =display_order=, its name and its
+number of parameter rows; the rows kept off with their order; every parameter
+value with its position. Then it states what a write would be —
+=configuration_analytics.put_many= for the set and
+=configuration_analytic_parameters.put= for one setting — and the four definitions
+that read it. The table is read with
+=configuration_analytics.list_by_configuration_id= and
+=configuration_analytic_parameters.list_by_configuration_analytic_id=.
+
+It offers to return to the report, and the return goes to the prototype that
+opened the page. Nothing is written.
+
+** The deferred editors
+
+=simulation= and =pfe= each need a purpose-built editor: one for the cube, one
+for the shift and one for the time grid. The page draws those settings as plain
+fields and labels each one a *deferred editor* on the parameter itself, and it
+says so again on the analytic step. A plain field is not the design, and the page
+never presents it as one.
+
+** What the page refuses to invent
+
+No BFF route serves reporting, so the page reads nothing. No operation returns
+the value domain of a parameter, so a select is drawn only where the fixture
+knows the enumeration and a text field where it does not. No operation writes the
+portfolio scope or the run settings inside a =risk_report_config=, so the scope
+is read off the configuration and never offered as a choice
+(=reporting.v1.configurations.list= and
+=reporting.v1.configurations.list_by_configuration_type_code= name the
+configurations the party holds; none is created here). Nothing states what a run
+needs beyond the configuration types its report type requires. The subjects named
+are the reporting service's own, and no subject is invented for a gap.
+
+** What is fake
+
+Every value is a fixture: the party, the configuration, its scope, the four
+definitions bound to it, the analytic rows and every parameter value. Nothing
+reads a server and nothing is written. The page labels itself a fixture at the
+top, in the step captions and in the prototype's own bar.
+
+Two statements on it are not fixture, and the page keeps them apart from the
+mock: an analytic is turned off by setting =active= to false rather than by
+deleting the row, and =pfe= cannot run without =simulation=.
+
+** Where the code lives
+
+=doc/prototypes/reporting/manage-the-analytics/=. Three files, plain HTML, CSS
+and JavaScript, no framework, no modules, no fetch, and no build step. The rail
+is computed in =rail()=, and every navigation reads that one function.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+- *Which of the three readings is right.* That is the question the variants
+  exist to answer, and this note does not answer it.
+- *Whether a person should be able to create a configuration from here.* The
+  page offers the party's own configurations and creates none, because no
+  operation in this journey's set writes a configuration.
+- *What the rail should say about a step that is not fit to run.* The standard
+  rail marks position, not readiness, so a broken pair and a sound one look alike
+  on the rail itself. A build that wants the rail to carry that state needs a
+  primitive the runtime does not have.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis each prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the group these answer to.
+- [[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change what a report runs]] — the journey this prototype owns.
+- [[file:../../knowledge/journeys/reporting/journey_create_a_report.org][Create a report]] — the journey that binds the configuration whose set this screen changes.
+- [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.
+- [[file:../../knowledge/ui/ux_language.org][UX Language]] — the rail and the rules a step's body follows.

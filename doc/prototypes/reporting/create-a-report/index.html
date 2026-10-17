@@ -14,13 +14,15 @@
   Create a report, from
   doc/knowledge/journeys/reporting/journey_create_a_report.org:
   a tenant administrator or market-risk owner names a report, binds the five
-  configurations it reads, chooses the analytics it runs and their settings,
-  and reads back what was written.
+  configurations it reads, reads the analytics the bound run settings
+  configuration carries, and reads back what was written.
 
-  The shape is decided. The screen is eight steps on the standard steps UI, the
-  one the system bootstrap journey uses: the rail, its done/current/ahead marks
-  and the step foot are copied from doc/prototypes/setup/first-run/, which
-  copies JourneyPage.tsx.
+  The shape is decided. The screen is the standard steps UI, the one the system
+  bootstrap journey uses: the rail, its done/current/ahead marks and the step
+  foot are copied from doc/prototypes/setup/first-run/, which copies
+  JourneyPage.tsx.
+
+  Eight steps, and the rail is fixed:
 
     1  What it is                    the name, the description, the report type
                                      as a combo box over the type table,
@@ -33,16 +35,23 @@
                                        conventions, pricing_engines,
                                        todays_market, curve_configuration,
                                        risk_report_config.
-    7  What it runs                  the fourteen analytic types with active
-                                     toggles, and the add-analytic flow the change
-                                     journey carries: the list of types, then the
-                                     detail with what the analytic is and how it
-                                     is calculated and one control per parameter,
-                                     then the effect.
+    7  What it runs                  the analytics the bound configuration
+                                     carries, read only: the count that is on,
+                                     the list with their display_order, the rows
+                                     kept off, the rule strip when the pfe and
+                                     simulation pair is broken, and the link to
+                                     Manage the analytics.
     8  Review and save               every field value, the five bindings, the
-                                     analytics with their settings, then
+                                     analytics with their settings as the
+                                     configuration holds them, then
                                      report_definitions.put and the read-back. It
                                      is the final step, so it draws no Back.
+
+  Analytic management is not drawn here. doc/prototypes/reporting/
+  manage-the-analytics/ owns it: the switchboard, a step per analytic that is on,
+  every parameter with a control chosen for its shape, the refused pair, and the
+  read-back. Step 7 reads the set that screen leaves and links to it. No control
+  on this page edits an analytic or a parameter, and nothing deletes a row.
 
   Each of the five configuration steps carries the same four parts: what binding
   a configuration of that type means, where its data lives, the picker for the
@@ -51,11 +60,9 @@
   /refdata/conventions. The other four are stated as missing, never drawn as
   working links.
 
-  The three structural variants this page used to carry (?variant=A|B|C: one
-  form, a wizard, a checklist) are gone. The product owner chose the standard
-  steps UI, and the design note records why the variants were dropped. ?step=1..8
-  still lands on a step, and ?pfe=without-simulation still opens the draft with
-  the rule broken.
+  ?step=N is numeric over the eight steps. ?pfe=without-simulation opens the
+  draft with the rule broken, so the rule strip on step 7 can be read without
+  changing two rows by hand.
 
   The rail knows position only, as the runtime's own rail does: done, current,
   ahead. It does not know how many items a save would refuse, and it does not
@@ -63,9 +70,10 @@
 
   Nothing here reads a server, and nothing is written. The operations named are
   the ones the journey cites: report_definitions.put, report_configurations.put,
-  configuration_analytics.put_many, configuration_analytic_parameters.put,
   analytic_types.list, configurations.list_by_configuration_type_code,
-  report_type_configuration_types.list, and the read-back with
+  report_type_configuration_types.list, configuration_analytics.
+  list_by_configuration_id, configuration_analytic_parameters.
+  list_by_configuration_analytic_id, and the read-back with
   report_definitions.get. Three things are absent and the page says so: no
   operation writes the portfolio scope, no service check enforces the
   pfe-needs-simulation rule (the ACME seeder does, in

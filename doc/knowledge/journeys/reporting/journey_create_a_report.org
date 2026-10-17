@@ -2,7 +2,7 @@
 :ID: 7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6
 :END:
 #+title: User Journey: Create a report
-#+description: A tenant administrator or market-risk owner names a report, binds the configurations it reads, chooses the analytics it runs and their settings, saves it, reads back exactly what was written, and leaves it on demand or hands it to the schedule journey.
+#+description: A tenant administrator or market-risk owner names a report, binds the configurations it reads, reads the analytics the bound configuration carries, saves it, reads back exactly what was written, and leaves it on demand or hands it to the schedule journey. The analytics are set on the shared screen that manages them.
 #+type: user_journey
 #+level: cross
 #+filetags: :knowledge:user_journey:reporting:
@@ -10,7 +10,7 @@
 #+updated: 2026-10-17
 #+startup: inlineimages
 
-This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator or market-risk owner names a report, binds the configurations it reads, chooses the analytics it runs and their settings, scopes it to a portfolio, saves it, reads back exactly what was written, and leaves it on demand or hands it to the schedule journey.
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator or market-risk owner names a report, binds the configurations it reads, reads the analytics the bound configuration carries, saves it, reads back exactly what was written, and leaves it on demand or hands it to the schedule journey. The analytics themselves are set on the one screen that manages them, which this journey links.
 
 A user journey describes what one person is trying to do, before anything is
 built. It is a design document that outlives any sprint, so it names the
@@ -32,9 +32,13 @@ it cannot: nothing today answers "what does this report need in order to run"
 beyond the configuration types its report type requires.
 
 The journey is done when a definition exists that reads back as the person wrote
-it: a name, a report type, five bound configurations, the analytics they chose
-with their settings, and a portfolio scope. It has never run, and the front door
-already draws that state.
+it: a name, a report type, five bound configurations, the analytics the bound
+configuration carries with their settings, and a portfolio scope. It has never
+run, and the front door already draws that state.
+
+The analytics are not chosen here. They belong to the run settings configuration
+the person binds, they are set on the one screen that manages them, and this
+journey reads them and links there.
 
 * Actor and trigger
 
@@ -51,20 +55,34 @@ the reports its siblings already run. The person opens
 [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]], finds
 no row that answers the question, and presses Create.
 
-This journey writes a definition and the configuration it binds, and creates no
-run. Nothing in the application creates a report today: no BFF route serves
-reporting, and the definitions that exist were seeded. The screen this journey
-describes does not exist, and the operations below are the ones it would send.
+This journey writes a definition and the bindings it makes, and creates no run.
+The analytic rows and their settings belong to the configuration and are written
+on Manage the analytics, which this journey links. Nothing in the application
+creates a report today: no BFF route serves reporting, and the definitions that
+exist were seeded. The screen this journey describes does not exist, and the
+operations below are the ones it would send.
 
 * Steps
 
-The journey is eight steps on the standard steps UI, the one the system bootstrap
-journey uses. A step carries an id, a title for the rail, a lead sentence and a
-body, and the last one is final; the rail is drawn from the same list, so the
-rail and the steps cannot disagree
+The journey is the standard steps UI, the one the system bootstrap journey uses.
+A step carries an id, a title for the rail, a lead sentence and a body, and the
+last one is final; the rail is drawn from the same list, so the rail and the
+steps cannot disagree
 ([[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]]). Going back is
 refused at the first step, and at a final step
 ([[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], section *The rail*).
+
+The rail is fixed at eight steps: what it is, one step for each of the five
+configuration types it binds, the analytics the bound configuration carries, and
+the final review. The rail, the step numbering and the step foot are one list, so
+all three agree at every moment.
+
+The rail used to be computed from what the report runs: seven fixed steps, then
+one step for every analytic that was on in =display_order=, then the review. Those
+analytic steps are gone. Analytic management belongs to one screen,
+[[file:../../prototypes/reporting/manage-the-analytics/][Manage the analytics]],
+and *What it runs* reads the set and links there. A rail that renumbers itself for
+a write made on another screen told the person nothing they could act on here.
 
 The five configuration types get one step each, in the order
 =report_type_configuration_types= states and the seeder writes: =conventions=,
@@ -237,59 +255,71 @@ and what the binding reaches and what it does not.
    the previous step bound, not of the definition. A
    =configuration_analytic= row hangs off that configuration, so every
    definition bound to it runs the same set, and a set that must differ belongs
-   to a configuration of its own. The person turns analytics on. The screen reads the
-   vocabulary with =reporting.v1.analytic_types.list= and offers these fourteen
-   analytic types, which are the whole picker: =npv=, =sensitivity=, =cashflow=,
-   =curves=, =simulation=, =saccr=, =parametricVar=, =portfolioDetails=,
-   =creditcurves=, =pfe=, =calibration=, =pnlExplain=,
-   =historicalSimulationVar= and =xva=. Each choice is a
-   =configuration_analytic= row carrying =analytic_type_code=, =display_order=
-   and =active=, written with =reporting.v1.configuration_analytics.put= or
-   =put_many=. Each analytic's settings are
-   =configuration_analytic_parameter= rows of =parameter_name= and =value=, in
-   positions, written with
-   =reporting.v1.configuration_analytic_parameters.put=. An analytic is turned
-   off by setting =active= false, never by deleting its row, so the settings stay
-   readable for the person who turns it back on.
+   to a configuration of its own. The step reads the vocabulary with
+   =reporting.v1.analytic_types.list= and the set with
+   =reporting.v1.configuration_analytics.list_by_configuration_id=, and it names
+   these fourteen analytic types, which are the whole vocabulary: =npv=,
+   =sensitivity=, =cashflow=, =curves=, =simulation=, =saccr=,
+   =parametricVar=, =portfolioDetails=, =creditcurves=, =pfe=, =calibration=,
+   =pnlExplain=, =historicalSimulationVar= and =xva=.
 
-   Adding an analytic that the configuration carries no row for is a flow of its
-   own, the one [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report
-   runs]] carries: the list of the fourteen types, then the detail that states
-   what the analytic is and how it is calculated with every parameter given a
-   control chosen for its shape and a note on what it means, then the effect of
-   turning it on. The flow writes one analytic row and its parameter rows.
+   *The step is a reading and a link, not a second implementation.* It shows the
+   set the configuration currently has: the count that is on, the list with each
+   analytic's =display_order=, a one-line statement of what each produces, and
+   the rows that are on the configuration and off, kept apart from the types that
+   carry no row at all. It also shows the incompatibility state: when =pfe= is on
+   and =simulation= is off, the rule strip states that the set cannot run, both
+   rows are marked, and the save refuses the pair.
+
+   *The analytics are set on Manage the analytics.* That screen owns the whole
+   interaction: the switchboard of every type with the on/off control, the
+   =display_order= and a one-line summary; a step for each analytic that is on,
+   titled with its name, carrying what the analytic is, how it is calculated, and
+   every parameter with a control chosen for the shape of its value, a note on
+   what the parameter means and what a normal value looks like; and a final step
+   that reads the set back. An analytic that takes no parameter says so there. The
+   step links to it, and a build that omits the link would be asking a person to
+   leave the wizard with no way to find the screen that changes the set.
+
+   Turn one off and the write is =active= false, never a deletion: the row keeps
+   its =display_order= and its =configuration_analytic_parameter= rows and reads as
+   off, so a later reader can see the report used to produce it. *No control on
+   either screen deletes a row*. The shared screen asks first before it turns one
+   off, because the parameter values leave its rail with the step.
 
    =pfe= reads a cube that =simulation= writes, so a report that enables =pfe=
-   without =simulation= cannot work. The flow refuses to turn =pfe= on and states
-   the rule where the two analytics sit. The statement is honest about where the
-   rule lives: it is enforced by the ACME seeder, in
+   without =simulation= cannot work. *This stays a state, not a blocked click*:
+   the rule strip on *What it runs* marks both the =pfe= row and the
+   =simulation= row, the save refuses the pair, and the shared screen refuses the
+   toggle and refuses to read such a set back. The statement is honest about where
+   the rule lives: it is enforced by the ACME seeder, in
    =generate_risk_config_data.py=, function
    =check_exposure_needs_simulation=, and *nothing in the reporting service
    validates it when a definition is written*. A caller that does not use this
    screen can write the combination today, and the run fails later.
 
    The analytic rows hang off the configuration, and the configuration is
-   shared, so the screen states which other definitions bind the same
-   configuration and would run the changed analytic set from their next run. This
-   is the one place in the journey where a person's local choice reaches rows
-   they did not open, and the screen says so rather than hiding it behind a save
-   button.
+   shared, so the step states which other definitions bind the same configuration
+   and would run the changed analytic set from their next run. This is the one
+   place in the journey where a person's local choice reaches rows they did not
+   open, and the step says so rather than leaving it in a note.
 
-8. *Review and save.* The final step states every value before the write: the
+8. [@8] *Review and save.* The final step states every value before the write: the
    name, the description, the report type, the official flag, the five bindings,
-   the analytics with their =active= and =display_order=, the parameter values,
-   and the portfolio scope. On confirmation the screen sends
+   the analytics with their =active= and =display_order= as the bound
+   configuration holds them, the parameter values, and the portfolio scope. The
+   analytics and their settings are read here and written on the shared screen;
+   this journey writes neither. On confirmation the screen sends
    =reporting.v1.report_definitions.put= for the definition, after the binding
-   and analytic writes of the steps before it. The definition is written on
+   writes of the steps before it. The definition is written on
    demand: =schedule_expression= is empty and =scheduler_job_id= is null. Its
    =fsm_state_id= is null until first activation, =run_grant_id= is null until the
    grant is created at admission, =pre_processing= is =execute=,
    =prepared_input_key= is empty, =post_processing= is =execute=, and
    =concurrency_policy= is the policy the person chose. Then the screen reads the
    definition back with =reporting.v1.report_definitions.get= and shows the stored
-   row rather than the values the person typed, and lists the party's definitions
-   with =reporting.v1.report_definitions.list= so the new row is visible among its
-   siblings. The definition is bitemporal, so an edit writes a new version and a
+   row rather than the values the person typed, so the new row reads beside the
+   party's other definitions. The definition is bitemporal, so an edit writes a new version and a
    past run keeps the version it ran under.
 
    It has never run. There is no =report_instance= for it, so the front door
@@ -313,54 +343,76 @@ and what the binding reaches and what it does not.
 
 * Screens and wireframes
 
-One screen, eight steps, on the standard steps UI: the rail the system bootstrap
-journey draws, with the step list as its only source. The steps are *What it is*,
-then one step for each configuration type (*The conventions it binds*, *The
-pricing engines it binds*, *The market data it binds*, *The curve configuration
-it binds*, *The run settings it binds*), then *What it runs*, then *Review and
-save*. The configuration steps follow the order
-=report_type_configuration_types= states and the seeder writes, and the rail is
-drawn from the same list, so the rail cannot disagree with it. The rail marks
-each step done, current or ahead, and it knows position only: it cannot say how
-many items a save would refuse. The step floor carries Back unless going back is
+One screen on the standard steps UI: the rail the system bootstrap journey draws,
+with the step list as its only source. The rail is fixed at eight steps, and it
+does not move while the person works: *What it is*, *The conventions it binds*,
+*The pricing engines it binds*, *The market data it binds*, *The curve
+configuration it binds*, *The run settings it binds*, *What it runs*, then
+*Review and save*. The configuration steps follow the order
+=report_type_configuration_types= states and the seeder writes. The rail marks
+each entry done, current or ahead, and it knows position only: it cannot say how
+many items a save would refuse. The step foot carries Back unless going back is
 refused, which it is at the first step and at a final step
 ([[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]]); the review is
 final, so it draws no Back at all.
 
-The screen writes four kinds of row and reads each one back: the definition, the
-bindings, the analytic rows, and the parameter rows. Two of its answers are
-absences it must state rather than draw round. The first is the checklist: the
-screen can name the configuration types the report type requires, and it cannot
-name what else a run needs. The second is the analytic rule: the screen refuses
-=pfe= without =simulation= because the seeder enforces that pair, and no service
-check exists to point at. A third is where the configuration data lives: only
-conventions has a screen, and the other four are stated as missing. Each
-configuration step therefore carries its own explanation, its own picker, its
-own answer about the screen, and what the binding reaches.
+A second screen holds the analytic interaction:
+[[file:../../prototypes/reporting/manage-the-analytics/][Manage the analytics]].
+It is where the set is built, where every parameter is set, and where the pair
+=pfe= and =simulation= is refused. *What it runs* reads the set that screen
+leaves and links to it.
 
-The prototype that argues this screen offered three structural variants of it, a
-single form, a wizard and a checklist. The product owner chose the standard steps
-UI, so the variants are gone and the screen commits to the eight steps above.
+The screen writes two kinds of row and reads each one back: the definition and
+its bindings. The analytic rows and the parameter rows are read and named, and
+written on the shared screen. Two of its answers are absences it must state
+rather than draw round. The first is the checklist: the screen can name the
+configuration types the report type requires, and it cannot name what else a run
+needs. The second is the analytic rule: the rule strip on *What it runs*, the
+marks on both rows and the refused save exist because the seeder enforces that
+pair, and no service check exists to point at. A third is where the configuration
+data lives: only conventions has a screen, and the other four are stated as
+missing. Each configuration step therefore carries its own explanation, its own
+picker, its own answer about the screen, and what the binding reaches.
 
-#+caption: Create a report, eight steps on the standard rail: what it is, one step per configuration type (what binding that configuration means, where its data lives, the picker, and what the binding reaches), what it runs (the analytics, their settings and the add-analytic flow), and review and save, which states every value written and reads the row back.
+=?step=N= is numeric over the eight steps, and it is stable, because the rail does
+not move. =?pfe=without-simulation= opens the draft with the rule broken, so the
+rule strip on *What it runs* can be read without changing two rows by hand.
+Nothing here carries an analytic's step number, because an analytic has no step on
+this screen.
+
+#+caption: Create a report on the standard rail: what it is, one step for each of the five configurations it binds, the analytics the bound configuration carries, and review and save. The analytics step reads the set and links to the screen that manages it.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_create_a_report.png]]
 
 * Prototype
 
-The [[file:../../prototypes/reporting/create-a-report/][prototype]] draws this journey on the standard steps UI, and [[file:../../prototypes/reporting/create-a-report.org][its design note]] says what it follows and what is fake. It belongs at
+The [[file:../../prototypes/reporting/create-a-report/][prototype]] draws this
+journey on the standard steps UI, and
+[[file:../../prototypes/reporting/create-a-report.org][its design note]] says what
+it follows and what is fake. It belongs at
 =doc/prototypes/reporting/create-a-report/=.
 
-The prototype must draw the eight steps on the rail the system bootstrap journey
-uses, with done, current and ahead marks and no Back on the final step; one step
-for each of the five configuration types, each with what binding a configuration
-of that type means, where its data lives, the picker, and what the binding
-reaches; the fourteen analytic types as a picker with =active= toggles; the refusal of
-=pfe= without =simulation=, with the rule stated and the seeder named as where it
-lives; the scope read off the bound configuration, since no operation writes it;
-and a review that names the field values rather than counting them. It must label every drawn value a fixture, because no
-operation here creates a report and no service check exists for the analytic
-rule it refuses.
+The analytics are not drawn there. They are set on
+[[file:../../prototypes/reporting/manage-the-analytics/][Manage the
+analytics]], which the journey links and which owns the whole analytic
+interaction. Its [[file:../../prototypes/reporting/manage-the-analytics.org][design
+note]] says what it argues.
+
+The prototype must draw the rail the system bootstrap journey uses, with done,
+current and ahead marks and no Back on the final step, and it must be eight
+steps: what it is, one step for each of the five configuration types, the
+analytics the bound configuration carries, and the final review, all numbered from
+one list. It must draw one step for each of the five configuration types, each
+with what binding a configuration of that type means, where its data lives, the
+picker, and what the binding reaches. *What it runs* must be the read-only
+summary of the set the bound configuration carries: the count that is on, the list
+with their =display_order=, the rows kept off, the broken =pfe=/=simulation= pair
+as a visible state with the rule stated and the seeder named as where it lives,
+and the link to the shared screen. It must draw the scope read off the bound
+configuration, since no operation writes it, and a review that names the field
+values rather than counting them. It must label every drawn value a fixture,
+because no operation here creates a report and no service check exists for the
+analytic rule it refuses.
 
 * Entities composed
 
@@ -380,9 +432,13 @@ rule it refuses.
 
 The definition is the row the journey creates and the other rows are what it
 reaches: a binding names a configuration, the configuration owns the analytics,
-and each analytic owns its parameters. That chain is why *What it runs* says whose rows the analytics are. A person
+and each analytic owns its parameters. That chain is why *What it runs* says whose
+rows the analytics are, and why it links to the screen that changes them. A person
 who changes the analytic set of a shared configuration changes what every
-definition binding it runs, and no copy stands between them.
+definition binding it runs, and no copy stands between them. It is also why the
+set on *What it runs* is a reading of
+=configuration_analytic.display_order= on the configuration the person bound, so
+the same report set up against another configuration reads a different set.
 
 The scope is two levels down that chain: =risk_report_config= holds it in
 =ores_reporting_risk_report_config_portfolios_tbl= and
@@ -404,44 +460,41 @@ row stays readable.
 | Every configuration step | The configurations of one type the party holds | =reporting.v1.configurations.list_by_configuration_type_code= | exists |
 | Every configuration step | Every configuration the party holds | =reporting.v1.configurations.list= | exists |
 | Every configuration step | Bind one configuration in its slot | =reporting.v1.report_configurations.put= | exists |
-| Review and save | Read the definition's bindings back | =reporting.v1.report_configurations.list= | exists |
-| What it runs | The analytic vocabulary the picker offers | =reporting.v1.analytic_types.list= | exists |
-| What it runs | Turn one analytic on or off, at an order | =reporting.v1.configuration_analytics.put= | exists |
-| What it runs | Write the whole analytic set at once | =reporting.v1.configuration_analytics.put_many= | exists |
+| What it runs | The analytic vocabulary the summary names | =reporting.v1.analytic_types.list= | exists |
 | What it runs | Read the analytics of the configuration | =reporting.v1.configuration_analytics.list_by_configuration_id= | exists |
-| What it runs | Write one setting of one analytic | =reporting.v1.configuration_analytic_parameters.put= | exists |
-| What it runs | Read the settings of one analytic | =reporting.v1.configuration_analytic_parameters.list_by_configuration_analytic_id= | exists |
+| What it runs | Read the settings of the analytics that are on | =reporting.v1.configuration_analytic_parameters.list_by_configuration_analytic_id= | exists |
+| Manage the analytics, the switchboard and each analytic step | Write the whole analytic set at once | =reporting.v1.configuration_analytics.put_many= | exists |
+| Manage the analytics, each analytic step | Write one setting of one analytic | =reporting.v1.configuration_analytic_parameters.put= | exists |
 | The market data it binds | Bind a market role to a today's market configuration | =reporting.v1.configuration_market_bindings.put= | exists |
-| The market data it binds | Read the market roles a configuration binds | =reporting.v1.configuration_market_bindings.list_by_configuration_id= | exists |
-| Every configuration step | Create a named configuration the party holds | =reporting.v1.configurations.put= | exists |
 | Review and save | Write the definition | =reporting.v1.report_definitions.put= | exists |
-| Review and save | Write several definitions at once | =reporting.v1.report_definitions.put_many= | exists |
 | Review and save | Read the definition back | =reporting.v1.report_definitions.get= | exists |
-| Review and save | List the party's definitions | =reporting.v1.report_definitions.list= | exists |
 | The run settings it binds | Choose the portfolio the report reads | (no operation writes the portfolio scope) | missing |
 | The run settings it binds | Read what a portfolio scope is | (no operation reads =risk_report_config='s scope) | missing |
-| What it runs | Refuse =pfe= without =simulation= | (no service check; the rule lives in the ACME seeder) | missing |
+| What it runs, the shared screen, and the save | Refuse =pfe= without =simulation= | (no service check; the rule lives in the ACME seeder) | missing |
 | What it is | Ask what else a run requires, beyond the configuration types | (no operation answers it) | missing |
 | (no step) | Create a report from the browser | (no BFF route) | missing |
 
-The writes are five: a definition, its bindings, its analytic rows, their
-parameters, and a configuration when the party holds none of a type.
-=reporting.v1.report_definitions.put_many= exists for a caller that creates
-several definitions at once; this journey writes one, and a person creating the
-next report runs it again. The
-definition write is the only one that creates the row the front door then lists;
-the others attach what the definition reads. =configuration_analytics.put_many=
-exists for the case the screen builds a set and writes it once, and =put= for
-the case a person flips one toggle.
+This journey writes two things here: a definition and its bindings. A person
+creating the next report runs the same writes again. The definition write is the
+only one that creates the row the front door then lists; the binding writes
+attach what the definition reads. The analytic rows and their parameters are
+written on Manage the analytics, and *What it runs* reads them.
+=configuration_analytics.put_many= is the one write of the analytic set there:
+turning a type on writes its row with the default value of each parameter, and
+turning one off writes =active= false and nothing else.
+
+Nothing in this journey's set creates a configuration. The person chooses among
+the ones the party already holds, which is why a party that holds none of a
+configuration type cannot finish this journey, and why *What is missing* records
+that gap rather than the screen drawing a Create button.
 
 Two of these writes reach rows the person did not open. A binding is shared with
 every definition that binds the same configuration, and an analytic row belongs
-to the configuration rather than to the definition, so a screen that edits the
-analytic set of a shared configuration changes the next run of every definition
-binding it. The journey states this and no operation warns about it. Each
-configuration step states how many definitions already bind the configuration
-the person picks, and *What it runs* repeats the count for the run settings it
-came from.
+to the configuration rather than to the definition, so the shared screen changes
+the next run of every definition binding it. The journey states this and no
+operation warns about it. Each configuration step states how many definitions
+already bind the configuration the person picks, and *What it runs* repeats the
+count for the run settings the analytics came from.
 
 No BFF route serves this screen. The prototype adds one, for example
 =POST /api/reporting/reports= for the definition and its bindings,
@@ -458,10 +511,10 @@ and checks a report-definition write code, which does not exist yet.
    and it is a guard over the seed's own data, not a constraint on the database
    and not a check in the reporting service. A definition written by any other
    caller can enable =pfe= without =simulation=, and nothing refuses it. The run
-   then fails, later, on the grid. The screen this journey describes can refuse
-   the pair, and it cannot make the refusal true for callers that do not use it.
-   A report also needs at least one analytic: a run with none produces nothing,
-   and nothing states that either.
+   then fails, later, on the grid. The two screens this journey describes can
+   refuse the pair, and they cannot make the refusal true for callers that do not
+   use them. A report also needs at least one analytic: a run with none produces
+   nothing, and nothing states that either.
 2. *No operation answers what a report needs in order to run.*
    =reporting.v1.report_type_configuration_types.list= names the configuration
    types a report type cannot start without, and that is all. Nothing names the
@@ -481,9 +534,11 @@ and checks a report-definition write code, which does not exist yet.
    are columns of a row this journey cannot write. When the party holds no
    configuration with the settings a new report needs, the journey stops.
 5. *The refusal to save =pfe= without =simulation= is the screen's own rule.*
-   The prototype draws it as a refusal. A build would have to keep that rule in
-   the screen, since no service check exists, and a second client would have to
-   keep it again.
+   Manage the analytics draws it as a refusal, and this journey's save refuses the
+   pair too. A build would have to keep that rule in both screens, since no service
+   check exists, and a second client would have to keep it again. Consolidating
+   the analytic interaction into one prototype removes the third copy, and it does
+   not remove the second: the save is still this journey's.
 6. *No BFF route serves reporting, and nothing in the application creates a
    report today.* Every definition that exists was seeded. This journey's screen,
    its review, its read-back and its refusals are new, and it has no row in any
@@ -493,6 +548,34 @@ and checks a report-definition write code, which does not exist yet.
    the right to create a definition or to change a shared configuration's
    analytics, and a person who may write one and not the other cannot be told
    apart. The tenant administrator holds =*= and reaches everything.
+8. *The analytic set has no draft behind it, and it is written from another
+    screen.* Turning an analytic on writes its =configuration_analytic= row on the
+    shared configuration at once, and a parameter typed on its step writes a
+    =configuration_analytic_parameter= row at once, because those are the
+    operations the journey's set holds. No operation stages an analytic set for
+    one definition, and no operation undoes the writes of a screen that was given
+    up. A person creating a report therefore changes rows other definitions read
+    before the definition is saved, and this journey cannot stage that change or
+    take it back.
+9. *This screen cannot tell whether the analytics were changed, or when.* The
+    link to the shared screen is a link: it carries no state and reports nothing
+    on return. A person who leaves the wizard, changes the set, and comes back sees
+    the new set on *What it runs*, and the review states it, but nothing says
+    whether that screen was opened at all, by whom, or how long ago. The same is
+    true of a set another person changed while this one was working.
+10. *No operation orders the summary, and =display_order= is not an identity.*
+    =configuration_analytic.display_order= orders the list on *What it runs* and
+    the steps on the shared screen, and turning one analytic off leaves the order
+    of the others alone. No route, link or operation in the application carries an
+    analytic's position: nothing outside the shared screen can point at "step 9"
+    and still be right after the next change. The shared screen offers
+    =?analytic=<code>= for that reason, and this journey offers nothing of the
+    kind.
+11. *The rail cannot say that the set it reads is not fit to run.* The runtime's
+    rail marks position only: done, current or ahead. A report whose bound
+    configuration cannot run looks exactly like a report whose configuration can,
+    so the state is carried by the rule strip on *What it runs*, by the marks on
+    two rows and by the refused save, and nowhere on the rail itself.
 
 * Related journeys
 
@@ -500,6 +583,7 @@ and checks a report-definition write code, which does not exist yet.
 - [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] — where a person goes when the definition is to run on a recurrence rather than on demand
 - [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run a person starts once the definition exists, and the place a missing input surfaces
 - [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — where a report created with a pair that cannot work surfaces its failure
+- [[file:../../prototypes/reporting/manage-the-analytics.org][Manage the analytics]] — the shared screen that owns the analytic interaction this journey reads and links
 - [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] — the runs a definition produces once it is used
 
 * Related knowledge
@@ -517,3 +601,4 @@ and checks a report-definition write code, which does not exist yet.
 - [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
 - [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows
 - [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — where the prototype that answers this journey is inventoried
+- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — the journey that owns the shared analytics screen

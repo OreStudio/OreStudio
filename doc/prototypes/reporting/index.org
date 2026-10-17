@@ -15,10 +15,11 @@ The reports a party runs, what each produced, what went wrong, and when the next
 one starts. Seven journeys describe that work, and there is no reporting surface
 in the application at all today, so nothing here has prior art to copy.
 
-9 prototypes answer to this group, one per journey. Each is a static page under
-=doc/prototypes/=, opens with no build and no session, and reads mock data only.
-The table below opens each one and says what it argues. Where a prototype carries
-a Gemini review, the last column opens it.
+10 prototypes answer to this group: one per journey, and one that two of them
+hand the analytics to. Each is a static page under =doc/prototypes/=, opens with
+no build and no session, and reads mock data only. The table below opens each one
+and says what it argues. Where a prototype carries a Gemini review, the last
+column opens it.
 
 [[file:../index.org][Prototypes]] is the top page and the only inventory.
 
@@ -62,8 +63,9 @@ answers can be compared.
 | [[file:find-out-why-a-run-went-wrong.org][Find out why a run went wrong]] | The sharpest question of them: are errors a place you go, a panel beside the run, or a ledger across runs. It renders twenty real error rows, including one trade failing in two analytics with the same message. | [[file:find-out-why-a-run-went-wrong/][prototype]] | none |
 | [[file:choose-when-a-report-runs.org][Choose when a report runs]] | Where scheduling lives: on the report, in a schedule list, or on a calendar. It keeps run now, pause, play and unschedule apart, and states that the schedule has no time zone, that no scheduler read exists for this screen, and that pause and play have no operation. | [[file:choose-when-a-report-runs/][prototype]] | none |
 | [[file:look-back-over-a-reports-history.org][Look back over a report's history]] | The runs of one report newest first, each with its timestamp, the newest marked latest, the last five fire times, and a notice when the run being read stops being the newest. | [[file:look-back-over-a-reports-history/][prototype]] | none |
-| [[file:create-a-report.org][Create a report]] | Creating a report as eight steps on the standard steps UI: what it is, one step for each of the five configurations it binds (what binding that configuration means, where its data lives, the picker, and the one screen that holds it), what it runs (the fourteen analytics, the add-analytic flow, and the refusal when pfe is enabled without simulation), and a final review that states every value, saves, and reads the row back. | [[file:create-a-report/][prototype]] | none |
-| [[file:change-what-a-report-runs.org][Change what a report runs]] | A wizard over three steps: the definition and the configurations it binds, each linking to the screen that holds its data, then the switchboard of every analytic type, then the review. Adding an analytic is its own mini wizard that explains the analytic, how it is calculated, and every parameter with a control and a note. Incompatibility is a visible state, so pfe without simulation is marked and refused. | [[file:change-what-a-report-runs/][prototype]] | none |
+| [[file:create-a-report.org][Create a report]] | Creating a report on the standard steps UI: seven fixed steps (what it is, one step for each of the five configurations it binds, and the analytics that configuration carries), then a final review that states every value and reads the row back. Step 7 is the entry point to the analytics and not a second implementation of them: it reads the set the bound configuration holds, with the count that is on, the display order, the rows kept off and the incompatibility state, and it hands the work to Manage the analytics. | [[file:create-a-report/][prototype]] | none |
+| [[file:change-what-a-report-runs.org][Change what a report runs]] | A wizard over three panels: the definition and the configurations it binds, each linking to the screen that holds its data, then the analytics of the bound configuration as a read-only summary, then what a change to that set reaches. It draws no analytic control: the switchboard and the add-analytic flow are gone, and step 2 hands the analytics to Manage the analytics and states what the change reaches. Incompatibility is a visible state, so pfe without simulation is marked and the rule is named. | [[file:change-what-a-report-runs/][prototype]] | none |
+| [[file:manage-the-analytics.org][Manage the analytics]] | The one prototype that owns the analytic interaction of a run settings configuration: a switchboard of the fourteen types with the on/off control, the =display_order= and a one-line summary, a rail step for each analytic that is on in =display_order=, and a final step that reads the set back. Turning one off asks first and sets =active= false rather than deleting the row. pfe without simulation is a state with both rows marked, the refused toggle and a final step that refuses to read the set back. Three readings of the per-analytic step behind =?variant=A|B|C=: a document, two columns, and a guided walk one parameter at a time. | [[file:manage-the-analytics/][prototype]] | none |
 
 * What none of them settle
 
@@ -71,6 +73,12 @@ Whether the seven journeys become one area, one screen, or two. That is the
 decision this set exists to inform, and it is taken after the review rather than
 here. Each prototype argues one journey; the area they share is drawn only far
 enough to judge the journey inside it.
+
+One thing is settled: analytic management has one screen. Create a report and
+Change what a report runs used to draw the same switchboard, the same parameters
+and the same incompatibility state, in two vocabularies for the same three
+states — on, off, and a type with no row. Both now read the set and link to
+Manage the analytics, which owns it.
 
 * Adding a prototype
 

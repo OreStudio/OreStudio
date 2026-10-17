@@ -134,7 +134,9 @@ No BFF route serves a reporting screen, and nothing in the web application
 shows a report today. Each journey names the route it needs in *What is
 missing*, and each carries a wireframe that is the design intent for the
 prototype that will draw it. The prototypes belong under
-=doc/prototypes/reporting/=, one directory per journey.
+=doc/prototypes/reporting/=, one directory per journey, except where two journeys
+share a screen: analytic management is one prototype that both *Create a report*
+and *Change what a report runs* link to, so the interaction is written once.
 
 * Related
 

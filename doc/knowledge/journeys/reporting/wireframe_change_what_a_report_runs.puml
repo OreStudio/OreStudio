@@ -48,85 +48,33 @@ salt
   this one, Board Risk Dashboard, Group DV01 by book, Treasury Sensitivity.
   Everything steps 2 and 3 change reaches all four.
   --
-  <b>STEP 2 - THE SWITCHBOARD: EVERY ANALYTIC TYPE, ONE ROW EACH</b>
+  <b>STEP 2 - THE ANALYTICS OF THE BOUND CONFIGURATION</b>
   --
   {#
-    Analytic | On | Order | Parameters
-    npv | Y | 1 | discount_curve, include_cashflows
-    sensitivity | Y | 2 | shift_size = 0.0001, shift_type = Absolute
-    cashflow | N | 3 | bucket, include_fixings
-    curves | no row | - | curve_set, build_on_the_fly
-    portfolioDetails | Y | 4 | grouping, include_empty_books
-    simulation | N | 5 | number_of_paths, seed, time_grid
-    pfe | Y | 6 | horizon = 10, quantile = 0.95, exposure_cube
-    saccr | N | 7 | reporting_currency, include_collateral
-    parametricVar | no row | - | confidence, horizon_days
-    creditcurves | no row | - | hazard_rate_source, recovery_rate
-    calibration | N | 8 | model, max_iterations, tolerance
-    pnlExplain | no row | - | decomposition, threshold
-    historicalSimulationVar | no row | - | confidence, lookback_days
-    xva | no row | - | base_currency, methodology, include_cva
+    on | display_order | analytic
+    3  | 1 | npv
+    3  | 5 | simulation
+    1  | 6 | pfe
   }
-  The parameters are summarised here. The controls live in the add-analytic flow.
-  A type with no row has no switch: adding it is the flow, which writes the row.
-  A row that is off stays on the configuration and reads as off. An analytic is
-  turned off by setting active to false, never by deleting the row, so the
-  history shows the report used to produce it.
-  No control on this panel removes a row.
-  {
-    [ Add analytic ] - opens the add-analytic flow
-  }
+  The step reads the set and states the ownership: the rows hang off the run
+  settings configuration the previous step bound, so every definition bound to
+  it runs the same set. Two ways out are offered, and neither writes here:
+  --
+  <b>SET THE ANALYTICS - A SHARED SCREEN</b>
+  --
+  The switchboard, one step per analytic that is on, the parameters and the
+  rule between analytics belong to their own prototype,
+  doc/prototypes/reporting/manage-the-analytics/, which this journey links to.
+  Both this journey and Create a report use it, so the interaction is drawn
+  once rather than twice.
   --
   <b>THE RULE BETWEEN ANALYTICS, SHOWN AS A STATE</b>
   --
-  <b>THIS SET CANNOT RUN: pfe is on and simulation is off.</b> Both rows above are marked.
-  {
-    [ simulation ] <color:red>OFF, staged - pfe is on, turning this off breaks it</color>
-    [ pfe ] <color:red>ON, staged - needs simulation, cannot run</color>
-  }
-  pfe reads a cube that simulation writes. The rule lives in the ACME seeder, in
-  generate_risk_config_data.py, check_exposure_needs_simulation, and in no service:
-  the write would be accepted and the run would fail later.
-  The screen refuses it itself and says that is what it is doing.
+  <b>THIS SET CANNOT RUN: pfe is on and simulation is off.</b> The shared screen
+  marks both rows and refuses the pair. The rule lives in the ACME seeder at
+  check_exposure_needs_simulation, and no service validates it, so the screen
+  holds the refusal that the platform does not.
   --
-  <b>THE ADD-ANALYTIC FLOW - SCREEN 1: THE LIST</b>
-  --
-  {#
-    Analytic | What it produces | State
-    npv | one present value per trade | on
-    sensitivity | the change per market factor | on
-    cashflow | cashflow rows, bucketed | off
-    curves | the built curves and pillars | no row
-    simulation | simulated paths and the cube | off, staged
-    saccr | standardised credit exposure | off
-    parametricVar | one value at risk figure | no row
-    portfolioDetails | trades and notional per book | on
-    creditcurves | survival probability per name | no row
-    pfe | exposure profile and one figure | on, staged
-    calibration | fitted parameters and fit error | off
-    pnlExplain | yesterday's P&L split by factor | no row
-    historicalSimulationVar | a value at risk from history | no row
-    xva | CVA, DVA and funding cost | no row
-  }
-  [ Choose ] and nothing is written.
-  --
-  <b>THE ADD-ANALYTIC FLOW - SCREEN 2: THE DETAIL, READ THREE WAYS</b>
-  --
-  <b>A document</b>   a short readable page, then every parameter in one column
-  <b>B two columns</b> explanation and calculation left, settings and effect right
-  <b>C guided</b>      one parameter at a time, the explanation beside it, a summary last
-  {#
-    The analytic | pfe is how large the book could become against a counterparty
-    How calculated | reads the cube simulation writes, takes a quantile by date
-  }
-  {#
-    Parameter | Control | Meaning and a normal value
-    horizon | number field | days forward; normal 10
-    quantile | number field | confidence read at; normal 0.95
-    exposure_cube | text field, DEFERRED | the cube it reads; the cube simulation wrote
-  }
-  The control follows the parameter's shape: number field for a count, select for
-  an enumeration, toggle for a boolean, text field for a name.
   <b>DEFERRED:</b> simulation and pfe need purpose-built editors for the cube, the
   shift and the time grid. They are drawn as plain fields here, and the page says
   so on the parameter. A plain field is not the design.

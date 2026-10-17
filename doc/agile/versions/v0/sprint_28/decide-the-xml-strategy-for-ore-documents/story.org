@@ -48,6 +48,13 @@ the work that follows is broken into tasks.
   the document it covers.
 - The follow-on work is expressed as tasks with sizes, or the route is
   declined with the reason recorded.
+- Numeric accuracy is stated as an invariant, not a hope: money is a decimal
+  taken from the document's digits, continuous quantities stay binary, and the
+  writer emits a form that reads back to the same value.
+- Round trip is defined as the values surviving and the output validating
+  against =input.xsd=, not as the document being reproduced.
+- All twenty root elements in the corpus are covered, the eleven with a mapper
+  first and the nine without afterwards.
 - Every XML document in the repository parses with the new scanner, and the
   check that proves it fails the build when one does not.
 - The write direction is specified, including the one place where shortest
@@ -67,6 +74,9 @@ the work that follows is broken into tasks.
 | [[id:A9C63FEC-D64C-438A-994D-C9F0753F0EAC][Migrate the market and configuration documents]] | BACKLOG | | | Curve configuration, today's market, pricing engines, stress testing and the ORE run document. |
 | [[id:5EBC0FAA-6541-420E-B174-E6DA738316E2][Remove xsdcpp]] | BACKLOG | | | Delete the generated domain, the sibling-checkout wiring, the two post-regeneration patches and the knowledge page. Last, because nothing may depend on the generated binding by then. |
 | [[id:5C0C929E-7D90-4954-9F46-5E28E69A1484][Stop formatting a log line per imported record]] | BACKLOG | | | The import path formats a full JSON record for every mapped entity, and it is the largest single cost in the current importer. Guard the trace lines so an off-level log costs nothing. |
+| [[id:04C460E8-3390-4844-9774-A1713A6F3726][Prove the round trip preserves the data and validates]] | BACKLOG | | | Round trip means the values survive and the output validates, not that the document is reproduced. Build the harness: read the corpus, write it, validate against input.xsd, read it back, and compare every field including the exact decimals. Fail on any element the model did not claim. |
+| [[id:8E02E7E1-AB6F-4123-B8F8-54EA4B2D24DE][Map the configuration documents that have no mapper]] | BACKLOG | | | Ibor fallback, reference data, script library, counterparty information and collateral balances. No mapper exists today, so these are new domain models on the codec rather than migrations. |
+| [[id:DBC23EE5-046F-48B8-985B-38E1726180F7][Map the analytics documents that have no mapper]] | BACKLOG | | | Simulation, sensitivity analysis, SIMM calibration and the cross asset model. The largest of the unmapped families and the one that exercises the most of the schema. |
 
 * Decisions
 
@@ -85,6 +95,10 @@ the work that follows is broken into tasks.
 * Out of scope
 
 - Extending =xsdcpp=. Route A is described and rejected, not scheduled.
+- Reproducing a document byte for byte: comments, indentation, attribute
+  order and the original spelling of a number are out of contract.
 - A general XML library: XPath, run-time schema validation, a DOM.
 - The drift on =trade= and =componentSubTrade=. Route C does not touch the
   generated binding, so the drift stops blocking anything.
+- Removing =xsdcpp= before every root element has a codec. It is the last
+  task, not an early one.

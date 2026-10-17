@@ -334,8 +334,8 @@ The fix is to start the terminator search past the four-character opener.
 The lesson is the corpus, not the bug. A subset asserted from reading a
 schema is a guess about what writers do.
 
-The corpus has twenty root elements. Ten of them have a mapper today and ten
-do not.
+The corpus has twenty root elements. Eleven of them have a mapper today and
+nine do not.
 
 | Root element | Documents | Mapper today |
 |--------------+-----------+--------------|
@@ -360,54 +360,98 @@ do not.
 | =SIMMCalibrationData= | 4 | none |
 | =IborFallbackConfig= | 1 | none |
 
-The ten without a mapper are the reason "cover every use case" needs a
-boundary. Parsing them is free and the gate proves it. Mapping them is new
-work that no current caller needs, and it belongs in its own stories.
+The nine without a mapper are in scope, and they come after the eleven.
+Parsing them is already free and gated. Mapping them is new work rather than
+a migration, so it is the last family work before the generated binding can
+go.
 
 * Writing
 
-The read direction is the one under pressure. The write direction is not, so
-the writer is allowed to be asymmetric and should be.
+The round trip this design owes is not a reproduction of the document. It is
+two properties. The values survive, and the output validates against ORE's
+schema. Comments, indentation, element order within an =xs:all= and the
+original spelling of a number are outside the contract, and dropping them is
+what makes the writer cheap.
 
-| Keep | Drop |
-|------+------|
-| Element names and nesting | Comments and processing instructions |
-| Required elements | CDATA sections |
-| Attribute names and values | The document's whitespace and indentation |
-| The exact value of every number | The original order within an =xs:all= |
-| Presence and absence of an element | The original spelling of a number |
-| | Attribute order |
+The bar is already set by the corpus.
+=scripts/validate_ore_examples.sh= passes 1,623 of 1,623 documents against
+=input.xsd= today, so the writer has to keep all of them valid, including the
+output it produces for documents it has just read.
+
+| Property | Required |
+|----------+----------|
+| Element names, nesting and attributes | Yes |
+| Required elements, at their schema cardinality | Yes |
+| Every value, numerically exact | Yes |
+| Output validates against =input.xsd= | Yes |
+| Comments, CDATA and processing instructions | No |
+| Whitespace, indentation and attribute order | No |
+| Order within an =xs:all= | No |
+| The original spelling of a number | No |
 
 Four decisions follow.
 
 **One table, two directions.** The writer walks the same field array in
 schema declaration order. That order is required for =xs:sequence= and is one
 valid choice for =xs:all=. It emits only present fields, so absence survives
-and the writer cannot invent an element the reader did not fill. The two
+and the writer cannot invent an element the reader never filled. The two
 directions cannot disagree because there is one table.
 
-**Fixed point, never shortest round trip.** =std::to_chars= with no format
-produces =1e-12= for a rate. That is not a valid =xs:decimal= and some
-readers reject it. The writer needs a fixed-point formatter driven by the
-column's scale, so a =numeric(38,12)= value writes twelve decimal places and
-never exponent notation. It is a small function and a large trap, and it
-earns its own test with the awkward values: zero, one, a negative, a value
-smaller than the scale, and a value at the full 38 digits.
+**Cardinality comes from the schema, not from the data.** The table records
+=minOccurs=, =maxOccurs= and whether an attribute is required. That is what
+lets the writer emit a valid document when a record is missing an optional
+value, fail loudly when it is missing a required one, and repeat a child as
+often as the schema allows. A writer without cardinality produces output that
+validates by luck.
 
-**The lexical form does not survive the database, and should not.** Reading
-keeps the document's digits, so a pure read-then-write round trip is exact.
-The import path, though, stores a =decimal= in =numeric(38,12)= and the
-exporter reads it back from there. The entity is the artefact; the document
-is not. So an export is a re-serialisation, and the round-trip test must
-compare values and not text. Where a document must be reproduced exactly, the
-source document is already kept.
+**Nothing may be silently dropped.** "No data lost" is only true if every
+element the reader accepts has a home. Content the schema names and the model
+does not claim is a generation error, because the table and the model are
+generated from the same inputs. Content the schema does not name, the three
+=xs:any= sites and anything ORE adds in a future schema, is captured into a
+residual annex on the record and written back. The prototype skips it, and
+skipping it is data loss with a quiet face.
 
-**Cost.** One buffer per writer, reserved from an estimate and grown
-geometrically. Integers through the bounded writer. Escaping only for text
-that contains one of the five characters, decided by one scan. And the writer
-is parallel over record ranges for free, because records are keyed and cannot
-refer to one another inside a document, so a large export writes N buffers
-and concatenates them.
+**The writer is cheap because it does not look back.** One buffer, reserved
+from an estimate and grown geometrically. Integers through a bounded decimal
+writer. Escaping decided by one scan and applied only to text that needs it.
+And it is parallel over record ranges for free, because records are keyed and
+cannot refer to one another inside a document, so a large export writes N
+buffers and concatenates them.
+
+* Numeric accuracy
+
+One invariant governs this work: a number that enters as text and leaves as
+text means the same number to ORE before and after.
+
+Three kinds, three rules.
+
+- *Money.* A decimal, parsed from the document's digits, never through a
+  binary float. Exact by construction, and the reason the
+  [[id:36BA97C5-F6F8-4101-9141-40390B35237A][story]] exists.
+- *Counts and integers.* An integer, parsed as one.
+- *Continuous quantities.* A =double=, per the guidelines. Volatility,
+  correlation, weight and day-count fraction stay binary. A double cannot hold
+  every decimal, so "exact" here means the double round-trips to itself: the
+  writer emits the shortest form that reads back to the same value.
+
+**The field kind is not the schema kind.** ORE types money as =xs:float= in
+some elements, as =xs:string= in one product and as =xs:double= in another.
+Following the schema would reintroduce the defect the bond review found, one
+element at a time. So the table's kind comes from two inputs. The XSD gives
+the shape, and the project's money vocabulary gives the classification.
+
+That vocabulary already exists and is already enforced, in
+=build/scripts/check_money_decimal_columns.py= and in the =field_group=
+models. The generator reuses it rather than inventing a second list, which
+also keeps the XML boundary and the database boundary speaking about money in
+the same words.
+
+**The bound.** ORE reads those elements as =float= itself. A decimal we write
+back is more precise than ORE can consume, so the round trip is exact inside
+our model and bounded by ORE's on the far side. That is a property of ORE's
+schema, not a defect in the codec, and it is the second reason the table
+carries our classification instead of the schema's.
 
 * Conclusions
 
@@ -433,10 +477,11 @@ and concatenates them.
 * How the work divides
 
 The recommendation is to adopt route C, in the order below, and to remove
-=xsdcpp= only when nothing depends on it.
+=xsdcpp= only when no document family depends on it. All twenty root
+elements are in scope. The eleven with a mapper migrate; the nine without
+are new models built on the same codec afterwards.
 
-Nine tasks, in the order they can merge. Each is a pull request that leaves
-the tree working, and =xsdcpp= only goes when nothing depends on it.
+Twelve tasks. Each is a pull request that leaves the tree working.
 
 | # | Task | Size | Depends on |
 |---+------+------+------------|
@@ -444,26 +489,33 @@ the tree working, and =xsdcpp= only goes when nothing depends on it.
 | 2 | [[id:7681078A-B911-4853-BB25-5F2607E87943][Generalise the codec for nested and repeated types]] | L | - |
 | 3 | [[id:2E83CCFB-025F-44F0-B97B-F377CC712BBE][Generate tables for every document family]] | L | 2 |
 | 4 | [[id:48AAB8BF-79FF-4461-B264-1C848C9EAD5C][Write the exporter from the same tables]] | M | 3 |
-| 5 | [[id:96950350-E907-4C03-87FE-1BAF7950FF3D][Migrate the reference data documents]] | M | 4 |
-| 6 | [[id:C010861C-1F2D-4C89-8A3C-4362C0E6F435][Migrate the portfolio documents]] | L | 5 |
-| 7 | [[id:A9C63FEC-D64C-438A-994D-C9F0753F0EAC][Migrate the market and configuration documents]] | L | 5 |
-| 8 | [[id:5C0C929E-7D90-4954-9F46-5E28E69A1484][Stop formatting a log line per imported record]] | S | - |
-| 9 | [[id:5EBC0FAA-6541-420E-B174-E6DA738316E2][Remove xsdcpp]] | M | 6, 7 |
+| 5 | [[id:04C460E8-3390-4844-9774-A1713A6F3726][Prove the round trip preserves the data and validates]] | M | 4 |
+| 6 | [[id:96950350-E907-4C03-87FE-1BAF7950FF3D][Migrate the reference data documents]] | M | 5 |
+| 7 | [[id:C010861C-1F2D-4C89-8A3C-4362C0E6F435][Migrate the portfolio documents]] | L | 6 |
+| 8 | [[id:A9C63FEC-D64C-438A-994D-C9F0753F0EAC][Migrate the market and configuration documents]] | L | 6 |
+| 9 | [[id:8E02E7E1-AB6F-4123-B8F8-54EA4B2D24DE][Map the configuration documents that have no mapper]] | M | 8 |
+| 10 | [[id:DBC23EE5-046F-48B8-985B-38E1726180F7][Map the analytics documents that have no mapper]] | L | 8 |
+| 11 | [[id:5C0C929E-7D90-4954-9F46-5E28E69A1484][Stop formatting a log line per imported record]] | S | - |
+| 12 | [[id:5EBC0FAA-6541-420E-B174-E6DA738316E2][Remove xsdcpp]] | M | 7, 8, 9, 10 |
 
-Three things about the order.
+Four things about the order.
 
 - Task 1 comes first because it is the gate every later task is measured
   against, and it is nearly free today.
-- Task 8 is independent and should be taken early. It removes two thirds of
-  the current importer's cost without touching XML, and it makes every
-  comparison after it honest.
-- Tasks 5, 6 and 7 each migrate one family completely: reader, writer, and
+- Task 5 comes before any family migrates, because a family that moves to the
+  codec before the round-trip harness exists moves without a test that its
+  data survives. The harness is what makes tasks 6 to 10 verifiable one at a
+  time.
+- Tasks 6, 7 and 8 each migrate one family completely: reader, writer, and
   the deletion of that family's mapper in the same change. The tree never
   holds two live implementations of one document.
+- Task 11 is independent and should be taken early. It removes about two
+  thirds of the current importer's cost without touching XML, and it makes
+  every comparison after it honest.
 
-What the family tasks do not cover is the ten root elements with no mapper
-today. Parsing them is already free and gated. Mapping them is new capability
-and belongs in separate stories, one per family group.
+Task 12 is last because the generated binding still serves every family that
+has not moved. It cannot be removed while one root element is still read
+through it.
 
 * What this does not settle
 
@@ -491,8 +543,9 @@ and belongs in separate stories, one per family group.
   fail. Dropping silently is how the credit export came to lose a required
   element from seventeen documents, so the default must be to fail in tests
   and to count in production.
-- *The ten root elements with no mapper.* Parsing them is gated and free.
-  Mapping them is new capability, and this investigation does not assume it.
+- *The nine root elements with no mapper.* They are in scope and sequenced
+  last, but their domain models do not exist yet, so their size is a guess
+  made from the document counts and the schema, not a measurement.
 
 * See also
 

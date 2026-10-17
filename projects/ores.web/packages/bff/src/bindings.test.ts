@@ -142,6 +142,8 @@ const LIST = 'marketdata.v1.feed_bindings.list';
 const PUT = 'marketdata.v1.feed_bindings.put_many';
 const DELETE_ONE = 'marketdata.v1.feed_bindings.delete';
 const ACTIVITY = 'marketdata.v1.ops.list_feed_binding_activity';
+const FEEDS = 'synthetic.v1.ops.list_folder_feeds';
+const OWNERS = 'synthetic.v1.ops.resolve_series_owners';
 
 const binding = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
     version: 3,
@@ -479,5 +481,80 @@ describe('what each binding has written', () => {
         const response = await send(server, sessionId, 'GET', '/api/bindings/activity');
         expect(response.statusCode).toBe(502);
         expect(response.json().message).toBe('The request names no party.');
+    });
+});
+
+describe('the sources a party may bind', () => {
+    it('leaves out a bound source and names the feed that holds a series', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [FEEDS]: {
+                success: true,
+                message: '',
+                feeds: [
+                    { source_name: 'a.bound', oresmd_uri: 'oresmd://fx/A', label: 'A' },
+                    { source_name: 'a.free', oresmd_uri: 'oresmd://fx/B', label: 'B' },
+                    { source_name: 'a.conflict', oresmd_uri: 'oresmd://fx/C', label: 'C' },
+                ],
+            },
+            [LIST]: { result: ok, feed_bindings: [{ source_name: 'a.bound' }] },
+            [OWNERS]: {
+                success: true,
+                message: '',
+                owners: [
+                    { series: 'oresmd://fx/B', source_name: '' },
+                    { series: 'oresmd://fx/C', source_name: 'other.running' },
+                ],
+            },
+        });
+
+        const response = await send(server, sessionId, 'GET', '/api/bindings/bindable-sources');
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().sources).toEqual([
+            expect.objectContaining({
+                source_name: 'a.free',
+                oresmd_uri: 'oresmd://fx/B',
+                held_by: null,
+            }),
+            expect.objectContaining({
+                source_name: 'a.conflict',
+                oresmd_uri: 'oresmd://fx/C',
+                held_by: 'other.running',
+            }),
+        ]);
+        expect(calls.find((call) => call.subject === LIST)?.body).toMatchObject({
+            filter: { party_id: PARTY },
+        });
+        expect(calls.find((call) => call.subject === OWNERS)?.body).toEqual({
+            series: ['oresmd://fx/B', 'oresmd://fx/C'],
+        });
+    });
+
+    it('asks nobody which feed holds a series when every source is bound', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [FEEDS]: {
+                success: true,
+                message: '',
+                feeds: [{ source_name: 'a.bound', oresmd_uri: 'oresmd://fx/A' }],
+            },
+            [LIST]: { result: ok, feed_bindings: [{ source_name: 'a.bound' }] },
+        });
+
+        const response = await send(server, sessionId, 'GET', '/api/bindings/bindable-sources');
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().sources).toEqual([]);
+        expect(calls.some((call) => call.subject === OWNERS)).toBe(false);
+    });
+
+    it('says so when the feeds could not be read', async () => {
+        const { server, sessionId } = buildTestServer({
+            [FEEDS]: { success: false, message: 'The feeds could not be read.', feeds: [] },
+        });
+
+        const response = await send(server, sessionId, 'GET', '/api/bindings/bindable-sources');
+
+        expect(response.statusCode).toBe(502);
+        expect(response.json().message).toBe('The feeds could not be read.');
     });
 });

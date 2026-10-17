@@ -205,6 +205,22 @@ TEST_CASE("starting a bound feed creates its feed_binding, for FX and IR alike",
     CHECK(f.store->bindings_[1].producer_kind == "SYNTHETIC");
 }
 
+TEST_CASE("the controller names the running feed that holds a series", tags) {
+    producer_kinds kinds;
+    controller_fixture f;
+
+    const auto fx = f.feed(kinds.fx_kind, kinds.fx_source, kinds.fx_oresmd_uri, kinds.fx_role);
+    REQUIRE(f.ctrl->start(fx, binding_mode::bound, test_bearer) ==
+            feed_controller::start_result::started);
+
+    const auto held = f.ctrl->running_source_name_for_series({kinds.fx_oresmd_uri});
+    REQUIRE(held.has_value());
+    CHECK(*held == kinds.fx_source);
+
+    CHECK_FALSE(f.ctrl->running_source_name_for_series({"oresmd://fx/nobody"}).has_value());
+    CHECK_FALSE(f.ctrl->running_source_name_for_series({}).has_value());
+}
+
 TEST_CASE("the binding a synthetic store creates names a generated producer, for FX and IR "
           "alike",
           tags) {

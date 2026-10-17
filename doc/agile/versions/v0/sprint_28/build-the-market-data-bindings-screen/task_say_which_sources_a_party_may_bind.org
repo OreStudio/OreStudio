@@ -8,12 +8,12 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/say-which-sources-a-party-may-bind
-#+pr:
+#+pr: 3401
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The Add dialog lists the synthetic sources the party does not consume, says whic
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -41,9 +41,44 @@ The Add dialog lists the synthetic sources the party does not consume, says whic
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The read splits in two, and only one half can be a server read.
+
+*The sources a party may bind* are its own generation configs, and its
+*bindings* belong to the marketdata service. No service user reads the other's
+tables: measured across =projects/ores.sql/create/=, marketdata reads no
+=ores_synthetic_*= table and synthetic reads no =ores_marketdata_*= table, and no
+cross-service function exists in either. The join therefore belongs in the BFF,
+which already reads both sides for the bindings screen and the activity route.
+That keeps the service-table isolation rule intact rather than widening a grant
+for one screen.
+
+*Which running feed holds a series* is the synthetic service's own to answer.
+The feed controller holds the running set, its =feeds_conflict()= decides that a
+series belongs to one feed at a time, and it already exposes
+=running_source_name_for_series()=. The feed overview handler already holds the
+controller as =ctrl_=. This is the answer the journey calls missing, and it is
+the read that has to be a new subject, because only the running service knows
+it.
+
+So the work is:
+
+1. A new synthetic read, =synthetic.v1.ops.resolve_series_owners=: given a list
+   of series, the source name of the running feed that holds each, empty where
+   none does. Declared in =ores.synthetic.feed_overview.org= beside
+   =list_folder_feeds=, so the C++ protocol and the TypeScript protocol are both
+   generated from it. Served from the controller through the feed overview
+   handler, registered in =registrar.cpp=.
+2. A BFF read, =GET /api/bindings/bindable-sources=: for the caller's party, the
+   synthetic sources with no binding, each with the series it would write, and
+   the running feed that already holds that series where there is one. Composed
+   from the feed overview read, the feed bindings read and the new read.
+3. Tests at both seams: the handler unit test for the controller answer, and the
+   BFF test for the composition, including a source that is already bound and a
+   source whose series a running feed holds.
+
+The Add dialog of the next task takes the BFF read. The handler read is what
+makes its refusal the controller's answer rather than a guess from the feed
+listing.
 
 * Measurements
 
@@ -57,7 +92,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web suite, packages/bff | 776 passed | =cd projects/ores.web/packages/bff && npx vitest run= | d82b793bcd |
+| Synthetic service suite | 449 assertions, 62 cases | =build/output/linux-clang-release-ninja/publish/bin/ores.synthetic.service.tests= | 3fb50958fe |
+| Local check gate | 37 passed, 0 failed | =./compass.sh check= | 29358ef01b |
 
 * Notes
 
@@ -76,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3401][#3401]] | [synthetic] Say which sources a party may bind |
 
 * Review
 
@@ -85,3 +122,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two reads the Add dialog needs are in.
+
+=synthetic.v1.ops.resolve_series_owners= answers from the running feed controller: given a list of series, the source name of the running feed that holds each, empty where none does. It is declared in =ores.synthetic.feed_overview.org=, so the C++ protocol and the TypeScript protocol are both generated from it, and it is served by =feed_overview_handler= under the same config read that opens the feed reads.
+
+=GET /api/bindings/bindable-sources= answers for the caller's party: its synthetic sources with no binding, each with the label, provider, asset class, enabled flag, running flag, the series it would write, and =held_by= — the running feed that already holds that series, or null. It joins the feed overview read, the feed bindings read and the new read in the BFF, because the sources belong to one service and the bindings to another and no service user reads the other's tables. That decision is in the Plan.
+
+Tests are at both seams: the controller answer is covered in =feed_controller_tests.cpp= (the new case is the first coverage of =running_source_name_for_series()=), and the composition is covered in =bindings.test.ts= for a bound source left out, a free source with no holder, a source whose series another running feed holds, an all-bound party, and a feeds read that fails.
+
+One flake was met on the way, in another component: =ores.database.tests= =postgres_listener_service_reconnect_surfaces_loss_window= failed once under the gate and passed five runs in isolation. It kills the listener backend, waits for it to be gone, then sends a NOTIFY it expects to be lost — but the listener reconnects on its own, and when it wins that race the NOTIFY lands on the new session and the test reads it as the first payload. The window cannot be held open from the test, so the test is racy by construction; the gate passed on the re-run. It is not this branch's doing and it is worth a task of its own.

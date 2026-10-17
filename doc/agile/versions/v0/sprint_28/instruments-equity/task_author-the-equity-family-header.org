@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: feature/author-the-equity-family-header
-#+pr:
+#+pr: 3477
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3477][#3477]] | [trading] Author the equity family header |
 
 * Review
 

@@ -1,0 +1,150 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: CREATE A REPORT</b>
+  --
+  New definition | Party ACMCOR | Tenant administrator
+  --
+  <b>1. IDENTITY</b>
+  --
+  {#
+    Field | Value
+    Name | Intraday Exposure
+    Description | Exposure profiles, trading book
+    Report type | risk
+    Is official | yes
+    Party | ACMCOR, from the session
+  }
+  --
+  <b>2. WHAT THE TYPE NEEDS</b>
+  --
+  {#
+    Configuration type | Required by risk
+    conventions | required
+    pricing_engines | required
+    todays_market | required
+    curve_configuration | required
+    risk_report_config | required
+  }
+  The list is report_type_configuration_types.list, read for risk. Nothing
+  answers a requirement beyond it.
+  --
+  <b>3. THE CONFIGURATIONS THE DEFINITION BINDS</b>
+  --
+  {#
+    Slot | Configuration
+    conventions | Group conventions
+    pricing_engines | Group pricing engines
+    todays_market | Group today's market
+    curve_configuration | Group curve configuration
+    risk_report_config | Exposure simulation
+  }
+  {
+    [ Bind a configuration ]
+  }
+  What each slot supplies, in the words the screen uses: conventions, the
+  instrument conventions the trades are read with; pricing engines, the pricing
+  model of each product and its parameters; today's market, the market data a run
+  prices against by market role; curve configuration, the curves, their
+  bootstrapping, segments, volatilities and correlations; risk report config, the
+  run settings a party shares, the base currency, the observation model, the VaR
+  and SIMM settings and threading, and the scope.
+  --
+  <b>4. THE ANALYTICS AND THEIR SETTINGS</b>
+  --
+  {#
+    On | Analytic | Order | Settings
+    Y | npv | 1 | baseCurrency GBP
+    Y | simulation | 2 | baseCurrency GBP
+    Y | pfe | 3 | quantile 0.95
+    N | saccr | 4 | -
+    N | sensitivity | 5 | -
+  }
+  Fourteen analytic types are offered. Each carries an active toggle, a display
+  order, and its own parameter rows.
+  {
+    [ Add an analytic ] | [ Edit its parameters ]
+  }
+  An analytic is turned off by setting active false. Nothing is deleted.
+  --
+  <b>REFUSED: pfe WITHOUT simulation</b>
+  --
+  pfe reads the cube that simulation writes, so a definition that enables pfe
+  without simulation cannot work. The rule lives in the ACME seeder,
+  check_exposure_needs_simulation, and not in the reporting service. Nothing
+  validates it when a definition is written.
+  --
+  <b>5. SCOPE</b>
+  --
+  {#
+    Portfolio | Scoped by
+    Group Treasury Portfolio | not scoped
+    Trading Book | Exposure simulation
+  }
+  The bound configuration is named Exposure simulation - Trading Book after the
+  analytics set and the scope it carries. The scope is a column of that
+  configuration and not a field of the definition, and no operation here writes
+  it: a portfolio no bound configuration is scoped to cannot be chosen.
+  --
+  <b>6. REVIEW: WHAT WILL BE WRITTEN</b>
+  --
+  {#
+    Written | Operation
+    definition | report_definitions.put
+    five binds | report_configurations.put
+    analytics | configuration_analytics.put_many
+    parameters | configuration_analytic_parameters.put
+  }
+  name Intraday Exposure, report_type risk, is_official true, schedule_expression
+  none, scheduler_job_id none, concurrency_policy skip, pre_processing execute,
+  prepared_input_key null, post_processing execute; npv, simulation and pfe
+  active true at orders 1, 2 and 3; baseCurrency GBP and quantile 0.95.
+  The definition is on demand.
+  {
+    [ Save the report ] | [ Back ]
+  }
+  --
+  <b>7. AFTER THE WRITE: READ BACK</b>
+  --
+  {#
+    Field | Read back
+    id | a new identifier
+    version | 1
+    schedule_expression | -
+    scheduler_job_id | -
+    runs | never run
+  }
+  The definition is bitemporal, so an edit writes a new version and no past run
+  changes. The front door draws this definition as never run.
+  {
+    [ Leave it on demand ] | [ Choose when it runs ]
+  }
+  --
+  <b>WHAT THIS SCREEN CANNOT SHOW</b>
+  --
+  No operation answers what a report needs in order to run beyond the
+  configuration types its report type requires. Nothing validates the
+  pfe-needs-simulation rule on write. No operation writes the portfolio scope.
+  No BFF route serves reporting, and nothing in the application creates a report
+  today.
+}
+
+@enduml

@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 4e0f3f61-7c25-44b5-9c3f-2f4b7b2e9a10
+:END:
+#+title: Create a report prototype
+#+description: Three structural variants of creating a report, on a throwaway page that states the missing scope write, the absent service check behind the pfe rule, and the absent checklist of what a run needs.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:create-a-report/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype argues what shape the act of creating a report has: one form with
+every section visible, a wizard of four steps, or a checklist where the
+definition is the product of what a report must satisfy. It carries three
+structural variants switched with =?variant=, and it answers to
+[[file:../../knowledge/journeys/reporting/journey_create_a_report.org][Create a report]].
+
+It is throwaway. It reads no service, and the page says plainly which parts of
+the definition it cannot write.
+
+* Detail
+
+** The question
+
+Creating a report is not one write. It is a definition, five configuration
+bindings, a set of analytic rows, their settings, and a scope, and none of them
+sits in the same table. The person has to hold all of it while answering one
+question: *can this report actually run?* The open question is whether that is a
+page, a walk, or a list.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=. Variant B takes =?step=1..4=,
+so a reviewer can land on the step they want to argue about.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | One form | Sections down one page: identity, what the type needs, the configurations, the analytics, the scope, the review. Everything visible at once, because a person moves between the sections while deciding. |
+| =B= | A wizard | Four steps on a rail: what it is, what it reads, what it runs, review and save. One decision at a time, and the rail marks each step met or open so progress is not a guess. |
+| =C= | A checklist | The screen is the list of what a report must satisfy, each item met or not, with the fields inline under the ones that are not. The definition falls out of the list, and the save is the last item. |
+
+All three carry the same fixture, the same refusals and the same review. They
+disagree about structure and not about content: the reviews in A, B and C name
+the same field values.
+
+** The five configurations, and why the screen says what each supplies
+
+A definition binds configurations of exactly five types: =conventions=,
+=pricing_engines=, =todays_market=, =curve_configuration= and
+=risk_report_config=. The screen shows each type with the thing it supplies,
+because a person choosing between two configurations needs to know what the
+choice decides: the conventions the trades are read with, the pricing model of
+each product, the market data a run prices against, the curves and their
+bootstrapping, and the run settings a party shares. Every slot also says how
+many other definitions bind the configuration in it, since a shared
+configuration is not copied to be shared.
+
+** The analytics belong to the configuration, not the definition
+
+The picker offers the fourteen analytic types: =npv=, =sensitivity=,
+=cashflow=, =curves=, =simulation=, =saccr=, =parametricVar=,
+=portfolioDetails=, =creditcurves=, =pfe=, =calibration=, =pnlExplain=,
+=historicalSimulationVar= and =xva=. Each carries an =active= toggle and a
+=display_order=, and turning one off sets =active= false rather than deleting the
+row. The settings sit behind a Settings dialog, one row per =parameter_name= and
+=value=, in positions.
+
+The rows hang off the configuration, and the configuration is shared. So the
+person choosing analytics is editing rows other definitions also run. The page
+says so: the slot row counts the definitions that bind the configuration, and the
+save adds a line naming them. A build that hid this would be lying about what the
+save reaches.
+
+** The rule between pfe and simulation
+
+=pfe= reads a cube that =simulation= writes, so enabling =pfe= without
+=simulation= cannot work. The page refuses that save, marks the two rows, and
+states the rule in full: it lives in the ACME seeder, in
+=generate_risk_config_data.py= at =check_exposure_needs_simulation=, and not in
+the reporting service. Nothing validates it when a definition is written, so the
+refusal on this page is *the screen's own rule*: a second client would have to
+carry it again. The fixture opens with the pair correctly on; =?pfe=without-simulation=
+opens it broken, so the refusal can be read without toggling two rows by hand.
+
+** The scope is chosen by choosing the configuration
+
+The scope is not a field of the definition. It is a column of the
+=risk_report_config= in the slot, held in that row's portfolio and book junction
+tables, and no operation in the journey's set writes it. The page therefore asks
+for a portfolio and resolves it to the configuration scoped to it; choosing a
+portfolio no bound configuration is scoped to rebinds the slot, and the activity
+line says that it did. The configurations and their scopes on this page are the
+seeder's.
+
+** The review names the field values
+
+Every variant ends in the same review, and the review names values rather than
+counting them: the definition's fifteen fields including the ones that stay
+empty (=fsm_state_id=, =schedule_expression=, =scheduler_job_id=, =run_grant_id=,
+=prepared_input_key=), one binding row per configuration type, the analytic rows
+with their =active= and =display_order=, and the parameter rows with their
+values. The save is refused while an item is open, because the definition would
+read back unlike the review. After the save, a read-back panel states the stored
+row, that the definition is on demand, and that it has never run.
+
+** What the page refuses to invent
+
+No BFF route serves reporting, and nothing in the application creates a report
+today. No operation writes or reads the portfolio scope or the run settings
+inside a =risk_report_config=. Nothing answers what a report needs in order to
+run beyond the configuration types its report type requires, so the checklist is
+*what a screen can check*, not what a run needs, and the page says so in the
+words of the checklist itself. The operations named are the journey's own; no
+subject is invented for the three gaps.
+
+** What is fake
+
+Every value is a fixture: the party, the configurations and their binding counts,
+the scopes, the analytic settings, and the identifier the save would return.
+Nothing reads a server and nothing is written.
+
+** Where the code lives
+
+=doc/prototypes/reporting/create-a-report/=. Three files, plain HTML, CSS and
+JavaScript, no framework, no modules, no fetch, and no build step.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+Whether a person should be able to create an analytic set, a configuration or a
+scope from this screen at all, or only choose among the ones the party already
+holds. The journey answers "choose", because nothing here can write those rows;
+a build that wants to answer "create" needs operations this journey does not
+have.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis each prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the group these answer to.
+- [[file:../../knowledge/journeys/reporting/journey_create_a_report.org][Create a report]] — the journey this prototype answers.

@@ -20,7 +20,7 @@ journeys are a person's view of that record: the reports their party owns, the
 runs of each, what a run produced, what went wrong, and when the next one
 starts.
 
-Seven journeys cover the lifecycle. The first is the front door, the one a
+Nine journeys cover the lifecycle. The first is the front door, the one a
 reader opens with a question and no identifier: *which reports does my party
 run, and how did each one last go?* From it a person runs a report, opens what a
 run produced, reads that result by counterparty as well as by book, follows an
@@ -29,7 +29,7 @@ runs of one report, and changes when the report runs next. The front door is
 what makes the others reachable, so it carries the health words the whole group
 uses.
 
-Only two of the seven write. Running a report creates a run, and choosing when
+Four of the nine write. Running a report creates a run, and choosing when
 it runs changes the definition's schedule. The other five read rows that a run
 already wrote. That split is why the group is cheap to build: the reporting
 service already stores the definitions, the runs, the output location and the
@@ -48,6 +48,8 @@ journey's *What is missing*.
 | [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] | tenant administrator | Set the schedule that makes a definition run, run it now, pause and resume the schedule, and take it away again |
 | [[id:D6F9CB58-2A30-4124-AC05-75218272F219][See a report's results by counterparty]] | market-risk, credit, trading-desk | One run read by counterparty: each name's aggregate NPV, notional, trade count and, where the report runs =saccr=, exposure, largest first, grouped through the parent counterparty, down to one name's trades, netting sets and errors |
 | [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] | trading-desk, market-risk, engineer | Every run of one report newest first, with the last five fire times, the newest marked latest, and a notice when the run being read stops being the newest |
+| [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] | tenant administrator, market-risk | Define a report: name it, bind the five configurations it reads, choose the analytics and their settings, scope it to a portfolio, and save it |
+| [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] | market-risk, tenant administrator | Turn an analytic on or off, change a parameter, and see what the change reaches: the next run of every definition sharing the configuration, and the runs it makes incomparable |
 
 * What a report is here
 

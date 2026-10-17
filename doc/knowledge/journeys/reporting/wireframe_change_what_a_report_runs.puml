@@ -1,0 +1,120 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: ANALYTICS - Group Consolidated Exposure - ACMCOR - risk</b>
+  --
+  <b>THE CONFIGURATION THIS DEFINITION BINDS</b>
+  --
+  {#
+    Configuration type | Configuration | Shared
+    conventions | ORE conventions 2026 | no
+    pricing_engines | ACME pricing engines | no
+    todays_market | London close 2026-10-16 | no
+    curve_configuration | ACME curve set | no
+    risk_report_config | Group risk configuration | yes, by 4 definitions
+  }
+  --
+  <b>ANALYTICS OF Group risk configuration: on and off, in display order</b>
+  --
+  {#
+    On | Analytic | Order | Parameters
+    Y | npv | 1 | -
+    Y | sensitivity | 2 | shift_size = 0.0001, shift_type = Absolute
+    N | cashflow | 3 | -
+    Y | portfolioDetails | 4 | -
+    Y | pfe | 5 | horizon = 10, quantile = 0.95
+    N | simulation | 6 | -
+  }
+  A row that is off stays on the configuration and reads as off. An analytic is turned off by setting active to
+  false and never by deleting the row, so the history shows the report used to produce it. No control on this
+  panel removes a row.
+  --
+  <b>THE ONE RULE BETWEEN ANALYTICS</b>
+  --
+  pfe reads a cube that simulation writes, so pfe on without simulation cannot work.
+  <b>REFUSED: pfe is on and simulation is off.</b> The rule lives in the ACME seeder, in
+  generate_risk_config_data.py, check_exposure_needs_simulation, and in no service. The server accepts this
+  set, so this panel states the rule itself.
+  --
+  <b>CHANGE A PARAMETER</b>
+  --
+  {#
+    Parameter | Value
+    sensitivity.shift_size | 0.00005
+    sensitivity.shift_type | Absolute
+    pfe.horizon | 10
+  }
+  A parameter change writes one row: its parameter_name and its value.
+  --
+  <b>REVIEW: EXACTLY WHAT WILL BE WRITTEN</b>
+  --
+  {#
+    Write | Analytic | Field | Was | Will be
+    configuration_analytic | cashflow | active | Y | N
+    configuration_analytic | saccr | active | - | Y
+    configuration_analytic_parameter | sensitivity | shift_size | 0.0001 | 0.00005
+  }
+  Confirm: write 2 analytic rows and 1 parameter row to Group risk configuration?
+  {
+    [ Cancel ] | [ Write ]
+  }
+  No row is deleted. No run is started, and no schedule, binding or processing phase is touched.
+  --
+  <b>WHAT THE CHANGE DOES NOT REACH</b>
+  --
+  Past runs keep the configuration they ran with, with their outputs and their errors. The configuration is
+  shared, so every definition bound to it runs the new set on its next run, including the three definitions the
+  person did not open.
+  --
+  <b>RUNS THE CHANGE MAKES INCOMPARABLE</b>
+  --
+  {#
+    Run | Started | Configuration it ran with
+    run 41c9f0a7 | 2026-10-16 06:04 | inference from start time
+    run 5b02e6d3 | 2026-10-15 06:03 | inference from start time
+  }
+  The results screen compares a run with a previous run of the same definition. A run after this change did not
+  produce the same measures, so a comparison between it and a run above is not a comparison. The screen marks a
+  comparison partial where a side carried errors, and it cannot mark this one: nothing says which configuration
+  version a run used.
+  --
+  <b>AFTER THE WRITE: READ BACK AND THE DEFINITION'S VERSIONS</b>
+  --
+  {#
+    Analytic | active | Order
+    cashflow | N | 3
+    saccr | Y | 7
+  }
+  {#
+    Definition version | Stated
+    v7 | 2026-10-17, the version this write records
+    v6 | 2026-09-30
+  }
+  The panel states the stored values, not the values the person typed.
+  --
+  <b>WHAT THIS PANEL CANNOT SHOW</b>
+  --
+  Which configuration version a run used: not readable. A configuration's own version history: not readable.
+  Whether pfe without simulation is refused: it is not, by any service. The screen states these absences rather
+  than drawing a validation it does not have.
+}
+
+@enduml

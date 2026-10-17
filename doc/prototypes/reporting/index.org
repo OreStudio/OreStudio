@@ -15,7 +15,7 @@ The reports a party runs, what each produced, what went wrong, and when the next
 one starts. Seven journeys describe that work, and there is no reporting surface
 in the application at all today, so nothing here has prior art to copy.
 
-7 prototypes answer to this group, one per journey. Each is a static page under
+9 prototypes answer to this group, one per journey. Each is a static page under
 =doc/prototypes/=, opens with no build and no session, and reads mock data only.
 The table below opens each one and says what it argues. Where a prototype carries
 a Gemini review, the last column opens it.
@@ -62,6 +62,8 @@ answers can be compared.
 | [[file:find-out-why-a-run-went-wrong.org][Find out why a run went wrong]] | The sharpest question of them: are errors a place you go, a panel beside the run, or a ledger across runs. It renders twenty real error rows, including one trade failing in two analytics with the same message. | [[file:find-out-why-a-run-went-wrong/][prototype]] | none |
 | [[file:choose-when-a-report-runs.org][Choose when a report runs]] | Where scheduling lives: on the report, in a schedule list, or on a calendar. It keeps run now, pause, play and unschedule apart, and states that the schedule has no time zone, that no scheduler read exists for this screen, and that pause and play have no operation. | [[file:choose-when-a-report-runs/][prototype]] | none |
 | [[file:look-back-over-a-reports-history.org][Look back over a report's history]] | The runs of one report newest first, each with its timestamp, the newest marked latest, the last five fire times, and a notice when the run being read stops being the newest. | [[file:look-back-over-a-reports-history/][prototype]] | none |
+| [[file:create-a-report.org][Create a report]] | Defining a report as a checklist it has to satisfy: the five configurations it binds, the analytics it runs with their settings, the portfolio it is scoped to, and the refusal when pfe is enabled without simulation. | [[file:create-a-report/][prototype]] | none |
+| [[file:change-what-a-report-runs.org][Change what a report runs]] | Turning an analytic on or off and changing a parameter, with the reach stated: the configuration is shared, so the change touches every definition bound to it, past runs keep what they ran with, and the runs either side are not comparable. | [[file:change-what-a-report-runs/][prototype]] | none |
 
 * What none of them settle
 

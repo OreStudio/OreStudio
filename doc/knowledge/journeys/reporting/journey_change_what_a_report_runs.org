@@ -1,0 +1,336 @@
+:PROPERTIES:
+:ID: 87B9678E-2085-4968-8AEA-7184D1384F1D
+:END:
+#+title: User Journey: Change what a report runs
+#+description: A market-risk owner or a tenant administrator adds one analytic to a report definition and takes another away, changes a parameter, and reads what the change does and does not reach, including that past runs keep their configuration and a new run is not comparable with an older one.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or a tenant administrator adds one analytic to a report definition and takes another away, changes a parameter, and reads what the change does and does not reach, including that past runs keep their configuration and a new run is not comparable with an older one.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"This report does not produce what I need any more, so I want to add one
+analytic, take another away, and know what that does to the runs I already
+have." The person owns a report definition for a party and reads its runs. A run
+came back with the measures they knew, and without the one they asked for. They
+want the missing measure produced by the next run, they want a measure they no
+longer read to stop costing a run, and they want one setting inside a measure
+adjusted. The journey is done when the definition runs the analytics the person
+meant, and the person has read what the change does and does not reach: which
+rows now carry what, which configuration moved, which runs keep the
+configuration they ran with, and which comparison stops being a comparison.
+
+* Actor and trigger
+
+A market-risk owner or a tenant administrator runs this journey. The owner knows
+what the desk reads and asks for the measure; the administrator holds the
+definition and makes the change. The person acts inside their own tenant, on a
+definition their party owns, and the configurations they can change are the
+party's own.
+
+The trigger is a run that came back without the measure the person asked for, or
+with a measure nobody reads any more, or with one setting of a measure that is
+wrong for the book. The person opens the definition from
+[[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]], and
+the journey ends when the analytics panel reads the way they meant it to.
+
+This journey writes analytics and their parameters. It does not write the
+definition's name, its schedule, its concurrency policy, its processing phases or
+its bindings, and it does not run the report. The next run of the definition
+carries the change; nothing here makes one.
+
+* Steps
+
+1. *Open the definition and read what it binds.* The person opens one definition
+   and reads its configuration panel. The panel states the definition's
+   =name=, =report_type=, =party_id=, and the configurations it binds. A
+   definition binds configurations of exactly five types: =conventions=,
+   =pricing_engines=, =todays_market=, =curve_configuration= and
+   =risk_report_config=. The panel reads the bindings, because the analytics do
+   not belong to the definition: they belong to the configuration the definition
+   binds, and the configuration in the fifth slot carries the analytics this
+   journey changes.
+2. *Open the analytics.* The person opens the analytics panel of the bound
+   configuration. The panel reads the configuration's =configuration_analytic=
+   rows and states one thing first: the configuration is shared. Several
+   definitions that run the same analytics over the same scope can bind one
+   configuration, so a change here reaches every definition bound to it, not
+   only the definition the person opened. The panel names those definitions
+   before offering a write, because "change this report" and "change these four
+   reports" are different decisions.
+3. *See which are on.* Each row states its =analytic_type_code=, its
+   =display_order= and its =active= flag, and the panel reads the vocabulary of
+   analytic types so the codes are named in words. The fourteen types are
+   =npv=, =sensitivity=, =cashflow=, =curves=, =simulation=, =saccr=,
+   =parametricVar=, =portfolioDetails=, =creditcurves=, =pfe=, =calibration=,
+   =pnlExplain=, =historicalSimulationVar= and =xva=. The panel draws a type
+   that is not on the configuration as a row that is off, not as a type that does
+   not exist: the vocabulary is the whole list, and the configuration holds the
+   ones it has ever asked for.
+4. *Read the parameters of an analytic.* A person who is about to change a
+   measure reads what it is set to. Each analytic carries its settings as
+   =configuration_analytic_parameter= rows, each a =parameter_name= and a
+   =value=, and the panel draws them under the analytic they belong to. The
+   value is text: the panel shows it as stored and does not convert it, because
+   no read in this journey types it.
+5. *Turn one on.* The person turns a measure on by setting its row's =active=
+   to true, not by adding an analytic the configuration never had. The write is
+   the same either way, and the panel says which one it is doing. One rule binds
+   two analytics to each other: =pfe= reads a cube that =simulation= writes, so
+   turning =pfe= on without =simulation= cannot work. The panel states the rule
+   and refuses the change, or offers =simulation= with it. *Nothing on the server
+   enforces this.* The rule lives in the ACME seeder and nowhere else, so the
+   write would be accepted and the run would fail later. The panel says that
+   too, rather than implying a check it cannot rely on.
+6. *Turn one off.* The person turns a measure off by setting its row's =active=
+   to false. The row stays. **An analytic is turned off by setting =active=
+   false, not by deleting the row**, because the history must show that it was
+   turned off: a person who reads the configuration later sees the measure, its
+   =display_order= and its parameters, and sees that it is off. Deleting the row
+   would erase the fact that the report ever produced it. The panel states the
+   rule in those words, and shows no control that removes a row.
+7. *Change a parameter.* The person edits one =value= under one analytic. A
+   parameter is its own row, addressed by the analytic it belongs to and the
+   =parameter_name= it carries, so changing it is a write to that row. A
+   parameter that does not exist yet is a new row on the same analytic. The panel
+   says which of the two will be written.
+8. *Review what the change does and does not reach.* The panel states the reach
+   of the change before the write, in four parts. It reaches the next run of
+   every definition bound to this configuration. It does not reach a run already
+   produced: a run keeps the configuration it ran with, and its outputs and its
+   errors are that run's own record. It does not reach the definition's
+   scheduling, its processing phases, its concurrency policy or its other four
+   configurations. And it invalidates the comparison: the results screen compares
+   a run with a previous run of the same definition, and marks a partial
+   comparison where a side carried errors. A run made after the change is not
+   comparable with a run made before it, because the two runs did not produce the
+   same measures. The difference between them is then a difference of
+   configuration and not a difference of the book, and the comparison states a
+   change that did not happen. The panel says so plainly, and names the runs that
+   this change will make incomparable: the definition's runs from before the
+   write.
+9. *Save.* The person confirms, and the confirmation restates exactly what will
+   be written: the analytic rows with their =active= flags and
+   =display_order=, and the parameter rows with their =parameter_name= and
+   =value=. The screen sends the set as one write. In a build the service writes
+   the rows, and a definition change writes a new version of the definition while
+   older versions stay readable. No step here deletes a row.
+10. *Read the definition back.* The screen reads the configuration's analytics
+    again and draws the stored values, not the values the person typed. A person
+    whose write was rejected sees the refusal and the stored set unchanged. The
+    panel states that the change is stored and that no run has yet produced it.
+11. *See the version history.* The person reads the definition's version history:
+    the versions it has had, and what each one states. This is the record of the
+    change, and it is also the only timeline the screen has to place a run
+    against. It is not a complete answer. **No operation says which runs were made
+    with which configuration version.** The best the screen can do is compare a
+    run's own start time with the definition's version history and say that a run
+    started before a version, which is an inference and not a fact, because the
+    analytics live on the configuration and the configuration's own version
+    history is not read here. *What is missing* records all of it.
+12. *Leave, or go on.* The person returns to the definition's latest run, or runs
+    the report to see the new measures. The run is
+    [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it
+    finish]]'s page, and its figures are
+    [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]]'s.
+    This journey changes what the next run produces and nothing else.
+
+* Screens and wireframes
+
+One screen. The definition header, the configuration panel, the analytics list,
+the parameter rows and the review are panels of the same screen, because the
+person reads them as one answer: what this report runs, and what changing it
+does. The review is not a separate screen. It sits under the list, so a person
+who has toggled three rows and changed two values reads the whole set as it will
+be written before confirming it.
+
+The screen writes two things and reads six. It writes the analytic rows and
+their parameter rows, and it reads the definition, its bindings, the
+configuration's analytics, their parameters, the analytic types and the
+definition's versions. It runs nothing and it schedules nothing.
+
+The panel keeps four statements beside the write, because a person who reads only
+the confirmation must still read them. Turning an analytic off sets =active= to
+false and leaves the row. A configuration is shared, so the change can reach
+definitions the person did not open. A run keeps the configuration it ran with,
+and nothing says which configuration version that was. And a run after the change
+is not comparable with a run before it. The panel draws the incomparable runs by
+their start times and says the placement is an inference.
+
+#+caption: Change what a report runs: the definition's bindings, the configuration's analytics with their active flags and parameters, the review of the write, and the runs the change makes incomparable.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_change_what_a_report_runs.png]]
+
+* Prototype
+
+The [[file:../../prototypes/reporting/change-what-a-report-runs/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/change-what-a-report-runs.org][its design note]] says what each argues and what is fake. This journey is the design intent for the analytics panel, and its prototype belongs at
+=doc/prototypes/reporting/change-what-a-report-runs/=. The prototype must draw
+the definition's five bindings and the configuration the analytics belong to; the
+analytics as rows that are on and rows that are off, with the =active= flag shown
+and the rule that off is =active= false and not a deletion stated on the panel;
+the parameter rows with their =parameter_name= and =value=; the refusal or flag
+for =pfe= without =simulation=, with the rule stated and the server's silence
+stated beside it; the review that names exactly what will be written; and the
+runs the change makes incomparable, placed by start time against the definition's
+version history and marked an inference. It must say that past runs keep their
+configuration, that the configuration is shared, and that a new run is not
+comparable with an older one. Every value on the page is a fixture, and the page
+says so.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =report_definition= | The definition whose analytics change: =name=, =report_type=, =party_id=, and the version history an edit writes | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_configuration= | The slot a configuration fills: =configuration_type_code= and =configuration_id=, five of them per definition | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+| =configuration= | The configuration the analytics belong to, which several definitions can bind | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| =configuration_analytic= | One measure the configuration asks for: =analytic_type_code=, =display_order= and =active= | [[id:ABEA22FE-C92F-4522-8256-72DE1804295B][ores.reporting.configuration_analytic]] |
+| =configuration_analytic_parameter= | One setting of one measure: =parameter_name= and =value= | [[id:BFDAC96E-3774-45F8-9013-DFDDF0EE7335][ores.reporting.configuration_analytic_parameter]] |
+| =analytic_type= | The vocabulary the =analytic_type_code= comes from: the fourteen types and their names | [[id:F92E7855-D5F5-41AE-AD3E-9F61BCC3830F][ores.reporting.analytic_type]] |
+| =report_instance= | The runs, which keep the configuration they ran with, and whose start times are what the screen places against the version history | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =party= | The owner of the definition and the configuration | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+The rows this journey edits are =configuration_analytic= and
+=configuration_analytic_parameter=, and neither belongs to the definition. The
+definition reaches them through =report_configuration=, one row per configuration
+type, and the configuration in the fifth type, =risk_report_config=, is the one
+that carries the analytics. The definition's own fields are shown to the person
+but not written here:
+=schedule_expression=, =concurrency_policy=, =pre_processing=,
+=prepared_input_key=, =post_processing= and =is_official= all stay as they are.
+
+The definition is bitemporal. An edit writes a new version, older versions stay
+readable, and a run keeps the configuration it ran with. That is what makes the
+change safe to make and hard to read afterwards: nothing is destroyed, and
+nothing names the version a run used.
+
+Every entity above carries =party_id= and is party-scoped by row-level security.
+The analytic and its parameters carry the tenant as well, because a
+configuration's analytics are written by the session that writes the
+configuration.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the definition | Read the definition | =reporting.v1.report_definitions.get= | exists |
+| Open the definition | List the party's definitions | =reporting.v1.report_definitions.list= | exists |
+| Open the definition | Read the configurations the definition binds | =reporting.v1.report_configurations.list= | exists |
+| Open the definition | Read the configurations themselves | =reporting.v1.configurations.list= | exists |
+| Open the analytics | Read the analytics of one configuration | =reporting.v1.configuration_analytics.list_by_configuration_id= | exists |
+| See which are on | Read the analytic type vocabulary | =reporting.v1.analytic_types.list= | exists |
+| Read the parameters | Read one analytic's parameters | =reporting.v1.configuration_analytic_parameters.list_by_configuration_analytic_id= | exists |
+| Turn one on, turn one off | Write one analytic's =active= and order | =reporting.v1.configuration_analytics.put= | exists |
+| Save | Write the whole set in one call | =reporting.v1.configuration_analytics.put_many= | exists |
+| Change a parameter | Write one parameter's value | =reporting.v1.configuration_analytic_parameters.put= | exists |
+| Read the definition back | Read the stored analytics again | =reporting.v1.configuration_analytics.list_by_configuration_id= | exists |
+| Review what the change does not reach | Read the configuration's market roles, which this journey leaves alone | =reporting.v1.configuration_market_bindings.list_by_configuration_id= | exists |
+| See the version history | List the definition's versions | =reporting.v1.report_definitions_versions.list= | exists |
+| See the version history | Read one version | =reporting.v1.report_definitions_versions.get= | exists |
+| Not sent here | Write a definition's binding to a configuration | =reporting.v1.report_configurations.put= | exists |
+| Not sent here | Write a configuration row | =reporting.v1.configurations.put= | exists |
+| Not sent here | Write a configuration's market roles | =reporting.v1.configuration_market_bindings.put= | exists |
+| Which runs ran with which configuration | Name the configuration version behind a run | (no operation returns it) | missing |
+| The screen itself | Read and change analytics from the browser | (no BFF route) | missing |
+
+Two operations are this journey's writes, and =configuration_analytics.put_many=
+carries the set. A person toggles rows and the screen sends the whole set at once,
+so added, turned-off and reordered analytics land together and a half-written
+configuration is not left behind. =configuration_analytic_parameters.put= writes
+one parameter at a time, because a parameter is one row with one value and the
+set of parameters a person edits is not a unit.
+
+=report_configurations.put= and =configurations.put= exist, and this journey
+sends neither. Reaching into another configuration, or rebinding the definition to
+a different one, is a different change: it would move every analytic at once and
+leave the old configuration running for whoever else binds it. A person who wants
+that has not asked to change what a report runs; they have asked to change which
+configuration it uses.
+
+No BFF route serves reporting. The prototype adds one, for example
+=GET /api/reporting/reports/<definition-id>/analytics= for the read and
+=PUT /api/reporting/reports/<definition-id>/analytics= for the write, which
+calls =configuration_analytics.put_many= and the parameter write behind it.
+
+* What is missing
+
+1. *A route and a screen.* No BFF route serves reporting, and nothing in the web
+   application shows a report today. The analytics panel, the parameter rows and
+   the review are new.
+2. *Nothing validates the =pfe= rule.* =pfe= reads a cube that =simulation=
+   writes, so turning =pfe= on without =simulation= cannot work. That rule lives
+   in the ACME seeder, in =generate_risk_config_data.py=, function
+   =check_exposure_needs_simulation=, and nowhere else. The reporting service
+   does not check it when a configuration is written, so
+   =reporting.v1.configuration_analytics.put_many= accepts the set and the
+   failure arrives in the run. A screen cannot rely on a refusal it does not get,
+   so the panel states the rule and flags the pair itself. That is a screen
+   defending itself against a server that does not, and it is the second-best
+   answer; a validation on the write is the first.
+3. *No operation says which runs used which configuration.* A run keeps the
+   configuration it ran with, and nothing reads that configuration back with the
+   run. The screen can place a run against the definition's version history by
+   the run's own start time, and that is an inference: the analytics live on the
+   configuration, and the definition's version history says what the definition
+   changed, not what the configuration held. A person who needs "this run predates
+   my change" has an inference and no fact, which is why the panel marks it.
+4. *No read of a configuration's version history.* A configuration carries a
+   version, and no operation in this journey's set returns the versions of one
+   configuration or the version a definition bound at a time. The definition's
+   history is the only history the screen can read, and it is a history of a
+   different row.
+5. *The comparison is marked partial for errors and not for a changed set of
+   analytics.* The results screen compares a run with a previous run of the same
+   definition and marks the comparison partial where either side carried errors.
+   It cannot mark it invalid because the analytics changed, because nothing tells
+   it that they did. A person reading a comparison across the change is reading
+   two different sets of measures side by side, and the screen shows the change
+   as a change in the figures.
+6. *The allowed values of a parameter are not readable here.* A parameter's kind
+   comes from the definition behind it, and the operations in this journey's set
+   read the configuration's parameter rows and the analytic types. No operation
+   in the set returns the value domain of a parameter, so the panel states a
+   value as the text that is stored and cannot tell the person whether it is one
+   the analytic accepts. A run is where a wrong value shows up.
+
+* Related journeys
+
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door this journey starts from, and the row whose next run carries the change
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run that produces the new measures, and the manual way to see them
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — the results screen whose comparison this change invalidates
+- [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] — the sequence of runs the person reads to see what the change did
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — where a person goes when =pfe= was turned on without =simulation= and the run failed
+- [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] — the schedule of the definition, which this journey does not touch
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] — the definition, its job held outside it, and its version history
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — the run the changed configuration feeds
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — the workflow a run starts
+- [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] — the definition this journey reads and does not edit
+- [[id:ABEA22FE-C92F-4522-8256-72DE1804295B][ores.reporting.configuration_analytic]] — the row a toggle writes
+- [[id:BFDAC96E-3774-45F8-9013-DFDDF0EE7335][ores.reporting.configuration_analytic_parameter]] — the row a parameter change writes
+- [[id:F92E7855-D5F5-41AE-AD3E-9F61BCC3830F][ores.reporting.analytic_type]] — the fourteen types
+- [[id:4D47DE4D-A52F-46E5-BA75-C2141BEB72D3][Investigation: The analytics of a configuration and their parameters]] — why the analytics and their parameters hang off the configuration
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — the component
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how the screen composes its reads
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Task: Extract the ores.reporting user journeys]] — the work that owns it
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows

@@ -79,6 +79,7 @@ the work that follows is broken into tasks.
 | [[id:04C460E8-3390-4844-9774-A1713A6F3726][Prove the round trip preserves the data and validates]] | BACKLOG | | | Round trip means the values survive and the output validates, not that the document is reproduced. Build the harness: read the corpus, write it, validate against input.xsd, read it back, and compare every field including the exact decimals. Fail on any element the model did not claim. |
 | [[id:8E02E7E1-AB6F-4123-B8F8-54EA4B2D24DE][Map the configuration documents that have no mapper]] | BACKLOG | | | Ibor fallback, reference data, script library, counterparty information and collateral balances. No mapper exists today, so these are new domain models on the codec rather than migrations. |
 | [[id:DBC23EE5-046F-48B8-985B-38E1726180F7][Map the analytics documents that have no mapper]] | BACKLOG | | | Simulation, sensitivity analysis, SIMM calibration and the cross asset model. The largest of the unmapped families and the one that exercises the most of the schema. |
+| [[id:1ADD3134-823B-45F4-B76B-B38AB47507AC][Build the faithful document layer]] | BACKLOG | | | Put the scanner in product code with the transient document model and the writer, and prove over the corpus that every document reads, writes back, compares equal and still validates against input.xsd. This layer needs no schema, so it lands before the schema tables. |
 
 * Decisions
 

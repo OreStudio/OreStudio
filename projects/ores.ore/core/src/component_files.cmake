@@ -51,11 +51,13 @@ set(files
     "planner/ore_import_planner.cpp"
     "scanner/ore_directory_scanner.cpp"
     "store/run_store.cpp"
+    "xml/document.cpp"
     "xml/document_kind.cpp"
     "xml/exporter.cpp"
     "xml/importer.cpp"
     "xml/roundtrip.cpp"
     "xml/roundtrip_harness.cpp"
+    "xml/scanner.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -104,10 +106,12 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/scanner/ore_directory_scanner.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/scanner/scan_result.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/store/run_store.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/document.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/document_kind.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/exporter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/importer.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/roundtrip.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/roundtrip_harness.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/scanner.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/xml.hpp"
 )

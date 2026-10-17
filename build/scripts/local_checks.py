@@ -745,6 +745,19 @@ CATALOGUE: tuple[Check, ...] = (
         phase=HEAVY,
         timeout=7200,
     ),
+    # The corpus test writes the documents it read back to the build tree,
+    # and this reads that output, so it follows the suite that produced it.
+    Check(
+        id="ore-xml-roundtrip",
+        title="The ORE XML written back from the corpus still validates",
+        argv=("bash", "build/scripts/check_ore_xml_roundtrip.sh"),
+        classes=("cpp",),
+        phase=HEAVY,
+        after=("ctest",),
+        timeout=900,
+        fix="Read the [ore][xml][corpus] test's first failure, then validate one "
+            "written document by hand with xmllint --schema external/ore/xsd/input.xsd.",
+    ),
     # Runs against the database the db check above rebuilt, so it stays after
     # it. Every suite writes the reference data it reads and rolls it back,
     # which is what lets the corpus pass on that fresh database.

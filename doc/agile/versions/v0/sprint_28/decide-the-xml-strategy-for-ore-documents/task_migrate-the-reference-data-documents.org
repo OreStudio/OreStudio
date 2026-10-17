@@ -119,12 +119,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families read and written through the codec | 3 of 5 (calendar adjustments, currency config, pricing engines) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 1a9d064421 |
+| Families read and written through the codec | 3 of 5 (calendar adjustments, currency config, pricing engines) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
 | Families whose XML mapper was deleted because nothing read it | 1 (netting sets) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
-| Pricing engine documents that round trip through the projection | every corpus document | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][pricingengines]"= | 1a9d064421 |
+| Pricing engine documents that round trip through the projection | every corpus document | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][pricingengines]"= | 35e8c17b9c |
 | Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3260f93169 |
 | Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | 3260f93169 |
-| XML suites | 506 cases, 79,184 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 1a9d064421 |
+| XML suites | 509 cases, 79,240 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
 
 * Notes
 

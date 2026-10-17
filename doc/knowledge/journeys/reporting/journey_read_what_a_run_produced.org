@@ -114,7 +114,37 @@ not run, rerun or edit anything.
    [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]].
    The archive is still the answer to "what did this run produce", and the errors
    are the answer to "what is missing from it".
-7. *Read the exported ORE package.* Pre-processing produces the engine's input,
+7. *Read a partial result.* A run can complete, write its archive, and still
+   not hold the whole answer. The engine may fail to build some trades, so
+   =npv.csv= carries no row for them and every total read from that file leaves
+   them out. A configured analytic may skip positions it could price, so those
+   positions carry an NPV and no Delta. Both facts are rows of the run, read by
+   =reporting.v1.report_error_events.list_by_report_instance_id=, and both are
+   already recorded before the person opens the screen. The screen must say so
+   before the numbers are trusted, and not in a panel a person may close.
+   - A banner above the results states that the results are partial and why: how
+     many trades the engine could not build, how many positions carry an NPV and
+     no Delta, and that the totals below exclude them. The banner names the count
+     of error rows and offers the way to see them, the same way the summary of a
+     completed run that carries errors does.
+   - The aggregate figures keep their number and carry a marker and a footnote.
+     The figure is not hidden and not replaced: a person who needs the total gets
+     it, and a person who would take it for the whole answer is told otherwise on
+     the figure itself.
+   - A book whose trades include a failed one is marked, and it states that its
+     figure excludes the failed trades. A portfolio above it states that it
+     inherits the exclusion, because its figure is the sum of its books and it
+     must not include a book that lost trades in silence.
+   - The per-trade table draws each failed trade as a row with its =TradeId=, its
+     =TradeType=, its =Notional= and its =CounterParty=, with =NPV= and
+     =NPV(Base)= empty, and with an =error= tag. Opening the row shows the error
+     the run recorded. A trade the engine could not build writes no row into
+     =npv.csv=, so its price cells are empty by nature and not by omission, and
+     the screen says so.
+   A completed run whose totals are incomplete is the ordinary case this step
+   exists for. The message =Report execution completed.= is true and says nothing
+   about it.
+8. *Read the exported ORE package.* Pre-processing produces the engine's input,
    and the step that prepares it is =ore.v1.ops.prepare_ore_package=. The
    package is the engine's input, and it is what a person would run locally to
    reproduce the output. The screen states
@@ -122,16 +152,16 @@ not run, rerun or edit anything.
    definition substitutes pre-processing resolves a prepared input instead, and
    the package it resubmits is named by the definition's =prepared_input_key=.
    The two are different objects, and the screen says which one this run used.
-8. *A run still in flight.* Output does not exist until retrieval. The run's
+9. *A run still in flight.* Output does not exist until retrieval. The run's
    =output_storage_key= is set only once the run's results have been retrieved,
    so a running run states that no output is available yet and that the panel
    will fill when the run completes. It does not draw an empty archive, which
    would read as a run that produced nothing.
-9. *A run that failed.* A failed run has no archive and no package to hand over.
+10. *A run that failed.* A failed run has no archive and no package to hand over.
    The screen says there is nothing to take, states that the run failed, and
    sends the reader to the run's errors. The empty answer is explained, not
    dressed as an empty folder.
-10. *Take it away, or leave.* The person copies the storage key, downloads the
+11. *Take it away, or leave.* The person copies the storage key, downloads the
     archive through the route the screen provides, or follows the error screen.
     The run remains the record: its outputs do not expire with the screen, and a
     person who comes back later reads the same key.
@@ -176,6 +206,12 @@ aggregate NPV at each node, an unbooked node for the trades with no booking, and
 a selected node that filters the per-trade rows. Because the archive carries no
 book column and no operation returns a result grouped by book, the prototype
 labels the tree a fixture and says on the panel how a built screen would join it.
+It must draw the partial case too, in all three interpretations: a completed run
+whose results carry errors, with the banner above the figures, the marker and the
+footnote on the figures, the marked books and portfolios, and the row of every
+trade the engine could not build. Because a person must be able to find that case
+on purpose, the prototype selects it by a fixture chip and by =?scenario= on the
+URL.
 
 * Entities composed
 
@@ -226,6 +262,8 @@ the output of a run from last week.
 | Read the results by book | Read a run's results already grouped by book | (no operation returns results grouped by book) | missing |
 | Read the results by book | List the portfolios under a portfolio in one read | (no =refdata.v1.portfolios.list_by_parent_portfolio_id=; the tree is assembled from =portfolios.list=) | missing |
 | Read the errors | List the run's errors | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
+| Read a partial result | Read the errors that make a completed run's results partial | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
+| Read a partial result | Read the per-trade rows, to draw the trades that carry no price | (no operation parses the archive) | missing |
 | Read the errors | Read one error | =reporting.v1.report_error_events.get= | exists |
 | Read the errors | Read the scope vocabulary | =reporting.v1.report_error_scopes.list= | exists |
 | Read the package | Prepare the ORE package the engine reads | =ore.v1.ops.prepare_ore_package= | exists |

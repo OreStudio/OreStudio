@@ -26,6 +26,10 @@ It is throwaway. It reads no service, and the archive manifest it draws is a
 fixture, said so on the page. So is the book tree: the run's archive carries no
 book column, so a node's trade count and NPV are drawn rather than read.
 
+One scenario sits beside the five runs: =results-with-errors= takes the completed
+run that carries eleven problems and draws the connection between the errors and
+the results, so the results say they are partial.
+
 * Detail
 
 ** The question
@@ -153,6 +157,49 @@ figures.
 The page draws one run that completed clean and one that completed carrying
 eleven rows, eight =Analytics= errors and three =Configuration= warnings. The
 second warns before the figures are trusted, and offers the way to see why.
+
+** The scenario: results that carry errors
+
+The eleventh-row run is not enough on its own. A reader can read the notice, then
+read USD 88,402,114 under it and take the total for the whole answer, because
+nothing on the figures, the book tree or the trade table says otherwise. The
+scenario =results-with-errors= draws the connection, and a reviewer finds it by
+its chip beside the run chips, or by the query parameter =scenario= set to
+=results-with-errors=.
+
+It exercises five things, in all three variants:
+
+- A banner above the results states that they are partial and why: the engine
+  could not build three trades, 412 positions carry an NPV and no Delta, and the
+  totals below exclude them. It names the count of error rows and offers the way
+  to see them, as the completed-with-errors notice does, and it carries no
+  dismiss.
+- The aggregate figures keep their number and carry a =partial= marker and a
+  footnote, so nobody reads a total as the whole answer.
+- A book whose trades include a failed one is marked and states that its figure
+  excludes the failed trades; a portfolio above it states that it inherits the
+  exclusion, because its figure is the sum of its books.
+- The per-trade table draws each failed trade as a row with its =TradeId=, its
+  =TradeType=, its =Notional=, its =CounterParty=, an empty =NPV= and =NPV(Base)=,
+  and an =error= tag. Opening the row shows the error recorded. A trade the
+  engine could not build writes no row into =npv.csv=, so the price cells are
+  empty by nature, and the panel says so.
+- The scenario's chip is labelled, and the amber note states that the scenario is
+  a fixture like the rest of the page.
+
+Why a completed run's totals can be incomplete: =Report execution completed.=
+is the system's sentence about the run, and it is true. It says the run ended and
+retrieval finished. It says nothing about what the engine could not build. The
+archive holds a row per trade it priced, so a trade it could not build is absent
+rather than zero, and every total read from that file is a total over the trades
+that survived. The sensitivity analytic skips positions it cannot shift, so a
+Delta total covers fewer positions than the NPV beside it. Both facts are rows of
+the run, read by
+=reporting.v1.report_error_events.list_by_report_instance_id=, and no operation
+is invented for the scenario. What the scenario cannot show honestly is the join
+from a failed trade to its own error: the two =SENSITIVITY= rows are recorded
+against the analytic, and the panel says so rather than implying a per-trade key
+the model does not store.
 
 ** What is fake
 

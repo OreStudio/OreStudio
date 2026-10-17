@@ -1,0 +1,325 @@
+:PROPERTIES:
+:ID: FA1CC25B-9745-4172-BAE8-4B6413958077
+:END:
+#+title: User Journey: Change the convention a party uses for one kind
+#+description: A person finds the one convention of one kind that states a term wrongly, chooses a different document or corrects the row, and reads what the change reaches, which is every run of the party and not one report.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:reporting:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person changes one convention of one kind for one party, and reads what the change reaches.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"The AED swaps are being booked on 30/360 and they should be ACT/360. I want to
+change that one thing, and I want to know what it hits before I do it."
+
+The person has one kind and one wrong term. The journey is done when the terms
+of that kind state what the person meant, they know which runs will read the new
+terms and which will not, and they know whether the change reached their party
+alone or the whole tenant.
+
+"Choosing a different document" and "correcting a document" are the same act on
+this screen and different acts on the server, and the screen says which one it
+is about to send. Choosing a different document is picking an existing row;
+correcting a document is writing a new version of that row. The third act, a
+term no document states, is not this journey:
+[[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] is.
+
+* Actor and trigger
+
+The actor is the person who maintains the tenant's reference data for the desks:
+an account holding =Operations=, which holds =refdata::<kind>_conventions:read=
+and =refdata::<kind>_conventions:write= for every kind, or a tenant
+administrator, who holds =*= and can also reach the operations no other role
+holds.
+
+The trigger is a trade or a run whose terms are wrong. The person arrives from
+[[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]],
+having found the kind and read its terms, or from a run whose figures are
+doubted. The journey starts on one kind of one party and ends when the person
+has read the reach.
+
+This journey writes one convention row of one kind. It does not write a report
+definition, its bindings or its schedule, and it does not run a report. The next
+run of a definition carries the change; nothing here makes one.
+
+The journey keeps no server state. No step waits on the server after its reply.
+
+* Steps
+
+1. *Open the kind.* The person arrives with one kind and one party already
+   chosen and lands on that kind's documents, not on the 26-kind list. The
+   system shows the kind's name, how many term columns its table carries, how
+   many documents the party holds, and whether the party or the tenant owns them.
+   The scope is stated on this step and not in a footnote, because it decides
+   who a write reaches: 22 kinds belong to the party and four belong to the
+   tenant.
+2. *Find the document that states the wrong term.* The person filters the kind's
+   documents. The generated filter takes =id_one_of= and nothing else, so the
+   field says on screen that it filters by key, and it cannot be used to ask for
+   "the AED swaps". The screen offers the two reads that work: page the list and
+   filter in the client, or open the document whose key the person already holds.
+   The terms are shown in words beside each row so the person can find the wrong
+   one by reading, which is the only search that reaches 320 documents.
+3. *Read what the row states, and what it inherits.* The system opens the row.
+   Every term column the table carries is shown, grouped by the part of the
+   schedule it belongs to. A term that is a pick from another reference list
+   holds that list's code and never its label, and the screen shows the code and
+   the label and says which list owns it. A term the row leaves empty is shown
+   as empty and not as a value, because empty and stated are different claims.
+   For =deposit_convention= the screen reads =index_based= first: when it is
+   set, the row states no calendar, convention, day count or settlement days and
+   inherits them from the index, so the person is told they are about to edit
+   columns a run does not read.
+4. *Choose which act this is.* The screen offers two, and never presents them as
+   one button. *Use a different document* picks another existing row of the same
+   kind. *Correct this document* writes a new version of this row with the
+   person's terms. The person picks, and the summary states which one is staged.
+   Nothing is written until they confirm.
+5. *Confirm the change and see the reach before the write.* The system shows what
+   will change: every field in the table's own order, a count of the fields that
+   differ from the version it read, and the reach. The reach is stated in three
+   sentences and each is a fact:
+   - *It reaches every definition of this party.* The conventions file a run is
+     assembled from is written from the party's whole conventions document, and
+     the configuration the definition binds is not read to build it. So the
+     change reaches all 22 of ACCOUS's definitions. On a tenant-scoped kind it
+     reaches every party of the tenant.
+   - *The reach looks narrower than it is, and that is the danger.* In ACME each
+     party binds one conventions configuration for all of its definitions —
+     ACCOUS 22 definitions on *US conventions*, ACCOUK 24 on *UK conventions*,
+     ACCOHK 22 on *HK conventions*, ACMCOR 10 on *Group conventions*. So the
+     party's reach and the configuration's reach coincide and a person never sees
+     the difference. Where a party bound two conventions configurations the
+     change would still reach both, and the screen would have said it reached one.
+   - *It does not reach a run already produced.* A run keeps the file it ran
+     with, and its outputs and its errors are that run's own record.
+   - *Nothing records which run read which version.* The comparison a reader
+     makes across the change is a comparison of two different sets of terms, and
+     the person cannot name the runs on the far side of it.
+6. *Write.* The person saves. The system writes the row with one request,
+   =refdata.v1.<kind>_conventions.put=, carrying the change, a precondition and
+   the intent. A correction states =must_match_version= with the version it read,
+   so a concurrent edit is refused instead of overwritten; a new document states
+   =must_not_exist=. Choosing a different document writes nothing for that
+   reason: both documents already exist. What the person has actually staged
+   there is a default, and there is no default to write — see /What is missing/.
+7. *See the result, and read what the write did not do.* The system reports the
+   document's new version, when it was written, by whom and with which change
+   reason. It also states the two things the write did not do: it did not mark
+   the document as the one a run takes, because no such mark exists; and it did
+   not retire the document it replaced, because a convention is retired by a
+   delete and this journey sends none.
+8. *Read the versions.* The person opens the history and reads every saved
+   version with the field-level difference from the one before. A revert is not a
+   history operation: it reads the old version and writes its values as a new
+   version, through the same =put= with a new change reason.
+9. *Leave, or go on.* The person returns to the kind's list, to the conventions
+   table, or runs the report to see the new terms take effect. The run is
+   [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it
+   finish]]'s page.
+
+* Screens and wireframes
+
+One screen: the kind in the header, the documents on the left, the open document
+and its terms on the right, and the reach as a panel the person must read before
+the confirm enables. The screen writes one row and reads the rest.
+
+The reach panel is not decoration. A person who believes they are changing one
+report's conventions and is in fact changing every run of the party has been
+misled by a screen, and this one does not do that.
+
+#+caption: Change the convention a party uses for one kind: the kind's 320 documents, the open document's terms, the two acts kept apart, and the reach panel that names the 22 definitions a change reaches, why that looks narrower than it is, and the runs it does not reach.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_change_the_convention_for_one_kind.png]]
+
+* Prototype
+
+No prototype is written for this journey in this pass, and none should be until
+the default marker exists. The act the journey is really about, choosing which
+document of a kind a run takes, cannot be drawn as a working interaction when
+the server has nowhere to put the choice: a screen that staged one would be
+drawing a write that fails.
+
+The existing
+[[file:../../prototypes/reporting/manage-the-conventions/][manage the
+conventions]] prototype draws the table this journey opens from, and its design
+note records the same absence. It is the design record for the reading; this
+journey is the design intent for the writing.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| The kind's convention table | The row the journey writes: every term column of that kind, and the version the precondition names | one of the 26; see the table below |
+| =configuration= | The conventions configuration a definition binds, whose name the reach panel reads so the person sees that the name is not a selection | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| =report_configuration= | The binding that makes a definition a reader of these terms, counted per party | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+| =report_definition= | The definitions in the reach panel, and the party the export resolves | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =calendar_name=, =day_count_fraction_type=, =business_day_convention_type=, =payment_frequency=, =floating_index_type= | The lists a term is a pick from; the screen shows their labels and links to the journey that owns each row | |
+
+#+ATTR_HTML: :class hug-leading
+| Kind | Rows per party | Distinct term sets | The table's own key |
+|------+----------------+--------------------+---------------------|
+| =swap_convention= | 320 | 201 | =id= |
+| =deposit_convention= | 163 | 141 | =id= |
+| =commodity_future_convention= | 790 | not counted here | =id= |
+| =swap_index_convention= | 243 | not counted here | =id= |
+| =ibor_index_convention= | 10, tenant-wide | not counted here | =id= |
+| =currency_pair_convention= | 179, tenant-wide | not counted here | =pair_code= |
+| =tenor_convention= | 4, tenant-wide | not counted here | =code= |
+
+The models the rest of this group leans on:
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =swap_convention= | The worked example: seven term columns, and the row a person is most likely to be correcting | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] |
+| =deposit_convention= | The row that inherits its terms from an index when =index_based= is set | [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] |
+| =ibor_index_convention= | The tenant kind whose row a party edit changes for every party | [[id:852FE06C-70D9-48BC-B768-D99D87D0D796][ores.refdata.ibor_index_convention]] |
+| =overnight_index_convention= | The same, for the overnight index | [[id:B72547F3-83B5-4F83-AA65-BBE16C191089][ores.refdata.overnight_index_convention]] |
+| =tenor_convention= | The tenant kind with a description column and no DQ route | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =currency_pair_convention= | The tenant kind keyed by the pair rather than by an id | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
+| =party= | The owner of the 22 party kinds, and the party the export resolves | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+Every one of these tables is bitemporal. A write does not overwrite: it closes
+the current row with a =valid_to= and writes the next version with a
+=valid_from=, so the version a run read stays readable. The =change_reason_code=
+and =change_commentary= the person supplies are stored on the row, and
+=modified_by= and =performed_by= are derived from the session and not from the
+request.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the kind | List the kind's documents | =refdata.v1.<kind>_conventions.list= | exists |
+| Find the document | Read one document | =refdata.v1.<kind>_conventions.get= | exists |
+| Find the document | Read several by key | =refdata.v1.<kind>_conventions.get_many= | exists |
+| Read the terms | Fill the term pickers | =refdata.v1.calendar_names.list=, =refdata.v1.day_count_fraction_types.list=, =refdata.v1.business_day_convention_types.list=, =refdata.v1.payment_frequencies.list=, =refdata.v1.floating_index_types.list= | exists |
+| Confirm the change | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| The reach | Read the party's definitions | =reporting.v1.report_definitions.list= | exists |
+| The reach | Read the configurations they bind | =reporting.v1.report_configurations.list= | exists |
+| The reach | Read the conventions configurations | =reporting.v1.configurations.list_by_configuration_type_code= | exists |
+| Write | Correct the document | =refdata.v1.<kind>_conventions.put= (=must_match_version=) | exists |
+| Write | Add a document | =refdata.v1.<kind>_conventions.put= (=must_not_exist=) | exists |
+| Read the versions | List the document's versions | =refdata.v1.<kind>_conventions_versions.list= | exists |
+| Read the versions | Read every version with its diff | =refdata.v1.history.get= (=entity_type= = =ores.refdata.<kind>_convention=) | exists |
+| See the result | Learn that a convention changed | =refdata.v1.<kind>_conventions_events.updated= | exists |
+| Retire a document | Close a document a run should stop reading | =refdata.v1.<kind>_conventions.delete= | exists, not offered by this journey |
+| Choose which document a run takes | Mark one document of a kind as the one in use | (no default column, no default row) | missing |
+| Search the kind by a term | Filter the list by anything but the key | (the filter is =id_one_of= and nothing else) | missing |
+| The screen itself | Change a convention from the browser | (no BFF route) | missing |
+
+The per-kind subjects are the generated ones: =refdata.v1.swap_conventions.put=,
+=refdata.v1.deposit_conventions.put=, =refdata.v1.ibor_index_conventions.put=
+and their equals for the rest. A tenant kind's key holds no party:
+=refdata.v1.ibor_index_conventions.put= takes an =id= and no party.
+
+The =delete= exists and this journey does not send it. Retiring a document a run
+reads is a different decision from correcting it, and nothing checks that a
+document is unreferenced before it is closed.
+
+No BFF route serves conventions. This journey adds the write behind the route the
+reading journey adds, for example =PUT
+/api/refdata/parties/<party-id>/conventions/<kind>/<key>=, which reads the row's
+current version, sends the =put= with =must_match_version=, and returns the new
+version.
+
+* What is missing
+
+1. *Choosing a different document has nothing to write to.* The journey's first
+   act, "use a different document", is the act the person most often wants, and
+   the server has no place for it. There is no default column on any of the 26
+   tables and no per-kind default row keyed by tenant and kind. Choosing a
+   different document would therefore be a write that changes nothing a run
+   reads. A default needs one of the two shapes, and until one exists this
+   journey cannot be built past step 4.
+2. *The change reaches more than the screen can promise to narrow.* The
+   conventions file a run is assembled from is written from the party's whole
+   conventions document; the bound configuration's id is not read. So a person
+   who corrects one swap document changes what every definition of the party
+   reads. The screen states it, and stating it does not fix it: there is no
+   server-side way to scope the change to one report, and no server-side way to
+   scope it to one kind's documents either, because the document write replaces
+   the party's rows kind by kind in one call. The gap is hidden in ACME, where
+   each party binds one conventions configuration and the two scopes coincide,
+   so the defect is invisible until a tenant wants two.
+3. *The list cannot be searched by a term.* The generated filter accepts
+   =id_one_of= and nothing else. On a kind of 320 documents, a person who knows
+   the term and not the key cannot find the row. A term filter on each list is
+   the missing operation, and it is the same gap
+   [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party
+   uses]] records.
+4. *No operation says whether a document is in use.* Nothing joins a convention
+   row to a run, a trade or a definition, so the screen cannot warn that the
+   document about to be corrected is one something reads. The best it can do is
+   say that every document of the party is read by every run.
+5. *A refused write carries no field-level record.* The refusal this journey must
+   handle is a term that references a value its list no longer holds, and the
+   generated =result= carries no =field_failure= for a convention service, so the
+   server cannot name the field it refused and the screen must match the code and
+   the message itself.
+6. *No convention field validates its term.* A convention's term columns are
+   plain text with no foreign key and no lookup check declared on the model, so
+   the server stores any text. A term that references a value the list does not
+   hold is written rather than refused, and the run is where it shows up.
+7. *A tenant-scoped kind is changed for the whole tenant with no warning.* Four
+   kinds carry no =party_id=: =currency_pair=, =ibor_index=, =overnight_index=
+   and =tenor=. A person correcting the IBOR index conventions for their own
+   party is changing 10 rows the whole tenant reads. The screen can say so
+   because the table's shape says so; nothing in the server reports the scope
+   back, and the write is refused by no one.
+8. *The whole-document write is a second, wider write to the same rows.*
+   =refdata.v1.conventions_documents.put= writes every kind of the party's
+   document in one call, and it leaves rows it is not given alone, so it can
+   neither delete nor retire. A person holding =TenantAdmin= can therefore send a
+   document that changes many kinds at once and receives no warning and no
+   summary of what moved. The per-kind =put= is the narrower act and is the one
+   this journey sends; the wider one existing beside it is the hazard.
+9. *No four-eyes control is seeded for a convention change.* The approval
+   operations exist, and no request kind is seeded for a convention row, a
+   request holds no pending change, and nothing applies the change when the last
+   decider approves. A person changing a term every desk reads cannot be
+   second-checked today.
+10. *No run records the version of a convention it read.* The history view says
+    what changed and not which run was affected, so the reach panel's third
+    sentence is a gap and not a warning.
+
+* Related journeys
+
+- [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] — the read this journey starts from, and the table a person arrives holding a kind from
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] — the same kind, when no document states the terms at all
+- [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data quality]] — the same rows arriving from the curated dataset, which is how the other 25 kinds are maintained
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — a term that is a pick is corrected on the list that owns it and not on the convention
+- [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] — a cross-currency or an FX convention names the currencies whose pair it serves
+- [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] — the currency-pair convention is 1:1 with its pair and edited from either side
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run whose next firing carries the change
+- [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] — the runs the change makes incomparable
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance, change reasons and the precondition
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE =conventions.xml= elements these rows export to
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the badge and form vocabulary the terms panel follows
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the runs that read these terms
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how the screen composes its reads
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections this page fills
+- =conventions_document_service::save= — the wider write that replaces the party's rows kind by kind
+- =ore.v1.ops.export_run_configuration= — the export that reads the party's document and ignores the bound configuration

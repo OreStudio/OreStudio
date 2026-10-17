@@ -1,0 +1,293 @@
+:PROPERTIES:
+:ID: AD7E6FC0-392E-46A9-8E28-23B7B4946A88
+:END:
+#+title: User Journey: Onboard a party and verify its conventions
+#+description: A tenant administrator provisions a party, reads that its conventions arrive in the same run and are not a manual step, and verifies what landed, what was skipped because the tenant already held it, and what a party the bundle never reached would read.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:tenancy:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator verifies that a newly provisioned party has the conventions its runs will read.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I have just provisioned a party. Its runs need market terms from the first
+minute. Do they have them, and how would I know if they did not?"
+
+This journey is a verification and not a fill. A party's conventions are not
+something a person assembles: the provisioning run publishes the
+=party_essentials= bundle once per party, and that bundle's first member is the
+conventions dataset. So the correct answer to "how do I give the new party its
+conventions" is "you do not — the run did it". The journey exists because a
+person still needs to prove it, and because the one state that goes wrong here
+goes wrong silently.
+
+The journey is done when the person can state, for the party they just created,
+how many documents of each kind it holds, which of those belong to the tenant
+rather than the party, and what a run of that party would write today.
+
+* Actor and trigger
+
+The actor is a tenant administrator, or the person operating provisioning for
+the tenant. They hold the tenant's permissions in full and they act inside their
+own tenant. The trigger is a party that has just been created — by a starting
+point's =provision_party= operation, by the Acme demo profile, or by an
+administrator creating one outside a plan — and a run that either has not been
+made yet or has produced figures nobody has checked.
+
+The journey starts when the party exists and ends when the person has read its
+conventions back, or has found that it has none and knows what would fill them.
+
+This is a verification journey. In the normal case it writes nothing: the party
+provisioning already wrote the rows. It reaches one write only in the abnormal
+case, and only by handing the work to
+[[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data
+quality]], which is the same publish the provisioning run made.
+
+The journey keeps no server state. The provisioning run does: it is a workflow
+instance, and its steps are where the person reads what the run actually did.
+
+* Steps
+
+1. *Read that the conventions are part of provisioning, and not a step after it.*
+   The person opens the provisioning run and reads the party plan's step 30,
+   =provision_party=, whose argument is ={"bundles": ["party_essentials"]}=. The
+   bundle states what it carries: "The reference data a single party needs: its
+   instrument conventions and its CRM topology. Published once per party with a
+   ={"party_id": "..."}= param." The person reads that the conventions and the CRM
+   topology are the same operation, and that neither is a manual fill. In the
+   Acme demo profile the four operational parties reach this step through the
+   same plan, after the LEI hierarchy import and before staff are loaded.
+2. *Read the publish the plan's step performs, and in what order.* The bundle
+   publishes its members in dependency order, one workflow step per dataset. The
+   conventions dataset, =ore.conventions=, is the bundle's member at display
+   order 5, before the CRM topology at 20. The step's command subject is
+   =refdata.v1.ops.publish_conventions_from_dq= and its parameters carry the
+   party's id. The person reads the step's counts, not a summary: the first
+   party's publish writes 2,188 rows, and every later party's publish writes
+   2,155 and skips 33.
+3. *Read the 33 as already-present and not as a failure.* 2,188 is 2,155 plus 33.
+   The 33 are the tenant-scoped kinds that the first party's publish wrote:
+   =ibor_index= with 10 and =overnight_index= with 23. They carry no =party_id=,
+   so they are the tenant's rows and every later party's publish correctly finds
+   them present. A person who reads 33 without this account reads a defect. The
+   screen states the two kinds and the two counts beside the skip.
+4. *Read the party's own total against what it should be.* The person reads the
+   party's conventions back, kind by kind. A party published from the bundle
+   holds 2,155 rows across the 22 party kinds, and reads a further 216 across the
+   four tenant kinds — =currency_pair= 179, =overnight_index= 23, =ibor_index= 10
+   and =tenor= 4 — which belong to the tenant and are shared with every other
+   party. So the party's own count and the number of documents a run of that
+   party reads are different numbers, and the screen shows both.
+5. *Read why the tenant kinds were there before the party was.* Of the four,
+   two arrived differently from the rest and the person reads why.
+   - =currency_pair= is published into the tenant by the =base= bundle, which is
+     a tenant publication and not a party one, so its 179 rows exist before any
+     party is provisioned.
+   - =tenor='s 4 rows are not published at all. They are copied from the system
+     tenant by =ores_iam_provision_tenant_fn= when the tenant is created, with
+     =system.new_record= and the commentary "Copied from the system tenant during
+     provisioning", and they are never refreshed afterwards.
+   The screen states which of the four came from where, because "the run did it"
+   is true of 2,155 of the rows and of none of the 33's second and later parties.
+6. *Read what a run of this party would write today.* The person asks the
+   question the party was provisioned to answer: what file does a run of this
+   party carry? The export reads the party's whole conventions document, kind by
+   kind, and writes it as the run's =conventionsFile=. For a party published from
+   the bundle that file holds the party's 2,155 rows and the tenant's 216. The
+   person reads that the four conventions configurations ACME's definitions bind
+   do not enter into it, and that every definition of the party writes the same
+   file.
+7. *Read the one party that has nothing, and what that means.* The person creates
+   a party outside the plan, or reads a party whose =provision_party= step failed.
+   It holds nothing for the 22 party kinds, because the bundle's publish never
+   ran for it. It still reads the tenant's 216 for the four tenant kinds, so the
+   party is not empty and the emptiness is easy to miss. Its runs write a
+   =conventionsFile= with no rows for 22 kinds. Nothing in the tree refuses such
+   a run and nothing says the party was skipped. This is the state the journey
+   exists to catch, and the screen marks it plainly rather than drawing an empty
+   table with no explanation.
+8. *Fill the gap with the operation provisioning already used, not with a
+   hand-written set.* The person who has to fix a party nobody published for
+   sends the same publish provisioning sends:
+   =dq.v1.ops.publish_bundle= for =party_essentials= with the party's id, or the
+   dataset alone with =dq.v1.ops.publish_datasets=. That publish writes the
+   2,155 rows and reads the 33 as skips, exactly as it does inside provisioning.
+   The person does not author 2,155 rows and does not choose documents:
+   [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data
+   quality]] owns that act and this journey hands to it.
+9. *Leave, or go on.* The party is verified. The person either reads its
+   conventions in detail
+   ([[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party
+   uses]]), or corrects a term the party needs differently from the curated set
+   ([[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party
+   uses for one kind]]).
+
+* Screens and wireframes
+
+One screen: the party and the provisioning run in the header, the publish step
+with its four counts, and the per-kind read of what the party holds and what it
+shares with the tenant. The state that matters is drawn once and drawn plainly:
+a party with no party-scoped conventions is marked as unpublished, with what a
+run would write and which operation would fill it.
+
+The screen does not offer a hand-entry path for the 2,155 rows. A screen that
+offered one would be teaching a person to do by hand what the plan does, which
+is how a party ends up with 2,155 rows that match no dataset and no provenance.
+
+#+caption: Onboard a party and verify its conventions: the provisioning run's publish step with its counts, the party's 2,155 own rows against the tenant's 216 shared ones, and the party the plan never reached with what a run would write.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_onboard_a_party_s_conventions.png]]
+
+* Prototype
+
+No prototype is written for this journey in this pass. The journey is a
+verification and its open questions are all about reads the server does not
+offer — a per-party expected count, a record that a party's conventions were
+published, and an attribution of the skip count. A prototype would draw three
+panels and fake all three numbers.
+
+What a prototype must draw when the reads exist is stated here: the publish
+step's four counts, the party's own total beside the tenant's shared total, the
+per-kind table with the owning scope marked, and the unpublished party as its own
+state with the operation that fills it.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| The 26 convention tables | What the party holds. 22 carry =party_id=; four do not, and a party reads the tenant's rows for those. | one per kind; see below |
+| =report_definition= | The definitions whose next run reads the file, and the party the export resolves | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =party= | The party being verified, its short code and its parent | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+| =change_reason= | =system.external_data_import= for a published row and =system.new_record= for a copied one, which tells the two apart after the fact | |
+| =dataset_bundle=, =dataset_bundle_member= | The =party_essentials= bundle and its members, which is what decision "the run does this" rests on | |
+
+The two counts a party has, and why they are different:
+
+#+ATTR_HTML: :class hug-leading
+| Scope | Kinds | Rows | Written by |
+|-------+-------+------+-----------|
+| The party's own | 22 | 2,155 | =refdata.v1.ops.publish_conventions_from_dq=, once per party, inside =party_essentials= |
+| Shared with the tenant | 4 | 216 | =currency_pair= 179 by the =base= bundle; =overnight_index= 23 and =ibor_index= 10 by the first party's publish; =tenor= 4 by the tenant provisioner |
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =swap_convention= | The kind a person checks first: 320 rows per party | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] |
+| =deposit_convention= | 163 rows per party | [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] |
+| =ibor_index_convention= | One of the two tenant kinds whose rows the first party's publish writes | [[id:852FE06C-70D9-48BC-B768-D99D87D0D796][ores.refdata.ibor_index_convention]] |
+| =overnight_index_convention= | The other one | [[id:B72547F3-83B5-4F83-AA65-BBE16C191089][ores.refdata.overnight_index_convention]] |
+| =tenor_convention= | The kind no publish reaches, copied by the tenant provisioner | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =currency_pair_convention= | The kind the =base= bundle publishes before any party exists | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
+
+The party-scoped kinds are party-scoped by row-level security, so a party
+session reads its own rows and a tenant administrator reads the tenant's parties.
+That is why the verification screen can be one screen for both actors: the rows
+are the same rows and the policy is what narrows them.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the plan | Read the provisioning profile's steps | =iam.v1.seed_profile_steps.list= | exists |
+| Read the plan | Read the party-focused bundles | =dq.v1.dataset_bundles.list= | exists |
+| Read the plan | Read a bundle's members | =dq.v1.dataset_bundle_members.list= | exists |
+| Read the publish | Read the run's steps and their results | =workflow.v1.ops.get_workflow_steps= | exists |
+| Read the publish | List the provisioning instances | =workflow.v1.instances.list= | exists |
+| Read the party | List the tenant's parties | =refdata.v1.parties.list= | exists |
+| Verify | List the party's conventions of one kind | =refdata.v1.<kind>_conventions.list= | exists |
+| Verify | Read the party's whole conventions document | =refdata.v1.conventions_documents.get= | exists, not reachable by a person |
+| Verify | Read the party's definitions | =reporting.v1.report_definitions.list= | exists |
+| Fill a party nobody published | Publish the bundle for the party | =dq.v1.ops.publish_bundle= | exists |
+| Fill a party nobody published | Publish the dataset for the party | =dq.v1.ops.publish_datasets= | exists |
+| Verify | Read the party's own total against an expected total | (no read states a party's expected convention count) | missing |
+| Verify | Read that a party's conventions were published | (nothing records it; the workflow step's counts are the only trace) | missing |
+| Verify | Read one publish's counts per kind | (the function returns one total) | missing |
+| The screen itself | Verify a party's conventions from the browser | (no BFF route) | missing |
+
+The provisioning engine dispatches every plan step to one subject,
+=iam.v1.ops.provision_tenant_step=, and the publish operation is one of the
+operations that subject performs. The publish step's own command subject is
+=refdata.v1.ops.publish_conventions_from_dq=, which is what the workflow step
+records and what the person reads.
+
+No BFF route serves this screen. This journey adds one, for example
+=GET /api/refdata/parties/<party-id>/conventions/verification=, which returns
+the party's per-kind counts, the tenant's counts for the four shared kinds, the
+expected total for a party published from =party_essentials=, and the last
+publish step's four counts.
+
+* What is missing
+
+1. *Nothing records that a party's conventions were published.* The publish's
+   only trace is the workflow step's =result_json=, and the conventions rows
+   themselves say =system.external_data_import= whoever wrote them. So the
+   question "did this party's conventions arrive" is answered by counting rows and
+   comparing against a number the person has to know. A per-party marker, or a
+   publication record keyed by party and dataset, would answer it directly.
+2. *No read states a party's expected convention count.* The 2,155 is a fact
+   about the curated dataset, derivable only by counting the artefact tables. A
+   party is verified against a number the person computed elsewhere. No operation
+   returns "this dataset should place these rows for this party".
+3. *A party the plan never reached is indistinguishable from a healthy one at a
+   glance.* It holds 216 tenant rows and no party rows, and every per-kind list
+   answers successfully with no rows. Nothing in the server reports the party as
+   unpublished, so the screen must derive "unpublished" from an empty per-kind
+   list and an expected count it does not have.
+4. *A run for an unpublished party is not refused.* The export writes a
+   conventions file with no rows for the 22 party kinds and the run proceeds. What
+   ORE does with such a file is ORE's affair, and nothing in the tree stops the
+   run or warns the person. A precondition on the run, or a validation at export,
+   is the missing guard.
+5. *The 33 are unattributed on the receipt.* The publish returns one
+   =records_skipped= and the person must know that two tenant-scoped kinds account
+   for it. The same gap
+   [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data
+   quality]] records, seen from the party end.
+6. *`refdata::conventions:read` is held by services and not by the person
+   verifying.* It is held by =OreService= and =ReportRun=, so the one read that
+   answers "what does this party's document hold" is closed to the tenant
+   administrator who is verifying it, and they read 26 lists instead.
+7. *`tenor` is refreshed for no tenant after the first.* Its 4 rows come from a
+   one-time copy at tenant creation. A tenant provisioned before a tenor
+   correction keeps the old rows forever and nothing says so; the only way to
+   refresh them is to write them with the per-kind =put=.
+8. *A starting point other than =acme_demo= may not name the bundle.*
+   =party_essentials= is named by the plans that have one, and a party created
+   outside a plan is published for by nobody. Nothing checks that a party has been
+   through a plan that names the bundle, and nothing reports a party that has not.
+
+* Related journeys
+
+- [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data quality]] — the publish this journey verifies, and the act it hands to when a party was missed
+- [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] — what the verified party's run will read
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] — a term this party needs differently from the curated set
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] — a term no curated document states
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the definitions a new party's runs are, and the front door to them
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run that reads the file this journey verifies
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
+- [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the starting point, the operations and the party bundle
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the bundle member and the publish subject the plan's step resolves
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — the provenance a published row carries
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the conventions file the party's run writes
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections this page fills
+- =party_essentials= — the bundle whose first member is the conventions dataset
+- =ores_iam_provision_tenant_fn= — the one-time copy of the tenor conventions

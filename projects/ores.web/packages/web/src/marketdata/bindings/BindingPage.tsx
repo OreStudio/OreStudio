@@ -36,6 +36,7 @@ import {
     RemoveRecordDialog,
     show,
     useRecordPermissions,
+    useRecordTabs,
     useRecords,
     type FieldSpec,
 } from '../../refdata/records.js';
@@ -43,6 +44,7 @@ import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { Notice } from '../../ui/Primitives.js';
 import { RelativeTime } from '../../ui/Time.js';
+import { BindingHistory } from './BindingHistory.js';
 import { heldBy, isSynthetic } from './bindingView.js';
 import { BINDINGS, VENDOR, bindingPath } from './bindingPaths.js';
 import { BINDABLE, bindableSourcesStore } from './bindableSourcesStore.js';
@@ -150,6 +152,10 @@ function BindingBody({
     const none = <span className="text-ink-faint">{'\u2014'}</span>;
     // The page is named for what the binding writes, not the source it consumes.
     const target = listed === undefined ? sourceName : titled(listed.identity);
+    const { tab, bar } = useRecordTabs({
+        label: target,
+        tabs: ['details', 'history'],
+    });
 
     return (
         <div className="space-y-4">
@@ -166,51 +172,62 @@ function BindingBody({
                 onEdit={may.write && isSynthetic(kind) ? () => setEditing(true) : undefined}
                 onDelete={may.remove ? () => setRemoving(true) : undefined}
             />
-            <RecordDetails
-                specs={BINDING_FIELDS}
-                row={binding as never}
-                extra={[
-                    [t('marketdata.bindings.status'), <StatusTag status={status} />],
-                    [
-                        t('marketdata.bindings.lastTick'),
-                        lastTick === '' ? none : <RelativeTime at={lastTick} />,
-                    ],
-                    [
-                        t('marketdata.bindings.feed'),
-                        feed === undefined ? (
-                            none
-                        ) : (
-                            <Link className="text-accent hover:underline" to={feedPageOf(feed)}>
-                                {feed.label}
-                            </Link>
-                        ),
-                    ],
-                    [t('marketdata.bindings.folder'), folder === '' ? none : folder],
-                    [
-                        t('marketdata.bindings.ticksPerHour'),
-                        feed === undefined ? none : String(feed.ticks_per_hour),
-                    ],
-                    [
-                        t('marketdata.bindings.series'),
-                        listed === undefined && feed === undefined ? (
-                            none
-                        ) : (
-                            <span className="flex flex-col gap-1">
-                                {listed !== undefined && (
-                                    <Link
-                                        className="text-accent hover:underline"
-                                        to={seriesPageOf(listed)}
-                                    >
-                                        {titled(listed.identity)}
-                                    </Link>
-                                )}
-                                {feed !== undefined && <OresmdUrl uri={feed.oresmd_uri} />}
-                            </span>
-                        ),
-                        t('marketdata.bindings.seriesHint'),
-                    ],
-                ]}
-            />
+            {bar}
+            {tab === 'details' && (
+                <RecordDetails
+                    specs={BINDING_FIELDS}
+                    row={binding as never}
+                    extra={[
+                        [t('marketdata.bindings.status'), <StatusTag status={status} />],
+                        [
+                            t('marketdata.bindings.lastTick'),
+                            lastTick === '' ? none : <RelativeTime at={lastTick} />,
+                        ],
+                        [
+                            t('marketdata.bindings.feed'),
+                            feed === undefined ? (
+                                none
+                            ) : (
+                                <Link className="text-accent hover:underline" to={feedPageOf(feed)}>
+                                    {feed.label}
+                                </Link>
+                            ),
+                        ],
+                        [t('marketdata.bindings.folder'), folder === '' ? none : folder],
+                        [
+                            t('marketdata.bindings.ticksPerHour'),
+                            feed === undefined ? none : String(feed.ticks_per_hour),
+                        ],
+                        [
+                            t('marketdata.bindings.series'),
+                            listed === undefined && feed === undefined ? (
+                                none
+                            ) : (
+                                <span className="flex flex-col gap-1">
+                                    {listed !== undefined && (
+                                        <Link
+                                            className="text-accent hover:underline"
+                                            to={seriesPageOf(listed)}
+                                        >
+                                            {titled(listed.identity)}
+                                        </Link>
+                                    )}
+                                    {feed !== undefined && <OresmdUrl uri={feed.oresmd_uri} />}
+                                </span>
+                            ),
+                            t('marketdata.bindings.seriesHint'),
+                        ],
+                    ]}
+                />
+            )}
+            {tab === 'history' && (
+                <BindingHistory
+                    row={binding as never}
+                    specs={BINDING_FIELDS}
+                    kind={kind}
+                    mayWrite={may.write}
+                />
+            )}
             {!isSynthetic(kind) && (
                 <Notice tone="info">{t('marketdata.bindings.vendorNote')}</Notice>
             )}

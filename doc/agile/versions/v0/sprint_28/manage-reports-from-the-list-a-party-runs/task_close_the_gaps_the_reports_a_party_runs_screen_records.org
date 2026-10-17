@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :reporting:sql:codegen:web:manage-reports-from-the-list-a-party-runs:sprint_28:v0:
 #+owner: marco
-#+branch: feature/manage-reports-from-the-list-a-party-runs
+#+branch: feature/close-the-reporting-gaps-phase-1
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -142,7 +142,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Person roles holding any =reporting::= grant before this task | 0 of =Member=, =Viewer=, =Trading=, =Sales=, =Operations=, =Support= | =git show origin/main:projects/ores.sql/populate/iam/iam_roles_populate.sql | grep -cE "'(Member|Viewer|Trading|Sales|Operations|Support)', 'reporting::"= | 676afbe3c9 |
+| =Member= grants for the five reads, after the populate runs | 5 | =compass sql -- -c "select r.name, p.code from ores_iam_role_permissions_tbl rp join ores_iam_roles_tbl r on r.id = rp.role_id join ores_iam_permissions_tbl p on p.id = rp.permission_id where r.name = 'Member' and p.code in (...) ..."= | e96b8a2580 |
+| =Member= grants matching =reporting::%=, =scheduler::%= or =dq::fsm%= | 5, all =:read=, and no wildcard | the same query without the code list | e96b8a2580 |
+| =ores.reporting.core.tests= | 103 test cases, 496 assertions, all pass | =compass build test_ores.reporting.core.tests= | e96b8a2580 |
+| =ores.reporting.api.tests=, =ores.reporting.service.tests=, =ores.shell.reporting.tests= | 63 / 10 / 377 test cases, all pass | =compass build test_ores.reporting.api.tests test_ores.reporting.service.tests test_ores.shell.reporting.tests= | e96b8a2580 |
+| Local checks | =org-links= and =lint= pass, 2 of 2 | =compass check --only org-links --only lint --exclude-heavy= | e96b8a2580 |
 
 * Notes
 
@@ -214,3 +219,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Phase 1 is closed. Five reads are granted to =Member= and read back from a
+populated database; =definition_id= is a filter member on the runs list; and
+=reporting.v1.report_instances.get_latest_by_definition= answers one run per
+definition asked for, reduced in the store and scoped by the session.
+
+Phases 2 and 3 are not started: per-run error count, health word, owner,
+next-fire, the event's definition id, cancelled and skipped health, the
+on-demand word, the prototype's kinds and the party code in the session are
+still open, exactly as the checkboxes say.

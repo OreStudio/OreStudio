@@ -311,9 +311,9 @@
             },
             {
                 id: 'type',
-                what: 'It is a risk report or a grid report',
-                why: 'There are exactly two report types, risk and grid, and the type decides what ' +
-                    'the report is rather than how it runs.',
+                what: 'It is a report of a registered type',
+                why: 'A type is a row in the type table, and the row also names the workflow that runs the report. ' +
+                    'One is registered today, risk, which names report_execution_workflow.',
                 met: true,
                 state: S.draft.reportType,
                 inline: 'type'
@@ -532,12 +532,14 @@
         return '<div class="field">' +
             '<label>Report type</label>' +
             '<div class="radios">' +
-            ['risk', 'grid'].map(function (code) {
+            ['risk'].map(function (code) {
                 return '<label><input type="radio" name="rtype" data-act="type" value="' + code + '"' +
-                    (S.draft.reportType === code ? ' checked' : '') + '> <span class="mono">' + code + '</span></label>';
+                    (S.draft.reportType === code ? ' checked' : '') + '> <span class="mono">' + code + '</span>' +
+                    ' <span class="faint">full ORE risk analytics run</span></label>';
             }).join('') +
             '</div>' +
-            '<span class="note">There are exactly two types, risk and grid.</span>' +
+            '<span class="note">The picker reads the type table, not a hardcoded list. One type is registered today, ' +
+            'risk, and it names the workflow that runs the report: report_execution_workflow.</span>' +
             '</div>';
     }
 

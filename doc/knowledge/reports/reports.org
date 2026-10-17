@@ -65,8 +65,12 @@ queue, and they do not agree with each other.
   reports, each with its purpose, its measures and its five classification axes.
 - The seed =projects/ores.sql/populate/reporting/reporting_report_definitions_populate.sql=
   creates 31 operational report definitions, all of type =risk=.
-- The two *report types* the seed registers are =risk= and =grid=
-  (see [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]]).
+- The *report type* the seed registers is =risk= alone. A type is a row in
+  =ores_reporting_report_types_tbl=, and that row also names the workflow that
+  runs the report: =risk= names =report_execution_workflow=. =grid= is not a
+  report type. It appears in the domain unit tests as a second code, to prove
+  the lookup is data rather than a hardcoded pair, and nowhere else. See
+  [[file:../architecture/report_definition_and_schedule.org][Report definition and schedule]].
 
 Migrating a report out of a catalogue and into this folder is the point at which
 it acquires a purpose, an audience and a worked ORE configuration in one place.

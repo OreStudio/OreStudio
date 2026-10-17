@@ -23,128 +23,120 @@ salt
   --
   New definition | Party ACMCOR | Tenant administrator
   --
-  <b>1. IDENTITY</b>
+  <b>THE RAIL: ONE ENTRY PER STEP, IN THE ORDER THE STEPS DECLARE</b>
+  {#
+    Mark | Step | State
+    Y | What it is | done
+    2 | What it reads | current
+    3 | What it runs | ahead
+    4 | Review and save | ahead
+  }
+  The current entry carries aria-current step. The last entry is final. The rail
+  is drawn from the step list, so the rail and the steps cannot disagree, and it
+  marks position only: it cannot say how many items a save would refuse.
+  --
+  <b>STEP 1 - WHAT IT IS</b>
   --
   {#
     Field | Value
     Name | Intraday Exposure
-    Description | Exposure profiles, trading book
+    Description | Exposure profiles
     Report type | risk
     Is official | yes
-    Party | ACMCOR, from the session
+    Concurrency policy | skip
   }
+  The report type is a combo box over ores_reporting_report_types_tbl. risk is
+  the one type registered today and it names report_execution_workflow. More
+  types are expected, so the control reads the table rather than a fixed pair.
+  The party comes from the session and is not a choice.
   --
-  <b>2. WHAT THE TYPE NEEDS</b>
+  <b>STEP 2 - WHAT IT READS</b>
   --
   {#
-    Configuration type | Required by risk
-    conventions | required
-    pricing_engines | required
-    todays_market | required
-    curve_configuration | required
-    risk_report_config | required
+    Configuration type | Screen that holds its data
+    conventions | PATHS.conventions
+    pricing_engines | no screen exists
+    todays_market | no screen exists
+    curve_configuration | no screen exists
+    risk_report_config | no screen exists
   }
-  The list is report_type_configuration_types.list, read for risk. Nothing
-  answers a requirement beyond it.
-  --
-  <b>3. THE CONFIGURATIONS THE DEFINITION BINDS</b>
-  --
-  {#
-    Slot | Configuration
-    conventions | Group conventions
-    pricing_engines | Group pricing engines
-    todays_market | Group today's market
-    curve_configuration | Group curve configuration
-    risk_report_config | Exposure simulation
-  }
+  A risk report binds all five configuration types. Each row states what its
+  configuration supplies: the conventions the trades are read with, the pricing
+  model of each product, the market data a run prices against, the curves with
+  their bootstrap and quotes, and the run settings the party shares. Each row
+  also names the screen that holds the data, and only conventions has one, at
+  /refdata/conventions. The other four are stated as missing rather than drawn
+  as links.
   {
     [ Bind a configuration ]
   }
-  What each slot supplies, in the words the screen uses: conventions, the
-  instrument conventions the trades are read with; pricing engines, the pricing
-  model of each product and its parameters; today's market, the market data a run
-  prices against by market role; curve configuration, the curves, their
-  bootstrapping, segments, volatilities and correlations; risk report config, the
-  run settings a party shares, the base currency, the observation model, the VaR
-  and SIMM settings and threading, and the scope.
+  The binding is written with report_configurations.put, from the candidates
+  configurations.list_by_configuration_type_code returns. The portfolio scope is
+  Group Treasury Portfolio, carried by the bound risk report config, and no
+  operation in this journey's set writes it.
   --
-  <b>4. THE ANALYTICS AND THEIR SETTINGS</b>
+  <b>STEP 3 - WHAT IT RUNS</b>
   --
   {#
     On | Analytic | Order | Settings
-    Y | npv | 1 | baseCurrency GBP
-    Y | simulation | 2 | baseCurrency GBP
-    Y | pfe | 3 | quantile 0.95
-    N | saccr | 4 | -
-    N | sensitivity | 5 | -
+    Y | npv | 1 | discount curve
+    Y | simulation | 2 | paths, grid
+    Y | pfe | 3 | horizon, quantile
+    N | saccr | 4 | row kept
+    | eleven more types | | one row each
   }
-  Fourteen analytic types are offered. Each carries an active toggle, a display
-  order, and its own parameter rows.
+  Fourteen analytic types, each with an active toggle and a display_order. An
+  analytic is turned off by setting active false; nothing is deleted, and its
+  settings stay readable.
   {
-    [ Add an analytic ] | [ Edit its parameters ]
+    [ Add an analytic ]
   }
-  An analytic is turned off by setting active false. Nothing is deleted.
+  Adding one is the flow Change what a report runs carries: the list of the
+  fourteen types, then the detail with what the analytic is, how it is
+  calculated, and every parameter with a control chosen for its shape and a note
+  on what it means, then the effect of turning it on.
   --
   <b>REFUSED: pfe WITHOUT simulation</b>
   --
   pfe reads the cube that simulation writes, so a definition that enables pfe
-  without simulation cannot work. The rule lives in the ACME seeder,
+  without simulation cannot work. The rule lives in the ACME seeder, in
   check_exposure_needs_simulation, and not in the reporting service. Nothing
-  validates it when a definition is written.
+  validates it when a definition is written: the flow refuses it, and the server
+  would accept it.
   --
-  <b>5. SCOPE</b>
-  --
-  {#
-    Portfolio | Scoped by
-    Group Treasury Portfolio | not scoped
-    Trading Book | Exposure simulation
-  }
-  The bound configuration is named Exposure simulation - Trading Book after the
-  analytics set and the scope it carries. The scope is a column of that
-  configuration and not a field of the definition, and no operation here writes
-  it: a portfolio no bound configuration is scoped to cannot be chosen.
-  --
-  <b>6. REVIEW: WHAT WILL BE WRITTEN</b>
+  <b>STEP 4 - REVIEW AND SAVE</b>
   --
   {#
     Written | Operation
     definition | report_definitions.put
     five binds | report_configurations.put
-    analytics | configuration_analytics.put_many
-    parameters | configuration_analytic_parameters.put
+    analytic rows | configuration_analytics.put_many
+    parameter rows | configuration_analytic_parameters.put
+    the scope | no operation
   }
-  name Intraday Exposure, report_type risk, is_official true, schedule_expression
-  none, scheduler_job_id none, concurrency_policy skip, pre_processing execute,
-  prepared_input_key null, post_processing execute; npv, simulation and pfe
-  active true at orders 1, 2 and 3; baseCurrency GBP and quantile 0.95.
-  The definition is on demand.
+  Every field value is named, including the ones that stay empty: name Intraday
+  Exposure, report_type risk, is_official true, concurrency_policy skip,
+  schedule_expression none, scheduler_job_id none, fsm_state_id none,
+  run_grant_id none, pre_processing execute, prepared_input_key null,
+  post_processing execute. Also the analytics with their active and
+  display_order, their parameter values, and the portfolio scope the bound
+  configuration carries.
   {
-    [ Save the report ] | [ Back ]
+    [ Save the report ]
   }
-  --
-  <b>7. AFTER THE WRITE: READ BACK</b>
-  --
-  {#
-    Field | Read back
-    id | a new identifier
-    version | 1
-    schedule_expression | -
-    scheduler_job_id | -
-    runs | never run
-  }
-  The definition is bitemporal, so an edit writes a new version and no past run
-  changes. The front door draws this definition as never run.
-  {
-    [ Leave it on demand ] | [ Choose when it runs ]
-  }
+  The read-back states the stored row with report_definitions.get, that the
+  definition is on demand, and that it has never run.
+  This step is final, so its foot carries no Back and the rail marks it final.
+  Going back is refused at the first step and when the step before the current
+  one is final.
   --
   <b>WHAT THIS SCREEN CANNOT SHOW</b>
   --
   No operation answers what a report needs in order to run beyond the
   configuration types its report type requires. Nothing validates the
   pfe-needs-simulation rule on write. No operation writes the portfolio scope.
-  No BFF route serves reporting, and nothing in the application creates a report
-  today.
+  Four of the five configuration types have no screen. No BFF route serves
+  reporting, and nothing in the application creates a report today.
 }
 
 @enduml

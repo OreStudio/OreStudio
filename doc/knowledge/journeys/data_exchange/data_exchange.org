@@ -51,15 +51,15 @@ No current entry point offers all three. The =ore= verbs move one component at a
 time. The run import is the one that carries several configuration documents, and
 its undo covers the curves, the market data, the pricing engines and the run
 document but not the conventions. The conventions document itself is still one
-message with 27 typed arrays.
+message carrying every convention family.
 
 * Patterns used
 
-- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] - the import boundary follows one operation per owning service, which is why a whole-environment move has no single transaction.
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per service]] - the import boundary follows one operation per owning service, which is why a whole-environment move has no single transaction.
 
 * See also
 
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] - the corpus index.
-- [[file:../../../prototypes/data_exchange/index.org][Data exchange prototypes]] - the five screens that serve these journeys.
+- [[id:1034E1CB-D639-4489-A16A-931549228D8A][Data exchange prototypes]] - the screens that serve these journeys.
 - [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
 - [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]

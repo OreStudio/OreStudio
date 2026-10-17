@@ -23,12 +23,16 @@ auto starts_with(std::string_view text, std::uint32_t at, std::string_view prefi
     return text.substr(at, prefix.size()) == prefix;
 }
 
-// Skips a construct that opens with the given prefix and closes with the given
-// terminator. Returns the offset past it, or npos when it is unterminated.
+// Skips a construct that opens at `at` and closes with the given terminator.
+// The search starts past the whole opener, not two bytes into it: ORE ships
+// documents whose comment opens as "<!-->" (an abrupt close that XML forbids
+// and every parser in use repairs), and starting the search inside the opener
+// would end the comment on its own first line and read the rest as markup.
 auto skip_bracketed(std::string_view text,
                     std::uint32_t at,
+                    std::string_view opener,
                     std::string_view terminator) -> std::optional<std::uint32_t> {
-    const auto close = text.find(terminator, at + 2);
+    const auto close = text.find(terminator, at + opener.size());
     if (close == std::string_view::npos)
         return std::nullopt;
     return static_cast<std::uint32_t>(close + terminator.size());
@@ -171,10 +175,10 @@ auto reader::next() -> event {
             if (!starts_with(document_, position_, "<!--") &&
                 !starts_with(document_, position_, "<?"))
                 break;
-            const auto terminator = starts_with(document_, position_, "<!--")
-                                      ? std::string_view("-->")
-                                      : std::string_view("?>");
-            const auto skipped = skip_bracketed(document_, position_, terminator);
+            const bool comment = starts_with(document_, position_, "<!--");
+            const auto opener = comment ? std::string_view("<!--") : std::string_view("<?");
+            const auto terminator = comment ? std::string_view("-->") : std::string_view("?>");
+            const auto skipped = skip_bracketed(document_, position_, opener, terminator);
             if (!skipped)
                 return fail("unterminated comment or processing instruction");
             position_ = *skipped;

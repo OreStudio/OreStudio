@@ -305,6 +305,110 @@ The codec removes both by never creating a float on the path.
 Reversing the order of all nine elements in a document produces identical
 records. A name-keyed table gets this for free; a positional mapper does not.
 
+* The corpus
+
+The stated subset is not a measured one, so the scanner was run over every
+XML document in the repository. =prototype/corpus.cpp= walks a tree, parses
+each document to the end, and prints the root element of each and anything it
+rejected.
+
+| Tree | Documents | Bytes | Rejected |
+|------+-----------+-------+----------|
+| =external/ore= | 1,623 | 23.9 MB | 0 |
+| =assets/test_data= and =doc/agile= | 133 | 0.4 MB | 0 |
+| =external/fpml= and =external/fix= | 2,215 | 20.6 MB | 0 |
+
+3,971 documents, 44.8 MB, no rejection. The FpML and FIX trees are far
+outside the ORE subset and parse anyway; they are in the check because they
+are the cheapest way to keep the scanner honest about prefixes, entities and
+CDATA.
+
+The first run rejected four documents and the reason is worth keeping. All
+four are =ore.xml= files that contain =<!--> 1.D Other Pricing Parameters
+<-->=, a comment opened and abruptly closed on its own line. XML forbids it
+and every parser in use repairs it by running the comment to the next
+=-->=. The scanner ended the comment at the =>= of the opener and read the
+rest of the line as markup.
+
+The fix is to start the terminator search past the four-character opener.
+The lesson is the corpus, not the bug. A subset asserted from reading a
+schema is a guess about what writers do.
+
+The corpus has twenty root elements. Ten of them have a mapper today and ten
+do not.
+
+| Root element | Documents | Mapper today |
+|--------------+-----------+--------------|
+| =Portfolio= | 374 | trades and the instrument families |
+| =ORE= | 422 | the run document |
+| =Simulation= | 189 | none |
+| =PricingEngines= | 125 | pricing engines |
+| =NettingSetDefinitions= | 99 | netting sets |
+| =TodaysMarket= | 99 | today's market |
+| =CurveConfiguration= | 89 | curve configuration |
+| =Conventions= | 72 | conventions |
+| =SensitivityAnalysis= | 51 | none |
+| =StressTesting= | 19 | stress testing |
+| =CreditSimulation= | 14 | credit simulation |
+| =ReferenceData= | 14 | none |
+| =CurrencyConfig= | 13 | currency config |
+| =ScriptLibrary= | 12 | none |
+| =CollateralBalances= | 10 | none |
+| =CalendarAdjustments= | 8 | calendar adjustments |
+| =CounterpartyInformation= | 4 | none |
+| =CrossAssetModel= | 4 | none |
+| =SIMMCalibrationData= | 4 | none |
+| =IborFallbackConfig= | 1 | none |
+
+The ten without a mapper are the reason "cover every use case" needs a
+boundary. Parsing them is free and the gate proves it. Mapping them is new
+work that no current caller needs, and it belongs in its own stories.
+
+* Writing
+
+The read direction is the one under pressure. The write direction is not, so
+the writer is allowed to be asymmetric and should be.
+
+| Keep | Drop |
+|------+------|
+| Element names and nesting | Comments and processing instructions |
+| Required elements | CDATA sections |
+| Attribute names and values | The document's whitespace and indentation |
+| The exact value of every number | The original order within an =xs:all= |
+| Presence and absence of an element | The original spelling of a number |
+| | Attribute order |
+
+Four decisions follow.
+
+**One table, two directions.** The writer walks the same field array in
+schema declaration order. That order is required for =xs:sequence= and is one
+valid choice for =xs:all=. It emits only present fields, so absence survives
+and the writer cannot invent an element the reader did not fill. The two
+directions cannot disagree because there is one table.
+
+**Fixed point, never shortest round trip.** =std::to_chars= with no format
+produces =1e-12= for a rate. That is not a valid =xs:decimal= and some
+readers reject it. The writer needs a fixed-point formatter driven by the
+column's scale, so a =numeric(38,12)= value writes twelve decimal places and
+never exponent notation. It is a small function and a large trap, and it
+earns its own test with the awkward values: zero, one, a negative, a value
+smaller than the scale, and a value at the full 38 digits.
+
+**The lexical form does not survive the database, and should not.** Reading
+keeps the document's digits, so a pure read-then-write round trip is exact.
+The import path, though, stores a =decimal= in =numeric(38,12)= and the
+exporter reads it back from there. The entity is the artefact; the document
+is not. So an export is a re-serialisation, and the round-trip test must
+compare values and not text. Where a document must be reproduced exactly, the
+source document is already kept.
+
+**Cost.** One buffer per writer, reserved from an estimate and grown
+geometrically. Integers through the bounded writer. Escaping only for text
+that contains one of the five characters, decided by one scan. And the writer
+is parallel over record ranges for free, because records are keyed and cannot
+refer to one another inside a document, so a large export writes N buffers
+and concatenates them.
+
 * Conclusions
 
 1. *The generated DOM is the wrong artefact for this seam.* Not only because
@@ -326,29 +430,40 @@ records. A name-keyed table gets this for free; a positional mapper does not.
 5. *The remaining cost is the interface, not the algorithm.* The pull event
    is a known, local optimisation with a clear direction.
 
-* Recommendations
+* How the work divides
 
-1. *Adopt route C in phases*, behind the existing importer and exporter
-   interfaces so no caller changes at once.
-   - Phase 1: the scanner and the read half for one document family.
-     Validate against the round-trip corpus, which already exists.
-   - Phase 2: the write half from the same tables, replacing =save_data= for
-     that family.
-   - Phase 3: widen one document family at a time, deleting each mapper as
-     its replacement lands, rather than keeping both.
-   - Phase 4: retire =xsdcpp= and delete the post-regeneration patches
-     (=reapply_ore_lexical_form.py=, =reapply_export_macros.py=) with it.
-2. *Keep pugixml for the generator.* The schema reader runs once per
-   regeneration and does not need to be fast. It is already a dependency and
-   it stays a build-time tool.
-3. *Do not build a general document library.* No XPath, no run-time schema
-   validation, no DOM. State the subset and reject anything outside it.
-4. *Measure per document family, not once.* Add a size and allocation check
-   per family so the property stays true. A change that reintroduces a heap
-   allocation per element should fail a check, not a review.
-5. *Fix the per-record log formatting on the import path now.* It is the
-   largest single cost in the current importer and it has nothing to do with
-   XML. It is a one-line change and it makes every later measurement honest.
+The recommendation is to adopt route C, in the order below, and to remove
+=xsdcpp= only when nothing depends on it.
+
+Nine tasks, in the order they can merge. Each is a pull request that leaves
+the tree working, and =xsdcpp= only goes when nothing depends on it.
+
+| # | Task | Size | Depends on |
+|---+------+------+------------|
+| 1 | [[id:FAC7E870-E2C5-46E2-A1BF-1F76BA43836F][Gate the scanner on the XML corpus]] | S | - |
+| 2 | [[id:7681078A-B911-4853-BB25-5F2607E87943][Generalise the codec for nested and repeated types]] | L | - |
+| 3 | [[id:2E83CCFB-025F-44F0-B97B-F377CC712BBE][Generate tables for every document family]] | L | 2 |
+| 4 | [[id:48AAB8BF-79FF-4461-B264-1C848C9EAD5C][Write the exporter from the same tables]] | M | 3 |
+| 5 | [[id:96950350-E907-4C03-87FE-1BAF7950FF3D][Migrate the reference data documents]] | M | 4 |
+| 6 | [[id:C010861C-1F2D-4C89-8A3C-4362C0E6F435][Migrate the portfolio documents]] | L | 5 |
+| 7 | [[id:A9C63FEC-D64C-438A-994D-C9F0753F0EAC][Migrate the market and configuration documents]] | L | 5 |
+| 8 | [[id:5C0C929E-7D90-4954-9F46-5E28E69A1484][Stop formatting a log line per imported record]] | S | - |
+| 9 | [[id:5EBC0FAA-6541-420E-B174-E6DA738316E2][Remove xsdcpp]] | M | 6, 7 |
+
+Three things about the order.
+
+- Task 1 comes first because it is the gate every later task is measured
+  against, and it is nearly free today.
+- Task 8 is independent and should be taken early. It removes two thirds of
+  the current importer's cost without touching XML, and it makes every
+  comparison after it honest.
+- Tasks 5, 6 and 7 each migrate one family completely: reader, writer, and
+  the deletion of that family's mapper in the same change. The tree never
+  holds two live implementations of one document.
+
+What the family tasks do not cover is the ten root elements with no mapper
+today. Parsing them is already free and gated. Mapping them is new capability
+and belongs in separate stories, one per family group.
 
 * What this does not settle
 
@@ -370,6 +485,14 @@ records. A name-keyed table gets this for free; a positional mapper does not.
   records are materialised once per batch at the database boundary. If the
   insert path can consume views, the borrowed layout goes all the way and the
   per-value string copy disappears.
+- *What the writer does with content the table cannot express.* A document can
+  carry an element no field claims, because the schema says =xs:any= or
+  because ORE added one. The reader skips it. The writer can only drop it or
+  fail. Dropping silently is how the credit export came to lose a required
+  element from seventeen documents, so the default must be to fail in tests
+  and to count in production.
+- *The ten root elements with no mapper.* Parsing them is gated and free.
+  Mapping them is new capability, and this investigation does not assume it.
 
 * See also
 

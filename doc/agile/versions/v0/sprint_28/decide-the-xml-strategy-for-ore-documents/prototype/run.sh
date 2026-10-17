@@ -47,6 +47,10 @@ clang++ $flags -std=c++23 -O2 -Wall -Wextra -Wno-invalid-offsetof -Wno-unused-pa
     -lores.ore.core -lores.platform -lores.utility -lores.refdata.api -lores.trading.api \
     -L"$build/vcpkg_installed/x64-linux/lib" -lpugixml
 
+clang++ $flags -std=c++23 -O2 -Wall -Wextra -I"$here" \
+    "$here/corpus.cpp" "$here/scanner.cpp" \
+    -o "$here/corpus"
+
 clang++ $flags -std=c++23 -O2 -Wall -Wextra -Wno-unused-parameter -I"$here" \
     "$here/bench_baseline.cpp" \
     -o "$here/bench_baseline" -Wl,--allow-shlib-undefined \
@@ -98,3 +102,7 @@ do
             "$here/bench_baseline" "$document" 2>/dev/null | tail -3 ;;
     esac
 done
+
+echo "== the corpus"
+"$here/corpus" external/ore assets/test_data doc/agile external/fpml external/fix |
+    grep -vE "^  [A-Za-z]+ +[0-9]+$"

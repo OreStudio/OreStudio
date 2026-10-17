@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -83,3 +83,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The durable push consumers are durable now. They are created explicitly with a
+name, a delivery subject and a delivery group derived from the stream and the
+service, and the subscription binds to that consumer instead of creating one of
+its own. The server keeps the consumer and its position across a restart, so a
+command published while the service is down waits for it.
+
+The acceptance was the reproduction that failed before. With ores.compute.service
+stopped, its consumer still existed and reported no interest, where before it
+disappeared. A command published into that window left one unprocessed message on
+the stream and none in flight. Starting the service delivered and acked it: ack
+floor one, unprocessed zero, redelivered zero, and the stream drained.
+
+A full provisioning pass then completed tenant_setup_workflow nine steps of nine
+and nineteen bundle publishes, with all fifteen step-command streams drained to
+zero messages and one acked consumer each. Two consumers predating the restart
+were reused with their original creation time, which exercises the reuse path.
+The suites are 96 of 96.
+
+Not covered, and worth its own task: the down-window delivery has no automated
+test, and MaxDeliver is ten with the default thirty second wait, so a service
+down for more than a few minutes could exhaust delivery attempts for a held
+command. The stream keeps the message for a day, but the delivery bound governs
+push redelivery.

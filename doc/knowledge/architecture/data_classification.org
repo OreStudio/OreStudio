@@ -348,6 +348,9 @@ control is the classification and the invariant, not a number.
 
 * See also
 
+- [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] — the
+  structure note that orders this cluster: it is the first page in that
+  reading order, and this page is where it starts.
 - [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the numbered form a modeller
   fills in, with the worked examples.
 - [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] — the manifest, the coordinator and the

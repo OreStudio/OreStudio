@@ -187,6 +187,9 @@ that was skipped.
 
 * See also
 
+- [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] — the
+  structure note that orders this cluster: this page is the second step in
+  its reading order, and it applies the definitions the first step states.
 - [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle and artefact]]
   — the definitions, the sanctions, the anti-type and the decision rule
   this checklist applies.

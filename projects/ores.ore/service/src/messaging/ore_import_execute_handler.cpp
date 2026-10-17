@@ -2949,7 +2949,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                           "a credit fact type has no import branch");
                         }
                     };
-                    if (!std::visit(write_fact, r.facts))
+                    if (!ores::trading::domain::visit_credit_facts(write_fact, r))
                         return false;
                     if (r.wrapped_index_swap && !write_fact(*r.wrapped_index_swap))
                         return false;

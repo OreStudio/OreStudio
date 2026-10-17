@@ -247,9 +247,8 @@ TEST_CASE("the credit family rows change when a stored field changes", tags) {
 
     const auto before = family_rows(items.front());
     auto& data = std::get<credit_instrument_data>(items.front().instrument);
-    auto* fact = std::get_if<ores::trading::domain::credit_default_swap_instrument>(&data.facts);
-    REQUIRE(fact != nullptr);
-    fact->recovery_rate = 0.123;
+    REQUIRE(!data.credit_default_swap_instruments.empty());
+    data.credit_default_swap_instruments.front().recovery_rate = 0.123;
 
     CHECK(family_rows(items.front()) != before);
 }

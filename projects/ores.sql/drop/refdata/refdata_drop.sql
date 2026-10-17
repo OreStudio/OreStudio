@@ -187,6 +187,8 @@
 \ir ./refdata_tenor_basis_swap_pay_receives_drop.sql
 \ir ./refdata_tenor_basis_swap_long_shorts_notify_trigger_drop.sql
 \ir ./refdata_tenor_basis_swap_long_shorts_drop.sql
+\ir ./refdata_conventions_imports_notify_trigger_drop.sql
+\ir ./refdata_conventions_imports_drop.sql
 \ir ./refdata_conventions_notify_trigger_drop.sql
 \ir ./refdata_conventions_drop.sql
 \ir ./refdata_zero_conventions_notify_trigger_drop.sql
@@ -232,6 +234,8 @@
 \ir ./refdata_netting_set_identifiers_drop.sql
 \ir ./refdata_netting_sets_notify_trigger_drop.sql
 \ir ./refdata_netting_sets_drop.sql
+\ir ./refdata_credit_limits_notify_trigger_drop.sql
+\ir ./refdata_credit_limits_drop.sql
 \ir ./refdata_netting_agreements_notify_trigger_drop.sql
 \ir ./refdata_netting_agreements_drop.sql
 

@@ -88,8 +88,9 @@ Three rules make it correct:
   and it receives nothing.
 - *Logging the failure and continuing.* The service looks healthy and drops
   every message addressed to it.
-- *Renaming a subject without the stream name passed to the subscribe.* The
-  stream is reconciled and the durable is not; see
+- *Renaming a subject without the stream name passed to the subscribe.* A
+  durable consumer is created by name on its stream, so the subscribe cannot
+  run without it and refuses the call; see
   [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]].
 
 * Resulting context

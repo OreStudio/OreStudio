@@ -64,6 +64,16 @@ Three properties define the pattern:
   stored filter differs from the subject asked for, which is what a renamed
   subject leaves behind; see [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]].
 
+The consumer is created explicitly, with a name, a delivery subject derived
+from the stream and that name, and a delivery group named for the service, and
+the subscription is bound to it afterwards. A consumer that the subscribe
+creates itself is removed
+by the server when that subscription drains, even when it is marked durable, and
+a service drains on shutdown; the consumer would then be gone while the service
+restarts. Creating it explicitly keeps the consumer, the delivery subject it
+publishes to, and the position it holds on the server, so a message published
+during the restart waits for the next start to read it.
+
 A durable consumer reads at-least-once. The handler must therefore be safe to
 run twice; see [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]].
 
@@ -80,9 +90,10 @@ run twice; see [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Ide
 
 * Pitfalls
 
-- *Omitting the stream name.* The durable is never reconciled, so a renamed
-  subject leaves a consumer the server refuses to attach and the service does
-  not start.
+- *Omitting the stream name.* The consumer cannot be created by name on a
+  stream, so the call refuses to run: a durable that the subscribe creates is
+  removed on drain, and the next restart would miss every message published
+  while the service was down.
 - *One durable name for two readers.* They share a position and split the work
   between them.
 - *A durable for everything.* A request whose answer is in the reply needs no

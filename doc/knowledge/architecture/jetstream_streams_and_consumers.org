@@ -70,8 +70,8 @@ Everything else is naming.
 // The publisher side: create the stream if it is absent, then keep it honest.
 admin.ensure_stream(stream_name, {subject_filter}, max_age_days, retention);
 
-// The reader side: name the stream and the subscribe reconciles the durable
-// first, then attaches a durable queue group that survives a restart.
+// The reader side: name the stream so the durable is created on it explicitly,
+// then bind a queue subscription to it; both outlive a restart.
 nats.js_queue_subscribe(subject, durable_name, queue_group, handler, stream_name);
 
 // The service side: declare a family of step commands once, and serve the whole
@@ -103,8 +103,18 @@ can take. A stream's subject filter is the contract that decides which publishes
 it holds, so =ensure_stream= compares it, the retention policy and the age limit
 against the ones asked for and *updates* them when any differs, in place. A
 durable consumer stores its own filter, so =js_queue_subscribe= reconciles that
-one the same way when the caller names the stream, also in place. Both
-reconciles are what make a renamed subject heal without losing a position.
+one the same way, also in place. Both reconciles are what make a renamed subject
+heal without losing a position.
+
+The consumer is not left to the subscribe to create. =js_queue_subscribe=
+creates it explicitly, with a delivery subject derived from the stream and the
+consumer name and a delivery group named for the service, and only then binds
+the subscription to it. A
+consumer that the subscribe creates itself is removed by the server when the
+subscription drains, even when it is marked durable, and a service drains on
+shutdown; that is the shape that loses a command published during a restart.
+Creating it explicitly keeps the consumer and its position on the server, and
+keeps the delivery subject stable, so the next start finds both.
 
 * The streams we create
 
@@ -157,16 +167,13 @@ This is the one failure that costs a service its start, and it fails closed.
 A rename rewrites the subject a service subscribes to. =ensure_stream= then
 reconciles the *stream*, so the stream carries the new filter and everything
 looks right. But a durable consumer's filter is stored in the consumer, not the
-stream, and *nothing reconciles a consumer* unless the subscribe is asked to.
-JetStream refuses to attach a durable whose stored filter differs from the one
-the code now asks for, so =js_QueueSubscribe= fails, the service exits, and the
-fleet reads one short with nothing in that service's own log but
-=js_QueueSubscribe failed=.
+stream, and nothing reconciles a consumer unless the subscribe does.
 
-=js_queue_subscribe= closes that hole. Pass the stream name — as
+=js_queue_subscribe= closes that hole. The stream name is required — pass it as
 =make_stream_name= returns it — and the call reads the durable's stored
-configuration first, updates the filter, the ack policy and the delivery bound
-in place where any differs, and only then attaches:
+configuration first, updates the filter, the ack policy, the delivery bound, the
+delivery subject and the delivery group in place where any differs, and only
+then binds:
 
 #+begin_src cpp :results verbatim
 const std::string engine_stream(nats.make_stream_name("workflow"));
@@ -182,12 +189,13 @@ nats.js_queue_subscribe(
 The update is in place because the alternative costs the consumer its position.
 The server accepts a changed filter set, and the consumer keeps its cursor, so
 widening a filter set does not replay a backlog the consumer had already worked
-through. A stored singular filter counts as stale, because one consumer cannot
-serve a family through it.
+through. The filter set is compared as a set, and a stored singular filter is
+read as a set of one, which is how the server stores a single filter. A consumer
+whose configuration already matches is reused as it stands, which is the normal
+restart path.
 
-A caller that passes no stream name subscribes without the check, which is what
-an ephemeral or externally managed consumer wants. A consumer that is absent, or
-that cannot be read, is left alone so the subscribe reports the real reason.
+The stream name is not optional. The consumer is created by name on that stream,
+so a call without it is refused before anything is subscribed.
 
 To read a stored filter by hand:
 

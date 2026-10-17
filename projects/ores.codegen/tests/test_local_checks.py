@@ -174,12 +174,12 @@ def test_every_check_has_a_title_and_a_command():
         assert check.argv, check.id
 
 
-def test_the_heavy_checks_are_the_build_the_database_ctest_and_pgtap():
+def test_the_heavy_checks_are_the_ones_that_need_a_built_tree():
     heavy_ids = {
         check.id for check in local_checks.CATALOGUE
         if check.phase == local_checks.HEAVY
     }
-    assert heavy_ids == {"build", "db", "ctest", "pgtap"}
+    assert heavy_ids == {"build", "db", "ctest", "pgtap", "ore-xml-roundtrip"}
 
 
 def test_only_a_sql_change_runs_the_sql_suites():

@@ -752,6 +752,8 @@ CATALOGUE: tuple[Check, ...] = (
         title="The ORE XML written back from the corpus still validates",
         argv=("bash", "build/scripts/check_ore_xml_roundtrip.sh"),
         classes=("cpp",),
+        paths=("projects/ores.ore/*", "external/ore/xsd/*", "external/ore/examples/*",
+               "build/scripts/check_ore_xml_roundtrip.sh"),
         phase=HEAVY,
         after=("ctest",),
         timeout=900,

@@ -290,6 +290,11 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                     stack[depth++] = {f->type, static_cast<std::byte*>(child)};
                     continue;
                 }
+                // The bit means "this element appeared", not "it carried
+                // text". ORE writes <Symbol></Symbol> for a required element
+                // with no value, and a bit set only on text would report that
+                // as missing.
+                mark_present(top.record, *f);
                 in_leaf = true;
                 pending = f;
                 pending_record = top.record;

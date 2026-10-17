@@ -5,17 +5,27 @@
 # One invocation per document family. The schemas are the authority for the
 # shape; the money list is the authority for what a numeric element means to
 # us, because ORE types the same money concept three different ways.
+#
+# XML_BINDINGS_OUT writes the same files under another root, which is how the
+# drift check compares what the schemas produce with what is committed.
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root="$(cd "$here/../../.." && pwd)"
 cd "$root"
 
+out="${XML_BINDINGS_OUT:-$root}"
 xsd=external/ore/xsd
-header=projects/ores.ore/core/include/ores.ore.core/xml/generated
-source=projects/ores.ore/core/src/xml/generated
+header="$out/projects/ores.ore/core/include/ores.ore.core/xml/generated"
+source="$out/projects/ores.ore/core/src/xml/generated"
 
-python3 "$here/generate_xml_bindings.py" \
+mkdir -p "$header" "$source"
+
+generate() {
+    python3 "$here/generate_xml_bindings.py" "$@"
+}
+
+generate \
     --schema "$xsd/calendaradjustment.xsd" \
     --schema "$xsd/ore_types.xsd" \
     --root-element CalendarAdjustments \
@@ -24,3 +34,13 @@ python3 "$here/generate_xml_bindings.py" \
     --include "ores.ore.core/xml/generated/calendar_adjustments.hpp" \
     --header "$header/calendar_adjustments.hpp" \
     --source "$source/calendar_adjustments.cpp"
+
+generate \
+    --schema "$xsd/currencyconfig.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element CurrencyConfig \
+    --root-type currencyConfig \
+    --accessor currency_config_document \
+    --include "ores.ore.core/xml/generated/currency_config.hpp" \
+    --header "$header/currency_config.hpp" \
+    --source "$source/currency_config.cpp"

@@ -377,6 +377,20 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("docs", "tooling"),
         paths=("doc/*", "build/scripts/check_pattern_uses.py"),
     ),
+    # The generated tables are the only copy of the schema's shape we keep, so
+    # a hand edit or a schema change that the tables did not follow is the same
+    # failure from here.
+    Check(
+        id="xml-bindings-drift",
+        title="The generated codec tables match the schemas",
+        argv=("python3", "build/scripts/check_xml_bindings_drift.py"),
+        classes=("cpp", "codegen"),
+        paths=("projects/ores.ore/scripts/*",
+               "projects/ores.ore/core/include/ores.ore.core/xml/generated/*",
+               "projects/ores.ore/core/src/xml/generated/*",
+               "external/ore/xsd/*"),
+        fix="Run ./projects/ores.ore/scripts/regenerate_xml_bindings.sh and commit.",
+    ),
     # The gate is narrow on purpose: it only applies when a file that changes
     # what the benchmark measures changed. A change to the XML sources, or to
     # the benchmark's own harness, owes a measurement; nothing else does.

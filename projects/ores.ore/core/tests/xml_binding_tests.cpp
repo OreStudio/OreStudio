@@ -19,6 +19,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
+#include "ores.ore.core/xml/generated/currency_config.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -35,6 +36,8 @@ using namespace ores::logging;
 using namespace ores::ore::xml;
 using ores::ore::xml::generated::calendar_adjustments_document;
 using ores::ore::xml::generated::calendaradjustment;
+using ores::ore::xml::generated::currency_config;
+using ores::ore::xml::generated::currency_config_document;
 
 // The calendar family's records and tables are generated from the schema by
 // projects/ores.ore/scripts/regenerate_xml_bindings.sh, and the generated names
@@ -232,4 +235,66 @@ TEST_CASE("every_calendar_adjustment_in_the_corpus_binds", tags) {
     CHECK(files > 0);
     CHECK(report.empty());
     CHECK(calendars > 40);
+}
+
+TEST_CASE("the_generated_currency_tables_bind_a_document", tags) {
+    auto lg(make_logger(test_suite));
+
+    // An enumeration, two integers and an xs:all, so the table exercises the
+    // kinds the calendar family does not.
+    const std::string text =
+        "<CurrencyConfig>"
+        "<Currency>"
+        "<Name>US Dollar</Name><ISOCode>USD</ISOCode><NumericCode>840</NumericCode>"
+        "<Symbol>$</Symbol><FractionSymbol>c</FractionSymbol>"
+        "<FractionsPerUnit>100</FractionsPerUnit>"
+        "<RoundingType>Closest</RoundingType><RoundingPrecision>2</RoundingPrecision>"
+        "</Currency>"
+        "</CurrencyConfig>";
+
+    currency_config record;
+    bind_error error;
+    const bool bound = binder::bind(currency_config_document(), text, &record, error);
+
+    INFO(error.message);
+    REQUIRE(bound);
+    REQUIRE(record.currency.size() == 1);
+    CHECK(record.currency[0].iso_code == "USD");
+    CHECK(record.currency[0].numeric_code == 840);
+    CHECK(record.currency[0].rounding_precision == 2);
+    CHECK(record.currency[0].rounding_type == 2);
+    CHECK(record.currency[0].currency_type.empty());
+}
+
+TEST_CASE("every_currency_config_in_the_corpus_binds", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
+    REQUIRE(fs::is_directory(root));
+
+    std::size_t files = 0;
+    std::size_t currencies = 0;
+    std::string report;
+
+    for (const auto& entry : fs::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file())
+            continue;
+        const auto name = entry.path().filename();
+        if (name != "currencies.xml" && name != "currencyconfig.xml")
+            continue;
+        ++files;
+        currency_config record;
+        bind_error error;
+        if (!binder::bind(currency_config_document(), read_file(entry.path()), &record, error)) {
+            report += entry.path().string() + ": " + error.message + "\n";
+            continue;
+        }
+        currencies += record.currency.size();
+    }
+
+    INFO("files: " << files << ", currencies: " << currencies);
+    INFO(report);
+    CHECK(files > 0);
+    CHECK(report.empty());
+    CHECK(currencies > 1000);
 }

@@ -94,7 +94,14 @@ task and name that file in the Command column.
 | Typecheck | exit 0 | =npm run typecheck= from =projects/ores.web= | =7687118e92= |
 | Web build | exit 0 | =npm run build= from =projects/ores.web= | =7687118e92= |
 | SQL timezone proof | identical =2026-10-17 14:39:57.246326Z= under UTC and Europe/London; old text =2026-10-17 15:39:57.246326+01= under London | =compass sql -- -c "set time zone 'UTC'; select to_char(event_time at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z' ...; set time zone 'Europe/London'; ..."= | =e45eedb266= |
-| C++ targeted build | pending a build-lock slot | =./compass.sh build ores.iam.service.exe ores.platform.tests -j6= | — |
+| Wire-protocol tests | 203 passed, 21 files | =npx vitest run= in =packages/wire-protocol= | =7f58f494a0= |
+| Whole web suite | bff 780, web 1582, contracts 16, org 59, wire-protocol 203 — all passed | =npm test= from =projects/ores.web= | =7f58f494a0= |
+| Typecheck | exit 0 | =npm run typecheck= from =projects/ores.web= | =7f58f494a0= |
+| Web build | exit 0 | =npm run build= from =projects/ores.web= | =7f58f494a0= |
+| C++ build | exit 0 | =./compass.sh build -j6= after =compass services stop= | =7f58f494a0= |
+| Database recreate | exit 0; schema =2f65cff87e0740ae=; =end_time timestamp with time zone NULL= | =compass db recreate -y -k= | =7f58f494a0= |
+| Empty-string sentinel grep | no matches | =git grep -nE "(end_time|endTime)[[:space:]]*[:=][[:space:]]*(''|\"\")"= | =7f58f494a0= |
+| Live sessions endpoint | =endTime= is =null= for an open session and ="2026-10-17 22:09:39.000000Z"= for a closed one | =curl -b jar http://127.0.0.1:20402/api/sessions= | =7f58f494a0= |
 
 * Notes
 
@@ -232,13 +239,54 @@ via its "Verifies task" field.
   work stays fixed against the rebuilt service.
 - No =MalformedResponseError= appears in the BFF journal for either call.
 
-** Still open
+** The remaining sentinels removed
 
-- =session.endTime= keeps its producer's =to_db_string= shape (no designator,
-  no =Z=) and its empty string means "still open". Typing it now would turn a
-  silent bug into a crash against live closed sessions, so it is left as a
-  producer fix of its own, recorded under Notes.
-- The =timestamp_to_timepoint= ambiguity between the =std::string_view= and
-  =db_timestamp= overloads is resolved in =06ddd7ed91=: the =db_timestamp=
-  overload appends ="+00"= before parsing, which on the =Z=-suffixed value the
-  read now produces would build =…246326Z+00= and fail.
+- =session.end_time= is a nullable =timestamp with time zone=, not =text not
+  null default ''=. The domain, entity and protocol hold
+  =std::optional<time_point>=, and an open session has no closing instant.
+  =GET /api/sessions= returns ="endTime":null= for the open session and
+  ="endTime":"2026-10-17 22:09:39.000000Z"= for the closed one, both quoted
+  from the same reply.
+- The inbox's notification =raised_at=/=read_at= and a part's =decided_at= are
+  =time_point=/=optional<time_point>=. The service reads the column through
+  =from_db_string= and throws when a non-null column is null; it no longer
+  writes the =to_char(... '"T"' ...)= spelling.
+- The compute telemetry =sampled_at=, =start_time= and =end_time= are
+  =time_point=; the handler no longer parses or formats them itself, and the
+  wrapper no longer formats one with =std::format(...T...)=.
+- Every instant in =packages/wire-protocol/src= is typed with
+  =wireTimestampSchema= or =nullableWireTimestampSchema=. The 50 field
+  declarations are listed by
+  =git grep -nE "^[[:space:]]+[a-zA-Z_]+:[[:space:]]+(nullable)?wireTimestampSchema" -- 'projects/ores.web/packages/wire-protocol/src/*.ts'=.
+- =wireTimestampOrAbsentSchema= is deleted: it admitted =''= as a second
+  spelling of "no instant". =nullableWireTimestampSchema= is the only one.
+- The screen helper no longer parses timestamps itself. It delegates to the
+  wire parser, and a value that is not the wire shape is logged with its bytes
+  and thrown; =isZeroTimestamp= keeps only the epoch rule.
+- A change event and a published message that fail to parse are logged and
+  thrown, not dropped. The transport logs the error that stops a subscription.
+- The =timestamp_to_timepoint= ambiguity was not resolved by =06ddd7ed91=:
+  the =std::string_view= call still selected neither overload and the branch
+  did not build. The auth-event read now calls
+  =datetime::from_iso8601_utc= directly, so the choice is stated.
+
+** Deferred, with the reason
+
+- =marketdata.feed_binding_activity.last_tick_at= is still a =std::string=
+  that is =''= when a source has written nothing. It is a marketdata protocol
+  field whose web schema lives in =@ores/contracts=, a package with no
+  =wire-protocol= dependency; typing it needs that package's ownership decision
+  and is a separate change. It is named here rather than left silent.
+- =iam= auth-event and session-statistics =from_time=/=to_time= are outgoing
+  filter strings in the generated protocol, with no web schema, and an empty
+  value means "no bound". They are not instants a server returns and were not
+  touched.
+- =login_info.last_login= is a NOT NULL column whose zero instant means "never
+  signed in". The web types it as the wire shape and =isZeroTimestamp= keeps
+  the epoch rule for display; making the column nullable is a model change of
+  its own, not a wire-typing fix.
+- HTTP contract schemas outside =wire-protocol= (=contracts/=, =web/src/api/=)
+  still spell some instants as =z.string()=. Their producers emit the wire
+  shape, so they are tolerant rather than wrong, but they are not the one
+  owner and are left for a follow-up that gives =@ores/contracts= the
+  dependency.

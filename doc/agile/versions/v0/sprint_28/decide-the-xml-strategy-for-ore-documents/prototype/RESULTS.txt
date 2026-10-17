@@ -1,0 +1,78 @@
+== one document end to end (currencies.xml, 179 records)
+-- variant 1
+document   : external/ore/examples/Input/currencies.xml (63341 bytes)
+rows       : 179
+best       : 2.779 ms
+allocations: 4674 (526276 bytes)
+sample     : AED|United Arab Emirates dirham|784|||100|Closest|2|Major
+-- variant 2
+document   : external/ore/examples/Input/currencies.xml (63341 bytes)
+rows       : 179
+best       : 0.148 ms
+allocations: 446 (35904 bytes)
+sample     : AED|United Arab Emirates dirham|784|||100|Closest|2|Major
+-- variant 3
+document   : external/ore/examples/Input/currencies.xml (63341 bytes)
+rows       : 179
+best       : 0.207 ms
+allocations: 535 (156432 bytes)
+sample     : AED|United Arab Emirates dirham|784|||100|Closest|2|Major
+-- variant 4
+document   : external/ore/examples/Input/currencies.xml (63341 bytes)
+rows       : 179
+best       : 0.149 ms
+allocations: 2 (161 bytes)
+sample     : 4855
+-- variant 5
+document   : external/ore/examples/Input/currencies.xml (63341 bytes)
+scanner    : 0.10 ms  613 MB/s  4832 events
+== round trip
+document   : external/ore/examples/Input/currencies.xml (63341 bytes)
+rows       : 179
+written    : 52601 bytes
+round trip : identical
+== numbers a binary float cannot hold
+-- portfolio.xml
+numeric    : 860
+digits lost: 2 (0.2%)
+float loss : 139 (16.2%)
+form lost  : 295 (34.3%)
+-- curveconfig.xml
+numeric    : 2101
+digits lost: 0 (0.0%)
+float loss : 0 (0.0%)
+form lost  : 2081 (99.0%)
+-- ois_portfolio.xml
+numeric    : 739
+digits lost: 0 (0.0%)
+float loss : 68 (9.2%)
+form lost  : 364 (49.3%)
+== parser throughput
+-- currencies.xml
+scanner    : 0.10 ms  619 MB/s  4832 events
+pugixml    : 0.05 ms  1206 MB/s
+size       : 63341 bytes
+xsdcpp load: 0.44 ms  (allocs 2252, bytes 147079)
+peak rss   : 81768 kB
+-- portfolio.xml
+scanner    : 0.77 ms  618 MB/s  24493 events
+pugixml    : 0.94 ms  509 MB/s
+xsdcpp     : not measured (stale build tree)
+-- curveconfig.xml
+scanner    : 1.13 ms  664 MB/s  47944 events
+pugixml    : 1.61 ms  466 MB/s
+size       : 750993 bytes
+xsdcpp load: 7.71 ms  (allocs 73851, bytes 2809121)
+peak rss   : 84340 kB
+-- conventions.xml
+scanner    : 1.61 ms  586 MB/s  67752 events
+pugixml    : 3.45 ms  274 MB/s
+size       : 945027 bytes
+xsdcpp load: 9.14 ms  (allocs 41008, bytes 2796135)
+peak rss   : 84772 kB
+-- calendar_adjustments.xml
+scanner    : 11.84 ms  531 MB/s  621639 events
+pugixml    : 30.50 ms  206 MB/s
+size       : 6290794 bytes
+xsdcpp load: 46.58 ms  (allocs 18029, bytes 23242382)
+peak rss   : 96956 kB

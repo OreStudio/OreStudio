@@ -152,6 +152,38 @@ struct bind_error {
 };
 
 /**
+ * @brief The field a type declares under a name, or null when it declares none.
+ *
+ * A projection from a record into a domain type asks the table which fields
+ * exist rather than repeating the schema, so a renamed element is a generated
+ * change and not a silent disagreement.
+ */
+ORES_ORE_CORE_EXPORT auto find_field(const record_type& type, std::string_view name,
+                                     bool attribute) -> const field*;
+
+/**
+ * @brief Whether a record states a value for the named field.
+ *
+ * An element that holds an empty string is present and empty, and one that
+ * never arrived is absent: the presence bit is the difference, and a
+ * projection that reads a member without it cannot tell the two apart.
+ */
+ORES_ORE_CORE_EXPORT auto is_present(const record_type& type, const void* record,
+                                     std::string_view name) -> bool;
+
+/**
+ * @brief Marks the named field of a record as present.
+ *
+ * The reader sets the bit when the element arrives. A record built by a
+ * projection states that itself, because the writer writes only the fields
+ * whose bit is set -- a value set without its bit is written nowhere.
+ *
+ * @return False when the type declares no such field.
+ */
+ORES_ORE_CORE_EXPORT auto mark_present(const record_type& type, void* record,
+                                       std::string_view name) -> bool;
+
+/**
  * @brief Fills one record from one document, as the scanner walks past it.
  *
  * The engine holds a stack of at most max_depth frames, each a type and the

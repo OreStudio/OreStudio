@@ -21,15 +21,20 @@
 #define ORES_ORE_CORE_DOMAIN_CALENDAR_ADJUSTMENT_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
 #include <vector>
 
 namespace ores::ore::domain {
 
 /**
- * @brief Maps between ORE XML calendar adjustment types and refdata domain types.
+ * @brief Projects one calendar adjustment record into the refdata message.
+ *
+ * The XML is read by the codec, not by this class: a calendar adjustment
+ * arrives as the record the generated table describes, and the work left is
+ * the part no table can carry -- which ORE element becomes which field of our
+ * own message, and what a date in the document means.
  */
 class ORES_ORE_CORE_EXPORT calendar_adjustment_mapper {
 private:
@@ -42,12 +47,14 @@ private:
     }
 
 public:
-    static refdata::messaging::calendar_adjustment map(const newcalendar& v);
-    static std::vector<refdata::messaging::calendar_adjustment> map(const calendaradjustment& v);
+    using record = xml::generated::calendar_adjustments::newcalendar;
+    using document = xml::generated::calendar_adjustments::calendaradjustment;
 
-    static newcalendar reverse(const refdata::messaging::calendar_adjustment& v);
-    static calendaradjustment
-    reverse(const std::vector<refdata::messaging::calendar_adjustment>& v);
+    static refdata::messaging::calendar_adjustment map(const record& v);
+    static std::vector<refdata::messaging::calendar_adjustment> map(const document& v);
+
+    static record reverse(const refdata::messaging::calendar_adjustment& v);
+    static document reverse(const std::vector<refdata::messaging::calendar_adjustment>& v);
 };
 
 }

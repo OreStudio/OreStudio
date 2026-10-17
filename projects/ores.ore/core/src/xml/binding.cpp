@@ -213,6 +213,36 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
 
 }
 
+auto find_field(const record_type& type, std::string_view name, bool attribute) -> const field* {
+    return find(type, name, attribute);
+}
+
+/**
+ * @brief The field a name denotes, whether the schema writes it as an element
+ * or as an attribute.
+ *
+ * A projection names a member the way the document does, and the document
+ * does not say which of the two it is: an attribute is a member of the same
+ * record, so both are searched rather than making every caller remember.
+ */
+auto find_by_name(const record_type& type, std::string_view name) -> const field* {
+    const auto* f = find(type, name, false);
+    return f != nullptr ? f : find(type, name, true);
+}
+
+auto is_present(const record_type& type, const void* record, std::string_view name) -> bool {
+    const auto* f = find_by_name(type, name);
+    return f != nullptr && present(record, *f);
+}
+
+auto mark_present(const record_type& type, void* record, std::string_view name) -> bool {
+    const auto* f = find_by_name(type, name);
+    if (f == nullptr)
+        return false;
+    mark_present(record, *f);
+    return true;
+}
+
 auto binder::bind(const document_type& doc, std::string_view text, void* root)
     -> std::expected<void, bind_error> {
     // A frame is either a record being filled or a leaf awaiting its text. A

@@ -31,10 +31,13 @@
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
+#include "ores.ore.core/xml/emitter.hpp"
+#include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <optional>
+#include <stdexcept>
 
 namespace ores::ore::xml {
 
@@ -103,8 +106,13 @@ std::string exporter::export_currency_config(const std::vector<currency>& v) {
 std::string exporter::export_calendar_adjustments(
     const std::vector<refdata::messaging::calendar_adjustment>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting " << v.size() << " calendar adjustments.";
-    const auto xsd = domain::calendar_adjustment_mapper::reverse(v);
-    return domain::save_data(xsd);
+    const auto record = domain::calendar_adjustment_mapper::reverse(v);
+    std::string out;
+    const auto emitted = emitter::emit(
+        generated::calendar_adjustments::calendar_adjustments_document(), &record, out);
+    if (!emitted)
+        throw std::runtime_error(emitted.error().message);
+    return out;
 }
 
 std::string exporter::export_conventions(const ores::refdata::messaging::conventions_document& mc) {

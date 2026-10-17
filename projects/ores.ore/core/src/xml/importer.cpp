@@ -23,9 +23,12 @@
 #include "ores.ore.core/domain/currency_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
+#include "ores.ore.core/xml/binding.hpp"
+#include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/nil_generator.hpp>
+#include <stdexcept>
 #include <sstream>
 
 namespace ores::ore::xml {
@@ -90,11 +93,21 @@ importer::import_calendar_adjustments(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
-    const std::string c(file::read_content(path));
+    return import_calendar_adjustments_text(file::read_content(path));
+}
+
+std::vector<refdata::messaging::calendar_adjustment>
+importer::import_calendar_adjustments_text(std::string_view text) {
+    const std::string c(text);
     BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
 
-    domain::calendaradjustment ca;
-    domain::load_data(c, ca);
+    domain::calendar_adjustment_mapper::document ca;
+    const auto bound = binder::bind(generated::calendar_adjustments::calendar_adjustments_document(),
+                                    c, &ca);
+    if (!bound)
+        throw std::runtime_error("calendar adjustments: line " +
+                                 std::to_string(bound.error().line) + ": " +
+                                 bound.error().message);
     const auto r = domain::calendar_adjustment_mapper::map(ca);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " calendar adjustments.";

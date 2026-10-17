@@ -161,7 +161,27 @@ not run, rerun or edit anything.
    The screen says there is nothing to take, states that the run failed, and
    sends the reader to the run's errors. The empty answer is explained, not
    dressed as an empty folder.
-11. *Take it away, or leave.* The person copies the storage key, downloads the
+11. *Compare the run with a previous run.* A run's figures answer what the
+    books were worth; they do not answer what changed. The person chooses a
+    previous completed run of the same definition on the result panel, or turns
+    the comparison off. The panel names the baseline by its run instance id and
+    its start time, and never by a report number. Each aggregate figure, each
+    book row, each tree node and the total row then carries its change and its
+    percentage against that run. Both sides are the actual figures of two runs and
+    the change is subtraction: no figure is multiplied by a constant to stand in
+    for another run, because a per-metric multiplier moves every book by the same
+    percentage and the change is then fiction. A stress scenario is not a run of
+    this report, and yesterday's official close belongs to a different run, so
+    neither is offered as a baseline. When either run in the comparison carried
+    errors, the change is partial: a total over the trades that survived cannot be
+    compared as if it were the whole answer. The badge carries a =partial= marker
+    and the screen says so once in words, with what the current run's errors leave
+    out. The book tree's selected node drives both sides, so selecting a book
+    compares that book across the two runs. Reading an earlier run's figures needs
+    the same parsed result the current run needs, so the comparison waits on the
+    same missing read twice; =reporting.v1.report_instances.list= is the existing
+    read that finds the earlier runs of the definition.
+12. *Take it away, or leave.* The person copies the storage key, downloads the
     archive through the route the screen provides, or follows the error screen.
     The run remains the record: its outputs do not expire with the screen, and a
     person who comes back later reads the same key.
@@ -188,6 +208,13 @@ trade count and an aggregate NPV at each node, an unbooked node for the trades
 that have no booking, and a selected node that filters the per-trade rows to its
 subtree.
 
+The result panel also carries the comparison: the control that chooses a previous
+run of the definition, the change badge under each figure, the change columns on
+the book tree and the by-book table, and the total row. When either side of the
+comparison carried errors the badge and the panel mark every change as partial,
+because a change between one incomplete figure and one complete figure is not the
+change the two runs would show.
+
 * Prototype
 
 The [[file:../../prototypes/reporting/read-what-a-run-produced/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/read-what-a-run-produced.org][its design note]] says what each argues and what is fake. This journey is the design intent for the run's outputs screen, and
@@ -211,7 +238,15 @@ whose results carry errors, with the banner above the figures, the marker and th
 footnote on the figures, the marked books and portfolios, and the row of every
 trade the engine could not build. Because a person must be able to find that case
 on purpose, the prototype selects it by a fixture chip and by =?scenario= on the
-URL.
+URL. It must draw the comparison too, on the result panel: a control that chooses
+a previous completed run of the same definition or no comparison, every aggregate
+figure, book row, tree node and the total row carrying its change and percentage
+against that run, the baseline named by its instance id and start time, and the
+=partial= marking on the change when either side carried errors. The page opens
+with the previous run chosen and =?baseline=none= turns the comparison off.
+Because an earlier run's
+figures need the same parsed result the current run needs, the changes are a
+fixture like the figures, and the panel says so.
 
 * Entities composed
 
@@ -264,6 +299,8 @@ the output of a run from last week.
 | Read the errors | List the run's errors | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
 | Read a partial result | Read the errors that make a completed run's results partial | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
 | Read a partial result | Read the per-trade rows, to draw the trades that carry no price | (no operation parses the archive) | missing |
+| Compare with a previous run | List the earlier completed runs of the same definition | =reporting.v1.report_instances.list= | exists |
+| Compare with a previous run | Read the baseline run's figures, book rows and total | (no operation parses the archive) | missing |
 | Read the errors | Read one error | =reporting.v1.report_error_events.get= | exists |
 | Read the errors | Read the scope vocabulary | =reporting.v1.report_error_scopes.list= | exists |
 | Read the package | Prepare the ORE package the engine reads | =ore.v1.ops.prepare_ore_package= | exists |
@@ -291,6 +328,12 @@ for the portfolios and their =parent_portfolio_id=,
 and =trading.v1.trade_bookings.list= for each trade's =book_id=. The two that do
 not exist are the read of a result grouped by book and
 =portfolios.list_by_parent_portfolio_id=, and both are in *What is missing*.
+
+The comparison adds one existing read and no new one: =report_instances.list=
+returns the runs of a definition, and the baseline is the earlier completed one
+among them. Reading the baseline's figures needs the parsed result this journey
+already needs, so a comparison is one read the platform has and two parsed
+results it does not.
 
 The reads are gated by =reporting::report_instances:read= and
 =reporting::report_definitions:read=, and the errors by

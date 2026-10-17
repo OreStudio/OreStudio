@@ -21,13 +21,24 @@
   archive and a manifest of its files first, C puts a written summary first.
   The variants disagree about what "the result" is, not about colour.
 
-  The fixture bar at the top of the page picks one of five mock runs: completed
+  The fixture bar at the top of the page picks one of six mock runs: completed
   clean, completed carrying 8 Analytics errors and 3 Configuration warnings,
-  failed, in flight, and a substituting run that completed clean. Beside them sits
-  one scenario chip, results-with-errors, also reachable with
-  ?scenario=results-with-errors: the completed run that carries errors drawn with
-  its results saying they are partial. The bar at the foot prints the live
-  variant, the scenario and the state it is showing.
+  failed, in flight, a substituting run that completed clean, and a second
+  Headline Position run a day earlier which is the baseline the completed run is
+  compared against. Beside them sits one scenario chip, results-with-errors, also
+  reachable with ?scenario=results-with-errors: the completed run that carries
+  errors drawn with its results saying they are partial. The bar at the foot
+  prints the live variant, the scenario and the state it is showing.
+
+  Variant A's result panel compares. The control under the analytics names a
+  previous completed run of the same definition, or no comparison; it defaults to
+  the previous run so the feature is visible on load, and ?baseline=none turns it
+  off. Each figure, each book row, each tree node and the total row then carries
+  its change and percentage against that run, whose instance id and start time
+  are printed beside the control. The baseline's figures are that run's own
+  fixture numbers, never this run's numbers scaled, so the books move by
+  different amounts. A change whose two sides are not both complete is marked
+  partial: the results-with-errors scenario shows the current run's case.
 
   Honest gaps, repeated on the page: no operation lists the files inside a
   run's archive, no operation or route serves the archive's bytes, and no read

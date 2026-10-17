@@ -33,7 +33,7 @@
  * Analytics / Configuration / Report, and severities error / warning. The
  * engine messages are drawn from real log_structured.json lines.
  *
- * One scenario sits beside the five runs: results-with-errors (?scenario=
+ * One scenario sits beside the six runs: results-with-errors (?scenario=
  * results-with-errors, or its chip). It takes the run that already carries
  * eleven problems and draws the connection between the errors and the results:
  * a banner above the figures saying the results are partial, a marker on the
@@ -43,6 +43,33 @@
  * total read as if it did. The errors are the run's own rows, read by
  * reporting.v1.report_error_events.list_by_report_instance_id, which exists; no
  * operation is invented for it.
+ *
+ * The result panel also compares. A completed run carries a control that picks
+ * another completed run of the same definition, started before it, or no run at
+ * all; the page defaults to the previous one, so a reviewer meets the comparison
+ * without hunting for it, and ?baseline=none turns it off. Each aggregate
+ * figure, each book row, each tree node and the total row then carries its
+ * change and its percentage against that run, and the panel names the baseline
+ * by its instance id and its start time.
+ *
+ * The comparison is arithmetic on two fixtures, and that is the point of it. The
+ * second Headline Position run below is a run of the same definition one day
+ * earlier, with its own figures per book, so ten books move by ten different
+ * amounts. Nothing here multiplies one run's numbers by a constant to invent a
+ * baseline, because a per-metric multiplier makes every book move by the same
+ * percentage and the change is then fiction. A stress scenario is not a previous
+ * run of this definition, and yesterday's official close belongs to a different
+ * run, so neither is offered as a baseline: the only sound comparison is another
+ * run of the same definition. A run is named by its instance id and its start
+ * time, never by a report number.
+ *
+ * A change is only as honest as the two numbers under it. When either run in the
+ * comparison carries errors the change is partial: a total over the trades that
+ * survived cannot be compared as if it were the whole answer. The badge carries
+ * the mark and the panel says so once in words, and the results-with-errors
+ * scenario shows what the current run's errors leave out. The book tree's
+ * selected node drives both sides, so selecting a book compares that book across
+ * the two runs.
  */
 
 (function () {
@@ -325,12 +352,16 @@
                 'todaysmarketcalibration.csv', 'fixings.csv', 'dividends.csv',
                 'runtimes.csv', 'log.txt', 'log_structured.json'],
             fileScale: 1,
+            /* n is the figure the value string prints, as a number. A change is
+               subtraction on two such numbers and nothing else: no figure is
+               scaled to make a baseline out of it. A figure that has no n is one
+               the page will not compare. */
             figures: [
-                { value: 'USD 88,402,114', label: 'NPV', note: 'npv, base currency USD, all books' },
-                { value: 'USD 1,846,818', label: 'Delta', note: 'sensitivity, summed over the books' },
-                { value: 'USD 52,350', label: 'Gamma', note: 'sensitivity, summed over the books' },
-                { value: '18,204', label: 'positions priced', note: 'the rows npv.csv carries' },
-                { value: '10', label: 'books', note: 'each trade in exactly one' }
+                { value: 'USD 88,402,114', n: 88402114, label: 'NPV', note: 'npv, base currency USD, all books' },
+                { value: 'USD 1,846,818', n: 1846818, label: 'Delta', note: 'sensitivity, summed over the books' },
+                { value: 'USD 52,350', n: 52350, label: 'Gamma', note: 'sensitivity, summed over the books' },
+                { value: '18,204', n: 18204, label: 'positions priced', note: 'the rows npv.csv carries' },
+                { value: '10', n: 10, label: 'books', note: 'each trade in exactly one' }
             ],
             table: {
                 title: 'NPV, Delta and Gamma by book',
@@ -469,6 +500,67 @@
                 'Its configuration names two analytics, <span class="mono">npv</span> and <span class="mono">saccr</span>. npv priced <span class="fig">2,292 positions</span> and returned NPV of <span class="fig">USD 383,853,078</span>; saccr returned an EAD of <span class="fig">USD 2.14 bn</span> over <span class="fig">6 counterparties</span>. ACME BANK PLC carried the largest EAD, at <span class="fig">USD 612.4 m</span>.',
                 'The engine reported nothing. The output is at <span class="key">reporting/runs/9a20c7d1-4f68-4e93-b7c5-1d8e6f2a4b03/output.tar.gz</span>, and the figures above are a reading of npv.csv and saccr.csv that nothing yet parses. This configuration writes no cashflow.csv and no capital_crif.csv, and the archive holds neither.'
             ]
+        },
+        {
+            /* The run a completed run is compared against. It is a real fixture
+               in the only sense this page has: a second run of the same
+               definition, a day earlier, with its own figures. Every number
+               below is its own. Nothing is derived from the run of 17 October by
+               a multiplier, so the change per book is the difference between two
+               fixtures and the books move by different amounts. It completed
+               clean, so a comparison against it is not against a partial
+               baseline. */
+            id: '2a58d0f4-7e31-4b96-8c05-6d1e9a3f2b48',
+            short: '2a58d0f4',
+            report: 'Headline Position',
+            definition: 'Headline Position',
+            party: 'ACCOUK',
+            kind: 'production',
+            reportType: 'risk',
+            state: 'completed',
+            startedAt: '2026-10-16 09:02:11',
+            completedAt: '2026-10-16 09:06:02',
+            duration: '3 m 51 s',
+            outputMessage: 'Report execution completed.',
+            key: 'reporting/runs/2a58d0f4-7e31-4b96-8c05-6d1e9a3f2b48/output.tar.gz',
+            preProcessing: 'execute',
+            analytics: ['npv', 'sensitivity'],
+            files: ['npv.csv', 'sensitivity.csv', 'pricingstats.csv', 'marketdata.csv',
+                'todaysmarketcalibration.csv', 'fixings.csv', 'dividends.csv',
+                'runtimes.csv', 'log.txt', 'log_structured.json'],
+            fileScale: 0.94,
+            figures: [
+                { value: 'USD 87,219,062', n: 87219062, label: 'NPV', note: 'npv, base currency USD, all books' },
+                { value: 'USD 1,818,348', n: 1818348, label: 'Delta', note: 'sensitivity, summed over the books' },
+                { value: 'USD 51,510', n: 51510, label: 'Gamma', note: 'sensitivity, summed over the books' },
+                { value: '18,162', n: 18162, label: 'positions priced', note: 'the rows npv.csv carries' },
+                { value: '10', n: 10, label: 'books', note: 'each trade in exactly one' }
+            ],
+            table: {
+                title: 'NPV, Delta and Gamma by book',
+                note: 'A reading of npv.csv and sensitivity.csv, which nothing parses yet. Delta and Gamma are the NPV change for a one basis point shift.',
+                columns: ['Book', 'Positions', 'NPV (USD)', 'Delta (USD)', 'Gamma (USD)'],
+                rows: [
+                    ['GBP Rates', '4,180', '39,804,118', '588,204', '17,412'],
+                    ['EUR Rates', '3,960', '28,904,118', '502,118', '14,502'],
+                    ['USD Rates', '5,080', '12,104,118', '396,204', '8,804'],
+                    ['FX Options', '1,842', '4,302,118', '171,204', '6,204'],
+                    ['Inflation', '1,046', '984,118', '88,204', '2,704'],
+                    ['Equity', '642', '302,118', '14,884', '468'],
+                    ['Liquidity Buffer Bonds', '622', '402,118', '26,118', '560'],
+                    ['Group FX Hedges', '488', '190,118', '16,204', '428'],
+                    ['Group Intercompany Loans', '276', '108,118', '13,204', '386'],
+                    ['Unbooked', '26', '118,000', '2,004', '42']
+                ]
+            },
+            errors: [],
+            story: [
+                'Headline Position finished at <span class="fig">09:06:02</span>, <span class="fig">three minutes and fifty-one seconds</span> after ACCOUK asked for it. It was a production run: pre-processing gathered the party\u2019s trades and market data, the engine priced them on the grid, and retrieval put the result at <span class="key">reporting/runs/2a58d0f4-7e31-4b96-8c05-6d1e9a3f2b48/output.tar.gz</span>.',
+                'Its configuration names two analytics, <span class="mono">npv</span> and <span class="mono">sensitivity</span>, and no others. npv priced <span class="fig">18,162 positions</span> across <span class="fig">10 books</span>; sensitivity took the Delta and Gamma of each book.',
+                'NPV was <span class="fig">USD 87,219,062</span>. Delta was <span class="fig">USD 1,818,348</span> and Gamma <span class="fig">USD 51,510</span>, summed over the books, both for a one basis point shift. GBP Rates was the largest book, at <span class="fig">USD 39,804,118</span>.',
+                'The engine reported nothing. No error and no warning sits beside this output, so the archive is the whole account of the run.',
+                'The archive is the run\u2019s whole answer: <span class="fig">{{files}} files</span>, <span class="fig">{{bytes}}</span> before compression. Two of them are the analytics\u2019 own output \u2014 npv.csv and sensitivity.csv \u2014 and the figures above are a reading of those two files, not a table this screen can query. This run completed clean, which is what lets a later run of the same definition be compared against it without a partial marking.'
+            ]
         }
     ];
 
@@ -558,6 +650,28 @@
             { id: '5e3a7d90-2c64-4b18-af07-9e1d6b8c3a52', type: 'Bond', maturity: '2027-09-14',
                 netting: 'NS-ACCOHK-003', ccy: 'USD', npv: '-412,884.20', npvBase: '-412,884.20',
                 notional: '20,000,000', notionalCcy: 'USD', cp: 'KESTREL ASSURANCE' }
+        ],
+        /* Headline Position, ACCOUK, 18,162 rows in npv.csv. The run compared
+           against the 17 October one. Every row priced: it completed clean. */
+        '2a58d0f4-7e31-4b96-8c05-6d1e9a3f2b48': [
+            { id: 'b1c7e094-3a62-4d18-9f75-2e8c5a0d3b61', type: 'Bond', maturity: '2031-05-12',
+                netting: 'NS-ACCOUK-004', ccy: 'GBP', npv: '1,204,118.00', npvBase: '1,421,204.33',
+                notional: '38,000,000', notionalCcy: 'GBP', cp: 'ACME BANK PLC' },
+            { id: '0d5a2f87-6b31-4e08-9c74-5a1f8e2d3b90', type: 'Bond', maturity: '2033-10-04',
+                netting: 'NS-ACCOUK-001', ccy: 'GBP', npv: '590,882.40', npvBase: '697,606.83',
+                notional: '42,000,000', notionalCcy: 'GBP', cp: 'MERIDIAN CAPITAL' },
+            { id: '3e8f52a7-9c14-4b80-8d36-5a2e7b1c4f09', type: 'Bond', maturity: '2034-08-22',
+                netting: 'NS-ACCOUK-004', ccy: 'GBP', npv: '1,190,402.20', npvBase: '1,405,420.18',
+                notional: '70,000,000', notionalCcy: 'GBP', cp: 'NORTHGATE CLEARING' },
+            { id: '8a4d1e63-2f75-4c09-b1a8-6d3e0f2c5b97', type: 'Bond', maturity: '2032-05-30',
+                netting: 'NS-ACCOUK-001', ccy: 'GBP', npv: '588,204.40', npvBase: '694,446.66',
+                notional: '40,000,000', notionalCcy: 'GBP', cp: 'MERIDIAN CAPITAL' },
+            { id: 'c6f20b94-7d35-4a18-8e62-1b9c5d0f3a27', type: 'Bond', maturity: '2030-06-17',
+                netting: 'NS-ACCOUK-002', ccy: 'USD', npv: '204,118.60', npvBase: '204,118.60',
+                notional: '12,000,000', notionalCcy: 'USD', cp: 'PACIFIC TRUST' },
+            { id: '74b9e0d3-2c16-4f85-a9d0-3e7b5c8f1a42', type: 'Bond', maturity: '2028-09-29',
+                netting: 'NS-ACCOUK-003', ccy: 'USD', npv: '88,402.10', npvBase: '88,402.10',
+                notional: '9,000,000', notionalCcy: 'USD', cp: 'KESTREL ASSURANCE' }
         ]
     };
 
@@ -736,6 +850,54 @@
                     rows: ['a09c3f57-4b18-4e26-8c93-1d6f5a2b0e74',
                         '5e3a7d90-2c64-4b18-af07-9e1d6b8c3a52'] }
             ]
+        },
+        /* The same tree, the same book and portfolio names, and its own figures.
+           The shape has to match so that a selected node names the same node in
+           both runs; selecting a book then compares that book across the two
+           runs. The figures differ book by book: GBP Rates is up, Equity and
+           Liquidity Buffer Bonds are down, and the Group FX Hedges book is up by
+           thirty per cent, so no two rows share a percentage. */
+        '2a58d0f4-7e31-4b96-8c05-6d1e9a3f2b48': {
+            name: 'Group Treasury Portfolio',
+            children: [
+                {
+                    name: 'Trading Portfolio',
+                    children: [
+                        {
+                            name: 'Rates Portfolio',
+                            children: [
+                                { name: 'GBP Rates', trades: 4180, npv: 39804118, delta: 588204, gamma: 17412,
+                                    rows: ['b1c7e094-3a62-4d18-9f75-2e8c5a0d3b61',
+                                        '0d5a2f87-6b31-4e08-9c74-5a1f8e2d3b90'] },
+                                { name: 'EUR Rates', trades: 3960, npv: 28904118, delta: 502118, gamma: 14502,
+                                    rows: [] },
+                                { name: 'USD Rates', trades: 5080, npv: 12104118, delta: 396204, gamma: 8804,
+                                    rows: [] }
+                            ]
+                        },
+                        {
+                            name: 'Markets Portfolio',
+                            children: [
+                                { name: 'FX Options', trades: 1842, npv: 4302118, delta: 171204, gamma: 6204,
+                                    rows: [] },
+                                { name: 'Inflation', trades: 1046, npv: 984118, delta: 88204, gamma: 2704,
+                                    rows: [] },
+                                { name: 'Equity', trades: 642, npv: 302118, delta: 14884, gamma: 468,
+                                    rows: [] }
+                            ]
+                        }
+                    ]
+                },
+                { name: 'Liquidity Buffer Bonds', trades: 622, npv: 402118, delta: 26118, gamma: 560,
+                    rows: ['3e8f52a7-9c14-4b80-8d36-5a2e7b1c4f09',
+                        '8a4d1e63-2f75-4c09-b1a8-6d3e0f2c5b97'] },
+                { name: 'Group FX Hedges', trades: 488, npv: 190118, delta: 16204, gamma: 428, rows: [] },
+                { name: 'Group Intercompany Loans', trades: 276, npv: 108118, delta: 13204, gamma: 386,
+                    rows: [] },
+                { name: 'Unbooked', kind: 'unbooked', trades: 26, npv: 118000, delta: 2004, gamma: 42,
+                    rows: ['c6f20b94-7d35-4a18-8e62-1b9c5d0f3a27',
+                        '74b9e0d3-2c16-4f85-a9d0-3e7b5c8f1a42'] }
+            ]
         }
     };
 
@@ -771,14 +933,14 @@
     ];
 
     var DEPENDENCY = {
-        A: 'A needs the result store. Every figure, every row of the aggregate table, every node of the book tree and every row of the per-trade table is a reading of the archive the two configured analytics wrote, and nothing parses an archive: post-processing is designed and not built. The tree needs one read more than the table: the archive has no book column, so a node is only reachable by joining each TradeId to trade_bookings.book_id through trading.v1.trade_bookings.list. Built with today\u2019s operations, A is the archive footer with an empty screen above it.',
+        A: 'A needs the result store. Every figure, every row of the aggregate table, every node of the book tree and every row of the per-trade table is a reading of the archive the two configured analytics wrote, and nothing parses an archive: post-processing is designed and not built. The tree needs one read more than the table: the archive has no book column, so a node is only reachable by joining each TradeId to trade_bookings.book_id through trading.v1.trade_bookings.list. The comparison needs all of that twice, once for each run, plus the read that lists the runs of a definition so the baseline can be chosen. Built with today\u2019s operations, A is the archive footer with an empty screen above it.',
         B: 'B is the only variant buildable from today\u2019s reads, and only down to the run: the state, the output message, the storage key and the errors are all fields of the run. What B cannot have is its own centre \u2014 the manifest, the per-trade rows behind npv.csv, the book tree\u2019s grouping and any download \u2014 because no operation lists, parses or serves the archive, and none groups a result by book. Its file list is inferred from the configured analytics, not observed inside the tar.',
         C: 'C needs what A needs \u2014 the parsed numbers, the trade rows and the book grouping \u2014 and then a writer trusted to keep a figure and its caveat in the same sentence. It is the easiest of the three to make wrong and the hardest to check: a column can be inspected, a sentence is believed.'
     };
 
     var S = {
         variant: 'A', runId: DEFAULT_RUN, scenario: null, file: 'npv.csv', trade: null, showErrors: false,
-        note: null, book: null, collapsed: []
+        note: null, book: null, collapsed: [], baseline: undefined
     };
 
     // ------------------------------------------------------------- helpers
@@ -812,6 +974,106 @@
     function scenarioFor(run) {
         var sc = scenario();
         return sc && sc.runId === run.id ? sc : null;
+    }
+
+    /* --------------------------------------------------------- comparison */
+
+    /* A comparison is another run of the same definition, and nothing else. A
+       stress scenario is not a run of this report, so it has no figures of its
+       own to compare with, and yesterday's close belongs to a different run. The
+       only baseline that answers "what changed since this report last ran" is a
+       completed earlier instance of the same definition, so that is the only
+       kind offered. Newest first: the previous run is the one a reader means. */
+    function baselineCandidates(run) {
+        if (run.state !== 'completed') return [];
+        return RUNS.filter(function (r) {
+            return r.definition === run.definition && r.id !== run.id &&
+                r.state === 'completed' && r.figures.length && BOOK_TREES[r.id] &&
+                r.startedAt < run.startedAt;
+        }).sort(function (a, b) {
+            return a.startedAt < b.startedAt ? 1 : -1;
+        });
+    }
+
+    /* S.baseline is undefined until a person chooses: undefined is the previous
+       run of the definition, null is no comparison, and a run id is that run. The
+       page therefore opens with the comparison on, and ?baseline=none turns it
+       off. A run with no earlier instance has no baseline whatever the state. */
+    function baselineFor(run) {
+        if (S.baseline === null) return null;
+        var candidates = baselineCandidates(run);
+        if (!candidates.length) return null;
+        if (typeof S.baseline === 'string') {
+            var chosen = candidates.filter(function (r) { return r.id === S.baseline; })[0];
+            if (chosen) return chosen;
+        }
+        return candidates[0];
+    }
+
+    /* A change is only as honest as the two numbers under it. A run that carried
+       errors wrote a figure over the trades that survived, so a change against
+       it, or from it, is partial. The results-with-errors scenario is the
+       deliberate case: it says which trades and which sensitivities are missing.
+       A baseline that completed clean is not partial. */
+    function comparisonPartiality(run, base) {
+        if (!base) return null;
+        var current = scenarioFor(run);
+        if (current) return { side: 'current', run: run, scenario: current };
+        var baseScenario = scenarioFor(base);
+        if (baseScenario) return { side: 'baseline', run: base, scenario: baseScenario };
+        if (base.errors.length) return { side: 'baseline', run: base };
+        if (run.errors.length) return { side: 'current', run: run };
+        return null;
+    }
+
+    function figureNumber(figure) {
+        if (!figure) return null;
+        return typeof figure.n === 'number' && isFinite(figure.n) ? figure.n : null;
+    }
+
+    function changeOf(current, base) {
+        if (typeof current !== 'number' || typeof base !== 'number') return null;
+        return {
+            amount: current - base,
+            pct: base === 0 ? null : (current - base) / Math.abs(base) * 100
+        };
+    }
+
+    /* The percentage divides by the baseline's magnitude, so a fall reads as a
+       fall whether the baseline is positive or negative. A share of the run is
+       compared in percentage points, which have no percentage of their own. */
+    function signedAmount(amount, style) {
+        var sign = amount < 0 ? '-' : '+';
+        if (style === 'money') return sign + 'USD ' + num(Math.abs(amount));
+        if (style === 'points') return sign + Math.abs(amount).toFixed(1) + ' pt';
+        return sign + num(Math.abs(amount));
+    }
+
+    function signedPct(pct) {
+        return (pct < 0 ? '-' : '+') + Math.abs(pct).toFixed(1) + '%';
+    }
+
+    function deltaBadge(current, base, style, partial, baseRun) {
+        var d = changeOf(current, base);
+        if (!d) return '';
+        var direction = d.amount > 0 ? 'up' : (d.amount < 0 ? 'down' : 'flat');
+        var text = signedAmount(d.amount, style) +
+            (style === 'points' || d.pct === null ? '' : ' \u00b7 ' + signedPct(d.pct));
+        var title = 'Change against run ' + baseRun.id + ', started ' + baseRun.startedAt +
+            (partial ? '. The change is partial.' : '');
+        return '<span class="bdg ' + direction + (partial ? ' partial' : '') + '" title="' + esc(title) + '">' +
+            '<span class="arrow">' + (direction === 'up' ? '\u25b2' : direction === 'down' ? '\u25bc' : '\u25ac') + '</span>' +
+            esc(text) + (partial ? '<span class="bdgtag">partial</span>' : '') + '</span>';
+    }
+
+    function baselineFigure(base, label) {
+        return (base.figures || []).filter(function (f) { return f.label === label; })[0] || null;
+    }
+
+    function tileStyle(label) {
+        if (/NPV|Delta|Gamma|VaR|EAD/.test(label)) return 'money';
+        if (label.indexOf('of the run') !== -1) return 'points';
+        return 'count';
     }
 
     /* The artefacts link. The icon is Fluent's folder, inlined because the
@@ -1165,12 +1427,21 @@
             '<span class="tag bad">partial</span><span>' + text + '</span></div>';
     }
 
-    function treeRows(node, depth) {
+    /* cmp is {base, partial} while the comparison is on, and null otherwise. With
+       it, every node carries the change of its aggregate NPV against the same
+       node of the baseline tree: the node ids are the tree paths, so a book is
+       compared with that book and a portfolio with that portfolio. B and C draw
+       the plain tree, because the comparison lives on the result panel. */
+    function treeRows(node, depth, cmp) {
         var rows = [];
         var hasChildren = node.children.length > 0;
         var collapsed = isCollapsed(node.id);
         var kind = node.kind === 'unbooked' ? 'no booking' : node.kind;
         var lost = node.lost > 0;
+        var baseNode = cmp ? findNode(bookTree(cmp.base), node.id) : null;
+        var delta = baseNode
+            ? deltaBadge(node.npv, baseNode.npv, 'money', cmp.partial, cmp.base)
+            : '';
         rows.push('<div class="bnode ' + esc(node.kind) + (lost ? ' partial' : '') +
             (S.book === node.id ? ' sel' : '') +
             '" data-act="book" data-book="' + esc(node.id) + '" style="padding-left:' + (10 + depth * 18) + 'px">' +
@@ -1183,28 +1454,30 @@
             '<span class="bkind">' + esc(kind) + '</span>' +
             '<span class="btrades">' + num(node.trades) + '</span>' +
             '<span class="bnpv">' + esc(money(node.npv)) + '</span>' +
+            (cmp ? '<span class="bdelta">' + delta + '</span>' : '') +
             '</div>');
         node.depth = depth;
         rows.push(nodeExclusion(node, depth));
         if (hasChildren && !collapsed) {
             node.children.forEach(function (child) {
-                rows = rows.concat(treeRows(child, depth + 1));
+                rows = rows.concat(treeRows(child, depth + 1, cmp));
             });
         }
         return rows;
     }
 
-    function treeTable(run) {
+    function treeTable(run, cmp) {
         var root = bookTree(run);
         if (!root) return '';
-        return '<div class="booktree">' +
+        return '<div class="booktree' + (cmp ? ' withdelta' : '') + '">' +
             '<div class="bhead" aria-hidden="true">' +
             '<span class="twisty pad"></span>' +
             '<span class="bname">Portfolio, book or trade</span>' +
             '<span class="bkind">Level</span>' +
             '<span class="btrades">Trades</span>' +
             '<span class="bnpv">Aggregate NPV' + (scenarioFor(run) ? ' \u00b7 partial' : '') + '</span>' +
-            '</div>' + treeRows(root, 0).join('') + '</div>';
+            (cmp ? '<span class="bdelta">Change' + (cmp.partial ? ' \u00b7 partial' : '') + '</span>' : '') +
+            '</div>' + treeRows(root, 0, cmp).join('') + '</div>';
     }
 
     /* The tree's own notice: the label that says fixture, and the two reads that
@@ -1278,16 +1551,17 @@
             '<span class="meta">' + bookTreeSummary(run) + '</span></header>';
     }
 
-    function bookTreeBody(run) {
-        return bookTreeNotice() + '<div style="margin-top:12px">' + treeTable(run) + '</div>' +
+    function bookTreeBody(run, cmp) {
+        return bookTreeNotice() + '<div style="margin-top:12px">' + treeTable(run, cmp) + '</div>' +
             bookTreeFooter(run);
     }
 
     /* A draws the tree inside the result card, above the per-trade table; B and C
-       give it a card of its own. */
-    function bookTreeBlock(run) {
+       give it a card of its own. Only A passes a comparison, so only A's tree
+       carries the change column. */
+    function bookTreeBlock(run, cmp) {
         if (!bookTree(run)) return '';
-        return '<div id="booktree">' + bookTreeHead(run, 'h3') + bookTreeBody(run) + '</div>';
+        return '<div id="booktree">' + bookTreeHead(run, 'h3') + bookTreeBody(run, cmp) + '</div>';
     }
 
     function bookTreeCard(run, blurb) {
@@ -1299,26 +1573,68 @@
     }
 
     /* The aggregate tile set. At the root it is the run's figures; below it, the
-       figures are the selected node's, read off the tree the screen just drew. */
-    function tilesFor(run) {
+       figures are the selected node's, read off the tree the screen just drew.
+       With a baseline in view each tile also carries the baseline's figure and
+       the two numbers a change is made of, so a reader can check the subtraction
+       by hand. The selected node names the same node in both trees. */
+    function tilesFor(run, base) {
         var root = bookTree(run);
         var node = selectedBookNode(run);
-        if (!root || !node || treeIsRoot(run)) return run.figures;
+        if (!root || !node || treeIsRoot(run)) {
+            return (run.figures || []).map(function (f) {
+                var bf = base ? baselineFigure(base, f.label) : null;
+                return {
+                    value: f.value, label: f.label, note: f.note, style: tileStyle(f.label),
+                    current: figureNumber(f),
+                    base: bf ? figureNumber(bf) : null,
+                    baseValue: bf ? bf.value : null
+                };
+            });
+        }
         var leaves = bookLeaves(node);
+        var baseRoot = base ? bookTree(base) : null;
+        var baseNode = baseRoot ? findNode(baseRoot, node.id) : null;
+        var baseLeaves = baseNode ? bookLeaves(baseNode) : null;
+        var shareNow = root.npv ? node.npv / root.npv * 100 : 0;
+        var shareBase = baseRoot && baseNode && baseRoot.npv
+            ? baseNode.npv / baseRoot.npv * 100 : null;
         return [
-            { value: money(node.npv), label: 'NPV', note: 'the selected node, rolled up from its children' },
-            { value: num(node.trades), label: 'trades priced',
-                note: 'of the ' + num(root.trades) + ' this run priced' },
-            { value: share(node.npv, root.npv), label: 'of the run\u2019s NPV',
-                note: 'the selected node against ' + root.name },
-            { value: String(leaves.length), label: leaves.length === 1 ? 'book in this subtree' : 'books in this subtree',
-                note: 'each book\u2019s figure is the sum of its trades' }
+            {
+                value: money(node.npv), label: 'NPV', style: 'money',
+                note: 'the selected node, rolled up from its children',
+                current: node.npv, base: baseNode ? baseNode.npv : null,
+                baseValue: baseNode ? money(baseNode.npv) : null
+            },
+            {
+                value: num(node.trades), label: 'trades priced', style: 'count',
+                note: 'of the ' + num(root.trades) + ' this run priced',
+                current: node.trades, base: baseNode ? baseNode.trades : null,
+                baseValue: baseNode ? num(baseNode.trades) : null
+            },
+            {
+                value: share(node.npv, root.npv), label: 'of the run\u2019s NPV', style: 'points',
+                note: 'the selected node against ' + root.name,
+                current: shareNow, base: shareBase,
+                baseValue: shareBase === null ? null : shareBase.toFixed(1) + '%'
+            },
+            {
+                value: String(leaves.length),
+                label: leaves.length === 1 ? 'book in this subtree' : 'books in this subtree',
+                style: 'count',
+                note: 'each book\u2019s figure is the sum of its trades',
+                current: leaves.length, base: baseLeaves ? baseLeaves.length : null,
+                baseValue: baseLeaves ? String(baseLeaves.length) : null
+            }
         ];
     }
 
     /* The by-book table is the tree's books, in tree order, so the aggregate
-       table and the tree cannot disagree about a book's name or its figures. */
-    function bookTableData(run) {
+       table and the tree cannot disagree about a book's name or its figures.
+       With a baseline in view every row gains its NPV change and percentage, and
+       the table gains a total row, so the book rows and the total are one
+       arithmetic: the total change is the difference of the two totals, which is
+       also the sum of the ten book changes. */
+    function bookTableData(run, base) {
         var root = bookTree(run);
         if (!root) return run.table;
         var leaves = bookLeaves(root);
@@ -1326,14 +1642,41 @@
             return b.delta !== undefined && b.gamma !== undefined;
         });
         if (!complete || !run.table) return run.table;
-        return {
+        var baseLeaves = base && bookTree(base) ? bookLeaves(bookTree(base)) : null;
+        var rows = leaves.map(function (b) {
+            var row = [b.name, num(b.trades), num(b.npv), num(b.delta), num(b.gamma)];
+            if (baseLeaves) {
+                var bb = baseLeaves.filter(function (x) { return x.name === b.name; })[0];
+                var d = bb ? changeOf(b.npv, bb.npv) : null;
+                row.push(d ? signedAmount(d.amount, 'money') : '\u2014');
+                row.push(d && d.pct !== null ? signedPct(d.pct) : '\u2014');
+            }
+            return row;
+        });
+        var result = {
             title: run.table.title,
             note: run.table.note,
-            columns: run.table.columns,
-            rows: leaves.map(function (b) {
-                return [b.name, num(b.trades), num(b.npv), num(b.delta), num(b.gamma)];
-            })
+            columns: run.table.columns.slice(),
+            rows: rows
         };
+        if (!baseLeaves) return result;
+        result.columns = run.table.columns.concat(['NPV change (USD)', 'Change']);
+        result.changeAt = run.table.columns.length;
+        result.note = run.table.note + ' The last two columns are the change against run ' +
+            base.short + ', started ' + base.startedAt + ', and the total row carries the same change.';
+        var totalTrades = 0, totalNpv = 0, totalDelta = 0, totalGamma = 0, totalBaseNpv = 0;
+        leaves.forEach(function (b) {
+            totalTrades += b.trades;
+            totalNpv += b.npv;
+            totalDelta += b.delta;
+            totalGamma += b.gamma;
+        });
+        baseLeaves.forEach(function (b) { totalBaseNpv += b.npv; });
+        var total = changeOf(totalNpv, totalBaseNpv);
+        result.total = ['Total', num(totalTrades), num(totalNpv), num(totalDelta), num(totalGamma),
+            total ? signedAmount(total.amount, 'money') : '\u2014',
+            total && total.pct !== null ? signedPct(total.pct) : '\u2014'];
+        return result;
     }
 
     function selectedTrade(run) {
@@ -1662,6 +2005,9 @@
             'so every download is drawn, not wired. ' +
             'The book tree is a fixture for one reason more: the archive carries no book column, so a built screen ' +
             'joins each TradeId to trade_bookings.book_id through trading.v1.trade_bookings.list. ' +
+            'The comparison is fixture twice over: the baseline run, its figures and its book tree are drawn from this ' +
+            'file like the run\u2019s own, and every change is arithmetic on those two fixtures \u2014 no figure is mixed, ' +
+            'scaled or averaged to stand in for another run. ' +
             'The artefacts link beside each package is a requirement on the platform rather than a working ' +
             'link: the application has no artefacts page, no route serves one, and no operation returns the ' +
             'package or the archive the link would open.' +
@@ -1794,32 +2140,126 @@
         return sc.markedFigures.indexOf(label) !== -1;
     }
 
+    /* The comparison control. It offers no comparison and the completed earlier
+       runs of this definition, and it prints the chosen baseline's instance id
+       and start time beside the control, so a reader never has to guess which
+       run a percentage is against. A run with no earlier instance says so rather
+       than offering an empty list. */
+    function compareBar(run, base, partiality) {
+        var candidates = baselineCandidates(run);
+        var options = '<option value="">No comparison</option>' + candidates.map(function (r) {
+            return '<option value="' + esc(r.id) + '"' + (base && base.id === r.id ? ' selected' : '') + '>' +
+                esc(r.id) + ' \u00b7 started ' + esc(r.startedAt) + '</option>';
+        }).join('');
+        var who;
+        if (base) {
+            who = '<span class="cmpwho">against run <span class="mono">' + esc(base.id) + '</span>' +
+                ' \u00b7 started ' + esc(base.startedAt) + ' \u00b7 completed ' + esc(base.completedAt) + '</span>';
+        } else if (candidates.length) {
+            who = '<span class="cmpwho dim">No comparison: every change below is off.</span>';
+        } else {
+            who = '<span class="cmpwho dim">No earlier completed run of this definition, so there is nothing ' +
+                'to compare against.</span>';
+        }
+        return '<div class="cmpbar">' +
+            '<span class="lbl">Compare against</span>' +
+            '<select class="cmpsel" data-act="baseline" aria-label="Compare against a previous run of this definition"' +
+            (candidates.length ? '' : ' disabled') + '>' + options + '</select>' +
+            who +
+            (partiality ? '<span class="tag bad">partial</span>' : '') +
+            '</div>';
+    }
+
+    /* Said once, in words, under the figures: what the baseline is, where both
+       sets of numbers come from, and, when either side carried errors, that the
+       change is partial and why. The percentage alone would not say any of it. */
+    function comparisonNote(run, base, partiality) {
+        if (!base) return '';
+        var words = 'Every change on this panel is this run minus the baseline: run <span class="mono">' +
+            esc(base.id) + '</span>, started ' + esc(base.startedAt) + ' and completed ' +
+            esc(base.completedAt) + '. Both sides are the fixture figures of two runs of <span class="mono">' +
+            esc(run.definition) + '</span>, so a book that moved by a different percentage from another moved by ' +
+            'a different amount in the fixture. No figure is scaled to make the baseline: a multiplier per ' +
+            'measure would move every book by the same percentage, and the change would be fiction.';
+        if (!partiality) return '<p class="cmpnote"><span class="tag ok">both sides complete</span><span>' +
+            words + '</span></p>';
+        var reason;
+        if (partiality.side === 'current' && partiality.scenario) {
+            reason = 'The changes are partial. The current run completed carrying ' + run.errors.length +
+                ' problems, and ' + partialFacts(run) + '. The banner above calls its totals floors for that ' +
+                'reason, and a change measured from a floor is partial too, wherever it appears on this panel.' +
+                (base.errors.length || scenarioFor(base)
+                    ? ' The baseline carries errors of its own as well.'
+                    : ' The baseline completed clean.');
+        } else if (partiality.side === 'current') {
+            reason = 'The changes are partial. This run completed carrying ' + run.errors.length + ' problems (' +
+                errorCountsText(run.errors) + '), so its figures are not the whole answer and a change computed ' +
+                'from them cannot be either. The results-with-errors scenario shows what those errors leave out.';
+        } else if (partiality.side === 'baseline' && partiality.scenario) {
+            reason = 'The changes are partial. The baseline run <span class="mono">' + esc(base.id) +
+                '</span> completed carrying ' + base.errors.length + ' problems, and ' + partialFacts(base) +
+                ', so every change is measured against a figure that is not the whole answer.';
+        } else {
+            reason = 'The changes are partial. The baseline run <span class="mono">' + esc(base.id) +
+                '</span> completed carrying ' + base.errors.length + ' problems, so every change is measured ' +
+                'against a partial baseline.';
+        }
+        return '<p class="cmpnote"><span class="tag bad">partial</span><span>' + reason + ' ' + words + '</span></p>';
+    }
+
+    function errorCountsText(errors) {
+        var w = countBy(errors, 'warning');
+        return scopeCounts(errors, 'error') + (w ? ' and ' + scopeCounts(errors, 'warning') : '');
+    }
+
     /* A treats the figures, the book tree and the tables as one thing: the run's
        result is a set of numbers, the tree is how they roll up from a trade to a
        book to a portfolio, and the per-trade table under it is the same result one
        trade at a time. Selecting a node changes the figures and the rows together. */
+    function tableCells(row, t, isTotal) {
+        return row.map(function (cell, i) {
+            var classes = i > 0 ? ['num'] : [];
+            if (isTotal) classes.push('totalcell');
+            if (t.changeAt !== undefined && i >= t.changeAt && /^[+-]/.test(cell)) {
+                classes.push(cell.charAt(0) === '-' ? 'down' : 'up');
+            }
+            return '<td' + (classes.length ? ' class="' + classes.join(' ') + '"' : '') + '>' +
+                esc(cell) + '</td>';
+        }).join('');
+    }
+
     function resultCard(run) {
-        var tiles = tilesFor(run).map(function (f) {
+        var base = baselineFor(run);
+        var partiality = comparisonPartiality(run, base);
+        var cmp = base ? { base: base, partial: !!partiality } : null;
+
+        var tiles = tilesFor(run, base).map(function (f) {
             var partial = marksPartial(run, f.label);
+            var badge = base ? deltaBadge(f.current, f.base, f.style, !!partiality, base) : '';
+            var note = f.note + (base && f.baseValue !== null && f.baseValue !== undefined
+                ? ' \u00b7 vs ' + f.baseValue + ' on run ' + base.short
+                : '');
             return '<div class="fig' + (partial ? ' partial' : '') + '">' +
                 '<div class="v">' + esc(f.value) + '</div>' +
                 '<div class="l">' + esc(f.label) + (partial ? ' <span class="tag bad">partial</span>' : '') + '</div>' +
-                '<div class="n">' + esc(f.note) + '</div></div>';
+                '<div class="n">' + esc(note) + '</div>' +
+                (badge ? '<div class="d">' + badge + '</div>' : '') +
+                '</div>';
         }).join('');
 
-        var t = bookTableData(run);
+        var t = bookTableData(run, base);
         var table = '';
         if (t) {
             var head = t.columns.map(function (c, i) {
                 return '<th' + (i > 0 ? ' class="num"' : '') + '>' + esc(c) + '</th>';
             }).join('');
             var body = t.rows.map(function (row) {
-                return '<tr>' + row.map(function (cell, i) {
-                    return '<td' + (i > 0 ? ' class="num"' : '') + '>' + esc(cell) + '</td>';
-                }).join('') + '</tr>';
+                return '<tr>' + tableCells(row, t) + '</tr>';
             }).join('');
+            if (t.total) body += '<tr class="totalrow">' + tableCells(t.total, t, true) + '</tr>';
             table = '<div class="sectionhead" style="margin-top:20px"><h3 class="subhead">' + esc(t.title) + '</h3>' +
-                '<span class="meta"><span class="tag warn">fixture</span><span>' + esc(t.note) + '</span></span></div>' +
+                '<span class="meta">' + (partiality ? '<span class="tag bad">partial</span>' : '') +
+                '<span class="tag warn">fixture</span><span>' + esc(t.note) + '</span></span></div>' +
                 '<div class="table-wrap"><table><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table></div>';
         }
 
@@ -1828,13 +2268,16 @@
             '<span class="meta"><span class="tag accent">' + esc(analyticsText(run)) + '</span>' +
             '<span class="tag warn">fixture</span><span>no measure below comes from any other analytic</span></span></header>' +
             analyticsLine(run) +
+            compareBar(run, base, partiality) +
             '<div class="figs" style="margin-top:16px">' + tiles + '</div>' +
+            comparisonNote(run, base, partiality) +
             partialFiguresLine(run, 'The four figures above are partial') +
-            bookTreeBlock(run) + table +
+            bookTreeBlock(run, cmp) + table +
             (tradesFor(run).length ? tradesHead(run) + tradesBlock(run) : '') +
             '<p class="rowfoot">No operation returns these figures or rows. They are what the archive says once something ' +
             'parses it \u2014 <span class="mono">' + esc(analyticsText(run)) + '</span> wrote them \u2014 and the result ' +
-            'store that would parse it is designed and not built.</p>' +
+            'store that would parse it is designed and not built. A change needs both sides parsed, so it waits on the ' +
+            'same read twice.</p>' +
             '</section>';
     }
 
@@ -2257,6 +2700,23 @@
         render();
     }
 
+    /* Turning the comparison off is a choice the page keeps: S.baseline is null
+       and stays null until the person picks a run again. Choosing a run is only
+       possible among the candidates the control offered. */
+    function setBaseline(id) {
+        var run = currentRun();
+        if (!id) {
+            S.baseline = null;
+        } else if (baselineCandidates(run).some(function (r) { return r.id === id; })) {
+            S.baseline = id;
+        } else {
+            return;
+        }
+        S.note = null;
+        render();
+        writeParams();
+    }
+
     /* Opening a row is a toggle: the same row closes it again, and the trade it
        names is the one the panel answers with. */
     function setTrade(id) {
@@ -2280,11 +2740,19 @@
         }
     }
 
+    /* A select makes its own click and keyboard behaviour, so it is not taken by
+       the click handler; its change event is the one that matters. */
+    document.addEventListener('change', function (ev) {
+        if (!ev.target.closest || !ev.target.closest('[data-act="baseline"]')) return;
+        setBaseline(ev.target.value);
+    });
+
     document.addEventListener('click', function (ev) {
         var el = ev.target.closest('[data-act]');
         if (!el) return;
-        ev.preventDefault();
         var act = el.getAttribute('data-act');
+        if (act === 'baseline') return;
+        ev.preventDefault();
 
         if (act === 'variant') {
             setVariant(el.getAttribute('data-variant'));
@@ -2363,6 +2831,11 @@
         if (t && tradeById(currentRun(), t)) S.trade = t;
         var b = p.get('book');
         if (b && findNode(bookTree(currentRun()), b)) S.book = b;
+        /* ?baseline=none turns the comparison off; an instance id picks the run;
+           no parameter leaves the previous run in view. */
+        var bl = p.get('baseline');
+        if (bl === 'none') S.baseline = null;
+        else if (bl) S.baseline = bl;
         if (p.get('errors') === '1') S.showErrors = true;
     }
 
@@ -2371,6 +2844,8 @@
         p.set('variant', S.variant);
         p.set('run', currentRun().id);
         if (S.scenario) p.set('scenario', S.scenario);
+        if (S.baseline === null) p.set('baseline', 'none');
+        else if (typeof S.baseline === 'string') p.set('baseline', S.baseline);
         if (S.file !== 'npv.csv') p.set('file', S.file);
         if (S.trade) p.set('trade', S.trade);
         if (S.book) p.set('book', S.book);

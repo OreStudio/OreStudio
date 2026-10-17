@@ -39,9 +39,9 @@ def test_cdash_rejects_unknown_group():
         _test_run_command("clang-debug", "Staging", [])
 
 
-def test_run_degrades_without_fcntl(monkeypatch):
-    """_acquire_build_lock returns (None, None, jobs) where fcntl is
-    unavailable; the command still runs and cleans up without crashing."""
+def test_run_tolerates_a_missing_lock_handle(monkeypatch):
+    """cmd_test still runs and cleans up when the lock hands back no handle,
+    which is what a dry-run-style or degraded acquisition looks like."""
     import compass
 
     captured = {}

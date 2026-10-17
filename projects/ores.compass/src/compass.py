@@ -13,6 +13,7 @@ Pillars:
 import argparse
 import csv
 import datetime
+import errno
 import filecmp
 import functools
 import http.server
@@ -24,12 +25,13 @@ import socket
 import sqlite3
 import subprocess
 import sys
+import threading
 import time
 
 import systemctl_bus
 
 try:
-    import fcntl  # POSIX-only; build-lock functions degrade gracefully without it.
+    import fcntl  # POSIX-only; the per-worktree lock degrades without it.
 except ImportError:
     fcntl = None
 from collections import defaultdict
@@ -5318,7 +5320,10 @@ def _cmd_test_run(args):
     if not args.cdash and not _test_run_preflight():
         return 1
 
-    lock_file, slot_name, _ = _acquire_build_lock()
+    lock, slot_name, _ = _acquire_build_lock()
+    if slot_name is not None:
+        print(f"🔒 Build lock: slot '{slot_name}' held as abstract AF_UNIX "
+              f"socket '{_BUILD_LOCK_SOCKET_PREFIX}{slot_name}'")
     log_path = _build_log_path(slot_name) if slot_name else None
     log = None
     if log_path is not None:
@@ -5336,8 +5341,8 @@ def _cmd_test_run(args):
     finally:
         if log is not None:
             log.close()
-        if lock_file is not None:
-            lock_file.close()
+        if lock is not None:
+            lock.close()
 
 
 def _cmd_test_results(args):
@@ -6776,10 +6781,23 @@ def _systemctl_is_active(unit) -> bool:
 # Two build-lock slots of -j3 each, so two environments on this host build at
 # a time and six cores are in flight at most on this 8-core host, leaving
 # headroom for Emacs, the interactive session, and any running fleet. Builds
-# from further environments queue behind them. The slot name picks the lock
-# file, /tmp/ores-build.lock.<name>; nothing else assumes a slot count.
+# from further environments queue behind them. A slot is bound as an abstract
+# AF_UNIX socket name, not as a file; nothing else assumes a slot count.
 BUILD_LOCK_SLOTS = (("a", 3), ("b", 3))
 BUILD_LOCK_POLL_INTERVAL = 1.0
+
+# Every build runs under bubblewrap, which gives it a private, empty /tmp and
+# a private /dev/shm, and /run/user/1000 is mounted read-only. A lock file in
+# any of those places is per-sandbox: every environment locks its own file,
+# every environment believes it holds slot 'a', and the cap is unbounded.
+# The network namespace is shared instead -- Postgres, NATS and the systemd
+# user bus all work from inside the sandbox -- and an abstract AF_UNIX name
+# lives in that namespace, not on a filesystem. Binding it is exclusive
+# within the namespace and the kernel frees it when the holding process
+# exits, so there is no stale lock and no writable path is needed.
+_BUILD_LOCK_SOCKET_PREFIX = "ores-build-slot-"
+_BUILD_LOCK_PROBE_TIMEOUT = 2.0
+_BUILD_LOCK_ACCEPT_TIMEOUT = 0.25
 
 # WS-7 change 2: dash-truncated template drop-in (same mechanism as
 # compass_claude.py's app-claude-.slice.d/) so every app-build-<env>.slice
@@ -6815,8 +6833,14 @@ def _ensure_build_slice_deployed() -> None:
                     check=False)
 
 
-def _build_lock_path(slot_name):
-    return Path(f"/tmp/ores-build.lock.{slot_name}")
+def _build_lock_socket_name(slot_name):
+    """The abstract AF_UNIX name for a slot.
+
+    The leading NUL is what makes the name abstract: the kernel keeps it in
+    the network namespace instead of creating a file, so it survives the
+    sandbox's private /tmp.
+    """
+    return "\0" + _BUILD_LOCK_SOCKET_PREFIX + slot_name
 
 
 def _build_lock_identity_line(jobs):
@@ -6827,45 +6851,112 @@ def _build_lock_identity_line(jobs):
     return f"{identity} | pid={os.getpid()} | jobs={jobs} | {PROJECT_ROOT} | since {started}\n"
 
 
-def build_lock_holder(slot_name):
-    """Best-effort read of who currently/last held a build-lock slot.
+class BuildLockSlot:
+    """A held build-lock slot: a listening abstract AF_UNIX socket.
 
-    Returns the identity line written by _acquire_build_lock, or None if
-    the slot's lock file doesn't exist yet or is empty. This is
-    informational only -- the content can be stale (left over from the
-    last holder) if the slot isn't actually held right now; pair with
-    _build_lock_slot_free() if you need to know whether it's held.
+    Holding the bound name is holding the lock; a second bind of the same
+    name fails with EADDRINUSE. Keep this object alive for as long as the
+    lock must be held and call close() to release it. A crash, a kill or a
+    plain exit also releases it, because the kernel drops a bound abstract
+    name when its process exits, so there is no stale lock to clean up.
+
+    A daemon thread accepts connections on the socket and answers each one
+    with the identity line, which is how build_lock_holder and
+    build_lock_status name the holder without a shared filesystem.
     """
+
+    def __init__(self, slot_name, jobs, sock, identity):
+        self.slot_name = slot_name
+        self.jobs = jobs
+        self._sock = sock
+        self._identity = identity.encode("utf-8")
+        self._stop = threading.Event()
+        self._thread = threading.Thread(
+            target=self._answer_identity_requests,
+            name=f"build-lock-{slot_name}",
+            daemon=True)
+        self._thread.start()
+
+    def _answer_identity_requests(self):
+        while not self._stop.is_set():
+            try:
+                conn, _ = self._sock.accept()
+            except socket.timeout:
+                continue
+            except OSError:
+                return
+            try:
+                conn.sendall(self._identity)
+            except OSError:
+                pass
+            finally:
+                conn.close()
+
+    def close(self):
+        if self._stop.is_set():
+            return
+        self._stop.set()
+        try:
+            self._sock.close()
+        except OSError:
+            pass
+        self._thread.join(timeout=1.0)
+
+
+def build_lock_holder(slot_name):
+    """Read the identity of the slot's current holder, or None if it is free.
+
+    The holder's daemon thread answers a connection on the slot's abstract
+    socket with its identity line. A free slot has no listener, so the
+    connection fails and there is nobody to report; unlike the old lock
+    file there is no stale content left behind by the previous holder.
+    """
+    probe = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    probe.settimeout(_BUILD_LOCK_PROBE_TIMEOUT)
     try:
-        content = _build_lock_path(slot_name).read_text(encoding="utf-8").strip()
-    except (FileNotFoundError, OSError):
+        probe.connect(_build_lock_socket_name(slot_name))
+        chunks = []
+        while True:
+            chunk = probe.recv(4096)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks).decode("utf-8", "replace").strip() or None
+    except OSError:
         return None
-    return content or None
+    finally:
+        probe.close()
 
 
 def _build_lock_slot_free(slot_name):
     """Non-destructively probe whether a build-lock slot is currently held.
 
-    Always reports free on platforms without fcntl (e.g. Windows) --
-    build locking is a no-op there; see _acquire_build_lock.
+    A free slot has no listener on its abstract name, so binding a throwaway
+    probe socket succeeds and is released at once. A held slot makes the
+    bind fail with EADDRINUSE. Any other failure means the mechanism is
+    unusable here; it is reported loudly and treated as "not free" so no
+    caller mistakes a broken probe for an idle host.
     """
-    if fcntl is None:
-        return True
-    fd = os.open(_build_lock_path(slot_name), os.O_CREAT | os.O_RDWR, 0o666)
-    probe = os.fdopen(fd, "r+")
+    probe = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
-        fcntl.flock(probe, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        return False
-    else:
-        fcntl.flock(probe, fcntl.LOCK_UN)
+        probe.bind(_build_lock_socket_name(slot_name))
         return True
+    except OSError as exc:
+        if exc.errno == errno.EADDRINUSE:
+            return False
+        print(f"⚠️  Cannot probe build-lock slot '{slot_name}': {exc}",
+              file=sys.stderr)
+        return False
     finally:
         probe.close()
 
 
 def build_lock_status():
-    """List of (slot_name, jobs, free, holder) for every build-lock slot."""
+    """List of (slot_name, jobs, free, holder) for every build-lock slot.
+
+    holder is only known while the slot is held: the holder answers the
+    probe itself, so a free slot reports None rather than a stale name.
+    """
     return [(name, jobs, _build_lock_slot_free(name), build_lock_holder(name))
             for name, jobs in BUILD_LOCK_SLOTS]
 
@@ -6987,60 +7078,65 @@ def _acquire_worktree_build_lock():
 def _acquire_build_lock():
     """Acquire one of the host-wide build-lock slots, blocking until free.
 
-    Every worktree/environment on this host shares the same slots (paths
-    outside any worktree, so they aren't per-checkout). Concurrent
-    `cmake --build` invocations across environments contend for the same
-    CPUs and have been observed to truncate/corrupt shared library
-    outputs when one build is killed mid-link while another links against
-    the same target -- these slots cap how many builds run at once and
-    at what parallelism each gets. flock releases automatically on
-    process exit (including a crash or kill -9), so there is no
-    stale-lock file to clean up.
+    Every worktree/environment on this host shares the same slots. They
+    are abstract AF_UNIX socket names, so they are host-wide, not
+    per-checkout, and they are not files: each build sandbox has a private
+    /tmp, so a lock file there would let every environment take slot 'a'
+    at once. Concurrent `cmake --build` invocations across environments
+    contend for the same CPUs and have been observed to truncate/corrupt
+    shared library outputs when one build is killed mid-link while another
+    links against the same target -- these slots cap how many builds run
+    at once and at what parallelism each gets.
 
-    Opens each slot with O_CREAT|O_RDWR (not "w") so attempting the lock
-    never truncates the file out from under whoever currently holds it --
-    that only happens once *this* process actually holds the slot, so the
-    holder's identity stays readable by other environments while they
-    wait (see build_lock_status).
+    A slot is held for as long as its bound socket stays open. The kernel
+    frees the abstract name when the holding process exits (including a
+    crash or kill -9), so there is no stale lock and no file to clean up.
+    The holder's background thread answers identity probes while the slot
+    is held (see build_lock_status).
 
-    There's no OS primitive to block on "whichever of N fds frees first",
-    so once every slot is taken this polls at BUILD_LOCK_POLL_INTERVAL;
-    with one slot and multi-minute compiles, the busy-wait cost is
-    negligible.
+    There's no OS primitive to block on "whichever of N sockets frees
+    first", so once every slot is taken this polls at
+    BUILD_LOCK_POLL_INTERVAL; with one slot and multi-minute compiles, the
+    busy-wait cost is negligible.
 
-    Returns (lock_file, slot_name, jobs) -- keep lock_file alive for as
-    long as the lock must be held; it releases when closed or
-    garbage-collected.
+    Returns (lock, slot_name, jobs), where lock is a BuildLockSlot --
+    keep it alive for as long as the lock must be held; close() releases
+    it.
 
-    On platforms without fcntl (e.g. Windows) this is a no-op: prints a
-    one-time warning and returns (None, None, <first slot's jobs>) so
-    the build proceeds unlocked and unlogged rather than crashing --
-    the concurrent-worktree scenario this lock protects against is a
-    Linux dev-host pattern, not something Windows CI hits.
+    If the abstract socket cannot be bound at all, this refuses to build
+    with a loud error: building unlocked must never be silent.
     """
-    if fcntl is None:
-        print("⚠️  Build locking is unavailable on this platform (no fcntl) "
-              "-- building unlocked.")
-        return None, None, BUILD_LOCK_SLOTS[0][1]
+    if not hasattr(socket, "AF_UNIX"):
+        print("❌ Cannot acquire a build lock: this platform has no AF_UNIX "
+              "sockets.\n"
+              "   Build-lock slots are abstract AF_UNIX names, shared through "
+              "the network namespace.\n"
+              "   Refusing to build without the lock.", file=sys.stderr)
+        sys.exit(1)
 
     _acquire_worktree_build_lock()
     announced = False
     while True:
         for name, jobs in BUILD_LOCK_SLOTS:
-            fd = os.open(_build_lock_path(name), os.O_CREAT | os.O_RDWR, 0o666)
-            lock_file = os.fdopen(fd, "r+")
+            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             try:
-                fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            except BlockingIOError:
-                lock_file.close()
-                continue
-            lock_file.seek(0)
-            lock_file.truncate()
-            lock_file.write(_build_lock_identity_line(jobs))
-            lock_file.flush()
+                sock.bind(_build_lock_socket_name(name))
+            except OSError as exc:
+                sock.close()
+                if exc.errno == errno.EADDRINUSE:
+                    continue
+                print(f"❌ Cannot acquire a build lock: binding abstract "
+                      f"socket '{_BUILD_LOCK_SOCKET_PREFIX}{name}' failed: "
+                      f"{exc}\n"
+                      "   Refusing to build without the lock.", file=sys.stderr)
+                sys.exit(1)
+            sock.listen(8)
+            sock.settimeout(_BUILD_LOCK_ACCEPT_TIMEOUT)
+            lock = BuildLockSlot(name, jobs, sock,
+                                 _build_lock_identity_line(jobs))
             if announced:
                 print(f"🔓 Build lock '{name}' acquired.")
-            return lock_file, name, jobs
+            return lock, name, jobs
         if not announced:
             holders = ", ".join(
                 f"{name} ({build_lock_holder(name) or 'unknown'})"
@@ -7063,10 +7159,10 @@ def cmd_build(argv):
     direct mode; this is the required path for light environments.
 
     A non-direct build acquires the host-wide lock slot first
-    (see _acquire_build_lock/BUILD_LOCK_SLOTS) so at most one environment
-    on this machine builds at once, capped to the slot's job count --
-    concurrent cmake builds beyond that contend for the same CPUs and
-    have been observed to corrupt shared library outputs. --jobs
+    (see _acquire_build_lock/BUILD_LOCK_SLOTS) so at most two environments
+    on this machine build at once, one per slot, capped to the slot's job
+    count -- concurrent cmake builds beyond that contend for the same CPUs
+    and have been observed to corrupt shared library outputs. --jobs
     overrides whichever slot's job count would otherwise apply.
 
     The actual `cmake --build` step (not the configure step) also runs
@@ -7108,9 +7204,9 @@ def cmd_build(argv):
                          "settings only. Neither flag, or both, deploys both "
                          "surfaces.")
     ap.add_argument("--status", action="store_true",
-                    help="Print who currently/last held each build-lock "
-                         "slot, plus a tail of its build log, and exit "
-                         "without building.")
+                    help="Print who currently holds each build-lock slot, "
+                         "plus a tail of its build log, and exit without "
+                         "building.")
     ap.add_argument("--no-index", action="store_true",
                     help="Skip the org-id rescan a direct build runs first "
                          "(about 3s). Only safe when no page has been added, "
@@ -7119,12 +7215,11 @@ def cmd_build(argv):
 
     if args.status:
         for name, jobs, free, holder in build_lock_status():
-            if not holder:
-                print(f"🔓 slot '{name}' (-j{jobs}): no build has taken it yet.")
-            elif free:
-                print(f"🔓 slot '{name}' (-j{jobs}): free. Last holder: {holder}")
+            if free:
+                print(f"🔓 slot '{name}' (-j{jobs}): free.")
             else:
-                print(f"🔒 slot '{name}' (-j{jobs}): held by {holder}")
+                print(f"🔒 slot '{name}' (-j{jobs}): held by "
+                      f"{holder or 'unknown holder'}")
             tail = _build_log_tail(name)
             log_path = _build_log_path(name)
             if tail is None:
@@ -7182,7 +7277,7 @@ def cmd_build(argv):
     if targets:
         build_cmd += ["--target", *targets]
 
-    lock_file = slot_name = None
+    lock = slot_name = None
     if args.dry_run:
         # No lock acquired for a dry run, so the slot (and its job count)
         # that a real invocation would land in isn't known yet -- preview
@@ -7191,9 +7286,11 @@ def cmd_build(argv):
         source = "--jobs" if args.jobs is not None else \
             f"slot '{BUILD_LOCK_SLOTS[0][0]}' (dry-run estimate, actual slot decided at run time)"
     else:
-        lock_file, slot_name, slot_jobs = _acquire_build_lock()
+        lock, slot_name, slot_jobs = _acquire_build_lock()
         jobs = args.jobs if args.jobs is not None else slot_jobs
         source = "--jobs" if args.jobs is not None else f"build-lock slot '{slot_name}'"
+        print(f"🔒 Build lock: slot '{slot_name}' held as abstract AF_UNIX "
+              f"socket '{_BUILD_LOCK_SOCKET_PREFIX}{slot_name}'")
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
     build_cmd += ["-j", str(jobs)]
     import compass_claude
@@ -7247,8 +7344,8 @@ def cmd_build(argv):
     finally:
         if log is not None:
             log.close()
-        if lock_file is not None:
-            lock_file.close()
+        if lock is not None:
+            lock.close()
 
 
 def _read_env_map() -> dict:

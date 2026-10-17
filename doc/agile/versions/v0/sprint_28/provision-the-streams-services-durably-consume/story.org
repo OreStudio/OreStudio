@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: F540D226-8EEE-44F3-8BCB-16A08290C6E6
+:END:
+#+title: Story: Streams are not provisioned for the subjects services durabl…
+#+description: Streams are not provisioned for the subjects services durably consume, and two defects share that cause. First, nothing in the codebase creates a JetStream stream: a search for stream creation across every service and core finds none. The workflow engine publishes step commands to a stream, times out after five seconds at workflow_engine.cpp:283, and reports that no service was asked to do the work, so provisioning aborts and reads as flakiness rather than as a missing stream. Second, stale and overlapping streams stop a service starting: iam fails with NATS error 10065 JSStreamSubjectOverlapErr when an old store predates main's stream-splitting change. The pattern is already written down in doc/knowledge/nats_patterns/pattern_stream_provisioning.org (added 2026-10-14): the service that durably reads a subject ensures its stream in its startup path, before it registers handlers, using ensure_stream over covering_subjects, and fails to start if it cannot. It exists, is documented, and is not implemented where it is needed. The work is to apply it to the owning services, resolve the overlap, and add a check that every durably consumed subject is covered by a stream its owner ensures and that streams do not overlap. Without the check the next service repeats it, because the only symptom is a timeout. Found while atomising the tenor basis swap convention, where it blocked ACME tenant provisioning.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Streams are not provisioned for the subjects services durably consume, and two defects share that cause. First, nothing in the codebase creates a JetStream stream: a search for stream creation across every service and core finds none. The workflow engine publishes step commands to a stream, times out after five seconds at workflow_engine.cpp:283, and reports that no service was asked to do the work, so provisioning aborts and reads as flakiness rather than as a missing stream. Second, stale and overlapping streams stop a service starting: iam fails with NATS error 10065 JSStreamSubjectOverlapErr when an old store predates main's stream-splitting change. The pattern is already written down in doc/knowledge/nats_patterns/pattern_stream_provisioning.org (added 2026-10-14): the service that durably reads a subject ensures its stream in its startup path, before it registers handlers, using ensure_stream over covering_subjects, and fails to start if it cannot. It exists, is documented, and is not implemented where it is needed. The work is to apply it to the owning services, resolve the overlap, and add a check that every durably consumed subject is covered by a stream its owner ensures and that streams do not overlap. Without the check the next service repeats it, because the only symptom is a timeout. Found while atomising the tenor basis swap convention, where it blocked ACME tenant provisioning.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+-

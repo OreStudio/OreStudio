@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 19BFD14F-3950-479A-93DE-4E211189E992
+:END:
+#+title: Task: Give the basket constituent its weight
+#+description: E11 measured the basket as a JSON string with its weights stored nowhere. The basket table was authored with the member name only. The design says the constituent holds the name and its weight, and that the weight is a continuous quantity, so double precision.
+#+type: task
+#+level: s1
+#+filetags: :instruments-equity:sprint_28:v0:
+#+owner: marco
+#+branch: feature/give-the-basket-constituent-its-weight
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A basket constituent row carries the member's name and its weight.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The basket constituent carries the member's weight now, so a row holds what
+the design says it holds: the name and the weight. E11 measured the basket as a
+JSON string that kept the names and the weights nowhere, and the child table
+had closed only the name half.
+
+The weight is a continuous quantity and not money, so the column is a binary
+float, and it is optional because a basket that names its members without
+weighting them is valid. An absent weight stays null.
+
+Verification. Full build clean, the whole suite passes 96 of 96 with the
+database recreated for the new column, ores.trading.core.tests passes 1196
+assertions in 178 cases and ores.trading.api.tests 410 assertions in 105 cases.
+

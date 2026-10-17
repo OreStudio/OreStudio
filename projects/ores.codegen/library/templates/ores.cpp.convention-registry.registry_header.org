@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 59F508CD-A259-4024-B5F9-BFC019E75ED6
+:END:
+#+title: ores.cpp.convention-registry.registry_header
+#+description: The constexpr table of every convention family and its write mode, rendered from the refdata entity models that declare =#+convention_family:=.
+#+type: archetype
+#+output: projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp
+#+facet: ores.cpp.convention-registry
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+Every convention family the conventions document carries, as a constexpr
+table: the family key, the entity model that serves it, the generated C++
+value type, the protocol subject stem, whether the family's table is
+party-scoped, and how the document writes it.
+
+A constexpr table gives the service a compile-checked enumeration, so a
+family the document names and the registry omits is a compile error at the
+call site rather than a silent omission at run time.
+
+The output path is literal because the facet renders from a /component/
+model: the header belongs to the component's API sub-tree, whose path no
+model variable states. clang-format runs over the rendered header, so the
+template states the table's shape and the formatter settles the layout.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_convention_family_registry.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_convention_family_registry.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-registry.registry_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_registry}}
+#ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_FAMILY_REGISTRY_HPP
+#define ORES_REFDATA_API_DOMAIN_CONVENTION_FAMILY_REGISTRY_HPP
+
+#include <cstddef>
+#include <string_view>
+
+namespace ores::refdata::domain {
+
+/**
+ * @brief How the conventions document writes a family's rows.
+ *
+ * party replaces the rows the importing party holds, by_id replaces the rows
+ * the document names by key, and world adds only rows the tenant does not
+ * already hold.
+ */
+enum class convention_write_mode { party, by_id, world };
+
+/**
+ * @brief One convention family the conventions document carries.
+ *
+ * key is the family's field name in the document, entity is the entity model
+ * that serves it, domain_type is the generated C++ value type, subject_stem is
+ * the protocol prefix every verb of that entity shares, party_scoped is true
+ * when the family's table carries a party_id column, and write_mode is how the
+ * document writes the family.
+ */
+struct convention_family_entry {
+    std::string_view key;
+    std::string_view entity;
+    std::string_view domain_type;
+    std::string_view subject_stem;
+    bool party_scoped;
+    convention_write_mode write_mode;
+};
+
+/**
+ * @brief Every convention family, ordered by family key.
+ */
+inline constexpr convention_family_entry convention_families[] = {
+{{#families}}
+    {"{{key}}",
+     "{{entity}}",
+     "{{domain_type}}",
+     "{{subject_stem}}",
+     {{#party_scoped}}true{{/party_scoped}}{{^party_scoped}}false{{/party_scoped}},
+     convention_write_mode::{{write_mode}}},
+{{/families}}
+};
+
+inline constexpr std::size_t convention_family_count =
+    sizeof(convention_families) / sizeof(convention_families[0]);
+
+}
+
+#endif
+{{/convention_registry}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF][ores.cpp.convention-registry]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

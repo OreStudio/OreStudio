@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: 932062BD-9759-496E-B4F1-796A53DC2FF2
+:END:
+#+title: ores.cpp.convention-registry.apply_fragment
+#+description: The apply, read and staged-import bodies of the conventions service, one call per convention family, compiled inside the service.
+#+type: archetype
+#+output: projects/ores.refdata/core/src/service/convention_family_apply.inc
+#+facet: ores.cpp.convention-registry
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+The bodies the conventions service compiles instead of writing one call per
+family by hand: three apply functions, one per write mode; three read
+functions, one per write mode; and the staged-import dispatcher, which decodes
+one family's payload into its own type so no instantiation sees the whole
+document.
+
+The fragment is an include, not a translation unit. It is compiled where the
+row helpers (=replace_party_rows=, =replace_rows_by_id=,
+=add_missing_world_rows=), the repositories and the stamp helper are visible,
+which is why the includes it needs travel as a second fragment beside it.
+
+The output is an =.inc= file, so clang-format does not run over it and the
+template states the layout: the continuation columns, the blank line between
+bodies, and the one-call-per-family grouping the reader scans.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_convention_family_apply.inc.mustache=.
+
+#+begin_src mustache :tangle cpp_convention_family_apply.inc.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-registry.apply_fragment.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_registry}}
+
+
+// Party families: the import replaces the rows the party holds.
+void apply_party_families(const ores::database::context& ctx,
+                          messaging::conventions_document& v) {
+{{#party}}
+    replace_party_rows(ctx,
+                       {{entity}}_repository(),
+                       std::move(v.{{key}}));
+{{/party}}
+}
+
+// By-id families: the import replaces the rows the document names.
+void apply_families_by_id(const ores::database::context& ctx,
+                         messaging::conventions_document& v) {
+{{#by_id}}
+    replace_rows_by_id(ctx,
+                       {{entity}}_repository(),
+                       std::move(v.{{key}}));
+{{/by_id}}
+}
+
+// World families: the import adds only the rows the tenant is missing.
+void apply_world_families(const ores::database::context& ctx,
+                          messaging::conventions_document& v,
+                          conventions_save_result& result) {
+{{#world}}
+    add_missing_world_rows(ctx,
+                           {{entity}}_repository(),
+                           v.{{key}},
+                           result.world_kept);
+{{/world}}
+}
+
+// The document reads each mode back from the same registry.
+void read_party_families(const ores::database::context& ctx,
+                         messaging::conventions_document& v) {
+{{#party}}
+    v.{{key}} = {{entity}}_repository().read_latest(ctx);
+{{/party}}
+}
+
+void read_families_by_id(const ores::database::context& ctx,
+                         messaging::conventions_document& v) {
+{{#by_id}}
+    v.{{key}} = {{entity}}_repository().read_latest(ctx);
+{{/by_id}}
+}
+
+void read_world_families(const ores::database::context& ctx,
+                         messaging::conventions_document& v) {
+{{#world}}
+    v.{{key}} = {{entity}}_repository().read_latest(ctx);
+{{/world}}
+}
+
+// Staged families: each branch decodes one family's payload into its own
+// type, so no instantiation sees the whole document.
+ORES_REFDATA_CORE_EXPORT bool apply_staged_family(const ores::database::context& ctx,
+                                                  const std::string& family,
+                                                  const std::string& payload,
+                                                  conventions_save_result& result) {
+{{#families}}
+    if (family == "{{key}}") {
+        const auto decoded =
+            rfl::json::read<{{domain_type}}>(payload);
+        if (!decoded)
+            throw std::runtime_error(
+                "Staged conventions payload for family "
+                "\"{{key}}\" does not decode.");
+        auto rows = std::vector<{{domain_type}}>{
+            std::move(*decoded)};
+        ores::service::messaging::stamp(rows.front(), ctx);
+{{#is_world}}
+        add_missing_world_rows(ctx,
+                               {{entity}}_repository(),
+                               std::move(rows),
+                               result.world_kept);
+{{/is_world}}
+{{^is_world}}
+        {{#is_party}}replace_party_rows{{/is_party}}{{#is_by_id}}replace_rows_by_id{{/is_by_id}}(ctx,
+                           {{entity}}_repository(),
+                           std::move(rows));
+{{/is_world}}
+        return true;
+    }
+{{/families}}
+    return false;
+}
+{{/convention_registry}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF][ores.cpp.convention-registry]]
+- [[id:5CC4694E-C342-41EB-9C9E-A3C6CDB264FE][ores.cpp.convention-registry.apply_includes]] — the repositories this fragment calls.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

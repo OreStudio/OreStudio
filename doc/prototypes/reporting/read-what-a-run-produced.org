@@ -2,7 +2,7 @@
 :ID: 7d062f46-83bf-4e87-89ec-22847f26a9c8
 :END:
 #+title: Read what a run produced prototype
-#+description: Three structural variants of a run's result, with the archive listing drawn as a stated fixture.
+#+description: Three structural variants of a run's result, a comparison against a previous run of the same definition, and the archive listing drawn as a stated fixture.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
@@ -26,9 +26,15 @@ It is throwaway. It reads no service, and the archive manifest it draws is a
 fixture, said so on the page. So is the book tree: the run's archive carries no
 book column, so a node's trade count and NPV are drawn rather than read.
 
-One scenario sits beside the five runs: =results-with-errors= takes the completed
+One scenario sits beside the six runs: =results-with-errors= takes the completed
 run that carries eleven problems and draws the connection between the errors and
 the results, so the results say they are partial.
+
+The result panel also compares. A completed run carries a control that chooses a
+previous run of the same definition, or no run, and every figure, every book row,
+every tree node and the total row then carries its change against that baseline.
+The page opens with the previous run chosen, so a reviewer meets the comparison
+without hunting for it, and =?baseline=none= turns it off.
 
 * Detail
 
@@ -203,6 +209,61 @@ from a failed trade to its own error: the two =SENSITIVITY= rows are recorded
 against the analytic, and the panel says so rather than implying a per-trade key
 the model does not store.
 
+** The comparison: what changed since the last run
+
+A run's numbers answer "what is it worth now". They do not answer "what changed",
+and the second question is the one a desk asks every morning. The result panel
+therefore compares the run in view with a previous run of the same definition.
+The control offers no comparison and every completed earlier instance of the
+definition, and it prints the chosen baseline's instance id and start time beside
+the control. The page opens with the previous run chosen; =?baseline=none= turns
+the comparison off, and a run whose definition has no earlier completed instance
+says so rather than offering an empty list.
+
+Every figure keeps its value and gains the change and the percentage against the
+baseline. The by-book table gains an =NPV change= column and a =Change= column on
+every row, and a total row that carries the same change as the difference of the
+two totals and as the sum of the ten book changes. The tree gains a change column,
+so a book compares with that book and a portfolio with that portfolio, and the
+selected node drives both sides: select GBP Rates and the figures and the tree row
+describe GBP Rates in both runs. The tile is the review's pattern, kept: a label,
+the value, a note under it, and the change badge.
+
+The two sides are two fixtures. The page draws two Headline Position runs of the
+same definition: 17 October at USD 88,402,114 of NPV, USD 1,846,818 of Delta,
+USD 52,350 of Gamma over 18,204 positions in 10 books; and 16 October at
+USD 87,219,062, USD 1,818,348, USD 51,510 over 18,162 positions in the same 10
+books. Ten books, ten different changes:
+
+| Book | NPV change (USD) | Change |
+|------+------------------+--------|
+| GBP Rates | +1,400,000 | +3.5% |
+| EUR Rates | -785,716 | -2.7% |
+| USD Rates | +779,902 | +6.4% |
+| FX Options | -97,238 | -2.3% |
+| Inflation | +134,086 | +13.6% |
+| Equity | -42,030 | -13.9% |
+| Liquidity Buffer Bonds | -171,000 | -42.5% |
+| Group FX Hedges | +58,284 | +30.7% |
+| Group Intercompany Loans | +10,086 | +9.3% |
+| Unbooked | -103,322 | -87.6% |
+| Total | +1,183,052 | +1.4% |
+
+The total is the difference of the two totals, and it is also the sum of the ten
+rows, because every number is a fixture figure of one run and the change is
+subtraction. The books do not move together, which is the point: a per-metric
+multiplier would make every row move by the same percentage and the change would
+be fiction.
+
+When either run in the comparison carried errors the change is partial, because
+a total over the trades that survived is not the whole answer. The badge carries
+a =partial= marker and the panel says so once in words, with the count of problems
+and what the current run's errors leave out. The =results-with-errors= scenario is
+the deliberate case: it marks the current run's changes as partial and names the
+three unbuildable trades and the 412 positions with an NPV and no Delta. The code
+marks a baseline that carries errors the same way, though this fixture's baseline
+completed clean, so the baseline branch is not exercised by a screenshot.
+
 ** What is fake
 
 The figures, the file names, the row counts, the sizes, the archive key, the book
@@ -222,29 +283,69 @@ CSS and JavaScript, no framework and no build step.
 No verdict yet. This page is on the branch that proposes it and has not been
 taken up.
 
-Gemini drew the result again, and that drawing is kept as
-[[file:read-what-a-run-produced/review/][the Gemini review]] beside the
-prototype. It proposes one screen rather than three readings of the same run:
-five figures across the top -- NPV, Delta, Gamma, positions and books -- over a
-single table of NPV, Delta and Gamma by book, with no archive and no trade rows
-beneath it.
+The review is the generated Gemini file, kept as it was produced in
+[[file:read-what-a-run-produced/review/gemini-dashboard.html][gemini-dashboard.html]]
+and listed at [[file:read-what-a-run-produced/review/][the review index]]. It proposes one
+screen rather than three readings of the same run: five figures across the top --
+NPV, Delta, Gamma, positions and books -- over a single table of NPV, Delta and
+Gamma by book, with a total row, and with every figure and every row carrying a
+change badge against a switchable baseline. It has no archive, no per-trade rows,
+no book tree and no error handling.
 
-The review is kept as it was drawn, and it disagrees with three facts this
+What we take from it:
+
+1. *A change against a named baseline.* Every aggregate figure, every book row
+   and the total row carries its change and its percentage. This prototype does
+   that, and names the baseline by its run instance id and its start time, so a
+   reader knows exactly what they are compared against.
+2. *The tile pattern.* A label, the value, a note under it and a change badge.
+   The agreed design already had the first three; the badge is the review's
+   contribution and it is kept.
+
+What we refuse, and why:
+
+1. *Multiplier-synthesised baselines.* The review multiplies each current figure
+   by a constant per metric -- 0.972 for NPV, 0.976 for Delta, 1.023 for Gamma,
+   0.992 for positions -- to invent the previous run. Every book then moves by
+   the same percentage for a metric, so the deltas are fiction: they are the
+   constant written twice. This prototype carries a second fixture run with its
+   own figures so the changes are differences between two sets of numbers, and
+   ten books move by ten different percentages.
+2. *A stress scenario as a baseline.* A stress scenario is not a previous run of
+   this report: it has no archive, no instance and no error rows of its own, and
+   its numbers answer a different question. The only sound baseline is another
+   run of the same definition.
+3. *Yesterday's official close as a baseline.* The close belongs to a different
+   run, usually of a different definition. Comparing a run with it measures two
+   differences at once and names neither.
+4. *Run numbers.* The review names its baseline =Run #1042 (2026-10-17 10:30)=.
+   A run is identified by its instance id, and the id is what a reader can look
+   up. The review also collapses the two configured analytics into a chip,
+   =rannpvsensitivity=, as if the analytic set named the run; a run is named by
+   its instance and its definition, and the analytics are named separately.
+
+What the review omits that this design requires: the book tree, the trade-level
+drill-down, and the error and partial support. The tree is how a run rolls up
+from a trade to its book and a portfolio, and the review's seven-row table cannot
+show a book that exists in one run and not another. The per-trade table is the
+detail npv.csv carries. The errors are what make a completed run's totals a
+partial answer, and a comparison built without them presents an incomplete
+change as arithmetic.
+
+The review is kept as it was drawn, and it still disagrees with two facts this
 prototype states:
 
 1. *It counts 24 books.* The prototype counts 10. A trade the engine could not
    build writes no =npv.csv= row, and the tree groups every trade into exactly
-   one node. The 24 was an earlier fixture figure, corrected for that reason.
-2. *It says the parser pipeline is active.* Nothing parses the run archive.
-   =ores_compute_results_tbl= holds the archive location, an outcome and an
-   error message, and no parsed rows. The result store that would parse the
-   archive is designed and not built.
-3. *It labels the run =npv_sensitivity=.* A run is identified by its instance
-   id and its definition, and the two analytics are named separately, as this
-   prototype does with =npv= and =sensitivity=.
-
-The review screen states the same three points beneath the drawing, so a reader
-meets them there and not only here.
+   one node. The 24 was an earlier fixture figure, corrected for that reason, and
+   the review's own table draws seven book rows, so 24 is not the grouping it
+   displays either.
+2. *It presumes a parser pipeline.* It draws parsed NPV, Delta and Gamma per book
+   and a total computed from them, as if a pipeline supplied the rows. Nothing
+   parses the run archive. =ores_compute_results_tbl= holds the archive location,
+   an outcome and an error message, and no parsed rows. The result store that
+   would parse the archive is designed and not built, which is why this prototype
+   labels every figure and every row a fixture on the panel that draws it.
 
 ** What it does not settle
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generalise-the-codec-for-nested-and-repeated-types
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,7 +28,7 @@ the table rather than in the engine.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

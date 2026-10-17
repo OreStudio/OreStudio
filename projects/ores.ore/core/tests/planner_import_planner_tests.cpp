@@ -397,7 +397,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                 } else if constexpr (std::is_same_v<T, fx_instrument_data>) {
                     ores::trading::domain::visit_fx_products(
                         [&](const auto& instr) {
-                            INFO("Instrument variant index checked");
+                            INFO("FX carrier row checked");
                             CHECK(instr.identity.trade_id == item.anchor.id);
                             ++checked;
                         },

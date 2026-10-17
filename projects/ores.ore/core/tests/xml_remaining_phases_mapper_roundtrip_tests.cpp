@@ -76,6 +76,18 @@ fx_instrument_data load_and_map_fx(const std::string& filename) {
     return *r;
 }
 
+/**
+ * @brief The one row the carrier holds for the trade, checked before it is read.
+ *
+ * The mapper states a row per trade, so a count other than one is the failure
+ * this line reports, not a row the test then reads.
+ */
+template <typename Row>
+const Row& single_row(const std::vector<Row>& rows) {
+    REQUIRE(rows.size() == 1);
+    return rows.front();
+}
+
 equity_instrument_data load_and_map_equity(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
@@ -129,7 +141,7 @@ bond_instrument_data load_and_map_bond(const std::string& filename, std::size_t 
 TEST_CASE("fx_double_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_DoubleBarrierOption.xml");
-    const auto& instr = r.barrier_options.front();
+    const auto& instr = single_row(r.barrier_options);
 
     CHECK(instr.identity.trade_type_code == "FxDoubleBarrierOption");
     CHECK(!instr.bought_currency.empty());
@@ -142,7 +154,7 @@ TEST_CASE("fx_double_barrier_option_forward", tags) {
 TEST_CASE("fx_double_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_DoubleBarrierOption.xml");
-    const auto& instr = r.barrier_options.front();
+    const auto& instr = single_row(r.barrier_options);
 
     const auto rt = fx_instrument_mapper::reverse_fx_double_barrier_option(instr);
     REQUIRE(rt.FxDoubleBarrierOptionData.operator bool());
@@ -157,7 +169,7 @@ TEST_CASE("fx_double_barrier_option_reverse", tags) {
 TEST_CASE("fx_european_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_FxEuropeanBarrierOption.xml");
-    const auto& instr = r.barrier_options.front();
+    const auto& instr = single_row(r.barrier_options);
 
     CHECK(instr.identity.trade_type_code == "FxEuropeanBarrierOption");
     CHECK(!instr.bought_currency.empty());
@@ -169,7 +181,7 @@ TEST_CASE("fx_european_barrier_option_forward", tags) {
 TEST_CASE("fx_european_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_FxEuropeanBarrierOption.xml");
-    const auto& instr = r.barrier_options.front();
+    const auto& instr = single_row(r.barrier_options);
 
     const auto rt = fx_instrument_mapper::reverse_fx_european_barrier_option(instr);
     REQUIRE(rt.FxEuropeanBarrierOptionData.operator bool());
@@ -184,7 +196,7 @@ TEST_CASE("fx_european_barrier_option_reverse", tags) {
 TEST_CASE("fx_kiko_barrier_option_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_KIKO_Barrier_Option.xml");
-    const auto& instr = r.barrier_options.front();
+    const auto& instr = single_row(r.barrier_options);
 
     CHECK(instr.identity.trade_type_code == "FxKIKOBarrierOption");
     CHECK(!instr.option_type.empty());
@@ -195,7 +207,7 @@ TEST_CASE("fx_kiko_barrier_option_forward", tags) {
 TEST_CASE("fx_kiko_barrier_option_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_fx("FX_KIKO_Barrier_Option.xml");
-    const auto& instr = r.barrier_options.front();
+    const auto& instr = single_row(r.barrier_options);
 
     const auto rt = fx_instrument_mapper::reverse_fx_kiko_barrier_option(instr);
     REQUIRE(rt.FxKIKOBarrierOptionData.operator bool());

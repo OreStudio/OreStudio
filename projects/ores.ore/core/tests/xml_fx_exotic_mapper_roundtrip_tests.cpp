@@ -33,7 +33,7 @@
  * For each example file:
  *   1. Parse ORE XML into ores.ore domain types.
  *   2. Forward-map to the typed FX carrier via trade_mapper.
- *   3. Extract the concrete typed struct from the variant.
+ *   3. Read the row from the array its product travels in.
  *   4. Assert key economic fields are populated.
  *   5. Reverse-map back to ORE XSD trade.
  *   6. Assert the round-tripped XSD type is structurally populated.
@@ -70,6 +70,18 @@ fx_instrument_data load_and_map(const std::string& filename) {
     return *r;
 }
 
+/**
+ * @brief The one row the carrier holds for the trade, checked before it is read.
+ *
+ * The mapper states a row per trade, so a count other than one is the failure
+ * this line reports, not a row the test then reads.
+ */
+template <typename Row>
+const Row& single_row(const std::vector<Row>& rows) {
+    REQUIRE(rows.size() == 1);
+    return rows.front();
+}
+
 } // namespace
 
 
@@ -89,7 +101,7 @@ namespace {
 TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Barrier_Option.xml");
-    const auto& instr = r.barrier_options.front();
+    const auto& instr = single_row(r.barrier_options);
 
     CHECK(instr.identity.trade_type_code == "FxBarrierOption");
     CHECK(!instr.bought_currency.empty());
@@ -108,7 +120,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Digital_Option.xml");
-    const auto& instr = r.digital_options.front();
+    const auto& instr = single_row(r.digital_options);
 
     CHECK(instr.identity.trade_type_code == "FxDigitalOption");
     CHECK(!instr.foreign_currency.empty());
@@ -128,7 +140,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Digital_Barrier_Option.xml");
-    const auto& instr = r.digital_options.front();
+    const auto& instr = single_row(r.digital_options);
 
     CHECK(instr.identity.trade_type_code == "FxDigitalBarrierOption");
     CHECK(!instr.foreign_currency.empty());
@@ -150,7 +162,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_OneTouch_option.xml");
-    const auto& instr = r.digital_options.front();
+    const auto& instr = single_row(r.digital_options);
 
     CHECK(instr.identity.trade_type_code == "FxTouchOption");
     CHECK(!instr.foreign_currency.empty());
@@ -169,7 +181,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_DoubleTouch_Option.xml");
-    const auto& instr = r.digital_options.front();
+    const auto& instr = single_row(r.digital_options);
 
     CHECK(instr.identity.trade_type_code == "FxDoubleTouchOption");
     CHECK(!instr.foreign_currency.empty());
@@ -186,7 +198,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Variance_Swap.xml");
-    const auto& instr = r.variance_swaps.front();
+    const auto& instr = single_row(r.variance_swaps);
 
     CHECK(instr.identity.trade_type_code == "FxVarianceSwap");
     CHECK(!instr.underlying_code.empty());
@@ -205,7 +217,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Average_Forward.xml");
-    const auto& instr = r.asian_forwards.front();
+    const auto& instr = single_row(r.asian_forwards);
 
     CHECK(instr.identity.trade_type_code == "FxAverageForward");
     CHECK(instr.payment_date.has_value());
@@ -224,7 +236,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxAccumulator.xml");
-    const auto& instr = r.accumulators.front();
+    const auto& instr = single_row(r.accumulators);
 
     CHECK(instr.identity.trade_type_code == "FxAccumulator");
     CHECK(!instr.underlying_code.empty());
@@ -247,7 +259,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxTaRF.xml");
-    const auto& instr = r.asian_forwards.front();
+    const auto& instr = single_row(r.asian_forwards);
 
     CHECK(instr.identity.trade_type_code == "FxTaRF");
     CHECK(!instr.fx_index.empty());
@@ -270,7 +282,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_generic_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxGenericBarrierOption.xml");
-    const auto& instr = r.barrier_options.front();
+    const auto& instr = single_row(r.barrier_options);
 
     CHECK(instr.identity.trade_type_code == "FxGenericBarrierOption");
     CHECK(!instr.underlying_code.empty());

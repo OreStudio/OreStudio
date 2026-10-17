@@ -19,9 +19,11 @@
  *
  */
 
+import { fromWireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
+
 /** One tick of a curve feed: when, the rate, and the pillar's datum. */
 export interface PillarTick {
-    readonly at: string;
+    readonly at: WireTimestamp;
     readonly value: number;
     readonly uri: string;
 }
@@ -34,7 +36,7 @@ export interface Pillar {
 
 /** One whole curve the feed made: the time of the batch and the rate at each pillar, in template order. */
 export interface Curve {
-    readonly at: string;
+    readonly at: WireTimestamp;
     readonly rates: readonly number[];
 }
 
@@ -61,10 +63,13 @@ export function curvesOf(ticks: readonly PillarTick[], pillars: number): readonl
     if (pillars === 0) {
         return [];
     }
-    const batches: { at: string; rates: number[] }[] = [];
+    const batches: { at: WireTimestamp; rates: number[] }[] = [];
     for (const tick of ticks) {
         const last = batches[batches.length - 1];
-        if (last !== undefined && last.at === tick.at) {
+        if (
+            last !== undefined &&
+            fromWireTimestamp(last.at).getTime() === fromWireTimestamp(tick.at).getTime()
+        ) {
             last.rates.push(tick.value);
         } else {
             batches.push({ at: tick.at, rates: [tick.value] });

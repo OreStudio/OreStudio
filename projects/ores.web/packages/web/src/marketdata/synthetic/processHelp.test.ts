@@ -23,6 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { runFeeds } from './feedRuns.js';
 import { bandWidth, halfLifeMinutes, PROFILES, processTypeOf, profileOf } from './processHelp.js';
 import { describedAs } from './mixture.js';
+import { wireTimestamp } from '@ores/wire-protocol/browser';
 import { emaOf, instantOf, statsOf, ticksCsv } from './ticks.js';
 
 describe('the quant help', () => {
@@ -63,7 +64,9 @@ describe('the quant help', () => {
     });
 
     it('reads a wire timestamp as an instant', () => {
-        expect(instantOf('2026-10-11 09:00:00Z')).toBe(Date.UTC(2026, 9, 11, 9, 0, 0));
+        expect(instantOf(wireTimestamp('2026-10-11 09:00:00Z'))).toBe(
+            Date.UTC(2026, 9, 11, 9, 0, 0),
+        );
     });
 });
 
@@ -73,9 +76,9 @@ const C = '33333333-3333-4333-8333-333333333333';
 
 describe('the ticks', () => {
     const ticks = [
-        { at: '2026-10-11 09:00:00Z', value: 1.1 },
-        { at: '2026-10-11 09:01:00Z', value: 1.3 },
-        { at: '2026-10-11 09:02:00Z', value: 1.2 },
+        { at: wireTimestamp('2026-10-11 09:00:00Z'), value: 1.1 },
+        { at: wireTimestamp('2026-10-11 09:01:00Z'), value: 1.3 },
+        { at: wireTimestamp('2026-10-11 09:02:00Z'), value: 1.2 },
     ];
 
     it('says the last tick, the move from the first, and the high and low', () => {

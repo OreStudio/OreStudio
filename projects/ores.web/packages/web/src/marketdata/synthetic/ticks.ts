@@ -19,9 +19,11 @@
  *
  */
 
+import { fromWireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
+
 /** One tick as the BFF serves it: a wire timestamp and the price. */
 export interface Tick {
-    readonly at: string;
+    readonly at: WireTimestamp;
     readonly value: number;
 }
 
@@ -34,9 +36,9 @@ export interface TickStats {
     readonly count: number;
 }
 
-/** A wire timestamp, such as 2026-10-11 09:00:00Z, as milliseconds. */
-export function instantOf(at: string): number {
-    return Date.parse(at.replace(' ', 'T'));
+/** A wire timestamp as milliseconds. */
+export function instantOf(at: WireTimestamp): number {
+    return fromWireTimestamp(at).getTime();
 }
 
 /** The last tick, the move from the first, and the high and low; nothing for an empty window. */

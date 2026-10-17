@@ -21,6 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { CurveEvolution, CurveSnapshot, ListedSeries } from '@ores/contracts';
+import { wireTimestamp } from '@ores/wire-protocol/browser';
 import {
     canBeShown,
     endOfDay,
@@ -164,8 +165,8 @@ describe('matrixOf', () => {
             { coordinates: ['2Y', 'ATM'], status: 'never_quoted' },
         ],
         instants: [
-            { as_of: '2026-10-01 00:00:00Z', values: ['0.080', '', ''] },
-            { as_of: '2026-10-02 00:00:00Z', values: ['0.081', '0.011', ''] },
+            { as_of: wireTimestamp('2026-10-01 00:00:00Z'), values: ['0.080', '', ''] },
+            { as_of: wireTimestamp('2026-10-02 00:00:00Z'), values: ['0.081', '0.011', ''] },
         ],
     };
 
@@ -180,7 +181,7 @@ describe('matrixOf', () => {
     it('leaves a missing value as a hole and never as zero', () => {
         const short = matrixOf({
             ...evolution,
-            instants: [{ as_of: '2026-10-01 00:00:00Z', values: ['0.080'] }],
+            instants: [{ as_of: wireTimestamp('2026-10-01 00:00:00Z'), values: ['0.080'] }],
         });
         expect(short.rows[2]?.cells).toEqual(['']);
     });
@@ -199,7 +200,7 @@ describe('nodeLabel', () => {
 
 describe('nowRowsOf', () => {
     const snapshot: CurveSnapshot = {
-        as_of: '2026-10-10 12:00:00Z',
+        as_of: wireTimestamp('2026-10-10 12:00:00Z'),
         coordinate_fields: ['expiry', 'strike_label'],
         nodes: [
             { coordinates: ['1Y', 'ATM'], status: '' },
@@ -207,7 +208,11 @@ describe('nowRowsOf', () => {
             { coordinates: ['2Y', 'ATM'], status: '' },
         ],
         values: ['0.080', '0.011', ''],
-        recorded_at: ['2026-10-10 09:00:00Z', '1970-01-01 00:00:00Z', '1970-01-01 00:00:00Z'],
+        recorded_at: [
+            wireTimestamp('2026-10-10 09:00:00Z'),
+            wireTimestamp('1970-01-01 00:00:00Z'),
+            wireTimestamp('1970-01-01 00:00:00Z'),
+        ],
         provenance: [],
         oldest_age_seconds: 10800,
         spread_seconds: 0,
@@ -242,10 +247,10 @@ describe('nowRowsOf', () => {
                     modified_by: 'trader',
                     change_reason_code: 'common.correction',
                     change_commentary: '',
-                    recorded_at: '2026-10-10 09:00:00Z',
+                    recorded_at: wireTimestamp('2026-10-10 09:00:00Z'),
                     derivation_config_id: '',
                     derivation_config_version: 0,
-                    source_as_of: '1970-01-01 00:00:00Z',
+                    source_as_of: wireTimestamp('1970-01-01 00:00:00Z'),
                 },
             ],
         });
@@ -259,10 +264,10 @@ describe('nowRowsOf', () => {
             modified_by: '',
             change_reason_code: '',
             change_commentary: '',
-            recorded_at: '1970-01-01 00:00:00Z',
+            recorded_at: wireTimestamp('1970-01-01 00:00:00Z'),
             derivation_config_id: '',
             derivation_config_version: 0,
-            source_as_of: '1970-01-01 00:00:00Z',
+            source_as_of: wireTimestamp('1970-01-01 00:00:00Z'),
             ...overrides,
         });
         const rows = nowRowsOf({

@@ -47,6 +47,7 @@ import type {
     CurveSeriesList,
     CurveSnapshot,
 } from '@ores/contracts';
+import { fromWireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
 import { PERMISSION } from '../access/permissions.js';
 import { useHolds } from '../access/holds.js';
 import { curves, type CurveRange } from '../api/curves.js';
@@ -102,9 +103,9 @@ interface Asked {
     readonly provenance: boolean;
 }
 
-/** The instant of a column, to the minute. */
-function columnLabel(asOf: string): string {
-    return asOf.slice(0, 16);
+/** The instant of a column, to the minute, read from the instant and not from its text. */
+function columnLabel(at: WireTimestamp): string {
+    return fromWireTimestamp(at).toISOString().slice(0, 16).replace('T', ' ');
 }
 
 export function MatrixPanel({ evolution }: { readonly evolution: CurveEvolution }): ReactNode {

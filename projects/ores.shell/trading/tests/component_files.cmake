@@ -43,6 +43,7 @@ set(files
     "equity_barrier_option_instrument_commands_tests.cpp"
     "equity_digital_option_instrument_commands_tests.cpp"
     "equity_forward_instrument_commands_tests.cpp"
+    "equity_instrument_commands_tests.cpp"
     "equity_option_instrument_commands_tests.cpp"
     "equity_position_instrument_commands_tests.cpp"
     "equity_position_option_underlying_commands_tests.cpp"

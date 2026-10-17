@@ -99,11 +99,18 @@ measure() {
             return 1
         fi
     done
-    ir="$(awk -v a="${big[0]}" -v b="${small[0]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
-    dr="$(awk -v a="${big[1]}" -v b="${small[1]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
-    i1="$(awk -v a="${big[2]}" -v b="${small[2]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
-    d1="$(awk -v a="${big[3]}" -v b="${small[3]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
-    ll="$(awk -v a="${big[4]}" -v b="${small[4]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
+    # A count whose growth between the two runs is smaller than the run-to-run
+    # noise comes out negative. Zero is the honest floor: it says the count did
+    # not grow with the work, not that it went backwards.
+    extract_delta() {
+        awk -v a="$1" -v b="$2" -v n="$repeats" \
+            'BEGIN { d = (a - b) / (n - 1); if (d < 0) d = 0; printf "%.1f", d }'
+    }
+    ir="$(extract_delta "${big[0]}" "${small[0]}")"
+    dr="$(extract_delta "${big[1]}" "${small[1]}")"
+    i1="$(extract_delta "${big[2]}" "${small[2]}")"
+    d1="$(extract_delta "${big[3]}" "${small[3]}")"
+    ll="$(extract_delta "${big[4]}" "${small[4]}")"
     local d1_rate ll_rate
     d1_rate="$(awk -v m="$d1" -v r="$dr" 'BEGIN{printf "%.1f%%", (r > 0 ? 100*m/r : 0)}')"
     ll_rate="$(awk -v m="$ll" -v a="$i1" -v b="$d1" 'BEGIN{printf "%.1f%%", ((a+b) > 0 ? 100*m/(a+b) : 0)}')"

@@ -146,7 +146,9 @@ wins on time, loses on work per byte, and the difference is a named target
 rather than a mystery.
 
 The zero LL misses on the scan rows mean the working set of a scan fits the
-last level on this machine. They are a measurement, not a missing value.
+last level on this machine. A count is clamped at zero because a count whose
+growth is smaller than the run-to-run noise would otherwise be recorded as a
+negative one.
 
 * What the earlier measurements changed
 

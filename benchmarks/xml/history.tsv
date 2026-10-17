@@ -90,7 +90,7 @@ tape	large	ll_miss_rate	98.6%	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3
 pugi	large	ns_per_parse	15525437.8	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3
 pugi	large	ir	74759474.8	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3
 pugi	large	dr	27642281.8	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3
-pugi	large	i1_misses	-0.2	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3
+pugi	large	i1_misses	0.0	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3
 pugi	large	d1_misses	727009.6	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3
 pugi	large	ll_misses	702823.4	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3
 pugi	large	d1_miss_rate	2.6%	6	65d2ad5407	2026-10-17T10:12:55Z	clang 21.1.8 -O3

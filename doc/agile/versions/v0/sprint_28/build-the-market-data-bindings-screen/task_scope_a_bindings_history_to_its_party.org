@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/scope-a-bindings-history-to-its-party
-#+pr:
+#+pr: 3444
 #+blocked_on: Nothing
 #+blocked_since:
 #+created: 2026-10-13
@@ -179,7 +179,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3444][#3444]] | [codegen] Scope the history read to the session's party |
 
 * Review
 

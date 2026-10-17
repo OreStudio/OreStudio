@@ -18,6 +18,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
+#include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -32,28 +33,25 @@ const std::string tags("[ore][xml][binding]");
 namespace fs = std::filesystem;
 using namespace ores::logging;
 using namespace ores::ore::xml;
+using ores::ore::xml::generated::calendar_adjustments_document;
+using ores::ore::xml::generated::calendaradjustment;
 
-// A hand-written table for CalendarAdjustments, which has every shape the
-// engine needs: three levels of nesting, a required attribute, two optional
-// children, and a repeated leaf two levels down. The generator replaces this
-// in the next task; the engine it exercises is the point here.
+// The calendar family's records and tables are generated from the schema by
+// projects/ores.ore/scripts/regenerate_xml_bindings.sh, and the generated names
+// are the schema's names. Nothing about that family is written by hand here.
 
-struct calendar_dates {
+// The two shapes below have no generator mapping yet, so they are hand-written
+// to exercise the engine directly: a residual field for content the schema does
+// not name, and a repeated leaf of a numeric type.
+
+struct notes {
     std::uint16_t present = 0;
-    std::vector<std::string> dates;
+    std::vector<residual_element> extras;
 };
 
-struct calendar_entry {
+struct level_list {
     std::uint16_t present = 0;
-    std::string name;
-    std::string base_calendar;
-    calendar_dates additional_holidays;
-    calendar_dates additional_business_days;
-};
-
-struct calendar_adjustments {
-    std::uint16_t present = 0;
-    std::vector<calendar_entry> calendars;
+    std::vector<double> levels;
 };
 
 constexpr auto hash_name(std::string_view name) -> std::uint32_t {
@@ -65,112 +63,10 @@ constexpr auto hash_name(std::string_view name) -> std::uint32_t {
     return h;
 }
 
-template <typename T>
-auto append_to(void* container, void** slot) -> void {
-    auto* vector = static_cast<std::vector<T>*>(container);
-    vector->emplace_back();
-    *slot = &vector->back();
-}
-
-const field calendar_dates_fields[] = {
-    {"Date",
-     hash_name("Date"),
-     field_kind::repeated_leaf,
-     offsetof(calendar_dates, dates),
-     0,
-     false,
-     false,
-     nullptr,
-     nullptr,
-     scalar_kind::text,
-     nullptr},
-};
-const record_type calendar_dates_type{"Dates", calendar_dates_fields, 1};
-
-const field calendar_entry_fields[] = {
-    {"name",
-     hash_name("name"),
-     field_kind::text,
-     offsetof(calendar_entry, name),
-     0,
-     true,
-     true,
-     nullptr,
-     nullptr,
-     scalar_kind::text,
-     nullptr},
-    {"BaseCalendar",
-     hash_name("BaseCalendar"),
-     field_kind::text,
-     offsetof(calendar_entry, base_calendar),
-     1,
-     false,
-     false,
-     nullptr,
-     nullptr,
-     scalar_kind::text,
-     nullptr},
-    {"AdditionalHolidays",
-     hash_name("AdditionalHolidays"),
-     field_kind::nested,
-     offsetof(calendar_entry, additional_holidays),
-     2,
-     false,
-     false,
-     nullptr,
-     &calendar_dates_type,
-     scalar_kind::text,
-     nullptr},
-    {"AdditionalBusinessDays",
-     hash_name("AdditionalBusinessDays"),
-     field_kind::nested,
-     offsetof(calendar_entry, additional_business_days),
-     3,
-     false,
-     false,
-     nullptr,
-     &calendar_dates_type,
-     scalar_kind::text,
-     nullptr},
-};
-const record_type calendar_entry_type{"Calendar", calendar_entry_fields, 4};
-
-const field calendar_adjustments_fields[] = {
-    {"Calendar",
-     hash_name("Calendar"),
-     field_kind::repeated_nested,
-     offsetof(calendar_adjustments, calendars),
-     0,
-     false,
-     false,
-     nullptr,
-     &calendar_entry_type,
-     scalar_kind::text,
-     &append_to<calendar_entry>},
-};
-const record_type calendar_adjustments_type{"CalendarAdjustments", calendar_adjustments_fields, 1};
-
-auto calendar_adjustments_document() -> const document_type& {
-    static const document_type doc{"CalendarAdjustments", &calendar_adjustments_type};
-    return doc;
-}
-
 auto read_file(const fs::path& path) -> std::string {
     std::ifstream file(path, std::ios::binary);
     return std::string{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
 }
-
-}
-
-struct notes {
-    std::uint16_t present = 0;
-    std::vector<residual_element> extras;
-};
-
-struct level_list {
-    std::uint16_t present = 0;
-    std::vector<double> levels;
-};
 
 const field notes_fields[] = {
     {"",
@@ -201,6 +97,8 @@ const field level_list_fields[] = {
      nullptr},
 };
 const record_type level_list_type{"Levels", level_list_fields, 1};
+
+}
 
 TEST_CASE("content_the_schema_does_not_name_is_captured", tags) {
     auto lg(make_logger(test_suite));
@@ -259,28 +157,28 @@ TEST_CASE("a_nested_document_binds_into_one_record", tags) {
         "<Calendar name=\"Empty\"/>"
         "</CalendarAdjustments>";
 
-    calendar_adjustments record;
+    calendaradjustment record;
     bind_error error;
     const bool bound = binder::bind(calendar_adjustments_document(), text, &record, error);
 
     INFO(error.message);
     REQUIRE(bound);
-    REQUIRE(record.calendars.size() == 2);
-    CHECK(record.calendars[0].name == "TARGET");
-    CHECK(record.calendars[0].base_calendar == "WeekendsOnly");
-    CHECK(record.calendars[0].additional_holidays.dates.size() == 2);
-    CHECK(record.calendars[0].additional_holidays.dates[0] == "2024-01-01");
-    CHECK(record.calendars[0].additional_business_days.dates.empty());
+    REQUIRE(record.calendar.size() == 2);
+    CHECK(record.calendar[0].name == "TARGET");
+    CHECK(record.calendar[0].base_calendar == "WeekendsOnly");
+    CHECK(record.calendar[0].additional_holidays.date.size() == 2);
+    CHECK(record.calendar[0].additional_holidays.date[0] == "2024-01-01");
+    CHECK(record.calendar[0].additional_business_days.date.empty());
 
     // A child that is absent stays absent, and one that arrives sets its bit.
-    CHECK((record.calendars[1].present & 0x2u) == 0u);
-    CHECK((record.calendars[0].present & 0x2u) != 0u);
+    CHECK((record.calendar[1].present & 0x2u) == 0u);
+    CHECK((record.calendar[0].present & 0x2u) != 0u);
 }
 
 TEST_CASE("a_missing_required_attribute_is_refused", tags) {
     auto lg(make_logger(test_suite));
 
-    calendar_adjustments record;
+    calendaradjustment record;
     bind_error error;
     const bool bound = binder::bind(calendar_adjustments_document(),
                                     "<CalendarAdjustments><Calendar/></CalendarAdjustments>",
@@ -294,7 +192,7 @@ TEST_CASE("a_missing_required_attribute_is_refused", tags) {
 TEST_CASE("an_unknown_element_is_refused_rather_than_dropped", tags) {
     auto lg(make_logger(test_suite));
 
-    calendar_adjustments record;
+    calendaradjustment record;
     bind_error error;
     const bool bound = binder::bind(calendar_adjustments_document(),
                                     "<CalendarAdjustments><Holiday/></CalendarAdjustments>",
@@ -319,14 +217,14 @@ TEST_CASE("every_calendar_adjustment_in_the_corpus_binds", tags) {
         if (!entry.is_regular_file() || entry.path().filename() != "calendaradjustment.xml")
             continue;
         ++files;
-        calendar_adjustments record;
+        calendaradjustment record;
         bind_error error;
         if (!binder::bind(
                 calendar_adjustments_document(), read_file(entry.path()), &record, error)) {
             report += entry.path().string() + ": " + error.message + "\\n";
             continue;
         }
-        calendars += record.calendars.size();
+        calendars += record.calendar.size();
     }
 
     INFO("files: " << files << ", calendars: " << calendars);

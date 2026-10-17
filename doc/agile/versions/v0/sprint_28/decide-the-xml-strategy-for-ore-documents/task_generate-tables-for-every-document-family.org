@@ -88,3 +88,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generator is =projects/ores.ore/scripts/generate_xml_bindings.py=, with
+=regenerate_xml_bindings.sh= as the lever that invokes it for each family. It
+reads the schema and emits both the C++ records and the codec tables, so the
+hand-written calendar table is gone and the family is entirely generated.
+
+What it derives from the schema: which complexTypes exist, their order, which
+children are elements and which are attributes, cardinality, enumerations, and
+which simpleType restricts to which primitive. What it cannot derive, and takes
+from this project instead, is what a numeric element *means*: ORE types the
+same money concept as xs:float, xs:double and xs:string in three places, so the
+money list is an argument rather than a reading.
+
+Verified: the same 7 binding cases pass against the generated records, the whole
+=ore xml= suite is 517 cases and 63,550 assertions, and re-running the generator
+produces byte-identical output, which is what a drift check will need.
+
+Two defects the wiring found, both of the same kind as the earlier ones. The
+generated source was not in =component_files.cmake=, so it compiled nowhere.
+And the accessor needed the export macro, because the library is built with
+hidden visibility and a generated function has no more right to the symbol
+table than a hand-written one did.

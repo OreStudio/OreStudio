@@ -98,11 +98,14 @@ DONE. The credit carrier no longer holds a polymorphic payload field.
 - =credit_fact_variant.hpp= is deleted and no consumer references it.
 - =credit_instrument_data= holds one typed array per concrete product type, joined to the header by the trade id each row carries flat: =credit_default_swap_instruments=, =index_credit_default_swap_instruments=, =index_credit_default_swap_option_instruments=, =synthetic_cdo_instruments=, =credit_linked_swap_instruments= and =risk_participation_agreement_instruments=.
 - =instrument.hpp= reads those arrays through typed accessors in place of the variant visit, so no reader needs a discriminator.
+- The six credit types have one home: a type tuple, the array tuple it maps to, and a static assertion that the two line up. =fact_rows=, =visit_credit_facts=, =stamp_ids=, =as_credit= and =append_instrument= all follow it, so a type that is not a credit fact is refused at compile time instead of reaching another product's array.
+- =visit_credit_facts= returns =std::optional=, so a carrier that states no fact is told apart from a visitor that answered false, and the import handler reports the empty case instead of failing silently.
+- =domain_instrument_tests.cpp= covers the empty carrier, the false answer, the one-row case and the array lookup.
 - Consumers migrated: =instrument_batch_mapper.cpp=, =credit_instrument_mapper.cpp= and the ORE import execute handler.
 - Left to their owning environments, as agreed: =rates_fact_variant= and =equity_instrument_variant=.
 
 Every local check passes on =linux-clang-release-ninja=. Nineteen passed in one full
 run and =step-consumers= passed on its own once the fleet was up, because it needs
-a running stream to inspect. =ctest= took 975.5 s and every suite passed. The ORE
+a running stream to inspect. =ctest= took 1536.3 s and every suite passed. The ORE
 XML round trip passes, which is the evidence that import and export still round
-trip. Base is =origin/main= at =69de13f789=.
+trip. Base is =origin/main= at =2176c3c1ec=.

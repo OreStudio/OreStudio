@@ -36,6 +36,11 @@ namespace ores::ore::xml {
  * money amount. The generator takes the shape from the schema and the kind
  * from this project's money vocabulary.
  */
+/**
+ * @brief The element type of a repeated leaf.
+ */
+enum class scalar_kind : std::uint8_t { text, integer, decimal, real };
+
 enum class field_kind : std::uint8_t {
     /// A string field, filled from the element's text.
     text,
@@ -49,13 +54,27 @@ enum class field_kind : std::uint8_t {
     enumeration,
     /// A required or optional child of a complex type.
     nested,
-    /// A repeated leaf, appended to a vector of strings.
-    repeated_text,
+    /// A repeated leaf, appended to a vector of scalars. `scalar` says which.
+    repeated_leaf,
+    /// A bag of content the schema does not name, captured rather than lost.
+    residual,
     /// A repeated child of a complex type, appended to a vector.
     repeated_nested,
 };
 
 struct record_type;
+
+/**
+ * @brief One element the schema does not name, kept so it is not lost.
+ *
+ * Only text content is captured. An unknown element with children cannot be
+ * represented, so the binding refuses the document rather than store half of
+ * it.
+ */
+struct residual_element {
+    std::string name;
+    std::string text;
+};
 
 /**
  * @brief One element or attribute of one schema type.
@@ -77,6 +96,8 @@ struct field {
     const char* const* tokens;
     /// Element type for nested and repeated_nested.
     const record_type* type;
+    /// The element type of a repeated_leaf, ignored otherwise.
+    scalar_kind scalar;
     /// Appends a default-constructed element to a vector and hands back its
     /// address. Null for every other kind.
     void (*append)(void* container, void** slot);

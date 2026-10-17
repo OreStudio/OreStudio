@@ -53,6 +53,16 @@ auto find(const record_type& type, std::string_view name, bool attribute) -> con
     return nullptr;
 }
 
+/**
+ * @brief The field that captures content the schema does not name, if any.
+ */
+auto residual_field(const record_type& type) -> const field* {
+    for (std::uint8_t i = 0; i < type.field_count; ++i)
+        if (type.fields[i].kind == field_kind::residual)
+            return &type.fields[i];
+    return nullptr;
+}
+
 auto present(const void* record, const field& f) -> bool {
     return (*static_cast<const std::uint16_t*>(record) & (1u << f.bit)) != 0;
 }
@@ -112,9 +122,48 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
             *reinterpret_cast<std::int8_t*>(slot) = index;
             break;
         }
-        case field_kind::repeated_text:
-            reinterpret_cast<std::vector<std::string>*>(slot)->emplace_back(text);
+        case field_kind::repeated_leaf: {
+            switch (f.scalar) {
+                case scalar_kind::text:
+                    reinterpret_cast<std::vector<std::string>*>(slot)->emplace_back(text);
+                    break;
+                case scalar_kind::integer: {
+                    std::int64_t value = 0;
+                    const auto [stop, ec] = std::from_chars(text.data(), text.data() + text.size(),
+                                                            value);
+                    if (ec != std::errc{} || stop != text.data() + text.size()) {
+                        error = "a repeated integer element does not hold one";
+                        return false;
+                    }
+                    reinterpret_cast<std::vector<std::int64_t>*>(slot)->push_back(value);
+                    break;
+                }
+                case scalar_kind::decimal: {
+                    const auto parsed = utility::decimal::decimal::from_string(text);
+                    if (!parsed) {
+                        error = parsed.error();
+                        return false;
+                    }
+                    reinterpret_cast<std::vector<utility::decimal::decimal>*>(slot)->push_back(
+                        *parsed);
+                    break;
+                }
+                case scalar_kind::real: {
+                    double value = 0;
+                    const auto [stop, ec] = std::from_chars(text.data(), text.data() + text.size(),
+                                                            value);
+                    if (ec != std::errc{} || stop != text.data() + text.size()) {
+                        error = "a repeated real element does not hold one";
+                        return false;
+                    }
+                    reinterpret_cast<std::vector<double>*>(slot)->push_back(value);
+                    break;
+                }
+            }
             break;
+        }
+        case field_kind::residual:
+            return false;
         case field_kind::nested:
         case field_kind::repeated_nested:
             return false;
@@ -141,6 +190,11 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
     // frame below it. Without this the leaf's end would pop its parent.
     bool in_leaf = false;
     int skipping = 0;
+    // Set while the engine is inside an element the schema does not name. Its
+    // text is kept on the residual record and its children are refused.
+    std::string* residual_text = nullptr;
+    bool residual_had_children = false;
+    std::string residual_name;
 
     reader input(text);
 
@@ -164,10 +218,20 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
         }
 
         if (skipping > 0) {
-            if (ev.kind == event_type::begin_element)
+            if (ev.kind == event_type::begin_element) {
                 ++skipping;
-            else if (ev.kind == event_type::end_element)
-                --skipping;
+                residual_had_children = true;
+            } else if (ev.kind == event_type::text && residual_text != nullptr) {
+                residual_text->append(ev.value);
+            } else if (ev.kind == event_type::end_element) {
+                if (--skipping == 0 && residual_had_children) {
+                    error.message = "unknown element '" + residual_name +
+                                    "' has children, which a projection cannot represent";
+                    error.line = input.line();
+                    error.column = input.column();
+                    return false;
+                }
+            }
             continue;
         }
 
@@ -186,14 +250,28 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                 const auto& top = stack[depth - 1];
                 const auto* f = find(*top.type, ev.name, false);
                 if (f == nullptr) {
-                    // Content the schema does not name is not silently dropped:
-                    // the binding refuses the document, because a projection
-                    // that ignores data cannot be checked against the source.
-                    error.message = "unknown element '" + std::string(ev.name) + "' in '" +
-                                    std::string(top.type->name) + "'";
-                    error.line = input.line();
-                    error.column = input.column();
-                    return false;
+                    // Content the schema does not name goes to the residual
+                    // field when the type declares one. A type without one
+                    // refuses the document, because a projection that ignores
+                    // data cannot be checked against the source.
+                    const auto* any = residual_field(*top.type);
+                    if (any == nullptr) {
+                        error.message = "unknown element '" + std::string(ev.name) + "' in '" +
+                                        std::string(top.type->name) + "'";
+                        error.line = input.line();
+                        error.column = input.column();
+                        return false;
+                    }
+                    auto* bag = reinterpret_cast<std::vector<residual_element>*>(top.record +
+                                                                                any->offset);
+                    bag->emplace_back();
+                    bag->back().name = std::string(ev.name);
+                    mark_present(top.record, *any);
+                    residual_text = &bag->back().text;
+                    residual_had_children = false;
+                    residual_name = std::string(ev.name);
+                    skipping = 1;
+                    continue;
                 }
                 if (depth == max_depth)
                     return fail("the document nests deeper than the binding follows");
@@ -249,6 +327,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
             case event_type::end_element: {
                 pending = nullptr;
                 pending_record = nullptr;
+                residual_text = nullptr;
                 if (in_leaf) {
                     in_leaf = false;
                     continue;
@@ -262,9 +341,9 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                     // An attribute is checked at the end of the element that
                     // carries it, exactly like a child: both are content the
                     // schema requires, and a missing one is a broken document
-                    // rather than an optional value.
-                    if (!f.required || f.kind == field_kind::repeated_text ||
-                        f.kind == field_kind::repeated_nested)
+                    // rather than an optional value. The repeated kinds set
+                    // their bit when they append, so minOccurs=1 works too.
+                    if (!f.required || f.kind == field_kind::residual)
                         continue;
                     if (!present(top.record, f)) {
                         error.message = "required element '" + std::string(f.name) +

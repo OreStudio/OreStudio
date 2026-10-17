@@ -114,5 +114,15 @@ Two positions are worth recording because they are choices, not defaults.
   represent should stop, not lose it. The tape keeps the fidelity case, where
   the whole document is preserved and written back.
 
-Still open in this task: the three =xs:any= sites, and repeated children of a
-simple type that is not text. Both are needed before every family can bind.
+The three =xs:any= sites are handled by a residual field: an element the schema
+does not name is captured as its name and its text. That is enough for ORE's
+own use, where the sites hold scalar content. An unknown element with children
+is refused, because a projection cannot represent a subtree it has no field
+for, and storing half of it would be the silent loss the gate exists to stop.
+
+A repeated leaf now carries a scalar kind, so a list of numbers fills a vector
+of numbers rather than a vector of spellings. ORE's instruments need this:
+=Strike=, =Payoff= and =Level= are repeated =xs:float= elements.
+
+Verified: 517 cases and 63,550 assertions in the =ore xml= suite, and the
+benchmark gate re-recorded at the new commit.

@@ -75,13 +75,14 @@ auto append_to(void* container, void** slot) -> void {
 const field calendar_dates_fields[] = {
     {"Date",
      hash_name("Date"),
-     field_kind::repeated_text,
+     field_kind::repeated_leaf,
      offsetof(calendar_dates, dates),
      0,
      false,
      false,
      nullptr,
      nullptr,
+     scalar_kind::text,
      nullptr},
 };
 const record_type calendar_dates_type{"Dates", calendar_dates_fields, 1};
@@ -96,6 +97,7 @@ const field calendar_entry_fields[] = {
      true,
      nullptr,
      nullptr,
+     scalar_kind::text,
      nullptr},
     {"BaseCalendar",
      hash_name("BaseCalendar"),
@@ -106,6 +108,7 @@ const field calendar_entry_fields[] = {
      false,
      nullptr,
      nullptr,
+     scalar_kind::text,
      nullptr},
     {"AdditionalHolidays",
      hash_name("AdditionalHolidays"),
@@ -116,6 +119,7 @@ const field calendar_entry_fields[] = {
      false,
      nullptr,
      &calendar_dates_type,
+     scalar_kind::text,
      nullptr},
     {"AdditionalBusinessDays",
      hash_name("AdditionalBusinessDays"),
@@ -126,6 +130,7 @@ const field calendar_entry_fields[] = {
      false,
      nullptr,
      &calendar_dates_type,
+     scalar_kind::text,
      nullptr},
 };
 const record_type calendar_entry_type{"Calendar", calendar_entry_fields, 4};
@@ -140,6 +145,7 @@ const field calendar_adjustments_fields[] = {
      false,
      nullptr,
      &calendar_entry_type,
+     scalar_kind::text,
      &append_to<calendar_entry>},
 };
 const record_type calendar_adjustments_type{"CalendarAdjustments", calendar_adjustments_fields, 1};
@@ -154,6 +160,91 @@ auto read_file(const fs::path& path) -> std::string {
     return std::string{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
 }
 
+}
+
+struct notes {
+    std::uint16_t present = 0;
+    std::vector<residual_element> extras;
+};
+
+struct level_list {
+    std::uint16_t present = 0;
+    std::vector<double> levels;
+};
+
+const field notes_fields[] = {
+    {"",
+     0,
+     field_kind::residual,
+     offsetof(notes, extras),
+     0,
+     false,
+     false,
+     nullptr,
+     nullptr,
+     scalar_kind::text,
+     nullptr},
+};
+const record_type notes_type{"Notes", notes_fields, 1};
+
+const field level_list_fields[] = {
+    {"Level",
+     hash_name("Level"),
+     field_kind::repeated_leaf,
+     offsetof(level_list, levels),
+     0,
+     false,
+     false,
+     nullptr,
+     nullptr,
+     scalar_kind::real,
+     nullptr},
+};
+const record_type level_list_type{"Levels", level_list_fields, 1};
+
+TEST_CASE("content_the_schema_does_not_name_is_captured", tags) {
+    auto lg(make_logger(test_suite));
+
+    notes record;
+    bind_error error;
+    const document_type doc{"Notes", &notes_type};
+    const bool bound =
+        binder::bind(doc, "<Notes><Anything>hello</Anything></Notes>", &record, error);
+
+    INFO(error.message);
+    REQUIRE(bound);
+    REQUIRE(record.extras.size() == 1);
+    CHECK(record.extras[0].name == "Anything");
+    CHECK(record.extras[0].text == "hello");
+}
+
+TEST_CASE("content_the_schema_does_not_name_and_cannot_represent_is_refused", tags) {
+    auto lg(make_logger(test_suite));
+
+    notes record;
+    bind_error error;
+    const document_type doc{"Notes", &notes_type};
+    const bool bound =
+        binder::bind(doc, "<Notes><Nested><Child/></Nested></Notes>", &record, error);
+
+    CHECK_FALSE(bound);
+    CHECK(error.message.find("children") != std::string::npos);
+}
+
+TEST_CASE("a_repeated_numeric_leaf_fills_a_vector", tags) {
+    auto lg(make_logger(test_suite));
+
+    level_list record;
+    bind_error error;
+    const document_type doc{"Levels", &level_list_type};
+    const bool bound =
+        binder::bind(doc, "<Levels><Level>1.5</Level><Level>2.5</Level></Levels>", &record, error);
+
+    INFO(error.message);
+    REQUIRE(bound);
+    REQUIRE(record.levels.size() == 2);
+    CHECK(record.levels[0] == 1.5);
+    CHECK(record.levels[1] == 2.5);
 }
 
 TEST_CASE("a_nested_document_binds_into_one_record", tags) {

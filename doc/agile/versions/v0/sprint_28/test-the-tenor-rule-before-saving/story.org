@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 55C8F1C7-EAD5-4BAC-8465-8F613BB8408F
+:END:
+#+title: Story: Test the tenor rule before saving it
+#+description: The tenor journey authors a rule and never shows its answer, so a wrong anchor or roll rule is discovered only after it is written. Add a test step that resolves the rule as it stands in the form and shows the date, its refusal, and how it got there.
+#+type: story
+#+level: s2
+#+filetags: :web:refdata:tenor:ux:sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person authoring a tenor's resolution reads the date it produces before they write it, against the draft they have typed rather than the row the server still holds. The arithmetic is the engine's, reached over the wire, so what the step shows is what the saved rule will do.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- The tenor journey carries a test step where a horizon, an optional spot date and a calendar are set, and the date the drafted rule resolves to is shown.
+- The step names the anchor it counted from, the date before the roll, the adjusted date, the roll rule and the calendar; a rule the server declines shows the step that refused, the dates counted and the row at fault, without losing the form.
+- A refdata operation resolves a rule supplied inline, so the answer describes the draft and not the saved row; it is served by the pure engine and carries the same structured refusal.
+- The step is covered by tests on both sides of the wire, and the journey's rail, i18n and existing steps are unchanged in behaviour.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E6F83232-432D-42FC-9E6B-E930E85D7A40][Scaffold story: Test the tenor rule before saving it]] | DONE | 2026-10-17 | 2026-10-17 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:181B794B-BCCC-4ED3-BF27-A8035A35D8B1][Build the draft-rule resolve step]] | DONE | 2026-10-17 | 2026-10-17 | Initial task for: Test the tenor rule before saving it |
+
+* Decisions
+
+* Out of scope
+
+-

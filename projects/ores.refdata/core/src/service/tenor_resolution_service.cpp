@@ -130,6 +130,23 @@ std::string field_name_for(aquant_domain::resolution_status status) {
     return {};
 }
 
+/// Fills a refusal into a response and hands it back. Every refusal on every
+/// path is the same shape: what happened, which step refused, and the row a
+/// caller can go and look at.
+messaging::resolve_tenor_response refuse_with(messaging::resolve_tenor_response response,
+                                              outcome what,
+                                              std::string code,
+                                              std::string message,
+                                              std::string field) {
+    response.result.outcome = what;
+    response.result.message = std::move(message);
+    response.result.code = std::move(code);
+    response.result.fields.push_back(field_failure{.field = std::move(field),
+                                                   .code = response.result.code,
+                                                   .message = response.result.message});
+    return response;
+}
+
 } // namespace
 
 tenor_resolution_service::tenor_resolution_service(context ctx)
@@ -144,36 +161,25 @@ tenor_resolution_service::resolve(const messaging::resolve_tenor_request& reques
     // response and returns rather than throwing. The dates already counted
     // travel with it, because a person looking at a refusal wants to know how
     // far the resolution got.
-    const auto refuse =
-        [&response](outcome what, std::string code, std::string message, std::string field) {
-            response.result.outcome = what;
-            response.result.message = std::move(message);
-            response.result.code = std::move(code);
-            response.result.fields.push_back(field_failure{.field = std::move(field),
-                                                           .code = response.result.code,
-                                                           .message = response.result.message});
-            return response;
-        };
-
     tenor_repository tenors;
     const auto tenor_rows = tenors.read_latest(ctx_, request.tenor_code);
     if (tenor_rows.empty()) {
-        return refuse(outcome::missing,
-                      "tenor_not_found",
-                      "No tenor '" + request.tenor_code + "' for this tenant.",
-                      "tenor_code");
+        return refuse_with(response,
+                           outcome::missing,
+                           "tenor_not_found",
+                           "No tenor '" + request.tenor_code + "' for this tenant.",
+                           "tenor_code");
     }
-    const auto& tenor = tenor_rows.front();
 
     tenor_convention_repository conventions;
     const auto convention_rows = conventions.read_latest(ctx_, request.convention_code);
     if (convention_rows.empty()) {
-        return refuse(outcome::missing,
-                      "convention_not_found",
-                      "No tenor convention '" + request.convention_code + "' for this tenant.",
-                      "convention_code");
+        return refuse_with(response,
+                           outcome::missing,
+                           "convention_not_found",
+                           "No tenor convention '" + request.convention_code + "' for this tenant.",
+                           "convention_code");
     }
-    const auto& convention = convention_rows.front();
 
     // A tenor resolves only because a row says it belongs to the convention,
     // and that row is also where the duration of a SPECIAL tenor lives. Its
@@ -185,24 +191,59 @@ tenor_resolution_service::resolve(const messaging::resolve_tenor_request& reques
             return row.tenor_code == request.tenor_code;
         });
     if (resolution_rule == resolution_rows.end()) {
-        return refuse(outcome::missing,
-                      "tenor_not_in_convention",
-                      "Tenor '" + request.tenor_code + "' does not belong to convention '" +
-                          request.convention_code + "': no tenor_convention_resolutions row.",
-                      "tenor_convention_resolutions");
+        return refuse_with(response,
+                           outcome::missing,
+                           "tenor_not_in_convention",
+                           "Tenor '" + request.tenor_code + "' does not belong to convention '" +
+                               request.convention_code + "': no tenor_convention_resolutions row.",
+                           "tenor_convention_resolutions");
     }
+
+    return resolve_rows(tenor_rows.front(),
+                        convention_rows.front(),
+                        *resolution_rule,
+                        request.calendar_code,
+                        request.horizon,
+                        request.spot);
+}
+
+messaging::resolve_tenor_response tenor_resolution_service::preview(
+    const messaging::preview_tenor_resolution_request& request) const {
+    // Nothing is read for the rule: it is the draft the caller is holding, and
+    // reading the stored row instead would answer about the wrong rule. The
+    // calendar is still the database's, because holidays are not a draft.
+    return resolve_rows(request.tenor,
+                        request.convention,
+                        request.resolution,
+                        request.calendar_code,
+                        request.horizon,
+                        request.spot);
+}
+
+messaging::resolve_tenor_response
+tenor_resolution_service::resolve_rows(const domain::tenor& tenor,
+                                       const domain::tenor_convention& convention,
+                                       const domain::tenor_convention_resolution& resolution_rule,
+                                       const std::string& calendar_code,
+                                       year_month_day horizon,
+                                       const std::optional<year_month_day>& spot) const {
+    messaging::resolve_tenor_response response;
+    response.calendar = calendar_code;
+    response.roll_rule = convention.business_day_convention_type;
 
     // An unmaterialised calendar has no business days at all, so every date
     // would look like a business day. That is a missing prerequisite rather
     // than an answer, and saying so is the only honest reply.
     calendar_date_repository dates{ctx_};
-    const auto calendar_days = dates.read_latest_by_calendar(request.calendar_code);
+    const auto calendar_days = dates.read_latest_by_calendar(calendar_code);
     if (calendar_days.empty()) {
-        return refuse(outcome::missing,
-                      "calendar_not_materialised",
-                      "Calendar '" + request.calendar_code +
-                          "' has no materialised dates for this tenant.",
-                      "calendar_code");
+        return refuse_with(response,
+                           outcome::missing,
+                           "calendar_not_materialised",
+                           "Calendar '" + calendar_code +
+                               "' has no materialised dates for this "
+                               "tenant.",
+                           "calendar_code");
     }
     const auto calendars = build_calendar_set(calendar_days);
 
@@ -210,8 +251,8 @@ tenor_resolution_service::resolve(const messaging::resolve_tenor_request& reques
     // else. An unparseable code is data the engine cannot be asked about, so
     // it refuses rather than guessing at a nearest match.
     tenor_resolution_request engine_request;
-    engine_request.horizon = request.horizon;
-    engine_request.spot_date = request.spot;
+    engine_request.horizon = horizon;
+    engine_request.spot_date = spot;
     engine_request.calendar_index = 0;
     try {
         engine_request.tenor.kind = parse_tenor_kind_code(tenor.kind);
@@ -220,68 +261,73 @@ tenor_resolution_service::resolve(const messaging::resolve_tenor_request& reques
 
         auto& rule = engine_request.rule.emplace();
         rule.anchor = parse_tenor_anchor_code(
-            resolution_rule->anchor_override.value_or(convention.measured_from));
+            resolution_rule.anchor_override.value_or(convention.measured_from));
         rule.algorithm = parse_resolution_algorithm_code(convention.resolution_algorithm);
         rule.roll = parse_business_day_convention_code(convention.business_day_convention_type);
-        rule.schedule_step_count = resolution_rule->schedule_step_count.value_or(0);
-        if (resolution_rule->offset_unit && resolution_rule->offset_multiplier) {
-            rule.offset = {parse_period_unit_code(*resolution_rule->offset_unit),
-                           *resolution_rule->offset_multiplier};
+        rule.schedule_step_count = resolution_rule.schedule_step_count.value_or(0);
+        if (resolution_rule.offset_unit && resolution_rule.offset_multiplier) {
+            rule.offset = {parse_period_unit_code(*resolution_rule.offset_unit),
+                           *resolution_rule.offset_multiplier};
         }
     } catch (const std::invalid_argument& e) {
-        return refuse(outcome::invalid, "unparseable_code", e.what(), "tenor_convention");
+        return refuse_with(
+            response, outcome::invalid, "unparseable_code", e.what(), "tenor_convention");
     }
-
-    response.roll_rule = convention.business_day_convention_type;
 
     // A row that names a schedule binds it to the schedule algorithm: under
     // ANCHOR_OFFSET the engine resolves on the calendar axis and never looks
     // at the schedule at all, so a row naming one there would be silently
     // ignored. Contradictory data is refused rather than read one way.
-    if (resolution_rule->schedule_code &&
+    if (resolution_rule.schedule_code &&
         engine_request.rule->algorithm != aquant_domain::resolution_algorithm::schedule_step) {
-        return refuse(outcome::invalid,
-                      "schedule_under_anchor_offset",
-                      "The resolution row for tenor '" + request.tenor_code + "' names schedule '" +
-                          *resolution_rule->schedule_code + "', but convention '" +
-                          request.convention_code + "' resolves by " +
-                          convention.resolution_algorithm + ", which never walks a schedule.",
-                      "resolution_algorithm");
+        return refuse_with(response,
+                           outcome::invalid,
+                           "schedule_under_anchor_offset",
+                           "The resolution row for tenor '" + tenor.code + "' names schedule '" +
+                               *resolution_rule.schedule_code + "', but convention '" +
+                               convention.code + "' resolves by " +
+                               convention.resolution_algorithm + ", which never walks a schedule.",
+                           "resolution_algorithm");
     }
 
     // The schedule axis, if the row names one. Its source decides how its
     // dates are produced, and a closed form this engine does not carry is
     // refused rather than walked as an event lookup that will find nothing.
     std::vector<schedule_date> schedule_dates;
-    if (resolution_rule->schedule_code) {
-        const auto& schedule_code = *resolution_rule->schedule_code;
+    if (resolution_rule.schedule_code) {
+        const auto& schedule_code = *resolution_rule.schedule_code;
         tenor_schedule_repository schedules;
         const auto schedule_rows = schedules.read_latest(ctx_, schedule_code);
         if (schedule_rows.empty()) {
-            return refuse(outcome::missing,
-                          "schedule_not_found",
-                          "No tenor schedule '" + schedule_code + "' for this tenant.",
-                          "schedule_code");
+            return refuse_with(response,
+                               outcome::missing,
+                               "schedule_not_found",
+                               "No tenor schedule '" + schedule_code + "' for this tenant.",
+                               "schedule_code");
         }
         const auto& schedule = schedule_rows.front();
 
         if (schedule.schedule_source == "CLOSED_FORM") {
             if (schedule_code != "ROLL_QUARTER") {
-                return refuse(outcome::invalid,
-                              "schedule_not_walkable",
-                              "Tenor schedule '" + schedule_code +
-                                  "' is closed-form and this engine walks only ROLL_QUARTER.",
-                              "schedule_code");
+                return refuse_with(response,
+                                   outcome::invalid,
+                                   "schedule_not_walkable",
+                                   "Tenor schedule '" + schedule_code +
+                                       "' is closed-form and this engine walks only "
+                                       "ROLL_QUARTER.",
+                                   "schedule_code");
             }
             engine_request.rule->schedule = schedule_kind::cds_roll_quarter;
         } else {
             engine_request.rule->schedule = schedule_kind::event_lookup;
             if (!schedule.calendar_code || !schedule.diary_entry_type) {
-                return refuse(outcome::invalid,
-                              "schedule_incomplete",
-                              "Tenor schedule '" + schedule_code +
-                                  "' is an event lookup with no calendar or diary entry type.",
-                              "schedule_code");
+                return refuse_with(response,
+                                   outcome::invalid,
+                                   "schedule_incomplete",
+                                   "Tenor schedule '" + schedule_code +
+                                       "' is an event lookup with no calendar or diary entry "
+                                       "type.",
+                                   "schedule_code");
             }
             calendar_event_repository events;
             const auto entries = events.read_latest_by_calendar_code(
@@ -308,11 +354,12 @@ tenor_resolution_service::resolve(const messaging::resolve_tenor_request& reques
     response.adjusted_date = result.resolved_date;
 
     if (result.status != aquant_domain::resolution_status::ok) {
-        return refuse(outcome::invalid,
-                      std::string(aquant_domain::to_string(result.status)),
-                      "The rule did not resolve: " +
-                          std::string(aquant_domain::to_string(result.status)) + ".",
-                      field_name_for(result.status));
+        return refuse_with(response,
+                           outcome::invalid,
+                           std::string(aquant_domain::to_string(result.status)),
+                           "The rule did not resolve: " +
+                               std::string(aquant_domain::to_string(result.status)) + ".",
+                           field_name_for(result.status));
     }
 
     return response;

@@ -46,6 +46,7 @@ using ores::refdata::domain::tenor;
 using ores::refdata::domain::tenor_convention;
 using ores::refdata::domain::tenor_convention_resolution;
 using ores::refdata::domain::tenor_schedule;
+using ores::refdata::messaging::preview_tenor_resolution_request;
 using ores::refdata::messaging::resolve_tenor_request;
 using ores::refdata::messaging::resolve_tenor_response;
 using ores::refdata::repository::calendar_exception_repository;
@@ -380,4 +381,76 @@ TEST_CASE("a row naming a schedule under an anchor-offset convention is refused"
     CHECK(response.result.code == "schedule_under_anchor_offset");
     REQUIRE(response.result.fields.size() == 1);
     CHECK(response.result.fields[0].field == "resolution_algorithm");
+}
+
+TEST_CASE("a preview answers about the drafted rule and not the stored one", tags) {
+    fixture f;
+
+    // The stored rule is one month from spot, rolled ModifiedFollowing, so it
+    // would answer 19 February. The draft says three months; an answer of
+    // three months is only reachable by using the draft.
+    tenor draft_tenor;
+    draft_tenor.code = "1M";
+    draft_tenor.kind = "PERIOD";
+    draft_tenor.unit = "MONTH";
+    draft_tenor.multiplier = 3;
+
+    tenor_convention draft_convention;
+    draft_convention.code = f.convention_code;
+    draft_convention.measured_from = "SPOT";
+    draft_convention.resolution_algorithm = "ANCHOR_OFFSET";
+    draft_convention.business_day_convention_type = "ModifiedFollowing";
+
+    tenor_convention_resolution draft_resolution;
+    draft_resolution.convention_code = f.convention_code;
+    draft_resolution.tenor_code = "1M";
+
+    preview_tenor_resolution_request req;
+    req.tenor = draft_tenor;
+    req.convention = draft_convention;
+    req.resolution = draft_resolution;
+    req.calendar_code = f.calendar_code;
+    req.horizon = horizon;
+    req.spot = spot;
+
+    tenor_resolution_service service(f.h.context());
+    const auto response = service.preview(req);
+
+    CHECK(response.result.outcome == outcome::ok);
+    CHECK(response.anchor_date == spot);
+    // 19 January plus three months is 19 April 2026, a Sunday, which
+    // ModifiedFollowing takes to the Monday.
+    CHECK(response.date_before_roll == std::chrono::year{2026} / std::chrono::April / 19);
+    CHECK(response.adjusted_date == std::chrono::year{2026} / std::chrono::April / 20);
+    CHECK(response.roll_rule == "ModifiedFollowing");
+    CHECK(response.calendar == f.calendar_code);
+}
+
+TEST_CASE("a preview of a rule that needs a spot date refuses and says so", tags) {
+    fixture f;
+
+    auto draft_convention = tenor_convention{};
+    draft_convention.code = f.convention_code;
+    draft_convention.measured_from = "SPOT";
+    draft_convention.resolution_algorithm = "ANCHOR_OFFSET";
+    draft_convention.business_day_convention_type = "ModifiedFollowing";
+
+    preview_tenor_resolution_request req;
+    req.tenor = tenor{};
+    req.tenor.kind = "PERIOD";
+    req.tenor.unit = "MONTH";
+    req.tenor.multiplier = 1;
+    req.convention = draft_convention;
+    req.resolution = tenor_convention_resolution{};
+    req.calendar_code = f.calendar_code;
+    req.horizon = horizon;
+    req.spot = std::nullopt;
+
+    tenor_resolution_service service(f.h.context());
+    const auto response = service.preview(req);
+
+    CHECK(response.result.outcome == outcome::invalid);
+    CHECK(response.result.code == "missing_spot_date");
+    REQUIRE(response.result.fields.size() == 1);
+    CHECK(response.result.fields[0].field == "spot");
 }

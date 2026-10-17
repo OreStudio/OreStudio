@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 181B794B-BCCC-4ED3-BF27-A8035A35D8B1
+:END:
+#+title: Task: Build the draft-rule resolve step
+#+description: Initial task for: Test the tenor rule before saving it
+#+type: task
+#+level: s1
+#+filetags: :test-the-tenor-rule-before-saving:sprint_28:v0:
+#+owner: marco
+#+branch: feature/test-the-tenor-rule-before-saving
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:55C8F1C7-EAD5-4BAC-8465-8F613BB8408F][Test the tenor rule before saving it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A person authoring a tenor's resolution reads the date it produces before they write it, against the draft they have typed rather than the row the server still holds. The arithmetic is the engine's, reached over the wire, so what the step shows is what the saved rule will do.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:55C8F1C7-EAD5-4BAC-8465-8F613BB8408F][Test the tenor rule before saving it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- The tenor journey carries a test step where a horizon, an optional spot date and a calendar are set, and the date the drafted rule resolves to is shown.
+- The step names the anchor it counted from, the date before the roll, the adjusted date, the roll rule and the calendar; a rule the server declines shows the step that refused, the dates counted and the row at fault, without losing the form.
+- A refdata operation resolves a rule supplied inline, so the answer describes the draft and not the saved row; it is served by the pure engine and carries the same structured refusal.
+- The step is covered by tests on both sides of the wire, and the journey's rail, i18n and existing steps are unchanged in behaviour.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The tenor journey carries a test step between the schedule and the review.
+A person sets a horizon, an optional spot date and a calendar, and reads the
+date the draft resolves to: the anchor it counted from, the date before the
+roll, the adjusted date, the roll rule and the calendar. A refusal is drawn
+beside the dates it reached, naming the row at fault, and the form keeps
+every value it had.
+
+The step tests the draft and not the saved row, because that is the question
+a person authoring a rule is asking. It reaches it through
+=refdata.v1.ops.preview_tenor_resolution=, which takes the three rows whole
+and is served by the same =resolve_rows= as the stored path, so there is one
+implementation of the arithmetic and the step cannot resolve anything other
+than what the confirm would save.
+
+Verified end to end except for one thing, stated rather than glossed: no
+authenticated call was made from a browser against a live fleet. The step,
+the BFF route and the service are covered by tests on both sides of the wire,
+and the C++ suite that carries the preview cases passes.

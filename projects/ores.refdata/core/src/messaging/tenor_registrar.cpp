@@ -88,6 +88,10 @@ register_tenor_handlers(ores::nats::service::client& nats,
         resolve_tenor_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->resolve_tenor(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        preview_tenor_resolution_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->preview_tenor_resolution(std::move(msg));
+        }));
     return subs;
 }
 

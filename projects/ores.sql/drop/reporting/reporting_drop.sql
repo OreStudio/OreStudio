@@ -20,8 +20,8 @@
 
 -- Drop RLS policies first, then notify triggers, then tables (reverse dependency order)
 \ir ./reporting_rls_policies_drop.sql
-\ir ./reporting_report_errors_notify_trigger_drop.sql
-\ir ./reporting_report_errors_drop.sql
+\ir ./reporting_report_error_events_notify_trigger_drop.sql
+\ir ./reporting_report_error_events_drop.sql
 \ir ./reporting_report_input_bundles_drop.sql
 \ir ./reporting_report_instances_notify_trigger_drop.sql
 \ir ./reporting_report_instances_fsm_guard_drop.sql

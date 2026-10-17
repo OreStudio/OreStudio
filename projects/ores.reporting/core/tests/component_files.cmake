@@ -33,7 +33,6 @@ set(files
     "parameter_value_domain_eventing_integration_tests.cpp"
     "report_configuration_eventing_integration_tests.cpp"
     "report_definition_eventing_integration_tests.cpp"
-    "report_error_eventing_integration_tests.cpp"
     "report_error_scope_eventing_integration_tests.cpp"
     "report_instance_eventing_integration_tests.cpp"
     "report_instance_kind_eventing_integration_tests.cpp"

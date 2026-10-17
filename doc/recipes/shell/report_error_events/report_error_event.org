@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: DBF8B476-9D33-51E7-9CE4-C6DD2DD70D18
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the report_error_events commands from the shell?
+#+description: Every command the report_error_events submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:report_error_events:
+
+This file documents the report_error_events resource at the shell, one section per command. Every command is a subcommand of =report_error_events=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 1A3F6F01-BB4B-5236-906F-E568DFD48347
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_error_events list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_error_events.list=.
+
+#+name: report_error_events-list
+#+begin_src ores-shell :tangle report_error_events-list.ores :exports none
+report_error_events list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: A4149B2D-5578-5AC1-AE82-3C4C0E4DB682
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_error_events get <id>
+#+end_example
+
+It is addressed at =reporting.v1.report_error_events.get=.
+
+#+name: report_error_events-get
+#+begin_src ores-shell :tangle report_error_events-get.ores :exports none
+report_error_events get 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: ED9036C8-FF58-56EC-B869-0B21990D1EA5
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_error_events get-many <id>
+#+end_example
+
+It is addressed at =reporting.v1.report_error_events.get_many=.
+
+#+name: report_error_events-get-many
+#+begin_src ores-shell :tangle report_error_events-get-many.ores :exports none
+report_error_events get-many 00000000-0000-0000-0000-000000000000
+#+end_src
+
+** =by-report-instance-id=
+:PROPERTIES:
+:ID: F2BBBF83-9258-5621-B3DB-6BF6EA6B1678
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_error_events by-report-instance-id <report_instance_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =reporting.v1.report_error_events.list_by_report_instance_id=.
+
+#+name: report_error_events-by-report-instance-id
+#+begin_src ores-shell :tangle report_error_events-by-report-instance-id.ores :exports none
+report_error_events by-report-instance-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+

@@ -198,23 +198,6 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Report Errors
--- -----------------------------------------------------------------------------
-alter table ores_reporting_report_errors_tbl enable row level security;
-
-drop policy if exists report_errors_tenant_isolation_policy
-    on ores_reporting_report_errors_tbl;
-
-create policy report_errors_tenant_isolation_policy
-on ores_reporting_report_errors_tbl
-for all using (
-    tenant_id = ores_iam_current_tenant_id_fn()
-)
-with check (
-    tenant_id = ores_iam_current_tenant_id_fn()
-);
-
--- -----------------------------------------------------------------------------
 -- Report Error Scopes
 -- System-owned vocabulary: seeded by the system tenant and read by every
 -- tenant that reads a report's errors. A tenant does not copy it at

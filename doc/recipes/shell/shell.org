@@ -1654,6 +1654,6 @@ tangled into the runnable script library
 
 - [[id:4BBF63E0-B3D4-50B8-B68B-A1B8EE1EB94C][How do I run the report_error_scopes commands from the shell?]]
 
-* Report Errors
+* Report Error Events
 
-- [[id:7D92028C-53AC-5741-9B7F-5E12AA94474A][How do I run the report_errors commands from the shell?]]
+- [[id:DBF8B476-9D33-51E7-9CE4-C6DD2DD70D18][How do I run the report_error_events commands from the shell?]]

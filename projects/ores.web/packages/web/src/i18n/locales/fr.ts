@@ -1339,6 +1339,7 @@ const fr: SourceCatalogue = {
         cancel: 'Annuler',
         copy: 'Copier',
         copied: 'Copié',
+        copyFailed: "Le navigateur a refusé la copie. Sélectionnez l'URL et copiez-la vous-même.",
         apply: 'Appliquer',
         refused: "L'URL a été refusée : {message}",
         choose: 'Choisissez un instrument et un type de cotation.',

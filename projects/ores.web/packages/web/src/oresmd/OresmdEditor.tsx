@@ -20,7 +20,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useState, type ReactNode } from 'react';
 import type { OresmdComposeRequest, OresmdSchema } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Input, Notice, Select, Tag } from '../ui/Primitives.js';
@@ -38,12 +38,10 @@ import {
     type EditorState,
 } from './editor.js';
 import { oresmdQueries } from './queries.js';
+import { useCopyToClipboard } from './useCopyToClipboard.js';
 
 /** How long the editor waits after a keystroke before it asks the codec. */
 const ASK_DELAY_MS = 250;
-
-/** How long the word Copied stays after a copy. */
-const COPIED_MS = 2000;
 
 /** The text after a delay, so a person typing is not answered on every key. */
 function useDelayed<T>(value: T, delayMs: number): T {
@@ -143,10 +141,6 @@ export function OresmdEditorDialog({
     const parsed = useQuery({ ...oresmdQueries.parse(url), enabled: url !== '' });
     const [state, setState] = useState<EditorState>(EMPTY);
     const [loaded, setLoaded] = useState(url === '');
-    const [copied, setCopied] = useState(false);
-    const copiedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    useEffect(() => () => clearTimeout(copiedTimer.current), []);
-
     useEffect(() => {
         if (loaded) return;
         if (parsed.data !== undefined) {
@@ -174,16 +168,7 @@ export function OresmdEditorDialog({
     const failure =
         key !== '' && askedKey === key && composed.isError ? composed.error.message : '';
 
-    const copy = async (): Promise<void> => {
-        try {
-            await navigator.clipboard.writeText(uri);
-            setCopied(true);
-            clearTimeout(copiedTimer.current);
-            copiedTimer.current = setTimeout(() => setCopied(false), COPIED_MS);
-        } catch {
-            setCopied(false);
-        }
-    };
+    const { copied, failed, copy } = useCopyToClipboard(uri);
 
     return (
         <Dialog
@@ -196,7 +181,7 @@ export function OresmdEditorDialog({
                     <Button type="button" variant="ghost" onClick={onClose}>
                         {t('oresmd.cancel')}
                     </Button>
-                    <Button type="button" disabled={uri === ''} onClick={() => void copy()}>
+                    <Button type="button" disabled={uri === ''} onClick={copy}>
                         {copied ? t('oresmd.copied') : t('oresmd.copy')}
                     </Button>
                     <Button
@@ -210,6 +195,7 @@ export function OresmdEditorDialog({
                 </>
             }
         >
+            {failed && <Notice tone="error">{t('oresmd.copyFailed')}</Notice>}
             {schema.isError ? (
                 <Notice tone="error">{schema.error.message}</Notice>
             ) : schema.isPending || !loaded ? (

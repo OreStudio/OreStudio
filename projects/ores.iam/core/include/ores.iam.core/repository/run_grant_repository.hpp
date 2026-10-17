@@ -119,6 +119,11 @@ public:
      * after a delete, which closes the transaction-time window rather than
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
+     *
+     * A key names a row of one party, and another party of the tenant may hold
+     * the same key, so the match is kept to the session's party. A null party
+     * column means the row belongs to the whole tenant and is kept for every
+     * party.
      */
     std::vector<domain::run_grant> read_any_by_resource(context ctx, const std::string& resource);
 

@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 4453F9AD-5575-481E-9CB2-5FDF31614689
+:END:
+#+title: The synthetic service test target never links
+#+description: ores.synthetic.service.tests references feed_kind_registry, which is declared in the service's src/ directory while the library builds with -fvisibility=hidden, so the symbols are defined but not exported and the binary has never been produced.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:synthetic:build:defect:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] that was filed to the *discarded* bucket of the product backlog. It was a real failure on the tree it was seen in, and a fixed one on the tree that followed.
+
+* What
+
+=compass build= fails at =ores.synthetic.service.tests= with undefined
+references to every =ores::synthetic::service::feed_kind_registry= member and to
+=make_default_feed_kind_registry= and =run_simulate_paths=. The test includes
+=projects/ores.synthetic/service/src/feed_kind_registry.hpp=, which lives in the
+private =src/= tree and carries no export macro, while the service library is
+compiled with =-fvisibility=hidden -fvisibility-inlines-hidden=. The library
+defines the 117 symbols — =nm -C --defined-only libores.synthetic.service.so.0.0.28=
+finds them — but none of them reach the dynamic symbol table, so no test that
+includes the header can link. =publish/bin/ores.synthetic.service.tests= did not
+exist in the checkout where this was seen.
+
+* Why it was discarded
+
+The cause was fixed on main before the report was filed, and the reporter had
+not yet rebased. =a2c824b07b [codegen] Make hidden visibility a part's decision=
+moved the flag from every part to a per-part declaration, and the synthetic
+service part does not ask for it, because its classes carry no export attribute
+and its suites link them — the rule the =hidden_visibility= docstring in
+=org_loader.py= states outright. On the rebased tree the target links and the
+full build is green, so there is nothing left to do.
+
+What the record is worth keeping for: the failure described a tree, not a defect
+in the product, and neither the reporter nor the reader could tell the two apart
+without rebasing first. The remedy is to rebase before filing.
+
+* References
+
+- =projects/ores.synthetic/service/CMakeLists.txt= line 51 — the visibility flags
+- =projects/ores.synthetic/service/src/feed_kind_registry.hpp= — the unexported declarations
+- =projects/ores.synthetic/service/tests/feed_kind_registry_tests.cpp= — the test that cannot link
+
+* See also
+
+- [[id:8B5BF9AD-4A3F-423D-BAE8-76DCB17A68B1][Scope a binding's history to its party]] — the task whose checks found it

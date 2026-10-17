@@ -54,9 +54,9 @@ same entries. Each family states =key=, =entity=, =domain_type=,
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:59F508CD-A259-4024-B5F9-BFC019E75ED6][ores.cpp.convention-registry.registry_header]] | The constexpr table of every convention family and its write mode. |
-| [[id:932062BD-9759-496E-B4F1-796A53DC2FF2][ores.cpp.convention-registry.apply_fragment]] | The apply, read and staged-import bodies, one per family, compiled inside the conventions service. |
-| [[id:5CC4694E-C342-41EB-9C9E-A3C6CDB264FE][ores.cpp.convention-registry.apply_includes]] | The repository includes the apply fragment needs, one per family. |
+| [[id:932062BD-9759-496E-B4F1-796A53DC2FF2][ores.cpp.convention-registry.apply_fragment]] | The apply, read and staged-import bodies of the conventions service, one call per convention family, compiled inside the service. |
+| [[id:5CC4694E-C342-41EB-9C9E-A3C6CDB264FE][ores.cpp.convention-registry.apply_includes]] | The repository includes the apply fragment needs, one per convention family, rendered outside the namespace that compiles the fragment. |
+| [[id:59F508CD-A259-4024-B5F9-BFC019E75ED6][ores.cpp.convention-registry.registry_header]] | The constexpr table of every convention family and its write mode, rendered from the refdata entity models that declare =#+convention_family:=. |
 
 * See also
 

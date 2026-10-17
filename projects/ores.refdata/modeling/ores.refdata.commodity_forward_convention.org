@@ -11,6 +11,7 @@
 #+entity_singular: commodity_forward_convention
 #+entity_plural: commodity_forward_conventions
 #+entity_title: Commodity Forward Convention
+#+convention_family: commodity_forward
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

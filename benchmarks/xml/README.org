@@ -105,7 +105,7 @@ Two readings, both uncomfortable.
 *The tape is the cache cost.* Building it multiplies first-level data misses by
 5.4 on the portfolio and by 4.7 on the 6.3 MB file, and last-level misses by
 2.5 and 9.9. A token is twenty bytes, so the 478 KB document becomes a 721 KB
-tape and the 6.3 MB document becomes a 64 MB tape. The scan-only column is the
+tape and the 6.3 MB document becomes a 15.9 MB tape. The scan-only column is the
 floor, and it is far below both trees.
 
 *The scanner executes three times the instructions pugixml does* on the same

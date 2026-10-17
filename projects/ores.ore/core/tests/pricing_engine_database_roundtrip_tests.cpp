@@ -21,11 +21,9 @@
 #include "ores.analytics.core/service/pricing_engines_document_service.hpp"
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
-#include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -51,7 +49,6 @@ std::filesystem::path ore_path(const std::string& relative) {
 
 using ores::analytics::repository::pricing_model_config_repository;
 using ores::ore::domain::pricing_engine_projection;
-using ores::ore::xml::parsed_text_difference;
 using ores::platform::filesystem::file;
 using ores::testing::scoped_database_helper;
 
@@ -94,10 +91,12 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     REQUIRE(from_database.parameters.size() == mapped.parameters.size());
 
     const auto rebuilt = pricing_engine_projection::reverse(from_database);
-    const auto exported = pricing_engine_projection::read(pricing_engine_projection::write(rebuilt));
+    const auto exported =
+        pricing_engine_projection::read(pricing_engine_projection::write(rebuilt));
 
     const auto difference = ores::ore::xml::compare_records(
-        *ores::ore::xml::generated::pricing_engines::pricing_engines_document().root, &original,
+        *ores::ore::xml::generated::pricing_engines::pricing_engines_document().root,
+        &original,
         &exported);
     INFO(f.string());
     if (difference)

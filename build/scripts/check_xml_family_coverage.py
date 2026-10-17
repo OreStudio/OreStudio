@@ -37,11 +37,11 @@ FAMILIES = {
     "IborFallbackConfig": ("supported", "table written and proved; nothing reads it yet"),
     "NettingSetDefinitions": ("supported", "table written and proved; nothing reads the ORE XML"),
     "TodaysMarket": ("supported", "todays_market_mapper reads it"),
+    "PricingEngines": ("supported", "run_store and the run configuration service read it"),
     # Migrating: product code reads the family, so a mapper still does the
     # work and a table is owed.
     "ORE": ("migrating", "run_store and the run configuration service read it"),
     "Portfolio": ("migrating", "importer and exporter read trades and their instruments"),
-    "PricingEngines": ("supported", "run_store and the run configuration service read it"),
     "CurveConfiguration": ("migrating", "curve_configuration_mapper reads it"),
     "CreditSimulation": (
         "migrating",

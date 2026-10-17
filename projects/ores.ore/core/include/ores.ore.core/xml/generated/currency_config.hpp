@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -24,7 +23,6 @@
 
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.utility/decimal/decimal.hpp"
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -35,25 +33,25 @@ struct currency_definition;
 struct currency_config;
 
 struct currency_definition {
-  std::uint64_t present = 0;
-  std::string name;
-  std::string iso_code;
-  std::string minor_unit_codes;
-  std::int64_t numeric_code = 0;
-  std::string symbol;
-  std::string fraction_symbol;
-  std::int64_t fractions_per_unit = 0;
-  std::int16_t rounding_type = 0;
-  std::int64_t rounding_precision = 0;
-  std::string currency_type;
+    std::uint64_t present = 0;
+    std::string name;
+    std::string iso_code;
+    std::string minor_unit_codes;
+    std::int64_t numeric_code = 0;
+    std::string symbol;
+    std::string fraction_symbol;
+    std::int64_t fractions_per_unit = 0;
+    std::int16_t rounding_type = 0;
+    std::int64_t rounding_precision = 0;
+    std::string currency_type;
 };
 struct currency_config {
-  std::uint64_t present = 0;
-  std::vector<currency_definition> currency;
+    std::uint64_t present = 0;
+    std::vector<currency_definition> currency;
 };
 
-ORES_ORE_CORE_EXPORT auto currency_config_document() -> const document_type &;
+ORES_ORE_CORE_EXPORT auto currency_config_document() -> const document_type&;
 
-} // namespace ores::ore::xml::generated::currency_config
+}
 
 #endif

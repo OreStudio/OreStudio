@@ -24,8 +24,8 @@
 #include "ores.analytics.api/domain/pricing_model_product.hpp"
 #include "ores.analytics.api/domain/pricing_model_product_parameter.hpp"
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
-#include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -79,9 +79,13 @@ public:
     /**
      * @brief Reads a PricingEngines document into the record the table describes.
      *
-     * @throws std::runtime_error naming the line where the document does not bind.
+     * @param text The document.
+     * @param origin The file the text came from, named in the failure.
+     * @throws std::invalid_argument naming the origin and the line where the
+     * document does not bind, which is the shape the run store reports its
+     * other configuration documents with.
      */
-    static document read(std::string_view text);
+    static document read(std::string_view text, std::string_view origin = {});
 
     /**
      * @brief Writes a PricingEngines record as a document.

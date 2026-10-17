@@ -119,8 +119,8 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
         }
         case document_kind::pricing_engines: {
             const auto t0 = clock_type::now();
-            const auto original =
-                ores::ore::domain::pricing_engine_projection::read(ores::platform::filesystem::file::read_content(file));
+            const auto original = ores::ore::domain::pricing_engine_projection::read(
+                ores::platform::filesystem::file::read_content(file));
             const auto mapped = ores::ore::domain::pricing_engine_projection::map(original);
             summary.import_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
 

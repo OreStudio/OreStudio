@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -24,7 +23,6 @@
 
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.utility/decimal/decimal.hpp"
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -39,38 +37,38 @@ struct global_parameters;
 struct pricingengines;
 
 struct parameter {
-  std::uint64_t present = 0;
-  std::string value;
-  std::string name;
+    std::uint64_t present = 0;
+    std::string value;
+    std::string name;
 };
 struct model_parameters {
-  std::uint64_t present = 0;
-  std::vector<parameter> parameter;
+    std::uint64_t present = 0;
+    std::vector<parameter> parameter;
 };
 struct engine_parameters {
-  std::uint64_t present = 0;
-  std::vector<parameter> parameter;
+    std::uint64_t present = 0;
+    std::vector<parameter> parameter;
 };
 struct product {
-  std::uint64_t present = 0;
-  std::string type;
-  std::string model;
-  model_parameters model_parameters;
-  std::string engine;
-  engine_parameters engine_parameters;
+    std::uint64_t present = 0;
+    std::string type;
+    std::string model;
+    model_parameters model_parameters;
+    std::string engine;
+    engine_parameters engine_parameters;
 };
 struct global_parameters {
-  std::uint64_t present = 0;
-  std::vector<parameter> parameter;
+    std::uint64_t present = 0;
+    std::vector<parameter> parameter;
 };
 struct pricingengines {
-  std::uint64_t present = 0;
-  std::vector<product> product;
-  global_parameters global_parameters;
+    std::uint64_t present = 0;
+    std::vector<product> product;
+    global_parameters global_parameters;
 };
 
-ORES_ORE_CORE_EXPORT auto pricing_engines_document() -> const document_type &;
+ORES_ORE_CORE_EXPORT auto pricing_engines_document() -> const document_type&;
 
-} // namespace ores::ore::xml::generated::pricing_engines
+}
 
 #endif

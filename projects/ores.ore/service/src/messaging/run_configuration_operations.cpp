@@ -326,8 +326,7 @@ void parse_document(std::string_view code,
     else if (code == "todays_market")
         d.market = todays_market_mapper::map(parse_file<todaysmarket>(file, content));
     else if (code == "pricing_engines")
-        d.engines =
-            pricing_engine_projection::map(pricing_engine_projection::read(content));
+        d.engines = pricing_engine_projection::map(pricing_engine_projection::read(content, *file));
 }
 
 // Hands one parsed document to the component that owns it. A document with a

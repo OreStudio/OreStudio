@@ -23,9 +23,11 @@
 #include "ores.ore.core/xml/generated/pricing_engines.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.testing/project_root.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 
 /**
@@ -68,8 +70,8 @@ const tables& table() {
     static const tables found = [] {
         const auto& root = *xg::pricing_engines_document().root;
         const auto& product = *find_child_type(root, "Product");
-        const auto& parameter = *find_child_type(*find_child_type(product, "ModelParameters"),
-                                                 "Parameter");
+        const auto& parameter =
+            *find_child_type(*find_child_type(product, "ModelParameters"), "Parameter");
         return tables{root, product, parameter};
     }();
     return found;
@@ -84,8 +86,8 @@ xg::parameter make_parameter(const std::string& name, const std::string& value) 
     return p;
 }
 
-xg::product make_product(const std::string& type, const std::string& model,
-                         const std::string& engine) {
+xg::product
+make_product(const std::string& type, const std::string& model, const std::string& engine) {
     xg::product p;
     p.type = type;
     p.model = model;
@@ -149,9 +151,9 @@ TEST_CASE("a_global_parameter_belongs_to_no_product_and_comes_back", tags) {
     state(table().root, &document, "Product");
 
     document.global_parameters.parameter.push_back(make_parameter("Calendar", "TARGET"));
-    state(
-        *ores::ore::xml::find_child_type(table().root, "GlobalParameters"),
-        &document.global_parameters, "Parameter");
+    state(*ores::ore::xml::find_child_type(table().root, "GlobalParameters"),
+          &document.global_parameters,
+          "Parameter");
     state(table().root, &document, "GlobalParameters");
 
     const auto mapped = ores::ore::domain::pricing_engine_projection::map(document);
@@ -162,6 +164,63 @@ TEST_CASE("a_global_parameter_belongs_to_no_product_and_comes_back", tags) {
     const auto rebuilt = ores::ore::domain::pricing_engine_projection::reverse(mapped);
     REQUIRE(rebuilt.global_parameters.parameter.size() == 1);
     CHECK(rebuilt.global_parameters.parameter.at(0).name == "Calendar");
+}
+
+TEST_CASE("a_row_the_document_has_no_place_for_is_refused", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::analytics::messaging::pricing_engines_document mapped;
+    ores::analytics::domain::pricing_model_product_parameter row;
+    row.parameter_name = "Calendar";
+    row.parameter_value = "TARGET";
+    row.parameter_scope = "nonsense";
+    mapped.parameters.push_back(row);
+    CHECK_THROWS_AS(ores::ore::domain::pricing_engine_projection::reverse(mapped),
+                    std::runtime_error);
+
+    mapped.parameters.front().parameter_scope = "global";
+    mapped.parameters.front().pricing_model_product_id = boost::uuids::random_generator()();
+    CHECK_THROWS_AS(ores::ore::domain::pricing_engine_projection::reverse(mapped),
+                    std::runtime_error);
+
+    mapped.parameters.front().parameter_scope = "model";
+    mapped.parameters.front().pricing_model_product_id = boost::uuids::random_generator()();
+    CHECK_THROWS_AS(ores::ore::domain::pricing_engine_projection::reverse(mapped),
+                    std::runtime_error);
+}
+
+TEST_CASE("rows_that_share_a_position_are_ordered_by_id", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::analytics::messaging::pricing_engines_document mapped;
+    ores::analytics::domain::pricing_model_product first;
+    first.id = boost::uuids::random_generator()();
+    first.pricing_engine_type_code = "Swap";
+    first.position = 0;
+    ores::analytics::domain::pricing_model_product second = first;
+    second.id = boost::uuids::random_generator()();
+    mapped.products.push_back(first);
+    mapped.products.push_back(second);
+
+    const auto rebuilt = ores::ore::domain::pricing_engine_projection::reverse(mapped);
+    REQUIRE(rebuilt.product.size() == 2);
+    const auto& expected = first.id < second.id ? first : second;
+    CHECK(rebuilt.product.at(0).type == expected.pricing_engine_type_code);
+}
+
+TEST_CASE("a_document_without_a_global_list_writes_none", tags) {
+    auto lg(make_logger(test_suite));
+
+    xg::pricingengines document;
+    document.product.push_back(make_product("Swap", "Discounted", "Discounted"));
+    state(table().root, &document, "Product");
+
+    const auto mapped = ores::ore::domain::pricing_engine_projection::map(document);
+    CHECK(mapped.parameters.empty());
+
+    const auto rebuilt = ores::ore::domain::pricing_engine_projection::reverse(mapped);
+    CHECK_FALSE(ores::ore::xml::is_present(table().root, &rebuilt, "GlobalParameters"));
+    CHECK_FALSE(rebuilt.product.empty());
 }
 
 TEST_CASE("every_pricing_engine_document_in_the_corpus_round_trips", tags) {
@@ -189,12 +248,10 @@ TEST_CASE("every_pricing_engine_document_in_the_corpus_round_trips", tags) {
         const auto original = ores::ore::domain::pricing_engine_projection::read(content);
         const auto mapped = ores::ore::domain::pricing_engine_projection::map(original);
         const auto rebuilt = ores::ore::domain::pricing_engine_projection::reverse(mapped);
-        const auto exported =
-            ores::ore::domain::pricing_engine_projection::read(
-                ores::ore::domain::pricing_engine_projection::write(rebuilt));
+        const auto exported = ores::ore::domain::pricing_engine_projection::read(
+            ores::ore::domain::pricing_engine_projection::write(rebuilt));
 
-        const auto difference =
-            ores::ore::xml::compare_records(table().root, &original, &exported);
+        const auto difference = ores::ore::xml::compare_records(table().root, &original, &exported);
         if (difference)
             INFO(difference->path << ": " << difference->detail);
         CHECK_FALSE(difference);

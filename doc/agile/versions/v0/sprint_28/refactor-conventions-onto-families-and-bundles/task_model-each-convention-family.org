@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/model-each-convention-family
+#+pr: 3459
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3459][#3459]] | [codegen] Generate the convention family registry |
 
 * Review
 

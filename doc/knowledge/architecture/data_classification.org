@@ -104,6 +104,8 @@ ownership.
 [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]], with the composite pattern
 when the parts move on their own change reason. The target shape is in
 [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]].
+The pages that choose and build the entity start at
+[[id:D70D7244-13F2-4D40-9351-C94920F4FC57][Entities]].
 
 *The wire shape.* The derived verbs, flat, with one typed array per part
 aligned over one page. A part's fields never appear as nested objects
@@ -164,6 +166,10 @@ pairs. Each part is an entity model whose foreign key names the central
 entity with =:bump_parent_version:=, =:list_by:=, =:list_by_uuid:= and
 =:list_by_as_of:=. The syntax is in
 [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]].
+The =<family>_key= restates the wire key the central entity's model
+declares, and the item and the write address the family by exactly those
+members, one positional per member; the declaration is in
+[[id:E2521A56-E053-4FDC-A9F3-AAE47918241B][Entity Addressing]].
 
 *The wire shape.* =<family>_item= for a read and =<family>_write= for a
 write. The item holds the key, the central row and one typed array per
@@ -353,6 +359,10 @@ control is the classification and the invariant, not a number.
   classification selects from.
 - [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]] — the target shape
   behind the Entity classification.
+- [[id:D70D7244-13F2-4D40-9351-C94920F4FC57][Entities]] — the hub that gathers the pages choosing and building
+  an entity, from naming to the repository.
+- [[id:E2521A56-E053-4FDC-A9F3-AAE47918241B][Entity Addressing]] — the wire key a model declares once, and the
+  key record a family item restates.
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the verbs and envelopes the
   Entity and List classifications use.
 - [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]] — one typed array per concrete type,

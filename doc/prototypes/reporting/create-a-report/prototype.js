@@ -86,9 +86,10 @@
         {
             code: 'conventions',
             title: 'The conventions it binds',
-            sub: '25 kinds, the bound documents and the gaps',
+            sub: '25 kinds, each reading none today',
             lead: 'This step reads the conventions set the bound configuration carries and hands ' +
-                'the work to Manage the conventions, which owns the picker and the per-kind steps.',
+                'the work to Manage the conventions, which owns the table of the 25 kinds, the ' +
+                'page for each kind and the create route.',
             /* The four fields the other four types carry are not read here: the
                summary is drawn by conventionsSummary, because the conventions
                step is an entry point rather than a picker. */
@@ -958,34 +959,35 @@
     }
 
     /* The conventions set the bound configuration carries, for the read-only
-       summary this step draws. Twenty-five kinds, the five with no document
-       named, so the counts and the list are computed rather than written. */
+       summary this step draws. Twenty-five kinds, and the curated row count each
+       one falls back to. ACME owns no document for any kind, so the summary
+       reads none on every row. */
     var CONVENTIONS_KINDS = [
-        { name: 'Deposit', code: 'deposit', bound: true },
-        { name: 'FRA', code: 'fra', bound: true },
-        { name: 'Future', code: 'future', bound: true },
-        { name: 'OIS', code: 'ois', bound: true },
-        { name: 'Average OIS', code: 'average_ois', bound: false },
-        { name: 'Swap', code: 'swap', bound: true },
-        { name: 'Tenor basis swap', code: 'tenor_basis_swap', bound: true },
-        { name: 'Tenor basis two swap', code: 'tenor_basis_two_swap', bound: true },
-        { name: 'Cross-currency basis', code: 'cross_currency_basis', bound: false },
-        { name: 'Cross-currency fix-float', code: 'cross_currency_fix_float', bound: true },
-        { name: 'Bond yield', code: 'bond_yield', bound: false },
-        { name: 'CDS', code: 'cds', bound: true },
-        { name: 'CMS spread option', code: 'cms_spread_option', bound: true },
-        { name: 'Commodity forward', code: 'commodity_forward', bound: true },
-        { name: 'Commodity future', code: 'commodity_future', bound: true },
-        { name: 'FX option', code: 'fx_option', bound: false },
-        { name: 'BMA basis swap', code: 'bma_basis_swap', bound: true },
-        { name: 'Zero', code: 'zero', bound: true },
-        { name: 'Inflation swap', code: 'inflation_swap', bound: true },
-        { name: 'Intraday power load', code: 'intraday_power_load', bound: true },
-        { name: 'IBOR index', code: 'ibor_index', bound: true },
-        { name: 'Overnight index', code: 'overnight_index', bound: true },
-        { name: 'Named swap index', code: 'swap_index', bound: true },
-        { name: 'Currency pair', code: 'currency_pair', bound: false },
-        { name: 'Zero inflation index', code: 'zero_inflation_index', bound: true }
+        { name: 'Deposit', rows: 163 },
+        { name: 'FRA', rows: 42 },
+        { name: 'Future', rows: 7 },
+        { name: 'OIS', rows: 52 },
+        { name: 'Average OIS', rows: 5 },
+        { name: 'Swap', rows: 320 },
+        { name: 'Tenor basis swap', rows: 37 },
+        { name: 'Tenor basis two swap', rows: 4 },
+        { name: 'Cross-currency basis', rows: 207 },
+        { name: 'Cross-currency fix-float', rows: 24 },
+        { name: 'Bond yield', rows: 5 },
+        { name: 'CDS', rows: 4 },
+        { name: 'CMS spread option', rows: 1 },
+        { name: 'Commodity forward', rows: 4 },
+        { name: 'Commodity future', rows: 790 },
+        { name: 'FX option', rows: 173 },
+        { name: 'BMA basis swap', rows: 3 },
+        { name: 'Zero', rows: 38 },
+        { name: 'Inflation swap', rows: 22 },
+        { name: 'Intraday power load', rows: 2 },
+        { name: 'IBOR index', rows: 10 },
+        { name: 'Overnight index', rows: 23 },
+        { name: 'Named swap index', rows: 243 },
+        { name: 'Currency pair', rows: 179 },
+        { name: 'Zero inflation index', rows: 9 }
     ];
 
     function reachList(items, bound) {
@@ -996,14 +998,18 @@
     }
 
     /* The conventions step is an entry point, not a second implementation of
-       the conventions. It reads the set the bound configuration carries, names
-       the kinds with no document, and hands the work to the shared prototype.
-       It draws no picker and no explanation wall: Manage the conventions owns
-       them. */
+       the conventions. It reads the set the bound configuration carries, states
+       that ACME holds no document for any kind, and hands the work to the shared
+       prototype. It draws no picker. */
     function conventionsSummary(type) {
         var bound = configById(S.draft.binds[type.code]);
-        var held = CONVENTIONS_KINDS.filter(function (kind) { return kind.bound; });
-        var missing = CONVENTIONS_KINDS.filter(function (kind) { return !kind.bound; });
+        var rows = CONVENTIONS_KINDS.map(function (kind) {
+            return '<tr><td>' + esc(kind.name) + '</td>' +
+                '<td class="code">none</td>' +
+                '<td class="wrap">No terms are held. A run that reaches the ' +
+                esc(kind.name) + ' family reads the curated document (' + kind.rows +
+                (kind.rows === 1 ? ' row' : ' rows') + ').</td></tr>';
+        }).join('');
         return '<div class="notice"><b>The conventions are managed on another screen.</b> ' +
             'This step reads the set the bound configuration carries and hands the work to ' +
             'Manage the conventions. It draws no picker and edits nothing, because one screen ' +
@@ -1011,25 +1017,27 @@
             '<div class="card" style="margin-top:14px;background:var(--bg)">' +
             '<div class="sectionhead"><h3>The set this report binds</h3>' +
             '<span class="meta">refdata.v1.conventions_documents.get \u00b7 fixture</span></div>' +
-            '<div class="statgrid">' +
+            '<div class="notice warn"><b>ACME owns no convention document yet.</b> No kind of ' +
+            'this set has a document of the party\u2019s own, so every row reads none and the ' +
+            'run falls back to the curated document for the kind. That is the state the ' +
+            'conventions screen handles first.</div>' +
+            '<div class="statgrid" style="margin-top:12px">' +
             '<div><span class="lbl">configuration</span><span class="val">' +
             esc(bound ? bound.name : 'nothing is bound in this slot') + '</span></div>' +
             '<div><span class="lbl">convention kinds</span><span class="val">' +
             CONVENTIONS_KINDS.length + '</span></div>' +
             '<div><span class="lbl">kinds with a document</span><span class="val">' +
-            '<span class="tag ok">' + held.length + ' bound</span></span></div>' +
-            '<div><span class="lbl">kinds with no document</span><span class="val">' +
-            '<span class="tag warn">' + missing.length + ' unbound</span></span></div>' +
+            '<span class="tag warn">0 held</span></span></div>' +
             '<div><span class="lbl">definitions bound</span><span class="val">' +
             (bound ? bound.boundBy : 0) + '</span></div>' +
             '</div>' +
-            (missing.length === 0
-                ? '<p class="rowfoot">Every convention kind the configuration covers has a ' +
-                  'document.</p>'
-                : '<p class="rowfoot"><b>The kinds with no document:</b> ' +
-                  missing.map(function (kind) { return esc(kind.name); }).join(', ') +
-                  '. A run that reaches one of those instrument families reads no terms for it. ' +
-                  'The list is the set\u2019s own, not a count on this page.</p>') +
+            '<table style="margin-top:12px"><thead><tr>' +
+            '<th>Kind</th><th>The convention in use</th><th>What its terms say</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<p class="rowfoot">The name of a convention is derived from its terms, because no ' +
+            'table stores one: an index-based document is named by its index, and a terms-based ' +
+            'document by its calendar, convention, day count and settlement days. With no ' +
+            'document held there is no name to derive and no terms to describe.</p>' +
             '</div>' +
             '<div class="notice" style="margin-top:12px"><b>How a configuration names one document ' +
             'per kind.</b> The reporting model does not say. ores_reporting_configurations_tbl ' +
@@ -1040,8 +1048,8 @@
             '<div class="draftrow" style="margin-top:14px">' +
             '<a class="btn primary" href="../manage-the-conventions/?from=create-a-report">' +
             'Manage the conventions \u2192</a>' +
-            '<span class="hint">The shared prototype owns the set, one step per kind that needs a ' +
-            'decision, and the read-back. It sits at ' +
+            '<span class="hint">The shared prototype owns the 25 rows, the page for each kind and ' +
+            'the create route. It sits at ' +
             'doc/prototypes/reporting/manage-the-conventions/.</span></div>' +
             '<p class="rowfoot">The candidates in this slot come from ' +
             '<span class="mono">reporting.v1.configurations.list_by_configuration_type_code</span>, ' +

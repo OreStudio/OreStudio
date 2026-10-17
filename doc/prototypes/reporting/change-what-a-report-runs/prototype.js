@@ -45,33 +45,35 @@
     var SHARED_WITH = ['Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity'];
 
     /* The conventions set, for the read-only summary the step draws. Twenty-five
-       kinds; five have no document. */
+       kinds, and the curated row count each one offers. ACME owns no document
+       for any kind, so every row of the summary reads none: the count is the
+       fallback, not a document of the party's own. */
     var CONVENTIONS_KINDS = [
-        { name: 'Deposit', bound: true },
-        { name: 'FRA', bound: true },
-        { name: 'Future', bound: true },
-        { name: 'OIS', bound: true },
-        { name: 'Average OIS', bound: false },
-        { name: 'Swap', bound: true },
-        { name: 'Tenor basis swap', bound: true },
-        { name: 'Tenor basis two swap', bound: true },
-        { name: 'Cross-currency basis', bound: false },
-        { name: 'Cross-currency fix-float', bound: true },
-        { name: 'Bond yield', bound: false },
-        { name: 'CDS', bound: true },
-        { name: 'CMS spread option', bound: true },
-        { name: 'Commodity forward', bound: true },
-        { name: 'Commodity future', bound: true },
-        { name: 'FX option', bound: false },
-        { name: 'BMA basis swap', bound: true },
-        { name: 'Zero', bound: true },
-        { name: 'Inflation swap', bound: true },
-        { name: 'Intraday power load', bound: true },
-        { name: 'IBOR index', bound: true },
-        { name: 'Overnight index', bound: true },
-        { name: 'Named swap index', bound: true },
-        { name: 'Currency pair', bound: false },
-        { name: 'Zero inflation index', bound: true }
+        { name: 'Deposit', rows: 163 },
+        { name: 'FRA', rows: 42 },
+        { name: 'Future', rows: 7 },
+        { name: 'OIS', rows: 52 },
+        { name: 'Average OIS', rows: 5 },
+        { name: 'Swap', rows: 320 },
+        { name: 'Tenor basis swap', rows: 37 },
+        { name: 'Tenor basis two swap', rows: 4 },
+        { name: 'Cross-currency basis', rows: 207 },
+        { name: 'Cross-currency fix-float', rows: 24 },
+        { name: 'Bond yield', rows: 5 },
+        { name: 'CDS', rows: 4 },
+        { name: 'CMS spread option', rows: 1 },
+        { name: 'Commodity forward', rows: 4 },
+        { name: 'Commodity future', rows: 790 },
+        { name: 'FX option', rows: 173 },
+        { name: 'BMA basis swap', rows: 3 },
+        { name: 'Zero', rows: 38 },
+        { name: 'Inflation swap', rows: 22 },
+        { name: 'Intraday power load', rows: 2 },
+        { name: 'IBOR index', rows: 10 },
+        { name: 'Overnight index', rows: 23 },
+        { name: 'Named swap index', rows: 243 },
+        { name: 'Currency pair', rows: 179 },
+        { name: 'Zero inflation index', rows: 9 }
     ];
 
     /* The five configuration types a definition binds. Only conventions has a
@@ -83,8 +85,9 @@
         {
             type: 'conventions',
             name: 'Group conventions',
-            supplies: 'The set of 25 convention kinds the run reads: 20 with a document, 5 with ' +
-                'none. The terms, not the market data, the curves or the engines.',
+            supplies: 'The set of 25 convention kinds the run reads. ACME holds no document ' +
+                'for any of them yet, so every kind falls back to the curated document. ' +
+                'The terms, not the market data, the curves or the engines.',
             route: {
                 path: '../manage-the-conventions/?from=change-what-a-report-runs',
                 screen: 'Manage the conventions',
@@ -434,35 +437,36 @@
 
 
     /* The conventions row is an entry point. This card reads the set the bound
-       configuration carries, names the kinds with no document, and hands the
-       work to the shared prototype. It draws no picker and no explanation. */
+       configuration carries, states that ACME owns no document for any kind,
+       and hands the work to the shared prototype. It draws no picker. */
     function conventionsCard() {
-        var held = CONVENTIONS_KINDS.filter(function (kind) { return kind.bound; });
-        var missing = CONVENTIONS_KINDS.filter(function (kind) { return !kind.bound; });
+        var rows = CONVENTIONS_KINDS.map(function (kind) {
+            return '<tr><td>' + esc(kind.name) + '</td>' +
+                '<td class="code">none</td>' +
+                '<td class="wrap">No terms are held. A run that reaches the ' +
+                esc(kind.name) + ' family reads the curated document (' + kind.rows +
+                (kind.rows === 1 ? ' row' : ' rows') + ').</td></tr>';
+        }).join('');
         return '<div class="card" style="margin-top:12px;background:var(--bg)">' +
             '<div class="sectionhead"><h3>The conventions set this report binds</h3>' +
             '<span class="meta">refdata.v1.conventions_documents.get \u00b7 fixture</span></div>' +
-            '<div class="statgrid">' +
-            '<div><span class="lbl">configuration</span><span class="val">Group conventions' +
-            '</span></div>' +
-            '<div><span class="lbl">convention kinds</span><span class="val">' +
-            CONVENTIONS_KINDS.length + '</span></div>' +
-            '<div><span class="lbl">with a document</span><span class="val">' +
-            '<span class="tag ok">' + held.length + ' bound</span></span></div>' +
-            '<div><span class="lbl">with no document</span><span class="val">' +
-            '<span class="tag warn">' + missing.length + ' unbound</span></span></div>' +
-            '</div>' +
-            '<p class="rowfoot"><b>The kinds with no document:</b> ' +
-            missing.map(function (kind) { return esc(kind.name); }).join(', ') +
-            '. A run that reaches one of those families reads no terms for it. ' +
-            'The per-kind binding is a fixture: the reporting model names no document per kind, ' +
-            'and the conventions document refdata owns is read per party, not per configuration.' +
-            '</p>' +
+            '<div class="notice warn"><b>ACME owns no convention document yet.</b> No kind of ' +
+            'this set has a document of the party\u2019s own, so every row below reads none and ' +
+            'the run falls back to the curated document for the kind. That is the state the ' +
+            'conventions screen handles first.</div>' +
+            '<table style="margin-top:12px"><thead><tr>' +
+            '<th>Kind</th><th>The convention in use</th><th>What its terms say</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>' +
+            '<p class="rowfoot">The name of a convention is derived from its terms, because no ' +
+            'table stores one: an index-based document is named by its index, and a terms-based ' +
+            'document by its calendar, convention, day count and settlement days. With no ' +
+            'document held there is no name to derive and no terms to describe. The per-kind ' +
+            'binding is a fixture: the reporting model names no document per kind.</p>' +
             '<div class="draftrow" style="margin-top:10px">' +
             '<a class="btn primary" href="../manage-the-conventions/?from=change-what-a-report-runs">' +
             'Manage the conventions \u2192</a>' +
-            '<span class="hint">One screen owns the set, a step per kind that needs a decision, ' +
-            'and the read-back. This wizard reads the set and links there.</span></div></div>';
+            '<span class="hint">One screen owns the 25 rows, the page for each kind and the ' +
+            'create route. This wizard reads the set and links there.</span></div></div>';
     }
 
     function stepOne() {

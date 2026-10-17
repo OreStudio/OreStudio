@@ -2,7 +2,7 @@
 :ID: 529d0061-fa74-4ad6-a6c6-a9456650ba75
 :END:
 #+title: Manage the conventions prototype
-#+description: The one prototype that owns the conventions interaction of a conventions configuration: the set of every convention kind, a rail step for each kind that needs a decision, a final step that reads the set back, and three readings of the per-kind step behind ?variant=A|B|C.
+#+description: The one prototype that owns the conventions interaction of a conventions configuration: a table of the 25 convention kinds with the document in use and its terms in words, a page per kind with its alternatives, and a create route for authoring.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:refdata:
@@ -18,9 +18,12 @@
 * Summary
 
 This prototype owns the whole conventions interaction of a conventions
-configuration: the set of every convention kind, a step for each kind that needs
-a decision, and a final step that reads the set back. Two prototypes that used to
-draw the same interaction hand the work here:
+configuration. It is a *table*, not a wizard: one row per convention kind, the
+name of the convention in use, what its terms say, and one button that opens
+that kind alone. The step-per-kind wizard that used to be here is gone, because
+twenty-five steps is not a screen a person can read.
+
+Two prototypes that used to draw the same interaction hand the work here:
 
 - [[file:create-a-report/][Create a report]] reads the set on its step 2 and links
   here;
@@ -32,207 +35,222 @@ reporting row of type =conventions= whose detail lives with =ores.refdata=, and
 thirty-one definitions bind the configuration this page draws. A change here
 reaches every one of their next runs.
 
-The screen is the standard steps UI, the one the system bootstrap journey uses.
-The layout of the per-kind step is the open question, so the page carries three
-readings of that step and of nothing else, behind =?variant=A|B|C=.
-
-It is throwaway. It reads no service. It draws real convention documents from the
-curated artefact tables, and it states plainly the one thing the models do not
-say: how a reporting configuration names a document for each kind.
+It is throwaway. It reads no service and writes nothing. The term values are
+real rows of the curated convention tables; ownership, the default mark and the
+change in progress are fixtures and say so.
 
 * Detail
 
-** What a convention kind is, and how many there are
+** The screen is a table
 
-A convention is the set of market terms an instrument is built on: the day count,
-the calendars, the business day rule, the payment frequency, the index, and the
-other terms its instrument family fixes before a trade exists
-([[file:../../knowledge/journeys/conventions/conventions.org][Conventions journeys]]).
-A *convention kind* is one instrument family's set, and it is exactly one ORE
-=conventions.xml= element: =<Deposit>=, =<Swap>=, =<CDS>=, =<FxOption>= and the
-rest. The refdata model gives each kind its own entity and table
-(=ores.refdata.deposit_convention=, =ores.refdata.cds_convention=, ...), and the
-data-quality layer gives each kind its own curated artefact table
-(=ores_dq_deposit_conventions_artefact_tbl=, =ores_dq_cds_conventions_artefact_tbl=,
-...).
+| Column | What it holds |
+|--------+---------------|
+| Kind | The family's name, its code, and how many curated rows it offers. |
+| The convention in use | The name of the document ACME holds for the kind. A kind with none reads *none* and says what a run does instead. |
+| What its terms say | The same terms in words. A kind with none says it holds no terms. |
+| (one button) | *Change*, which opens that kind alone. Nothing else on the row acts. |
 
-There are **25 curated kinds**. The count is not a number in a comment: the
-database holds exactly 25 =ores_dq_*_conventions_artefact_tbl= tables, and the
-conventions document message carries exactly 25 vectors, one per kind. The model
-folder holds **26** =ores.refdata.<x>_convention.org= files, because it also
-carries =tenor_convention=. That kind has no curated artefact table, so it has no
-candidate document and this page does not draw it. The journey page's table of
-families still lists tenor and omits =zero_inflation_index=, which the database
-and the message do carry; the database and the message agree with each other, and
-this page follows them.
+The table answers one question: what does this report read, kind by kind. A
+person scans 25 rows and opens the one that is wrong. Nothing is chosen on the
+table, so nothing is lost by looking.
 
-** How a conventions configuration names a document for each kind
+** The first state is no document, and the page says so
 
-**The reporting model does not say, and this page states that rather than
-smoothing it over.**
+**ACME, tenant =b7fe3d66-2aed-4d1c-a19b-0406b689640b=, owns no row in any of
+the 25 =ores_refdata_<kind>_conventions_tbl= tables.** Neither does any other
+party: 22 of the 25 hold no row at all, and the other three
+(=currency_pair=, =ibor_index=, =overnight_index=) hold rows of the system
+tenant. So every row of the table reads *none: the run falls back to the curated
+document*, and the page states that above the table, in the words the reader
+needs:
 
-- =ores_reporting_configurations_tbl= carries =name=,
-  =configuration_type_code=, =owning_component= and the standard provenance
-  columns. It has no document column and no per-kind child table.
-- The conventions document refdata owns is the
-  =conventions_document= message in
-  =projects/ores.refdata/modeling/ores.refdata.configuration_document_messages.org=.
-  It is *one document*, not one per kind; each kind is a vector inside it.
-- =refdata.v1.conventions_documents.get= takes a =party_id= and no
-  =configuration_id=, unlike the curve configuration document, whose get and
-  delete do take the reporting configuration. So the document is read per party,
-  not per configuration.
-- =refdata.v1.conventions_documents.put= stores the document for the session's
-  party, and no operation binds one document to one kind of one configuration.
+  ACME owns no convention document today. Every row below reads none, and a run
+  falls back to the curated document for the kind. No party owns one either.
+  This is the state the screen handles first.
 
-The per-kind binding on this page is therefore a fixture: each kind is shown bound
-to one document id from its curated artefact table. The candidate ids, field names
-and values are real rows of =ores_dev_bright_faraday=; the binding is not a
-column anywhere. A build needs a model and an operation before the set can be
-stored as the page draws it. The page says this on the set, on the read-back, and
-here.
+The only convention data is the curated set: 25
+=ores_dq_<kind>_conventions_artefact_tbl= tables, tenant
+=ffffffff-ffff-ffff-ffff-ffffffffffff= and party =00000000-…=, holding 2,367 rows
+between them. Swap holds 320, commodity future 790, FX option 173, deposit 163,
+CMS spread option 1.
 
-** The standard steps UI, and where it is copied from
+** A name is derived, because no name is stored
 
-The steps UI is not invented here. The rail, its marks and the step foot are
-copied from =doc/prototypes/setup/first-run/prototype.css= and
-=doc/prototypes/setup/first-run/prototype.js=, which copy =JourneyPage.tsx= and
-the journey runtime:
+No convention table carries a name and none carries a description. The curated
+tables carry an =id= text, which is the row's key; the party tables carry a
+=uuid= id. Neither is a field of the document. Both the name and the description
+are therefore read off the terms:
 
-- =.journey=, a grid of =14rem 1fr= with the rail left, and its 820px collapse;
-- =.railnav ol= and =.railentry= with its =.done=, =.current= and =.ahead=
-  states;
-- =.railmark= with the same three states, a tick once a step is behind the
-  person and its number otherwise;
-- =.stepfoot= with =.ml-auto= for the primary action.
+- An **index-based** document is named by its index, such as =AED-EIBORON=.
+- A **terms-based** document is named by its calendar, its convention, its day
+  count and its settlement days, such as
+  =AED · ModifiedFollowing · ACT/360 · 2d=.
+- The **payment frequency** joins the name where the kind states one, because
+  two swap rows differ only in it.
+- A kind whose table carries no calendar and no day count is named by the
+  identifier terms it does carry: an FX option by its FX convention, its ATM
+  type, its delta type and its switch tenor.
+- A term the row leaves empty is dropped from the name and reported beside it.
 
-The rail is drawn from one computed list, so the rail, the step numbering and the
-step foot cannot disagree. Going back is refused at the first step and at a step
-that is final. The last step is final, so it draws no Back, and its rail entry
-carries a *final* tag.
+**The fields differ by kind, because the tables do.** Deposit carries
+=index_based, index, calendar, convention, end_of_month, day_count_fraction,
+settlement_days=; swap carries =fixed_calendar, fixed_frequency,
+fixed_convention, fixed_day_count_fraction, index= and states no settlement
+days; FRA carries an index and nothing else; IBOR index carries no index column
+at all, so its terms cannot name the index it belongs to; FX option carries no
+calendar; commodity future carries 51 term columns. A single formula cannot span
+them, so the rule is stated per kind and the table names the fields it read
+under each name. That is the shape the created convention will have to satisfy,
+and no one has decided it.
 
-** The rail shape, and the rule for which kinds get a step
+The description is the same terms said in words, from one dictionary of term
+names: "The AED calendar, modified following as the business-day rule, ACT/360
+as its day count, settlement 2 business days after the trade." An index-based
+row reads "Fixing on AED-EIBORON. It states no calendar, convention, day count
+or settlement days, so the index carries them."
 
-| Position | Step | What it draws |
-|----------+------+---------------|
-| 1 | The conventions set | Every convention kind the configuration covers, one row each: the kind and its code, the document bound to it, the state, and the control that opens its step or starts a change. A row with no document says so. Counts, the rule, and the model absence. |
-| 2 to 1 + n | One per kind that needs a decision | Titled with the kind's name. What the convention family is, what it fixes about an instrument of that kind, the document bound today, the documents that exist for the kind with the fields that distinguish them, what changes if another is picked, and the step foot. |
-| last | What the conventions are now | The set as it now reads, the kinds that changed, what a save would write and cannot write, and the way back to the report. It is =final=. |
+** A derived name does not identify a document
 
-A kind gets a step when **it has no document bound, or when the document picked
-for it differs from the one bound**. A kind that already has a document and needs
-no change does not get a step, because 25 steps is not a wizard. The page says
-that rule on the set. On the fixture, 20 kinds are bound and 5 are not, so the
-rail carries 7 steps: the set, the 5 kinds that need a decision, and the
-read-back. *Change* on a bound row starts a real change and adds its step;
-*Keep the bound document* puts it back and removes the step, the way turning an
-analytic off removes its step on
-[[file:manage-the-analytics.org][Manage the analytics]].
+The curated swap table holds **320 rows stating 201 distinct sets of terms**, so
+two rows carry one name: =AED-SWAP= and =AED-EIBOR-3M-SWAP= state the same
+TARGET, modified following, 30/360, annual swap. The deposit table holds 163
+rows stating 141 sets, and its five bond-yield rows state one set between them.
+The row key tells them apart and the name does not, so the key sits beside every
+name on a kind's page. The page says this rather than presenting a derived name
+as an identity it is not.
 
-** What a convention step carries
+** The page for one kind
 
-Every kind step carries the same parts, and they are grounded in the model the
-page read:
+=?kind=<code>= opens that kind alone:
 
-- *What the convention family is.* Two or three sentences from the entity
-  model's own description, in plain words.
-- *What it fixes about an instrument of that kind.* A short list: the schedule,
-  the calendar and business-day rule, the day count, the index or indices, the
-  fixing rules. For a family whose model carries one pointer field, such as FRA,
-  the list says so.
-- *The document bound today.* Its id, its artefact table, its version, its field
-  count and its ORE element. A kind with no document says that a run which
-  reaches its instrument family reads no terms for it.
-- *The picker.* Every document that exists for that kind, drawn from
-  =ores_dq_<kind>_conventions_artefact_tbl=: the id, the version, and the first
-  five fields the model declares, which are the fields that tell one document
-  from another. An explicit *no document bound* choice lets a person unbind a
-  kind. A kind whose table has no row says there is nothing to pick; currency
-  pair is that case on the fixture.
-- *What changes.* The fields that differ between the bound document and the
-  picked one. It states that the same trade read under two convention sets gives
-  two different numbers, and neither of them is wrong: each is the correct price
-  under its own terms. It also states that a run made after the change is not
-  comparable with one made before it.
+- **The document in use**, at the top, with its terms, its version, the date it
+  became valid, who modified it and why, and where it came from: adopted from a
+  curated row, or authored on the create route. A kind with none draws a stated
+  *none* card and says what a run does instead.
+- **The alternatives for that kind**, read from the curated table, each with its
+  derived name, its description and its key.
+- **Which alternative is the default.** None is modelled, and the page says
+  where a real one would have to live.
+- **The create route**, which leaves the report flow.
 
-** Three readings of the per-kind step
+A kind that holds more than one document says that the model does not say which
+one a run takes: the key of the table is =(tenant_id, id, party_id)=, so several
+rows per party and kind are allowed, and no column orders them.
 
-=?variant=A|B|C= changes the per-kind step and nothing else. The set and the rail
-are identical across the three, so the comparison is of one screen.
+** The default: none is modelled, and here is where it would live
 
-- *A, document first.* The bound document card, then every field it holds, then
-  the picker of the documents that exist for the kind.
-- *B, compare.* The picker beside a side-by-side compare of the bound document
-  against the candidate, and a field-by-field list with the differing fields
-  marked. A kind with no document shows *no document bound* on its side, which is
-  the honest comparison for the five unbound kinds.
-- *C, field by field.* One field at a time, with its value in the bound document,
-  its value in the candidate, and the explanation of what the field means beside
-  it. This is for the fat families: cross-currency basis carries 24 fields and
-  cross-currency fix-float 17, and a whole-document table is too much to read.
+The only =%default%= column anywhere is =pays_at_default_time= on
+=ores_refdata_cds_conventions_tbl=, which is a CDS business term and not a
+default flag. So the fallback a run takes when a party holds nothing is not a
+choice between documents that anyone has recorded, and the page cannot show
+which alternative a run would use.
 
-Variant C holds a cursor, and =?guide=N= is that cursor in the URL, so a reload
-lands on the same field.
+A real default would have to live in one of two places, and the page names both:
 
-** Deep links over a rail that moves
+1. a **per-kind default column** on
+   =ores_refdata_<kind>_conventions_tbl=, marking one row of the party's own as
+   the one a run takes;
+2. a **per-kind default row keyed by tenant and kind**, in its own table, naming
+   a curated document where the tenant holds none.
 
-=?step=N= is numeric over the *current* rail, which makes it readable and also
-unstable: the number of a step moves whenever a kind before it changes. So the
-page also accepts =?kind=<code>=, which resolves to that kind's step whatever its
-number, and it writes both into the URL as the person navigates. A reload
-therefore lands on the same step. A kind that needs no change has no step, so that
-link lands on the set with the row marked and the reason stated.
+Neither exists, and the prototype picks neither. The default mark drawn on the
+swap, deposit and CDS pages is a fixture, labelled =default · fixture= wherever
+it appears, so that the states "a document matching the default" and "a document
+deviating from it" can be read. The comparison that decides is over the fields
+the kind names itself by.
 
-=?variant=A|B|C= chooses the reading, =?guide=N= the field variant C shows, and
-=?from=create-a-report|change-what-a-report-runs= decides where *Return to the
-report* goes. =?change=<code>= is a fixture deep link that picks the first
-alternative for a kind, so a reload can show a changed set and the read-back
-without walking it.
+** Three readings of the alternatives
 
-** The final step reads the set back
+=?variant=A|B|C= changes the alternatives block and nothing else. The document in
+use, the default statement and the create route are identical across the three,
+so a reader compares one block.
 
-The last step states the counts, names the kinds that changed with what they were
-and what they now are, and lists all 25 kinds with their state and their before
-and after documents. It then states what a save would write
-(=refdata.v1.conventions_documents.put=, the whole document for the session's
-party) and what it cannot write (no operation binds a document to one kind of one
-reporting configuration). It offers to return to the report that opened it.
-Nothing is written.
+- **A, described list.** Every alternative with its derived name, its terms in
+  words, its key, and the one in use marked.
+- **B, compare.** The document in use beside a candidate, field by field, with
+  the fields that differ marked, and a count of them. This is for the swap family
+  of 320 rows, where a list of 320 descriptions cannot be read.
+- **C, search and filter.** A search over the derived name and the description,
+  and filters for the long kinds: index-based, terms-based, marked default, and
+  not the one in use. The search finds a document by a term a person would say
+  aloud, and it reads nothing else: no index, no ranking, no server.
+
+** The create route is its own screen
+
+Authoring a convention is a different job from choosing one, so it has its own
+page, reached from the table or from a kind:
+
+- the **terms in a form**, one field per term the chosen kind's table carries,
+  and the form changes with the kind;
+- the **kind chosen** in the same form, because the terms depend on it;
+- a **reason code**, a **commentary** and a **valid from**, which are the
+  bitemporal columns of the write;
+- a statement of **what it writes**: the party's own row in
+  =ores_refdata_<kind>_conventions_tbl=, bitemporal, carrying =modified_by=,
+  =performed_by=, =change_reason_code=, =change_commentary=, =valid_from= and
+  =valid_to=;
+- a statement that it **leaves the report flow**: a person arrives from a report
+  and does not return to it.
+
+**What was verified about the write, and what was not.** The subject exists on
+all 26 kinds, tenor included: 26 =refdata.v1.<kind>_conventions.put= subjects
+declared in =projects/ores.refdata/api/include/ores.refdata.api/messaging/=
+and subscribed by 26 registrars in =projects/ores.refdata/core/src/messaging/=,
+each with a handler behind it, and the deposit resource also carries a shell
+command and its tests. **No run of the write is recorded here**, so the page
+claims that the operation exists in shape and claims nothing about whether it
+works. The prototype calls no subject.
+
+**Three kinds cannot be party-owned.** =ores_refdata_currency_pair_conventions_tbl=,
+=ores_refdata_ibor_index_conventions_tbl= and
+=ores_refdata_overnight_index_conventions_tbl= carry **no =party_id= column**,
+unlike the other 22. A row written there belongs to the whole tenant. The create
+route says so on those three kinds, and the table says so once for all of them.
+
+** Reachable states
+
+The bar at the foot of the page sets the fixture:
+
+| State | What it draws |
+|-------+---------------|
+| =?state=acme= | No document anywhere: every row reads none. The database state, and the default. |
+| =?state=several= | A fixture: swap holds two documents, CDS one, deposit one that matches the marked default, and every other kind still none. This is the state that shows "several", "exactly one", "none", "matches the default" and "deviates from it" at once. |
+| =?state=change= | The state above plus one pick that has not been written, on swap. |
+
+=?kind=<code>= opens a kind, =?variant=A|B|C= the reading, =?cand=<key>= the
+candidate variant B compares, =?from=create-a-report|change-what-a-report-runs=
+where the back link goes, and =?seed=<key>= starts the create form from a curated
+row. Every link is a plain query string, so a reload lands where the person was.
 
 ** What the page refuses to invent
 
-- No reporting operation reads a per-kind document, so the binding is a fixture
-  and the page says so. It invents no subject for it.
-- The subjects it names are real: =reporting.v1.configurations.list= and
-  =reporting.v1.configurations.list_by_configuration_type_code= for the
-  configurations, =reporting.v1.report_configurations.put= for the binding of a
-  definition, and =refdata.v1.conventions_documents.get= and
-  =refdata.v1.conventions_documents.put= for the conventions document. The
-  per-kind =refdata.v1.<kind>_conventions.list= subjects exist and are named on
-  the step, but the page reads no server.
-- No operation reads a curated artefact table either. The picker is drawn from
-  those tables as a fixture, and the page says that beside the picker.
-- The page draws no candidate a table does not have: currency pair says its
-  curated table holds no row, and the step stays open with nothing to pick.
+- No default marker, because none exists. The mark drawn is a fixture.
+- No name column, because none exists. The name is derived on the page, and the
+  page says what it read.
+- No per-kind binding in the reporting model, because the model has none. The
+  binding the fixture shows is labelled as a fixture.
+- No operation on the create route is called, and no claim is made that the
+  write works.
+- No description column, because none exists: the description is the terms,
+  said in words.
 
 ** What is fake
 
 Every value is a fixture: the party, the configuration, the thirty-one
-definitions, which document is bound to which kind, and the change state. The
-candidate documents and their fields are real rows from
-=ores_dev_bright_faraday=, but nothing reads a server and nothing is written. The
-page labels itself a fixture at the top, in the step captions and in the
-prototype's own bar.
-
-One statement is not fixture, and the page keeps it apart from the mock: the same
-trade read under two convention sets gives two different numbers, and neither is
-wrong.
+definitions, which document ACME owns, which alternative is the default, and the
+change in progress. The term values and the row keys are real rows of
+=ores_dev_bright_faraday=, and the counts on the rows are real counts of the
+curated tables. Nothing reads a server and nothing is written. The page labels
+itself a fixture at the top, on the bar and in each card that carries an
+invented value.
 
 ** Where the code lives
 
 =doc/prototypes/reporting/manage-the-conventions/=. Three files, plain HTML, CSS
-and JavaScript, no framework, no modules, no fetch, and no build step. The rail
-is computed in =rail()=, and every navigation reads that one function.
+and JavaScript, no framework, no modules, no fetch, and no build step. One
+function derives a name, one renders the terms in words, and every screen reads
+them, so the table, the alternatives and the create form cannot disagree about
+what a document is called.
 
 ** The verdict
 
@@ -240,14 +258,17 @@ None yet. This page is on the branch that proposes it and waits for review.
 
 ** What it does not settle
 
-- *Which of the three readings is right.* That is the question the variants exist
-  to answer, and this note does not answer it.
+- *Which of the three readings is right.* That is the question the variants
+  exist to answer, and this note does not answer it.
 - *How a reporting configuration should name a document per kind.* The current
-  model does not. The candidates are a per-kind document column or junction on
-  the configuration, or keying the conventions document by configuration rather
-  than by party. The page states the absence and does not pick the fix.
-- *Whether a person should bind a document to every one of the 25 kinds before a
-  report can run.* The page allows a kind to stay unbound and says what that
+  model does not. The page states the absence and does not pick the fix.
+- *Where the default should live.* Two places are named and neither is chosen.
+- *What to do about the kinds whose terms cannot name their own document*: IBOR
+  index carries no index column, five bond-yield rows state one set of terms,
+  and three kinds have no party column. A name derived from terms is honest
+  about all three and silent about the fix.
+- *Whether a person should hold a document for every one of the 25 kinds before
+  a report can run.* The page allows a kind to stay empty and says what that
   means; no service enforces completeness today.
 
 * See also
@@ -258,6 +279,5 @@ None yet. This page is on the branch that proposes it and waits for review.
 - [[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change what a report runs]] — the other journey that hands its conventions step here.
 - [[file:../../knowledge/journeys/conventions/conventions.org][Conventions journeys]] — what a convention is, and the reference data lists it picks from.
 - [[file:../../knowledge/journeys/conventions/journey_define_the_conventions_for_an_instrument.org][Define the conventions for an instrument]] — the refdata journey that defines a convention.
-- [[file:manage-the-analytics.org][Manage the analytics]] — the sibling prototype this one copies its rail shape from.
-- [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.
-- [[file:../../knowledge/ui/ux_language.org][UX Language]] — the rail and the rules a step's body follows.
+- [[file:manage-the-analytics.org][Manage the analytics]] — the sibling prototype, and the screen this one used to copy its rail from.
+- [[file:../../knowledge/ui/ux_language.org][UX Language]] — the vocabulary a screen's body follows.

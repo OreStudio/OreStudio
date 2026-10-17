@@ -33,10 +33,18 @@ def git(*args):
     ).stdout.strip()
 
 
-def is_ancestor(older, newer):
+def measures_the_same_files(commit, last):
+    """True when a recorded commit holds the same watched files as now.
+
+    Content, not ancestry. A merge commit on main introduces the branch's
+    changes, so the recorded branch commit is an ancestor of it rather than a
+    descendant, and an ancestry test would fail on main after every merge. Two
+    commits with the same bytes in the watched paths describe the same
+    measurement.
+    """
     return (
         subprocess.run(
-            ("git", "merge-base", "--is-ancestor", older, newer),
+            ("git", "diff", "--quiet", last, commit, "--") + WATCHED,
             capture_output=True,
             check=False,
         ).returncode
@@ -69,7 +77,7 @@ def main():
             if len(fields) >= 6 and fields[0] != "mode":
                 recorded.add(fields[5])
 
-    if any(is_ancestor(last, commit) for commit in recorded):
+    if any(measures_the_same_files(commit, last) for commit in recorded):
         return 0
 
     print("The XML code changed and no measurement was recorded after it.")

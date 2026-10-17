@@ -179,9 +179,12 @@ the writer's callers, or a change anywhere else in the tree never triggers it.
 That is the point: a gate that fires on unrelated work is a gate people learn
 to skip.
 
-A row counts if its commit is the last commit that touched those files, or a
-descendant of it, so a later commit that touches nothing measured, such as a
-record update, does not invalidate a measurement already taken.
+A row counts when the committed files it measured are byte-identical to the
+ones in the tree now. Content, not ancestry: a merge on trunk introduces the
+branch's changes, so the recorded branch commit is an ancestor of the merge
+rather than a descendant, and an ancestry test would fail on trunk after every
+merge. Comparing bytes also means a later commit that touches nothing measured
+does not invalidate a measurement already taken.
 
 When a change genuinely cannot move a number, the check is skipped with
 =--only= and the reason recorded on the pull request. That is a deliberate

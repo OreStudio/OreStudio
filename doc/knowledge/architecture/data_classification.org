@@ -57,8 +57,8 @@ only together when one of these is true:
 - A cross-type invariant must hold at one instant. A structure, its
   trades, its instruments and its legs must describe the same deal at
   the same instant, or the set is not a structure.
-- One operation must apply the set or none of it. A conventions import,
-  or a portfolio-wide correction, either lands whole or leaves nothing.
+- One operation must apply the set or none of it. A portfolio-wide
+  correction either lands whole or leaves nothing.
 - A boundary format needs the set at once. A portfolio destined for ORE
   XML carries every instrument kind the book holds.
 - An environment export reconstructs a working system from one
@@ -317,10 +317,10 @@ related by an invariant, one owner holds them, and one =unit_of_work=
 writes them. An environment export is a package: refdata conventions,
 trading trades and marketdata fixings are in it because they came from
 one system, not because they are related, so no transaction joins them.
-A conventions import is a package: the file lists 27 kinds and refdata
-owns them all, so when the import declares all-or-nothing those families
-are one bundle, and until then each family is its own bundle. The file is
-only the bytes that carried them.
+A conventions import is one operation, so its relatedness is that
+operation's intent and not the file's contents: refdata owns all 27
+families, the file is a package, and until the operation declares
+all-or-nothing each family is applied on its own.
 
 ** Artefact (document-shaped)
 

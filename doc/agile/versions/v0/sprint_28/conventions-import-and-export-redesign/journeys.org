@@ -114,7 +114,7 @@ atomicity and a named overall outcome.
    and the owner's call.
 2. Whether a trade import stays partial or becomes all-or-nothing. The journeys
    demand both, for different actors and different files.
-3. Whether the export is one bundle or one command per component. The journeys
+3. Whether the export is one package or one command per component. The journeys
    demand a manifest either way.
 4. Whether the import gets its own permission, or borrows the write permission of
    every row it creates. The party-scoped journey demands one of the two, and the
@@ -137,7 +137,7 @@ atomicity and a named overall outcome.
 
 * See also
 
-- [[file:design.org][Design: import and export conventions by family]] - the draft this page informs.
-- [[file:story.org][Story: import and export conventions without a document aggregate]]
-- [[file:../../../../../knowledge/journeys/data_exchange/data_exchange.org][Data exchange journeys]] - the group hub.
+- [[id:712C441E-CDF0-4F4C-A406-4D4E9A6CB63B][Design: import and export conventions by family]] - the draft this page informs.
+- [[id:60EDB576-96B3-433A-9CDA-9FA70CEE20ED][Story: import and export conventions without a document aggregate]]
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]

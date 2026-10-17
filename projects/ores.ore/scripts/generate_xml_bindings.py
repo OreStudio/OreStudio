@@ -50,11 +50,20 @@ CPP_TYPE = {
     "real": "double",
 }
 
+# A numeric member states its zero, so a record built by hand carries no
+# indeterminate value into a writing. The decimal already defaults to zero.
+CPP_ZERO = {
+    "std::int64_t": " = 0",
+    "std::int16_t": " = 0",
+    "double": " = 0",
+}
+
 SCALAR = {
     "text": "scalar_kind::text",
     "integer": "scalar_kind::integer",
     "decimal": "scalar_kind::decimal",
     "real": "scalar_kind::real",
+    "enumeration": "scalar_kind::enumeration",
 }
 
 LICENCE = """/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
@@ -219,8 +228,14 @@ def children_of(complex_type):
             )
     for node in complex_type:
         if local(node.tag) in ("sequence", "all", "choice"):
+            # A compositor that repeats repeats its members: a document may
+            # carry any member of a repeated choice any number of times, and
+            # the member's own maxOccurs says nothing about that.
+            repeated_compositor = node.get("maxOccurs", "1") not in ("1",)
             for element in node:
                 if local(element.tag) == "element":
+                    if repeated_compositor and element.get("maxOccurs", "1") in ("1",):
+                        element.set("maxOccurs", node.get("maxOccurs"))
                     elements.append(element)
                     if local(node.tag) == "choice":
                         CHOICE_CHILDREN.add(id(element))
@@ -435,6 +450,18 @@ def spellings_of(schema, owner, element):
     return None
 
 
+def ops_name(type_name, member):
+    """The table entry that grows, measures and indexes one repeated member."""
+    return f"{type_name}_{member}_ops"
+
+
+def vector_element_type(cpp):
+    prefix = "std::vector<"
+    if not cpp.startswith(prefix):
+        raise SystemExit(f"{cpp} is not a vector of one element type")
+    return cpp[len(prefix) : -1]
+
+
 def member_declaration(schema, element, money):
     name = element.get("name")
     member = snake(name)
@@ -453,7 +480,7 @@ def member_declaration(schema, element, money):
         kind, cpp = "decimal", CPP_TYPE["decimal"]
 
     if repeated:
-        return member, "repeated_leaf", f"std::vector<{cpp}>", True
+        return member, kind, f"std::vector<{cpp}>", True
     return member, kind, cpp, False
 
 
@@ -510,7 +537,8 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         body = [f"struct {names[type_name]} {{", "    std::uint64_t present = 0;"]
         own_kind = content_kind(schema, complex_type)
         if own_kind is not None:
-            body.append(f"    {CPP_TYPE[own_kind]} value;")
+            own_cpp = CPP_TYPE[own_kind]
+            body.append(f"    {own_cpp} value{CPP_ZERO.get(own_cpp, '')};")
         for attribute in attributes:
             body.append(f"    std::string {snake(attribute.get('name'))};")
         for element in elements:
@@ -521,13 +549,14 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                     cpp = names[target]
                     if repeated:
                         cpp = f"std::vector<{cpp}>"
-                body.append(f"    {cpp} {member};")
+                body.append(f"    {cpp} {member}{CPP_ZERO.get(cpp, '')};")
         if is_residual(complex_type):
             body.append("    std::vector<residual_element> extras;")
         body.append("};")
         declarations.append("\n".join(body))
 
     tables = []
+    repeated_members = []
     for type_name in ordered:
         complex_type = schema.complex_types[type_name]
         elements, attributes = children_of(complex_type)
@@ -562,26 +591,35 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 nested = names[
                     element.get("type") or schema.inline_name.get(id(element), element.get("name"))
                 ]
-                append = f"&append_to<{nested}>" if repeated else "nullptr"
+                ops = "nullptr"
+                if repeated:
+                    ops = f"&{ops_name(names[type_name], member)}"
+                    repeated_members.append((ops_name(names[type_name], member), nested))
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{field_kind}, '
                     f"std::uint32_t(offsetof({names[type_name]}, {member})), {bit}, false, "
                     f"{'true' if required else 'false'}, nullptr, "
-                    f"&{nested}_record, scalar_kind::text, {append}}},"
+                    f"&{nested}_record, scalar_kind::text, {ops}}},"
                 )
             else:
-                # Only an enumeration reads its spelling table. A repeated leaf
-                # of an enumerated type is a list of spellings, which is a
-                # list of strings.
+                # A repeated leaf is one value of the element's own kind, so
+                # the row says which kind that is and the engine stores that.
+                field_kind = "repeated_leaf" if repeated else kind
                 tokens = (
                     spellings_of(schema, type_name, element) or "nullptr"
                     if kind == "enumeration"
                     else "nullptr"
                 )
+                ops = "nullptr"
+                if repeated:
+                    ops = f"&{ops_name(names[type_name], member)}"
+                    repeated_members.append(
+                        (ops_name(names[type_name], member), vector_element_type(cpp))
+                    )
                 rows.append(
-                    f'    {{"{name}", {hash_name(name)}u, field_kind::{kind}, '
+                    f'    {{"{name}", {hash_name(name)}u, field_kind::{field_kind}, '
                     f"std::uint32_t(offsetof({names[type_name]}, {member})), {bit}, false, "
-                    f"{'true' if required else 'false'}, {tokens}, nullptr, {scalar}, nullptr}},"
+                    f"{'true' if required else 'false'}, {tokens}, nullptr, {scalar}, {ops}}},"
                 )
             bit += 1
         if is_residual(complex_type):
@@ -601,6 +639,13 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             + "\n".join(rows)
             + f"\n}};\nconst record_type {names[type_name]}_record{{\"{type_name}\", "
             f"{names[type_name]}_fields, {bit}, {text_field}}};"
+        )
+
+    ops = []
+    for ops_instance, element_type in repeated_members:
+        ops.append(
+            f"constexpr vector_ops {ops_instance}{{&append_to<{element_type}>, "
+            f"&count_of<{element_type}>, &at_of<{element_type}>}};"
         )
 
     spellings = []
@@ -662,7 +707,19 @@ auto append_to(void* container, void** slot) -> void {{
     *slot = &vector->back();
 }}
 
+template <typename T>
+auto count_of(const void* container) -> std::size_t {{
+    return static_cast<const std::vector<T>*>(container)->size();
+}}
+
+template <typename T>
+auto at_of(const void* container, std::size_t index) -> const void* {{
+    return &(*static_cast<const std::vector<T>*>(container))[index];
+}}
+
 {chr(10).join(spellings)}
+
+{chr(10).join(ops)}
 
 {chr(10).join(tables)}
 

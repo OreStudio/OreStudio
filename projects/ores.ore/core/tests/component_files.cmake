@@ -67,6 +67,7 @@ set(files
     "xml_curve_configuration_mapper_roundtrip_tests.cpp"
     "xml_curveconfig_roundtrip_tests.cpp"
     "xml_document_tests.cpp"
+    "xml_emitter_tests.cpp"
     "xml_equity_golden_roundtrip_tests.cpp"
     "xml_equity_mapper_roundtrip_tests.cpp"
     "xml_example_coverage_tests.cpp"

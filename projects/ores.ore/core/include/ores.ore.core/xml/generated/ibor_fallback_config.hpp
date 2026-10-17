@@ -38,9 +38,9 @@ struct ibor_fallback_config;
 
 struct ibor_fallback_global_settings {
   std::uint64_t present = 0;
-  std::int16_t enable_ibor_fallbacks;
-  std::int16_t use_rfr_curve_in_todays_market;
-  std::int16_t use_rfr_curve_in_simulation_market;
+  std::int16_t enable_ibor_fallbacks = 0;
+  std::int16_t use_rfr_curve_in_todays_market = 0;
+  std::int16_t use_rfr_curve_in_simulation_market = 0;
 };
 struct ibor_fallback_fallback {
   std::uint64_t present = 0;

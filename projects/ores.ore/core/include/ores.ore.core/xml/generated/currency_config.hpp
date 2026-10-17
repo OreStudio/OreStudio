@@ -39,12 +39,12 @@ struct currency_definition {
   std::string name;
   std::string iso_code;
   std::string minor_unit_codes;
-  std::int64_t numeric_code;
+  std::int64_t numeric_code = 0;
   std::string symbol;
   std::string fraction_symbol;
-  std::int64_t fractions_per_unit;
-  std::int16_t rounding_type;
-  std::int64_t rounding_precision;
+  std::int64_t fractions_per_unit = 0;
+  std::int16_t rounding_type = 0;
+  std::int64_t rounding_precision = 0;
   std::string currency_type;
 };
 struct currency_config {

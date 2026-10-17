@@ -35,8 +35,21 @@ template <typename T> auto append_to(void *container, void **slot) -> void {
   *slot = &vector->back();
 }
 
+template <typename T> auto count_of(const void *container) -> std::size_t {
+  return static_cast<const std::vector<T> *>(container)->size();
+}
+
+template <typename T>
+auto at_of(const void *container, std::size_t index) -> const void * {
+  return &(*static_cast<const std::vector<T> *>(container))[index];
+}
+
 const char *rounding_type_spellings[] = {"Up",    "Down",    "Closest",
                                          "Floor", "Ceiling", nullptr};
+
+constexpr vector_ops currency_config_currency_ops{
+    &append_to<currency_definition>, &count_of<currency_definition>,
+    &at_of<currency_definition>};
 
 const field currency_definition_fields[] = {
     {"Name", 266367750u, field_kind::text,
@@ -62,7 +75,7 @@ const field currency_definition_fields[] = {
      true, nullptr, nullptr, scalar_kind::integer, nullptr},
     {"RoundingType", 2895186805u, field_kind::enumeration,
      std::uint32_t(offsetof(currency_definition, rounding_type)), 7, false,
-     true, rounding_type_spellings, nullptr, scalar_kind::text, nullptr},
+     true, rounding_type_spellings, nullptr, scalar_kind::enumeration, nullptr},
     {"RoundingPrecision", 1567587679u, field_kind::integer,
      std::uint32_t(offsetof(currency_definition, rounding_precision)), 8, false,
      true, nullptr, nullptr, scalar_kind::integer, nullptr},
@@ -76,7 +89,7 @@ const field currency_config_fields[] = {
     {"Currency", 342827606u, field_kind::repeated_nested,
      std::uint32_t(offsetof(currency_config, currency)), 0, false, false,
      nullptr, &currency_definition_record, scalar_kind::text,
-     &append_to<currency_definition>},
+     &currency_config_currency_ops},
 };
 const record_type currency_config_record{"currencyConfig",
                                          currency_config_fields, 1, no_text};

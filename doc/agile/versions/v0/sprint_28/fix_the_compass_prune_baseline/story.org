@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: F8E0D7C4-4DFC-4111-9CBB-E20510C1F5C9
+:END:
+#+title: Story: Prune the branches that are merged into origin/main
+#+description: compass branches prune selects branches merged into origin/main, then deletes them with git branch -d, which asks whether they are merged into HEAD. A branch merged into main but not into whatever is checked out is reported safe to prune and then survives the prune with a message that blames unmerged commits.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+compass branches prune deletes every branch it reports safe to prune, whatever is checked out, and never deletes one that is not an ancestor of origin/main.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- A local branch merged into origin/main is deleted even when the current branch does not contain it.
+- A local branch with commits not in origin/main is never deleted, whatever the current branch holds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AFC28D64-5F48-4A79-80C8-D609666E2088][Scaffold story: Prune the branches that are merged into origin/main]] | DONE | 2026-10-17 | 2026-10-17 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:E3D8BFA2-12EE-421F-9876-40E68BF6BCCC][Fix the baseline the prune deletes against]] | DONE | | 2026-10-17 | Initial task for: Prune the branches that are merged into origin/main |
+
+* Decisions
+
+* Out of scope
+
+-

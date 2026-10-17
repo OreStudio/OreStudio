@@ -188,6 +188,18 @@ def cmd_report(project_root):
     return 0
 
 
+def is_merged_into_main(project_root, name):
+    """True when `name` is an ancestor of origin/main.
+
+    `git branch -d` answers a different question -- whether the branch is
+    merged into HEAD -- and refuses a branch that main already holds whenever
+    the checked-out branch does not contain it.
+    """
+    p = subprocess.run(["git", "merge-base", "--is-ancestor", name, "origin/main"],
+                       cwd=str(project_root), capture_output=True, text=True)
+    return p.returncode == 0
+
+
 def cmd_prune(project_root, confirmed):
     if not fetch_prune(project_root):
         print(f"{RED}⚠️  git fetch --prune failed; results may be stale.{RESET}", file=sys.stderr)
@@ -208,18 +220,25 @@ def cmd_prune(project_root, confirmed):
         print(f"\nRe-run with {_ycmd('-y')} to actually delete.")
         return 0
 
-    # `git branch -d`/`git push origin --delete` process each ref
-    # independently and return non-zero if ANY one fails, even when the
-    # rest succeeded -- so the deleted set is computed from the actual
-    # before/after branch list rather than trusted from the return code.
+    # `-d` asks whether each branch is merged into HEAD, which is not the set
+    # classify() chose, so a branch that main holds survives whenever the
+    # checked-out branch happens to be older than it. Each name is re-checked
+    # against origin/main here and deleted with `-D`, which makes the check
+    # that matters explicit rather than inherited from the checked-out branch.
+    verified = [name for name in to_local if is_merged_into_main(project_root, name)]
+    refused = [name for name in to_local if name not in verified]
+
     deleted_local, deleted_remote = [], []
-    if to_local:
-        p = subprocess.run(["git", "branch", "-d"] + to_local, cwd=str(project_root))
+    if verified:
+        p = subprocess.run(["git", "branch", "-D"] + verified, cwd=str(project_root))
         still_present = set(local_branches(project_root))
-        deleted_local = [name for name in to_local if name not in still_present]
+        deleted_local = [name for name in verified if name not in still_present]
         if p.returncode != 0:
-            print(f"{RED}⚠️  some local branch deletions failed (may have "
-                  f"unmerged commits despite the --merged check).{RESET}", file=sys.stderr)
+            print(f"{RED}⚠️  some local branch deletions failed.{RESET}", file=sys.stderr)
+
+    for name in refused:
+        print(f"{YELLOW}⚠️  {name} is no longer an ancestor of origin/main; "
+              f"left alone.{RESET}", file=sys.stderr)
 
     if to_remote:
         p = subprocess.run(["git", "push", "origin", "--delete"] + to_remote, cwd=str(project_root))

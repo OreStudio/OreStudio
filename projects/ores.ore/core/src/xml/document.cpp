@@ -18,6 +18,8 @@
  */
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.ore.core/xml/scanner.hpp"
+#include <functional>
+#include <utility>
 
 namespace ores::ore::xml {
 
@@ -25,9 +27,7 @@ namespace {
 
 constexpr std::string_view indent_unit = "  ";
 
-constexpr bool is_space(char c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-}
+using detail::is_space;
 
 /**
  * @brief Appends the escaped form of text content.
@@ -102,7 +102,7 @@ auto is_blank(std::string_view text) -> bool {
     return true;
 }
 
-auto document::read(std::string_view text, parse_error& error) -> std::optional<document> {
+auto document::read(std::string_view text) -> std::expected<document, parse_error> {
     document result;
     result.buffer_.assign(text);
 
@@ -110,29 +110,47 @@ auto document::read(std::string_view text, parse_error& error) -> std::optional<
     auto& tokens = result.tokens_;
     tokens.reserve(text.size() / 8 + 8);
 
+    std::uint32_t depth = 0;
+    bool have_root = false;
+
+    auto reject = [](std::string message) {
+        return std::unexpected(parse_error{std::move(message), 0, 0});
+    };
+
     for (;;) {
         const auto ev = input.next();
-        if (ev.kind == event_type::error) {
-            error.message = std::string(input.error());
-            error.line = input.line();
-            error.column = input.column();
-            return std::nullopt;
+        if (ev.kind == event_type::error)
+            return std::unexpected(
+                parse_error{std::string(input.error()), input.line(), input.column()});
+        if (ev.kind == event_type::end_of_document) {
+            if (!have_root)
+                return reject("the document has no root element");
+            return result;
         }
-        if (ev.kind == event_type::end_of_document)
-            break;
 
         token entry;
         switch (ev.kind) {
             case event_type::begin_element:
+                if (depth == 0) {
+                    if (have_root)
+                        return reject("the document has more than one root element");
+                    have_root = true;
+                }
+                ++depth;
                 entry.kind = token_kind::begin_element;
                 break;
             case event_type::end_element:
+                if (depth == 0)
+                    return reject("a tag closed with no open element");
+                --depth;
                 entry.kind = token_kind::end_element;
                 break;
             case event_type::attribute:
                 entry.kind = token_kind::attribute;
                 break;
             case event_type::text:
+                if (depth == 0 && !is_blank(ev.value))
+                    return reject("the document carries text outside its root element");
                 entry.kind = token_kind::text;
                 break;
             default:
@@ -145,21 +163,21 @@ auto document::read(std::string_view text, parse_error& error) -> std::optional<
         }
         if (!ev.value.empty()) {
             const auto* begin = ev.value.data();
-            const bool decoded = begin < result.buffer_.data() ||
-                                 begin >= result.buffer_.data() + result.buffer_.size();
-            if (decoded) {
+            const auto* first = result.buffer_.data();
+            const auto* last = first + result.buffer_.size();
+            const bool in_buffer =
+                !std::less<const char*>{}(begin, first) && std::less<const char*>{}(begin, last);
+            if (in_buffer) {
+                entry.value_begin = static_cast<std::uint32_t>(begin - first);
+            } else {
                 entry.value_begin = static_cast<std::uint32_t>(result.decoded_.size());
                 result.decoded_.append(ev.value);
                 entry.value_decoded = true;
-            } else {
-                entry.value_begin = static_cast<std::uint32_t>(begin - result.buffer_.data());
             }
             entry.value_length = static_cast<std::uint32_t>(ev.value.size());
         }
         tokens.push_back(entry);
     }
-
-    return result;
 }
 
 auto document::is_formatting(std::size_t index) const -> bool {
@@ -200,6 +218,8 @@ auto operator==(const document& lhs, const document& rhs) -> bool {
         if (left->kind != right->kind)
             return false;
         if (left->kind == token_kind::end_element) {
+            if (lhs.name(*left) != rhs.name(*right))
+                return false;
             ++left;
             ++right;
             continue;
@@ -282,6 +302,10 @@ auto document::write(std::string& out) const -> void {
                 continue;
             }
             case token_kind::end_element: {
+                if (depth == 0) {
+                    tag_open = false;
+                    continue;
+                }
                 --depth;
                 const bool closing_mixed = !open_mixed.empty() && open_mixed.back();
                 if (!open_mixed.empty())

@@ -30,7 +30,6 @@ const std::string tags("[ore][xml][corpus]");
 
 namespace fs = std::filesystem;
 using ores::ore::xml::document;
-using ores::ore::xml::parse_error;
 using ores::ore::xml::token_kind;
 
 auto read_file(const fs::path& path) -> std::string {
@@ -69,7 +68,8 @@ TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", tags) {
     REQUIRE(fs::is_directory(root));
 
     const auto output = fs::path(ORES_XML_ROUNDTRIP_DIR);
-    fs::remove_all(output);
+    std::error_code ignored;
+    fs::remove_all(output, ignored);
 
     std::size_t documents = 0;
     std::size_t failures = 0;
@@ -82,24 +82,22 @@ TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", tags) {
         ++documents;
         const auto text = read_file(entry.path());
 
-        parse_error error;
-        const auto original = document::read(text, error);
+        const auto original = document::read(text);
         if (!original) {
             ++failures;
-            report += entry.path().string() + ": " + error.message + " at line " +
-                      std::to_string(error.line) + "\n";
+            report += entry.path().string() + ": " + original.error().message + " at line " +
+                      std::to_string(original.error().line) + "\n";
             continue;
         }
 
         written.clear();
         original->write(written);
 
-        parse_error again;
-        const auto reread = document::read(written, again);
+        const auto reread = document::read(written);
         if (!reread) {
             ++failures;
-            report +=
-                entry.path().string() + " wrote something it cannot read: " + again.message + "\n";
+            report += entry.path().string() +
+                      " wrote something it cannot read: " + reread.error().message + "\n";
             continue;
         }
         if (!(*original == *reread)) {
@@ -109,8 +107,14 @@ TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", tags) {
         }
 
         const auto target = output / fs::relative(entry.path(), root);
-        fs::create_directories(target.parent_path());
-        std::ofstream(target, std::ios::binary) << written;
+        std::error_code ignored;
+        fs::create_directories(target.parent_path(), ignored);
+        std::ofstream file(target, std::ios::binary);
+        file << written;
+        if (!file) {
+            ++failures;
+            report += "could not write " + target.string() + "\n";
+        }
     }
 
     INFO(report);
@@ -130,8 +134,7 @@ TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value", tags
     for (const auto& entry : fs::recursive_directory_iterator(root)) {
         if (!entry.is_regular_file() || entry.path().extension() != ".xml")
             continue;
-        parse_error error;
-        const auto parsed = document::read(read_file(entry.path()), error);
+        const auto parsed = document::read(read_file(entry.path()));
         if (!parsed)
             continue;
 

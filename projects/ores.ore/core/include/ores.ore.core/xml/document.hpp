@@ -21,7 +21,7 @@
 
 #include "ores.ore.core/export.hpp"
 #include <cstdint>
-#include <optional>
+#include <expected>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -82,19 +82,40 @@ public:
      *
      * The document owns a copy of the text, because the tape points into it.
      * One allocation for the text and one for the tape is the whole cost.
+     *
+     * Text is normalised as XML requires before it is stored: line endings
+     * become a line feed, and a literal tab or line break inside an attribute
+     * value becomes a space. A character reference survives that, so a tab
+     * written as =&#9;= stays a tab and a literal tab becomes a space.
+     *
+     * The text must hold exactly one root element. Anything else is rejected,
+     * because the writer would otherwise produce bytes that are not a
+     * document.
      */
-    static auto read(std::string_view text, parse_error& error) -> std::optional<document>;
+    static auto read(std::string_view text) -> std::expected<document, parse_error>;
 
+    /**
+     * @brief The document's token stream, in document order.
+     */
     [[nodiscard]] auto tokens() const -> const std::vector<token>& {
         return tokens_;
     }
+    /**
+     * @brief The element or attribute name a token carries.
+     */
     [[nodiscard]] auto name(const token& t) const -> std::string_view {
         return std::string_view(buffer_).substr(t.name_begin, t.name_length);
     }
+    /**
+     * @brief The text or attribute value a token carries.
+     */
     [[nodiscard]] auto value(const token& t) const -> std::string_view {
         const auto& from = t.value_decoded ? decoded_ : buffer_;
         return std::string_view(from).substr(t.value_begin, t.value_length);
     }
+    /**
+     * @brief The name of the document's root element.
+     */
     [[nodiscard]] auto root() const -> std::string_view;
 
     /**

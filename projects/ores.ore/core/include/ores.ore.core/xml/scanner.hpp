@@ -28,6 +28,17 @@
 
 namespace ores::ore::xml {
 
+namespace detail {
+
+/**
+ * @brief True for the four characters XML treats as whitespace.
+ */
+constexpr auto is_space(char c) -> bool {
+    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+
+}
+
 /**
  * @brief What the scanner found next.
  */
@@ -96,7 +107,7 @@ private:
     auto fail(std::string_view message) -> event;
     auto take_name() -> std::string_view;
     auto take_quoted() -> std::optional<std::string_view>;
-    auto decode(std::string_view raw) -> std::string_view;
+    auto normalise(std::string_view raw, bool attribute) -> std::string_view;
 
     static constexpr std::uint8_t max_depth = 64;
 

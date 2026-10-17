@@ -24,16 +24,12 @@ namespace ores::ore::xml {
 
 namespace {
 
-constexpr bool is_space(char c) {
-    return c == ' ' || c == '\t' || c == '\n' || c == '\r';
-}
-
 constexpr bool ends_name(char c) {
-    return is_space(c) || c == '>' || c == '/' || c == '=' || c == '<';
+    return detail::is_space(c) || c == '>' || c == '/' || c == '=' || c == '<';
 }
 
 auto skip_space(std::string_view text, std::uint32_t& i) -> void {
-    while (i < text.size() && is_space(text[i]))
+    while (i < text.size() && detail::is_space(text[i]))
         ++i;
 }
 
@@ -111,43 +107,141 @@ auto reader::take_quoted() -> std::optional<std::string_view> {
     return document_.substr(start, close - start);
 }
 
-auto reader::decode(std::string_view raw) -> std::string_view {
-    const auto amp = raw.find('&');
-    if (amp == std::string_view::npos)
+namespace {
+
+auto named_entity(std::string_view entity) -> const char* {
+    if (entity == "amp")
+        return "&";
+    if (entity == "lt")
+        return "<";
+    if (entity == "gt")
+        return ">";
+    if (entity == "quot")
+        return "\"";
+    if (entity == "apos")
+        return "'";
+    return nullptr;
+}
+
+/**
+ * @brief Reads a character reference such as "#65" or "#x41".
+ *
+ * Returns nothing for a spelling that is not a reference or that names a code
+ * point XML does not allow, so the caller can keep the bytes verbatim instead
+ * of inventing a character.
+ */
+auto character_reference(std::string_view entity) -> std::optional<char32_t> {
+    if (entity.size() < 2 || entity[0] != '#')
+        return std::nullopt;
+    const bool hex = entity[1] == 'x' || entity[1] == 'X';
+    const auto digits = entity.substr(hex ? 2 : 1);
+    if (digits.empty())
+        return std::nullopt;
+
+    std::uint32_t code = 0;
+    for (const char c : digits) {
+        std::uint32_t digit = 0;
+        if (c >= '0' && c <= '9')
+            digit = static_cast<std::uint32_t>(c - '0');
+        else if (hex && c >= 'a' && c <= 'f')
+            digit = static_cast<std::uint32_t>(c - 'a' + 10);
+        else if (hex && c >= 'A' && c <= 'F')
+            digit = static_cast<std::uint32_t>(c - 'A' + 10);
+        else
+            return std::nullopt;
+        if (code > 0x10FFFFu / 16u)
+            return std::nullopt;
+        code = code * (hex ? 16u : 10u) + digit;
+        if (!hex && code > 0x10FFFFu)
+            return std::nullopt;
+    }
+
+    const bool allowed = code == 0x9 || code == 0xA || code == 0xD ||
+                         (code >= 0x20 && code <= 0xD7FF) || (code >= 0xE000 && code <= 0xFFFD) ||
+                         (code >= 0x10000 && code <= 0x10FFFF);
+    if (!allowed)
+        return std::nullopt;
+    return static_cast<char32_t>(code);
+}
+
+auto append_utf8(std::string& out, char32_t code) -> void {
+    const auto c = static_cast<std::uint32_t>(code);
+    if (c < 0x80) {
+        out.push_back(static_cast<char>(c));
+    } else if (c < 0x800) {
+        out.push_back(static_cast<char>(0xC0 | (c >> 6)));
+        out.push_back(static_cast<char>(0x80 | (c & 0x3F)));
+    } else if (c < 0x10000) {
+        out.push_back(static_cast<char>(0xE0 | (c >> 12)));
+        out.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
+        out.push_back(static_cast<char>(0x80 | (c & 0x3F)));
+    } else {
+        out.push_back(static_cast<char>(0xF0 | (c >> 18)));
+        out.push_back(static_cast<char>(0x80 | ((c >> 12) & 0x3F)));
+        out.push_back(static_cast<char>(0x80 | ((c >> 6) & 0x3F)));
+        out.push_back(static_cast<char>(0x80 | (c & 0x3F)));
+    }
+}
+
+}
+
+auto reader::normalise(std::string_view raw, bool attribute) -> std::string_view {
+    bool needs_work = false;
+    for (const char c : raw) {
+        if (c == '&' || c == '\t' || c == '\n' || c == '\r') {
+            needs_work = true;
+            break;
+        }
+    }
+    if (!needs_work)
         return raw;
 
     scratch_.clear();
-    scratch_.append(raw.substr(0, amp));
-    std::uint32_t i = static_cast<std::uint32_t>(amp);
-    while (i < raw.size()) {
-        if (raw[i] != '&') {
-            scratch_.push_back(raw[i++]);
+    for (std::size_t i = 0; i < raw.size();) {
+        const char c = raw[i];
+        if (c == '&') {
+            const auto semi = raw.find(';', i);
+            if (semi == std::string_view::npos) {
+                scratch_.push_back(c);
+                ++i;
+                continue;
+            }
+            const auto entity = raw.substr(i + 1, semi - i - 1);
+            if (const auto* named = named_entity(entity)) {
+                scratch_.append(named);
+            } else if (const auto code = character_reference(entity)) {
+                append_utf8(scratch_, *code);
+            } else {
+                // An entity this reader does not know, or a reference to a
+                // code point XML forbids, is kept verbatim rather than guessed
+                // at, so the bytes stay visible instead of becoming a
+                // character the document never named.
+                scratch_.append(raw.substr(i, semi - i + 1));
+            }
+            i = semi + 1;
             continue;
         }
-        const auto semi = raw.find(';', i);
-        if (semi == std::string_view::npos) {
-            scratch_.push_back(raw[i++]);
+        if (attribute) {
+            // A literal tab or line break in an attribute value is a space
+            // once the document is normalised. A character reference to one
+            // is not, and it survived the branch above.
+            if (c == '\t' || c == '\n' || c == '\r') {
+                scratch_.push_back(' ');
+                ++i;
+                continue;
+            }
+        } else if (c == '\r') {
+            // Line endings are normalised before anything else sees the text.
+            scratch_.push_back('\n');
+            ++i;
+            if (i < raw.size() && raw[i] == '\n')
+                ++i;
             continue;
         }
-        const auto entity = raw.substr(i + 1, semi - i - 1);
-        if (entity == "amp")
-            scratch_.push_back('&');
-        else if (entity == "lt")
-            scratch_.push_back('<');
-        else if (entity == "gt")
-            scratch_.push_back('>');
-        else if (entity == "quot")
-            scratch_.push_back('"');
-        else if (entity == "apos")
-            scratch_.push_back('\'');
-        else
-            // An entity this reader does not know is kept verbatim rather than
-            // guessed at, so a document that uses one still parses and the
-            // unknown text stays visible.
-            scratch_.append(raw.substr(i, semi - i + 1));
-        i = static_cast<std::uint32_t>(semi + 1);
+        scratch_.push_back(c);
+        ++i;
     }
-    return scratch_;
+    return std::string_view(scratch_);
 }
 
 auto reader::next() -> event {
@@ -184,7 +278,7 @@ auto reader::next() -> event {
             const auto raw = take_quoted();
             if (!raw)
                 return fail("expected a quoted attribute value");
-            return event{event_type::attribute, name, decode(*raw)};
+            return event{event_type::attribute, name, normalise(*raw, true)};
         }
 
         // Comments and processing instructions are skipped before anything
@@ -213,7 +307,8 @@ auto reader::next() -> event {
             position_ = open == std::string_view::npos ?
                             static_cast<std::uint32_t>(document_.size()) :
                             static_cast<std::uint32_t>(open);
-            return event{event_type::text, {}, decode(document_.substr(start, position_ - start))};
+            return event{
+                event_type::text, {}, normalise(document_.substr(start, position_ - start), false)};
         }
 
         if (starts_with(document_, position_, "<![CDATA[")) {

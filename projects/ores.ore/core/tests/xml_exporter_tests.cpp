@@ -433,10 +433,8 @@ TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards", tag
     const auto xml = exporter::export_portfolio(items, instruments);
     REQUIRE(xml.contains("EUR-EURIBOR-6M"));
 
-    const auto translated = exporter::export_portfolio(
-        items,
-        instruments,
-        [](const std::string& uri) -> std::string {
+    const auto translated =
+        exporter::export_portfolio(items, instruments, [](const std::string& uri) -> std::string {
             return uri == "EUR-EURIBOR-6M" ? "EUR-ESTER" : uri;
         });
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << translated;

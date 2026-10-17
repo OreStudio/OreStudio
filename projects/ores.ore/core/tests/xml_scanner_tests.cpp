@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/scanner.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <string>
@@ -23,8 +24,10 @@
 
 namespace {
 
+const std::string_view test_suite("ores.ore.tests");
 const std::string tags("[ore][xml][scanner]");
 
+using namespace ores::logging;
 using ores::ore::xml::event_type;
 using ores::ore::xml::reader;
 
@@ -101,6 +104,8 @@ TEST_CASE("leading_whitespace_belongs_to_the_text", tags) {
 }
 
 TEST_CASE("a_cdata_section_keeps_its_markup_characters", tags) {
+    auto lg(make_logger(test_suite));
+
     bool failed = false;
     const auto events = collect("<a><![CDATA[if (x < 1 && y > 2) {}]]></a>", failed);
 
@@ -120,6 +125,8 @@ TEST_CASE("the_five_predefined_entities_decode", tags) {
 }
 
 TEST_CASE("an_unknown_entity_is_kept_verbatim", tags) {
+    auto lg(make_logger(test_suite));
+
     bool failed = false;
     const auto events = collect("<a>&nbsp;</a>", failed);
 

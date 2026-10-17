@@ -45,6 +45,7 @@ Rework options, forwards, swaps, variance swaps, barriers, digitals, Asians, acc
 | [[id:8D0357A4-C17A-4459-9A7F-5D2731ECDA65][Write the equity basket as rows]] | DONE | | 2026-10-17 | The worst-of basket swap holds its constituents as a JSON string in basket_json. A list is rows of a child table, so author equity_basket_constituents keyed by the trade and the constituent's ordinal, and retire the JSON column from the model. |
 | [[id:709B5239-D264-4760-B12C-1145E7CA5BB4][Author the equity family header]] | DONE | 2026-10-17 | 2026-10-17 | The equity family has no header, so it has no common dates and the 17 routed codes point at nine product tables. Author equity_instrument, keyed by the trade, holding only the columns every code shares. The routing and the fact-table columns that move follow with the mappers. |
 | [[id:1425802C-0065-4569-A2B7-322D21B3391A][Test the equity position underlying]] | DONE | 2026-10-17 | 2026-10-17 | E15: equity_position_option_underlying has a table, a history field mapper and an event registrar, but no eventing or repository test. Enable the generated eventing test and check what it covers. |
+| [[id:1C3274C4-84F7-4914-8CAF-134F7A57B1B1][Record the equity arc status]] | STARTED | 2026-10-17 | | Units 1 to 5 and E15 are merged. Record the state, the PRs, and the evidence that units 6 to 11 are mapper work that cannot be done as model work, so the next phase starts from the finding rather than rediscovering it. |
 
 * Decisions
 

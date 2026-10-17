@@ -92,3 +92,27 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The engine is in =ores.ore.core/xml/binding=. It holds a stack of at most 32
+frames, each a type and the record being filled, and it writes into the record
+as the scanner walks past. Nothing is retained after a frame closes, so the
+document is never materialised. That is the decision the benchmark drove.
+
+What it handles, exercised by a hand-written table for CalendarAdjustments:
+three levels of nesting, a repeated child of a complex type, a repeated leaf,
+a required attribute, optional children, and requiredness checked at the end of
+each element. Verified against the corpus: the five calendar adjustment
+documents in =external/ore= bind, 45 calendars in all, and the whole
+=ore xml= suite is green at 514 cases and 63,540 assertions.
+
+Two positions are worth recording because they are choices, not defaults.
+
+- *A required attribute is checked like a required child.* Both are content
+  the schema requires. Skipping attributes was a bug the test caught.
+- *Content the schema does not name is refused, not dropped.* For a projection
+  that is the right failure: a document carrying an element the model cannot
+  represent should stop, not lose it. The tape keeps the fidelity case, where
+  the whole document is preserved and written back.
+
+Still open in this task: the three =xs:any= sites, and repeated children of a
+simple type that is not text. Both are needed before every family can bind.

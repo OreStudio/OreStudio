@@ -772,6 +772,28 @@ CATALOGUE: tuple[Check, ...] = (
         timeout=1800,
         fix="Read the suite's plan line and the first ERROR it printed.",
     ),
+    # The one check whose subject is a server-side object rather than a file.
+    # A durable consumer is declared at runtime, so a service that adds a second
+    # one per subject produces the same C++ as a service that follows the
+    # contract, and no read of the tree can tell them apart. It is therefore in
+    # the heavy phase, where the fleet that declares the streams is expected to
+    # be up, and it fails rather than skips when it cannot reach the server: a
+    # check that answers "nothing to do" when it cannot see what it checks is
+    # one that silently stops checking. `--exclude-heavy` keeps it out of the
+    # ordinary run, so what that run pays today is unchanged.
+    Check(
+        id="step-consumers",
+        title="Every step stream carries one consumer, and the claim's own numbers",
+        argv=("python3", "build/scripts/check_step_consumers.py"),
+        classes=("cpp", "services"),
+        phase=HEAVY,
+        timeout=300,
+        fix="Serve the family with one step_routes table and serve_step_commands,"
+            " so the stream carries one durable named '<stream>_consumer'. If it"
+            " is the ack wait or the delivery bound that moved, step_claim_lease"
+            " is written against them: hold off x (deliveries - 1) must exceed"
+            " the lease.",
+    ),
 )
 
 CHECKS_BY_ID = {check.id: check for check in CATALOGUE}

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 3402E259-3F40-4F03-91FC-F6498539D89F
+:END:
+#+title: Stop check runs leaving generated files dirty in the working tree
+#+description: compass check regenerates and compares, and on this environment the comparison leaves files modified: ores.refdata.api/domain/calendar_rule.hpp, then wire-protocol configuration_document_protocol.ts, then curve_bootstrap_config_protocol.ts, each appearing as modified within a minute of the others and sometimes showing an empty diff. Two files had to be reverted by hand in one session, and a generated header's reversion nearly went into a commit. The tree should be unchanged after a read-only check, or the check should name every file it wrote.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:checks:snag:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

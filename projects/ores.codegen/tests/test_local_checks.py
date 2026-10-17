@@ -58,13 +58,13 @@ def test_a_prose_only_change_builds_the_pages_and_nothing_else_heavy():
 
 def test_a_header_change_builds_and_tests():
     assert heavy(["projects/ores.iam/core/include/ores.iam.core/x.hpp"]) == {
-        "build", "db", "ctest",
+        "build", "db", "ctest", "step-consumers",
     }
 
 
 def test_a_source_change_builds_and_tests():
     assert heavy(["projects/ores.marketdata/core/src/a.cpp"]) == {
-        "build", "db", "ctest",
+        "build", "db", "ctest", "step-consumers",
     }
 
 
@@ -179,7 +179,16 @@ def test_the_heavy_checks_are_the_ones_that_need_a_built_tree():
         check.id for check in local_checks.CATALOGUE
         if check.phase == local_checks.HEAVY
     }
-    assert heavy_ids == {"build", "db", "ctest", "pgtap", "ore-xml-roundtrip"}
+    # step-consumers reads a live server, which no ordinary run has, so it is
+    # heavy: the phase where the infrastructure it needs is expected to be up.
+    assert heavy_ids == {
+        "build",
+        "db",
+        "ctest",
+        "pgtap",
+        "ore-xml-roundtrip",
+        "step-consumers",
+    }
 
 
 def test_only_a_sql_change_runs_the_sql_suites():

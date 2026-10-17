@@ -125,7 +125,8 @@ public:
      * register. Everything else compares exactly, including the digits of
      * every number.
      */
-    friend auto operator==(const document& lhs, const document& rhs) -> bool;
+    friend ORES_ORE_CORE_EXPORT auto operator==(const document& lhs,
+                                                 const document& rhs) -> bool;
     friend auto operator!=(const document& lhs, const document& rhs) -> bool {
         return !(lhs == rhs);
     }

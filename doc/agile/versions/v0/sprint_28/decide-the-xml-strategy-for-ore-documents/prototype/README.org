@@ -64,6 +64,21 @@ The variants:
   would emit them from the org model, and the table would point at their
   members.
 
+* Where this departs from the coding standards
+
+The probe is throwaway and it is held to the standards that make it readable,
+not to the ones that make it shippable. It keeps the licence header, the
+include order and the naming. It does not adopt =std::expected=: a =result=
+struct with an ok flag is enough to prove a design and costs less churn to
+throw away. The product layer does adopt it, and that is where the standard
+bites.
+
+Two copies of the scanner exist while both layers are alive. The probe's copy
+is a snapshot from before the product one learned to normalise values, so the
+two will disagree on entities and attribute whitespace. That is deliberate:
+the probe answers a design question, and the product layer is the thing that
+answers a correctness one.
+
 * What to carry forward
 
 - The table shape in =codec.hpp=: offset, bit, kind, hash. It is the whole

@@ -22,12 +22,7 @@
 import { z } from 'zod';
 import type { AuthenticatedCaller } from './account-operations.js';
 import type { TenantSetupRun } from './contracts.js';
-import {
-    uuidSchema,
-    type TenantDetail,
-    type TenantSetup,
-    type TenantSummary,
-} from './domain.js';
+import { uuidSchema, type TenantDetail, type TenantSetup, type TenantSummary } from './domain.js';
 import { nullableWireTimestampSchema, wireTimestampSchema } from './time.js';
 import {
     subjects as tenantSubjects,

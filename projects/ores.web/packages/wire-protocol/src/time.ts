@@ -54,8 +54,7 @@ export type WireTimestamp = string & { readonly [timestampBrand]: 'WireTimestamp
  * PostgreSQL states when the microsecond is zero). Nothing outside that range
  * is a wire timestamp, and the pattern is never widened to admit one.
  */
-const WIRE_TIMESTAMP_PATTERN =
-    /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?Z$/;
+const WIRE_TIMESTAMP_PATTERN = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,6}))?Z$/;
 
 /**
  * Validates and brands a wire timestamp.

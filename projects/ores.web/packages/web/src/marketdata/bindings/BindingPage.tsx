@@ -173,7 +173,7 @@ function BindingBody({
                     [t('marketdata.bindings.status'), <StatusTag status={status} />],
                     [
                         t('marketdata.bindings.lastTick'),
-                        lastTick === '' ? none : <RelativeTime at={lastTick} />,
+                        lastTick === null ? none : <RelativeTime at={lastTick} />,
                     ],
                     [
                         t('marketdata.bindings.feed'),

@@ -447,7 +447,7 @@ describe('a write that names a binding of another party', () => {
 });
 
 describe('what each binding has written', () => {
-    it('answers the series and last tick of each binding, and empty text for a silent source', async () => {
+    it('answers the series and last tick of each binding, and null for a silent source', async () => {
         const { server, sessionId } = buildTestServer({
             [ACTIVITY]: {
                 success: true,
@@ -458,7 +458,7 @@ describe('what each binding has written', () => {
                         series_id: SERIES,
                         last_tick_at: '2026-10-12 23:50:26Z',
                     },
-                    { source_name: 'synthetic.bloomberg.nzdusd', series_id: '', last_tick_at: '' },
+                    { source_name: 'synthetic.bloomberg.nzdusd', series_id: null, last_tick_at: null },
                 ],
             },
         });
@@ -470,7 +470,7 @@ describe('what each binding has written', () => {
                 series_id: SERIES,
                 last_tick_at: '2026-10-12 23:50:26Z',
             },
-            { source_name: 'synthetic.bloomberg.nzdusd', series_id: '', last_tick_at: '' },
+            { source_name: 'synthetic.bloomberg.nzdusd', series_id: null, last_tick_at: null },
         ]);
     });
 

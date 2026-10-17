@@ -22,6 +22,7 @@
 #include "ores.ore.core/export.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <expected>
 #include <string>
 #include <string_view>
 
@@ -157,9 +158,12 @@ public:
      * On failure the record is left in whatever state the engine reached, so a
      * caller that wants to keep partial results must decide that itself. The
      * usual contract is to discard the record.
+     *
+     * @return Nothing on success, or where and why the document could not be
+     * bound.
      */
-    static auto bind(const document_type& doc, std::string_view text, void* root, bind_error& error)
-        -> bool;
+    static auto bind(const document_type& doc, std::string_view text, void* root)
+        -> std::expected<void, bind_error>;
 };
 
 }

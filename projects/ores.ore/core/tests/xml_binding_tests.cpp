@@ -26,6 +26,7 @@
 #include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <expected>
 #include <filesystem>
 #include <fstream>
 #include <string>
@@ -59,6 +60,16 @@ namespace nsd = ores::ore::xml::generated::netting_set_definitions;
 namespace tm = ores::ore::xml::generated::todays_market;
 using tm::todays_market_document;
 using tm::todaysmarket;
+
+/**
+ * @brief The reason a bind failed, or nothing when it succeeded.
+ *
+ * INFO and CHECK both evaluate eagerly, so reading error() straight off a
+ * result that may hold a value is undefined behaviour.
+ */
+auto diagnose(const std::expected<void, bind_error>& result) -> std::string {
+    return result ? std::string{} : result.error().message;
+}
 
 // The calendar family's records and tables are generated from the schema by
 // projects/ores.ore/scripts/regenerate_xml_bindings.sh, and the generated names
@@ -128,12 +139,10 @@ TEST_CASE("content_the_schema_does_not_name_is_captured", tags) {
     auto lg(make_logger(test_suite));
 
     notes record;
-    bind_error error;
     const document_type doc{"Notes", &notes_type};
-    const bool bound =
-        binder::bind(doc, "<Notes><Anything>hello</Anything></Notes>", &record, error);
+    const auto bound = binder::bind(doc, "<Notes><Anything>hello</Anything></Notes>", &record);
 
-    INFO(error.message);
+    INFO(diagnose(bound));
     REQUIRE(bound);
     REQUIRE(record.extras.size() == 1);
     CHECK(record.extras[0].name == "Anything");
@@ -144,25 +153,22 @@ TEST_CASE("content_the_schema_does_not_name_and_cannot_represent_is_refused", ta
     auto lg(make_logger(test_suite));
 
     notes record;
-    bind_error error;
     const document_type doc{"Notes", &notes_type};
-    const bool bound =
-        binder::bind(doc, "<Notes><Nested><Child/></Nested></Notes>", &record, error);
+    const auto bound = binder::bind(doc, "<Notes><Nested><Child/></Nested></Notes>", &record);
 
     CHECK_FALSE(bound);
-    CHECK(error.message.find("children") != std::string::npos);
+    CHECK(diagnose(bound).find("children") != std::string::npos);
 }
 
 TEST_CASE("a_repeated_numeric_leaf_fills_a_vector", tags) {
     auto lg(make_logger(test_suite));
 
     level_list record;
-    bind_error error;
     const document_type doc{"Levels", &level_list_type};
-    const bool bound =
-        binder::bind(doc, "<Levels><Level>1.5</Level><Level>2.5</Level></Levels>", &record, error);
+    const auto bound =
+        binder::bind(doc, "<Levels><Level>1.5</Level><Level>2.5</Level></Levels>", &record);
 
-    INFO(error.message);
+    INFO(diagnose(bound));
     REQUIRE(bound);
     REQUIRE(record.levels.size() == 2);
     CHECK(record.levels[0] == 1.5);
@@ -182,10 +188,9 @@ TEST_CASE("a_nested_document_binds_into_one_record", tags) {
         "</CalendarAdjustments>";
 
     calendaradjustment record;
-    bind_error error;
-    const bool bound = binder::bind(calendar_adjustments_document(), text, &record, error);
+    const auto bound = binder::bind(calendar_adjustments_document(), text, &record);
 
-    INFO(error.message);
+    INFO(diagnose(bound));
     REQUIRE(bound);
     REQUIRE(record.calendar.size() == 2);
     CHECK(record.calendar[0].name == "TARGET");
@@ -203,28 +208,24 @@ TEST_CASE("a_missing_required_attribute_is_refused", tags) {
     auto lg(make_logger(test_suite));
 
     calendaradjustment record;
-    bind_error error;
-    const bool bound = binder::bind(calendar_adjustments_document(),
+    const auto bound = binder::bind(calendar_adjustments_document(),
                                     "<CalendarAdjustments><Calendar/></CalendarAdjustments>",
-                                    &record,
-                                    error);
+                                    &record);
 
     CHECK_FALSE(bound);
-    CHECK(error.message.find("name") != std::string::npos);
+    CHECK(diagnose(bound).find("name") != std::string::npos);
 }
 
 TEST_CASE("an_unknown_element_is_refused_rather_than_dropped", tags) {
     auto lg(make_logger(test_suite));
 
     calendaradjustment record;
-    bind_error error;
-    const bool bound = binder::bind(calendar_adjustments_document(),
+    const auto bound = binder::bind(calendar_adjustments_document(),
                                     "<CalendarAdjustments><Holiday/></CalendarAdjustments>",
-                                    &record,
-                                    error);
+                                    &record);
 
     CHECK_FALSE(bound);
-    CHECK(error.message.find("Holiday") != std::string::npos);
+    CHECK(diagnose(bound).find("Holiday") != std::string::npos);
 }
 
 TEST_CASE("every_calendar_adjustment_in_the_corpus_binds", tags) {
@@ -242,10 +243,10 @@ TEST_CASE("every_calendar_adjustment_in_the_corpus_binds", tags) {
             continue;
         ++files;
         calendaradjustment record;
-        bind_error error;
-        if (!binder::bind(
-                calendar_adjustments_document(), read_file(entry.path()), &record, error)) {
-            report += entry.path().string() + ": " + error.message + "\n";
+        const auto bound =
+            binder::bind(calendar_adjustments_document(), read_file(entry.path()), &record);
+        if (!bound) {
+            report += entry.path().string() + ": " + bound.error().message + "\n";
             continue;
         }
         calendars += record.calendar.size();
@@ -274,10 +275,9 @@ TEST_CASE("the_generated_currency_tables_bind_a_document", tags) {
         "</CurrencyConfig>";
 
     currency_config record;
-    bind_error error;
-    const bool bound = binder::bind(currency_config_document(), text, &record, error);
+    const auto bound = binder::bind(currency_config_document(), text, &record);
 
-    INFO(error.message);
+    INFO(diagnose(bound));
     REQUIRE(bound);
     REQUIRE(record.currency.size() == 1);
     CHECK(record.currency[0].iso_code == "USD");
@@ -305,9 +305,10 @@ TEST_CASE("every_currency_config_in_the_corpus_binds", tags) {
             continue;
         ++files;
         currency_config record;
-        bind_error error;
-        if (!binder::bind(currency_config_document(), read_file(entry.path()), &record, error)) {
-            report += entry.path().string() + ": " + error.message + "\n";
+        const auto bound =
+            binder::bind(currency_config_document(), read_file(entry.path()), &record);
+        if (!bound) {
+            report += entry.path().string() + ": " + bound.error().message + "\n";
             continue;
         }
         currencies += record.currency.size();
@@ -334,10 +335,9 @@ TEST_CASE("a_generated_money_field_keeps_the_documents_digits", tags) {
         "</Fallback></Fallbacks></IborFallbackConfig>";
 
     ibor_fallback_config record;
-    bind_error error;
-    const bool bound = binder::bind(ibor_fallback_config_document(), text, &record, error);
+    const auto bound = binder::bind(ibor_fallback_config_document(), text, &record);
 
-    INFO(error.message);
+    INFO(diagnose(bound));
     REQUIRE(bound);
     REQUIRE(record.fallbacks.fallback.size() == 1);
     CHECK(record.fallbacks.fallback[0].ibor_index == "CHF-LIBOR-SN");
@@ -360,10 +360,10 @@ TEST_CASE("every_ibor_fallback_document_in_the_corpus_binds", tags) {
             continue;
         ++files;
         ibor_fallback_config record;
-        bind_error error;
-        if (!binder::bind(
-                ibor_fallback_config_document(), read_file(entry.path()), &record, error)) {
-            report += entry.path().string() + ": " + error.message + "\n";
+        const auto bound =
+            binder::bind(ibor_fallback_config_document(), read_file(entry.path()), &record);
+        if (!bound) {
+            report += entry.path().string() + ": " + bound.error().message + "\n";
             continue;
         }
         fallbacks += record.fallbacks.fallback.size();
@@ -393,10 +393,9 @@ TEST_CASE("a_generated_element_with_text_and_attributes_binds_both", tags) {
         "</CounterpartyInformation>";
 
     counterparty_information record;
-    bind_error error;
-    const bool bound = binder::bind(counterparty_information_document(), text, &record, error);
+    const auto bound = binder::bind(counterparty_information_document(), text, &record);
 
-    INFO(error.message);
+    INFO(diagnose(bound));
     REQUIRE(bound);
     REQUIRE(record.counterparties.counterparty.size() == 1);
     CHECK(record.counterparties.counterparty[0].counterparty_id == "CPTY_A");
@@ -424,10 +423,10 @@ TEST_CASE("every_counterparty_document_in_the_corpus_binds", tags) {
             continue;
         ++files;
         counterparty_information record;
-        bind_error error;
-        if (!binder::bind(
-                counterparty_information_document(), read_file(entry.path()), &record, error)) {
-            report += entry.path().string() + ": " + error.message + "\n";
+        const auto bound =
+            binder::bind(counterparty_information_document(), read_file(entry.path()), &record);
+        if (!bound) {
+            report += entry.path().string() + ": " + bound.error().message + "\n";
             continue;
         }
         parties += record.counterparties.counterparty.size();
@@ -455,9 +454,9 @@ TEST_CASE("the_generated_todays_market_tables_bind_the_corpus", tags) {
             continue;
         ++files;
         todaysmarket record;
-        bind_error error;
-        if (!binder::bind(todays_market_document(), read_file(entry.path()), &record, error)) {
-            report += entry.path().string() + ": " + error.message + "\n";
+        const auto bound = binder::bind(todays_market_document(), read_file(entry.path()), &record);
+        if (!bound) {
+            report += entry.path().string() + ": " + bound.error().message + "\n";
             continue;
         }
         configurations += record.configuration.size();
@@ -484,10 +483,9 @@ TEST_CASE("an_abstract_element_with_substitution_members_binds", tags) {
                              "</NettingSetDefinitions>";
 
     nsd::nettingsetdefinitions record;
-    bind_error error;
-    const bool bound = binder::bind(nsd::netting_set_definitions_document(), text, &record, error);
+    const auto bound = binder::bind(nsd::netting_set_definitions_document(), text, &record);
 
-    INFO(error.message);
+    INFO(diagnose(bound));
     REQUIRE(bound);
     REQUIRE(record.netting_set.size() == 1);
     CHECK(record.netting_set[0].netting_set_id == "CPTY_A");
@@ -510,10 +508,10 @@ TEST_CASE("every_netting_set_document_in_the_corpus_binds", tags) {
             continue;
         ++files;
         nsd::nettingsetdefinitions record;
-        bind_error error;
-        if (!binder::bind(
-                nsd::netting_set_definitions_document(), read_file(entry.path()), &record, error)) {
-            report += entry.path().string() + ": " + error.message + "\n";
+        const auto bound =
+            binder::bind(nsd::netting_set_definitions_document(), read_file(entry.path()), &record);
+        if (!bound) {
+            report += entry.path().string() + ": " + bound.error().message + "\n";
             continue;
         }
         sets += record.netting_set.size();
@@ -541,9 +539,10 @@ TEST_CASE("the_generated_conventions_tables_bind_the_corpus", tags) {
             continue;
         ++files;
         cnv::conventions record;
-        bind_error error;
-        if (!binder::bind(cnv::conventions_document(), read_file(entry.path()), &record, error)) {
-            report += entry.path().string() + ": " + error.message + "\n";
+        const auto bound =
+            binder::bind(cnv::conventions_document(), read_file(entry.path()), &record);
+        if (!bound) {
+            report += entry.path().string() + ": " + bound.error().message + "\n";
             continue;
         }
         if (record.deposit.present != 0)
@@ -562,15 +561,13 @@ TEST_CASE("a_leaf_element_cannot_contain_another_element", tags) {
     // A leaf is a frame, so a child under it is refused rather than popping
     // the parent and running the required check against the wrong record.
     notes record;
-    bind_error error;
     const document_type doc{"Notes", &notes_type};
-    const bool bound =
-        binder::bind(doc, "<Notes><Anything>x<Child/></Anything></Notes>", &record, error);
+    const auto bound = binder::bind(doc, "<Notes><Anything>x<Child/></Anything></Notes>", &record);
 
     // The residual field captures text and refuses children, which is the
     // same rule from the other side.
     CHECK_FALSE(bound);
-    CHECK(error.message.find("children") != std::string::npos);
+    CHECK(diagnose(bound).find("children") != std::string::npos);
 }
 
 TEST_CASE("text_split_by_a_comment_is_one_value", tags) {
@@ -583,10 +580,9 @@ TEST_CASE("text_split_by_a_comment_is_one_value", tags) {
                              "</Fallback></Fallbacks></IborFallbackConfig>";
 
     ibor_fallback_config record;
-    bind_error error;
-    const bool bound = binder::bind(ibor_fallback_config_document(), text, &record, error);
+    const auto bound = binder::bind(ibor_fallback_config_document(), text, &record);
 
-    INFO(error.message);
+    INFO(diagnose(bound));
     REQUIRE(bound);
     REQUIRE(record.fallbacks.fallback.size() == 1);
     CHECK(record.fallbacks.fallback[0].ibor_index == "CHF-LIBOR-SN");
@@ -596,13 +592,12 @@ TEST_CASE("a_document_without_a_root_or_with_two_is_refused", tags) {
     auto lg(make_logger(test_suite));
 
     calendaradjustment record;
-    bind_error error;
-    CHECK_FALSE(binder::bind(calendar_adjustments_document(), "", &record, error));
-    CHECK(error.message.find("root") != std::string::npos);
+    const auto empty_document = binder::bind(calendar_adjustments_document(), "", &record);
+    CHECK_FALSE(empty_document);
+    CHECK(diagnose(empty_document).find("root") != std::string::npos);
 
-    CHECK_FALSE(binder::bind(calendar_adjustments_document(),
-                             "<CalendarAdjustments/><CalendarAdjustments/>",
-                             &record,
-                             error));
-    CHECK(error.message.find("more than one root") != std::string::npos);
+    const auto two_roots = binder::bind(
+        calendar_adjustments_document(), "<CalendarAdjustments/><CalendarAdjustments/>", &record);
+    CHECK_FALSE(two_roots);
+    CHECK(diagnose(two_roots).find("more than one root") != std::string::npos);
 }

@@ -22,6 +22,7 @@
 #include "ores.utility/decimal/decimal.hpp"
 #include <array>
 #include <charconv>
+#include <expected>
 #include <vector>
 
 namespace ores::ore::xml {
@@ -83,11 +84,8 @@ auto mark_present(void* record, const field& f) -> void {
  * a second value for a number is refused rather than silently overwriting the
  * first.
  */
-auto store(void* record,
-           const field& f,
-           std::string_view text,
-           bool append,
-           std::string& error) -> bool {
+auto store(void* record, const field& f, std::string_view text, bool append, std::string& error)
+    -> bool {
     static_cast<void>(append);
     auto* slot = static_cast<std::byte*>(record) + f.offset;
     switch (f.kind) {
@@ -200,8 +198,8 @@ auto store(void* record,
 
 }
 
-auto binder::bind(const document_type& doc, std::string_view text, void* root, bind_error& error)
-    -> bool {
+auto binder::bind(const document_type& doc, std::string_view text, void* root)
+    -> std::expected<void, bind_error> {
     // A frame is either a record being filled or a leaf awaiting its text. A
     // leaf is a frame rather than a flag so a leaf with children is refused
     // instead of quietly popping its parent, and so a leaf's own attributes
@@ -225,27 +223,21 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
 
     reader input(text);
 
-    auto fail = [&input, &error](std::string message) {
-        error.message = std::move(message);
-        error.line = input.line();
-        error.column = input.column();
-        return false;
+    auto fail = [&input](std::string message) -> std::expected<void, bind_error> {
+        return std::unexpected(bind_error{std::move(message), input.line(), input.column()});
     };
 
     for (;;) {
         const auto ev = input.next();
-        if (ev.kind == event_type::error) {
-            error.message = std::string(input.error());
-            error.line = input.line();
-            error.column = input.column();
-            return false;
-        }
+        if (ev.kind == event_type::error)
+            return std::unexpected(
+                bind_error{std::string(input.error()), input.line(), input.column()});
         if (ev.kind == event_type::end_of_document) {
             if (!have_root)
                 return fail("the document has no root element");
             if (depth != 0)
                 return fail("the document ended inside an element");
-            return true;
+            return {};
         }
 
         if (residual_depth > 0) {
@@ -282,8 +274,8 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                     if (any == nullptr)
                         return fail("unknown element '" + std::string(ev.name) + "' in '" +
                                     std::string(top.type->name) + "'");
-                    auto* bag = reinterpret_cast<std::vector<residual_element>*>(top.record +
-                                                                                any->offset);
+                    auto* bag =
+                        reinterpret_cast<std::vector<residual_element>*>(top.record + any->offset);
                     bag->emplace_back();
                     bag->back().name = std::string(ev.name);
                     mark_present(top.record, *any);

@@ -8,7 +8,7 @@
 #+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work:sprint_28:v0:
 #+owner: marco
 #+branch: feature/mop-up-the-codegen-snags-the-parts-guard-left
-#+pr: 3433
+#+pr: 3435
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -128,6 +128,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3435][#3435]] | [ci] Drop the comment about the retired macos-14 runner |
 | [[https://github.com/OreStudio/OreStudio/pull/3433][#3433]] | [agile] Capture the non-systemd fleet start |
 | [[https://github.com/OreStudio/OreStudio/pull/3432][#3432]] | [codegen] Land the CMake model diagnostics |
 | [[https://github.com/OreStudio/OreStudio/pull/3430][#3430]] | [codegen] Make hidden visibility a part decision and green the build |

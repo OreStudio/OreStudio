@@ -83,3 +83,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The scanner and the document model are in product code, and the whole corpus
+goes through them: 1,623 documents read, written back, compared equal, and
+validating against =input.xsd=. The corpus found two silent data losses that
+no test written from the schema would have found, and both are now tests.
+
+The layer needs no schema, so it landed before the schema tables rather than
+after them. That changes the order of the work the story had planned: the
+generator now serves the projection, not the round trip.
+
+=ctest= has not run in this worktree. The tree predates the checkout's
+=domain.hpp= and the rebuild was still at 436 of 2,909 targets after an hour.
+The same sources are compiled and run directly against Catch2, which is where
+the results above come from. The CMake wiring is unproven until a build
+completes.

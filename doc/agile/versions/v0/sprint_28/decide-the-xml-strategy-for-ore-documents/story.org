@@ -34,11 +34,9 @@ the work that follows is broken into tasks.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The faithful document layer is built and proven over the corpus. The schema tables and the projection remain. |
+| Now           | The document layer is built, merged and measured. The schema tables and the projection remain. |
 | Waiting on    | Nothing.                               |
-| Next          | Approve route C and take the two small tasks: the corpus gate and the log formatting. |
-| Waiting on    | A decision on the recommendation.      |
-| Next          | Approve route C, then start with the corpus gate and the log-formatting fix, which are the two small ones. |
+| Next          | The schema tables, the writer, and the round-trip harness, in the order the tasks set out. |
 | Last touched  | 2026-10-17                               |
 
 * Acceptance

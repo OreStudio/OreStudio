@@ -84,7 +84,28 @@ not run, rerun or edit anything.
    =trading.v1.trades.get= is what resolves the id to the trade. Nothing parses
    the archive yet, so no screen can serve these rows as data — see
    *What is missing*.
-5. *Read the errors that came with the output.* Output and errors are not
+5. *Read the results by book.* A run's results have a third reading beside the
+   aggregate figures and the one-row-per-trade table: the book tree. The tree has
+   four levels. A portfolio is the top level. A portfolio nests under another
+   portfolio, so a sub-portfolio is a level of its own. A book hangs off a
+   portfolio. A trade is booked to a book, so the trade is the bottom level.
+   The person opens the tree of the run's portfolios and books, sees each node's
+   name, its trade count and its aggregate NPV, and expands a level to read the
+   books inside it. Each node aggregates what sits below it: a book's figure is
+   the sum of its trades, and a portfolio's figure is the sum of its books.
+   Selecting a node filters the per-trade table to that subtree, so a person
+   drills from the group portfolio to a book and then to one row. A trade that is
+   booked to no book is a real state, and the tree shows it. That trade has no
+   =book_id= on =ores_trading_trade_bookings_tbl=, so it cannot sit under a book,
+   and the screen draws it as an unbooked node rather than dropping it. The
+   hierarchy is the schema's. =ores_refdata_portfolios_tbl= carries
+   =parent_portfolio_id=, so portfolios nest. =ores_refdata_books_tbl= carries
+   =parent_portfolio_id=, so a book hangs off a portfolio.
+   =ores_trading_trade_bookings_tbl= carries =trade_id= and =book_id=, so a trade
+   is booked to a book. The tree on the prototype is a fixture, for two reasons
+   the journey states in *What is missing*: the archive carries no book column,
+   and no operation returns the run's results grouped by book.
+6. *Read the errors that came with the output.* Output and errors are not
    alternatives. A run that completed while carrying errors produced its
    archive and recorded its errors, and a reader who takes the archive must know
    what the run said was wrong. The outputs screen therefore carries the error
@@ -93,7 +114,7 @@ not run, rerun or edit anything.
    [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]].
    The archive is still the answer to "what did this run produce", and the errors
    are the answer to "what is missing from it".
-6. *Read the exported ORE package.* Pre-processing produces the engine's input,
+7. *Read the exported ORE package.* Pre-processing produces the engine's input,
    and the step that prepares it is =ore.v1.ops.prepare_ore_package=. The
    package is the engine's input, and it is what a person would run locally to
    reproduce the output. The screen states
@@ -101,19 +122,19 @@ not run, rerun or edit anything.
    definition substitutes pre-processing resolves a prepared input instead, and
    the package it resubmits is named by the definition's =prepared_input_key=.
    The two are different objects, and the screen says which one this run used.
-7. *A run still in flight.* Output does not exist until retrieval. The run's
+8. *A run still in flight.* Output does not exist until retrieval. The run's
    =output_storage_key= is set only once the run's results have been retrieved,
    so a running run states that no output is available yet and that the panel
    will fill when the run completes. It does not draw an empty archive, which
    would read as a run that produced nothing.
-8. *A run that failed.* A failed run has no archive and no package to hand over.
+9. *A run that failed.* A failed run has no archive and no package to hand over.
    The screen says there is nothing to take, states that the run failed, and
    sends the reader to the run's errors. The empty answer is explained, not
    dressed as an empty folder.
-9. *Take it away, or leave.* The person copies the storage key, downloads the
-   archive through the route the screen provides, or follows the error screen.
-   The run remains the record: its outputs do not expire with the screen, and a
-   person who comes back later reads the same key.
+10. *Take it away, or leave.* The person copies the storage key, downloads the
+    archive through the route the screen provides, or follows the error screen.
+    The run remains the record: its outputs do not expire with the screen, and a
+    person who comes back later reads the same key.
 
 * Screens and wireframes
 
@@ -131,6 +152,12 @@ a run in flight with no output yet, and a failed run with nothing to take.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_read_what_a_run_produced.png]]
 
+The book tree sits with the figures and the per-trade rows, because it is a
+third reading of the same result. It draws the run's portfolios and books with a
+trade count and an aggregate NPV at each node, an unbooked node for the trades
+that have no booking, and a selected node that filters the per-trade rows to its
+subtree.
+
 * Prototype
 
 The [[file:../../prototypes/reporting/read-what-a-run-produced/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/read-what-a-run-produced.org][its design note]] says what each argues and what is fake. This journey is the design intent for the run's outputs screen, and
@@ -143,7 +170,12 @@ panel why the list is absent. It must draw the drill-down too: the run's figures
 as an aggregate with the per-trade table under them, one row per trade, and the
 error a row carries where the run recorded one against that trade. Because no
 operation parses the archive, the prototype labels the rows a fixture on the
-panel that draws them.
+panel that draws them. It must draw the book tree in all three interpretations,
+in each one's own shape: the run's portfolios and books with a trade count and an
+aggregate NPV at each node, an unbooked node for the trades with no booking, and
+a selected node that filters the per-trade rows. Because the archive carries no
+book column and no operation returns a result grouped by book, the prototype
+labels the tree a fixture and says on the panel how a built screen would join it.
 
 * Entities composed
 
@@ -179,6 +211,20 @@ the output of a run from last week.
 | Read the output location | Read the archive key the run recorded | carried by =reporting.v1.report_instances.get= | exists |
 | Drill down to one trade | Read a run's per-trade results | (no operation parses the archive) | missing |
 | Drill down to one trade | Read the trade a result row names | =trading.v1.trades.get= | exists |
+| Read the results by book | List the run's portfolios | =refdata.v1.portfolios.list= | exists |
+| Read the results by book | Read one portfolio, and its =parent_portfolio_id= | =refdata.v1.portfolios.get= | exists |
+| Read the results by book | Read many portfolios | =refdata.v1.portfolios.get_many= | exists |
+| Read the results by book | List the books under a portfolio | =refdata.v1.books.list_by_parent_portfolio_id= | exists |
+| Read the results by book | List the books | =refdata.v1.books.list= | exists |
+| Read the results by book | Read one book, and its =parent_portfolio_id= | =refdata.v1.books.get= | exists |
+| Read the results by book | Read many books | =refdata.v1.books.get_many= | exists |
+| Read the results by book | List the trades' bookings, and so each trade's =book_id= | =trading.v1.trade_bookings.list= | exists |
+| Read the results by book | Read one booking | =trading.v1.trade_bookings.get= | exists |
+| Read the results by book | Read many bookings | =trading.v1.trade_bookings.get_many= | exists |
+| Read the results by book | List the trades that were booked | =trading.v1.trades.list= | exists |
+| Read the results by book | List the runs of a definition, to reach the run | =reporting.v1.report_instances.list= | exists |
+| Read the results by book | Read a run's results already grouped by book | (no operation returns results grouped by book) | missing |
+| Read the results by book | List the portfolios under a portfolio in one read | (no =refdata.v1.portfolios.list_by_parent_portfolio_id=; the tree is assembled from =portfolios.list=) | missing |
 | Read the errors | List the run's errors | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
 | Read the errors | Read one error | =reporting.v1.report_error_events.get= | exists |
 | Read the errors | Read the scope vocabulary | =reporting.v1.report_error_scopes.list= | exists |
@@ -200,6 +246,13 @@ report instance. The package is an operation of the ORE component, and no
 reporting read returns it. The archive's own bytes are behind storage, not
 reporting: the run names the key and the screen needs a route that can fetch the
 object it names.
+
+The book tree is assembled from reads that exist: =refdata.v1.portfolios.list=
+for the portfolios and their =parent_portfolio_id=,
+=refdata.v1.books.list_by_parent_portfolio_id= for the books under a portfolio,
+and =trading.v1.trade_bookings.list= for each trade's =book_id=. The two that do
+not exist are the read of a result grouped by book and
+=portfolios.list_by_parent_portfolio_id=, and both are in *What is missing*.
 
 The reads are gated by =reporting::report_instances:read= and
 =reporting::report_definitions:read=, and the errors by
@@ -243,21 +296,40 @@ caller's token and checks the read codes above.
    not built, so there are no report rows to query and "what did this run
    produce" is still answered by an archive rather than by a table. The
    prototype draws the per-trade table as a stated fixture for that reason.
-6. *The run does not name the job that produced the archive.* =report_instance=
+6. *No read returns a result grouped by book.* The run's archive carries no book
+   column. =npv.csv='s columns are exactly =TradeId=, =TradeType=, =Maturity=,
+   =MaturityTime=, =NPV=, =NpvCurrency=, =NPV(Base)=, =BaseCurrency=,
+   =Notional=, =NotionalCurrency=, =Notional(Base)=, =NettingSet= and
+   =CounterParty=, so a row of the file names a trade and never a book.
+   Attributing a result to a book needs the join from =TradeId= to
+   =trade_bookings.book_id=, through =trading.v1.trade_bookings.list=, and no
+   operation returns results already grouped by book. The booking is real and
+   stored; the grouped read is the missing piece. The book tree therefore needs
+   the per-trade read above *and* this join before a screen can serve it, and the
+   prototype draws every node's trade count and NPV as a fixture.
+7. *No =portfolios.list_by_parent_portfolio_id=.* Portfolios nest through
+   =parent_portfolio_id= on =ores_refdata_portfolios_tbl=, and there is no read
+   that returns the portfolios under a portfolio. A client assembles the
+   portfolio tree from =refdata.v1.portfolios.list=, which carries
+   =parent_portfolio_id=, and pays for it with a full list of the party's
+   portfolios per level. =refdata.v1.books.list_by_parent_portfolio_id= exists
+   for books, so the book level needs no such workaround; the portfolio level
+   does.
+8. *The run does not name the job that produced the archive.* =report_instance=
    carries no batch or workunit id, so the screen cannot link this output to the
    compute job whose =output_uri= it came from. The key is on the run; the
    lineage to the grid is not.
-7. *The error permissions sit too high.* =reporting::report_error_events:read=
+9. *The error permissions sit too high.* =reporting::report_error_events:read=
    and =reporting::report_error_scopes:read= are held by no role below
    =TenantAdmin= and =SuperAdmin=, which hold =*=. A trading desk can open the
    archive and cannot read the errors that say what is missing from it, which is
    the one warning the outputs screen exists to give.
-8. *The package a substituting run used is named on the definition, not the
-   run.* A run that resolves a prepared input leaves the definition to state
-   =prepared_input_key=, and a later edit to the definition changes what the
-   screen reports for an earlier run. The definition keeps its history, and the
-   run does not name the version of the definition it used, so the screen has no
-   key to the prepared input the run actually read.
+10. *The package a substituting run used is named on the definition, not the
+    run.* A run that resolves a prepared input leaves the definition to state
+    =prepared_input_key=, and a later edit to the definition changes what the
+    screen reports for an earlier run. The definition keeps its history, and the
+    run does not name the version of the definition it used, so the screen has no
+    key to the prepared input the run actually read.
 
 * Related journeys
 

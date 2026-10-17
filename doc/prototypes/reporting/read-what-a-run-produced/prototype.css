@@ -538,6 +538,82 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-
 .dep { border-left: 2px solid var(--line-strong); padding-left: 12px; }
 .dep .t { font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 3px; }
 
+/* ----------------------------------------------------------- book tree */
+/* The run's result rolled up: a group portfolio at the top, portfolios under
+   it, a book under a portfolio, and one row of the table per trade at the
+   bottom. Selecting a book filters the per-trade table beside it. */
+
+.booktree {
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    background: var(--bg);
+    overflow: hidden;
+}
+.booktree .bhead,
+.booktree .bnode {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 2px 12px;
+    font-size: 12.5px;
+    line-height: 1.3;
+}
+.booktree .bhead {
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 10.5px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+.booktree .bnode {
+    cursor: pointer;
+    border-bottom: 1px solid var(--line-soft);
+}
+.booktree .bnode:last-child { border-bottom: none; }
+.booktree .bnode:hover { background: rgba(255, 255, 255, 0.03); }
+.booktree .bnode.sel { background: var(--accent-dim); box-shadow: inset 2px 0 0 var(--accent); }
+.booktree .bnode.unbooked { background: rgba(210, 153, 34, 0.06); }
+.booktree .bnode.unbooked .bname { color: var(--warn); }
+.booktree .twisty {
+    flex: 0 0 14px;
+    color: var(--ink-faint);
+    font-size: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+.booktree .twisty.pad { cursor: default; }
+.booktree .bname {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--ink);
+}
+.booktree .bnode.portfolio .bname { font-weight: 600; }
+.booktree .bkind {
+    flex: 0 0 78px;
+    color: var(--ink-faint);
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.booktree .btrades {
+    flex: 0 0 76px;
+    text-align: right;
+    color: var(--ink-dim);
+    font-variant-numeric: tabular-nums;
+}
+.booktree .bnpv {
+    flex: 0 0 136px;
+    text-align: right;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+}
+.booktree .bnode.sel .bnpv, .booktree .bnode.sel .btrades { color: var(--ink); }
+
 @media (max-width: 980px) {
     .split { grid-template-columns: 1fr; }
     .appnav { display: none; }

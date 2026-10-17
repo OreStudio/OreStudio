@@ -83,3 +83,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The equity family has a header. =equity_instruments= is keyed by the trade and
+carries only the columns every routed code shares: the identity, =start_date=
+and =maturity_date= as the family's common dates, and the description. It
+carries no economic field, because none is common to every code, and no
+underlying, because two products state a basket.
+
+One model declaration generated the domain type, JSON I/O, the table, the
+entity, the repository, the messaging, the eventing, the shell command with its
+test, and the SQL create and drop files, with the party and trade-type indexes
+and a date-order check.
+
+Not done, and named: the routing is not re-pointed. The catalogue's equity codes
+still name the nine product tables and the importer still writes them, so the
+header has no coverage check yet. Re-pointing first would leave imports writing
+rows the catalogue does not name. The routing, the coverage check and the fact
+tables' duplicated identity columns all move with the mapper migration, which
+the operator deferred to the xsdcpp removal.
+
+Verification is partial, and for a reason outside this unit. Documentation
+checks pass and the codegen drift for the trading component regenerates what is
+committed. The build could not link: =main= at 2ec7644db7 does not compile,
+because =ores.refdata.core= declares =apply_families_by_id= and its siblings in
+=convention_family_apply.hpp= and calls them from =conventions_document_service.cpp=,
+while the translation unit that defines them, =convention_family_apply.cpp=, is
+registered in no =component_files.cmake=. That is the conventions refactor's
+in-flight work, owned by another environment, so it is reported rather than
+fixed here.
+

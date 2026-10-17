@@ -15,32 +15,51 @@
   doc/knowledge/journeys/reporting/journey_create_a_report.org:
   a tenant administrator or market-risk owner names a report, binds the five
   configurations it reads, chooses the analytics it runs and their settings,
-  scopes it to a portfolio, and reads back what was written.
+  and reads back what was written.
 
-  The question this page answers: what shape is the act of creating a report,
-  when the thing being created is a definition plus five bindings plus a set of
-  analytics plus a scope?
+  The shape is decided. The screen is four steps on the standard steps UI, the
+  one the system bootstrap journey uses: the rail, its done/current/ahead marks
+  and the step foot are copied from doc/prototypes/setup/first-run/, which
+  copies JourneyPage.tsx.
 
-    A  a single form        sections down one page, everything visible at once
-    B  a wizard             four steps, one decision at a time
-    C  a checklist          the list of what a report must satisfy, and the
-                            definition falls out of it
+    1  What it is        the name, the description, the report type as a combo
+                         box over the type table, is_official, and the
+                         concurrency policy
+    2  What it reads     the five configuration types the definition binds, what
+                         each supplies, and the screen that holds its data. Only
+                         conventions has one: PATHS.conventions,
+                         /refdata/conventions. The other four are stated as
+                         missing, never drawn as working links.
+    3  What it runs      the fourteen analytic types with active toggles, and
+                         the add-analytic flow the change journey carries: the
+                         list of types, then the detail with what the analytic is
+                         and how it is calculated and one control per parameter,
+                         then the effect.
+    4  Review and save   every field value, the five bindings, the analytics with
+                         their settings, then report_definitions.put and the
+                         read-back. It is the final step, so it draws no Back.
 
-  Switch with ?variant=A|B|C, or with the buttons in the foot bar. Variant B
-  takes ?step=1..4 for the step it opens on, so a reviewer can land on "what it
-  runs" directly. ?pfe=without-simulation opens the draft with the rule broken,
-  so the refusal can be seen without toggling two rows by hand.
+  The three structural variants this page used to carry (?variant=A|B|C: one
+  form, a wizard, a checklist) are gone. The product owner chose the standard
+  steps UI, and the design note records why the variants were dropped. ?step=1..4
+  still lands on a step, and ?pfe=without-simulation still opens the draft with
+  the rule broken.
+
+  The rail knows position only, as the runtime's own rail does: done, current,
+  ahead. It does not know how many items a save would refuse, and it does not
+  say so.
 
   Nothing here reads a server, and nothing is written. The operations named are
   the ones the journey cites: report_definitions.put, report_configurations.put,
   configuration_analytics.put_many, configuration_analytic_parameters.put,
-  analytic_types.list, configurations.list, configurations.put,
-  report_configurations.list, report_type_configuration_types.list, and the
-  list_by_* reads. Three things are absent and the page says so: no operation
-  writes the portfolio scope, no service check enforces the pfe-needs-simulation
-  rule (the ACME seeder does, in check_exposure_needs_simulation), and no
-  operation answers what else a run needs beyond its report type's configuration
-  types. Every value on the page is a fixture.
+  analytic_types.list, configurations.list_by_configuration_type_code,
+  report_type_configuration_types.list, and the read-back with
+  report_definitions.get. Three things are absent and the page says so: no
+  operation writes the portfolio scope, no service check enforces the
+  pfe-needs-simulation rule (the ACME seeder does, in
+  check_exposure_needs_simulation), and no operation answers what else a run
+  needs beyond its report type's configuration types. Every value on the page is
+  a fixture.
 -->
 
 <div class="proto-note" id="proto-note"></div>

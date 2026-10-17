@@ -3,24 +3,37 @@
  *
  * See doc/knowledge/journeys/reporting/journey_create_a_report.org.
  *
- * The journey's question is what shape the act of creating a report has, when a
- * report is a definition plus five bindings plus a set of analytics plus a
- * scope. All three variants carry the same fixture and the same writes, and
- * disagree only about structure: A one form with every section visible, B a
- * four-step wizard with a rail, C a checklist where the definition is the
- * product of what the report must satisfy.
+ * The shape is decided: this screen is four steps on the standard steps UI, the
+ * one the system bootstrap journey uses. The rail, its done/current/ahead marks
+ * and the step foot are copied from doc/prototypes/setup/first-run/, which
+ * copies JourneyPage.tsx. It is not restyled here.
+ *
+ *   1  What it is     the name, the description, the report type, is_official,
+ *                     and the concurrency policy
+ *   2  What it reads  the five configuration types the definition binds, what
+ *                     each supplies, and where its data lives
+ *   3  What it runs   the fourteen analytic types with active toggles, and the
+ *                     add-analytic flow the change journey carries
+ *   4  Review and save  every field value, the bindings and the analytics, then
+ *                     report_definitions.put and the read-back. It is the final
+ *                     step, so it draws no Back.
+ *
+ * The three structural variants (?variant=A|B|C: one form, a wizard, a
+ * checklist) were dropped when the product owner chose the standard steps UI.
+ * The design note records that. ?step=1..4 still lands on a step, and
+ * ?pfe=without-simulation still opens the draft with the rule broken.
  *
  * Three absences the copy never hides:
  *
  *  - the portfolio scope is a column of the bound risk report config and no
- *    operation in this journey's set writes it, so the scope is chosen by
- *    choosing the configuration that carries it;
+ *    operation in this journey's set writes it, so the step reads the scope
+ *    off the configuration rather than offering a choice;
  *  - pfe reads a cube simulation writes, and the rule that pairs them lives in
- *    the ACME seeder (generate_risk_config_data.py, check_exposure_needs_simulation)
- *    and not in the reporting service, so the refusal on this page is the
- *    screen's own rule;
- *  - nothing answers what a report needs in order to run beyond the
- *    configuration types its report type requires.
+ *    the ACME seeder (generate_risk_config_data.py,
+ *    check_exposure_needs_simulation) and not in the reporting service, so the
+ *    refusal on this page is the screen's own rule;
+ *  - no screen exists for four of the five configuration types. Only
+ *    conventions has a route, PATHS.conventions = /refdata/conventions.
  *
  * Nothing here sends a message. The operations named are the journey's own. */
 
@@ -37,11 +50,13 @@
 
     /* The whole configuration vocabulary: five types, and no more. `supplies`
        is the sentence the screen uses, because a person choosing between two
-       configurations needs to know what the choice decides. */
+       configurations needs to know what the choice decides. `where` is the
+       screen that holds the data, and only conventions has one. */
     var CONFIG_TYPES = [
         {
             code: 'conventions',
-            supplies: 'The instrument conventions the trades are read with, one document for each convention kind.'
+            supplies: 'The instrument conventions the trades are read with, one document for each convention kind.',
+            where: { symbol: 'PATHS.conventions', path: '/refdata/conventions', screen: 'Conventions' }
         },
         {
             code: 'pricing_engines',
@@ -57,40 +72,498 @@
         },
         {
             code: 'risk_report_config',
-            supplies: 'The run settings the party shares: base currency, observation model, VaR and SIMM settings, and threading. It also carries the scope.'
+            supplies: 'The run settings the party shares: base currency, observation model, VaR and SIMM settings, and threading. It carries the analytics and the scope.'
         }
     ];
 
-    /* The fourteen analytic types the picker offers. `params` are the settings a
-       configuration row carries for that analytic, as the ACME seeder writes
-       them; a type with no settings asks for nothing. */
-    var ANALYTICS = [
-        { code: 'npv', params: [['baseCurrency', 'GBP']] },
-        { code: 'sensitivity', params: [['recalibrateModels', 'Y'], ['outputSensitivityThreshold', '0.000001'], ['parSensitivity', 'Y']] },
-        { code: 'cashflow', params: [] },
-        { code: 'curves', params: [['configuration', 'default'], ['grid', '240,1M']] },
-        { code: 'simulation', params: [['baseCurrency', 'GBP'], ['storeFlows', 'Y'], ['amc', 'N']] },
-        { code: 'saccr', params: [['simmVersion', '2.1']] },
-        { code: 'parametricVar', params: [['quantiles', '0.99'], ['method', 'DeltaGammaNormal'], ['breakdown', 'Y']] },
-        { code: 'portfolioDetails', params: [] },
-        { code: 'creditcurves', params: [['configuration', 'default'], ['grid', '240,1M']] },
-        { code: 'pfe', params: [['exposureProfiles', 'Y'], ['exposureProfilesByTrade', 'N'], ['quantile', '0.95'], ['calculationType', 'Symmetric'], ['allocationMethod', 'None'], ['exerciseNextBreak', 'N'], ['baseCurrency', 'GBP']] },
-        { code: 'calibration', params: [] },
-        { code: 'pnlExplain', params: [['parSensitivity', 'Y']] },
-        { code: 'historicalSimulationVar', params: [['historicalPeriod', '2008-09-01,2009-03-31'], ['mporDays', '10'], ['quantiles', '0.99'], ['includeExpectedShortfall', 'Y']] },
-        { code: 'xva', params: [['exposureProfiles', 'Y'], ['cva', 'Y'], ['dva', 'Y'], ['fva', 'Y'], ['quantile', '0.95'], ['baseCurrency', 'GBP']] }
+    /* The report types the type table holds. A type is a category row, and the
+       row also names the workflow that runs the report. One is registered
+       today, and more are expected: the control is a combo box over the table
+       rather than a fixed pair of choices, so a type added as a row appears
+       without a code change. */
+    var REPORT_TYPES = [
+        { code: 'risk', what: 'the full ORE risk analytics run', workflow: 'report_execution_workflow' }
     ];
 
-    /* The portfolios the party holds. The scope is not a field of the
-       definition: it is a column of the risk report config in the slot, so a
-       portfolio resolves to the configurations scoped to it. */
-    var PORTFOLIOS = [
-        { name: 'Group Treasury Portfolio', scopedBy: ['cfg-rrc-exposure-gtp', 'cfg-rrc-intraday-gtp'] },
-        { name: 'Trading Book', scopedBy: ['cfg-rrc-exposure-tb'] }
+    /* The fourteen analytic types, in the order the page draws them. Each carries
+       what it produces, what it is, how it is calculated in plain words, what
+       turning it on does, the analytic it needs, and every parameter it takes
+       with the control its shape asks for.
+     */
+    var ANALYTICS = [
+        {
+            code: 'npv',
+            name: 'Net present value',
+            produces: 'One present value per trade, netted to book and to portfolio.',
+            what: 'Net present value is what the book is worth today. Every trade is priced against ' +
+                'today\u2019s curves and the results are added up the book tree.',
+            how: 'Each trade\u2019s future cashflows are projected, discounted back at the discount ' +
+                'curve, and summed. The sums roll up from trade to book to portfolio.',
+            effect: 'Adds the headline number a desk reads first. It is the cheapest analytic here, ' +
+                'and every other analytic on this configuration assumes it is produced.',
+            params: [
+                {
+                    name: 'discount_curve',
+                    shape: 'text',
+                    value: 'ACME discount curve',
+                    help: 'The curve the cashflows are discounted at. It names a curve in the ' +
+                        'curve_configuration bound beside this one.',
+                    normal: 'A curve name, usually the party\u2019s own discount curve.'
+                },
+                {
+                    name: 'include_cashflows',
+                    shape: 'toggle',
+                    value: 'false',
+                    help: 'Write each projected cashflow as well as the total.',
+                    normal: 'Off. Turn it on only when someone is going to read the cashflow rows.'
+                }
+            ]
+        },
+        {
+            code: 'sensitivity',
+            name: 'Sensitivity',
+            produces: 'The change in value for a small shift in each market factor, such as DV01 per curve.',
+            what: 'A sensitivity says how much the book moves when one market factor moves a little and ' +
+                'everything else stays still. It is what a risk reader uses to see which factor the ' +
+                'book is exposed to.',
+            how: 'Every factor is shifted up and down by the same small amount, the book is repriced ' +
+                'twice, and the difference is divided by the shift. The pair of numbers states a slope.',
+            effect: 'Turns one repricing into two or more. It is the first analytic that costs a run ' +
+                'measurably, and the one a limit conversation starts from.',
+            params: [
+                {
+                    name: 'shift_size',
+                    shape: 'number',
+                    value: '0.0001',
+                    help: 'The bump applied to every market factor, as a decimal.',
+                    normal: '0.0001, which is one basis point.'
+                },
+                {
+                    name: 'shift_type',
+                    shape: 'select',
+                    options: ['Absolute', 'Relative'],
+                    value: 'Absolute',
+                    help: 'Whether the bump is a number in the factor\u2019s own units or a share of ' +
+                        'its level.',
+                    normal: 'Absolute for rates and credit, Relative for prices.'
+                }
+            ]
+        },
+        {
+            code: 'cashflow',
+            name: 'Cashflows',
+            produces: 'The projected cashflow rows of every trade, bucketed by date.',
+            what: 'Cashflows are the money the book is contracted to pay and receive, listed by date. ' +
+                'They are the raw material every other analytic is built from.',
+            how: 'Each trade is projected to its payment dates, the amounts are placed in date buckets, ' +
+                'and the buckets are netted per currency.',
+            effect: 'Produces the rows a treasury reader works from. It is large: a run that carries ' +
+                'cashflows writes far more output than one that does not.',
+            params: [
+                {
+                    name: 'bucket',
+                    shape: 'select',
+                    options: ['1D', '1W', '1M'],
+                    value: '1D',
+                    help: 'How wide each date bucket is.',
+                    normal: '1D for a daily risk report, 1M for a treasury view.'
+                },
+                {
+                    name: 'include_fixings',
+                    shape: 'toggle',
+                    value: 'true',
+                    help: 'Include the fixings already known for the valuation date.',
+                    normal: 'On, unless the reader wants the forward-looking set alone.'
+                }
+            ]
+        },
+        {
+            code: 'curves',
+            name: 'Curves',
+            produces: 'The built curves themselves, with their pillars and their discount factors.',
+            what: 'A curve is a table of rates by tenor that the other analytics discount and project ' +
+                'with. Reading the built curve is how a person checks that today\u2019s market data was ' +
+                'read the way they expected.',
+            how: 'The curve is built from its configuration and today\u2019s market data: the pillars are ' +
+                'fitted, the interpolation is applied, and discount factors are written at each pillar.',
+            effect: 'Writes a diagnostic table beside the figures. It changes no other analytic; it is ' +
+                'the one place where a curve that was built wrongly can be seen.',
+            params: [
+                {
+                    name: 'curve_set',
+                    shape: 'text',
+                    value: 'ACME curve set',
+                    help: 'The curves to write. It names the curve_configuration bound beside this one.',
+                    normal: 'The party\u2019s own curve set.'
+                },
+                {
+                    name: 'build_on_the_fly',
+                    shape: 'toggle',
+                    value: 'false',
+                    help: 'Build the curves inside this analytic instead of reading the built ones.',
+                    normal: 'Off. On is for checking a builder, not for a production run.'
+                }
+            ]
+        },
+        {
+            code: 'simulation',
+            name: 'Simulation',
+            produces: 'Simulated future paths of the market, and the exposure cube pfe reads.',
+            what: 'Simulation draws many possible futures of the market, prices the book in each one, ' +
+                'and keeps the results. It is the groundwork for pfe and for the VaR that is not ' +
+                'parametric.',
+            how: 'The market is moved forward along a set of paths, each path is priced at a grid of ' +
+                'dates, and the values are stored as a cube of path by date by trade.',
+            effect: 'The heaviest analytic here. It writes a cube, it makes the run take minutes rather ' +
+                'than seconds, and pfe cannot run without it.',
+            paramEditor: 'deferred',
+            editorNeeds: 'the shift it applies and the time grid it writes the cube at',
+            params: [
+                {
+                    name: 'number_of_paths',
+                    shape: 'number',
+                    value: '1000',
+                    help: 'How many simulated paths the run draws.',
+                    normal: '1000 for a development run, several thousand for a risk figure.'
+                },
+                {
+                    name: 'seed',
+                    shape: 'number',
+                    value: '42',
+                    help: 'The seed of the random draw, so a run can be repeated.',
+                    normal: 'Any whole number, held fixed while a result is being compared.'
+                },
+                {
+                    name: 'time_grid',
+                    shape: 'select',
+                    options: ['1D', '1W', '1M'],
+                    value: '1D',
+                    help: 'The step of the dates the cube is written at.',
+                    normal: '1D for a daily exposure view.',
+                    deferred: 'The time grid is drawn here as a plain select. It needs a ' +
+                        'purpose-built editor on a later task, like the cube it feeds.'
+                }
+            ]
+        },
+        {
+            code: 'saccr',
+            name: 'SA-CCR',
+            produces: 'The standardised counterparty credit exposure of each netting set.',
+            what: 'SA-CCR is the regulatory formula for how much credit exposure a derivative book ' +
+                'carries against a counterparty. It is not a simulation: it is a calculation on the ' +
+                'trades as they stand.',
+            how: 'Trades are grouped into netting sets, each set\u2019s replacement cost and potential ' +
+                'future exposure are computed by the regulatory formula, and the two are added.',
+            effect: 'Produces the regulatory number. It reads the trades and the netting sets and needs ' +
+                'no other analytic.',
+            params: [
+                {
+                    name: 'reporting_currency',
+                    shape: 'text',
+                    value: 'USD',
+                    help: 'The currency the exposure is restated into.',
+                    normal: 'The currency the report is read in, USD here.'
+                },
+                {
+                    name: 'include_collateral',
+                    shape: 'toggle',
+                    value: 'true',
+                    help: 'Reduce the exposure by the collateral held against each netting set.',
+                    normal: 'On when the party has collateral agreements, which this one does.'
+                }
+            ]
+        },
+        {
+            code: 'parametricVar',
+            name: 'Parametric VaR',
+            produces: 'One value at risk figure, computed from the sensitivities and a covariance matrix.',
+            what: 'Parametric VaR answers "how much could this book lose in a day". It assumes the ' +
+                'moves are normally distributed, so it is fast and it is wrong exactly when markets ' +
+                'are not normal.',
+            how: 'The sensitivities are combined through a covariance matrix of the factors, and the ' +
+                'result is scaled to the holding period and read at the confidence level.',
+            effect: 'Produces a number in the shape a board paper wants. It needs sensitivity to be on, ' +
+                'because the sensitivities are its input.',
+            params: [
+                {
+                    name: 'confidence',
+                    shape: 'number',
+                    value: '0.99',
+                    help: 'The quantile the figure is read at.',
+                    normal: '0.99 for a regulatory view, 0.95 for an internal one.'
+                },
+                {
+                    name: 'horizon_days',
+                    shape: 'number',
+                    value: '1',
+                    help: 'The holding period the figure covers, in days.',
+                    normal: '1 for a trading desk, 10 for a regulatory figure.'
+                },
+                {
+                    name: 'volatility_period_days',
+                    shape: 'number',
+                    value: '250',
+                    help: 'How many days of history the covariance matrix is built from.',
+                    normal: '250, which is one trading year.'
+                }
+            ]
+        },
+        {
+            code: 'portfolioDetails',
+            name: 'Portfolio details',
+            produces: 'How many trades and how much notional each book and portfolio carries.',
+            what: 'The size of the book, stated beside its value. A person reading a figure needs to ' +
+                'know whether it covers three trades or three thousand.',
+            how: 'The trades are counted and their notionals summed per book, and the books roll up ' +
+                'through the portfolio tree.',
+            effect: 'Produces the population figures. It is cheap, and a reader who does not see it ' +
+                'cannot tell an empty book from a fully hedged one.',
+            params: [
+                {
+                    name: 'grouping',
+                    shape: 'select',
+                    options: ['Book', 'Portfolio'],
+                    value: 'Book',
+                    help: 'The level the rows are drawn at.',
+                    normal: 'Book, with the portfolios as the roll-up above them.'
+                },
+                {
+                    name: 'include_empty_books',
+                    shape: 'toggle',
+                    value: 'false',
+                    help: 'List books that carry no trade.',
+                    normal: 'Off. On when the person is looking for a book that should have trades.'
+                }
+            ]
+        },
+        {
+            code: 'creditcurves',
+            name: 'Credit curves',
+            produces: 'The survival probability and hazard rate curve of each counterparty.',
+            what: 'A credit curve says how likely a counterparty is to still be there in a year. It is ' +
+                'what the credit analytics discount with.',
+            how: 'Spreads observed in the market, or a recovery rate assumption, are fitted to a curve ' +
+                'of survival probabilities by tenor.',
+            effect: 'Produces the credit input the exposure analytics read. Without it a credit figure ' +
+                'comes from a default assumption nobody stated.',
+            params: [
+                {
+                    name: 'hazard_rate_source',
+                    shape: 'select',
+                    options: ['Spread', 'CDS'],
+                    value: 'Spread',
+                    help: 'Where the hazard rate comes from.',
+                    normal: 'Spread where the party has quoted spreads, CDS otherwise.'
+                },
+                {
+                    name: 'recovery_rate',
+                    shape: 'number',
+                    value: '0.4',
+                    help: 'The share of the exposure recovered if the counterparty defaults.',
+                    normal: '0.4, which is the common senior unsecured assumption.'
+                }
+            ]
+        },
+        {
+            code: 'pfe',
+            name: 'Potential future exposure',
+            produces: 'An exposure profile per counterparty and date, and one figure at the horizon.',
+            what: 'Potential future exposure is how large the book could become against a counterparty ' +
+                'in the future. It is read against a limit, so it is the analytic a credit officer ' +
+                'opens first.',
+            how: 'It reads the cube simulation writes, takes a quantile across the simulated paths at ' +
+                'each date, and keeps the profile and the figure at the horizon.',
+            effect: 'Produces the exposure a limit is measured against. It cannot run unless simulation ' +
+                'is on, because the cube is its whole input.',
+            requires: 'simulation',
+            paramEditor: 'deferred',
+            editorNeeds: 'the cube it reads, which simulation writes',
+            params: [
+                {
+                    name: 'horizon',
+                    shape: 'number',
+                    value: '10',
+                    help: 'How many days forward the exposure is projected.',
+                    normal: '10 days, or the maturity of the longest trade for a lifetime figure.'
+                },
+                {
+                    name: 'quantile',
+                    shape: 'number',
+                    value: '0.95',
+                    help: 'The confidence the exposure is read at.',
+                    normal: '0.95. A limit conversation usually quotes 0.95 and 0.99 together.'
+                },
+                {
+                    name: 'exposure_cube',
+                    shape: 'text',
+                    value: 'simulation-cube-01',
+                    help: 'The cube this reads. The cube is written by simulation and named here.',
+                    normal: 'The cube the simulation on this configuration wrote.',
+                    deferred: 'The cube is drawn here as a plain text field. Choosing, comparing and ' +
+                        'reusing a cube needs a purpose-built editor, which is a later task.'
+                }
+            ]
+        },
+        {
+            code: 'calibration',
+            name: 'Calibration',
+            produces: 'The fitted model parameters, and how far the fit missed the market.',
+            what: 'Calibration is fitting a model to what the market quotes. It is a diagnostic: a ' +
+                'model that fits badly will misprice everything that reads it.',
+            how: 'The model is repriced against the market quotes, the parameters are moved until the ' +
+                'difference is under the tolerance or the iterations run out, and the residual is ' +
+                'written.',
+            effect: 'Produces the fit quality. It changes no figure; it tells a person whether to trust ' +
+                'the figures beside it.',
+            params: [
+                {
+                    name: 'model',
+                    shape: 'select',
+                    options: ['Hull-White', 'Black-Karasinski'],
+                    value: 'Hull-White',
+                    help: 'The model the parameters are fitted for.',
+                    normal: 'Hull-White for the rates book.'
+                },
+                {
+                    name: 'max_iterations',
+                    shape: 'number',
+                    value: '100',
+                    help: 'How many fitting steps are allowed before the fit is abandoned.',
+                    normal: '100. A fit that reaches it did not converge.'
+                },
+                {
+                    name: 'tolerance',
+                    shape: 'number',
+                    value: '0.000001',
+                    help: 'The fit is good enough when the worst quote is within this amount.',
+                    normal: '0.000001, a millionth of the quote\u2019s own units.'
+                }
+            ]
+        },
+        {
+            code: 'pnlExplain',
+            name: 'P&L explain',
+            produces: 'Yesterday\u2019s profit and loss split by factor: rates, credit, FX, and the rest.',
+            what: 'P&L explain answers why the number moved. It splits the day\u2019s change into the ' +
+                'part each market factor caused and the part nothing explains.',
+            how: 'The book is repriced at yesterday\u2019s market and at today\u2019s, factor by factor, ' +
+                'and each factor\u2019s contribution is taken as a difference. What remains is unexplained.',
+            effect: 'Produces the explanation of a move. It is read the morning after, so a change to it ' +
+                'is noticed a day late.',
+            params: [
+                {
+                    name: 'decomposition',
+                    shape: 'select',
+                    options: ['Delta-gamma', 'Sensitivity'],
+                    value: 'Delta-gamma',
+                    help: 'How the change is split across factors.',
+                    normal: 'Delta-gamma, which keeps the second-order term.'
+                },
+                {
+                    name: 'threshold',
+                    shape: 'number',
+                    value: '0.01',
+                    help: 'A contribution smaller than this is gathered into "other".',
+                    normal: '0.01 in reporting currency.'
+                }
+            ]
+        },
+        {
+            code: 'historicalSimulationVar',
+            name: 'Historical simulation VaR',
+            produces: 'One value at risk figure, read from how the book would have moved on past days.',
+            what: 'Historical simulation VaR replays the book against what the market actually did and ' +
+                'reads the loss at the confidence level. It keeps the fat tails parametric VaR loses.',
+            how: 'The book is repriced at each of the past days\u2019 market moves, the results are sorted, ' +
+                'and the loss at the confidence quantile is taken.',
+            effect: 'Produces a second VaR beside the parametric one. The two differing is itself the ' +
+                'reading: it says the distribution is not normal.',
+            params: [
+                {
+                    name: 'confidence',
+                    shape: 'number',
+                    value: '0.99',
+                    help: 'The quantile the figure is read at.',
+                    normal: '0.99.'
+                },
+                {
+                    name: 'lookback_days',
+                    shape: 'number',
+                    value: '250',
+                    help: 'How many past days are replayed.',
+                    normal: '250, which is one trading year.'
+                },
+                {
+                    name: 'holding_period_days',
+                    shape: 'number',
+                    value: '1',
+                    help: 'The holding period the figure covers.',
+                    normal: '1 for a desk, 10 for a regulatory figure.'
+                },
+                {
+                    name: 'use_log_returns',
+                    shape: 'toggle',
+                    value: 'true',
+                    help: 'Replay the moves as log returns rather than simple returns.',
+                    normal: 'On. It keeps a large move from crossing zero.'
+                }
+            ]
+        },
+        {
+            code: 'xva',
+            name: 'XVA',
+            produces: 'The valuation adjustments: CVA, DVA and the funding cost, per counterparty.',
+            what: 'XVA is the difference between the risk-free value of a book and what it is really ' +
+                'worth once the counterparty might default, the party might default, and the funding ' +
+                'has a cost.',
+            how: 'The exposure profile is combined with the counterparty\u2019s credit curve and the ' +
+                'party\u2019s own, weighted by the probability of default at each date, and summed.',
+            effect: 'Produces the adjustment a trading desk is measured on after the trade is booked. It ' +
+                'is the last analytic to run and it reads the exposure profile.',
+            params: [
+                {
+                    name: 'base_currency',
+                    shape: 'text',
+                    value: 'USD',
+                    help: 'The currency every adjustment is restated into.',
+                    normal: 'The reporting currency, USD here.'
+                },
+                {
+                    name: 'methodology',
+                    shape: 'select',
+                    options: ['Semi-analytic', 'Nested Monte Carlo'],
+                    value: 'Semi-analytic',
+                    help: 'How the adjustment is computed.',
+                    normal: 'Semi-analytic. Nested Monte Carlo costs many times more.'
+                },
+                {
+                    name: 'include_cva',
+                    shape: 'toggle',
+                    value: 'true',
+                    help: 'Charge the counterparty\u2019s possible default.',
+                    normal: 'On.'
+                },
+                {
+                    name: 'include_dva',
+                    shape: 'toggle',
+                    value: 'false',
+                    help: 'Credit the party\u2019s own possible default.',
+                    normal: 'Off for a group view, on for a desk that is measured on it.'
+                },
+                {
+                    name: 'netting_threshold',
+                    shape: 'number',
+                    value: '1000000',
+                    help: 'The exposure below which no adjustment is taken for a netting set.',
+                    normal: '1000000 in reporting currency.'
+                }
+            ]
+        }
     ];
 
     /* Configurations the party holds, by type. A risk report config carries the
-       analytic set too, which is why the analytics picker edits it. */
+       analytic set and the scope, which is why the analytics belong to the
+       configuration in the slot and not to the definition. */
     var CONFIGS = [
         { id: 'cfg-conv-group', type: 'conventions', name: 'Group conventions', detail: '24 convention kinds', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-pe-group', type: 'pricing_engines', name: 'Group pricing engines', detail: '42 products', scope: null, boundBy: 31, analytics: null },
@@ -143,44 +616,70 @@
         { code: 'fail', label: 'Fail: a firing is recorded as failed, and does not run' }
     ];
 
-    var VARIANTS = [
+    /* The four steps, in the order the rail draws them. A step carries an id, a
+       title for the rail, a lead sentence and a body; `final` marks the step the
+       person may not walk back from. The rail and the steps cannot disagree,
+       because the rail is drawn from this list. */
+    var STEPS = [
         {
-            id: 'A',
-            name: 'One form',
-            gist: 'Creating a report is one page of sections: identity, what the type needs, the five configurations, the analytics, the scope, and the review, all visible at once.'
+            id: 'what-it-is',
+            title: 'What it is',
+            lead: 'Name the report, describe it in one sentence, choose the report type it ' +
+                'draws its requirements from, and say whether it is official and what happens ' +
+                'when two runs collide.'
         },
         {
-            id: 'B',
-            name: 'Wizard',
-            gist: 'Creating a report is four steps on a rail: what it is, what it reads, what it runs, and review and save. One decision at a time, and the rail says what is still open.'
+            id: 'what-it-reads',
+            title: 'What it reads',
+            lead: 'A report of the risk type binds all five configuration types, so every slot ' +
+                'names what its configuration supplies and the screen that holds its data.'
         },
         {
-            id: 'C',
-            name: 'Checklist',
-            gist: 'Creating a report is the list of what a report must satisfy, each item met or not, with the fields inline under the ones that are not. The definition is the product of the list.'
+            id: 'what-it-runs',
+            title: 'What it runs',
+            lead: 'Fourteen analytic types, each on or off, each with the settings it carries, ' +
+                'and one pair that cannot work together.'
+        },
+        {
+            id: 'review',
+            title: 'Review and save',
+            lead: 'Every field value the save will write, the five bindings and the analytics ' +
+                'with their settings, then the write and the row read back.',
+            final: true
         }
     ];
 
     var PFE_RULE = 'pfe reads a cube that simulation writes, so a report that enables pfe without ' +
         'simulation cannot work. The rule lives in the ACME seeder, in ' +
         'generate_risk_config_data.py at check_exposure_needs_simulation, and not in the reporting ' +
-        'service: nothing validates it when a definition is written.';
+        'service: nothing validates it when a definition is written. This screen refuses it itself, ' +
+        'and a build would have to carry the rule again.';
 
-    var CHECKLIST_WAIVER = 'Nothing answers what a report needs in order to run beyond the ' +
-        'configuration types its report type requires, so this list is everything a screen can ' +
-        'check today, and not everything a run needs.';
+    var NO_DELETE = 'An analytic is turned off by setting active to false, not by deleting the ' +
+        'row. The row keeps its display_order and its settings and reads as off, so a later reader ' +
+        'can see the report used to produce it.';
+
+    var NO_CONFIG_SCREEN = 'Only conventions has a screen. PATHS.conventions is ' +
+        '/refdata/conventions. pricing_engines, todays_market, curve_configuration and ' +
+        'risk_report_config have no screen in the application, and this page states that rather ' +
+        'than drawing a link that would not resolve.';
+
+    var DEFERRED_EDITORS = 'simulation and pfe each need a purpose-built editor: one for the cube, ' +
+        'one for the shift and one for the time grid. This page draws those settings as plain ' +
+        'fields and says so on the parameter itself.';
+
+    var WAIVER = 'report_type_configuration_types.list names the configuration types a report type ' +
+        'cannot start without, and that is all. Nothing answers what a report needs in order to run ' +
+        'beyond that: not the analytics a run must enable, not the inputs each analytic reads.';
 
     var S = {
-        variant: 'A',
         step: 1,
         draft: null,
         saved: null,
-        dialog: null,
+        flow: null,
         activity: 'new, nothing written',
         showState: false,
-        openInline: {},
-        log: [],
-        touchedAnalytics: false
+        log: []
     };
 
     // ------------------------------------------------------------- helpers
@@ -200,13 +699,8 @@
         return CONFIGS.filter(function (entry) { return entry.type === type; });
     }
 
-    function analyticsOf(code) {
+    function analyticOf(code) {
         var found = ANALYTICS.filter(function (entry) { return entry.code === code; });
-        return found.length === 1 ? found[0] : null;
-    }
-
-    function portfolioOf(name) {
-        var found = PORTFOLIOS.filter(function (entry) { return entry.name === name; });
         return found.length === 1 ? found[0] : null;
     }
 
@@ -221,6 +715,19 @@
 
     // --------------------------------------------------------- the draft
 
+    function paramsFor(code) {
+        return analyticOf(code).params.map(function (param, index) {
+            return { name: param.name, value: param.value, position: index + 1 };
+        });
+    }
+
+    function copyAnalytics(config) {
+        if (!config || !config.analytics) return [];
+        return config.analytics.map(function (row) {
+            return { code: row.code, active: row.active, order: row.order, params: paramsFor(row.code) };
+        });
+    }
+
     function newDraft() {
         var draft = {
             name: '',
@@ -229,38 +736,14 @@
             official: true,
             concurrency: 'skip',
             binds: {},
-            scope: null,
             analytics: []
         };
         CONFIG_TYPES.forEach(function (type) {
             var candidates = configsOf(type.code);
             draft.binds[type.code] = candidates.length > 0 ? candidates[0].id : null;
         });
-        draft.scope = configById(draft.binds.risk_report_config).scope;
         draft.analytics = copyAnalytics(configById(draft.binds.risk_report_config));
         return draft;
-    }
-
-    function copyAnalytics(config) {
-        return config.analytics.map(function (row) {
-            var type = analyticsOf(row.code);
-            var values = {};
-            var positions = {};
-            type.params.forEach(function (pair) { values[pair[0]] = pair[1]; });
-            return {
-                code: row.code,
-                active: row.active,
-                order: row.order,
-                params: type.params.map(function (pair, index) {
-                    positions[pair[0]] = index + 1;
-                    return { name: pair[0], value: values[pair[0]], position: index + 1 };
-                })
-            };
-        });
-    }
-
-    function boundRiskConfig() {
-        return configById(S.draft.binds.risk_report_config);
     }
 
     function analyticsRow(code) {
@@ -273,17 +756,31 @@
             .sort(function (a, b) { return a.order - b.order; });
     }
 
+    function nextOrder() {
+        return S.draft.analytics.reduce(function (acc, row) {
+            return Math.max(acc, row.order);
+        }, 0) + 1;
+    }
+
     function pfeWithoutSimulation() {
         var pfe = analyticsRow('pfe');
         var simulation = analyticsRow('simulation');
         return !!(pfe && pfe.active) && !(simulation && simulation.active);
     }
 
+    function boundRiskConfig() {
+        return configById(S.draft.binds.risk_report_config);
+    }
+
+    function boundScope() {
+        var config = boundRiskConfig();
+        return config && config.scope ? config.scope : null;
+    }
+
     // ------------------------------------------------------------ checks
 
-    /* The list of what a report must satisfy. Variant C draws it as the screen;
-       A and B use it for the review and the rail. `inline` names the editor the
-       checklist opens under the item. */
+    /* What a save is refused on. This is the list the screen can check, and the
+       review states it: it is not what a run needs. */
     function checks() {
         var nameTaken = TAKEN_NAMES.some(function (taken) {
             return taken.toLowerCase() === String(S.draft.name || '').trim().toLowerCase();
@@ -292,48 +789,34 @@
             {
                 id: 'name',
                 what: 'It has a name the party does not already use',
-                why: 'A definition\u2019s name is unique within its party, and the front door reads it. ' +
-                    TAKEN_NAMES.slice(0, 4).join(', ') + ' and five more are taken.',
                 met: String(S.draft.name || '').trim() !== '' && !nameTaken,
                 state: String(S.draft.name || '').trim() === ''
                     ? 'no name yet'
-                    : (nameTaken ? 'the party already uses this name' : 'named'),
-                inline: 'name'
+                    : (nameTaken ? 'the party already uses this name' : 'named')
             },
             {
                 id: 'description',
                 what: 'It says what it is for',
-                why: 'The definition carries a description, and it is the only sentence a reader ' +
-                    'sees beside the name on the front door.',
                 met: String(S.draft.description || '').trim() !== '',
-                state: String(S.draft.description || '').trim() === '' ? 'no description yet' : 'described',
-                inline: 'description'
+                state: String(S.draft.description || '').trim() === '' ? 'no description yet' : 'described'
             },
             {
                 id: 'type',
                 what: 'It is a report of a registered type',
-                why: 'A type is a row in the type table, and the row also names the workflow that runs the report. ' +
-                    'One is registered today, risk, which names report_execution_workflow.',
                 met: true,
-                state: S.draft.reportType,
-                inline: 'type'
+                state: S.draft.reportType
             },
             {
                 id: 'official',
                 what: 'It states whether it is official',
-                why: 'An official report never reads a sandbox: its scope cannot name a sandbox ' +
-                    'portfolio or a virtual book. A definition defaults to official.',
                 met: true,
-                state: S.draft.official ? 'official' : 'not official, and may read a sandbox',
-                inline: 'official'
+                state: S.draft.official ? 'official' : 'not official, and may read a sandbox'
             },
             {
                 id: 'concurrency',
                 what: 'It says what happens when two runs collide',
-                why: 'The concurrency policy decides the state a run is born in: skip, queue, or fail.',
                 met: !!S.draft.concurrency,
-                state: S.draft.concurrency || 'not chosen',
-                inline: 'concurrency'
+                state: S.draft.concurrency || 'not chosen'
             }
         ];
 
@@ -342,11 +825,8 @@
             list.push({
                 id: 'slot-' + type.code,
                 what: 'It binds a ' + type.code + ' configuration',
-                why: type.supplies,
                 met: !!bound,
-                state: bound ? bound.name : 'nothing bound',
-                inline: 'slot',
-                slot: type.code
+                state: bound ? bound.name : 'nothing bound'
             });
         });
 
@@ -354,24 +834,18 @@
         list.push({
             id: 'analytics',
             what: 'It runs at least one analytic',
-            why: 'A run with no analytic switched on produces nothing. An analytic is turned off by ' +
-                'setting active false, never by deleting its row.',
             met: active.length > 0,
             state: active.length === 0 ? 'no analytic is on' : active.length + ' on: ' +
-                active.map(function (row) { return row.code; }).join(', '),
-            inline: 'analytics'
+                active.map(function (row) { return row.code; }).join(', ')
         });
-
         list.push({
             id: 'pfe',
             what: 'pfe is not enabled without simulation',
-            why: PFE_RULE,
             met: !pfeWithoutSimulation(),
             state: pfeWithoutSimulation() ? 'pfe is on and simulation is off, so a save is refused'
                 : (analyticsRow('pfe') && analyticsRow('pfe').active
                     ? 'pfe and simulation are both on'
-                    : 'pfe is off, so the rule does not apply'),
-            inline: 'pfe'
+                    : 'pfe is off, so the rule does not apply')
         });
 
         var emptySettings = active.filter(function (row) {
@@ -380,44 +854,27 @@
         list.push({
             id: 'settings',
             what: 'The analytics that carry settings carry them',
-            why: 'An analytic\u2019s settings are configuration_analytic_parameter rows of a ' +
-                'parameter_name and a value, in positions.',
             met: emptySettings.length === 0,
             state: emptySettings.length === 0 ? 'every setting has a value'
-                : 'a value is empty for ' + emptySettings.map(function (row) { return row.code; }).join(', '),
-            inline: 'settings'
+                : 'a value is empty for ' + emptySettings.map(function (row) { return row.code; }).join(', ')
         });
 
         list.push({
             id: 'scope',
-            what: 'It reads a portfolio',
-            why: 'The scope is a column of the bound risk report config, not a field of the ' +
-                'definition, and no operation in this journey\u2019s set writes it.',
-            met: !!S.draft.scope,
-            state: S.draft.scope || 'nothing chosen',
-            inline: 'scope'
-        });
-
-        var open = list.filter(function (item) { return !item.met; }).length;
-        list.push({
-            id: 'review',
-            what: 'Every value it will write has been read back',
-            why: 'The review names the field values rather than summarising them, so what is saved ' +
-                'is what was read.',
-            met: open === 0,
-            state: open === 0 ? 'ready to save' : open + ' item' + (open === 1 ? '' : 's') + ' still open',
-            inline: 'review'
+            what: 'The bound configuration carries a portfolio scope',
+            met: !!boundScope(),
+            state: boundScope() ? boundScope() : 'the bound configuration is scoped to no portfolio'
         });
 
         return list;
     }
 
-    function openCount() {
-        return checks().filter(function (item) { return !item.met; }).length;
+    function openItems() {
+        return checks().filter(function (item) { return !item.met; });
     }
 
     function ready() {
-        return openCount() === 0;
+        return openItems().length === 0;
     }
 
     // ------------------------------------------------------------- write plan
@@ -488,13 +945,12 @@
             '<div>' +
             '<div class="crumbs">Reporting / Reports / <span class="mono">new definition</span></div>' +
             '<h1>Create a report</h1>' +
-            '<p class="lede">Name the report, bind the five configurations it reads, choose the ' +
-            'analytics it runs and their settings, and scope it to a portfolio. The review states ' +
-            'every field value before it is written.</p>' +
+            '<p class="lede">Four steps on the standard rail: what the report is, what it reads, ' +
+            'what it runs, and a review that states every value before it is written.</p>' +
             '</div>' +
             '<div class="actions">' +
             '<span class="tag warn">fixture</span>' +
-            '<span class="updated">installation clock ' + esc(fixtureClock()) + '</span>' +
+            '<span class="updated">' + esc(fixtureClock()) + '</span>' +
             '</div></div>';
     }
 
@@ -503,6 +959,14 @@
             'is written. The party, the configurations, the analytics and their settings are mock ' +
             'data drawn from the ACME seed. <b>No BFF route serves reporting today</b>, and nothing ' +
             'in the application creates a report.</div>';
+    }
+
+    function stepHeaderHtml() {
+        return '<div class="stepheader"><div class="metaline">' +
+            '<span class="nm">' + esc(S.draft.name || 'A new report definition') + '</span>' +
+            '<span class="sub">party ' + esc(PARTY.code) + ' \u00b7 ' +
+            esc(S.saved ? 'written, ' + S.saved.id : 'nothing written') + '</span>' +
+            '</div></div>';
     }
 
     function nameField() {
@@ -528,28 +992,23 @@
             '</div>';
     }
 
-    /* The report types the type table holds. A type is a category row, and the
-       row also names the workflow that runs the report. One is registered
-       today. The control is a combo box rather than a pair of radios because
-       the table is the list and a second type must appear without a code
-       change. */
-    var REPORT_TYPES = [
-        { code: 'risk', label: 'risk', what: 'the full ORE risk analytics run', workflow: 'report_execution_workflow' }
-    ];
-
     function typeField() {
+        var chosen = REPORT_TYPES.filter(function (one) {
+            return one.code === S.draft.reportType;
+        })[0];
         return '<div class="field">' +
-            '<label>Report type</label>' +
-            '<select data-act="type" class="combo">' +
+            '<label for="f-type">Report type</label>' +
+            '<select id="f-type" data-act="type" class="combo">' +
             REPORT_TYPES.map(function (one) {
                 return '<option value="' + one.code + '"' +
                     (S.draft.reportType === one.code ? ' selected' : '') + '>' +
                     one.code + ' \u2014 ' + one.what + '</option>';
             }).join('') +
             '</select>' +
-            '<span class="note">The combo box reads the type table, so a type added there appears here without a code ' +
-            'change. One is registered today, <span class="mono">risk</span>, and it names the workflow that runs the ' +
-            'report: <span class="mono">report_execution_workflow</span>.</span>' +
+            '<span class="note">A combo box over <span class="mono">ores_reporting_report_types_tbl</span>, ' +
+            'so a type added as a row appears here without a code change. One is registered today, ' +
+            '<span class="mono">risk</span>, and its row names the workflow that runs the report: ' +
+            '<span class="mono">' + esc(chosen ? chosen.workflow : '') + '</span>.</span>' +
             '</div>';
     }
 
@@ -560,7 +1019,7 @@
             CONCURRENCY.map(function (entry) {
                 return '<option value="' + entry.code + '"' +
                     (S.draft.concurrency === entry.code ? ' selected' : '') + '>' +
-                    esc(entry.code) + ' \u2014 ' + esc(entry.label) + '</option>';
+                    entry.code + ' \u2014 ' + esc(entry.label) + '</option>';
             }).join('') +
             '</select>' +
             '<span class="note">What a second firing does while a run is in flight.</span>' +
@@ -577,112 +1036,440 @@
             '</div>';
     }
 
-    function identityFields() {
+    function stepOneBody() {
         return '<div class="formgrid">' + nameField() + descriptionField() + typeField() +
             concurrencyField() + officialField() + '</div>';
     }
 
-    function configSlots(onlySlot) {
-        return '<div class="slots">' + CONFIG_TYPES.filter(function (type) {
-            return !onlySlot || type.code === onlySlot;
-        }).map(function (type) {
-            var bound = configById(S.draft.binds[type.code]);
-            var candidates = configsOf(type.code);
-            return '<div class="slot">' +
-                '<div class="type"><code>' + esc(type.code) + '</code>' +
-                '<span class="req">required by ' + esc(S.draft.reportType) + '</span></div>' +
-                '<div class="supplies">' + esc(type.supplies) + '</div>' +
-                '<div class="pick">' +
-                '<select data-act="bind" data-slot="' + esc(type.code) + '">' +
-                '<option value=""' + (bound ? '' : ' selected') + '>not bound</option>' +
-                candidates.map(function (config) {
-                    return '<option value="' + esc(config.id) + '"' +
-                        (bound && bound.id === config.id ? ' selected' : '') + '>' +
-                        esc(config.name) + '</option>';
-                }).join('') +
-                '</select>' +
-                '<span class="shared">' + (bound
-                    ? esc(bound.detail) + ' \u00b7 bound by <b>' + bound.boundBy + ' definitions</b>'
-                    : 'nothing is bound in this slot, and a ' + esc(type.code) + ' configuration is required') +
-                '</span>' +
-                '</div>' +
-                '</div>';
+    // ---------------------------------------------------------- step two
+
+    function whereHtml(type) {
+        if (!type.where) {
+            return '<span class="noscr">No screen exists for <span class="mono">' +
+                esc(type.code) + '</span>.</span>';
+        }
+        return '<a href="#" data-act="noop" class="route">' + esc(type.where.screen) + ' \u00b7 ' +
+            esc(type.where.symbol) + ' = ' + esc(type.where.path) + '</a>';
+    }
+
+    function slotHtml(type) {
+        var bound = configById(S.draft.binds[type.code]);
+        var candidates = configsOf(type.code);
+        return '<div class="slot">' +
+            '<div class="type"><code>' + esc(type.code) + '</code>' +
+            '<span class="req">required by ' + esc(S.draft.reportType) + '</span></div>' +
+            '<div class="supplies">' + esc(type.supplies) +
+            '<div class="where">' + whereHtml(type) + '</div></div>' +
+            '<div class="pick">' +
+            '<select data-act="bind" data-slot="' + esc(type.code) + '">' +
+            '<option value=""' + (bound ? '' : ' selected') + '>not bound</option>' +
+            candidates.map(function (config) {
+                return '<option value="' + esc(config.id) + '"' +
+                    (bound && bound.id === config.id ? ' selected' : '') + '>' +
+                    esc(config.name) + '</option>';
+            }).join('') +
+            '</select>' +
+            '<span class="shared">' + (bound
+                ? esc(bound.detail) + ' \u00b7 bound by <b>' + bound.boundBy + ' definitions</b>'
+                : 'nothing is bound in this slot, and a ' + esc(type.code) + ' configuration is required') +
+            '</span>' +
+            '</div></div>';
+    }
+
+    function scopeReadout() {
+        var config = boundRiskConfig();
+        return '<h3 style="margin:20px 0 10px;font-size:14px">The scope the report reads</h3>' +
+            '<div class="statgrid">' +
+            '<div><span class="lbl">portfolio</span><span class="val">' +
+            esc(boundScope() || 'none: the bound configuration is scoped to no portfolio') + '</span></div>' +
+            '<div><span class="lbl">carried by</span><span class="val">' +
+            esc(config ? config.name : 'no configuration is bound') + '</span></div>' +
+            '<div><span class="lbl">written by</span><span class="val">' +
+            '<span class="tag warn">no operation</span></span></div>' +
+            '</div>' +
+            '<p class="rowfoot">The scope is not a field of the definition. It is a column of the ' +
+            'risk report config in the slot, held in that row\u2019s portfolio and book junction ' +
+            'tables, so choosing a configuration chooses the portfolio the report reads. ' +
+            '<b>No operation in this journey\u2019s set writes the scope</b>, so the scope on this ' +
+            'page is the seeder\u2019s.</p>';
+    }
+
+    function stepTwoBody() {
+        return '<div class="slots">' + CONFIG_TYPES.map(slotHtml).join('') + '</div>' +
+            scopeReadout() +
+            '<p class="rowfoot">The configuration types are read with ' +
+            '<span class="mono">reporting.v1.report_type_configuration_types.list</span> for ' +
+            esc(S.draft.reportType) + ', and the candidates in each slot with ' +
+            '<span class="mono">reporting.v1.configurations.list_by_configuration_type_code</span>. ' +
+            esc(NO_CONFIG_SCREEN) + '</p>';
+    }
+
+    // -------------------------------------------------------- step three
+
+    function ruleState() {
+        if (pfeWithoutSimulation()) return 'violated';
+        var pfe = analyticsRow('pfe');
+        var simulation = analyticsRow('simulation');
+        return pfe && pfe.active && simulation && simulation.active ? 'satisfied' : 'open';
+    }
+
+    function ruleStrip() {
+        var state = ruleState();
+        var cls = state === 'violated' ? ' err' : (state === 'satisfied' ? ' ok' : '');
+        var title;
+        if (state === 'violated') {
+            title = '<span class="tag bad">this set cannot run</span> pfe is on and simulation is off';
+        } else if (state === 'satisfied') {
+            title = '<span class="tag ok">rule satisfied</span> pfe and simulation are both on';
+        } else {
+            title = '<span class="tag warn">rule between analytics</span> pfe is off, so the rule ' +
+                'does not bind yet';
+        }
+        return '<div class="rule' + cls + '">' +
+            '<div class="rtitle">' + title + '</div>' +
+            '<div class="rbody"><b>pfe reads a cube that simulation writes.</b> ' + esc(PFE_RULE) +
+            ' This is the authority of a person who creates a definition, and no operation in the ' +
+            'journey\u2019s set can carry it.</div></div>';
+    }
+
+    function switchFor(code) {
+        var row = analyticsRow(code);
+        if (!row) return '<span class="swnone">no row</span>';
+        var on = row.active;
+        return '<button class="sw" role="switch" aria-checked="' + (on ? 'true' : 'false') + '" ' +
+            'data-act="toggle" data-code="' + esc(code) + '" title="Writes active ' + (on ? 'false' : 'true') +
+            '. The row is never deleted.">' +
+            '<span class="track"><span class="knob"></span></span>' +
+            '<span class="statelbl ' + (on ? 'on' : 'off') + '">' + (on ? 'on' : 'off') + '</span></button>';
+    }
+
+    function paramsSummary(row) {
+        if (!row || row.params.length === 0) return '<span class="hint">no settings</span>';
+        return '<div class="an-params">' + row.params.map(function (param) {
+            return '<span class="p"><span class="pn">' + esc(param.name) + '</span>' +
+                '<span class="pv">' + esc(param.value) + '</span></span>';
         }).join('') + '</div>';
     }
 
-    function analyticsPicker(includeRule) {
-        var broken = pfeWithoutSimulation();
-        var rows = ANALYTICS.map(function (type) {
-            var row = analyticsRow(type.code);
-            var on = !!(row && row.active);
-            var locked = broken && ((type.code === 'pfe' && on) || type.code === 'simulation');
-            var params = row && row.params.length > 0
-                ? row.params.slice(0, 2).map(function (param) {
-                    return esc(param.name) + ' <span class="pv">' + esc(param.value) + '</span>';
-                }).join(' \u00b7 ') + (row.params.length > 2 ? ' \u00b7 +' + (row.params.length - 2) + ' more' : '')
-                : 'no settings';
-            return '<div class="pickrow' + (locked ? ' locked' : '') + '">' +
-                '<button class="switch' + (locked ? ' bad' : '') + '" role="switch" aria-checked="' +
-                (on ? 'true' : 'false') + '" data-act="toggle-analytic" data-code="' + esc(type.code) +
-                '" aria-label="' + esc(type.code) + (on ? ' active' : ' inactive') + '"></button>' +
-                '<span class="acode' + (on ? ' on' : '') + '">' + esc(type.code) + '</span>' +
-                '<span class="params">' + params + '</span>' +
-                '<span class="order field"><input type="number" min="1" max="14" data-act="order" data-code="' +
-                esc(type.code) + '" value="' + (row ? row.order : '') + '"' +
-                (on ? '' : ' disabled') + ' title="display_order"></span>' +
-                '<span class="rowact">' + (on
-                    ? '<button class="btn small linklike" data-act="params" data-code="' + esc(type.code) + '">Settings</button>'
-                    : '') + '</span>' +
-                '</div>';
-        }).join('');
+    function analyticRowHtml(code) {
+        var entry = analyticOf(code);
+        var row = analyticsRow(code);
+        var conflict = ruleState() === 'violated' && (code === 'pfe' || code === 'simulation');
+        var cls = 'anrow';
+        if (!row) cls += ' norow';
+        else if (!row.active) cls += ' isoff';
+        if (conflict) cls += ' conflict';
 
-        return '<div class="picker">' + rows + '</div>' +
-            '<p class="rowfoot">Every analytic is offered, active or not. Turning one off sets ' +
-            '<span class="mono">active</span> false: the row and its settings stay.</p>' +
-            (includeRule === false ? '' :
-                '<div class="rule" style="margin-top:12px"><b>The rule between two analytics.</b> ' +
-                esc(PFE_RULE) + '</div>') +
-            (broken
-                ? '<div class="notice err" style="margin-top:12px"><b>Refused.</b> pfe is on and ' +
-                  'simulation is off. Turn simulation on, or turn pfe off, before saving. No ' +
-                  'service would refuse this write: the screen is the only place that checks it.' +
-                  '</div>'
-                : '');
-    }
+        var badges = [];
+        if (!row) {
+            badges.push('<span class="tag muted">no row on this configuration</span>');
+        } else if (!row.active) {
+            badges.push('<span class="tag muted">off \u00b7 row kept at display_order ' + row.order + '</span>');
+        }
+        if (conflict && code === 'pfe') {
+            badges.push('<span class="tag bad">needs simulation \u00b7 cannot run</span>');
+        }
+        if (conflict && code === 'simulation') {
+            badges.push('<span class="tag bad">pfe is on \u00b7 turning this off breaks it</span>');
+        }
 
-    function scopePicker() {
-        var options = PORTFOLIOS.map(function (portfolio) {
-            var config = configById(S.draft.binds.risk_report_config);
-            var carried = config && portfolio.scopedBy.indexOf(config.id) !== -1;
-            return '<option value="' + esc(portfolio.name) + '"' +
-                (S.draft.scope === portfolio.name ? ' selected' : '') + '>' +
-                esc(portfolio.name) + (carried ? ' \u2014 scoped by the bound configuration' : '') +
-                '</option>';
-        }).join('');
-        var config = boundRiskConfig();
-        return '<div class="formgrid">' +
-            '<div class="field">' +
-            '<label for="f-scope">Portfolio the report reads</label>' +
-            '<select id="f-scope" data-act="scope"><option value="">not chosen</option>' + options + '</select>' +
-            '<span class="note">' +
-            (config && config.scope
-                ? 'The bound configuration ' + esc(config.name) + ' is scoped to ' + esc(config.scope) + '.'
-                : 'No risk report config is bound, so no scope comes with it.') +
-            '</span>' +
+        return '<div class="' + cls + '">' +
+            '<div class="an-top">' +
+            switchFor(code) +
+            '<span class="an-name">' + esc(entry.name) +
+            '<span class="codename">' + esc(entry.code) + '</span>' +
+            '<span class="an-produces">' + esc(entry.produces) + '</span></span>' +
+            '<span class="an-order">' + (row ? 'order ' + row.order : '\u2014') + '</span>' +
+            '<span class="an-summary">' + paramsSummary(row) + '</span>' +
+            '<span class="an-act"><button class="btn small" data-act="settings" data-code="' +
+            esc(code) + '">' + (row ? 'Settings' : 'Add it') + '</button></span>' +
             '</div>' +
-            '<div class="field">' +
-            '<label>What carries the scope</label>' +
-            '<p class="dim" style="font-size:13px">The scope is not a field of the definition. It is a ' +
-            'column of the risk report config in the slot, in its portfolio and book junction tables, ' +
-            'so choosing a portfolio means choosing the configuration scoped to it. ' +
-            '<b>No operation in this journey\u2019s set writes the scope.</b></p>' +
-            '</div>' +
+            (badges.length > 0 ? '<div class="cellgroup an-badges">' + badges.join('') + '</div>' : '') +
             '</div>';
     }
 
-    function reviewPanel() {
-        var open = checks().filter(function (item) { return !item.met; });
+    function switchboard() {
+        var onCount = ANALYTICS.filter(function (entry) {
+            var row = analyticsRow(entry.code);
+            return !!(row && row.active);
+        }).length;
+        var rowCount = ANALYTICS.filter(function (entry) {
+            return !!analyticsRow(entry.code);
+        }).length;
+        return ruleStrip() +
+            '<div class="sectionhead" style="margin-top:14px"><h3>Every analytic type, one row each</h3>' +
+            '<span class="meta">reporting.v1.analytic_types.list \u00b7 14 types \u00b7 ' +
+            rowCount + ' rows \u00b7 ' + onCount + ' on \u00b7 fixture</span></div>' +
+            '<div class="anlist">' + ANALYTICS.map(function (entry) {
+                return analyticRowHtml(entry.code);
+            }).join('') + '</div>' +
+            '<div class="reviewbar">' +
+            '<span class="count">The rows hang off the bound configuration, ' +
+            esc(boundRiskConfig() ? boundRiskConfig().name : 'and none is bound') + ', which other ' +
+            'definitions bind too. The switchboard keeps the on/off control and the order; the ' +
+            'settings are set in the add-analytic flow, one analytic at a time.</span>' +
+            '<button class="btn primary" data-act="flow-open">Add an analytic</button>' +
+            '</div>' +
+            '<p class="rowfoot">' + esc(NO_DELETE) + ' A type with no row has no switch: adding it ' +
+            'is the <b>Add an analytic</b> flow, which sets its settings and then writes the row. ' +
+            'Every switch shown writes an existing row.</p>';
+    }
 
+    // ------------------------------------------------ the add-analytic flow
+
+    function flowCrumbs() {
+        var screen = S.flow.screen;
+        return '<div class="flowhead"><div class="crumbs">' +
+            '<button class="linkbtn" data-act="flow-close">The analytics</button><span>/</span>' +
+            '<button class="linkbtn" data-act="flow-list">Add an analytic</button>' +
+            (screen === 'list' ? '' : '<span>/</span><span>' +
+                (screen === 'detail' ? 'The detail' : 'The effect') + '</span>') +
+            '</div><div class="flowsteps">' +
+            '<span class="fs' + (screen === 'list' ? ' on' : '') + '">1 the list</span>' +
+            '<span class="fs' + (screen === 'detail' ? ' on' : '') + '">2 the detail</span>' +
+            '<span class="fs' + (screen === 'effect' ? ' on' : '') + '">3 the effect</span>' +
+            '</div></div>';
+    }
+
+    function rowStateTag(code) {
+        var row = analyticsRow(code);
+        if (!row) return '<span class="tag muted">no row</span>';
+        if (!row.active) return '<span class="tag muted">off</span>';
+        return '<span class="tag ok">on</span>';
+    }
+
+    function flowList() {
+        var rows = ANALYTICS.map(function (entry) {
+            return '<div class="pickrow">' +
+                '<span class="pickname">' + esc(entry.name) +
+                '<span class="codename">' + esc(entry.code) + '</span></span>' +
+                '<span class="pickwhat">' + esc(entry.produces) + '</span>' +
+                '<span class="pickstate">' + rowStateTag(entry.code) + '</span>' +
+                '<button class="btn small" data-act="choose" data-code="' + esc(entry.code) +
+                '">Choose</button></div>';
+        }).join('');
+        return flowCrumbs() +
+            '<div class="sectionhead"><h3>Add an analytic: the fourteen types</h3>' +
+            '<span class="meta">reporting.v1.analytic_types.list \u00b7 fixture</span></div>' +
+            '<p class="hint" style="margin-bottom:10px">Each type states what it produces and whether ' +
+            'the bound configuration already carries it. "On the configuration" and "on" are ' +
+            'different things: a row that is off still exists, and a type with no row was never ' +
+            'asked for.</p>' +
+            '<div class="picklist">' + rows + '</div>' +
+            '<div class="stepnav"><button class="btn" data-act="flow-close">Cancel</button>' +
+            '<span></span></div>';
+    }
+
+    function control(param) {
+        var value = S.flow.values[param.name];
+        var common = ' data-act="param" data-pact="param" data-name="' + esc(param.name) +
+            '" aria-label="' + esc(param.name) + ' of ' + esc(S.flow.code) + '"';
+        if (param.shape === 'number') {
+            return '<input type="number" step="any" class="ctl" value="' + esc(value) + '"' + common + '>';
+        }
+        if (param.shape === 'text') {
+            return '<input type="text" class="ctl" value="' + esc(value) + '"' + common + '>';
+        }
+        if (param.shape === 'select') {
+            return '<select class="ctl"' + common + '>' + param.options.map(function (option) {
+                return '<option' + (option === value ? ' selected' : '') + '>' + esc(option) +
+                    '</option>';
+            }).join('') + '</select>';
+        }
+        var on = value === 'true';
+        return '<button class="sw" role="switch" aria-checked="' + (on ? 'true' : 'false') + '"' +
+            common + ' data-toggle="1">' +
+            '<span class="track"><span class="knob"></span></span>' +
+            '<span class="statelbl ' + (on ? 'on' : 'off') + '">' + (on ? 'on' : 'off') +
+            '</span></button>';
+    }
+
+    function paramCard(param) {
+        var value = S.flow.values[param.name];
+        var deferred = param.deferred
+            ? '<div class="deferred"><span class="tag warn">deferred editor</span> ' +
+              esc(param.deferred) + '</div>'
+            : '';
+        return '<div class="pc">' +
+            '<div class="pch"><span class="pname">' + esc(param.name) + '</span>' +
+            '<span class="tag muted">' + esc(param.shape) + '</span></div>' +
+            '<div class="pcrow">' + control(param) + '</div>' +
+            '<p class="phelp">' + esc(param.help) + ' <span class="pnormal">A normal value is ' +
+            esc(param.normal.replace(/^[A-Z]/, function (first) { return first.toLowerCase(); })) +
+            '</span></p>' + deferred +
+            '</div>';
+    }
+
+    function explanationBlock() {
+        var entry = analyticOf(S.flow.code);
+        return '<div class="explain">' +
+            '<h3>What ' + esc(entry.name.toLowerCase()) + ' is</h3>' +
+            '<p>' + esc(entry.what) + '</p>' +
+            '<h3>How it is calculated</h3>' +
+            '<p>' + esc(entry.how) + '</p>' +
+            '<p class="hint mono">' + esc(entry.code) + '</p>' +
+            '</div>';
+    }
+
+    function deferredNotice() {
+        var entry = analyticOf(S.flow.code);
+        if (entry.paramEditor !== 'deferred') return '';
+        return '<div class="notice warn" style="margin-top:10px"><b>' + esc(entry.code) +
+            ' needs a purpose-built editor, and this page does not draw it.</b> ' + esc(entry.code) +
+            ' carries ' + esc(entry.editorNeeds) + ', which a plain field cannot show well. ' +
+            DEFERRED_EDITORS.charAt(0).toUpperCase() + esc(DEFERRED_EDITORS.slice(1)) +
+            '</div>';
+    }
+
+    function flowDetail() {
+        var entry = analyticOf(S.flow.code);
+        return flowCrumbs() +
+            '<div class="sectionhead"><h3>Add ' + esc(entry.name) +
+            ': what it is, and every setting it takes</h3>' +
+            '<span class="meta">reporting.v1.configuration_analytic_parameters.' +
+            'list_by_configuration_analytic_id \u00b7 fixture</span></div>' +
+            '<div class="doc">' + explanationBlock() + deferredNotice() + '</div>' +
+            '<div class="sectionhead" style="margin-top:14px"><h3>The settings of ' +
+            esc(S.flow.code) + '</h3><span class="hint">' + entry.params.length +
+            ' setting(s) \u00b7 each control follows the shape of its value</span></div>' +
+            '<div class="pcol">' + (entry.params.length === 0
+                ? '<p class="dim" style="font-size:13px">This analytic takes no setting. It is ' +
+                  'either on or off.</p>'
+                : entry.params.map(paramCard).join('')) + '</div>' +
+            '<div class="stepnav">' +
+            '<button class="btn" data-act="flow-list">Back to the list</button>' +
+            '<button class="btn primary" data-act="flow-effect">Continue to the effect</button>' +
+            '</div>';
+    }
+
+    /* The rule as it stands for the analytic on the table. */
+    function ruleBrokenHere() {
+        var entry = analyticOf(S.flow.code);
+        if (entry.code === 'pfe') {
+            var simulation = analyticsRow('simulation');
+            return !(simulation && simulation.active);
+        }
+        return false;
+    }
+
+    function effectBlock() {
+        var entry = analyticOf(S.flow.code);
+        var config = boundRiskConfig();
+        var needs;
+        if (entry.requires) {
+            needs = '<div class="' + (ruleBrokenHere() ? 'notice err' : 'notice ok') + '">' +
+                '<b>' + esc(entry.code) + ' needs ' + esc(entry.requires) + '.</b> ' +
+                (ruleBrokenHere()
+                    ? 'It is off in the set on the table, so this analytic cannot be turned on. '
+                    : 'It is on in the set on the table, so the rule is satisfied. ') +
+                esc(PFE_RULE) + '</div>';
+        } else {
+            needs = '<div class="notice"><b>No other analytic has to be on.</b> The one rule ' +
+                'between analytics binds pfe to simulation and nothing else, so this analytic ' +
+                'stands alone.</div>';
+        }
+        return '<div class="effect">' +
+            '<h3>What turning ' + esc(entry.code) + ' on does</h3>' +
+            '<p>' + esc(entry.effect) + '</p>' +
+            '<ul class="effects">' +
+            '<li>It writes one analytic row on ' + esc(config ? config.name : 'the bound configuration') +
+            ': <span class="mono">' + esc(entry.code) + '.active = true</span>, and one parameter row ' +
+            'per setting below.</li>' +
+            '<li>' + (config && config.boundBy > 0
+                ? config.boundBy + ' other definitions bind that configuration, so their next run ' +
+                  'produces this analytic too, and none of them was opened here.'
+                : 'No other definition binds that configuration today.') + '</li>' +
+            '<li>The definition being created runs nothing until a run is asked for. Nothing here ' +
+            'creates a run.</li>' +
+            '</ul>' + needs + '</div>';
+    }
+
+    function flowWrites() {
+        var entry = analyticOf(S.flow.code);
+        var row = analyticsRow(entry.code);
+        var list = [{
+            entity: 'configuration_analytic',
+            field: entry.code + '.active',
+            was: row ? String(row.active) : 'no row',
+            will: 'true, display_order ' + (row ? row.order : nextOrder())
+        }];
+        entry.params.forEach(function (param) {
+            var was = null;
+            (row ? row.params : []).forEach(function (old) {
+                if (old.name === param.name) was = old.value;
+            });
+            var value = S.flow.values[param.name];
+            if (was === value) return;
+            list.push({
+                entity: 'configuration_analytic_parameter',
+                field: entry.code + '.' + param.name,
+                was: was === null ? '\u2014' : was,
+                will: value
+            });
+        });
+        return '<div class="writes">' +
+            '<div class="wh"><span class="ent">entity</span><span class="fld">field</span>' +
+            '<span class="was">was</span><span class="will">will be</span></div>' +
+            list.map(function (write) {
+                return '<div class="w"><span class="ent">' + esc(write.entity) + '</span>' +
+                    '<span class="fld">' + esc(write.field) + '</span>' +
+                    '<span class="was">' + esc(write.was) + '</span>' +
+                    '<span class="will"><span class="arrow">\u2192 </span>' + esc(write.will) +
+                    '</span></div>';
+            }).join('') + '</div>';
+    }
+
+    function flowEffect() {
+        var entry = analyticOf(S.flow.code);
+        var refused = ruleBrokenHere();
+        var actions;
+        if (refused) {
+            actions = '<div class="draftrow">' +
+                '<button class="btn" data-act="fix-requires">Turn simulation on as well</button>' +
+                '<button class="btn" data-act="flow-detail">Back to the settings</button>' +
+                '<button class="btn ghost" data-act="flow-close">Cancel</button></div>';
+        } else {
+            actions = '<div class="draftrow">' +
+                '<button class="btn" data-act="flow-detail">Back to the settings</button>' +
+                '<button class="btn ghost" data-act="flow-close">Cancel</button>' +
+                '<button class="btn primary" data-act="commit" data-code="' + esc(entry.code) + '">' +
+                (analyticsRow(entry.code) ? 'Save these settings' : 'Turn ' + esc(entry.code) + ' on') +
+                '</button></div>';
+        }
+        return flowCrumbs() +
+            '<div class="sectionhead"><h3>The effect of adding ' + esc(entry.name) + '</h3>' +
+            '<span class="meta">what it reaches, and what it cannot do \u00b7 fixture</span></div>' +
+            effectBlock() +
+            '<div class="sectionhead" style="margin-top:14px"><h3>Exactly what this write adds</h3>' +
+            '<span class="meta">configuration_analytics.put_many \u00b7 ' +
+            'configuration_analytic_parameters.put</span></div>' +
+            flowWrites() +
+            (refused
+                ? '<div class="rule err" style="margin-top:12px">' +
+                  '<div class="rtitle"><span class="tag bad">refused \u00b7 cannot be turned on</span>' +
+                  'pfe needs simulation, and simulation is off in the set on the table</div>' +
+                  '<div class="rbody">This refusal is the screen\u2019s own. Nothing on the server ' +
+                  'would refuse the write: <span class="mono">reporting.v1.configuration_analytics.' +
+                  'put_many</span> accepts pfe without simulation and the run fails later. The rule ' +
+                  'lives in the ACME seeder, in ' +
+                  '<span class="mono">check_exposure_needs_simulation</span>, and in no service. ' +
+                  'A build would have to carry it in the screen, as this page does.</div></div>'
+                : '') +
+            actions;
+    }
+
+    function stepThreeBody() {
+        if (S.flow) {
+            if (S.flow.screen === 'list') return flowList();
+            if (S.flow.screen === 'detail') return flowDetail();
+            return flowEffect();
+        }
+        return switchboard();
+    }
+
+    // --------------------------------------------------------- step four
+
+    function reviewPanel() {
         function fieldTable(rows) {
             return '<table><tbody>' + rows.map(function (row) {
                 return '<tr><td>' + esc(row[0]) + '</td><td class="val' + (row[2] ? ' empty' : '') + '">' +
@@ -707,18 +1494,21 @@
             'risk report config, which other definitions bind too.</p></div>';
 
         var analytics = '<div class="writeblock">' +
-            '<div class="op"><span class="what">The analytic rows</span>' +
+            '<div class="op"><span class="what">Every analytic row the configuration carries</span>' +
             '<span class="subject">reporting.v1.configuration_analytics.put_many</span></div>' +
-            '<table><thead><tr><th>analytic_type_code</th><th>display_order</th><th>active</th></tr></thead><tbody>' +
-            analyticRows().map(function (row) {
-                return '<tr><td class="code">' + esc(row[0]) + '</td><td class="code">' + esc(row[1]) +
-                    '</td><td class="code">' + esc(row[2]) + '</td></tr>';
-            }).join('') + '</tbody></table>' +
+            (S.draft.analytics.length === 0
+                ? '<p class="dim">No analytic row is on the configuration.</p>'
+                : '<table><thead><tr><th>analytic_type_code</th><th>display_order</th><th>active</th>' +
+                  '</tr></thead><tbody>' +
+                  analyticRows().map(function (row) {
+                      return '<tr><td class="code">' + esc(row[0]) + '</td><td class="code">' + esc(row[1]) +
+                          '</td><td class="code">' + esc(row[2]) + '</td></tr>';
+                  }).join('') + '</tbody></table>') +
             '<p class="hint">A row is written for every analytic the person turned on or off. ' +
             'Nothing is deleted.</p></div>';
 
         var params = parameterRows();
-        var parameters = '<div class="writeblock">' +
+        var settings = '<div class="writeblock">' +
             '<div class="op"><span class="what">The settings of the analytics that are on</span>' +
             '<span class="subject">reporting.v1.configuration_analytic_parameters.put</span></div>' +
             (params.length === 0
@@ -731,34 +1521,36 @@
             '</div>';
 
         var scope = '<div class="writeblock">' +
-            '<div class="op"><span class="what">The scope</span>' +
+            '<div class="op"><span class="what">The scope, which the configuration carries</span>' +
             '<span class="subject">no operation</span></div>' +
-            '<table><tbody><tr><td>portfolio</td><td class="val' + (S.draft.scope ? '' : ' empty') + '">' +
-            esc(S.draft.scope || 'nothing chosen') + '</td></tr>' +
+            '<table><tbody><tr><td>portfolio</td><td class="val' + (boundScope() ? '' : ' empty') + '">' +
+            esc(boundScope() || 'none') + '</td></tr>' +
             '<tr><td>carried by</td><td class="val">' +
-            esc(boundRiskConfig() ? boundRiskConfig().name : 'no configuration bound') + '</td></tr></tbody></table>' +
+            esc(boundRiskConfig() ? boundRiskConfig().name : 'no configuration bound') +
+            '</td></tr></tbody></table>' +
             '<p class="hint">No operation in this journey\u2019s set writes or reads the scope: it ' +
             'comes with the configuration, and the seeder builds that configuration.</p></div>';
 
+        var open = openItems();
         var openBox = open.length === 0
-            ? '<div class="notice ok"><b>Ready to save.</b> Everything the checklist can check is met. ' +
-              'The checklist is what a screen can check, not what a run needs.</div>'
+            ? '<div class="notice ok"><b>Ready to save.</b> Everything the screen can check is met. ' +
+              'That is not everything a run needs: ' + esc(WAIVER) + '</div>'
             : '<div class="notice err"><b>Not ready.</b> ' + open.length + ' item' +
               (open.length === 1 ? '' : 's') + ' still open: ' +
               open.map(function (item) { return esc(item.what); }).join('; ') + '. A save is refused ' +
-              'while any is open, because the definition would read back unlike the review.</div>';
+              'while any is open, because the definition would read back unlike this review.</div>';
 
-        return '<div class="review">' + openBox + definition + bindings + analytics + parameters + scope +
-            '<p class="hint">' + esc(CHECKLIST_WAIVER) + '</p></div>';
+        return '<div class="review">' + openBox + definition + bindings + analytics + settings + scope +
+            '<p class="hint">' + esc(WAIVER) + '</p></div>';
     }
 
     function readbackPanel() {
         if (!S.saved) return '';
         var saved = S.saved;
-        return '<div class="card readback">' +
-            '<div class="sectionhead"><h2>Read back after the write</h2>' +
-            '<span class="meta"><span class="tag ok">stored</span>' +
-            '<span>reporting.v1.report_definitions.get</span></span></div>' +
+        return '<div class="card readback" style="margin-top:16px;background:var(--bg)">' +
+            '<div class="sectionhead"><h3>Read back after the write</h3>' +
+            '<span class="meta"><span class="tag ok">stored, fixture</span>' +
+            '<span class="mono">reporting.v1.report_definitions.get</span></span></div>' +
             '<div class="banner"><b>' + esc(saved.name) + '</b> reads back as written. ' +
             '<span class="mono">' + esc(saved.id) + '</span> \u00b7 version 1</div>' +
             '<div class="statgrid" style="margin-top:14px">' +
@@ -766,7 +1558,7 @@
             '<div><span class="lbl">party_id</span><span class="val mono">' + esc(PARTY.code) + '</span></div>' +
             '<div><span class="lbl">schedule_expression</span><span class="val dim">empty, on demand</span></div>' +
             '<div><span class="lbl">scheduler_job_id</span><span class="val dim">empty</span></div>' +
-            '<div><span class="lbl">run_grant_id</span><span class="val dim">empty until a run needs it</span></div>' +
+            '<div><span class="lbl">run_grant_id</span><span class="val dim">empty until admission</span></div>' +
             '<div><span class="lbl">fsm_state_id</span><span class="val dim">empty until first activation</span></div>' +
             '<div><span class="lbl">is_official</span><span class="val mono">' + (saved.official ? 'true' : 'false') + '</span></div>' +
             '<div><span class="lbl">concurrency_policy</span><span class="val mono">' + esc(saved.concurrency) + '</span></div>' +
@@ -776,17 +1568,23 @@
             saved.bindings.map(function (row) {
                 return '<tr><td>bound ' + esc(row[0]) + '</td><td>' + esc(row[1]) + '</td></tr>';
             }).join('') +
-            '<tr><td>portfolio scope</td><td>' + esc(saved.scope) + ', carried by the bound configuration</td></tr>' +
+            '<tr><td>portfolio scope</td><td>' + esc(saved.scope || 'none') +
+            ', carried by the bound configuration</td></tr>' +
             '<tr><td>analytic rows</td><td>' + saved.analytics + '</td></tr>' +
             '<tr><td>parameter rows</td><td>' + saved.params + '</td></tr>' +
             '</tbody></table>' +
             '<p class="rowfoot">The definition is bitemporal: an edit writes a new version and no past ' +
             'run changes. It has never run, so the front door draws it as never run. ' +
             '<b>Nothing was sent.</b></p>' +
-            '<div class="actions" style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">' +
+            '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">' +
             '<button class="btn" data-act="leave">Leave it on demand</button>' +
             '<button class="btn" data-act="schedule">Choose when it runs</button>' +
+            '<button class="btn ghost" data-act="discard">Start another report</button>' +
             '</div></div>';
+    }
+
+    function stepFourBody() {
+        return reviewPanel() + readbackPanel();
     }
 
     function reachCard() {
@@ -811,278 +1609,105 @@
         return '<div class="card gaps"><div class="sectionhead"><h2>What this page cannot show</h2></div>' +
             '<dl>' +
             '<dt>The analytic rule is the screen\u2019s own</dt>' +
-            '<dd>' + esc(PFE_RULE) + ' The refusal above is drawn because the journey asks for it, and ' +
-            'a build would have to carry the rule in the screen.</dd>' +
+            '<dd>' + esc(PFE_RULE) + ' The refusal on step 3 is drawn because the journey asks for ' +
+            'it, and a build would have to carry the rule in the screen.</dd>' +
             '<dt>No operation answers what a report needs</dt>' +
-            '<dd>report_type_configuration_types.list names the configuration types a report type ' +
-            'cannot start without, and that is all. Nothing names the analytics a run must enable, or ' +
-            'the inputs each analytic reads, so a screen cannot show the full checklist a definition ' +
-            'must satisfy.</dd>' +
+            '<dd>' + esc(WAIVER) + '</dd>' +
             '<dt>No operation writes the scope</dt>' +
             '<dd>The scope lives on the risk report config, in its portfolio and book junction ' +
-            'tables, and no operation in this set touches them. The configurations on this page, with ' +
-            'their scopes, are the seeder\u2019s.</dd>' +
+            'tables, and no operation in this set touches them. Every configuration on this page, ' +
+            'with its scope, is the seeder\u2019s, so step 2 reads the scope rather than offering a ' +
+            'choice.</dd>' +
+            '<dt>Only one configuration type has a screen</dt>' +
+            '<dd>' + esc(NO_CONFIG_SCREEN) + '</dd>' +
             '<dt>No route, and nothing creates a report</dt>' +
-            '<dd>No BFF route serves reporting, and nothing in the application creates a report today: ' +
-            'every definition that exists was seeded.</dd>' +
+            '<dd>No BFF route serves reporting, and nothing in the application creates a report ' +
+            'today: every definition that exists was seeded.</dd>' +
             '<dt>No write permission is named</dt>' +
             '<dd>No permission code names the right to create a definition or to change a shared ' +
             'configuration\u2019s analytics. The tenant administrator holds *, and reaches both.</dd>' +
             '</dl></div>';
     }
 
-    // ------------------------------------------------------- variants
+    // ------------------------------------------------------------ the rail
 
-    function sectionCard(id, title, meta, body) {
-        return '<div class="card" id="' + id + '"><div class="sectionhead"><h2>' + esc(title) + '</h2>' +
-            '<span class="meta">' + meta + '</span></div>' + body + '</div>';
+    /* The rail, verbatim from doc/prototypes/setup/first-run/prototype.js: one
+       entry per step, done / current / ahead, the mark a tick once a step is
+       behind the person. The title carries a "final" tag on the last step,
+       because a final step is where the rail refuses to go back. */
+    function railHtml(list, at) {
+        return '<nav class="railnav" aria-label="Steps"><ol>' +
+            list.map(function (s, i) {
+                var cls = i === at ? 'current' : (i < at ? 'done' : 'ahead');
+                return '<li class="railentry ' + cls + '"' + (i === at ? ' aria-current="step"' : '') + '>' +
+                    '<span class="railmark ' + cls + '">' + (i < at ? '\u2713' : String(i + 1)) + '</span>' +
+                    esc(s.title) + (s.final ? ' <span class="tag muted">final</span>' : '') + '</li>';
+            }).join('') + '</ol></nav>';
     }
 
-    function variantA() {
-        var open = openCount();
-        return pageHead() + fixtureNote() +
-            sectionCard('sec-identity', '1. Identity', '<span class="tag muted">the definition</span>',
-                identityFields()) +
-            sectionCard('sec-needs', '2. What a ' + S.draft.reportType + ' report needs',
-                '<span class="mono">reporting.v1.report_type_configuration_types.list</span>',
-                '<table><thead><tr><th>configuration_type_code</th><th>required by ' +
-                esc(S.draft.reportType) + '</th></tr></thead><tbody>' +
-                CONFIG_TYPES.map(function (type) {
-                    return '<tr><td class="code">' + esc(type.code) + '</td><td>required</td></tr>';
-                }).join('') + '</tbody></table>' +
-                '<p class="rowfoot">This list is the one read that answers part of what the report ' +
-                'needs. It names configuration types, and nothing names the analytics a run must enable.</p>') +
-            sectionCard('sec-configs', '3. The configurations it binds',
-                '<span class="mono">reporting.v1.report_configurations.put</span>' + ' \u00b7 ' +
-                '<span class="mono">reporting.v1.configurations.list_by_configuration_type_code</span>',
-                configSlots()) +
-            sectionCard('sec-analytics', '4. The analytics, and their settings',
-                '<span class="mono">reporting.v1.analytic_types.list</span> \u00b7 ' +
-                '<span class="mono">reporting.v1.configuration_analytics.put_many</span>',
-                analyticsPicker()) +
-            sectionCard('sec-scope', '5. The scope', '<span class="tag warn">no operation</span>',
-                scopePicker()) +
-            sectionCard('sec-review', '6. Review and save',
-                '<span class="tag ' + (open === 0 ? 'ok' : 'bad') + '">' +
-                (open === 0 ? 'ready' : open + ' open') + '</span>',
-                reviewPanel() +
-                '<div class="actions" style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">' +
-                '<button class="btn primary" data-act="save"' + (ready() ? '' : ' disabled') +
-                '>Save the report</button>' +
-                '<button class="btn" data-act="discard">Start again</button>' +
-                '<span class="hint">' + (ready()
-                    ? 'Five writes, in the order shown above.'
-                    : 'A save is refused while an item is open.') + '</span>' +
-                '</div>') +
-            readbackPanel() + reachCard() + gapCard();
-    }
-
-    var STEPS = [
-        { n: 1, name: 'What it is', sub: 'name, type, official', ids: ['name', 'description', 'type', 'official', 'concurrency'] },
-        { n: 2, name: 'What it reads', sub: 'five configurations, the scope', ids: ['slot-conventions', 'slot-pricing_engines', 'slot-todays_market', 'slot-curve_configuration', 'slot-risk_report_config', 'scope'] },
-        { n: 3, name: 'What it runs', sub: 'the analytics and their settings', ids: ['analytics', 'pfe', 'settings'] },
-        { n: 4, name: 'Review and save', sub: 'what will be written', ids: ['review'] }
-    ];
-
-    function stepState(step) {
-        var list = checks();
-        var items = list.filter(function (item) { return step.ids.indexOf(item.id) !== -1; });
-        var open = items.filter(function (item) { return !item.met; }).length;
-        return { items: items, open: open, met: open === 0 };
-    }
-
-    function rail() {
-        return '<div class="rail">' + STEPS.map(function (step) {
-            var state = stepState(step);
-            return '<button class="railitem' + (S.step === step.n ? ' here' : '') +
-                (state.met ? ' met' : '') + '" data-act="step" data-step="' + step.n + '">' +
-                '<span class="num">' + step.n + '</span>' +
-                '<span class="head">' + esc(step.name) + '</span>' +
-                '<span class="sub">' + (state.met ? esc(step.sub) : state.open + ' open \u00b7 ' + esc(step.sub)) +
-                '</span></button>';
-        }).join('') +
-            '<div class="railfoot">A step marked open has an item a save would refuse. The rail reads ' +
-            'the same checklist variant C draws as the screen.</div></div>';
-    }
-
-    function stepBody() {
-        if (S.step === 1) {
-            return '<div class="card"><div class="sectionhead"><h2>What it is</h2>' +
-                '<span class="meta"><span class="tag muted">step 1 of 4</span></span></div>' +
-                identityFields() + '</div>';
+    function nextOf(step) {
+        if (step.id === 'what-it-is') return { label: 'Next: what it reads', enabled: true };
+        if (step.id === 'what-it-reads') return { label: 'Next: what it runs', enabled: true };
+        if (step.id === 'what-it-runs') return { label: 'Next: review and save', enabled: true };
+        if (step.id === 'review' && !S.saved) {
+            return { label: 'Save the report', enabled: ready() };
         }
-        if (S.step === 2) {
-            return '<div class="card"><div class="sectionhead"><h2>What it reads</h2>' +
-                '<span class="meta"><span class="tag muted">step 2 of 4</span></span></div>' +
-                '<p class="dim" style="margin-bottom:12px;font-size:13px">Five configuration types, and ' +
-                'what each supplies. A ' + esc(S.draft.reportType) + ' report needs all five.</p>' +
-                configSlots() +
-                '<h3 style="margin:18px 0 10px;font-size:14px">The scope</h3>' + scopePicker() +
-                '</div>';
-        }
-        if (S.step === 3) {
-            return '<div class="card"><div class="sectionhead"><h2>What it runs</h2>' +
-                '<span class="meta"><span class="tag muted">step 3 of 4</span></span></div>' +
-                analyticsPicker() + '</div>';
-        }
-        return '<div class="card"><div class="sectionhead"><h2>Review and save</h2>' +
-            '<span class="meta"><span class="tag muted">step 4 of 4</span></span></div>' +
-            reviewPanel() + '</div>' + readbackPanel();
+        return null;
     }
 
-    function variantB() {
-        var open = openCount();
-        return pageHead() + fixtureNote() +
-            '<div class="wizard">' + rail() +
-            '<div class="wizardbody">' + stepBody() +
-            '<div class="card"><div class="wizardfoot">' +
-            '<span class="hint">' + (open === 0
-                ? 'Nothing is open. The review names every field value.'
-                : open + ' item' + (open === 1 ? '' : 's') + ' open, across ' +
-                  STEPS.filter(function (step) { return !stepState(step).met; }).length + ' steps.') +
-            '</span>' +
-            '<span class="right">' +
-            '<button class="btn" data-act="step" data-step="' + Math.max(1, S.step - 1) + '"' +
-            (S.step === 1 ? ' disabled' : '') + '>Back</button>' +
-            '<button class="btn" data-act="step" data-step="' + Math.min(4, S.step + 1) + '"' +
-            (S.step === 4 ? ' disabled' : '') + '>Next</button>' +
-            '<button class="btn primary" data-act="save"' + (ready() ? '' : ' disabled') +
-            '>Save the report</button>' +
-            '</div></div></div>' +
-            '</div></div>' +
-            reachCard() + gapCard();
+    /* Going back is refused at the first step, and when the step before the
+       current one is final. This journey's last step is the one that writes, so
+       it carries final and draws no Back either: once the review has stated
+       every value, there is no earlier state to return to. */
+    function backAllowed(at) {
+        return at > 0 && STEPS[at - 1].final !== true && STEPS[at].final !== true;
     }
 
-    function checklistInline(item) {
-        if (item.inline === 'name') return '<div class="formgrid">' + nameField() + '</div>';
-        if (item.inline === 'description') return '<div class="formgrid">' + descriptionField() + '</div>';
-        if (item.inline === 'type') return '<div class="formgrid">' + typeField() + '</div>';
-        if (item.inline === 'official') return '<div class="formgrid">' + officialField() + '</div>';
-        if (item.inline === 'concurrency') return '<div class="formgrid">' + concurrencyField() + '</div>';
-        if (item.inline === 'slot') return configSlots(item.slot);
-        if (item.inline === 'analytics') return analyticsPicker(false);
-        if (item.inline === 'pfe') {
-            return '<div class="rule">' + esc(PFE_RULE) + '</div>' +
-                (pfeWithoutSimulation()
-                    ? '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">' +
-                      '<button class="btn small" data-act="toggle-analytic" data-code="simulation">' +
-                      'Turn simulation on</button>' +
-                      '<button class="btn small" data-act="toggle-analytic" data-code="pfe">Turn pfe off</button>' +
-                      '</div>'
-                    : '');
+    function footHtml(step, at) {
+        var next = nextOf(step);
+        var back = backAllowed(at);
+        if (next === null && !back) return '';
+        return '<div class="stepfoot">' +
+            (back ? '<button type="button" class="btn ghost" data-act="back">Back</button>' : '') +
+            (next !== null
+                ? '<button type="button" class="btn primary ml-auto" data-act="next"' +
+                  (next.enabled ? '' : ' disabled') + '>' + esc(next.label) + '</button>'
+                : '') + '</div>';
+    }
+
+    function stepBody(step) {
+        if (step.id === 'what-it-is') return stepOneBody();
+        if (step.id === 'what-it-reads') return stepTwoBody();
+        if (step.id === 'what-it-runs') return stepThreeBody();
+        return stepFourBody();
+    }
+
+    function at() {
+        for (var i = 0; i < STEPS.length; i += 1) {
+            if (STEPS[i].id === S.step) return i;
         }
-        if (item.inline === 'settings') {
-            return '<p class="dim" style="font-size:13px">Every setting is edited from the picker ' +
-                'above, with Settings beside the analytic that carries it.</p>';
-        }
-        if (item.inline === 'scope') return scopePicker();
-        if (item.inline === 'review') return reviewPanel();
-        return '';
-    }
-
-    var CHANGEABLE = ['name', 'description', 'type', 'official', 'concurrency', 'slot', 'scope'];
-
-    function variantC() {
-        var list = checks();
-        var met = list.filter(function (item) { return item.met; }).length;
-        var body = list.map(function (item) {
-            var mark = item.met ? '\u2713' : '';
-            var changeable = item.met && CHANGEABLE.indexOf(item.inline) !== -1;
-            var showInline = !item.met || item.id === 'review' || item.id === 'analytics' ||
-                item.id === 'pfe' || S.openInline[item.id] === true;
-            return '<div class="chk ' + (item.met ? 'met' : 'bad') + '">' +
-                '<span class="mark">' + mark + '</span>' +
-                '<div><div class="what">' + esc(item.what) + '</div>' +
-                '<div class="why">' + esc(item.why) + '</div></div>' +
-                '<div class="state"><span class="tag ' + (item.met ? 'ok' : 'bad') + '">' +
-                (item.met ? 'met' : 'not met') + '</span>' +
-                '<span class="dim" style="font-size:12px">' + esc(item.state) + '</span>' +
-                (changeable
-                    ? '<button class="btn small ghost" data-act="change" data-id="' + esc(item.id) + '">' +
-                      (S.openInline[item.id] ? 'Hide' : 'Change') + '</button>'
-                    : '') +
-                '</div>' +
-                (showInline ? '<div class="inline">' + checklistInline(item) + '</div>' : '') +
-                '</div>';
-        }).join('');
-
-        return pageHead() + fixtureNote() +
-            '<div class="card"><div class="sectionhead"><h2>The list a report must satisfy</h2>' +
-            '<span class="meta"><span class="tag ' + (met === list.length ? 'ok' : 'bad') + '">' +
-            met + ' of ' + list.length + ' met</span>' +
-            '<span class="mono" style="font-size:11px">the definition is the product of this list</span>' +
-            '</span></div>' +
-            '<p class="dim" style="font-size:13px">Every item the screen can check is here, in the ' +
-            'order it is decided, and the fields sit under the item they satisfy. ' +
-            esc(CHECKLIST_WAIVER) + '</p>' +
-            '<div class="progressbar"><span style="width:' + Math.round(100 * met / list.length) +
-            '%"></span></div>' +
-            '<div class="checklist" style="margin-top:14px">' + body + '</div>' +
-            '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">' +
-            '<button class="btn primary" data-act="save"' + (ready() ? '' : ' disabled') +
-            '>Save the report</button>' +
-            '<button class="btn" data-act="discard">Start again</button>' +
-            '<span class="hint">' + (ready() ? 'Everything is met.'
-                : 'A save is refused while an item is not met.') + '</span>' +
-            '</div></div>' +
-            readbackPanel() + reachCard() + gapCard();
-    }
-
-    // -------------------------------------------------------------- dialog
-
-    function settingsDialog() {
-        if (!S.dialog) return '';
-        var row = analyticsRow(S.dialog.code);
-        if (!row) return '';
-        return '<div class="backdrop"><div class="dialog" role="dialog" aria-modal="true">' +
-            '<h2>Settings of <span class="mono">' + esc(row.code) + '</span></h2>' +
-            '<p class="confirmline">One row per setting: a <b>parameter_name</b> and a <b>value</b>, in ' +
-            'positions. The values below are the ACME seeder\u2019s, and a fixture.</p>' +
-            '<div class="paramgrid">' +
-            '<span class="head">parameter_name</span><span class="head">value</span><span class="head">pos</span>' +
-            row.params.map(function (param, index) {
-                return '<input type="text" data-act="param-name" data-code="' + esc(row.code) +
-                    '" data-index="' + index + '" value="' + esc(param.name) + '" aria-label="parameter name ' +
-                    (index + 1) + '">' +
-                    '<input type="text" data-act="param-value" data-code="' + esc(row.code) +
-                    '" data-index="' + index + '" value="' + esc(param.value) + '" aria-label="value ' +
-                    (index + 1) + '">' +
-                    '<input class="num" type="number" min="1" data-act="param-pos" data-code="' + esc(row.code) +
-                    '" data-index="' + index + '" value="' + param.position + '" aria-label="position ' +
-                    (index + 1) + '">';
-            }).join('') +
-            '</div>' +
-            (row.params.length === 0
-                ? '<p class="dim">This analytic takes no setting. The picker still offers it.</p>'
-                : '') +
-            '<div class="actions">' +
-            '<button class="btn" data-act="param-add" data-code="' + esc(row.code) + '">Add a setting</button>' +
-            '<button class="btn primary" data-act="param-close">Done</button>' +
-            '</div>' +
-            '<p class="hint">A build would write these with ' +
-            '<span class="mono">reporting.v1.configuration_analytic_parameters.put</span>. Nothing here ' +
-            'is sent.</p>' +
-            '</div></div>';
+        return 0;
     }
 
     // --------------------------------------------------------------- bars
 
-    function variant() {
-        var found = VARIANTS.filter(function (entry) { return entry.id === S.variant; });
-        return found.length === 1 ? found[0] : VARIANTS[0];
+    function renderNote() {
+        var position = at();
+        document.getElementById('proto-note').textContent =
+            'PROTOTYPE \u00b7 fixture data, nothing reads a server, nothing is written \u00b7 ' +
+            'step ' + (position + 1) + ' of 4, ' + STEPS[position].title + ' \u00b7 ' + S.activity +
+            ' \u00b7 ' + PERSON.name + ', ' + PERSON.role + ', party ' + PARTY.code;
     }
 
     function renderBar() {
-        var variantButtons = VARIANTS.map(function (entry) {
-            return '<button data-act="variant" data-variant="' + entry.id + '"' +
-                (S.variant === entry.id ? ' class="on"' : '') + '>' + esc(entry.id) + '</button>';
+        var position = at();
+        var states = STEPS.map(function (step, index) {
+            return '<button data-act="step" data-step="' + step.id + '"' +
+                (position === index ? ' class="on"' : '') + '>' + (index + 1) + ' ' +
+                esc(step.title) + '</button>';
         }).join('');
-
-        var stateLine = '<span class="label">variant <b>' + esc(S.variant) + '</b> \u00b7 ' +
-            esc(variant().name) + (S.variant === 'B' ? ' \u00b7 step <b>' + S.step + '</b> of 4' : '') +
-            ' \u00b7 state: <b>' + esc(S.activity) + '</b> \u00b7 ' + esc(PERSON.name) + ', ' +
-            esc(PERSON.role) + ' on party ' + esc(PARTY.code) + '</span>';
-
+        var stateLine = '<span class="label">step <b>' + (position + 1) + ' of 4</b> \u00b7 ' +
+            esc(STEPS[position].title) + ' \u00b7 state: <b>' + esc(S.activity) + '</b></span>';
         var statePanel = !S.showState ? '' : '<div class="state-panel">' +
             '<div class="state-grid">' +
             '<span>fixture clock: <b>' + esc(fixtureClock()) + '</b></span>' +
@@ -1092,14 +1717,14 @@
                 return !!S.draft.binds[type.code];
             }).length + ' of 5</b></span>' +
             '<span>analytics on: <b>' + activeAnalytics().length + ' of 14</b></span>' +
-            '<span>scope: <b>' + esc(S.draft.scope || 'none') + '</b></span>' +
-            '<span>checklist open: <b>' + openCount() + '</b></span>' +
+            '<span>scope: <b>' + esc(boundScope() || 'none') + '</b></span>' +
+            '<span>save open: <b>' + openItems().length + '</b></span>' +
             '<span>pfe without simulation: <b>' + (pfeWithoutSimulation() ? 'yes' : 'no') + '</b></span>' +
             '</div>' +
             '<p class="state-note">One party, because a definition belongs to one party. The ' +
             'configurations, their scopes and every analytic setting are a fixture. Nothing reads a ' +
-            'server, no operation writes the scope, the pfe rule lives in the seeder, and nothing ' +
-            'answers what a report needs beyond its configuration types.</p>' +
+            'server, no operation writes the scope, the pfe rule lives in the seeder, and only ' +
+            'conventions has a screen among the five configuration types.</p>' +
             (S.log.length === 0
                 ? '<p class="state-note">No action yet.</p>'
                 : '<ol>' + S.log.map(function (entry, index) {
@@ -1109,26 +1734,30 @@
 
         document.getElementById('proto-bar').innerHTML =
             '<div class="bar-line">' +
-            '<span class="tag-prototype">Prototype</span>' + variantButtons +
+            '<span class="tag-prototype">Prototype</span>' +
+            states +
             '<span class="sep">|</span>' + stateLine +
-            '<span class="gist">' + esc(variant().gist) + '</span>' +
             '<button data-act="toggle-state">' + (S.showState ? 'Hide state' : 'Show state') + '</button>' +
             '</div>' + statePanel;
     }
 
-    function renderNote() {
-        document.getElementById('proto-note').textContent =
-            'PROTOTYPE \u00b7 fixture data, nothing reads a server, nothing is written \u00b7 variant ' +
-            S.variant + ' \u00b7 ' + S.activity + ' \u00b7 ' + PERSON.name + ', ' + PERSON.role +
-            ', party ' + PARTY.code;
-    }
-
     function render() {
-        var body = S.variant === 'A' ? variantA() : (S.variant === 'B' ? variantB() : variantC());
+        var position = at();
+        var step = STEPS[position];
         document.getElementById('app').innerHTML =
-            '<div class="shell">' + appHeader() + '<main>' + body + '</main></div>' + settingsDialog();
+            '<div class="shell">' + appHeader() +
+            '<main>' + pageHead() + fixtureNote() +
+            '<div class="journey">' + railHtml(STEPS, position) +
+            '<section class="card">' +
+            stepHeaderHtml() +
+            '<h2>' + esc(step.title) + '</h2><p class="lead">' + esc(step.lead) + '</p>' +
+            stepBody(step) + footHtml(step, position) +
+            '</section></div>' +
+            reachCard() + gapCard() +
+            '</main></div>';
         renderNote();
         renderBar();
+        writeParams();
     }
 
     // ------------------------------------------------------------ actions
@@ -1142,89 +1771,89 @@
         if (S.log.length > 12) S.log.pop();
     }
 
-    function toggleAnalytic(code) {
-        var row = analyticsRow(code);
-        if (!row) {
-            var type = analyticsOf(code);
-            var highest = S.draft.analytics.reduce(function (acc, entry) {
-                return Math.max(acc, entry.order);
-            }, 0);
-            S.draft.analytics.push({
-                code: code,
-                active: true,
-                order: highest + 1,
-                params: type.params.map(function (pair, index) {
-                    return { name: pair[0], value: pair[1], position: index + 1 };
-                })
-            });
-            logStep('turned ' + code + ' on \u2014 ' + (type.params.length === 0
-                ? 'it takes no setting'
-                : 'it carries ' + type.params.length + ' setting' + (type.params.length === 1 ? '' : 's')));
+    function touch() {
+        S.saved = null;
+        if (pfeWithoutSimulation()) {
+            setActivity('pfe on without simulation: a save is refused');
         } else {
-            row.active = !row.active;
-            logStep('set ' + code + ' active ' + row.active + ' \u2014 the row stays, nothing is deleted');
+            setActivity('editing ' + (S.draft.name || 'a new report'));
         }
-        S.touchedAnalytics = true;
-        setActivity(pfeWithoutSimulation()
-            ? 'pfe on without simulation: a save is refused'
-            : (S.draft.name ? 'editing ' + S.draft.name : 'new, nothing written'));
-        render();
-        writeParams();
     }
 
-    function loadAnalytics(config) {
-        if (!config) {
-            S.draft.analytics = [];
-            return;
-        }
-        S.draft.analytics = copyAnalytics(config);
+    function toggleAnalytic(code) {
+        var row = analyticsRow(code);
+        if (!row) return;
+        row.active = !row.active;
+        logStep('set ' + code + ' active ' + row.active + ' \u2014 the row stays, nothing is deleted');
+        touch();
+        render();
     }
 
     function bindSlot(slot, id) {
         S.draft.binds[slot] = id || null;
         var config = configById(id);
         if (slot === 'risk_report_config') {
-            loadAnalytics(config);
-            S.draft.scope = config ? config.scope : null;
-            logStep('bound ' + (config ? config.name : 'nothing') + ' in risk_report_config \u2014 it ' +
-                'carries ' + (config ? 'the analytic set and the scope ' + config.scope : 'nothing'));
+            S.draft.analytics = copyAnalytics(config);
+            logStep('bound ' + (config ? config.name : 'nothing') + ' in risk_report_config \u2014 ' +
+                'it carries the analytic set and the scope ' + (config && config.scope ? config.scope : 'none'));
         } else {
             logStep('bound ' + (config ? config.name : 'nothing') + ' in ' + slot);
         }
-        setActivity(pfeWithoutSimulation()
-            ? 'pfe on without simulation: a save is refused'
-            : 'editing ' + (S.draft.name || 'a new report'));
+        touch();
         render();
-        writeParams();
     }
 
-    function chooseScope(name) {
-        S.draft.scope = name || null;
-        if (!name) {
-            logStep('cleared the scope');
-            render();
-            writeParams();
-            return;
+    /* The flow's state: the screen it is on, the analytic it is about, and one
+       value per setting, seeded from the row when the configuration already
+       carries it and from the type's own default when it does not. */
+    function flowState(screen, code) {
+        var values = {};
+        if (code) {
+            var entry = analyticOf(code);
+            var row = analyticsRow(code);
+            entry.params.forEach(function (param) {
+                var value = param.value;
+                (row ? row.params : []).forEach(function (old) {
+                    if (old.name === param.name) value = old.value;
+                });
+                values[param.name] = value;
+            });
         }
-        var portfolio = portfolioOf(name);
-        var current = configById(S.draft.binds.risk_report_config);
-        if (!current || portfolio.scopedBy.indexOf(current.id) === -1) {
-            var replacement = configById(portfolio.scopedBy[0]);
-            S.draft.binds.risk_report_config = replacement.id;
-            loadAnalytics(replacement);
-            logStep('chose ' + name + ' \u2014 and bound ' + replacement.name + ' in risk_report_config, ' +
-                'because the scope is a column of the configuration and not of the definition');
-            setActivity('scope ' + name + ' \u00b7 ' + replacement.name);
-        } else {
-            logStep('chose ' + name + ', already carried by ' + current.name);
-            setActivity('scope ' + name);
-        }
+        return { screen: screen, code: code || null, values: values };
+    }
+
+    function openFlow(screen, code) {
+        S.flow = flowState(screen, code);
+        setActivity('add analytic \u00b7 ' + screen + (code ? ' \u00b7 ' + code : ''));
         render();
-        writeParams();
+    }
+
+    function closeFlow() {
+        S.flow = null;
+        setActivity('editing ' + (S.draft.name || 'a new report'));
+        render();
+    }
+
+    function commitAnalytic(code) {
+        var entry = analyticOf(code);
+        var row = analyticsRow(code);
+        if (!row) {
+            row = { code: code, active: true, order: nextOrder(), params: [] };
+            S.draft.analytics.push(row);
+        }
+        row.active = true;
+        row.params = entry.params.map(function (param, index) {
+            return { name: param.name, value: S.flow.values[param.name], position: index + 1 };
+        });
+        logStep('wrote ' + code + '.active true at display_order ' + row.order +
+            (entry.params.length > 0 ? ' with ' + entry.params.length + ' setting(s)' : ', no settings'));
+        S.flow = null;
+        touch();
+        render();
     }
 
     function save() {
-        var open = checks().filter(function (item) { return !item.met; });
+        var open = openItems();
         if (open.length > 0) {
             logStep('save refused: ' + open.map(function (item) { return item.id; }).join(', '));
             setActivity('save refused');
@@ -1232,77 +1861,80 @@
             return;
         }
         var config = boundRiskConfig();
-        var rows = S.draft.analytics;
         S.saved = {
             id: 'rpt-' + (0x1000000 + Math.floor(Math.random() * 0xeffffff)).toString(16),
             name: S.draft.name,
             reportType: S.draft.reportType,
             official: S.draft.official,
             concurrency: S.draft.concurrency,
-            scope: S.draft.scope,
+            scope: boundScope(),
             bindings: bindingRows().map(function (row) { return [row[0], row[1]]; }),
-            analytics: rows.length + ' rows on ' + (config ? config.name : 'no configuration'),
+            analytics: S.draft.analytics.length + ' rows on ' + (config ? config.name : 'no configuration'),
             params: parameterRows().length + ' settings'
         };
         logStep('would send reporting.v1.report_definitions.put for ' + S.draft.name +
             ' \u2014 nothing is sent');
         logStep('would send reporting.v1.report_configurations.put for five slots');
-        logStep('would send reporting.v1.configuration_analytics.put_many for ' + rows.length +
-            ' rows on ' + (config ? config.name : 'no configuration'));
+        logStep('would send reporting.v1.configuration_analytics.put_many for ' +
+            S.draft.analytics.length + ' rows on ' + (config ? config.name : 'no configuration'));
         logStep('would send reporting.v1.configuration_analytic_parameters.put for ' +
             parameterRows().length + ' settings');
+        logStep('would read it back with reporting.v1.report_definitions.get');
         if (config && config.boundBy > 0) {
             logStep(config.boundBy + ' other definitions bind ' + config.name +
                 ', and run the analytic set this save wrote');
         }
         setActivity('saved (nothing sent) \u00b7 never run');
         render();
-        writeParams();
     }
 
     function discard() {
         S.draft = newDraft();
         S.saved = null;
-        S.touchedAnalytics = false;
-        S.openInline = {};
-        S.step = 1;
+        S.flow = null;
+        S.step = 'what-it-is';
         logStep('started again from the fixture');
         setActivity('new, nothing written');
         render();
-        writeParams();
     }
 
     // --------------------------------------------------------------- boot
 
+    function stepIndex(id) {
+        for (var i = 0; i < STEPS.length; i += 1) {
+            if (STEPS[i].id === id) return i;
+        }
+        return -1;
+    }
+
     function readParams() {
         var params = new URLSearchParams(window.location.search);
-        var wanted = (params.get('variant') || '').toUpperCase();
-        if (VARIANTS.some(function (entry) { return entry.id === wanted; })) S.variant = wanted;
-        var step = parseInt(params.get('step'), 10);
-        if (step >= 1 && step <= 4) S.step = step;
+        var wanted = parseInt(params.get('step'), 10);
+        if (wanted >= 1 && wanted <= STEPS.length) S.step = STEPS[wanted - 1].id;
         if (params.get('pfe') === 'without-simulation') {
             S.draft.binds.risk_report_config = 'cfg-rrc-exposure-tb';
-            loadAnalytics(configById('cfg-rrc-exposure-tb'));
-            S.draft.scope = 'Trading Book';
+            S.draft.analytics = copyAnalytics(configById('cfg-rrc-exposure-tb'));
             var simulation = analyticsRow('simulation');
             if (simulation) simulation.active = false;
-            S.touchedAnalytics = true;
             setActivity('pfe on without simulation: a save is refused');
+        }
+        var screen = params.get('screen');
+        var analytic = params.get('analytic');
+        if (screen === 'list' || ((screen === 'detail' || screen === 'effect') && analyticOf(analytic))) {
+            S.step = 'what-it-runs';
+            S.flow = flowState(screen, analytic);
         }
     }
 
     function writeParams() {
         var params = new URLSearchParams();
-        params.set('variant', S.variant);
-        if (S.variant === 'B') params.set('step', String(S.step));
-        if (pfeWithoutSimulation() && paramSeedBroken()) params.set('pfe', 'without-simulation');
+        params.set('step', String(stepIndex(S.step) + 1));
+        if (pfeWithoutSimulation() && S.seededBroken === true) params.set('pfe', 'without-simulation');
+        if (S.flow) {
+            params.set('screen', S.flow.screen);
+            if (S.flow.code) params.set('analytic', S.flow.code);
+        }
         window.history.replaceState(null, '', window.location.pathname + '?' + params.toString());
-    }
-
-    /* Whether the broken pair came from the URL, so a person who turns
-       simulation on does not have the parameter put back on a reload. */
-    function paramSeedBroken() {
-        return S.seededBroken === true;
     }
 
     document.addEventListener('click', function (event) {
@@ -1316,37 +1948,58 @@
         event.preventDefault();
         var code = element.getAttribute('data-code');
 
-        if (act === 'variant') {
-            S.variant = element.getAttribute('data-variant');
+        if (act === 'step') {
+            S.step = element.getAttribute('data-step');
+            S.flow = null;
+            setActivity(stepIndex(S.step) === 3 ? 'reviewing what will be written'
+                : 'step ' + (stepIndex(S.step) + 1) + ' of 4');
             render();
-            writeParams();
-        } else if (act === 'step') {
-            S.variant = 'B';
-            S.step = parseInt(element.getAttribute('data-step'), 10);
-            setActivity(S.step === 4 ? 'reviewing what will be written' : 'step ' + S.step + ' of 4');
+        } else if (act === 'back') {
+            S.step = STEPS[Math.max(0, at() - 1)].id;
+            S.flow = null;
+            setActivity('step ' + (at() + 1) + ' of 4');
             render();
-            writeParams();
-        } else if (act === 'change') {
-            var id = element.getAttribute('data-id');
-            S.openInline[id] = !S.openInline[id];
-            render();
+        } else if (act === 'next') {
+            if (STEPS[at()].id === 'review') {
+                save();
+            } else {
+                S.step = STEPS[Math.min(STEPS.length - 1, at() + 1)].id;
+                S.flow = null;
+                setActivity('step ' + (at() + 1) + ' of 4');
+                render();
+            }
         } else if (act === 'toggle-state') {
             S.showState = !S.showState;
             render();
-        } else if (act === 'toggle-analytic') {
+        } else if (act === 'toggle') {
             toggleAnalytic(code);
-        } else if (act === 'params') {
-            S.dialog = { code: code };
-            setActivity('editing the settings of ' + code);
+        } else if (act === 'settings') {
+            openFlow('detail', code);
+        } else if (act === 'flow-open') {
+            openFlow('list');
+        } else if (act === 'flow-list') {
+            openFlow('list');
+        } else if (act === 'flow-close') {
+            closeFlow();
+        } else if (act === 'choose') {
+            openFlow('detail', code);
+        } else if (act === 'flow-detail') {
+            openFlow('detail', S.flow.code);
+        } else if (act === 'flow-effect') {
+            S.flow.screen = 'effect';
+            setActivity('add analytic \u00b7 effect \u00b7 ' + S.flow.code);
             render();
-        } else if (act === 'param-close') {
-            S.dialog = null;
+        } else if (act === 'fix-requires') {
+            var simulation = analyticsRow('simulation');
+            if (simulation) {
+                simulation.active = true;
+                logStep('turned simulation on \u2014 pfe now has the cube it reads');
+            }
+            S.flow = null;
+            touch();
             render();
-        } else if (act === 'param-add') {
-            var row = analyticsRow(code);
-            row.params.push({ name: '', value: '', position: row.params.length + 1 });
-            logStep('added a setting to ' + code);
-            render();
+        } else if (act === 'commit') {
+            commitAnalytic(code);
         } else if (act === 'save') {
             save();
         } else if (act === 'discard') {
@@ -1369,58 +2022,56 @@
         if (!element) return;
         var act = element.getAttribute('data-act');
         var code = element.getAttribute('data-code');
-        var index = parseInt(element.getAttribute('data-index'), 10);
 
         if (act === 'name') {
             S.draft.name = element.value;
-            S.saved = null;
+            touch();
             render();
-            writeParams();
         } else if (act === 'description') {
             S.draft.description = element.value;
-            S.saved = null;
+            touch();
             render();
-            writeParams();
         } else if (act === 'type') {
             S.draft.reportType = element.value;
             logStep('report type ' + element.value + ' \u2014 it decides what the report is');
+            touch();
             render();
-            writeParams();
         } else if (act === 'official') {
             S.draft.official = element.checked;
             logStep('is_official ' + element.checked);
+            touch();
             render();
-            writeParams();
         } else if (act === 'concurrency') {
             S.draft.concurrency = element.value;
             logStep('concurrency_policy ' + element.value);
+            touch();
             render();
-            writeParams();
         } else if (act === 'bind') {
             bindSlot(element.getAttribute('data-slot'), element.value);
-        } else if (act === 'scope') {
-            chooseScope(element.value);
-        } else if (act === 'order') {
-            var ordered = analyticsRow(code);
-            if (ordered) {
-                ordered.order = Math.max(1, parseInt(element.value, 10) || 1);
-                logStep('display_order of ' + code + ' is ' + ordered.order);
+        } else if (act === 'param') {
+            var name = element.getAttribute('data-name');
+            if (element.getAttribute('data-toggle') === '1') {
+                S.flow.values[name] = S.flow.values[name] === 'true' ? 'false' : 'true';
+                render();
+            } else {
+                S.flow.values[name] = element.value;
             }
-            render();
-        } else if (act === 'param-name' || act === 'param-value' || act === 'param-pos') {
-            var row = analyticsRow(code);
-            if (!row || !row.params[index]) return;
-            if (act === 'param-name') row.params[index].name = element.value;
-            if (act === 'param-value') row.params[index].value = element.value;
-            if (act === 'param-pos') row.params[index].position = Math.max(1, parseInt(element.value, 10) || 1);
-            S.saved = null;
-            render();
         }
+    });
+
+    /* A switch reads its new value on click, so the toggle control in the flow
+       re-renders without going through change. */
+    document.addEventListener('click', function (event) {
+        var element = event.target.closest('[data-pact="param"][data-toggle="1"]');
+        if (!element) return;
+        event.preventDefault();
+        var name = element.getAttribute('data-name');
+        S.flow.values[name] = S.flow.values[name] === 'true' ? 'false' : 'true';
+        render();
     });
 
     S.draft = newDraft();
     S.seededBroken = new URLSearchParams(window.location.search).get('pfe') === 'without-simulation';
     readParams();
     render();
-    writeParams();
 }());

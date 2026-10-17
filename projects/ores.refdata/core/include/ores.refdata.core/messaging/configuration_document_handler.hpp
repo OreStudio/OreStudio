@@ -32,7 +32,7 @@
 namespace ores::refdata::messaging {
 
 /**
- * @brief Serves the configuration documents refdata owns: curve configurations and conventions.
+ * @brief Serves the curve configuration document refdata owns.
  *
  * Every operation runs under the caller's session, so the rows a save writes
  * belong to the caller's party and a read sees what that party may see.
@@ -46,8 +46,6 @@ public:
     void save_curve_configuration_document(ores::nats::message msg);
     void get_curve_configuration_document(ores::nats::message msg);
     void delete_curve_configuration_document(ores::nats::message msg);
-    void save_conventions_document(ores::nats::message msg);
-    void get_conventions_document(ores::nats::message msg);
 
 private:
     inline static std::string_view logger_name =

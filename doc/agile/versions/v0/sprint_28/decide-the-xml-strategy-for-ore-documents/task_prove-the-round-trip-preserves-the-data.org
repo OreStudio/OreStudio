@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/prove-the-round-trip-preserves-the-data
-#+pr:
+#+pr: 3449
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -121,7 +121,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3449][#3449]] | [ore] Prove the round trip preserves the data and validates |
 
 * Review
 

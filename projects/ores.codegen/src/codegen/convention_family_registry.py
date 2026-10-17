@@ -12,11 +12,19 @@ from the model: a family whose columns include ``party_id`` is party-scoped,
 one without is world-scoped. The domain type, the protocol subject stem and
 the entity name all follow from the frontmatter and the entity name.
 
-The registry is rendered as a C++ header rather than an org or JSON artefact
-because the C++ conventions service is the consumer that must stop carrying a
-hand-written call per family, and a constexpr table gives it a compile-checked
-enumeration; the web BFF reaches the same data through its generated protocol
-twins in a later slice.
+A family's write mode follows from its scope, except where the document writes
+it by row key rather than by party: such a model declares
+``#+convention_write: by_id``. The mode is ``party`` by default, ``world`` when
+the table has no ``party_id`` column, and ``by_id`` when declared.
+
+Two artefacts are rendered from the registry: a C++ header that states every
+family and its write mode, and an include fragment that carries one write call
+per family. The conventions service includes the fragment inside the anonymous
+namespace that defines its row helpers, so the hand-written call per family
+cannot drift from the modelling tree. The header is rendered as C++ rather
+than an org or JSON artefact because a constexpr table gives the service a
+compile-checked enumeration; the web BFF reaches the same data through its
+generated protocol twins in a later slice.
 """
 
 from __future__ import annotations
@@ -35,10 +43,17 @@ HEADER_RELATIVE_PATH = Path(
     "/convention_family_registry.hpp"
 )
 
+FRAGMENT_RELATIVE_PATH = Path(
+    "projects/ores.refdata/core/src/service/convention_family_apply.inc"
+)
+
+WRITE_MODE_KEYWORD = "convention_write"
+DECLARABLE_WRITE_MODES = ("party", "by_id")
+
 _FRONTMATTER_RE = re.compile(r"^#\+([A-Za-z0-9_-]+):\s*(.*?)\s*$")
 _ENTRY_RE = re.compile(
     r'\{\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*'
-    r'(true|false)\s*\}'
+    r'(true|false),\s*convention_write_mode::([a-z_]+)\s*\}'
 )
 
 _LICENSE = """\
@@ -67,7 +82,7 @@ _PREAMBLE = """\
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
  * Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
  * To change an entry, edit the convention entity model's
- * #+convention_family: declaration and regenerate.
+ * #+convention_family: or #+convention_write: declaration and regenerate.
  */
 #ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_FAMILY_REGISTRY_HPP
 #define ORES_REFDATA_API_DOMAIN_CONVENTION_FAMILY_REGISTRY_HPP
@@ -78,12 +93,22 @@ _PREAMBLE = """\
 namespace ores::refdata::domain {
 
 /**
+ * @brief How the conventions document writes a family's rows.
+ *
+ * party replaces the rows the importing party holds, by_id replaces the rows
+ * the document names by key, and world adds only rows the tenant does not
+ * already hold.
+ */
+enum class convention_write_mode { party, by_id, world };
+
+/**
  * @brief One convention family the conventions document carries.
  *
  * key is the family's field name in the document, entity is the entity model
  * that serves it, domain_type is the generated C++ value type, subject_stem is
- * the protocol prefix every verb of that entity shares, and party_scoped is
- * true when the family's table carries a party_id column.
+ * the protocol prefix every verb of that entity shares, party_scoped is true
+ * when the family's table carries a party_id column, and write_mode is how the
+ * document writes the family.
  */
 struct convention_family_entry {
     std::string_view key;
@@ -91,6 +116,7 @@ struct convention_family_entry {
     std::string_view domain_type;
     std::string_view subject_stem;
     bool party_scoped;
+    convention_write_mode write_mode;
 };
 
 /**
@@ -120,6 +146,7 @@ class FamilyEntry:
     domain_type: str
     subject_stem: str
     party_scoped: bool
+    write_mode: str
 
 
 def _frontmatter(path: Path) -> dict[str, str]:
@@ -147,6 +174,28 @@ def _column_names(path: Path) -> set[str]:
     return columns
 
 
+def _write_mode(frontmatter: dict[str, str], party_scoped: bool, path: Path) -> str:
+    """The write mode a model declares, or the one its scope implies.
+
+    ``world`` is never declared: a table without a party_id column is written
+    by adding only the rows the tenant does not already hold.
+    """
+    declared = (frontmatter.get(WRITE_MODE_KEYWORD) or "").strip()
+    if not declared:
+        return "party" if party_scoped else "world"
+    if declared not in DECLARABLE_WRITE_MODES:
+        raise ValueError(
+            f"{path}: #+{WRITE_MODE_KEYWORD}: {declared!r} is not one of"
+            f" {', '.join(DECLARABLE_WRITE_MODES)}; world follows from the"
+            " absence of a party_id column"
+        )
+    if declared == "party" and not party_scoped:
+        raise ValueError(
+            f"{path}: #+{WRITE_MODE_KEYWORD}: party requires a party_id column"
+        )
+    return declared
+
+
 def _entry_for(path: Path, key: str) -> FamilyEntry:
     """The registry entry a marked entity model declares."""
     frontmatter = _frontmatter(path)
@@ -155,12 +204,14 @@ def _entry_for(path: Path, key: str) -> FamilyEntry:
     plural = (frontmatter.get("entity_plural") or f"{entity}s").strip()
     if not component:
         raise ValueError(f"{path}: a marked convention family must declare #+component:")
+    party_scoped = "party_id" in _column_names(path)
     return FamilyEntry(
         key=key,
         entity=entity,
         domain_type=f"ores::{component}::domain::{entity}",
         subject_stem=f"{component}.v1.{plural}",
-        party_scoped="party_id" in _column_names(path),
+        party_scoped=party_scoped,
+        write_mode=_write_mode(frontmatter, party_scoped, path),
     )
 
 
@@ -198,10 +249,121 @@ def render_header(entries: list[FamilyEntry]) -> str:
         f'     "{entry.entity}",\n'
         f'     "{entry.domain_type}",\n'
         f'     "{entry.subject_stem}",\n'
-        f'     {"true" if entry.party_scoped else "false"}}},\n'
+        f'     {"true" if entry.party_scoped else "false"},\n'
+        f'     convention_write_mode::{entry.write_mode}}},\n'
         for entry in entries
     )
     return _LICENSE + "\n" + _PREAMBLE + rows + _EPILOGUE
+
+
+_FRAGMENT_PREAMBLE = """\
+// AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+// Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
+// To change a call, edit the convention entity model's #+convention_family: or
+// #+convention_write: declaration and regenerate. Include this fragment inside
+// the anonymous namespace that defines replace_party_rows, replace_rows_by_id
+// and add_missing_world_rows.
+"""
+
+
+def _repository(entry: FamilyEntry) -> str:
+    """The accessor that names the family's repository."""
+    return f"{entry.entity}_repository()"
+
+
+def _apply_party_body(entries: list[FamilyEntry]) -> str:
+    lines = [
+        "void apply_party_families(const ores::database::context& ctx,",
+        "                          messaging::conventions_document& v) {",
+    ]
+    for entry in entries:
+        lines.extend(
+            [
+                "    replace_party_rows(ctx,",
+                f"                       {_repository(entry)},",
+                f"                       std::move(v.{entry.key}));",
+            ]
+        )
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def _apply_by_id_body(entries: list[FamilyEntry]) -> str:
+    lines = [
+        "void apply_families_by_id(const ores::database::context& ctx,",
+        "                         messaging::conventions_document& v) {",
+    ]
+    for entry in entries:
+        lines.extend(
+            [
+                "    replace_rows_by_id(ctx,",
+                f"                       {_repository(entry)},",
+                f"                       std::move(v.{entry.key}));",
+            ]
+        )
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def _apply_world_body(entries: list[FamilyEntry]) -> str:
+    lines = [
+        "void apply_world_families(const ores::database::context& ctx,",
+        "                          messaging::conventions_document& v,",
+        "                          conventions_save_result& result) {",
+    ]
+    for entry in entries:
+        lines.extend(
+            [
+                "    add_missing_world_rows(ctx,",
+                f"                           {_repository(entry)},",
+                f"                           v.{entry.key},",
+                "                           result.world_kept);",
+            ]
+        )
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def _read_body(name: str, entries: list[FamilyEntry]) -> str:
+    signature = f"void {name}("
+    lines = [
+        f"{signature}const ores::database::context& ctx,",
+        f"{' ' * len(signature)}messaging::conventions_document& v) {{",
+    ]
+    for entry in entries:
+        assignment = f"    v.{entry.key} = {_repository(entry)}.read_latest(ctx);"
+        if len(assignment) <= 100:
+            lines.append(assignment)
+        else:
+            lines.extend(
+                [
+                    f"    v.{entry.key} =",
+                    f"        {_repository(entry)}.read_latest(ctx);",
+                ]
+            )
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def render_fragment(entries: list[FamilyEntry]) -> str:
+    """The include fragment the conventions service compiles, byte for byte."""
+    by_mode = {
+        mode: [entry for entry in entries if entry.write_mode == mode]
+        for mode in ("party", "by_id", "world")
+    }
+    bodies = [
+        "// Party families: the import replaces the rows the party holds.\n"
+        + _apply_party_body(by_mode["party"]),
+        "// By-id families: the import replaces the rows the document names.\n"
+        + _apply_by_id_body(by_mode["by_id"]),
+        "// World families: the import adds only the rows the tenant is missing.\n"
+        + _apply_world_body(by_mode["world"]),
+        "// The document reads each mode back from the same registry.\n"
+        + _read_body("read_party_families", by_mode["party"]),
+        _read_body("read_families_by_id", by_mode["by_id"]),
+        _read_body("read_world_families", by_mode["world"]),
+    ]
+    return _LICENSE + "\n" + _FRAGMENT_PREAMBLE + "\n\n" + "\n\n".join(bodies) + "\n"
 
 
 def parse_header(text: str) -> list[FamilyEntry]:
@@ -221,6 +383,7 @@ def parse_header(text: str) -> list[FamilyEntry]:
                 domain_type=match.group(3),
                 subject_stem=match.group(4),
                 party_scoped=match.group(5) == "true",
+                write_mode=match.group(6),
             )
         )
     return entries

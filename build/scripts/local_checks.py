@@ -478,17 +478,18 @@ CATALOGUE: tuple[Check, ...] = (
     ),
     Check(
         id="convention-family-registry",
-        title="The convention family registry matches the modelling tree",
+        title="The convention family registry and apply fragment match the modelling tree",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_convention_family_registry.py"),
         classes=("modeling", "codegen"),
         paths=(
             "projects/ores.refdata/modeling/*.org",
             "projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp",
+            "projects/ores.refdata/core/src/service/convention_family_apply.inc",
             "projects/ores.codegen/src/codegen/convention_family_registry.py",
             "projects/ores.codegen/scripts/*convention_family_registry.py",
         ),
         fix="Run projects/ores.codegen/scripts/regenerate_convention_family_registry.py"
-            " and commit the header.",
+            " and commit the header and fragment.",
     ),
     Check(
         id="er-diagram",

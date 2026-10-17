@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Check the generated convention family registry against the modelling tree.
+"""Check the generated convention family artefacts against the modelling tree.
 
-The registry header is generated from the refdata entity models that declare
-``#+convention_family: <key>``; see
+The registry header and the apply fragment are generated from the refdata
+entity models that declare ``#+convention_family: <key>``; see
 ``projects/ores.codegen/scripts/regenerate_convention_family_registry.py``.
 This check fails when:
 
@@ -10,12 +10,15 @@ This check fails when:
   registry, which is a model added without a regeneration;
 * a registry entry names an entity that no longer carries the declaration or no
   longer exists, which is a model removed without a regeneration;
-* an entry's key, domain type, subject stem or scope disagrees with what its
-  model states, which is a generated header edited by hand or a model changed
-  without a regeneration.
+* an entry's key, domain type, subject stem, scope or write mode disagrees with
+  what its model states, which is a generated header edited by hand or a model
+  changed without a regeneration;
+* the header or the apply fragment differs from its generated form, which is a
+  generated artefact edited by hand;
+* the apply fragment is missing.
 
-It reads the models and the header only, so it needs neither codegen nor a
-formatter.
+It reads the models and the two artefacts only, so it needs neither codegen nor
+a formatter.
 
 Usage::
 
@@ -32,16 +35,18 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects" / "ores.codegen" / "src"))
 
 from codegen.convention_family_registry import (  # noqa: E402
+    FRAGMENT_RELATIVE_PATH,
     HEADER_RELATIVE_PATH,
     discover_entries,
     parse_header,
+    render_fragment,
     render_header,
 )
 
 
 def _field_problems(expected, stated) -> list[str]:
     problems: list[str] = []
-    for field in ("key", "domain_type", "subject_stem", "party_scoped"):
+    for field in ("key", "domain_type", "subject_stem", "party_scoped", "write_mode"):
         want = getattr(expected, field)
         got = getattr(stated, field)
         if want != got:
@@ -53,10 +58,16 @@ def _field_problems(expected, stated) -> list[str]:
 
 
 def check(project_root: Path) -> list[str]:
-    """Every way the registry disagrees with the modelling tree."""
+    """Every way the generated artefacts disagree with the modelling tree."""
     header = project_root / HEADER_RELATIVE_PATH
-    if not header.exists():
-        return [f"{HEADER_RELATIVE_PATH} is missing"]
+    fragment = project_root / FRAGMENT_RELATIVE_PATH
+    missing = [
+        relative_path
+        for relative_path in (HEADER_RELATIVE_PATH, FRAGMENT_RELATIVE_PATH)
+        if not (project_root / relative_path).exists()
+    ]
+    if missing:
+        return [f"{relative_path} is missing" for relative_path in missing]
 
     try:
         expected = discover_entries(project_root)
@@ -88,6 +99,10 @@ def check(project_root: Path) -> list[str]:
         problems.append(
             f"{HEADER_RELATIVE_PATH} differs from its generated form"
         )
+    if fragment.read_text(encoding="utf-8") != render_fragment(expected):
+        problems.append(
+            f"{FRAGMENT_RELATIVE_PATH} differs from its generated form"
+        )
     return problems
 
 
@@ -115,7 +130,7 @@ def main() -> int:
 
     print(
         f"{len(discover_entries(root))} convention families match"
-        f" {HEADER_RELATIVE_PATH}"
+        f" {HEADER_RELATIVE_PATH} and {FRAGMENT_RELATIVE_PATH}"
     )
     return 0
 

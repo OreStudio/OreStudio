@@ -331,6 +331,17 @@ caller's token and checks the read codes above.
     run does not name the version of the definition it used, so the screen has no
     key to the prepared input the run actually read.
 
+11. *No artefacts page, and no icon to open it with.* The screen offers an
+    =Artefacts= link beside each package, the input package and the output
+    archive, because the package is a container of files and a reader who wants
+    to look inside it expects to leave the screen for somewhere that lists them.
+    Two things are missing behind that link. There is no artefacts page and no
+    route serves one, so the link is the requirement on the platform rather than
+    a working destination. And the icon set carries no box, package or archive
+    glyph: the sixty-eight Fluent icons in the application have a folder and
+    nothing nearer, so the prototype draws a folder and the catalogue needs a
+    package icon before the real screen can use a fitting one.
+
 * Related journeys
 
 - [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door that leads to a run's row

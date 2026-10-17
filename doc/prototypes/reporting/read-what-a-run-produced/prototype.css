@@ -625,3 +625,17 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-
     .runhead h1 { font-size: 19px; }
     .prose { font-size: 14px; }
 }
+
+.artelink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--accent);
+    font-size: 12px;
+    text-decoration: none;
+}
+.artelink:hover { border-color: var(--accent); background: var(--accent-dim); }
+.aricon { flex: none; }

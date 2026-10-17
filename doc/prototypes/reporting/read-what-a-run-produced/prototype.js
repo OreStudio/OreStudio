@@ -740,6 +740,22 @@
         return runById(S.runId) || runById(DEFAULT_RUN);
     }
 
+    /* The artefacts link. The icon is Fluent's folder, inlined because the
+       prototype stands alone and cannot load the application's asset. The icon
+       set carries no box, package or archive glyph, so the folder is the
+       nearest meaning: a container of files. The destination is the artefacts
+       page, which the application does not have yet. */
+    var ARTEFACT_ICON =
+        '<svg class="aricon" viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">' +
+        '<path fill="currentColor" d="M4.5 3C3.11929 3 2 4.11929 2 5.5V14.5C2 15.8807 3.11929 17 4.5 17H15.5C16.8807 17 18 15.8807 18 14.5V7.5C18 6.11929 16.8807 5 15.5 5H9.70711L8.21967 3.51256C7.89148 3.18437 7.44636 3 6.98223 3H4.5ZM3 5.5C3 4.67157 3.67157 4 4.5 4H6.98223C7.18115 4 7.37191 4.07902 7.51256 4.21967L8.79289 5.5L7.43934 6.85355C7.34557 6.94732 7.21839 7 7.08579 7H3V5.5ZM3 8H7.08579C7.48361 8 7.86514 7.84196 8.14645 7.56066L9.70711 6H15.5C16.3284 6 17 6.67157 17 7.5V14.5C17 15.3284 16.3284 16 15.5 16H4.5C3.67157 16 3 15.3284 3 14.5V8Z"/></svg>';
+
+    function artefactsLink(key, what) {
+        return '<a class="artelink" href="/artefacts?package=' + encodeURIComponent(key) + '"' +
+            ' title="Open the artefacts for the ' + esc(what) + '"' +
+            ' aria-label="Open the artefacts for the ' + esc(what) + '">' +
+            ARTEFACT_ICON + '<span>Artefacts</span></a>';
+    }
+
     function esc(value) {
         return String(value === null || value === undefined ? '' : value)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -1425,7 +1441,10 @@
             'variant B draws one as a fixture and says so on it. No operation returns the archive or the ORE package, ' +
             'so every download is drawn, not wired. ' +
             'The book tree is a fixture for one reason more: the archive carries no book column, so a built screen ' +
-            'joins each TradeId to trade_bookings.book_id through trading.v1.trade_bookings.list.' +
+            'joins each TradeId to trade_bookings.book_id through trading.v1.trade_bookings.list. ' +
+            'The artefacts link beside each package is a requirement on the platform rather than a working ' +
+            'link: the application has no artefacts page, no route serves one, and no operation returns the ' +
+            'package or the archive the link would open.' +
             '</div>';
     }
 
@@ -1540,6 +1559,7 @@
             '<span class="key">' + esc(run.key) + '</span>' +
             '<button class="btn small" data-act="copy-key">Copy key</button>' +
             '<button class="btn small" data-act="download-archive">Download archive</button>' +
+            artefactsLink(run.key, 'output package') +
             '</div>' +
             '<p class="rowfoot">output_storage_key. Its contents are not listed: no operation lists the files inside an ' +
             'archive, and no route serves its bytes \u2014 the download is drawn, not wired.</p>' +
@@ -1566,7 +1586,8 @@
                 '<p class="dim">This run did not prepare an input. It submitted the archive its definition already names, ' +
                 'the definition\u2019s prepared_input_key:</p>' +
                 '<div class="keyline" style="margin-top:10px"><span class="key">' + esc(run.preparedInputKey) + '</span>' +
-                '<button class="btn small" data-act="open-package">Open package</button></div>' +
+                '<button class="btn small" data-act="open-package">Open package</button>' +
+                artefactsLink(run.preparedInputKey, 'input package') + '</div>' +
                 '<p class="rowfoot">The package is the engine\u2019s input, not one of the run\u2019s outputs. The definition ' +
                 'names the key and the run does not, so a later edit to the definition changes what this screen reports for ' +
                 'this run. No operation returns the package or lists its files.</p></section>';
@@ -1578,6 +1599,7 @@
             'directory of CSV files and the structured log the engine read \u2014 and it is a different object from the ' +
             'run\u2019s output archive above.</p>' +
             '<div class="keyline" style="margin-top:10px"><button class="btn small" data-act="open-package">Open package</button>' +
+            artefactsLink(run.definitionId + '/' + run.id + '/input', 'input package') +
             '<span class="hint">No operation returns the package or lists its files, and the run records no storage key for it.</span></div>' +
             '</section>';
     }
@@ -1628,6 +1650,7 @@
             '<span class="key">' + esc(run.key) + '</span>' +
             '<button class="btn small" data-act="copy-key">Copy key</button>' +
             '<button class="btn small primary" data-act="download-archive">Download archive</button>' +
+            artefactsLink(run.key, 'output package') +
             '</div>';
     }
 

@@ -233,7 +233,11 @@ and what the binding reaches and what it does not.
    settings or the scope*: both come from the seeder, and the step reads them
    rather than offering a choice.
 
-7. *What it runs.* The person turns analytics on. The screen reads the
+7. *What it runs.* These are the analytics of the run settings configuration
+   the previous step bound, not of the definition. A
+   =configuration_analytic= row hangs off that configuration, so every
+   definition bound to it runs the same set, and a set that must differ belongs
+   to a configuration of its own. The person turns analytics on. The screen reads the
    vocabulary with =reporting.v1.analytic_types.list= and offers these fourteen
    analytic types, which are the whole picker: =npv=, =sensitivity=, =cashflow=,
    =curves=, =simulation=, =saccr=, =parametricVar=, =portfolioDetails=,

@@ -857,8 +857,9 @@
         {
             id: 'what-it-runs',
             title: 'What it runs',
-            lead: 'Fourteen analytic types, each on or off, each with the settings it carries, ' +
-                'and one pair that cannot work together.'
+            lead: 'The analytics of the run settings configuration you bound, not of this ' +
+                'definition. They are rows on that configuration, so every definition bound to it ' +
+                'runs them too, and a set that must differ belongs to a configuration of its own.'
         },
         {
             id: 'review',

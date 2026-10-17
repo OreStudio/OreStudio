@@ -11,303 +11,558 @@
 
 * Summary
 
-A bundle is many entities of different kinds that must arrive together
-because a cross-type invariant holds at one instant: an environment
-export, an archive, a portfolio-wide conversion. A portfolio may span
-every instrument type the system holds, so a bundle can be very large and
-fully heterogeneous. No message type can enumerate its kinds.
+A bundle is a set of entities of different kinds that must arrive
+together because a genuine cross-type invariant holds at one instant: an
+environment export, an archive, a portfolio-wide conversion. The test is
+one sentence, completed without naming a file, a screen, a workflow step
+or a boundary format: "one member may not be written without the others
+because ___ must hold at one instant". If the blank needs a file, a
+screen, a step or a format, the set is an artefact's contents or a
+display concern, not a data type. If one owner writes every member, the
+set is a *family*, not a bundle.
 
-The bundle therefore travels as an artefact in object storage with a
-manifest. The manifest is a modelled operation type: small, declared,
-versioned and validated. A coordinator reads only the manifest and sends
-one message per owner. Each message carries a part reference and never
-the data. Each owner loads its part, validates it against its own model,
-and applies it atomically in its own transaction.
+A bundle is carried by three artefacts. The *manifest* is a generated,
+modelled operation type naming every part. A *part* is one owner's rows
+of one kind, encoded as a msgpack stream. The *bundle archive* is a
+content-addressed, zstd-compressed ZIP that holds one entry per (owner,
+kind) and embeds the manifest. The bytes live in object storage. The
+manifest and the part references are kilobytes; the rows are never on
+the wire.
 
-Atomicity is per owner by construction, and global atomicity across
-owners is not available. Consistency comes from sequencing, from a stated
-=as_of= instant, and from a sandbox that lets a person examine the result
-before it is live. Progress and retry are per part.
+A coordinator reads only the manifest and dispatches one message per
+owner. Each message carries the archive URI and that owner's part
+records, never the data. Each owner fetches only its own entries,
+verifies their checksums, streams and validates the rows, and applies
+them atomically in its own =unit_of_work=. Atomicity is per owner by
+construction; global atomicity across owners does not exist on this
+platform and must not be promised. Consistency comes from sequencing, a
+stated =as_of= instant, and a sandbox for examine-before-live. Progress
+and retry are per part.
 
 * Detail
 
-** What a bundle is, and what it is not
+** What a bundle is, and the test for one
 
 A bundle is a classification, not a file format and not a large message.
 It is sanctioned by
 [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][the bundle classification]]
 when a cross-type invariant must hold at one instant and several owners
-hold the types.
+hold the types. The kinds are open: a portfolio may span every
+instrument type the system holds, so no closed set of member types can
+name the bundle.
 
-A bundle is *not* one of these:
+The test is the sentence above. Complete it without naming a file, a
+screen, a workflow step or a boundary format:
 
-- not an aggregate struct with one typed array per kind. That is the
-  anti-type, and it fails as soon as the kinds are open.
-- not a document parser. Parsing another owner's format is that owner's
-  job, at its own boundary.
-- not a distributed transaction. No transaction spans two databases
-  here, and none should be introduced to make a bundle feel atomic.
-- not a message that carries the bytes. A message carries a reference.
+#+begin_quote
+One member may not be written without the others because __________
+must hold at one instant.
+#+end_quote
+
+- If the blank needs a file, a screen, a step or a format to be true,
+  the set is an artefact's contents or a display convenience. Split it.
+- If the invariant covers only some members, the set is two or more
+  classifications. Split it at the invariant.
+- If the invariant covers every member and one owner holds them, the
+  set is a *family*, not a bundle. One owner that writes the set is a
+  family even when the set is large or spans several tables.
+- If the invariant covers every member and several owners hold them, it
+  is a bundle, and this page is its transport.
+
+A file's contents are never an invariant. A document lists conventions
+because the format lists them; that is a fact about ORE XML, not about
+conventions. An export that must be converted to a boundary format is a
+bundle only when the conversion needs all the members at one instant;
+otherwise it is a set of entity or family reads.
 
 The design constraint is the heterogeneity, not the size. Size makes the
 transport worth designing; heterogeneity is why the transport cannot
-name the types.
+name the types in one message.
 
-The bundle is the transport, not the delivery decision. Which rows it
-carries is set by the data tier: a tier 2 canonical dataset is installed
-as a bundle, while a tier 3 installation exemplar arrives as an
-=ores.seeder= dataset. The tiers are in
-[[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]].
+** Anatomy: manifest, part, archive
 
-** The artefact is content-addressed
-
-The bytes go to
-[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] before any
-owner is told about them. One bundle has one artefact, or one artefact
-per part, under a bucket and an opaque key.
-
-- *Content-addressed.* The key derives from the content, or the manifest
-  records a checksum that is verified before the bytes are used. Two
-  uploads of the same part converge on one object, so a retried upload
-  costs nothing and creates no second truth.
-- *Immutable.* A put replaces a whole object and there is no append. A
-  part that must change gets a new artefact and a new manifest.
-- *Opaque to the store.* Storage never parses a bundle, and never learns
-  what a part means. That is what lets a bundle hold kinds one component
-  has never heard of.
-- *Retained as evidence.* An imported bundle is the evidence of what was
-  imported and when. It is kept by key, not copied into a table.
-
-The artefact is *not* an opaque archive in the sense this page forbids
-below. The difference is the manifest: the bundle is a manifest plus
-named parts, not one self-describing blob.
-
-** The manifest is a modelled operation type
-
-The manifest is the routing table, and it is a first-class type:
-
-- It is declared in a codegen operation model, so it is generated, with a
-  codec and a schema. It is never free-form JSON, never a =std::string=
-  field holding JSON, and never inferred from the payload.
-- It is versioned. =bundle_format_version= states the manifest layout, so
-  a reader can refuse a version it does not know instead of guessing.
-- It is small. A manifest that carries data has become the message the
-  bundle exists to avoid.
-- It is the only part of the bundle a coordinator reads.
-
-** What the manifest carries**
+A bundle has exactly three artefacts. Each one has one writer, one place
+to live, and a fixed set of readers.
 
 #+ATTR_HTML: :class hug-leading
-| Field | Meaning |
-|-------+---------|
-| =bundle_format_version= | The layout version of the manifest and its part records. A reader refuses an unknown version. |
-| =producer= | The service and version that built the bundle. It names the origin, not the owner of the data. |
-| =as_of= | The bitemporal instant the bundle is a view of. See [[*as_of makes a stale import detectable][as_of]] below. |
-| =target= | Where the bundle applies: the sandbox, its anchor, and the party it applies as. |
-| =parts[]= | One record per part. Each record names its owner, the kind, the format, the row count, the checksum and the URI. |
+| Artefact | What it is | Where it lives | Who may read it |
+|----------+------------+----------------+-----------------|
+| *Manifest* | A generated operation object: the bundle format version, the producer, the =as_of= instant, the target, and one record per part. It is encoded with the platform wire codec, like any other message. | The object =bundles/{bundle_id}/manifest.msgpack=. The same bytes are the first entry of the archive, named =manifest.msgpack=, so the archive describes itself. | The coordinator, the producer, and a boundary converter such as the ORE XML writer. An owner receives its own part records in its message and does not need the whole manifest. |
+| *Part* | One owner's rows of one kind, encoded as a msgpack stream of one generated type. It is a logical member of the archive, not a separate object. | An entry in =bundle.zip.zst= or in the tar container, selected by its entry name or by its byte range. | Its owner, and only its owner, during an apply. A converter may read every part during an export. |
+| *Bundle archive* | A content-addressed ZIP whose entries are zstd-compressed, with one entry per (owner, kind) and the manifest embedded. It is the only object that holds rows. | The object =bundles/{bundle_id}/bundle.zip.zst=, or =bundle.tar.zst= when the container is a tar. | An owner reads one entry. A converter reads every entry. The coordinator does not open it. |
 
-The target is not decoration. A bundle with no target either applies to
-world data or is refused, and both answers must be explicit. A bundle
-aimed at a sandbox applies inside that sandbox's isolation; the anchor
-decides who may open the sandbox and who may then see the result, per
+The archive is assembled from staging objects written by the owners.
+Each owner encodes its own part, compresses that entry with zstd, writes
+the compressed entry to a staging object, and returns a part record with
+the checksum and both sizes. The producer writes the manifest, then asks
+object storage to copy each staging entry into the archive under its
+entry name, at ZIP method 93, without recompressing it, and to add the
+manifest as the =manifest.msgpack= entry. It never decodes an entry. The
+producer deletes the staging objects once the archive's part checksums
+have been verified. No component ever encodes or compresses another
+owner's rows.
+
+The =bundle_id= is SHA-256 over the canonical manifest bytes with every
+=part.uri= set to the empty string, encoded by the same codec in
+declaration order. The URI is the only field blanked, because it is
+derived from the id. The digest therefore covers =as_of=, the target, the
+producer, every part checksum and the compressed layout. A re-encoding
+changes the id and therefore the key; the part checksums do not change,
+so semantic identity survives at the part level. A key is never reused
+for different semantic content.
+
+** Why nothing bulk is on the wire
+
+The manifest and the part references are kilobytes. The data is in
+object storage. Efficiency comes from that structure, not from the
+encoding: encoding a bundle into a message would still move the same
+bytes onto the bus, and would add a decode step before any owner could
+start.
+
+The reason a bundle does not travel as a message is validation,
+routing, per-part retry and the prohibition on an encoded value in a
+message field — not size.
+
+- *Validation.* A message is validated before it is accepted. A bundle's
+  rows cannot be validated until they are decoded against the owner's
+  model, which is the owner's job at its own boundary.
+- *Routing.* One message has one subject and one handler. A bundle has
+  one part per owner, and the coordinator must dispatch each part to the
+  owner that may write it.
+- *Per-part retry.* A failed row must cost one part, not a whole
+  bundle. A message that carries the archive forces a re-send of every
+  part to retry one.
+- *The encoded-value rule.* A message field that holds an encoded value
+  has no static type at either end; see
+  [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]].
+
+A message also has a practical bound, and a bundle does not. That is a
+limit on the message, not the reason for the design.
+
+** The manifest
+
+The manifest is a *generated, modelled operation type*. It is declared
+in =ores.codegen.operation=, generated with a schema and a codec, and
+encoded with the platform wire codec like any other message. It is never
+free-form JSON, never a =std::string= field holding JSON, and never
+inferred from the payload or from the archive. It is versioned, so a
+reader refuses a layout it does not know instead of guessing.
+
+#+ATTR_HTML: :class hug-leading
+| Field | Type | Meaning |
+|-------+------+---------|
+| =bundle_format_version= | =uint16= | The layout version of the manifest and its part records. A reader refuses an unknown version. |
+| =container= | =enum { zip_zstd, tar_zstd }= | The archive container and its compression. The reader selects the entry access method from it. |
+| =producer.component= | =string= | The service that assembled the bundle. It names the origin of the manifest, not the owner of the data. |
+| =producer.version= | =string= | The build version of that service. |
+| =producer.environment= | =string= | The environment the bundle was produced in: development, test, staging or production, with its instance identifier. |
+| =as_of= | =timestamp= | The bitemporal instant the bundle is a view of, in UTC with microsecond precision. See *Progress, retry, and staleness* below. |
+| =target.sandbox= | =uuid, empty= | The sandbox the bundle applies into. Empty means an export-only bundle, which may be converted but never applied. |
+| =target.anchor= | =uuid= | The official portfolio-tree node the sandbox is anchored to, or the party's anchor for an export-only bundle. |
+| =target.party= | =uuid= | The party the apply acts as. |
+| =parts= | =array<part>= | One record per (owner, kind), in application order. The order is the sequencing rule. |
+| =part.owner= | =string= | The owning component's short name, such as =refdata=; its service is =ores.refdata=. This is the routing field: one part, one owner. |
+| =part.kind= | =string= | The stable generated kind name the part holds, such as =currency=, used for diagnostics and for the owner's validation. |
+| =part.format_version= | =uint16= | The version of the row encoding in this part. It is independent of =bundle_format_version=. |
+| =part.row_count= | =uint64= | The expected number of rows. It drives progress and catches a truncated entry. |
+| =part.checksum= | =sha256= | SHA-256 of the *uncompressed* entry bytes. The owner verifies it before applying a row. |
+| =part.uncompressed_size= | =uint64= | The number of bytes the checksum covers. |
+| =part.compressed_size= | =uint64= | The number of bytes the entry occupies in the archive. It is recorded separately from the checksum. |
+| =part.uri= | =string= | The bucket and key of the archive that holds the part. All parts of one bundle carry the same URI. |
+| =part.entry= | =entry_ref= | The ZIP entry name, or the byte range (offset and length) in a tar container. |
+
+The target is not decoration. An apply bundle with an empty
+=target.sandbox= is refused by the coordinator. A bundle aimed at a
+sandbox applies inside that sandbox's isolation; the anchor decides who
+may open the sandbox and who may then see the result, per
 [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]].
 
-** The part record**
+=parts= is grouped by owner: every part of one owner is contiguous, and
+the owners appear in dependency order. The grouping is what lets one
+message per owner preserve the global application order. A manifest that
+interleaves two owners is refused, because no single message per owner
+could deliver the interleaving.
 
-#+ATTR_HTML: :class hug-leading
-| Field | Meaning |
-|-------+---------|
-| =owner= | The service that owns the kind and will apply the part. This is the routing field: one part, one owner. |
-| =kind= | The entity kinds the part holds, for diagnostics and for the owner's own validation. |
-| =format= | The encoding of the bytes, including its version, so the owner parses with the codec it expects. |
-| =row_count= | The expected number of records. It drives progress and catches a truncated upload. |
-| =checksum= | The content hash. The owner verifies it before applying a row. |
-| =uri= | The bucket and key of the part's bytes. |
+=parts= is O(number of parts), never O(number of rows). A part record
+holds a =row_count=, not the rows. That bound is what makes the
+manifest validatable before any bytes move: its size is set by the
+number of owners and kinds, not by the size of the portfolio, so a
+portfolio of a hundred million rows still has a manifest of kilobytes.
+A manifest that grew with rows would be the message the bundle exists to
+avoid, and the coordinator would have to read the data to validate its
+own routing table.
 
-A part may carry more, such as a byte length or a compression name, and
-none of it changes the rule: the record names data, it never contains it.
+** The container and the encoding
 
-`owner` is what makes the set a bundle rather than a union. A part whose
-owner is unknown is a manifest error; a part with two owners is two
-parts.
+The archive is a ZIP with one zstd-compressed entry per (owner, kind),
+named ={owner}/{kind}=, using ZIP compression method 93, plus the
+embedded =manifest.msgpack= entry. The ZIP central directory is the
+index: it gives every entry's name, compression method, compressed size
+and offset. The archive is content-addressed: a key is never reused for a
+different semantic content. A put replaces the whole object; a different
+compression is a new =bundle_id=. A =tar_zstd= container is allowed only
+when it carries a seekable zstd frame index that gives each entry's byte
+range; a plain =tar.zst= has no index, cannot give random access, and is
+refused.
 
-** The coordinator reads only the manifest
+*Random access is the decisive point.* A container with an index gives
+random access to a single part. An owner seeks to its entry, reads that
+entry and nothing else. A single large msgpack document cannot do this,
+because a msgpack array has no index: to reach the owner's part, a reader
+must decode every row of every earlier part. That would force one owner
+to read and parse bytes another owner produced, which is exactly what
+[[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]]
+forbids. The index is therefore a boundary control, not a performance
+detail.
 
-The coordinator is the operation's front end. It:
+The row encoding has four rules:
 
-1. stores the artefact and computes the checksums;
-2. validates the manifest: version, target, the required fields, and that
-   every part names an owner;
-3. sends one message per owner, in the manifest's order;
-4. collects one reply per part and records per-part progress;
-5. retries or reports per part, and never re-runs the whole bundle to fix
-   one part.
+1. *One entry, one type, one stream.* An entry is a stream of msgpack
+   maps, one map per row, and every map is the owner's generated type
+   for that kind. The entry does not hold one array of all rows.
+2. *Named fields, never positional arrays.* A row is a map with string
+   keys. A later field addition adds a key and does not shift an
+   existing value, so an archived bundle still decodes after the type
+   gains a field. A positional array binds meaning to position; adding
+   a field in the middle silently reinterprets every archived row.
+3. *Row-by-row streaming decode with bounded memory.* The owner
+   decompresses the entry and decodes one map at a time, validates it
+   and writes it inside its transaction. Memory is the size of one row
+   plus the transaction state, not the size of the bundle. This is what
+   makes a portfolio spanning every instrument type tractable: the
+   number of kinds changes the number of parts, not the memory an owner
+   needs to apply one of them.
+4. *The part format version is independent of the bundle format
+   version.* =part.format_version= gates the row encoding;
+   =bundle_format_version= gates only the manifest layout and the
+   container rules. A version 1 bundle may contain a version 2 part, and
+   the owner selects the decoder from the part record. A new row field
+   or a new part encoding does not force a new manifest layout.
 
-The coordinator does not parse another owner's data. It may check that a
-part exists and that its bytes match the recorded checksum, because that
-reads bytes without interpreting them. Interpretation belongs to the
-owner, and
-[[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] is
-why: the coordinator has no schema for another service's rows, so any
-parse it performs is a second model that can only drift. The same rule is
-recorded in
+** Checksums and compression
+
+Every part is checksummed *uncompressed*: SHA-256 over the concatenated
+msgpack maps exactly as the owner will decode them. The checksum is
+therefore a statement about the data, not about the compressor. A later
+zstd version, a different compression level or a re-encoding of the
+archive leaves the checksum unchanged, so the part's semantic identity
+survives a compressor upgrade. The compressed size is recorded separately
+in =part.compressed_size=; it describes the object, not the data. A
+re-encoding produces a new =bundle_id=, because the compressed layout is
+part of the manifest, and the recomputed checksum still matches.
+
+The owner decompresses the entry, hashes the uncompressed stream, and
+compares the digest with the manifest before it applies the first row.
+Verification is a first pass over the entry and decoding is a second
+pass, so memory stays bounded and no row is applied before the digest
+matches. A mismatch is a failure of the part, never a warning.
+
+Compress the archive, not the messages. The wire codec already gzips a
+message payload above 4096 bytes, so compressing a manifest or a
+part-reference message again is compressing compressed data. Do not wrap
+the archive in gzip either: its entries are already zstd-compressed.
+Compression belongs to the object-storage layer, where the archive and
+its entries live.
+
+** The coordinator
+
+The coordinator is the apply operation's front end. It reads only the
+manifest. It validates the version, the target, the required fields,
+that every part names a known owner, that every (owner, kind) pair is
+unique, and that the part order is the declared sequence. It may HEAD
+the archive object to confirm that it exists; it does not GET, decompress
+or decode a part, and it does not compute a part checksum. That check
+belongs to the owner, which reads the bytes anyway.
+
+The coordinator must never parse another owner's data, or database per
+service is broken. It has no schema for another service's rows, so any
+parse it performs is a second model that can only drift. The same rule
+is recorded in
 [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes
-another component's tables]].
+another component's tables]] and in
+[[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]].
 
-** One message per owner, carrying a reference**
+It dispatches one message per owner, carrying the bundle id, the
+correlation id, the archive URI, the manifest's =as_of= and =target=,
+and that owner's part records. A reference, never the data. When an
+owner holds several parts, the one message carries all of that owner's
+records; the message is still O(parts this owner owns), and the owner
+applies them in manifest order and reports each part separately. No
+message carries rows, a document or an archive.
 
-A part message is small, typed and bounded. It carries:
+The part message is a request with a deadline, per
+[[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]]. The
+reply names the part and reports applied, rejected or failed, with the
+reason and the row count.
 
-- the bundle id and the correlation id;
-- the part: owner, kind, format, row count, checksum and URI;
-- the manifest's =as_of= and =target=;
-- nothing else. Not the rows, not the document, not an archive.
+#+caption: The bundle round trip: the export operation collects one part record per owner, object storage assembles and stores the archive, the coordinator reads only the manifest and sends one part reference per owner, and each owner reads only its own entry and applies it in its own transaction.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/bundle_transport_sequence.png]]
 
-The message is a request with a deadline, per
-[[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]]. Its reply
-names the part and reports applied, rejected or failed, with the reason.
+Source: [[./bundle_transport_sequence.puml][=bundle_transport_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/bundle_transport_sequence.puml=.
 
-One message per owner is the routing rule. A bundle with three owners
-sends three messages. A bundle with one owner is not a bundle: it is a
-family or a series of entity writes, and it should be modelled that way.
+#+caption: The bundle layout: the manifest object, the archive object and its entries, and the one set of objects each participant reads. The coordinator reads the manifest and never opens an entry; each owner reads only its own entries; the converter reads every entry.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/bundle_transport_layout.png]]
 
-** The owner applies its part atomically**
+Source: [[./bundle_transport_layout.puml][=bundle_transport_layout.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/bundle_transport_layout.puml=.
+
+** The owner
 
 The owner's step is the only step that writes rows, and it writes only
 its own:
 
-1. Read the part from the URI and verify the checksum.
-2. Parse it with the codec the =format= names, and validate it against
-   the owner's own model: required fields, keys, references it owns.
-3. Apply the whole part in one transaction, or reject it whole.
-4. Stamp the session's tenant and party, never a value from the payload.
-5. Reply with the counts and, on failure, the reason.
+1. Fetch only its part, by entry name or byte range, from the archive
+   the message names. It does not fetch the whole archive.
+2. Decompress the entry and verify the SHA-256 of the uncompressed
+   stream against =part.checksum=.
+3. Look up the idempotency key (bundle id, owner, kind, checksum). If
+   this part already committed, reply applied with its recorded counts
+   and stop.
+4. Compare =as_of= with the owner's heads. A stale part is refused, as
+   *Progress, retry, and staleness* states.
+5. Decode the stream with the codec =part.format_version= names, one
+   row at a time, and validate each row against the owner's own model:
+   required fields, keys, and references the owner holds.
+6. Write each validated row through the generated repository for its
+   kind, inside one =unit_of_work=, in manifest order when the owner
+   holds several parts. Never write a kind's table with a hand-written
+   statement in a part handler; see
+   [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go
+   through the repositories]].
+7. Commit only after the last row, and only if the decoded count equals
+   =part.row_count=. A row that fails validation, a count that differs
+   and any write error roll back the whole part. The part is all or
+   nothing.
+8. Do not read between the writes of the unit of work. In unpatched
+   sqlgen a read commits the transaction, so the rule that keeps the
+   part atomic is the one in
+   [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of
+   work commits it]].
+9. Stamp the session's tenant and party, never a value from the payload.
+10. Reply with the counts and, on failure, the reason.
 
 The transaction is the owner's, so the part is the unit of atomicity. A
-failure halfway rolls back that part alone. No other owner sees a partial
-write, and no other owner is asked to compensate.
+failure halfway rolls back that part alone. No other owner sees a
+partial write, and no other owner is asked to compensate.
 
-The apply is still a repository write. Each kind's table is written only
-through that kind's generated repository, never by a hand-written
-statement in the owner's part handler; see
-[[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]].
-
-** Atomicity is per owner, by construction**
+** Atomicity and consistency
 
 - *Global atomicity across owners is not available.* Two services own
   two databases, and no transaction spans both. A two-phase commit would
   couple every owner's availability to the coordinator's, which the
-  component boundaries forbid.
+  component boundaries forbid. Do not promise global atomicity to a
+  caller, and do not describe a bundle as all-or-nothing across owners.
 - *Per-owner atomicity is the guarantee.* Each part is all or nothing,
-  and a bundle's manifest names exactly which parts exist.
+  and the manifest names exactly which parts exist. A bundle that is
+  complete when every part reports applied is a bundle whose parts all
+  resolve at the same instant.
 - *A bundle that needs global rollback is a modelling error.* If the
   invariant truly needs every owner to commit together, the data belongs
   under one owner or the operation is not a bundle. Split the invariant
-  until each part holds locally, or accept the sandbox below.
-
-State this limit in the operation's own page. A caller who believes a
-bundle is globally atomic will not build the retry it needs.
-
-** Consistency by sequencing**
-
-The order in the manifest is the order of application, and a part starts
-only after its predecessor's reply where the invariant has a direction.
-An environment export imports reference data before the configuration
-that names it, and trades before the structures that group them.
-
-Two rules follow:
-
-- *Order what must be ordered.* If a part's rows reference another
-  owner's rows, the referenced part is applied first, and the manifest
-  says so by position.
-- *Do not invent an order that does not exist.* Where no part constrains
-  another, they apply independently, and the =as_of= instant is what
-  makes the set coherent rather than the sequence.
-
-A bundle that is complete when every part reports applied is a bundle
-whose parts all resolve at the same instant. That, not a transaction, is
-the consistency it delivers.
-
-** The sandbox for examine-before-live**
-
-The sandbox is the compensating control for the missing global
-transaction, and it is where an import is examined.
-
-- The bundle applies into a sandbox, so a wrong part is discarded with
-  the whole sandbox rather than repaired row by row in live data.
-- The sandbox keeps the official rows untouched and isolates trades by
-  where they are booked and by what they are, per
+  until each part holds locally, or use the sandbox below.
+- *Consistency comes from sequencing.* The order in =parts= is the order
+  of application, and a part starts only after its predecessor's reply
+  where the invariant has a direction. An environment export imports
+  reference data before the configuration that names it, and trades
+  before the structures that group them. A failed part blocks only its
+  successors, which stay pending and are not dispatched; independent
+  parts continue. Where no part constrains another, they apply
+  independently, and =as_of= is what makes the set coherent rather than
+  the sequence.
+- *The sandbox is the compensating control.* An import applies into a
+  sandbox, so a wrong part is discarded with the whole sandbox rather
+  than repaired row by row in live data. Promotion from the sandbox to
+  live data is a separate, smaller operation with its own review; it is
+  not a retry of the import. See
   [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]].
-- Promotion from the sandbox to live data is a separate, smaller
-  operation with its own review. It is not a retry of the import.
 
-** Progress and retry are per part**
+#+ATTR_HTML: :class hug-leading
+| Failure | What the coordinator does | What the user sees |
+|---------+---------------------------+--------------------|
+| Part missing | The owner's fetch of the entry fails. The coordinator marks that part =failed= and does not re-send the same immutable archive; the other parts keep their own state. | The part's owner, kind and entry name, and =missing=. The bundle is incomplete, and no rows from that part were applied. |
+| Checksum mismatch | The owner refuses before applying, because the bytes are not the bytes the manifest names. The coordinator marks the part =failed= and reports both digests; a retry of the same bytes cannot help. | =checksum_mismatch=, with the expected and actual SHA-256. The part applied nothing; the other parts are unchanged. |
+| Kind unsupported | The coordinator refuses the manifest at dispatch when no known owner claims the part. If the owner knows the kind but not the format version, it replies =unsupported= and the coordinator marks the part =failed=. | The kind and =part.format_version=, and the component that must be upgraded. No message is sent, or no row is applied. |
+| Apply refused | The owner validates or applies and rejects the part; it rolls the whole part back and replies =rejected= with the row or key that failed. The coordinator records the reason and does not retry a data finding. | The reason and the failing row or key. The part applied nothing; the other parts are not rolled back. |
+| Owner unreachable | No responder is available, or the request cannot be delivered. The coordinator retries with bounded backoff until the bundle deadline, then marks the part =failed=. | =unreachable=, with the owner's name and the attempts made. The part stays pending until the deadline, and other parts proceed. |
+| Deadline exceeded | The part's bounded request expires. The coordinator marks the part =timed_out= and re-offers it only through the idempotent retry below; the owner may still commit after the reply was lost. | =timed_out=, with the deadline and the part's last known state. The coordinator reports the part as unknown until the retry or a reconciliation read confirms it. |
 
-- *Progress.* The coordinator records each part as pending, applied or
-  rejected, with its row count and reason. The bundle's progress is the
-  set of its parts, not a percentage of a blob.
-- *Retry.* A retry re-sends the part reference. The artefact is
-  immutable, so the retry reads the same bytes, and an idempotent apply
-  converges. A part applied twice is applied twice with the same result.
+** Progress, retry, and staleness
+
+Progress and retry are per part, never per archive:
+
+- *Progress.* The coordinator records each part as =pending=,
+  =dispatched=, =applied=, =rejected=, =failed= or =timed_out=, with its
+  row count and reason. The bundle's progress is the set of its parts,
+  not a percentage of a blob.
+- *Retry.* A retry re-sends the part reference. The archive's content is
+  immutable, so the retry reads the same uncompressed bytes. The apply is
+  idempotent
+  on the key (bundle id, owner, kind, checksum): the owner records that
+  key in its own part-apply ledger in the same transaction as the rows,
+  and a second delivery of the same part finds the key and replies
+  applied without writing again. The coordinator does not re-upload the
+  archive and does not restart the whole bundle to fix one part.
 - *Rejection.* A rejected part is a finding about the data, not a
   transport failure. It is reported with the row or key that failed, and
   the other parts are not rolled back.
-- *No whole-bundle restart.* Restarting the coordinator re-offers the
-  outstanding parts only. A retried bundle does not re-upload the
-  artefact.
+- *Restart.* Restarting the coordinator re-offers the outstanding parts
+  only.
 
-** Never carry an opaque archive in a message**
+=as_of= makes a stale bundle detectable rather than last-writer-wins.
+It is the bitemporal instant the bundle is a view of, per
+[[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]]. A
+part is *stale* when the owner's heads have moved since that instant:
+any row the part would write has a version whose transaction time is
+later than =as_of=, or a key the part references in this owner's
+database was deleted or replaced after =as_of=. A part whose =as_of= is
+later than or equal to every relevant change is not stale, and it
+applies.
 
-An opaque self-describing archive is bytes that carry their own
-structure: a tar, a zip, a document. It must never be a field inside a
-message, and the bundle transport is the reason the rule is worth
-stating.
+The owner *refuses* a stale part. It does not rebase it. A rebase is an
+explicit new export at a newer =as_of=, which produces a new manifest and
+a new =bundle_id=; the producer mints it, and no owner edits the
+manifest or silently applies an older part against newer rows.
 
-| What it defeats | Why |
-|-----------------+-----|
-| Validation | The receiver cannot check a row before it acts. It must unpack first, so the failure surfaces after the message was accepted. |
-| Routing | One blob has no owner per kind, so the coordinator cannot dispatch per owner, and no service knows which part is its business. |
-| Per-part retry | A failed row means re-sending the whole archive, so a retry costs the bundle. |
-| Progress | "Half the archive" is not a reportable state. |
-| The encoded-value rule | A message field that holds an encoded value has no static type at either end; see [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]]. |
-| Size | A message has a practical bound, and a bundle does not. Object storage is the store for bytes with no schema. |
+Refusal is the chosen behaviour for three reasons. A silent rebase would
+make each part a different instant, which destroys the one property the
+bundle exists to provide. The archived bundle is the evidence of what was
+imported and when; a rebase that changed its meaning would destroy that
+evidence. And a refusal is detectable: the user sees the stale part and
+can ask for a fresh bundle, while a rebase reports success and leaves the
+mixture invisible.
 
-The manifest is the opposite of an archive: declared, small, versioned
-and validated before a single row moves.
+** Worked example: a portfolio exported for ORE XML
 
-** as_of makes a stale import detectable**
+A portfolio spans currencies, calendars, conventions, curves, trades and
+every instrument type the book holds. The export must give the ORE XML
+converter one instant, or the document mixes two books.
 
-The =as_of= field is the bitemporal instant the bundle is a view of, per
-[[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]].
+*The parts.* One part per (owner, kind), in application order:
 
-Without it, an import is last-writer-wins. A bundle built yesterday is
-applied today, overwrites rows that changed in between, and reports
-success. Nothing in the exchange says the data is old.
+- =refdata/currency=, =refdata/calendar=, =refdata/day_count= and
+  =refdata/convention=;
+- =marketdata/curve= and =marketdata/vol_surface=;
+- =trading/portfolio=, =trading/book=, =trading/trade= and
+  =trading/instrument/*=, one part per instrument kind.
 
-With it, the owner compares the instant to its rows before it applies:
+This is exactly the case a closed message type cannot carry: the last
+group gains a member whenever the book gains an instrument kind.
 
-- a part whose =as_of= is older than the owner's own latest change is
-  detectable, and can be rejected or flagged instead of applied;
-- every part resolves at the same instant, so the set is one view of the
-  world rather than a mixture of two;
-- the exchange records which instant was imported, so a later
-  investigation can tell a stale bundle from a wrong one.
+*The manifest in outline.*
 
-The =as_of= is a statement by the producer. The owner still decides what
-to do with a stale part; the manifest only makes it visible.
+#+begin_example
+bundle_format_version  1
+container              zip_zstd
+producer               {trading-export, 1.0.0, production}
+as_of                  2026-10-17T09:00:00.000000Z
+target                 {sandbox: empty (export only),
+                        anchor: desk-42, party: portfolio-owner}
+parts                  refdata/*, marketdata/*, trading/*
+                       one part record per (owner, kind)
+#+end_example
 
-** What a bundle must not become**
+*The sequence.*
 
-- A struct with one typed array per kind. That is the anti-type in
-  [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]].
-- A coordinator that parses another owner's format.
-- A distributed transaction, or a caller that believes in one.
-- A free-form JSON manifest, or a manifest inferred from the payload.
-- A message that carries the bytes.
-- A one-owner bundle, which is a family or a series of entity writes.
-- A bundle for an invariant that a family already holds. If one owner
-  and one central row carry it, use
-  =ores.codegen.family=, not this transport.
+1. The converter fixes =as_of= and asks the export operation for the
+   portfolio. No owner reads outside that instant.
+2. Each owner reads its rows in one transaction, encodes and
+   zstd-compresses its entry, writes a staging object, and returns a
+   part record with the checksum, row count and both sizes.
+3. The producer writes the manifest, then asks storage to assemble the
+   staging entries into one archive and to add the manifest entry. It
+   verifies every part checksum.
+4. The converter reads the manifest, then streams each entry into the
+   ORE XML writer. It writes to a temporary file and renames it only
+   after every part has been read and checked.
+
+*The atomicity actually obtained.* There is no global transaction. Each
+owner's part is one consistent read at =as_of=, and the conversion is
+all or nothing at its own boundary: if any part is missing or fails its
+checksum, the converter writes no ORE XML at all. A failure does not
+roll back a read, because there is nothing to roll back; it withholds
+the output. That is consistency by the instant plus an atomic output
+file, not distributed atomicity.
+
+** Worked example: an environment export imported into development
+
+A developer needs a production defect reproduced from one snapshot of
+the environment: identity, reference data, market data and trades
+together.
+
+*The parts.* =iam/tenant= and =iam/party=; =refdata/currency=,
+=refdata/calendar= and =refdata/convention=; =marketdata/curve=;
+=trading/book=, =trading/portfolio=, =trading/trade= and
+=trading/instrument/*=. Owners: =ores.iam=, =ores.refdata=,
+=ores.marketdata= and =ores.trading=.
+
+*The manifest in outline.*
+
+#+begin_example
+bundle_format_version  1
+container              zip_zstd
+producer               {environment-export, 1.0.0, production}
+as_of                  2026-10-17T09:00:00.000000Z
+target                 {sandbox: 7f3c..., anchor: desk-42,
+                        party: 8a21...}
+parts                  iam/*, refdata/*, marketdata/*, trading/*
+                       ordered by reference, not alphabetical
+#+end_example
+
+*The sequence.*
+
+1. The source environment exports the bundle and stores the archive and
+   manifest, as in the previous example.
+2. The development coordinator reads the manifest, checks that the
+   sandbox is open, that its anchor matches =target.anchor=, and that
+   every part names a known owner.
+3. It sends one message per owner in =parts= order: =ores.iam= first,
+   then =ores.refdata=, then =ores.marketdata=, then =ores.trading=.
+4. Each owner fetches only its entries, verifies the checksums, streams
+   the rows, validates them, and applies them in one =unit_of_work= per
+   part.
+5. A person examines the sandbox. Promotion to live data is a separate
+   operation with its own review.
+
+*The atomicity actually obtained.* Each part is atomic in its owner's
+database. If =trading= rejects a trade after =refdata= applied, the
+=refdata= rows stay in the sandbox and the =trading= part applied
+nothing; the sandbox is then discarded as a whole, and no official row
+was touched. The bundle does not provide global rollback, and the
+sandbox is what makes that limit safe.
+
+** What a bundle must not become
+
+- *An opaque archive inside a message field.* That is the artefact
+  anti-pattern in
+  [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]]:
+  the receiver must unpack before it can validate, no owner can be
+  routed to, and one failed row costs the whole archive. It also breaks
+  the encoded-value rule in
+  [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over
+  NATS]].
+- *A union of unrelated entities presented as one struct.* That is the
+  anti-type in
+  [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]]:
+  one typed array per kind, named after a file or a screen, with no
+  manifest, no owner boundary and no instant.
+- *A payload the coordinator parses.* A coordinator that decodes another
+  owner's rows is a second model. It is the composite scope the
+  classification page refuses, in
+  [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]],
+  and it breaks
+  [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]].
+  The manifest is the only thing the coordinator reads.
+- *A substitute for a family when one owner suffices.* If one owner
+  writes every member and one transaction can hold the invariant, the
+  set is a family; use =ores.codegen.family=, not this transport. The
+  classification page owns that decision, in
+  [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]],
+  and the checklist records it, in
+  [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][the data classification
+  checklist]].
 
 * See also
 
@@ -318,10 +573,15 @@ to do with a stale part; the manifest only makes it visible.
   this transport.
 - [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — which rows a bundle carries, and the dataset or
   seeder that delivers them.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — =ores.codegen.operation=,
+  the pattern the manifest is declared with.
 - [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]] — the rule that
   binds the owner's apply to the generated repository of each kind.
-- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the store the artefact lives in, and its key rule.
-- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that places the artefact against
+- [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of work commits it]] — the read rule that keeps
+  the owner's one transaction atomic.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the store the archive and manifest live in, and
+  its key rule.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that places the archive against
   the database and the stream.
 - [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] — why the coordinator does not parse another
   owner's data.

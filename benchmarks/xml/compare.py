@@ -15,11 +15,28 @@ from collections import defaultdict
 
 
 def load(path):
-    runs = defaultdict(dict)
+    """Latest run per commit, per case.
+
+    A commit can be measured more than once and the file is append-only, so the
+    most recent run for a commit is the one compared. An older run at the same
+    commit is not lost, only not used.
+    """
+    newest = {}
     with open(path, newline="") as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
-            key = (row["mode"], row["input"])
-            runs[key].setdefault(row["commit"], {})[row["metric"]] = float(row["value"])
+            try:
+                value = float(row["value"])
+            except (TypeError, ValueError):
+                # A rate or a truncated row is not comparable here; say so by
+                # leaving it out rather than failing the whole file.
+                continue
+            key = (row["commit"], row["mode"], row["input"], row["metric"])
+            if key not in newest or row["date"] > newest[key][0]:
+                newest[key] = (row["date"], value)
+
+    runs = defaultdict(dict)
+    for (commit, mode, name, metric), (_, value) in newest.items():
+        runs[(mode, name)].setdefault(commit, {})[metric] = value
     return runs
 
 
@@ -39,14 +56,15 @@ def main():
     order = commits_in_order(runs)
     older = sys.argv[1]
     newer = sys.argv[2] if len(sys.argv) > 2 else order[-1]
-    if older not in order or newer not in order:
-        sys.exit(f"no rows for {older} or {newer}; known: {', '.join(order)}")
+    missing = [c for c in (older, newer) if c not in order]
+    if missing:
+        sys.exit(f"no rows for {', '.join(missing)}; known: {', '.join(order)}")
 
     print(f"{'case':<24}{'metric':<14}{'older':>14}{'newer':>14}{'delta':>10}")
     for (mode, name), per_commit in sorted(runs.items()):
         if older not in per_commit or newer not in per_commit:
             continue
-        for metric in ("ns_per_parse", "ir", "d1_misses", "ll_misses"):
+        for metric in ("ns_per_parse", "ir", "i1_misses", "d1_misses", "ll_misses"):
             before = per_commit[older].get(metric)
             after = per_commit[newer].get(metric)
             if before is None or after is None or before == 0:

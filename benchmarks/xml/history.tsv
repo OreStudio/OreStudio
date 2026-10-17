@@ -1,97 +1,85 @@
-mode	input	metric	value	commit	date	compiler
-scan	small	ns_per_parse	174565.4	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	small	ir	462351524	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	small	d1_misses	225642	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	small	ll_misses	15134	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	small	ns_per_parse	201963.5	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	small	ir	537664594	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	small	d1_misses	1179718	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	small	ll_misses	19436	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	small	ns_per_parse	62289.8	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	small	ir	159024329	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	small	d1_misses	1255892	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	small	ll_misses	17695	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	portfolio	ns_per_parse	1290005.6	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	portfolio	ir	666521662	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	portfolio	d1_misses	340837	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	portfolio	ll_misses	27406	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	portfolio	ns_per_parse	1445649.9	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	portfolio	ir	760586689	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	portfolio	d1_misses	1826670	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	portfolio	ll_misses	67911	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	portfolio	ns_per_parse	855609.9	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	portfolio	ir	219824031	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	portfolio	d1_misses	1579176	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	portfolio	ll_misses	54060	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	scripts	ns_per_parse	98382.7	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	scripts	ir	35317381	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	scripts	d1_misses	93936	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	scripts	ll_misses	19330	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	scripts	ns_per_parse	122817.9	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	scripts	ir	42344263	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	scripts	d1_misses	250155	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	scripts	ll_misses	23987	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	scripts	ns_per_parse	98154.2	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	scripts	ir	43383700	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	scripts	d1_misses	250106	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	scripts	ll_misses	23303	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	large	ns_per_parse	19151731.5	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	large	ir	863970264	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	large	d1_misses	559566	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	large	ll_misses	234056	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	large	ns_per_parse	26413079.0	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	large	ir	954532659	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	large	d1_misses	2626251	fcea424d5a	2026-10-17T09:29:10Z	Debian
-tape	large	ll_misses	2315099	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	large	ns_per_parse	15174164.5	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	large	ir	468502784	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	large	d1_misses	1813791	fcea424d5a	2026-10-17T09:29:10Z	Debian
-pugi	large	ll_misses	1549574	fcea424d5a	2026-10-17T09:29:10Z	Debian
-scan	small	ns_per_parse	104927.2	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	small	ir	310823788	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	small	d1_misses	226039	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	small	ll_misses	15129	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	small	ns_per_parse	121792.3	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	small	ir	369121987	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	small	d1_misses	1057520	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	small	ll_misses	19427	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	small	ns_per_parse	62138.1	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	small	ir	159024338	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	small	d1_misses	1255892	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	small	ll_misses	17694	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	portfolio	ns_per_parse	619206.7	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	portfolio	ir	343284280	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	portfolio	d1_misses	341035	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	portfolio	ll_misses	27401	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	portfolio	ns_per_parse	738693.2	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	portfolio	ir	410789917	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	portfolio	d1_misses	1391372	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	portfolio	ll_misses	61090	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	portfolio	ns_per_parse	861060.9	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	portfolio	ir	219824075	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	portfolio	d1_misses	1579176	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	portfolio	ll_misses	54063	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	scripts	ns_per_parse	60994.4	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	scripts	ir	27297995	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	scripts	d1_misses	93975	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	scripts	ll_misses	19324	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	scripts	ns_per_parse	82947.0	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	scripts	ir	33481611	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	scripts	d1_misses	243005	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	scripts	ll_misses	23881	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	scripts	ns_per_parse	98280.3	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	scripts	ir	43383741	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	scripts	d1_misses	250106	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	scripts	ll_misses	23306	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	large	ns_per_parse	11796418.5	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	large	ir	649136379	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	large	d1_misses	559571	e82a0a827f	2026-10-17T09:36:23Z	Debian
-scan	large	ll_misses	234042	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	large	ns_per_parse	18074169.5	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	large	ir	718883014	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	large	d1_misses	2457273	e82a0a827f	2026-10-17T09:36:23Z	Debian
-tape	large	ll_misses	2209507	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	large	ns_per_parse	15164394.0	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	large	ir	468502768	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	large	d1_misses	1813791	e82a0a827f	2026-10-17T09:36:23Z	Debian
-pugi	large	ll_misses	1549578	e82a0a827f	2026-10-17T09:36:23Z	Debian
+mode	input	metric	value	repeats	commit	date	compiler
+scan	small	ns_per_parse	101815.0	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	small	ir	1547849.0	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	small	i1_misses	12.6	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	small	d1_misses	1130.1	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	small	ll_misses	75.6	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	small	d1_miss_rate	0.2%	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	small	ll_miss_rate	0.0%	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	small	ns_per_parse	116590.6	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	small	ir	1832536.2	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	small	i1_misses	12.8	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	small	d1_misses	5285.5	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	small	ll_misses	97.1	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	small	d1_miss_rate	0.7%	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	small	ll_miss_rate	0.0%	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	small	ns_per_parse	63395.2	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	small	ir	790890.9	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	small	i1_misses	12.7	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	small	d1_misses	6281.4	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	small	ll_misses	88.5	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	small	d1_miss_rate	1.7%	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	small	ll_miss_rate	0.0%	200	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	portfolio	ns_per_parse	594546.4	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	portfolio	ir	8418553.0	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	portfolio	i1_misses	63.6	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	portfolio	d1_misses	8524.3	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	portfolio	ll_misses	684.9	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	portfolio	d1_miss_rate	0.3%	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	portfolio	ll_miss_rate	0.0%	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	portfolio	ns_per_parse	700254.2	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	portfolio	ir	10070097.3	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	portfolio	i1_misses	64.3	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	portfolio	d1_misses	34786.5	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	portfolio	ll_misses	1527.2	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	portfolio	d1_miss_rate	0.8%	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	portfolio	ll_miss_rate	0.0%	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	portfolio	ns_per_parse	921256.4	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	portfolio	ir	5340114.5	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	portfolio	i1_misses	64.6	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	portfolio	d1_misses	39480.1	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	portfolio	ll_misses	1351.6	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	portfolio	d1_miss_rate	1.5%	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	portfolio	ll_miss_rate	0.0%	40	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	scripts	ns_per_parse	58899.2	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	scripts	ir	1230117.8	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	scripts	i1_misses	127.3	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	scripts	d1_misses	4697.6	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	scripts	ll_misses	966.0	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	scripts	d1_miss_rate	1.1%	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	scripts	ll_miss_rate	0.1%	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	scripts	ns_per_parse	81444.8	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	scripts	ir	1536277.6	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	scripts	i1_misses	128.6	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	scripts	d1_misses	12149.8	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	scripts	ll_misses	1193.7	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	scripts	d1_miss_rate	1.3%	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	scripts	ll_miss_rate	0.0%	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	scripts	ns_per_parse	100654.2	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	scripts	ir	2034723.1	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	scripts	i1_misses	129.6	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	scripts	d1_misses	12506.8	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	scripts	ll_misses	1165.2	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	scripts	d1_miss_rate	1.2%	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	scripts	ll_miss_rate	0.0%	20	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	large	ns_per_parse	11040601.0	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	large	ir	283470610.0	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	large	i1_misses	1275.5	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	large	d1_misses	279770.5	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	large	ll_misses	117019.0	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	large	d1_miss_rate	0.3%	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+scan	large	ll_miss_rate	0.0%	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	large	ns_per_parse	16839945.5	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	large	ir	317511465.0	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	large	i1_misses	1303.5	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	large	d1_misses	1228315.5	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	large	ll_misses	1104748.5	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	large	d1_miss_rate	1.0%	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+tape	large	ll_miss_rate	0.3%	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	large	ns_per_parse	14794059.5	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	large	ir	193358570.0	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	large	i1_misses	1304.5	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	large	d1_misses	906683.0	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	large	ll_misses	774798.0	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	large	d1_miss_rate	1.2%	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3
+pugi	large	ll_miss_rate	0.3%	2	32864d66de	2026-10-17T09:48:06Z	clang 21.1.8 -O3

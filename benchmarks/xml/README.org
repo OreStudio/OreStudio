@@ -13,12 +13,11 @@
 
 Two axes, because they answer different questions.
 
-- *Time* is what a caller waits for. It is noisy on a shared machine and it is
-  recorded anyway, because a change that doubles the time is worth seeing.
+- *Time* is what a caller waits for. It moves on a shared machine and it is
+  recorded anyway, because a change that doubles it is worth seeing.
 - *Cache and instruction counts* are why the time moved. They come from
-  =cachegrind=, which simulates the caches, so the same binary on the same
-  input produces the same numbers on every run. That is what makes a committed
-  history worth diffing.
+  =cachegrind=, which simulates the memory hierarchy without needing
+  privileges.
 
 Three modes, so the cost of the document model can be separated from the cost
 of scanning.
@@ -27,7 +26,11 @@ of scanning.
 |------+--------------|
 | =scan= | reads the events and keeps nothing |
 | =tape= | builds the transient document model |
-| =pugi= | builds a pugixml DOM, the baseline the model is judged against |
+| =pugi= | loads a pugixml DOM, the baseline the model is judged against |
+
+Every count is divided by the repeat count before it is recorded, so a row for
+one input is comparable with a row for another. The repeat count is a column
+of its own, so the division can be undone.
 
 * Running it
 
@@ -35,122 +38,110 @@ of scanning.
 ./benchmarks/xml/run.sh              # measure and append to history.tsv
 ./benchmarks/xml/run.sh --no-record  # measure and print, leave the history alone
 ./benchmarks/xml/compare.py <older-commit> [<newer-commit>]
+XML_BENCH_BUILD=build/output/other-preset ./benchmarks/xml/run.sh
 #+end_src
 
-=run.sh= builds the benchmark from the product sources with the build tree's
-own flags, so it needs a configured tree but no CMake target. It is not part
-of =ctest= and not part of any check: it takes minutes and it is not a pass or
-fail. Run it when the XML layer changes, and record the result.
+=run.sh= builds the benchmark from the product sources using the build tree's
+own flags, including its optimisation level, so it needs a configured tree but
+no CMake target. It is not part of =ctest= and not part of any check: it takes
+minutes and it is not a pass or fail.
 
-=history.tsv= is long-form: one row per case, metric, commit, date and
-compiler. Appending is safe, and =compare.py= prints the delta between any two
-commits that appear in it.
+=history.tsv= is long-form: one row per case, metric, repeat count, commit,
+date and compiler. Appending is safe, and =compare.py= prints the delta between
+any two commits that appear in it, using the most recent run for each.
 
-* Cache tooling, and what works here
+The commit column names the tree that was measured, and every name in it must
+be reachable from =main= or the row is untraceable.
 
-|=cachegrind=| simulates the L1 instruction, L1 data and last-level caches and
-counts instructions. It needs no privileges, it is deterministic, and it is the
-only one of the two options that works unprivileged on this machine. It is
-roughly fifty times slower than a native run, which is why =inputs.tsv= pins a
-small repeat count.
+* Cache tooling, and what it does not cover
 
-|=perf= is installed but =/proc/sys/kernel/perf_event_paranoid= is 3, so
-unprivileged processes cannot read hardware cache counters. Real counters need
-=sudo sysctl kernel.perf_event_paranoid=1=, and even then the counts move
-between runs. Use cachegrind for the committed history and treat =perf= as a
-tool for a one-off look.
+=cachegrind= simulates the first level and one last level, and counts
+instructions. It has no second-level model, so a miss that leaves L1 is either
+served by the last level or counted as an LL miss. *L2 is not measured*, and
+nothing in this directory claims to measure it.
 
-Neither measures what the hardware actually did. Cachegrind's numbers are a
-simulation of a stated cache configuration, printed in its header. They are
-comparable across builds of the same machine, and not comparable across
-machines.
+It needs no privileges and its counts are stable to a few hundred instructions
+of process startup. Over a run of a million instructions that is noise; over a
+run of two thousand it is not, which is why the inputs are repeated until each
+run is in the millions.
+
+The miss rates cachegrind prints are recorded as well as the counts.
+Utilisation is a rate, and a count alone does not say whether the working set
+fits.
+
+=perf= is installed but =/proc/sys/kernel/perf_event_paranoid= is 3, so
+unprivileged processes cannot read hardware cache counters. That is the only
+route to L2 numbers on this machine, and it needs =sudo sysctl
+kernel.perf_event_paranoid=1=.
 
 * A benchmarking framework
 
-None of the three is required for the cache axis: cachegrind does that, and no
-C++ framework reports cache misses.
-
-For the time axis there are three sensible choices.
+No C++ framework reports cache misses, so the cache axis needs cachegrind
+whatever else is adopted.
 
 | Option | Cost | Reach for it when |
 |--------+------+-------------------|
-| Google Benchmark 1.9.5 | a vcpkg dependency; the port is vendored, the source is not cached | the suite grows and you want percentiles, counters, and a JSON baseline |
+| Google Benchmark 1.9.5 | a vcpkg dependency; the port is vendored, the source is not cached | the suite grows and you want percentiles, counters and a baseline file |
 | nanobench 4.6.0 | one header, MIT, also vendored as a port | you want low-overhead microbenchmarks and HTML or CSV out |
 | Catch2 =BENCHMARK= | already a dependency | the case is trivial and you want it beside the tests |
 
-This directory does not use any of them yet, and the reason is cost rather
-than taste. Adding a dependency means a =vcpkg install= against a build tree
-that is currently hours behind, and the measurement this file exists to take
-works without it. The hand-rolled loop is the "best of five" statistic, which
-is the one number that matters when the machine is shared. When the build tree
-is current, Google Benchmark is the right home for the time axis: it is the
-one that records a baseline file a script can diff, which is the property this
-directory is built around.
+This directory uses none of them yet. Adding a dependency means a =vcpkg
+install= against a build tree that is behind, and the measurement works
+without it. The hand-rolled loop records the one statistic that matters on a
+shared machine, best of five. Google Benchmark is the right home for the time
+axis once the tree is current, because it writes a baseline file a script can
+diff.
 
-* The first measurement, and what it changed
+* The baseline at 32864d66de
 
-The suite was first run at =fcea424d5a=, twenty repeats of one 478 KB
-portfolio and two of the 6.3 MB calendar file.
+Counts are per parse. One 478 KB portfolio, one 63 KB currency file, and the
+6.3 MB calendar file.
 
-| Input | Mode | ns/parse | Instructions | D1 misses | LL misses |
-|-------+------+----------+--------------+-----------+-----------|
-| portfolio | scan | 1,403,333 | 666,521,544 | 340,837 | 27,406 |
-| portfolio | tape | 1,454,835 | 760,586,768 | 1,826,670 | 67,914 |
-| portfolio | pugi | 849,544 | 219,824,078 | 1,579,176 | 54,063 |
-| large | scan | 19,174,893 | 863,970,232 | 559,566 | 234,056 |
-| large | tape | 26,526,143 | 954,532,643 | 2,626,251 | 2,315,099 |
-| large | pugi | 14,952,829 | 468,502,687 | 1,813,791 | 1,549,571 |
+| Input | Mode | ns/parse | Instructions | D1 misses | LL misses | D1 miss rate |
+|-------+------+----------+--------------+-----------+-----------+--------------|
+| small | scan | 101,815 | 1,547,849 | 1,130 | 76 | 0.2% |
+| small | tape | 116,591 | 1,832,536 | 5,286 | 97 | 0.7% |
+| small | pugi | 63,395 | 790,891 | 6,281 | 89 | 1.7% |
+| portfolio | scan | 594,546 | 8,418,553 | 8,524 | 685 | 0.3% |
+| portfolio | tape | 700,254 | 10,070,097 | 34,787 | 1,527 | 0.8% |
+| portfolio | pugi | 921,256 | 5,340,115 | 39,480 | 1,352 | 1.5% |
+| large | scan | 11,040,601 | 283,470,610 | 279,771 | 117,019 | 0.3% |
+| large | tape | 16,839,946 | 317,511,465 | 1,228,316 | 1,104,749 | 1.0% |
+| large | pugi | 14,794,060 | 193,358,570 | 906,683 | 774,798 | 1.2% |
 
-Two readings, both uncomfortable.
+Two readings.
 
-*The tape is the cache cost.* Building it multiplies first-level data misses
-by 5.4 on the portfolio and last-level misses by 9.9 on the 6.3 MB file. A
-token is twenty bytes, so the 478 KB document becomes a 721 KB tape and the
-6.3 MB document becomes a 15.9 MB tape. The scan-only column is the floor, and
-it is far below both trees. This qualifies the claim that the generated DOM is
-the expensive artefact: it is expensive relative to scanning, and so is the
-tape.
+*The tape is the cache cost.* Building it multiplies first-level data misses by
+4.1 on the portfolio and 4.4 on the 6.3 MB file, and last-level misses by 2.2
+and 9.4. A token is twenty bytes, so the 478 KB document becomes a 721 KB tape
+and the 6.3 MB document becomes a 15.9 MB tape. The scan-only column is the
+floor and it is far below both trees. This qualifies the claim that the
+generated DOM is the expensive artefact: it is expensive relative to scanning,
+and so is the tape.
 
-*The scanner executed three times pugixml's instructions* on the same
-document, 666 M against 220 M. A callgrind profile put forty percent of the
-parse in one place: the =normalise= pre-scan, a byte-at-a-time loop over every
-text and attribute value that almost always found nothing to do. A second
-tenth went to =memcmp= on the tag path, which compared up to five prefixes for
-every element.
+*The scanner executes about 1.6 times pugixml's instructions* on the same
+document, though it is now faster in wall time on both the large files. It wins
+on allocated bytes and on time, and loses on work per byte.
 
-* What the first measurement changed
+* What the first measurements changed
 
-The scanner took two changes, both measured before and after.
+The suite was first run before the stack was rebased, with a runner that
+recorded totals rather than per-parse counts and that appended =-O2= after the
+tree's =-O3=. Those rows were removed rather than relabelled, because a
+comparison across two optimisation levels says nothing. What they found is
+recorded in the message of =ef31c41f11= and in the scanner itself: the
+=normalise= pre-scan was forty percent of the parse, and =memcmp= on the tag
+path was another tenth. Both were fixed and the scanner's instructions fell by
+48% on the portfolio and 25% on the 6.3 MB file.
 
-- The pre-scan is now a few memchr-backed =find()= calls.
-- The second character after =<= decides which prefix is worth comparing,
-  which keeps the common tag path free of =memcmp=.
+* What is not a gate
 
-The same suite at =e82a0a827f=:
-
-| Input | Mode | ns/parse | Instructions | Change in instructions |
-|-------+------+----------+--------------+------------------------|
-| portfolio | scan | 620,464 | 343,284,249 | -48% |
-| portfolio | tape | 740,802 | 410,789,892 | -46% |
-| portfolio | pugi | 903,024 | 219,824,068 | unchanged |
-| large | scan | 11,790,666 | 649,136,390 | -25% |
-| large | tape | 18,089,642 | 718,883,057 | -25% |
-| large | pugi | 14,405,819 | 468,502,757 | unchanged |
-
-Wall time on the portfolio fell from 1.40 ms to 0.62 ms per parse, and the
-scanner is now 1.6 times pugixml's instructions rather than three. The tape
-still costs four times the first-level misses of scanning alone, which is what
-building a model costs and is why the entity path will stream rather than
-build one.
-
-The corpus did not move: 1,623 documents read, 1,623 round tripped, 1,623
-validating, 26 unit cases green.
-
-* What to run when
-
-- A change to the scanner, the document model or the writer: the whole suite.
-- A change to a codec table: the case that covers its family.
-- A change that only touches the orchestration around the codec: nothing here.
+"When the XML layer changes, run the benchmark" is a convention, not a check.
+Making it one means a check that fails when =projects/ores.ore/core/src/xml/*=
+changed and =history.tsv= gained no row for the current commit. That is a
+deliberate omission: a gate on a benchmark that takes minutes needs a waiver
+mechanism, and choosing one is a design decision rather than an obvious
+default.
 
 * See also
 

@@ -29,11 +29,11 @@ built here. Each gap the analysis records is the work that follows.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
-| Now          | The specification and the gap list are written. Nothing is built. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close this task, then take the first gap as its own task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

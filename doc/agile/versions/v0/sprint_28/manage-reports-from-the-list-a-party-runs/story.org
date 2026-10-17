@@ -73,7 +73,7 @@ door.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:B15A20EA-29CD-4F01-9709-545BF9334A51][Specify the reports a party runs screen and its server gaps]] | STARTED | 2026-10-17 | | Name the route, the BFF endpoint and the read subjects for the reports-a-party-runs screen, and carry the initial list of what the server cannot yet supply. |
+| [[id:B15A20EA-29CD-4F01-9709-545BF9334A51][Specify the reports a party runs screen and its server gaps]] | DONE | 2026-10-17 | 2026-10-17 | Name the route, the BFF endpoint and the read subjects for the reports-a-party-runs screen, and carry the initial list of what the server cannot yet supply. |
 
 * Decisions
 

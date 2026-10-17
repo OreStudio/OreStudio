@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate the convention family registry header and apply fragment.
+"""Regenerate the convention family registry, the apply fragment and its includes.
 
 Every refdata entity model that declares ``#+convention_family: <key>`` joins
 the registry; see ``codegen.convention_family_registry``. The header is written

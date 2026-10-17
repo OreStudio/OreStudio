@@ -17,7 +17,7 @@ This check fails when:
   generated artefact edited by hand;
 * the apply fragment is missing.
 
-It reads the models and the two artefacts only, so it needs neither codegen nor
+It reads the models and the three artefacts only, so it needs neither codegen nor
 a formatter.
 
 Usage::
@@ -37,10 +37,12 @@ sys.path.insert(0, str(REPO_ROOT / "projects" / "ores.codegen" / "src"))
 from codegen.convention_family_registry import (  # noqa: E402
     FRAGMENT_RELATIVE_PATH,
     HEADER_RELATIVE_PATH,
+    INCLUDES_RELATIVE_PATH,
     discover_entries,
     parse_header,
     render_fragment,
     render_header,
+    render_includes,
 )
 
 
@@ -61,9 +63,14 @@ def check(project_root: Path) -> list[str]:
     """Every way the generated artefacts disagree with the modelling tree."""
     header = project_root / HEADER_RELATIVE_PATH
     fragment = project_root / FRAGMENT_RELATIVE_PATH
+    includes = project_root / INCLUDES_RELATIVE_PATH
     missing = [
         relative_path
-        for relative_path in (HEADER_RELATIVE_PATH, FRAGMENT_RELATIVE_PATH)
+        for relative_path in (
+            HEADER_RELATIVE_PATH,
+            FRAGMENT_RELATIVE_PATH,
+            INCLUDES_RELATIVE_PATH,
+        )
         if not (project_root / relative_path).exists()
     ]
     if missing:
@@ -102,6 +109,10 @@ def check(project_root: Path) -> list[str]:
     if fragment.read_text(encoding="utf-8") != render_fragment(expected):
         problems.append(
             f"{FRAGMENT_RELATIVE_PATH} differs from its generated form"
+        )
+    if includes.read_text(encoding="utf-8") != render_includes(expected):
+        problems.append(
+            f"{INCLUDES_RELATIVE_PATH} differs from its generated form"
         )
     return problems
 

@@ -16,17 +16,16 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "convention_family_apply.hpp"
+#include "convention_family_apply_includes.inc"
+#include "conventions_row_helpers.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
+#include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "convention_family_apply.hpp"
-#include "conventions_row_helpers.hpp"
-#include <rfl/json.hpp>
-// One repository per family the generated apply fragment calls.
-#include "convention_family_apply_includes.inc"
 #include <map>
+#include <rfl/json.hpp>
 #include <utility>
 #include <vector>
 

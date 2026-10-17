@@ -600,8 +600,8 @@ entity "reporting" as reporting {
   ores_reporting_parameter_value_domains_tbl
   ores_reporting_report_configurations_tbl
   ores_reporting_report_definitions_tbl
+  ores_reporting_report_error_events_tbl
   ores_reporting_report_error_scopes_tbl
-  ores_reporting_report_errors_tbl
   ores_reporting_report_input_bundles_tbl
   ores_reporting_report_instance_kinds_tbl
   ores_reporting_report_instances_tbl

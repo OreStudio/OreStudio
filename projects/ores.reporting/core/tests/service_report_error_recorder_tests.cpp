@@ -20,7 +20,7 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
-#include "ores.reporting.core/repository/report_error_repository.hpp"
+#include "ores.reporting.core/repository/report_error_event_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_kind_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
@@ -95,9 +95,9 @@ std::string write_instance(const ores::database::context& party_ctx,
     return boost::uuids::to_string(instance.id);
 }
 
-std::vector<ores::reporting::domain::report_error>
+std::vector<ores::reporting::domain::report_error_event>
 errors_of(const ores::database::context& ctx, const std::string& instance_id) {
-    ores::reporting::repository::report_error_repository errors;
+    ores::reporting::repository::report_error_event_repository errors;
     return errors.read_latest_by_report_instance_id(ctx, instance_id, 0, 100);
 }
 
@@ -225,20 +225,14 @@ TEST_CASE("an error whose scope the vocabulary does not hold is refused rather t
     CHECK(errors_of(ctx, instance_id).empty());
 }
 
-TEST_CASE("an error carries the party of its run and not the party of the caller",
-          "[service][database][.]") {
+TEST_CASE("an error carries the party of its run and not the party of the caller", tags) {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
 
     // The run belongs to a party the session is not acting as, and both parties
-    // are visible to it. A recorder that stamped the session's party would write
-    // an error the run's own party cannot read, which is the leak the party
-    // policy exists to close.
-    //
-    // This cannot pass while report_error_service::save_errors stamps the party
-    // from the session: the service overwrites whatever the recorder derived
-    // from the run. It is written down here so the gap is not forgotten, and is
-    // hidden behind the [.] tag until the write path stops doing that.
+    // are visible to it. The recorder writes the run's own party rather than
+    // stamping the session's, so an error the run's own party cannot read is
+    // never written, which is the leak the party policy exists to close.
     const auto run_ctx = write_test_party_and_scope_context(h, gen);
     const auto caller_ctx = write_test_party_and_scope_context(h, gen);
     const auto run_party_id = *run_ctx.party_id();

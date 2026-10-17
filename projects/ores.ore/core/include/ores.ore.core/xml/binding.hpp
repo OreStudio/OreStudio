@@ -173,6 +173,17 @@ ORES_ORE_CORE_EXPORT auto find_child_type(const record_type& type, std::string_v
     -> const record_type*;
 
 /**
+ * @brief Marks the element's own text as present.
+ *
+ * A type written as xs:simpleContent holds text beside its attributes, and
+ * that text is a row of its own with no name: the table names it by index.
+ * A projection that sets the text states it here.
+ *
+ * @return False when the type holds no text of its own.
+ */
+ORES_ORE_CORE_EXPORT auto mark_text_present(const record_type& type, void* record) -> bool;
+
+/**
  * @brief Whether a record states a value for the named field.
  *
  * An element that holds an empty string is present and empty, and one that

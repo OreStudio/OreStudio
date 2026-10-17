@@ -23,7 +23,7 @@
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/curve_configuration_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
@@ -326,7 +326,7 @@ void parse_document(std::string_view code,
     else if (code == "todays_market")
         d.market = todays_market_mapper::map(parse_file<todaysmarket>(file, content));
     else if (code == "pricing_engines")
-        d.engines = pricing_engine_mapper::map(parse_file<pricingengines>(file, content));
+        d.engines = pricing_engine_projection::map(pricing_engine_projection::read(content, *file));
 }
 
 // Hands one parsed document to the component that owns it. A document with a
@@ -515,7 +515,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
                                                             .party_id = run.party_id})
                     .document));
         else if (code == "pricing_engines")
-            files[*file] = save_data(pricing_engine_mapper::reverse(
+            files[*file] = pricing_engine_projection::write(pricing_engine_projection::reverse(
                 call(owners,
                      an::get_pricing_engines_document_request{.configuration_id = configuration,
                                                               .party_id = run.party_id})

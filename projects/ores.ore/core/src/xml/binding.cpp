@@ -265,6 +265,13 @@ auto set_enumeration(const record_type& type,
     return false;
 }
 
+auto mark_text_present(const record_type& type, void* record) -> bool {
+    if (type.text_field == no_text)
+        return false;
+    mark_present(record, type.fields[type.text_field]);
+    return true;
+}
+
 auto find_child_type(const record_type& type, std::string_view name) -> const record_type* {
     const auto* f = find(type, name, false);
     return f != nullptr ? f->type : nullptr;

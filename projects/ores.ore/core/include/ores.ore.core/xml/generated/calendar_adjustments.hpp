@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -24,7 +23,6 @@
 
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.utility/decimal/decimal.hpp"
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -36,24 +34,23 @@ struct newcalendar;
 struct calendaradjustment;
 
 struct dates {
-  std::uint64_t present = 0;
-  std::vector<std::string> date;
+    std::uint64_t present = 0;
+    std::vector<std::string> date;
 };
 struct newcalendar {
-  std::uint64_t present = 0;
-  std::string name;
-  std::string base_calendar;
-  dates additional_holidays;
-  dates additional_business_days;
+    std::uint64_t present = 0;
+    std::string name;
+    std::string base_calendar;
+    dates additional_holidays;
+    dates additional_business_days;
 };
 struct calendaradjustment {
-  std::uint64_t present = 0;
-  std::vector<newcalendar> calendar;
+    std::uint64_t present = 0;
+    std::vector<newcalendar> calendar;
 };
 
-ORES_ORE_CORE_EXPORT auto calendar_adjustments_document()
-    -> const document_type &;
+ORES_ORE_CORE_EXPORT auto calendar_adjustments_document() -> const document_type&;
 
-} // namespace ores::ore::xml::generated::calendar_adjustments
+}
 
 #endif

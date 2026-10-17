@@ -30,6 +30,20 @@
 namespace ores::ore::xml::projection {
 
 /**
+ * @brief The table a named child of a type is described by, or a refusal.
+ *
+ * A projection names the elements it walks. A schema rename reaches this as a
+ * name the table no longer has, which is a disagreement between the code and
+ * the schema rather than a runtime condition, so it stops with the name.
+ */
+inline auto child(const record_type& type, std::string_view name) -> const record_type& {
+    const auto* found = find_child_type(type, name);
+    if (found == nullptr)
+        throw std::runtime_error(std::format("the {} table has no '{}' element", type.name, name));
+    return *found;
+}
+
+/**
  * @brief States the row a projection fills, or refuses to write silently.
  *
  * A rename in the schema reaches the projection as a name the table no longer

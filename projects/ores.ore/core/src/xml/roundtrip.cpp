@@ -18,6 +18,7 @@
  */
 #include "ores.ore.core/xml/roundtrip.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -114,6 +115,20 @@ convert(const std::filesystem::path& file, document_kind kind, roundtrip_summary
             auto xml = exporter::export_calendar_adjustments(adjustments);
             summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
             ++summary.calendar_files;
+            return xml;
+        }
+        case document_kind::pricing_engines: {
+            const auto t0 = clock_type::now();
+            const auto original = ores::ore::domain::pricing_engine_projection::read(
+                ores::platform::filesystem::file::read_content(file));
+            const auto mapped = ores::ore::domain::pricing_engine_projection::map(original);
+            summary.import_ms += std::chrono::duration_cast<millis>(clock_type::now() - t0).count();
+
+            const auto t1 = clock_type::now();
+            auto xml = ores::ore::domain::pricing_engine_projection::write(
+                ores::ore::domain::pricing_engine_projection::reverse(mapped));
+            summary.export_ms += std::chrono::duration_cast<millis>(clock_type::now() - t1).count();
+            ++summary.pricing_engine_files;
             return xml;
         }
         case document_kind::conventions: {

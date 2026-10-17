@@ -33,10 +33,10 @@
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
+#include "ores.ore.core/xml/projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
-#include "projection.hpp"
 #include <algorithm>
 #include <format>
 #include <iterator>

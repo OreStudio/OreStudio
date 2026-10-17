@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/add-edit-and-delete-a-binding
-#+pr:
+#+pr: 3419
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3419][#3419]] | [web] Add, edit and delete a binding |
 
 * Review
 

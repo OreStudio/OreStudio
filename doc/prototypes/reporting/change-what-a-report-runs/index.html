@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: change what a report runs — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Change what a report runs, from
+  doc/knowledge/journeys/reporting/journey_change_what_a_report_runs.org:
+  a market-risk owner or a tenant administrator adds one analytic to a
+  configuration, takes another away, changes a parameter, and reads what the
+  change does and does not reach.
+
+  The question this page answers: how does a person change the set of analytics
+  a report runs without losing what the change costs?
+
+    A  a switchboard     every analytic as a row, toggled in place
+    B  a before and after  the current set beside the proposed one, with the
+                           difference stated as added, removed and changed
+    C  a question first  what measure is missing, then the types that would
+                         produce it, then the runs the change strands
+
+  Switch with ?variant=A|B|C, or with the buttons in the foot bar.
+
+  Nothing here reads a server. An analytic is turned off by setting active to
+  false, never by deleting the row, and the page says so. pfe reads a cube that
+  simulation writes, so pfe on without simulation is refused here; the rule
+  lives in the ACME seeder and in no service, so a build could not rely on a
+  server check. No operation says which runs were made with which configuration
+  version, so the run placement here is an inference from start times.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

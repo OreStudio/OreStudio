@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: create a report — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Create a report, from
+  doc/knowledge/journeys/reporting/journey_create_a_report.org:
+  a tenant administrator or market-risk owner names a report, binds the five
+  configurations it reads, chooses the analytics it runs and their settings,
+  scopes it to a portfolio, and reads back what was written.
+
+  The question this page answers: what shape is the act of creating a report,
+  when the thing being created is a definition plus five bindings plus a set of
+  analytics plus a scope?
+
+    A  a single form        sections down one page, everything visible at once
+    B  a wizard             four steps, one decision at a time
+    C  a checklist          the list of what a report must satisfy, and the
+                            definition falls out of it
+
+  Switch with ?variant=A|B|C, or with the buttons in the foot bar. Variant B
+  takes ?step=1..4 for the step it opens on, so a reviewer can land on "what it
+  runs" directly. ?pfe=without-simulation opens the draft with the rule broken,
+  so the refusal can be seen without toggling two rows by hand.
+
+  Nothing here reads a server, and nothing is written. The operations named are
+  the ones the journey cites: report_definitions.put, report_configurations.put,
+  configuration_analytics.put_many, configuration_analytic_parameters.put,
+  analytic_types.list, configurations.list, configurations.put,
+  report_configurations.list, report_type_configuration_types.list, and the
+  list_by_* reads. Three things are absent and the page says so: no operation
+  writes the portfolio scope, no service check enforces the pfe-needs-simulation
+  rule (the ACME seeder does, in check_exposure_needs_simulation), and no
+  operation answers what else a run needs beyond its report type's configuration
+  types. Every value on the page is a fixture.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

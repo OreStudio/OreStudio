@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: cd82104f-64da-44b4-922a-1e50d89ceb2c
+:END:
+#+title: Change what a report runs prototype
+#+description: Three structural variants of changing the analytics a report configuration carries, on a throwaway page that keeps a turned-off analytic as a row, refuses pfe without simulation, and names the runs the change strands.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:change-what-a-report-runs/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype argues how a person changes the analytics a report runs: a
+switchboard, a before and after, or a question first. It carries three structural
+variants switched with =?variant=, and it answers to
+[[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change
+what a report runs]].
+
+It is throwaway. It reads no service, and the page states which parts of the
+change it cannot show and which rules the server does not enforce.
+
+* Detail
+
+** The question
+
+The analytics belong to a configuration, not to the definition, and a
+configuration is shared. The open question is how a person changes that set
+without losing what the change costs: which rows move, which definitions it
+reaches, and which earlier runs stop being comparable with the next one.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Switchboard | Every analytic type is a row with an on/off control, and the parameters sit inline under the ones that have them. The whole set is visible and a toggle is one click. |
+| =B= | Before and after | The stored set sits beside the proposed one, and the difference is stated as added, removed and changed before anything is written. |
+| =C= | A question first | The screen asks what measure is missing, narrows the analytic types that would produce it, then shows the change against the runs it strands. |
+
+A and B open with a change already staged, so the review and the difference are
+on the page rather than one click away. C opens with the question answered, and
+says so.
+
+** The toggle writes =active=, and never deletes
+
+The page exists because turning an analytic off is a write of =active = false=.
+The row keeps its =display_order= and its =configuration_analytic_parameter=
+rows, and reads as off, so the history shows the report used to produce it. A
+type the configuration never carried reads as "no row", and turning it on adds a
+row; that is a different write and the page says which one it is sending. **No
+control on the page removes a row.**
+
+** The one rule between analytics**
+
+=pfe= reads a cube that =simulation= writes. The page refuses pfe on without
+simulation, whichever side of the pair is clicked, and it says why the refusal is
+its own: **the rule lives in the ACME seeder**, in
+=generate_risk_config_data.py=, function =check_exposure_needs_simulation=, and
+in no service. Nothing validates it when a configuration is written, so
+=configuration_analytics.put_many= would accept the set and the failure would
+arrive in the run. The rule strip sits on every variant and states its own state:
+not binding while pfe is off, satisfied while both are on, and violated if the
+pair is broken.
+
+** What the change reaches, and what it does not**
+
+A run keeps the configuration it ran with, with its outputs and its errors. The
+configuration is shared, so the change reaches every definition bound to it,
+including the three the person did not open. Nothing on the page writes the
+definition's schedule, its processing phases, its concurrency policy or its other
+four configurations.
+
+** The runs that stop being comparable**
+
+The results screen compares a run with a previous run of the same definition. A
+run made after the change did not produce the same measures, so the comparison
+between it and an older run is not a comparison, and the page says that plainly
+on every variant. It places each run by its own start time against the
+definition's version history and marks the placement an inference, because **no
+operation says which configuration version a run used** and the analytics are not
+on the definition. The results screen marks a comparison partial where a side
+carried errors; it cannot mark this case at all.
+
+** What is fake**
+
+The definition, the five bindings, the eight analytic rows, the parameters, the
+runs, the versions and the clock are fixtures. Nothing reads a server, the page
+sends nothing, and the write is applied to the page's own array. The rules are
+not fixtures: =active = false= is how the model turns an analytic off, and pfe
+without simulation is a rule the seeder enforces and no service does.
+
+** Where the code lives**
+
+=doc/prototypes/reporting/change-what-a-report-runs/=. Three files, plain HTML,
+CSS and JavaScript, no framework and no build step.
+
+** The verdict**
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle**
+
+Which runs a change reached. Until an operation names the configuration version
+behind a run, every placement on this page is an inference, and a build can only
+repeat that inference. The parameter's allowed values are unsettled too: no
+operation in the journey's set reads the value domain, so the page shows a value
+as stored.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the journeys these answer to.

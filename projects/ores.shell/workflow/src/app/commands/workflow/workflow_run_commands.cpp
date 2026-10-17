@@ -341,8 +341,8 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                 }
                 // Every step this run showed is done, but the run owes more:
                 // the engine has not created them yet, or nothing is driving
-                // it. Worth a line, because the wait now outlives the visible
-                // list instead of calling the run finished.
+                // it. Worth a line, because the wait outlives the visible list
+                // rather than calling the run finished.
                 const auto owed = steps_expected(*result, expected_steps);
                 if (total < owed &&
                     std::ranges::all_of(result->steps, &workflow_run_commands::is_step_complete))

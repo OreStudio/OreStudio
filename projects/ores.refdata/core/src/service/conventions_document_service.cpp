@@ -48,12 +48,14 @@
 #include "ores.refdata.core/repository/zero_inflation_index_convention_repository.hpp"
 #include "ores.refdata.core/service/convention_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <limits>
 #include <map>
+#include <rfl/json.hpp>
 #include <set>
 #include <string>
 #include <utility>
@@ -208,10 +210,12 @@ void add_missing_world_rows(const ores::database::context& ctx,
         repo.write(ctx, missing);
 }
 
-// One call per convention family, grouped by the write mode its model states.
-#include "convention_family_apply.inc"
-
 }
+
+// One call per convention family, grouped by the write mode its model states.
+// The fragment sits at namespace scope because the staged dispatch is exported
+// for the import service; the row helpers above stay internal to this file.
+#include "convention_family_apply.inc"
 
 conventions_document_service::conventions_document_service(context ctx)
     : ctx_(std::move(ctx)) {}

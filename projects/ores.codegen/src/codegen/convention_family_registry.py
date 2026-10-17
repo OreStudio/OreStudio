@@ -260,9 +260,9 @@ _FRAGMENT_PREAMBLE = """\
 // AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
 // Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
 // To change a call, edit the convention entity model's #+convention_family: or
-// #+convention_write: declaration and regenerate. Include this fragment inside
-// the anonymous namespace that defines replace_party_rows, replace_rows_by_id
-// and add_missing_world_rows.
+// #+convention_write: declaration and regenerate. Include this fragment where
+// replace_party_rows, replace_rows_by_id and add_missing_world_rows are
+// visible, with <rfl/json.hpp> and the stamp helper already included.
 """
 
 
@@ -345,6 +345,58 @@ def _read_body(name: str, entries: list[FamilyEntry]) -> str:
     return "\n".join(lines)
 
 
+def _staged_apply_body(entries: list[FamilyEntry]) -> str:
+    """One branch per family, decoding a staged payload into its own type."""
+    lines = [
+        "// Staged families: each branch decodes one family's payload into its own",
+        "// type, so no instantiation sees the whole document.",
+        "ORES_REFDATA_CORE_EXPORT bool apply_staged_family(const ores::database::context& ctx,",
+        "                                                  const std::string& family,",
+        "                                                  const std::string& payload,",
+        "                                                  conventions_save_result& result) {",
+    ]
+    for entry in entries:
+        lines.append(f'    if (family == "{entry.key}") {{')
+        lines.extend(
+            [
+                "        const auto decoded =",
+                f"            rfl::json::read<{entry.domain_type}>(payload);",
+                "        if (!decoded)",
+                "            throw std::runtime_error(",
+                '                "Staged conventions payload for family "',
+                f'                "\\"{entry.key}\\" does not decode.");',
+                f"        auto rows = std::vector<{entry.domain_type}>{{",
+                "            std::move(*decoded)};",
+                "        ores::service::messaging::stamp(rows.front(), ctx);",
+            ]
+        )
+        if entry.write_mode == "world":
+            lines.extend(
+                [
+                    "        add_missing_world_rows(ctx,",
+                    f"                               {_repository(entry)},",
+                    "                               std::move(rows),",
+                    "                               result.world_kept);",
+                ]
+            )
+        else:
+            helper = (
+                "replace_party_rows"
+                if entry.write_mode == "party"
+                else "replace_rows_by_id"
+            )
+            lines.extend(
+                [
+                    f"        {helper}(ctx,",
+                    f"                           {_repository(entry)},",
+                    "                           std::move(rows));",
+                ]
+            )
+        lines.extend(["        return true;", "    }"])
+    lines.extend(["    return false;", "}"])
+    return "\n".join(lines)
+
+
 def render_fragment(entries: list[FamilyEntry]) -> str:
     """The include fragment the conventions service compiles, byte for byte."""
     by_mode = {
@@ -362,6 +414,7 @@ def render_fragment(entries: list[FamilyEntry]) -> str:
         + _read_body("read_party_families", by_mode["party"]),
         _read_body("read_families_by_id", by_mode["by_id"]),
         _read_body("read_world_families", by_mode["world"]),
+        _staged_apply_body(entries),
     ]
     return _LICENSE + "\n" + _FRAGMENT_PREAMBLE + "\n\n" + "\n\n".join(bodies) + "\n"
 

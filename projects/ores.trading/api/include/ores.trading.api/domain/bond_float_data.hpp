@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FLOAT_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FLOAT_DATA_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <span>
 #include <string>
@@ -44,7 +45,7 @@ struct bond_float_data {
     /**
      * @brief The number the document states.
      */
-    double value = {};
+    ores::utility::decimal::decimal value = {};
 
     /**
      * @brief The date the number applies from, when the document states one.

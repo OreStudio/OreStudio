@@ -54,7 +54,7 @@ domain::bond_repo bond_repo_mapper::map(const bond_repo_entity& v) {
         v.repo_rate.has_value() ?
             std::optional(ores::utility::decimal::decimal::from_string(*v.repo_rate).value()) :
             std::nullopt;
-    r.repo_index = v.repo_index.value_or("");
+    r.repo_index = v.repo_index;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -75,7 +75,7 @@ bond_repo_entity bond_repo_mapper::map(const domain::bond_repo& v) {
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.repo_type = v.repo_type;
     r.repo_rate = v.repo_rate.has_value() ? std::optional(v.repo_rate->to_string()) : std::nullopt;
-    r.repo_index = v.repo_index.empty() ? std::nullopt : std::optional(v.repo_index);
+    r.repo_index = v.repo_index;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

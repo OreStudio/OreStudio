@@ -60,7 +60,8 @@ std::vector<ores::diff::domain::field_value> render_bond_issue_fields(const doma
     fields.push_back(
         {.name = "Price Quote Method", .value = v.price_quote_method.value_or(std::string{})});
     fields.push_back({.name = "Price Quote Base Value",
-                      .value = v.price_quote_base_value.value_or(std::string{})});
+                      .value = v.price_quote_base_value ? v.price_quote_base_value->to_string() :
+                                                          std::string{}});
     fields.push_back({.name = "Sub Type", .value = v.sub_type.value_or(std::string{})});
     fields.push_back({.name = "Price Type", .value = v.price_type.value_or(std::string{})});
     fields.push_back({.name = "Payer", .value = v.payer.value_or(std::string{})});

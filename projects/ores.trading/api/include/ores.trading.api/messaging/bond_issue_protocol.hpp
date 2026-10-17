@@ -53,7 +53,7 @@ struct bond_issue_write {
     std::optional<std::string> credit_group;
     std::optional<std::string> volatility_curve_id;
     std::optional<std::string> price_quote_method;
-    std::optional<std::string> price_quote_base_value;
+    std::optional<ores::utility::decimal::decimal> price_quote_base_value;
     std::optional<std::string> sub_type;
     std::optional<std::string> price_type;
     std::optional<std::string> payer;

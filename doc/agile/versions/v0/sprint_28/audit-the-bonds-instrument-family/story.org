@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 55EEBE1E-4929-4BC4-9C3D-3553EE374546
+:END:
+#+title: Story: Audit the bonds instrument family against the data-oriented design guidelines
+#+description: Bonds were the data-oriented design pilot, reworked across sprints 25 to 27. Review the family's current data model against the Regime 2 checklist and record what holds and what does not.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Establish, with evidence, whether the bonds instrument family's persisted data model meets the data-oriented design guidelines, and record the findings so the remediations can be planned.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+- Every Regime 2 decision check is walked over the family's 27 entity models, with the evidence for each result.
+- The invariant checks are spot-checked once, with what was read stated.
+- Each finding is mapped to a criterion and carries file-and-line evidence.
+- The review states what it did not check.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:058554DC-63EA-4DB1-9205-CE3C42F40682][Fix the defects the bond family review found]] | BACKLOG | | | The review found six money columns read through a binary float on import, one money column typed text, two option money columns at a scale the corpus exceeds, a schedule parent whose role check disagrees with its child, two nullable index columns that generate non-optional types, and a money-column check that cannot see any of it. Fix them, and replace a knowledge-page citation that points at a file that does not exist. |
+
+* Decisions
+
+* Out of scope
+
+-

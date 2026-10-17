@@ -59,6 +59,39 @@ def test_money_exact_in_both_places_is_clean(tmp_path):
     assert names(check.money_offenders(root)) == []
 
 
+def test_a_money_word_in_a_modifier_is_not_money(tmp_path):
+    """`premium_date` carries `premium`, but its head noun is `date`."""
+    body = (column("premium_date", "text", "std::optional<std::string>")
+            + column("price_type", "text", "std::optional<std::string>")
+            + column("premium_currency", "text", "std::optional<std::string>"))
+    root = tree(tmp_path, "ores.trading.t", body)
+    assert names(check.money_offenders(root)) == []
+
+
+def test_a_money_head_typed_text_is_reported(tmp_path):
+    """`premium_amount` is money, and text is where the defect hid."""
+    root = tree(tmp_path, "ores.trading.t",
+                column("premium_amount", "text",
+                       "std::optional<std::string>"))
+    assert names(check.money_offenders(root)) == ["premium_amount"]
+
+
+def test_a_trailing_qualifier_does_not_hide_the_money_head(tmp_path):
+    """`face_value` states a face amount; `value` is not the head noun."""
+    root = tree(tmp_path, "ores.trading.t",
+                column("face_value", "text", "std::optional<std::string>"))
+    assert names(check.money_offenders(root)) == ["face_value"]
+
+
+def test_classify_reads_the_head_noun():
+    assert check.classify("premium_amount") == "money"
+    assert check.classify("premium_date") == "other"
+    assert check.classify("price_type") == "other"
+    assert check.classify("index_spread") == "money"
+    assert check.classify("calibrate_constituents_to_index_spread") == "money"
+    assert check.classify("recovery_rate") == "continuous"
+
+
 def test_continuous_typed_exact_is_reported(tmp_path):
     root = tree(tmp_path, "ores.trading.t",
                 column("recovery_rate", "numeric(38, 12)", "double"))

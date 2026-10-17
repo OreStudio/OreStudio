@@ -19,6 +19,7 @@
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #+end_src
@@ -35,7 +36,7 @@ The kind of amortization step the row states, such as Constant or Floating.
 
 ** value
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :economic: true
 :END:
 

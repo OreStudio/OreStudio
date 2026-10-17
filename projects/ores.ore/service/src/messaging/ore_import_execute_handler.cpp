@@ -149,19 +149,6 @@ parse_optional_date(const std::optional<std::string>& text) {
     return text ? parse_date(*text) : std::nullopt;
 }
 
-// The document states an amount as text and the flat write carries a
-// decimal, so the boundary parses the text; a spelling that does not parse
-// stays an unengaged optional.
-std::optional<ores::utility::decimal::decimal>
-parse_optional_decimal(const std::optional<std::string>& text) {
-    if (!text || text->empty())
-        return std::nullopt;
-    auto parsed = ores::utility::decimal::decimal::from_string(*text);
-    if (!parsed)
-        return std::nullopt;
-    return std::move(*parsed);
-}
-
 // The schema states a list of numbers as one text, split on the separators
 // the corpus uses.
 std::vector<std::string> split_numbers(const std::string& text) {
@@ -791,9 +778,7 @@ std::string save_leg_amounts(Nats& nats,
         req.change.write.leg_number = leg_number;
         req.change.write.amount_role = amount_role;
         req.change.write.sequence_number = ++sequence_number;
-        // The ORE XML number is a binary float and the amount is a decimal
-        // from here on, so the value is converted once, at the boundary.
-        req.change.write.value = ores::utility::decimal::decimal::from_double(amount.value).value();
+        req.change.write.value = amount.value;
         req.change.write.start_date = amount.start_date;
         auto resp = nats_call(nats, req, error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
@@ -975,13 +960,7 @@ std::string save_leg(Nats& nats,
         req.change.write.leg_number = leg_number;
         req.change.write.sequence_number = ++sequence_number;
         req.change.write.amortization_type = amortization.type;
-        // The ORE XML number is a binary float and the amount is a decimal
-        // from here on, so the value is converted once, at the boundary.
-        req.change.write.value =
-            amortization.value ?
-                std::optional(
-                    ores::utility::decimal::decimal::from_double(*amortization.value).value()) :
-                std::nullopt;
+        req.change.write.value = amortization.value;
         req.change.write.start_date = amortization.start_date;
         req.change.write.end_date = amortization.end_date;
         req.change.write.frequency = amortization.frequency;
@@ -1123,9 +1102,7 @@ save_issue_leg_amounts(Nats& nats,
         req.change.write.leg_number = leg_number;
         req.change.write.amount_role = amount_role;
         req.change.write.sequence_number = ++sequence_number;
-        // The ORE XML number is a binary float and the amount is a decimal
-        // from here on, so the value is converted once, at the boundary.
-        req.change.write.value = ores::utility::decimal::decimal::from_double(amount.value).value();
+        req.change.write.value = amount.value;
         req.change.write.start_date = amount.start_date;
         auto resp = nats_call(nats, req, error);
         if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
@@ -1279,13 +1256,7 @@ std::string save_issue_leg(Nats& nats,
         req.change.write.leg_number = leg_number;
         req.change.write.sequence_number = ++sequence_number;
         req.change.write.amortization_type = amortization.type;
-        // The ORE XML number is a binary float and the amount is a decimal
-        // from here on, so the value is converted once, at the boundary.
-        req.change.write.value =
-            amortization.value ?
-                std::optional(
-                    ores::utility::decimal::decimal::from_double(*amortization.value).value()) :
-                std::nullopt;
+        req.change.write.value = amortization.value;
         req.change.write.start_date = amortization.start_date;
         req.change.write.end_date = amortization.end_date;
         req.change.write.frequency = amortization.frequency;
@@ -1358,7 +1329,7 @@ std::string save_option_block(Nats& nats,
         req.change.write.settlement = block.settlement;
         req.change.write.settlement_method = block.settlement_method;
         req.change.write.pay_off_at_expiry = block.pay_off_at_expiry;
-        req.change.write.premium_amount = parse_optional_decimal(block.premium_amount);
+        req.change.write.premium_amount = block.premium_amount;
         req.change.write.premium_currency = block.premium_currency;
         req.change.write.premium_pay_date = parse_optional_date(block.premium_pay_date);
         req.change.write.exercise_fee_settlement_period = block.exercise_fee_settlement_period;
@@ -1516,11 +1487,7 @@ std::string save_strike(Nats& nats,
     req.change.write.price_currency = strike.price_currency;
     req.change.write.yield_value = strike.yield_value;
     req.change.write.yield_compounding = strike.yield_compounding;
-    req.change.write.bare_value =
-        strike.bare_value ?
-            std::optional(
-                ores::utility::decimal::decimal::from_double(*strike.bare_value).value()) :
-            std::nullopt;
+    req.change.write.bare_value = strike.bare_value;
     req.change.write.bare_currency = strike.bare_currency;
 
     std::string error;
@@ -1559,11 +1526,7 @@ std::string save_forward(Nats& nats,
         req.change.write.settlement = settlement.settlement;
         req.change.write.amount = settlement.amount;
         req.change.write.lock_rate = settlement.lock_rate;
-        req.change.write.dv01 =
-            settlement.dv01 ?
-                std::optional(
-                    ores::utility::decimal::decimal::from_double(*settlement.dv01).value()) :
-                std::nullopt;
+        req.change.write.dv01 = settlement.dv01;
         req.change.write.lock_rate_day_counter = settlement.lock_rate_day_counter;
         req.change.write.settlement_dirty = settlement.settlement_dirty;
     }

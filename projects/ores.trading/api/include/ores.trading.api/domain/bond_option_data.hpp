@@ -30,6 +30,7 @@
 #include "ores.trading.api/domain/bond_option_payment_data.hpp"
 #include "ores.trading.api/domain/bond_option_premium.hpp"
 #include "ores.trading.api/domain/bond_option_settlement.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <optional>
 #include <string>
 #include <vector>
@@ -45,10 +46,11 @@ namespace ores::trading::domain {
  * export re-emits it.
  *
  * The schema requires the long and short flag and makes every other member
- * optional, so a member the document omits stays absent. The premium amount and
- * the exercise price list are text in the schema, not numbers, and stay text
- * here, and the automatic exercise flag carries the document's own spelling of
- * the schema's bool type.
+ * optional, so a member the document omits stays absent. The premium amount is
+ * money, so it is an exact decimal; the schema spells it as text and the mapper
+ * parses those digits. The exercise price list stays text, because the schema
+ * states the whole list as one string with no separator it fixes. The automatic
+ * exercise flag carries the document's own spelling of the schema's bool type.
  */
 struct bond_option_data {
     /**
@@ -112,9 +114,9 @@ struct bond_option_data {
     std::optional<std::string> pay_off_at_expiry;
 
     /**
-     * @brief The premium amount, as the document spells it.
+     * @brief The premium amount.
      */
-    std::optional<std::string> premium_amount;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
 
     /**
      * @brief The currency the premium pays in.

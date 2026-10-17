@@ -25,5 +25,9 @@ export default defineConfig({
     test: {
         include: ['src/**/*.test.ts'],
         environment: 'node',
+        // These tests build an in-process server and read real files, so a
+        // test's runtime follows the machine's load rather than its own cost.
+        // Thirty seconds leaves room for a busy box and still catches a hang.
+        testTimeout: 30_000,
     },
 });

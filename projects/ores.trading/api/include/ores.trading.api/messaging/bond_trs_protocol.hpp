@@ -45,7 +45,7 @@ struct bond_trs_write {
     std::string return_type;
     std::string funding_leg_type;
     std::optional<ores::utility::decimal::decimal> funding_rate;
-    std::string funding_index;
+    std::optional<std::string> funding_index;
     std::optional<std::string> payer;
     std::optional<std::string> price_type;
     std::optional<ores::utility::decimal::decimal> initial_price;

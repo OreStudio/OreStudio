@@ -25,6 +25,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_FORWARD_PREMIUM_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_FORWARD_PREMIUM_HPP
 
+#include "ores.utility/decimal/decimal.hpp"
 #include <string>
 
 namespace ores::trading::domain {
@@ -32,14 +33,15 @@ namespace ores::trading::domain {
 /**
  * @brief A forward bond's premium: the amount and the date it pays.
  *
- * Both members are required strings, and the schema spells the amount as text
- * rather than as a number.
+ * Both members are required. The amount is money, so it is an exact decimal; the
+ * schema spells it as text and the mapper parses those digits. The date is ISO
+ * 8601 text.
  */
 struct bond_forward_premium {
     /**
-     * @brief The premium amount, as the document spells it.
+     * @brief The premium amount.
      */
-    std::string amount;
+    ores::utility::decimal::decimal amount;
 
     /**
      * @brief The date the premium pays on, as ISO 8601 text.

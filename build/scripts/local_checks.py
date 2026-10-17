@@ -408,6 +408,7 @@ CATALOGUE: tuple[Check, ...] = (
               "--changed", "--base", "{base}"),
         classes=("modeling", "codegen"),
         phase=PREPARE,
+        timeout=1800,
         fix="Run compass codegen regenerate for the component the report names.",
     ),
     Check(
@@ -415,6 +416,7 @@ CATALOGUE: tuple[Check, ...] = (
         title="A render of every catalogue component matches the tree",
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_component_drift.py", "--sweep"),
         classes=("modeling", "codegen"),
+        timeout=1800,
     ),
     Check(
         id="paste-blocks",

@@ -55,7 +55,7 @@ domain::bond_trs bond_trs_mapper::map(const bond_trs_entity& v) {
         v.funding_rate.has_value() ?
             std::optional(ores::utility::decimal::decimal::from_string(*v.funding_rate).value()) :
             std::nullopt;
-    r.funding_index = v.funding_index.value_or("");
+    r.funding_index = v.funding_index;
     r.payer = v.payer;
     r.price_type = v.price_type;
     r.initial_price =
@@ -84,7 +84,7 @@ bond_trs_entity bond_trs_mapper::map(const domain::bond_trs& v) {
     r.funding_leg_type = v.funding_leg_type;
     r.funding_rate =
         v.funding_rate.has_value() ? std::optional(v.funding_rate->to_string()) : std::nullopt;
-    r.funding_index = v.funding_index.empty() ? std::nullopt : std::optional(v.funding_index);
+    r.funding_index = v.funding_index;
     r.payer = v.payer;
     r.price_type = v.price_type;
     r.initial_price =

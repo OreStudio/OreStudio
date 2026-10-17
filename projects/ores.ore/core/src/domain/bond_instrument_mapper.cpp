@@ -363,7 +363,7 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
 template <typename Row>
 bond_float_data map_number(const Row& row) {
     bond_float_data result;
-    result.value = static_cast<double>(row);
+    result.value = exact_decimal(row);
     if (row.startDate)
         result.start_date = std::string(*row.startDate);
     return result;
@@ -372,7 +372,7 @@ bond_float_data map_number(const Row& row) {
 template <typename Row>
 Row reverse_number(const bond_float_data& row) {
     Row result;
-    static_cast<float&>(result) = static_cast<float>(row.value);
+    set_exact(result, row.value);
     if (row.start_date)
         result.startDate = *row.start_date;
     return result;
@@ -390,7 +390,7 @@ bond_amortization_data map_amortization(const amortizationData& a) {
     bond_amortization_data result;
     result.type = to_string(a.Type);
     if (a.Value)
-        result.value = static_cast<double>(*a.Value);
+        result.value = exact_decimal(*a.Value);
     if (a.StartDate)
         result.start_date = std::string(*a.StartDate);
     if (a.EndDate)
@@ -406,7 +406,7 @@ amortizationData reverse_amortization(const bond_amortization_data& row) {
     amortizationData result;
     result.Type = parse_code(row.type, amortization_type_count, amortizationType::FixedAmount);
     if (row.value)
-        result.Value = static_cast<float>(*row.value);
+        result.Value = static_cast<float>(row.value->to_double());
     set_present_text(result.StartDate, row.start_date);
     set_present_text(result.EndDate, row.end_date);
     set_present_text(result.Frequency, row.frequency);
@@ -450,7 +450,7 @@ bond_forward_settlement map_forward_settlement(const settlementData& s) {
     if (s.LockRate)
         result.lock_rate = exact_decimal(*s.LockRate);
     if (s.dv01)
-        result.dv01 = static_cast<double>(*s.dv01);
+        result.dv01 = exact_decimal(*s.dv01);
     if (s.LockRateDayCounter)
         result.lock_rate_day_counter = std::string(*s.LockRateDayCounter);
     if (s.SettlementDirty)
@@ -468,7 +468,7 @@ settlementData reverse_forward_settlement(const bond_forward_settlement& row) {
     if (row.lock_rate)
         result.LockRate = static_cast<float>(row.lock_rate->to_double());
     if (row.dv01)
-        result.dv01 = static_cast<float>(*row.dv01);
+        result.dv01 = static_cast<float>(row.dv01->to_double());
     set_present_text(result.LockRateDayCounter, row.lock_rate_day_counter);
     set_present_text(result.SettlementDirty, row.settlement_dirty);
     return result;
@@ -476,14 +476,15 @@ settlementData reverse_forward_settlement(const bond_forward_settlement& row) {
 
 bond_forward_premium map_forward_premium(const forwardBondData_PremiumData_t& p) {
     bond_forward_premium result;
-    result.amount = std::string(p.Amount);
+    result.amount =
+        to_optional_decimal(std::string(p.Amount)).value_or(ores::utility::decimal::decimal{});
     result.date = std::string(p.Date);
     return result;
 }
 
 forwardBondData_PremiumData_t reverse_forward_premium(const bond_forward_premium& row) {
     forwardBondData_PremiumData_t result;
-    set_text(result.Amount, row.amount);
+    set_text(result.Amount, row.amount.to_string());
     set_text(result.Date, row.date);
     return result;
 }
@@ -933,7 +934,7 @@ bond_option_data map_option_data(const optionData& od) {
     if (od.PayOffAtExpiry)
         result.pay_off_at_expiry = std::string(*od.PayOffAtExpiry);
     if (od.PremiumAmount)
-        result.premium_amount = std::string(*od.PremiumAmount);
+        result.premium_amount = to_optional_decimal(std::string(*od.PremiumAmount));
     if (od.PremiumCurrency)
         result.premium_currency = std::string(*od.PremiumCurrency);
     if (od.PremiumPayDate)
@@ -980,7 +981,7 @@ void reverse_option_data(const bond_option_data& row, optionData& od) {
         od.SettlementMethod = parse_code(
             *row.settlement_method, settlement_method_count, settlementMethod::PhysicalOTC);
     set_present_text(od.PayOffAtExpiry, row.pay_off_at_expiry);
-    set_present_text(od.PremiumAmount, row.premium_amount);
+    set_present_decimal(od.PremiumAmount, row.premium_amount);
     set_present_text(od.PremiumCurrency, row.premium_currency);
     set_present_text(od.PremiumPayDate, row.premium_pay_date);
     if (!row.premiums.empty()) {
@@ -1023,7 +1024,7 @@ bond_strike_data map_strike_data(const _StrikeData_t& sd) {
             result.yield_compounding = to_string(*sd.StrikeYield->Compounding);
     }
     if (sd.Value)
-        result.bare_value = static_cast<double>(*sd.Value);
+        result.bare_value = exact_decimal(*sd.Value);
     if (sd.Currency)
         result.bare_currency = std::string(*sd.Currency);
     return result;
@@ -1049,7 +1050,7 @@ _StrikeData_t reverse_strike_data(const bond_strike_data& row) {
         result.StrikeYield = std::move(yield);
     }
     if (row.bare_value)
-        result.Value = static_cast<float>(*row.bare_value);
+        result.Value = static_cast<float>(row.bare_value->to_double());
     if (row.bare_currency)
         result.Currency = *row.bare_currency;
     return result;
@@ -1113,7 +1114,7 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
     if (bd.PriceQuoteMethod)
         issue.price_quote_method = std::string(*bd.PriceQuoteMethod);
     if (bd.PriceQuoteBaseValue)
-        issue.price_quote_base_value = std::string(*bd.PriceQuoteBaseValue);
+        issue.price_quote_base_value = to_optional_decimal(std::string(*bd.PriceQuoteBaseValue));
     if (bd.SubType)
         issue.sub_type = std::string(*bd.SubType);
     if (bd.PriceType)
@@ -1170,7 +1171,7 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
     set_present_text(bd.CreditGroup, issue.credit_group);
     set_present_text(bd.VolatilityCurveId, issue.volatility_curve_id);
     set_present_text(bd.PriceQuoteMethod, issue.price_quote_method);
-    set_present_text(bd.PriceQuoteBaseValue, issue.price_quote_base_value);
+    set_present_decimal(bd.PriceQuoteBaseValue, issue.price_quote_base_value);
     set_present_text(bd.SubType, issue.sub_type);
     set_present_text(bd.Payer, issue.payer);
     if (issue.price_type) {
@@ -1638,7 +1639,8 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
         if (leg_type_from_row)
             d.FundingData.LegData.LegType = legType::Floating;
         _FloatingLegData_t fld;
-        static_cast<std::string&>(fld.Index) = data.trs->funding_index;
+        if (data.trs->funding_index)
+            set_text(fld.Index, *data.trs->funding_index);
         legDataType_group_t ldt;
         ldt.FloatingLegData = std::move(fld);
         d.FundingData.LegData.legDataType = std::move(ldt);
@@ -1664,7 +1666,8 @@ trade bond_instrument_mapper::reverse_bond_repo(const bond_instrument_data& data
         d.RepoData.LegData.LegType = floating ? legType::Floating : legType::Fixed;
     if (floating) {
         _FloatingLegData_t fld;
-        static_cast<std::string&>(fld.Index) = data.repo->repo_index;
+        if (data.repo->repo_index)
+            set_text(fld.Index, *data.repo->repo_index);
         legDataType_group_t ldt;
         ldt.FloatingLegData = std::move(fld);
         d.RepoData.LegData.legDataType = std::move(ldt);

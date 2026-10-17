@@ -67,7 +67,7 @@ struct bond_forward_settlement {
     /**
      * @brief The position's sensitivity to a basis point, when the document states one.
      */
-    std::optional<double> dv01;
+    std::optional<ores::utility::decimal::decimal> dv01;
 
     /**
      * @brief Day count convention the lock rate accrues under, when the document states one.

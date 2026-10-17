@@ -10,9 +10,19 @@ Both halves of the rule are checked, because a tree that gets one right and
 the other wrong is in the state this rule exists to end: the same economic
 quantity typed two ways, and a conversion between them at every seam.
 
-  * A money column is wrong when its SQL type is floating point, or when its
-    SQL type is exact (numeric) but its C++ type is a double -- exact at rest
-    and lossy in the domain, which is the subtler of the two.
+  * A money column is wrong when its SQL type is floating point, when its SQL
+    type is text, or when its SQL type is exact (numeric) but its C++ type is
+    a double -- exact at rest and lossy in the domain, which is the subtler of
+    the two. A text column holds the quantity as digits the store cannot
+    compare or sum, so the money is inexact in both places.
+  * A column is money only when the money word is the head noun of its name.
+    `premium_amount` is money; `premium_date`, `premium_currency` and
+    `price_type` carry a money word and are a date, a currency and a code. A
+    trailing qualifier sits after the quantity without replacing it, so the
+    head noun is the token before it: `face_value` and
+    `minimum_transfer_amount_pay` are money. Text is where the collisions
+    concentrate, so this is what keeps the text case precise rather than
+    seventy false positives.
   * A continuous column is wrong when its SQL type is exact. Rounding a
     volatility, a weight or a day-count fraction to twelve places states a
     precision the quantity does not have, and ORE's own schema reads those
@@ -22,9 +32,13 @@ The rule is stated in
 doc/knowledge/architecture/exact_numbers_and_economic_change.org and checked
 by the Regime 2 criteria in data_oriented_design.org.
 
-Offenders that existed when the rule was written live in a baseline beside
-this script, one per direction, so the debt stays visible and the check fails
-only on one that is not there. Regenerate with --write-baseline or
+A column whose name says money but whose economics do not -- a quote, an
+identity spelling or a code that carries a money word -- is recorded in the
+money baseline with its reason in that column's model prose, because the head
+noun is enough to name the quantity and not enough to say what it holds.
+Offenders that existed when the rule was written live in the same baseline,
+one per direction, so the debt stays visible and the check fails only on one
+that is not there. Regenerate with --write-baseline or
 --write-continuous-baseline after deliberately fixing some.
 
 Usage:
@@ -45,6 +59,12 @@ MONEY_TOKENS = frozenset({
     "rate", "spread", "notional", "amount", "price", "strike", "fee",
     "premium", "margin", "barrier", "face", "yield",
 })
+
+# A token that follows the quantity without replacing it, so the head noun is
+# the token before it: `face_value` is a face amount, `barrier_level` a
+# barrier, `minimum_transfer_amount_pay` the pay side of an amount, and
+# `independent_amount_held` an amount that is held.
+HEAD_QUALIFIERS = frozenset({"value", "level", "pay", "receive", "held"})
 
 # Columns whose name says money and whose economics do not: a variance strike
 # is volatility, a vol config's strike factor is a multiplier, and a synthetic
@@ -88,12 +108,25 @@ CONTINUOUS_BASELINE = Path(__file__).with_suffix("").with_name(
     "continuous_decimal_columns.baseline")
 
 
+def money_name(name: str) -> bool:
+    """True when the name's head noun is a money word.
+
+    The head noun is the last token, after any qualifier that trails the
+    quantity without naming something else. `premium_amount` is money;
+    `premium_date` and `price_type` are not.
+    """
+    tokens = name.lower().split("_")
+    while tokens and tokens[-1] in HEAD_QUALIFIERS:
+        tokens.pop()
+    return bool(tokens) and tokens[-1] in MONEY_TOKENS
+
+
 def classify(name: str) -> str:
     """Returns 'money', 'continuous' or 'other' for a column name."""
     tokens = name.lower().split("_")
     if any(t in CONTINUOUS_TOKENS for t in tokens):
         return "continuous"
-    if any(t in MONEY_TOKENS for t in tokens):
+    if money_name(name):
         return "money"
     return "other"
 
@@ -172,6 +205,7 @@ def money_offenders(root: Path):
                 yield path, line_no, name, "(embedded)", cpp
             continue
         if base_type(sql_type) in FLOAT_TYPES or \
+                base_type(sql_type) == "text" or \
                 (base_type(sql_type) == "numeric" and "double" in cpp):
             yield path, line_no, name, sql_type, cpp
 

@@ -50,8 +50,8 @@ std::string convert_to_table(const std::vector<bond_repo>& v) {
           << "Version" << fort::endr;
 
     for ([[maybe_unused]] const auto& brp : v) {
-        table << brp.repo_type << opt_str(brp.repo_rate) << brp.repo_index << brp.modified_by
-              << brp.version << fort::endr;
+        table << brp.repo_type << opt_str(brp.repo_rate) << opt_str(brp.repo_index)
+              << brp.modified_by << brp.version << fort::endr;
     }
     return table.to_string();
 }

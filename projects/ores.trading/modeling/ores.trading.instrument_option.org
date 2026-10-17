@@ -209,7 +209,7 @@ Flag saying the payoff falls due at expiry.
 
 ** premium_amount
 :PROPERTIES:
-:type:     numeric(28, 10)
+:type:     numeric(38, 12)
 :cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :economic: true

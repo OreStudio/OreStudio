@@ -65,7 +65,7 @@ The rate the forward locks, when the document states one.
 
 ** dv01
 :PROPERTIES:
-:cpp_type: std::optional<double>
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
 :END:
 
 The position's sensitivity to a basis point, when the document states one.

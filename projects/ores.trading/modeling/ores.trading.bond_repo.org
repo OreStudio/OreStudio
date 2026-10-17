@@ -89,7 +89,7 @@ Rate of the repo leg, when the leg is fixed.
 ** repo_index
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 

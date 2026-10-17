@@ -357,10 +357,7 @@ collect_amounts(const std::vector<AmountRow>& rows, std::string_view leg_role, i
     for (const auto& row : rows) {
         if (leg_role_of(row) != leg_role || row.leg_number != leg_number)
             continue;
-        // The stored amount is a decimal and the ORE-shaped value the reader
-        // rebuilds is the float the ORE document holds, so the conversion
-        // happens once, here, at that boundary.
-        domain::bond_float_data amount{row.value.to_double(), row.start_date};
+        domain::bond_float_data amount{row.value, row.start_date};
         if (row.amount_role == "notional")
             amounts.notional.push_back(std::move(amount));
         else if (row.amount_role == "rate")
@@ -483,13 +480,12 @@ domain::bond_leg_data build_leg(const Rows& rows, const LegRow& row) {
     for (const auto& amortization : rows.amortizations) {
         if (leg_role_of(amortization) != leg_role || amortization.leg_number != leg_number)
             continue;
-        leg.amortizations.push_back(
-            {amortization.amortization_type,
-             amortization.value ? std::optional(amortization.value->to_double()) : std::nullopt,
-             amortization.start_date,
-             amortization.end_date,
-             amortization.frequency,
-             amortization.underflow});
+        leg.amortizations.push_back({amortization.amortization_type,
+                                     amortization.value,
+                                     amortization.start_date,
+                                     amortization.end_date,
+                                     amortization.frequency,
+                                     amortization.underflow});
     }
 
     leg.schedule =
@@ -591,8 +587,7 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         block.settlement = row.settlement;
         block.settlement_method = row.settlement_method;
         block.pay_off_at_expiry = row.pay_off_at_expiry;
-        block.premium_amount =
-            row.premium_amount ? std::optional(row.premium_amount->to_string()) : std::nullopt;
+        block.premium_amount = row.premium_amount;
         block.premium_currency = row.premium_currency;
         block.premium_pay_date = iso_optional(row.premium_pay_date);
 
@@ -658,13 +653,12 @@ void apply_strike(domain::bond_instrument_data& data, const instrument_rows& row
     if (!rows.strike)
         return;
     const auto& row = *rows.strike;
-    data.strike_data = domain::bond_strike_data{
-        row.price_value,
-        row.price_currency,
-        row.yield_value,
-        row.yield_compounding,
-        row.bare_value ? std::optional(row.bare_value->to_double()) : std::nullopt,
-        row.bare_currency};
+    data.strike_data = domain::bond_strike_data{row.price_value,
+                                                row.price_currency,
+                                                row.yield_value,
+                                                row.yield_compounding,
+                                                row.bare_value,
+                                                row.bare_currency};
 }
 
 void apply_forward(domain::bond_instrument_data& data, const instrument_rows& rows) {
@@ -679,14 +673,15 @@ void apply_forward(domain::bond_instrument_data& data, const instrument_rows& ro
     settlement.settlement = row.settlement;
     settlement.amount = row.amount;
     settlement.lock_rate = row.lock_rate;
-    settlement.dv01 = row.dv01 ? std::optional(row.dv01->to_double()) : std::nullopt;
+    settlement.dv01 = row.dv01;
     settlement.lock_rate_day_counter = row.lock_rate_day_counter;
     settlement.settlement_dirty = row.settlement_dirty;
     data.forward_settlement = std::move(settlement);
 
     if (row.premium_amount || row.premium_date)
-        data.forward_premium = domain::bond_forward_premium{row.premium_amount.value_or(""),
-                                                            row.premium_date.value_or("")};
+        data.forward_premium = domain::bond_forward_premium{
+            row.premium_amount.value_or(ores::utility::decimal::decimal{}),
+            row.premium_date.value_or("")};
 }
 
 /**

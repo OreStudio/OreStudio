@@ -90,7 +90,7 @@ struct bond_repo final {
     /**
      * @brief Index code of the repo leg, when the leg is floating.
      */
-    std::string repo_index;
+    std::optional<std::string> repo_index;
 
     /**
      * @brief Username of the person who last modified this bond repo.

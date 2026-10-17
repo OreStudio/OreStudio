@@ -240,17 +240,14 @@ business_unit_type_repository::read_any_by_code(context ctx, const std::string& 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<business_unit_type_entity, domain::business_unit_type>(
+    return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
         ctx,
         query,
         [](const auto& entities) { return business_unit_type_mapper::map(entities); },
         lg(),
         "Reading any business unit type by code.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

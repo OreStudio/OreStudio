@@ -237,17 +237,14 @@ std::vector<domain::app> app_repository::read_any_by_name(context ctx, const std
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<app_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "name"_c == name) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<app_entity, domain::app>(
+    return execute_read_query<app_entity, domain::app>(
         ctx,
         query,
         [](const auto& entities) { return app_mapper::map(entities); },
         lg(),
         "Reading any compute app by name.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

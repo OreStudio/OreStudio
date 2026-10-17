@@ -230,17 +230,14 @@ std::vector<domain::fsm_transition>
 fsm_transition_repository::read_any_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any fsm transition by name: " << name;
     const auto query = sqlgen::read<std::vector<fsm_transition_entity>> | where("name"_c == name) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<fsm_transition_entity, domain::fsm_transition>(
+    return execute_read_query<fsm_transition_entity, domain::fsm_transition>(
         ctx,
         query,
         [](const auto& entities) { return fsm_transition_mapper::map(entities); },
         lg(),
         "Reading any fsm transition by name.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

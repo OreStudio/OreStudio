@@ -225,17 +225,14 @@ std::vector<domain::fsm_state> fsm_state_repository::read_any_by_name(context ct
                                                                       const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any fsm state by name: " << name;
     const auto query = sqlgen::read<std::vector<fsm_state_entity>> | where("name"_c == name) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<fsm_state_entity, domain::fsm_state>(
+    return execute_read_query<fsm_state_entity, domain::fsm_state>(
         ctx,
         query,
         [](const auto& entities) { return fsm_state_mapper::map(entities); },
         lg(),
         "Reading any fsm state by name.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

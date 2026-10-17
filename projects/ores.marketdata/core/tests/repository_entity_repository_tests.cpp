@@ -101,8 +101,8 @@ TEST_CASE("feed_binding_history_resolves_to_the_session_party_s_row", tags) {
     REQUIRE(their_rows.size() == 1);
     CHECK(their_rows.front().id == theirs.id);
 
-    // A session with no party reads the tenant, which is what it did before
-    // the party was part of the read.
+    // A session with no party reads the whole tenant, so the newest row of
+    // either party answers it.
     const auto whole_tenant = repo.read_any_by_source_name(h.context(), source_name);
     REQUIRE(whole_tenant.size() == 1);
     CHECK(whole_tenant.front().id == theirs.id);

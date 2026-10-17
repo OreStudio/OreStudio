@@ -417,24 +417,31 @@ std::vector<domain::{{entity_singular}}>
     const auto tid = ctx.tenant_id().to_string();{{sys_decl}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where({{{tenant_where}}} && "{{column}}"_c == {{column}}) |
-        order_by("valid_from"_c.desc());
+        order_by("valid_from"_c.desc()){{^domain_entity.has_party_column}} |
+        sqlgen::limit(1){{/domain_entity.has_party_column}};
 {{/read_tenant_filtered}}
 {{^read_tenant_filtered}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
         where("{{column}}"_c == {{column}}) |
-        order_by("valid_from"_c.desc());
+        order_by("valid_from"_c.desc()){{^domain_entity.has_party_column}} |
+        sqlgen::limit(1){{/domain_entity.has_party_column}};
 {{/read_tenant_filtered}}
 
+{{^domain_entity.has_party_column}}
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading any {{entity_singular_words}} by {{column}}.");
+{{/domain_entity.has_party_column}}
+{{#domain_entity.has_party_column}}
     auto found = execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,
         [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
         lg(), "Reading any {{entity_singular_words}} by {{column}}.");
-{{#domain_entity.has_party_column}}
     // A key names a row of one party, and another party of the tenant may hold
     // the same key, so the read keeps the session's party's rows. The filter
-    // runs before the newest row is taken, not after: the read would otherwise
-    // return another party's newer row and this party's history would read as
-    // empty. A null party column means the row belongs to the whole tenant and
+    // runs before the newest row is taken because the party column may be
+    // null, and a null party means the row belongs to the whole tenant and
     // stays readable by every party, as the latest-by finder also has it.
     if (const auto party = ctx.party_id(); party.has_value())
         std::erase_if(found, [&](const auto& row) {
@@ -445,10 +452,10 @@ std::vector<domain::{{entity_singular}}>
             return row.party_id != *party;
 {{/domain_entity.party_column_optional}}
         });
-{{/domain_entity.has_party_column}}
     if (found.size() > 1)
         found.resize(1);
     return found;
+{{/domain_entity.has_party_column}}
 }
 {{/key_resolvers}}
 {{/current_state}}

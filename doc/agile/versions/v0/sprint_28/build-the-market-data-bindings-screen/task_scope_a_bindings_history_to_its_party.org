@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/scope-a-bindings-history-to-its-party
 #+pr:
-#+blocked_on:
+#+blocked_on: Nothing
 #+blocked_since:
 #+created: 2026-10-13
-#+updated: 2026-10-13
+#+updated: 2026-10-17
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ A binding's history is read by its source name, which every party of a tenant ma
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented on the branch; the resolver is party-scoped and a two-party test passes. Waiting to merge. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Next         | Merge, then story task 9044BB8A draws the History tab. |
+| Last touched | 2026-10-17                               |
 
 * Acceptance
 
@@ -109,11 +109,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Resolver definitions in generated repositories | 57 in 57 files | =grep -rh '_repository::read_any_by_' --include=*_repository.cpp projects/*/core/src/repository/ | wc -l= | =a1152ae6ee= |
-| Resolvers that own a party column, and take the fix | 31 | same file list, then =xargs grep -l 'ctx.party_id()' | wc -l= | =a1152ae6ee= |
-| Resolvers with an optional party column | 1 (=batch.external_ref=, =ores.compute=) | same list, then =xargs grep -l 'party_id.has_value()' | wc -l= | =a1152ae6ee= |
-| Components whose generated repositories change | 7 (analytics, compute, iam, marketdata, refdata, reporting, variability) | the file list above, grouped by =projects/<component>= | =a1152ae6ee= |
-| Generated files rewritten | 62 (31 header, 31 implementation) | =git status --short | grep -c '_repository\.(hpp|cpp)'= | =a1152ae6ee= |
+| Resolver definitions in generated repositories | 57, in 57 files | =grep -rl --include=*_repository.cpp -e read_any_by_ projects/*/core/src/repository > /tmp/r.txt; wc -l < /tmp/r.txt= | =50b2ac29df..HEAD= |
+| Resolvers that own a party column, and take the party filter | 31 | =grep -rl --include=*_repository.cpp -e 'ctx.party_id()' projects/*/core/src/repository > /tmp/p.txt; wc -l < /tmp/p.txt= | =50b2ac29df..HEAD= |
+| Resolvers without a party column, unchanged by the party filter | 26 | the difference between the two counts above | =50b2ac29df..HEAD= |
+| Resolvers with an optional party column | 1 (=batch.external_ref=, =ores.compute=) | =grep -rl --include=*_repository.cpp -e 'party_id.has_value()' projects/*/core/src/repository > /tmp/o.txt; wc -l < /tmp/o.txt= | =50b2ac29df..HEAD= |
+| Components whose generated repositories change | 10 | =git diff --name-only origin/main...HEAD > /tmp/d.txt; cut -d/ -f2 /tmp/d.txt > /tmp/c.txt; sort -u /tmp/c.txt > /tmp/c2.txt; wc -l < /tmp/c2.txt= | =50b2ac29df..HEAD= |
+| Generated repository files rewritten | 88 (31 headers, 57 implementations) | =git diff --name-only origin/main...HEAD > /tmp/d.txt; grep -c '_repository\.' /tmp/d.txt= | =50b2ac29df..HEAD= |
 
 * Notes
 
@@ -187,3 +188,49 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+** The decision: the template, and the entities it affects
+
+The party filter is emitted by the generator, not written for =feed_binding=. The
+same rule governs 30 other entities, and the entity screen specification states
+it as a property of history reads in general, so a per-entity override would
+leave the defect in place everywhere else.
+
+The entities that gain the filter, by component:
+
+| Component | Entities |
+|-----------+----------|
+| analytics | credit_simulation_config, credit_simulation_entity_config, credit_simulation_matrix_config, credit_simulation_matrix_row_config, credit_simulation_netting_set_config, pricing_model_config, pricing_model_product, pricing_model_product_parameter, todays_market_collection, todays_market_config, todays_market_configuration, todays_market_configuration_binding |
+| compute | batch (optional party column) |
+| iam | run_grant |
+| marketdata | feed_binding |
+| refdata | book, business_unit, crm_topology_config, curve_definition, netting_agreement, netting_set, netting_set_identifier, party_contact_information, party_identifier, portfolio |
+| reporting | configuration, configuration_parameter, report_configuration, report_definition, report_instance |
+| variability | system_setting |
+
+** Verification, and what it does not cover
+
+=feed_binding_history_resolves_to_the_session_party_s_row= in
+=projects/ores.marketdata/core/tests/repository_entity_repository_tests.cpp=
+writes two bindings under one source name, one per party, and reads each back
+under its own party. Both files were reformatted by clang-format and the case
+passes with 6 assertions. The old read returned the newest row of either party,
+and the two rows the test writes are 5 ms apart, so the case fails against the
+old code rather than passing by accident.
+
+It asserts the resolver, =read_any_by_source_name=, which is where the wrong
+party was chosen. It does not assert =feed_binding_service::get_feed_binding_history=
+end to end, and no case covers a binding whose own delete closed its window
+while another party holds a newer row under the same name.
+
+** Known limits of the emitted filter
+
+- A session with no party reads the whole tenant, which is what every entity's
+  history read did before and what a system caller still needs.
+- The filter compares the row's party exactly. A party context carries the party
+  and its descendants as visible parties, so a row owned by a descendant party
+  is admitted by row-level security but dropped here. No entity in this change
+  holds rows for a descendant party today.
+- The filter runs in memory because the party column may be null and the
+  template does not branch the query on that. The entity solver fetches every
+  version of the key rather than one row; see the review item recorded below.

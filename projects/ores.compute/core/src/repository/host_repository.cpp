@@ -232,17 +232,14 @@ std::vector<domain::host> host_repository::read_any_by_external_id(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<host_entity>> |
                        where("tenant_id"_c == tid && "external_id"_c == external_id) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<host_entity, domain::host>(
+    return execute_read_query<host_entity, domain::host>(
         ctx,
         query,
         [](const auto& entities) { return host_mapper::map(entities); },
         lg(),
         "Reading any compute host by external_id.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

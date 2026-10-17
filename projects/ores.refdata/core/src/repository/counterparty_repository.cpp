@@ -254,17 +254,14 @@ counterparty_repository::read_any_by_short_code(context ctx, const std::string& 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
                        where("tenant_id"_c == tid && "short_code"_c == short_code) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<counterparty_entity, domain::counterparty>(
+    return execute_read_query<counterparty_entity, domain::counterparty>(
         ctx,
         query,
         [](const auto& entities) { return counterparty_mapper::map(entities); },
         lg(),
         "Reading any counterparty by short_code.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

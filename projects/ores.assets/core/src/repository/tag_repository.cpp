@@ -230,17 +230,14 @@ std::vector<domain::tag> tag_repository::read_any_by_name(context ctx, const std
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tag_entity>> |
                        where("tenant_id"_c == tid && "name"_c == name) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<tag_entity, domain::tag>(
+    return execute_read_query<tag_entity, domain::tag>(
         ctx,
         query,
         [](const auto& entities) { return tag_mapper::map(entities); },
         lg(),
         "Reading any asset tag by name.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

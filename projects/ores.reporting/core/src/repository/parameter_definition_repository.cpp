@@ -252,17 +252,14 @@ parameter_definition_repository::read_any_by_name(context ctx, const std::string
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<parameter_definition_entity>> |
                        where("tenant_id"_c == tid && "name"_c == name) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<parameter_definition_entity, domain::parameter_definition>(
+    return execute_read_query<parameter_definition_entity, domain::parameter_definition>(
         ctx,
         query,
         [](const auto& entities) { return parameter_definition_mapper::map(entities); },
         lg(),
         "Reading any parameter definition by name.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

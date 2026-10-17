@@ -214,17 +214,14 @@ std::vector<domain::role> role_repository::read_any_by_name(context ctx, const s
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<role_entity>> |
                        where("tenant_id"_c == tid && "name"_c == name) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<role_entity, domain::role>(
+    return execute_read_query<role_entity, domain::role>(
         ctx,
         query,
         [](const auto& entities) { return role_mapper::map(entities); },
         lg(),
         "Reading any role by name.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

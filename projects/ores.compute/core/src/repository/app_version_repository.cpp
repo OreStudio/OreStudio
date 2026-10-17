@@ -244,17 +244,14 @@ app_version_repository::read_any_by_wrapper_version(context ctx,
     const auto query = sqlgen::read<std::vector<app_version_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) &&
                              "wrapper_version"_c == wrapper_version) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<app_version_entity, domain::app_version>(
+    return execute_read_query<app_version_entity, domain::app_version>(
         ctx,
         query,
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(),
         "Reading any app version by wrapper_version.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

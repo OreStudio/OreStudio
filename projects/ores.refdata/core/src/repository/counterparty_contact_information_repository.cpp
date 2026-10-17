@@ -285,18 +285,15 @@ counterparty_contact_information_repository::read_any_by_contact_type(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_contact_information_entity>> |
                        where("tenant_id"_c == tid && "contact_type"_c == contact_type) |
-                       order_by("valid_from"_c.desc());
+                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
 
-    auto found = execute_read_query<counterparty_contact_information_entity,
-                                    domain::counterparty_contact_information>(
+    return execute_read_query<counterparty_contact_information_entity,
+                              domain::counterparty_contact_information>(
         ctx,
         query,
         [](const auto& entities) { return counterparty_contact_information_mapper::map(entities); },
         lg(),
         "Reading any counterparty contact information by contact_type.");
-    if (found.size() > 1)
-        found.resize(1);
-    return found;
 }
 
 

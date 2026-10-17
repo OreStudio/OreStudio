@@ -20,6 +20,8 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <cstdlib>
+#include <ctime>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -272,4 +274,30 @@ TEST_CASE("from_iso8601_utc_keeps_the_second_when_no_fraction_is_stated", tags) 
 TEST_CASE("from_iso8601_utc_refuses_a_malformed_fraction", tags) {
     CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 10:30:45.Z"), std::invalid_argument);
     CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 10:30:45.12xZ"), std::invalid_argument);
+}
+
+TEST_CASE("to_iso8601_utc_writes_the_same_bytes_whatever_the_process_timezone", tags) {
+    // The server's convention, not a second one: an instant must cross the
+    // wire as the same bytes whether the process reading it runs in UTC or in
+    // a zone with a positive or negative offset. Every writer in the system
+    // goes through this function, so pinning it here covers them all.
+    const auto instant = make_utc(2026, 10, 17, 13, 0, 9) + std::chrono::microseconds{512000};
+    constexpr auto expected = "2026-10-17 13:00:09.512000Z";
+
+    const char* original = std::getenv("TZ");
+    const bool had_original = original != nullptr;
+    const std::string saved = had_original ? std::string{original} : std::string{};
+
+    for (const char* zone : {"UTC", "Europe/London", "America/New_York"}) {
+        setenv("TZ", zone, 1);
+        tzset();
+        CHECK(datetime::to_iso8601_utc(instant) == expected);
+        CHECK(datetime::from_iso8601_utc(expected) == instant);
+    }
+
+    if (had_original)
+        setenv("TZ", saved.c_str(), 1);
+    else
+        unsetenv("TZ");
+    tzset();
 }

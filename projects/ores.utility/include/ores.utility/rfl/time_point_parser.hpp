@@ -32,9 +32,10 @@ struct Parser<ReaderType, WriterType, std::chrono::system_clock::time_point, Pro
     using InputVarType = typename ReaderType::InputVarType;
     using OutputVarType = typename WriterType::OutputVarType;
 
-    // std::chrono::system_clock::time_point is always UTC by definition (C++20).
-    // We serialise with a 'Z' suffix and parse with UTC interpretation so that
-    // server and client agree regardless of the host machine's local timezone.
+    // The wire shape is defined once, in
+    // doc/knowledge/architecture/time_architecture.org. Both directions
+    // delegate to datetime, which implements it, so this parser states no
+    // format of its own.
     static Result<std::chrono::system_clock::time_point> read(const ReaderType& _r,
                                                               const InputVarType& _var) noexcept {
         const auto str_result =

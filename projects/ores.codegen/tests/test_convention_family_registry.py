@@ -18,10 +18,13 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 from codegen.convention_family_registry import (  # noqa: E402
     FRAGMENT_RELATIVE_PATH,
     HEADER_RELATIVE_PATH,
+    TS_RELATIVE_PATH,
     discover_entries,
+    discover_web_families,
     parse_header,
     render_fragment,
     render_header,
+    render_typescript,
 )
 
 SCRIPT = (
@@ -95,6 +98,12 @@ def _write_artefacts(root: Path, entries) -> None:
     fragment = root / FRAGMENT_RELATIVE_PATH
     fragment.parent.mkdir(parents=True, exist_ok=True)
     fragment.write_text(render_fragment(entries), encoding="utf-8")
+    typescript = root / TS_RELATIVE_PATH
+    typescript.parent.mkdir(parents=True, exist_ok=True)
+    web_entries, composites = discover_web_families(root)
+    typescript.write_text(
+        render_typescript(web_entries, composites), encoding="utf-8"
+    )
 
 
 TWO = {
@@ -246,6 +255,46 @@ def test_a_hand_edited_fragment_fails(tmp_path):
         str(FRAGMENT_RELATIVE_PATH) in problem and "differs" in problem
         for problem in problems
     )
+
+
+def test_a_missing_typescript_twin_fails(tmp_path):
+    root = _tree(tmp_path, TWO)
+    _write_artefacts(root, discover_entries(root))
+    (root / TS_RELATIVE_PATH).unlink()
+
+    problems = check.check(root)
+
+    assert problems == [f"{TS_RELATIVE_PATH} is missing"]
+
+
+def test_a_hand_edited_typescript_twin_fails(tmp_path):
+    root = _tree(tmp_path, TWO)
+    _write_artefacts(root, discover_entries(root))
+    typescript = root / TS_RELATIVE_PATH
+    typescript.write_text(
+        typescript.read_text(encoding="utf-8") + "// edited by hand\n",
+        encoding="utf-8",
+    )
+
+    problems = check.check(root)
+
+    assert any(
+        str(TS_RELATIVE_PATH) in problem and "differs" in problem
+        for problem in problems
+    )
+
+
+def test_the_typescript_twin_carries_the_family_entries(tmp_path):
+    root = _tree(tmp_path, THREE)
+    entries, composites = discover_web_families(root)
+
+    text = render_typescript(entries, composites)
+
+    assert "key: 'ois'" in text
+    assert "entity: 'ois_convention'" in text
+    assert "subjectStem: 'refdata.v1.ois_conventions'" in text
+    assert "writeMode: 'by_id'" in text
+    assert composites == []
 
 
 def test_the_fragment_names_one_helper_call_per_family(tmp_path):

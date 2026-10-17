@@ -17,14 +17,16 @@ it by row key rather than by party: such a model declares
 ``#+convention_write: by_id``. The mode is ``party`` by default, ``world`` when
 the table has no ``party_id`` column, and ``by_id`` when declared.
 
-Two artefacts are rendered from the registry: a C++ header that states every
-family and its write mode, and an include fragment that carries one write call
-per family. The conventions service includes the fragment inside the anonymous
-namespace that defines its row helpers, so the hand-written call per family
-cannot drift from the modelling tree. The header is rendered as C++ rather
-than an org or JSON artefact because a constexpr table gives the service a
-compile-checked enumeration; the web BFF reaches the same data through its
-generated protocol twins in a later slice.
+Three artefacts are rendered from the registry: a C++ header that states every
+family and its write mode, an include fragment that carries one write call per
+family, and a TypeScript twin the web BFF reads. The conventions service
+includes the fragment inside the anonymous namespace that defines its row
+helpers, so the hand-written call per family cannot drift from the modelling
+tree. The header is rendered as C++ rather than an org or JSON artefact because
+a constexpr table gives the service a compile-checked enumeration. The
+TypeScript twin carries the same entries, plus the families the web screen
+lists that the conventions document does not carry: a convention entity with no
+document family, and a composite family drawn as one central row plus its parts.
 """
 
 from __future__ import annotations
@@ -45,6 +47,11 @@ HEADER_RELATIVE_PATH = Path(
 
 FRAGMENT_RELATIVE_PATH = Path(
     "projects/ores.refdata/core/src/service/convention_family_apply.inc"
+)
+
+TS_RELATIVE_PATH = Path(
+    "projects/ores.web/packages/wire-protocol/src/generated/refdata/domain"
+    "/convention_family_registry.ts"
 )
 
 WRITE_MODE_KEYWORD = "convention_write"
@@ -149,6 +156,23 @@ class FamilyEntry:
     write_mode: str
 
 
+@dataclass(frozen=True)
+class CompositeFamily:
+    """A composite family: one central convention row plus its parts.
+
+    The conventions document does not carry a composite family, so this entry
+    is not in the C++ registry. The web screen still lists it as one family,
+    so the TypeScript twin states it beside the document families.
+    """
+
+    key: str
+    entity: str
+    subject_stem: str
+    kind_code: str
+    central_entity: str
+    parts: tuple[str, ...]
+
+
 def _frontmatter(path: Path) -> dict[str, str]:
     """The file's #+key: frontmatter values, before the first heading."""
     values: dict[str, str] = {}
@@ -242,6 +266,83 @@ def discover_entries(project_root: Path) -> list[FamilyEntry]:
     return sorted(entries, key=lambda entry: entry.key)
 
 
+def _family_parts(path: Path) -> tuple[str, ...]:
+    """The part entity names the model's * Parts table states, in file order."""
+    parts: list[str] = []
+    in_parts = False
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.startswith("* "):
+            in_parts = line.strip() == "* Parts"
+            continue
+        if not in_parts or not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if len(cells) < 2 or cells[1] in ("entity", "") or set(cells[0]) <= {"-", ":"}:
+            continue
+        parts.append(cells[1])
+    return tuple(parts)
+
+
+def _composite_for(path: Path) -> CompositeFamily:
+    """The web family a composite family model declares."""
+    frontmatter = _frontmatter(path)
+    entity = (frontmatter.get("entity_singular") or path.stem.split(".")[-1]).strip()
+    component = (frontmatter.get("component") or "").strip()
+    plural = (frontmatter.get("entity_plural") or f"{entity}s").strip()
+    central = ""
+    body = path.read_text(encoding="utf-8", errors="replace")
+    match = re.search(r"^:central_entity:\s*(\S+)\s*$", body, re.MULTILINE)
+    if match:
+        central = match.group(1)
+    if not component:
+        raise ValueError(f"{path}: a family model must declare #+component:")
+    if not central:
+        raise ValueError(f"{path}: a family model must declare :central_entity:")
+    parts = _family_parts(path)
+    if not parts:
+        raise ValueError(f"{path}: a family model must state its parts")
+    return CompositeFamily(
+        key=entity.removesuffix("_convention").replace("_", "-"),
+        entity=entity,
+        subject_stem=f"{component}.v1.{plural}",
+        kind_code=entity.removesuffix("_convention").upper(),
+        central_entity=central,
+        parts=parts,
+    )
+
+
+def discover_web_families(
+    project_root: Path,
+) -> tuple[list[FamilyEntry], list[CompositeFamily]]:
+    """Every family the web screen lists, and the composites it draws.
+
+    The document families are the registry entries. A convention entity the
+    document does not carry, such as a tenor convention, is still a screen of
+    its own, so it joins the list with a key derived from its entity name. A
+    composite family is not a document family either; its parts and its
+    central row are, so the web screen lists the composite and withholds the
+    three document families it is made from.
+    """
+    document = discover_entries(project_root)
+    documented = {entry.entity for entry in document}
+    entries = list(document)
+    composites: list[CompositeFamily] = []
+    for path in discover_models(get_component(COMPONENT), project_root):
+        frontmatter = _frontmatter(path)
+        if frontmatter.get("type") == "ores.codegen.family":
+            composites.append(_composite_for(path))
+            continue
+        if frontmatter.get(MARKER):
+            continue
+        entity = (frontmatter.get("entity_singular") or "").strip()
+        if not entity.endswith("_convention") or entity in documented:
+            continue
+        entries.append(_entry_for(path, entity.removesuffix("_convention")))
+    return sorted(entries, key=lambda entry: entry.key), sorted(
+        composites, key=lambda family: family.key
+    )
+
+
 def render_header(entries: list[FamilyEntry]) -> str:
     """The committed registry header, byte for byte."""
     rows = "".join(
@@ -254,6 +355,116 @@ def render_header(entries: list[FamilyEntry]) -> str:
         for entry in entries
     )
     return _LICENSE + "\n" + _PREAMBLE + rows + _EPILOGUE
+
+
+_TS_LICENSE = """\
+/** -*- mode: typescript-ts-mode; tab-width: 4; indent-tabs-mode: nil -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */"""
+
+_TS_PREAMBLE = """\
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
+ * The TypeScript twin of the C++ convention family registry. To change an
+ * entry, edit the convention entity model's #+convention_family: or
+ * #+convention_write: declaration and regenerate.
+ */
+export type ConventionWriteMode = 'party' | 'by_id' | 'world';
+
+/** One convention family, as the conventions screen lists it. */
+export interface ConventionFamilyEntry {
+    /** The family's key in the screen, and the import document's family. */
+    readonly key: string;
+    /** The entity model that serves the family. */
+    readonly entity: string;
+    /** The protocol subject prefix every verb of the entity shares. */
+    readonly subjectStem: string;
+    /** Whether the family's table carries a party_id column. */
+    readonly partyScoped: boolean;
+    /** How the import document writes the family's rows. */
+    readonly writeMode: ConventionWriteMode;
+}
+
+/** A family drawn as one central convention row plus its parts. */
+export interface CompositeConventionFamilyEntry {
+    /** The family's key in the screen. */
+    readonly key: string;
+    /** The family model that serves the composite. */
+    readonly entity: string;
+    /** The family protocol's subject prefix. */
+    readonly subjectStem: string;
+    /** The kind_code every central row of the family carries. */
+    readonly kindCode: string;
+    /** The central entity the family's parts hang off. */
+    readonly centralEntity: string;
+    /** The part entity models the family carries. */
+    readonly parts: readonly string[];
+}
+"""
+
+
+def _ts_string(value: str) -> str:
+    """A TypeScript single-quoted string literal."""
+    escaped = value.replace("\\", "\\\\").replace("'", "\\'")
+    return f"'{escaped}'"
+
+
+def render_typescript(
+    entries: list[FamilyEntry], composites: list[CompositeFamily]
+) -> str:
+    """The committed TypeScript registry twin, byte for byte."""
+    rows = "".join(
+        "    {\n"
+        f"        key: {_ts_string(entry.key.replace('_', '-'))},\n"
+        f"        entity: {_ts_string(entry.entity)},\n"
+        f"        subjectStem: {_ts_string(entry.subject_stem)},\n"
+        f"        partyScoped: {'true' if entry.party_scoped else 'false'},\n"
+        f"        writeMode: {_ts_string(entry.write_mode)},\n"
+        "    },\n"
+        for entry in entries
+    )
+    composite_rows = "".join(
+        "    {\n"
+        f"        key: {_ts_string(composite.key)},\n"
+        f"        entity: {_ts_string(composite.entity)},\n"
+        f"        subjectStem: {_ts_string(composite.subject_stem)},\n"
+        f"        kindCode: {_ts_string(composite.kind_code)},\n"
+        f"        centralEntity: {_ts_string(composite.central_entity)},\n"
+        "        parts: ["
+        + ", ".join(_ts_string(part) for part in composite.parts)
+        + "],\n"
+        "    },\n"
+        for composite in composites
+    )
+    return (
+        _TS_LICENSE
+        + "\n"
+        + _TS_PREAMBLE
+        + "\nexport const conventionFamilies: readonly ConventionFamilyEntry[] = [\n"
+        + rows
+        + "];\n"
+        + "\nexport const compositeConventionFamilies:"
+        + " readonly CompositeConventionFamilyEntry[] = [\n"
+        + composite_rows
+        + "];\n"
+    )
 
 
 _FRAGMENT_PREAMBLE = """\

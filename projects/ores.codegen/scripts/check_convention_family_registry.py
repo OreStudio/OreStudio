@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Check the generated convention family artefacts against the modelling tree.
 
-The registry header and the apply fragment are generated from the refdata
-entity models that declare ``#+convention_family: <key>``; see
+The registry header, the apply fragment and the TypeScript twin are generated
+from the refdata entity and family models; see
 ``projects/ores.codegen/scripts/regenerate_convention_family_registry.py``.
 This check fails when:
 
@@ -13,12 +13,12 @@ This check fails when:
 * an entry's key, domain type, subject stem, scope or write mode disagrees with
   what its model states, which is a generated header edited by hand or a model
   changed without a regeneration;
-* the header or the apply fragment differs from its generated form, which is a
-  generated artefact edited by hand;
-* the apply fragment is missing.
+* the header, the apply fragment or the TypeScript twin differs from its
+  generated form, which is a generated artefact edited by hand;
+* any of the three artefacts is missing.
 
-It reads the models and the two artefacts only, so it needs neither codegen nor
-a formatter.
+It reads the models and the three artefacts only, so it needs neither codegen
+nor a formatter.
 
 Usage::
 
@@ -37,10 +37,13 @@ sys.path.insert(0, str(REPO_ROOT / "projects" / "ores.codegen" / "src"))
 from codegen.convention_family_registry import (  # noqa: E402
     FRAGMENT_RELATIVE_PATH,
     HEADER_RELATIVE_PATH,
+    TS_RELATIVE_PATH,
     discover_entries,
+    discover_web_families,
     parse_header,
     render_fragment,
     render_header,
+    render_typescript,
 )
 
 
@@ -61,9 +64,14 @@ def check(project_root: Path) -> list[str]:
     """Every way the generated artefacts disagree with the modelling tree."""
     header = project_root / HEADER_RELATIVE_PATH
     fragment = project_root / FRAGMENT_RELATIVE_PATH
+    typescript = project_root / TS_RELATIVE_PATH
     missing = [
         relative_path
-        for relative_path in (HEADER_RELATIVE_PATH, FRAGMENT_RELATIVE_PATH)
+        for relative_path in (
+            HEADER_RELATIVE_PATH,
+            FRAGMENT_RELATIVE_PATH,
+            TS_RELATIVE_PATH,
+        )
         if not (project_root / relative_path).exists()
     ]
     if missing:
@@ -103,6 +111,16 @@ def check(project_root: Path) -> list[str]:
         problems.append(
             f"{FRAGMENT_RELATIVE_PATH} differs from its generated form"
         )
+    try:
+        web_entries, composites = discover_web_families(project_root)
+    except ValueError as error:
+        return problems + [str(error)]
+    if typescript.read_text(encoding="utf-8") != render_typescript(
+        web_entries, composites
+    ):
+        problems.append(
+            f"{TS_RELATIVE_PATH} differs from its generated form"
+        )
     return problems
 
 
@@ -130,7 +148,8 @@ def main() -> int:
 
     print(
         f"{len(discover_entries(root))} convention families match"
-        f" {HEADER_RELATIVE_PATH} and {FRAGMENT_RELATIVE_PATH}"
+        f" {HEADER_RELATIVE_PATH}, {FRAGMENT_RELATIVE_PATH} and"
+        f" {TS_RELATIVE_PATH}"
     )
     return 0
 

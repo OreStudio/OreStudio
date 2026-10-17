@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Regenerate the convention family registry header and apply fragment.
+"""Regenerate the convention family registry header, apply fragment and twin.
 
 Every refdata entity model that declares ``#+convention_family: <key>`` joins
 the registry; see ``codegen.convention_family_registry``. The header is written
-to a fixed path under the refdata API, and the include fragment to the refdata
-core service, so the C++ service compiles one call per family instead of
-naming each one by hand.
+to a fixed path under the refdata API, the include fragment to the refdata core
+service, and the TypeScript twin to the web wire-protocol package, so the C++
+service compiles one call per family and the web BFF reads one family list
+instead of naming each one by hand.
 
 Usage::
 
-    regenerate_convention_family_registry.py            # write both artefacts
+    regenerate_convention_family_registry.py            # write every artefact
     regenerate_convention_family_registry.py --check    # exit non-zero if stale
 """
 
@@ -25,9 +26,12 @@ sys.path.insert(0, str(REPO_ROOT / "projects" / "ores.codegen" / "src"))
 from codegen.convention_family_registry import (  # noqa: E402
     FRAGMENT_RELATIVE_PATH,
     HEADER_RELATIVE_PATH,
+    TS_RELATIVE_PATH,
     discover_entries,
+    discover_web_families,
     render_fragment,
     render_header,
+    render_typescript,
 )
 
 
@@ -41,9 +45,11 @@ def main() -> int:
     args = parser.parse_args()
 
     entries = discover_entries(REPO_ROOT)
+    web_entries, composites = discover_web_families(REPO_ROOT)
     artefacts = (
         (HEADER_RELATIVE_PATH, render_header(entries)),
         (FRAGMENT_RELATIVE_PATH, render_fragment(entries)),
+        (TS_RELATIVE_PATH, render_typescript(web_entries, composites)),
     )
 
     if args.check:

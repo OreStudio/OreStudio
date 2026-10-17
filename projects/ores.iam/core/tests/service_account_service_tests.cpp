@@ -636,8 +636,8 @@ std::vector<repository::auth_event_entity> lock_events(const ores::database::con
                                                        ctx.tenant_id().to_string(),
                                                        boost::uuids::to_string(account_id),
                                                        event_type,
-                                                       "",
-                                                       "",
+                                                       std::nullopt,
+                                                       std::nullopt,
                                                        100,
                                                        0);
 }

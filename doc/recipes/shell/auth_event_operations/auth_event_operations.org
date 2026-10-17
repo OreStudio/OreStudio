@@ -30,6 +30,6 @@ It is addressed at =iam.v1.auth_events.list=.
 
 #+name: auth_event_operations-list-auth-events
 #+begin_src ores-shell :tangle auth_event_operations-list-auth-events.ores :exports none
-auth_event_operations list-auth-events __none__ __none__ __none__ __none__
+auth_event_operations list-auth-events __none__ __none__ - -
 #+end_src
 

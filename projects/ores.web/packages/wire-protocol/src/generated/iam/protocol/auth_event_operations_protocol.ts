@@ -44,14 +44,15 @@ export interface AuthEvent {
 /**
  * @brief A window over the caller's tenant authentication events.
  *
- * An empty filter does not filter. The window is newest first, so the
- * screen reads the most recent events without asking for an order.
+ * A bound the caller states no value for is null, and the read then applies no
+ * bound on that side. The window is newest first, so the screen reads the most
+ * recent events without asking for an order.
  */
 export interface ListAuthEventsRequest {
     account_id: string;
     event_type: string;
-    from_time: string;
-    to_time: string;
+    from_time: string | null;
+    to_time: string | null;
     limit: number;
     offset: number;
 }

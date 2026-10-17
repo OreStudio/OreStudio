@@ -30,6 +30,6 @@ It is addressed at =iam.v1.ops.get_session_statistics=.
 
 #+name: session_statistics_operations-get-session-statistics
 #+begin_src ores-shell :tangle session_statistics_operations-get-session-statistics.ores :exports none
-session_statistics_operations get-session-statistics __none__ __none__ __none__
+session_statistics_operations get-session-statistics __none__ - -
 #+end_src
 

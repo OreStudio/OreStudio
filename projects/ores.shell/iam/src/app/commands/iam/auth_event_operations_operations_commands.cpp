@@ -98,8 +98,12 @@ void auth_event_operations_operations_commands::process_list_auth_events(
     try {
         req.account_id = parsed->positionals[next++];
         req.event_type = parsed->positionals[next++];
-        req.from_time = parsed->positionals[next++];
-        req.to_time = parsed->positionals[next++];
+        req.from_time =
+            ores::shell::app::from_token<std::optional<std::chrono::system_clock::time_point>>(
+                parsed->positionals[next++], "from_time");
+        req.to_time =
+            ores::shell::app::from_token<std::optional<std::chrono::system_clock::time_point>>(
+                parsed->positionals[next++], "to_time");
         if (const auto& raw_limit = parsed->flag("limit"); !raw_limit.empty()) {
             req.limit = ores::shell::app::from_token<std::uint32_t>(raw_limit, "limit");
         }

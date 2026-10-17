@@ -22,7 +22,7 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { type OresClient } from '@ores/wire-protocol';
+import { type OresClient, fromWireTimestamp, wireTimestamp } from '@ores/wire-protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
@@ -197,8 +197,8 @@ describe('GET /api/auth-events', () => {
                 body: {
                     account_id: '',
                     event_type: 'login_failure',
-                    from_time: '',
-                    to_time: '',
+                    from_time: null,
+                    to_time: null,
                     offset: 0,
                     limit: 50,
                 },
@@ -220,10 +220,13 @@ describe('GET /api/auth-events', () => {
         });
 
         expect(response.statusCode).toBe(200);
-        const body = calls[0]?.body as { from_time: string; to_time: string };
-        expect(body.from_time).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}Z$/);
-        expect(body.to_time).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}Z$/);
-        expect(Date.parse(body.to_time)).toBeGreaterThan(Date.parse(body.from_time));
+        const body = calls[0]?.body as { from_time: string | null; to_time: string | null };
+        if (body.from_time === null || body.to_time === null) {
+            throw new Error('A named period states both bounds.');
+        }
+        const from = fromWireTimestamp(wireTimestamp(body.from_time));
+        const to = fromWireTimestamp(wireTimestamp(body.to_time));
+        expect(to.getTime() - from.getTime()).toBe(86_400_000);
 
         await server.close();
     });
@@ -279,8 +282,8 @@ describe('GET /api/session-statistics', () => {
                 subject: 'iam.v1.ops.get_session_statistics',
                 body: {
                     account_id: '',
-                    from_time: '',
-                    to_time: '',
+                    from_time: null,
+                    to_time: null,
                     offset: 0,
                     limit: 100,
                 },

@@ -352,6 +352,7 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
     return result;
 }
 
+
 void execute_raw_command(context ctx,
                          const std::string& sql,
                          logging::logger_t& lg,
@@ -546,7 +547,7 @@ void execute_parameterized_command(context ctx,
 std::vector<std::vector<std::optional<std::string>>>
 execute_parameterized_multi_column_query(context ctx,
                                          const std::string& sql,
-                                         const std::vector<std::string>& params,
+                                         const std::vector<std::optional<std::string>>& params,
                                          logging::logger_t& lg,
                                          const std::string& operation_desc) {
 
@@ -566,10 +567,12 @@ execute_parameterized_multi_column_query(context ctx,
 
     set_full_context(conn_guard.conn, ctx, lg);
 
+    // A null pointer in paramValues is what libpq reads as SQL NULL, so a
+    // parameter the caller left unset reaches the statement as NULL.
     std::vector<const char*> param_values;
     param_values.reserve(params.size());
     for (const auto& p : params) {
-        param_values.push_back(p.c_str());
+        param_values.push_back(p.has_value() ? p->c_str() : nullptr);
     }
 
     pg_result_guard result_guard(PQexecParams(conn_guard.conn,

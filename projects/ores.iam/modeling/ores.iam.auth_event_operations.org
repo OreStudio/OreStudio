@@ -104,8 +104,9 @@ no generated CRUD. The message shape here is the whole of its protocol.
 /**
  * @brief A window over the caller's tenant authentication events.
  *
- * An empty filter does not filter. The window is newest first, so the
- * screen reads the most recent events without asking for an order.
+ * A bound the caller states no value for is null, and the read then applies no
+ * bound on that side. The window is newest first, so the screen reads the most
+ * recent events without asking for an order.
  */
 #+end_src
 
@@ -121,13 +122,17 @@ no generated CRUD. The message shape here is the whole of its protocol.
 
 *** from_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
 :END:
+
+The start of the window, or null when the caller states no lower bound.
 
 *** to_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
 :END:
+
+The end of the window, or null when the caller states no upper bound.
 
 *** limit
 :PROPERTIES:

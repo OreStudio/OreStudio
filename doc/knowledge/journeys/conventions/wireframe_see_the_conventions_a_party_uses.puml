@@ -1,0 +1,112 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>SEE THE CONVENTIONS A PARTY USES</b>  { Tenant: acme_corporation | Party: ACCOUS | Kinds: 26 }
+  --
+  {
+    {
+      <b>The party and what it holds</b>
+      --
+      Party owns: <b>2,155</b> rows across <b>22</b> party kinds
+      Tenant shares: <b>216</b> rows across <b>4</b> tenant kinds
+      [ Party: ACCOUS v ] | [ Search a kind: "^swap            " ]
+      --
+      {#
+        Kind | Term cols | Rows | Owner | Where it came from
+        average_ois | 4 | 5 | party | DQ publish
+        cds | 22 | 4 | party | DQ publish
+        commodity_future | 50 | 790 | party | DQ publish
+        <b>swap</b> | 7 | <b>320</b> | party | DQ publish
+        currency_pair | 8 | 179 | <b>tenant</b> | DQ publish (base bundle)
+        ibor_index | 5 | 10 | <b>tenant</b> | DQ publish
+        overnight_index | 4 | 23 | <b>tenant</b> | DQ publish
+        tenor | 4 | 4 | <b>tenant</b> | copied at provisioning
+        ... 18 more kinds ...
+      }
+      <i>No convention table has a name column. Names on this screen are derived from the terms.</i>
+    } | {
+      <b>swap</b>: 320 documents, 201 distinct term sets
+      --
+      {#
+        Document | Terms in words | Version
+        AED-SWAP | AED - ModifiedFollowing - 30/360 - settlement 2d | v1
+        <b>AED-EIBOR-3M-SWAP</b> | the same terms as AED-SWAP | v1
+        EUR-6M-SWAP | TARGET - ModifiedFollowing - ACT/360 - 6M | v3
+        ... 317 more documents ...
+      }
+      201 names stand for 320 documents: 119 rows carry a name another row also carries.
+      --
+      <b>Which of these does a run take?</b>
+      <b>Not recorded.</b> No table has a default marker.
+      The one %default% column in refdata is pays_at_default_time on cds_convention,
+      which is a credit-event business term and not a mark on a document.
+      [ Change this kind... ]
+    }
+  }
+  --
+  {
+    {
+      <b>What the run's report binds</b>
+      --
+      {#
+        Definition | Conventions configuration
+        Headline Position | US conventions
+        Large Exposures | US conventions
+        ... 76 more definitions ...
+      }
+      --
+      {#
+        Configuration | Type | Definitions | Rows it carries
+        <b>US conventions</b> | conventions | 22 | <b>0</b>
+        UK conventions | conventions | 24 | 0
+        HK conventions | conventions | 22 | 0
+        Group conventions | conventions | 10 | 0
+      }
+      <i>A conventions configuration is a header with no children.</i>
+      <i>No market binding, no parameter and no analytic hangs off it.</i>
+    } | {
+      <b>What the export actually writes</b>
+      --
+      The run's conventionsFile is written from <b>the party's whole</b>
+      conventions document. The bound configuration's id is <b>not read</b>.
+      --
+      {#
+        Read for the file | Value
+        Party resolved | ACCOUS
+        Configuration resolved | (none - not read)
+        Party kinds written | 22, 2,155 rows
+        Tenant kinds written | 4, 216 rows
+      }
+      <i>Four configuration names, one set of rows.</i>
+      <i>Rebinding a report to a different configuration would change nothing.</i>
+      --
+      <b>Versions of EUR-6M-SWAP</b>  version: { v1 | v2 | <b>v3</b> }
+      {#
+        Field | v2 to v3
+        Fixed Day Count Fraction | 30/360 -> ACT/360
+        Sub-Periods Coupon Type | (empty) -> Compounding
+      }
+      <i>The history says when a term changed. No run records the version it read.</i>
+    }
+  }
+}
+
+@enduml

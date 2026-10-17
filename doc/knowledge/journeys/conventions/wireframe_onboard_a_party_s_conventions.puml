@@ -1,0 +1,109 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ONBOARD A PARTY AND VERIFY ITS CONVENTIONS</b>  { Plan | Publish | What the party holds }
+  --
+  {
+    {
+      <b>The plan's step, and the bundle it names</b>
+      --
+      {#
+        Step | Operation | Argument
+        ... | import_lei_hierarchy | {"bundles": ["acme_lei_import"]}
+        <b>30</b> | <b>provision_party</b> | {"bundles": ["party_essentials"]}
+        40 | load_staff | (the four operational parties)
+      }
+      --
+      <b>party_essentials</b>, published once per party with {"party_id": "..."}
+      {#
+        Order | Member
+        <b>5</b> | <b>ore.conventions</b>  (the instrument conventions)
+        20 | refdata.crm_topology_bundles
+      }
+      <i>The conventions are a step of provisioning. They are not a manual fill.</i>
+      [ Read the run ]
+    } | {
+      <b>The publish step, with its four counts</b>
+      --
+      refdata.v1.ops.publish_conventions_from_dq, party id in the params
+      {#
+        Party | inserted | updated | skipped
+        ACMCOR, the first | <b>2,188</b> | 0 | 0
+        ACCOUK, ACCOUS, ACCOHK, each | <b>2,155</b> | 0 | <b>33</b>
+      }
+      --
+      <b>The 33, accounted for</b>
+      2,188 = 2,155 party rows + 33 tenant rows.
+      ibor_index 10 + overnight_index 23 = 33. They carry no party_id, so the
+      guard "not already here for this tenant and party" finds the row the first
+      party's publish wrote. Every later party reads 33 skipped, correctly.
+      <b>Already present, tenant-wide. Not a failure.</b>
+      --
+      <b>How the four tenant kinds arrived</b>
+      {#
+        Kind | Rows | Written by
+        currency_pair | 179 | the base bundle, per tenant, before any party
+        overnight_index | 23 | the first party's publish
+        ibor_index | 10 | the first party's publish
+        tenor | 4 | ores_iam_provision_tenant_fn, once per tenant, never after
+      }
+    }
+  }
+  --
+  {
+    {
+      <b>What the party holds, and what a run would write</b>
+      --
+      {#
+        Scope | Kinds | Rows | Owner
+        the party's own | 22 | <b>2,155</b> | ACCOUS
+        shared with the tenant | 4 | <b>216</b> | the tenant
+        <b>what a run writes</b> | 26 | <b>2,371</b> | the party's whole document
+      }
+      <i>The party's own count and the number of documents its run reads are different numbers.</i>
+      <i>The four configuration names its definitions bind do not enter into it.</i>
+      [ See the conventions... ]
+    } | {
+      <b>Verified</b>
+      --
+      {#
+        Kind | Rows | Owner | Provenance of the row
+        swap | 320 | party | system.external_data_import
+        deposit | 163 | party | system.external_data_import
+        currency_pair | 179 | tenant | system.external_data_import
+        tenor | 4 | tenant | system.new_record, copied at provisioning
+      }
+      [ Change a kind... ]
+      --
+      <b>Unpublished</b>  (a party the bundle never reached)
+      --
+      <b>This party holds no conventions of its own.</b>
+      It reads the tenant's 216 for the four tenant kinds, so it does not look empty.
+      Its runs write a conventionsFile with no rows for the 22 party kinds.
+      Nothing refuses such a run and nothing says the party was skipped.
+      --
+      [ Publish party_essentials for this party ]
+      <i>The same operation provisioning sends. Not 2,155 hand-written rows.</i>
+    }
+  }
+}
+
+@enduml

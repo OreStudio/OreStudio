@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: choose when a report runs — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Choose when a report runs, from
+  doc/knowledge/journeys/reporting/journey_choose_when_a_report_runs.org:
+  a tenant administrator gives a report definition a schedule, changes it, or
+  takes it away, and reads what the change does and does not cover.
+
+  The question this page answers: where does scheduling live, so that the five
+  reporting journeys become one surface instead of a screen per journey?
+
+    A  on the report      a field group on the report's own row
+    B  a schedule list    one list of schedules, scanned together
+    C  a calendar         a week of fire times, clashes and quiet days
+
+  Switch with ?variant=A|B|C, or with the buttons in the foot bar. The role
+  state (?role=admin|analyst) is the second axis: only a tenant administrator
+  may schedule, and every other role reads the cadence.
+
+  Nothing here reads a server. Three operations exist -- run now
+  (reporting.v1.ops.trigger_report_instance),
+  reporting.v1.ops.schedule_report_definitions and
+  reporting.v1.ops.unschedule_report_definitions -- and there is no read of a
+  scheduler job, no pause or play operation, and no time zone on the schedule.
+  Pause and play would set the scheduler job's is_active, in
+  ores_scheduler_job_definitions_tbl; nothing exposes that flag to a reporting
+  screen, so the paused row is a fixture. The notes say so.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>PUBLISH CONVENTIONS FROM DATA QUALITY</b>  { Datasets | Coverage | Bundle | Receipt }
+  --
+  {
+    {
+      <b>The datasets</b>
+      --
+      {#
+        Code | Name | Artefact type | Catalogue
+        <b>ore.conventions</b> | ORE Instrument Conventions | conventions | ORE Analytics
+        refdata.currency_pair_conventions | Standard Currency Pair Conventions | currency_pair_conventions | FX Market Conventions
+        refdata.currency_pair_convention_calendars | Currency Pair Convention Calendars | ... | FX Market Conventions
+      }
+      <i>Payload: a curated artefact row per party, seeded in the system tenant.</i>
+      --
+      <b>What the person cannot read</b>
+      <b>No read of an ores_dq_*_artefact_tbl over NATS.</b>
+      DQ publishes artefact types and datasets, not the rows they stage.
+      What is about to land is readable only in the database.
+    } | {
+      <b>What the publish covers: 25 of 26 kinds</b>
+      --
+      {#
+        Route | Kinds | Subject
+        the 24-kind array | 24 | refdata.v1.ops.publish_conventions_from_dq
+        currency pair | 1 | refdata.v1.ops.publish_currency_pair_conventions_from_dq
+        <b>tenor</b> | <b>0</b> | (no artefact table, no subject)
+      }
+      <i>The function loops a 24-kind array and dispatches by name transform.</i>
+      <i>ores_dq_&lt;kind&gt;_conventions_artefact_tbl into ores_refdata_&lt;kind&gt;_conventions_tbl.</i>
+      <i>A new kind costs one array entry and one artefact table, not a function.</i>
+      --
+      <b>tenor is the 26th</b>
+      No ores_dq_tenor_conventions_artefact_tbl exists, so no function can copy it.
+      Its 4 rows are copied from the system tenant by ores_iam_provision_tenant_fn
+      when the tenant is created, reason system.new_record, and never refreshed.
+    }
+  }
+  --
+  {
+    {
+      <b>Which bundle, and who it publishes for</b>
+      --
+      {#
+        Dataset | Bundle | Scope | Param
+        ore.conventions | <b>party_essentials</b> | once per <b>party</b> | {"party_id": "..."}
+        refdata.currency_pair_conventions | <b>base</b> | once per <b>tenant</b> | (none)
+      }
+      --
+      The shell spells it: bundles publish party_essentials, with the party id, and wait.
+      That reaches dq.v1.ops.publish_bundle, which starts a workflow instance: one step per dataset.
+      The conventions step is refdata.v1.ops.publish_conventions_from_dq.
+      [ Publish ] | [ Read the run ]
+    } | {
+      <b>Receipt: the four counts the step returns</b>
+      --
+      {#
+        The publish | inserted | updated | skipped | deleted
+        first party, ore.conventions | <b>2,188</b> | 0 | 0 | 0
+        each later party | <b>2,155</b> | 0 | <b>33</b> | 0
+        a re-publish of the same party | 0 | 0 | <b>2,188</b> | 0
+        currency_pair, second publish | 0 | <b>179</b> | 0 | 0
+      }
+      --
+      <b>The 33 is not a defect</b>
+      Four kinds carry no party_id. Two of them are in the 24-kind array:
+      ibor_index 10 + overnight_index 23 = 33. The insert is guarded by
+      "this key is not already here for this tenant and party", and with no party
+      column it finds the row the first party's publish wrote.
+      <b>The 33 reads: already present, tenant-wide.</b>
+      --
+      <b>A re-publish does not carry a corrected curated row</b>
+      The 24-kind function has no update path: it inserts where the row is absent
+      and counts everything else as skipped. Its result carries no updated count.
+      <b>25 of the 26 kinds cannot take a correction. currency_pair is the one that can.</b>
+      <i>Correcting a row a tenant already holds is the change journey's job, per row.</i>
+    }
+  }
+}
+
+@enduml

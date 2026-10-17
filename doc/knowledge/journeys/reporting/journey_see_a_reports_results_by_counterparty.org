@@ -1,0 +1,357 @@
+:PROPERTIES:
+:ID: D6F9CB58-2A30-4124-AC05-75218272F219
+:END:
+#+title: User Journey: See a report's results by counterparty
+#+description: A market-risk or credit reader opens one finished run and reads its results by counterparty: each counterparty's aggregate NPV, its notional, its trade count and, where the report runs saccr, its exposure, grouped through the parent counterparty.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk or credit reader opens one finished run and reads its results by counterparty: each counterparty's aggregate NPV, its notional, its trade count and, where the report runs saccr, its exposure, grouped through the parent counterparty.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Which counterparties is this run exposed to, and how much of the run is each
+one?" The person has a finished run in front of them and needs the counterparty
+view of it rather than the book view: who the run faces, what each of them is
+worth to it, and which of them carry the concentration. The journey is done
+when they can name the counterparties that dominate the run, hand one of them to
+a colleague with its trades behind the number, and say what the run leaves out.
+
+The book view answers a different question, and
+[[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] owns it.
+The same run read by portfolio, book and trade is how a person reconciles their
+own book. Read by counterparty it is how they answer a limit question, a credit
+question, or a desk asking what one name contributed.
+
+* Actor and trigger
+
+Two actors share this journey, and they read it for different reasons. A
+market-risk or credit person reads it after a limit question, or before signing
+off the party's exposure: they need the ranked view, the totals, and the name
+that is out of line. A trading-desk person reads it after a trade or a group of
+trades, asking what one counterparty contributed to the run and which of its
+trades moved the number.
+
+Both act inside their own party. They arrive from a run's row on
+[[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]], or
+from the results panel of
+[[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]],
+or from the result of
+[[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] by
+switching that result from its book reading to its counterparty reading.
+
+The trigger is a run that has completed, and a question about who it faces. The
+journey starts when the person opens the counterparty view of that run and ends
+when they have the ranked counterparties, or one counterparty's trades, or the
+reason a name they expected is not there.
+
+This is a read-only journey. It reads a run that already exists and changes
+nothing: no run, no definition and no counterparty record.
+
+* Steps
+
+1. *Open the counterparty view of one run.* The person is looking at a completed
+   run, and switches its result from the book reading to the counterparty
+   reading. The view is entered from the run's results, never from a global
+   counterparty list: a counterparty's own page answers "who is this name", and
+   this view answers "what did this run do with this name". The header keeps the
+   run in front of the person, so every figure below is a figure of that run and
+   of no other, and the panel names the analytics the run's report configuration
+   runs, because those decide which measures exist. A report that runs =npv=
+   alone has no exposure column; a report that runs =npv= and =saccr= has both.
+2. *Read the counterparties the run is exposed to.* The screen lists one row per
+   counterparty the run has a result for. Each row states the counterparty's
+   short code and its full name, its aggregate NPV, its notional, its trade
+   count and, where the report runs =saccr=, its exposure. The aggregate NPV is
+   the sum of the =NPV(Base)= of the trades the run attributes to that
+   counterparty, the notional is the sum of those trades' =Notional(Base)=, and
+   the trade count is how many such trades the run holds. The ordering is stated
+   on the screen and is the point of the step: the largest first, by exposure
+   where the report runs =saccr= and by aggregate NPV where it does not. The
+   person scans the top of that list and has the answer to "how much of the run
+   is each one". A share of the run is shown beside the figure, so a row that is
+   a tenth of the run reads as a tenth.
+3. *Group them, because counterparties nest.* A counterparty carries
+   =parent_counterparty_id= on =ores_refdata_counterparties_tbl=, so a banking
+   group and its legal entities are both real, and both are meaningful to
+   different readers: credit reads the group, the desk reads the entity it
+   faces. The screen therefore draws a group and its members as one structure,
+   with the group's own row carrying the sum over its members and each member
+   carrying its own figure. A reader sees a group total and then expands it to
+   the members that make it up, and the total is arithmetic: the group figure is
+   the sum of its members plus the trades booked to the group itself, so a
+   parent that disagrees with its children cannot appear. A counterparty whose
+   parent is not in the run is drawn under a stated heading rather than promoted
+   to a group of one, and a group whose members are all outside the run is drawn
+   as a group with its own trades.
+4. *Open one counterparty.* The person selects a counterparty, and the screen
+   shows what the number is made of: the trades the run attributes to that
+   counterparty, each with its trade id, its trade type, its notional and its
+   NPV, the netting sets those trades sit in, and any error the run recorded
+   against those trades. A trade in the result is the trading trade with that id,
+   so =trading.v1.trades.get= is what resolves the row to the trade itself, and
+   the trade names its =counterparty_id=. The netting set is on the trade's
+   booking, =ores_trading_trade_bookings_tbl=, which carries =trade_id= and
+   =netting_set_id=, so a counterparty's exposure reads by netting set and a
+   person can see which set carries the exposure rather than only the total. The
+   errors are the run's own rows, read by
+   =reporting.v1.report_error_events.list_by_report_instance_id= and filtered to
+   the subjects the counterparty's trades name; their scopes are =Trade=,
+   =Analytics=, =Curve=, =Configuration= and =Report=, and none of them is a
+   counterparty, so a counterparty's errors are reached through its trades and
+   never directly. A person who wants the errors as a set of their own follows
+   [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]].
+5. *Notice a name with no result, and a trade with no name.* A counterparty the
+   party can see that the run has no result for is a stated case, not an
+   absence: it is listed with a zero trade count and a dash where the figures
+   would be, and the screen says plainly that the run produced nothing for it.
+   A trade that names no counterparty is the other stated case. The schema
+   allows it: =ores_trading_trades_tbl= carries =counterparty_scope= and a check
+   that =counterparty_id= may be null only when the scope is =intra_entity=, so
+   an intra-entity trade has no counterparty by design. The screen draws such a
+   trade under a stated heading of its own, with its own notional and NPV, and
+   says that the run's counterparty totals are therefore less than the run's
+   total by that amount. Neither case is dropped, because a total that silently
+   leaves out a name or a trade reconciles against nothing.
+6. *Leave, or go on.* The person opens the trades behind one name, follows an
+   error down, opens what the run produced, or goes back to the report's row.
+   The view creates nothing and the next person who opens the run reads the same
+   figures.
+
+No step waits on the server after its reply, and the journey keeps no state of
+its own. It is a run of screens over immediate operations, so it needs no
+[[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][workflow instance]].
+
+* Screens and wireframes
+
+One screen. The run header, the ranked list, the group and member rows, the
+selected counterparty's trades and netting sets, and the errors against them are
+panels of that screen, because they are one answer: what this run faces and how
+much of it each name is. The screen is read-only: it creates nothing, changes
+nothing and destroys nothing.
+
+The list is the screen. A person arrives with a question about concentration and
+leaves with a ranked answer, so the totals, the ordering rule and the share of
+the run each row carries are on the screen and not behind a control. The two
+stated cases sit below the ranked rows rather than inside them, because a name
+with no result is not a measure of zero and a trade with no name is not a
+counterparty.
+
+#+caption: See a report's results by counterparty: the run's ranked counterparties with aggregate NPV, notional, trade count and exposure, a group above its members, one counterparty opened to its trades, netting sets and errors, a counterparty with no result, and a trade that names no counterparty.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_see_a_reports_results_by_counterparty.png]]
+
+The wireframe draws the three readings the prototype carries as variants: a
+ranked list with a group row above its members and the totals at the foot, a tree
+that expands a group into its members with a rolled-up aggregate at each node,
+and a map of the run as a proportional bar, each segment as wide as its
+counterparty's share, with the selected name read beside it.
+
+* Prototype
+
+The [[file:../../prototypes/reporting/see-a-reports-results-by-counterparty/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/see-a-reports-results-by-counterparty.org][its design note]] says what each argues and what is fake. This journey is the design intent for the counterparty view of a run's result, and its prototype belongs at =doc/prototypes/reporting/see-a-reports-results-by-counterparty/=, with hyphens because the inventory gate reads the directory name as a link.
+
+The prototype must draw three structural readings of the same run. =A= draws one
+ranked table, largest first, with a group row above its members and the totals at
+the foot. =B= draws a tree grouped by parent counterparty, each node carrying its
+rolled-up aggregate and expanding to its members, so a group total and its parts
+are visible together. =C= draws a map of the run as a proportional bar, sized by
+each counterparty's NPV, with the selected counterparty read beside it, for the
+person asking how concentrated the run is.
+
+In all three, every counterparty must state its aggregate NPV, its notional, its
+trade count and, where the run's report runs =saccr=, its exposure,
+and every row must carry both the short code and the full name, because a reader
+uses one and recognises the other. Selecting a counterparty must show its trades
+and the errors the run recorded against them. A counterparty with no result and a
+trade that names no counterparty must each be drawn as a stated case rather than
+dropped. A group must be drawn with at least two members, because a group of one
+proves nothing about the roll-up.
+
+Because no operation returns a result grouped by counterparty, and no operation
+parses the run's archive, every figure on the page is a fixture and the panel
+that draws it says so. The panel also states the two facts that make it a
+fixture: nothing parses the archive, and =npv.csv= names the counterparty as a
+name rather than an id.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =report_instance= | The run being read: its state, its kind, and the definition it came from. Every figure is a figure of this run | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =report_definition= | The definition behind the run, whose report configuration decides which analytics ran and therefore whether there is an exposure column | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =counterparty= | The row: short code, full name, and =parent_counterparty_id=, which is what makes a group and its members | [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][ores.refdata.counterparty]] |
+| =party_counterparty= | Which counterparties the party can see, so a name with no result can still be listed as a stated case | [[id:77870EE2-3123-4881-AF13-F35D432FC237][ores.refdata.party_counterparty]] |
+| =trade= | The trades behind a counterparty's aggregate: =counterparty_id=, =counterparty_scope=, trade type and notional | [[id:4304A441-E532-45FB-837A-378F13693CAE][ores.trading.trade]] |
+| =netting_set= | The sets the trades sit in, which is the level at which an exposure is reported | [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][ores.refdata.netting_set]] |
+| =report_error_event= | The errors recorded against the trades a counterparty contributed: severity, scope and message | [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] |
+| =report_error_scope= | The vocabulary the errors are placed by, none of whose members is a counterparty | [[id:FF774B04-12E6-4BDF-B94C-222095651C4F][ores.reporting.report_error_scope]] |
+| =party= | The owner of the run and of the counterparty visibility rows | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+The run is the scope; the counterparty is the row. Neither the aggregate NPV, the
+notional, the trade count nor the exposure is a stored field: every one of them
+is derived from the run's result rows and the trades behind them, and *What is
+missing* states the reads that would spare the screen that work. The grouping is
+not stored either: =parent_counterparty_id= is on the counterparty, so the screen
+assembles the tree from the counterparty records it reads.
+
+A trade's netting set is not on the trade. =ores_trading_trades_tbl= carries the
+party, the counterparty and the trade type;
+=ores_trading_trade_bookings_tbl= carries =trade_id=, =book_id= and
+=netting_set_id=, and it versions on its own timeline, so a re-papering into
+another netting set cuts a new version of the booking and leaves the trade alone.
+The screen reads the booking current at the run, which is the booking whose
+window covers the run's start.
+
+The counterparty and the party are party-scoped by row-level security, and the
+run and the definition are bitemporal, so the names the run's own records carry
+are the names of the run and not of today's edit.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the run's view | Read the run | =reporting.v1.report_instances.get= | exists |
+| Open the run's view | List the runs of a definition, to reach the run | =reporting.v1.report_instances.list= | exists |
+| Open the run's view | Read the run's errors | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
+| Read the counterparties | List the counterparty records the rows resolve to | =refdata.v1.counterparties.list= | exists |
+| Read the counterparties | Read one counterparty, and its =parent_counterparty_id= | =refdata.v1.counterparties.get= | exists |
+| Read the counterparties | List the counterparties the party can see, so a name with no result can be stated | =refdata.v1.party_counterparties.list_by_party_id= | exists |
+| Read the counterparties | Read the run's results grouped by counterparty | (no operation returns results grouped by counterparty) | missing |
+| Read the counterparties | Read each counterparty's aggregate NPV, notional and trade count | (no operation parses the archive) | missing |
+| Group them | Read a counterparty's parent, and so build the group tree | carried by =refdata.v1.counterparties.list= and =refdata.v1.counterparties.get= | exists |
+| Group them | Roll a group's aggregate up from its members | (the screen sums the rows; no operation rolls up a group) | missing |
+| Open one counterparty | List the trades the run attributes to a counterparty | =trading.v1.trades.list= | exists |
+| Open one counterparty | Read the trade a result row names | =trading.v1.trades.get= | exists |
+| Open one counterparty | List the trades' bookings, and so each trade's =netting_set_id= | =trading.v1.trade_bookings.list= | exists |
+| Open one counterparty | Read the exposure a =saccr= run reported for a netting set | (no operation parses the archive) | missing |
+| Open one counterparty | Read the errors recorded against a counterparty's trades | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
+| Open one counterparty | Read the errors recorded against a counterparty | (the error scopes carry no counterparty) | missing |
+| Notice a name with no result | List the party's counterparties, to find the ones the run omits | =refdata.v1.party_counterparties.list_by_party_id= | exists |
+| Notice a trade with no name | Find the trades whose =counterparty_id= is null | =trading.v1.trades.list= | exists |
+| The screen itself | Read a run's results by counterparty from the browser | (no BFF route) | missing |
+
+The run, the definition and the errors are reads the reporting service already
+serves. The counterparty records are reference data reads. The trades and their
+bookings are trading reads, and =trades.list= takes a filter record that carries
+=counterparty_id=, so one counterparty's trades in the party are one read rather
+than the whole population filtered in the browser.
+
+The netting sets come free with the reads above: a trade's booking carries
+=netting_set_id=, and the run's own result row carries the netting set's name in
+=NettingSet=. The screen groups a counterparty's exposure by that name and does
+not need the netting set's own record to rank one counterparty against another.
+
+The attribution is the hard part, and it is two joins the platform does not
+serve as one. A result row in =npv.csv= names the counterparty as a name. The
+trade's own =counterparty_id= is the id, reached through
+=trading.v1.trades.get=, and the safety of the join rests on it. Neither the
+group roll-up nor a counterparty's totals is a stored field, so the screen does
+the arithmetic from the result rows and says so.
+
+The reads are gated by =reporting::report_instances:read= and
+=reporting::report_error_events:read= for the run and its errors, and by
+=refdata::counterparties:read= and =trading::trades:read= for the records the
+rows resolve to. The error reads are held by no role below =TenantAdmin= and
+=SuperAdmin=, and those two hold =*=. A credit reader who can see the
+counterparty and its trades therefore cannot read why one of them failed, which
+*What is missing* states rather than paper over.
+
+No BFF route serves reporting. The prototype adds one, for example
+=GET /api/reporting/runs/<run-id>/counterparties=, which returns the run's
+counterparty rows with their aggregates, the grouping, and the stated cases. The
+handler authenticates the caller's token and checks the read codes above.
+
+* What is missing
+
+1. *No operation returns results grouped by counterparty.* The archive holds
+   =npv.csv=, and its columns are exactly =TradeId=, =TradeType=, =Maturity=,
+   =MaturityTime=, =NPV=, =NpvCurrency=, =NPV(Base)=, =BaseCurrency=,
+   =Notional=, =NotionalCurrency=, =Notional(Base)=, =NettingSet= and
+   =CounterParty=. Nothing parses it. =ores_compute_results_tbl= holds the
+   archive's =output_uri=, its =outcome= and its =error_message=, and it holds
+   no parsed rows, so the aggregate NPV, the notional and the trade count of one
+   counterparty have no read behind them, and neither does the exposure a
+   =saccr= run reports. Every figure on this screen waits on a result store or
+   an archive read, and the prototype draws each one as a stated fixture.
+2. *=npv.csv= names the counterparty, it does not identify it.* The file's
+   =CounterParty= column carries a name, and no id. Attributing a result row to
+   a counterparty record therefore needs the trade's =counterparty_id=, which
+   =trading.v1.trades.get= returns, and the netting set the trade sits in, which
+   =trading.v1.trade_bookings.list= returns; the alternative is a match on the
+   name, and a name match is not safe: two legal entities of one group can share
+   a name, =full_name= is not unique in the tenant, and the file's spelling is
+   the engine's rather than the record's. The one thing the name is good for is
+   a warning when it disagrees with the trade's record, and the screen should
+   show that disagreement rather than resolve it silently.
+3. *No read returns a counterparty's errors.* The error model has no counterparty
+   subject: the scopes it places errors by are exactly =Trade=, =Analytics=,
+   =Curve=, =Configuration= and =Report=, so an error is recorded against a
+   trade, an analytic, a curve, the configuration or the run, and never against
+   a counterparty. A counterparty's errors are reached only through the trades
+   that name it, by reading the run's errors and filtering them to the trade ids
+   the counterparty contributed. An error recorded against an analytic alone
+   cannot be attributed to a counterparty at all, and the screen says so instead
+   of dividing it across names.
+4. *No BFF route serves reporting.* Nothing in the web application shows a report
+   today, so the counterparty view is a new route and a new screen as well as a
+   new read.
+5. *No read rolls a group up.* =parent_counterparty_id= is on the counterparty
+   record, and =counterparties.list= carries it, so the screen can build the
+   group tree. No operation sums a group, and there is no read of the
+   counterparties under a parent counterparty: a client assembles the tree from
+   the full list. The roll-up is the screen's arithmetic, and the screen must
+   state that the group figure and its members' figures come from the same rows,
+   so a reader can check one against the other.
+6. *The booking that gave the netting set is versioned, and the run names no
+   version.* A re-papering into another netting set cuts a new version of the
+   trade's booking, and the run carries no booking version and no as-of time, so
+   the screen reads the booking current when it draws and can disagree with the
+   netting set the engine actually used.
+7. *A trade with no counterparty is legal, and nothing reports the size of the
+   gap.* =ores_trading_trades_tbl= allows =counterparty_id= to be null when
+   =counterparty_scope= is =intra_entity=, so a run can hold a trade that no
+   counterparty claims. The screen draws it as a stated case, and the run's own
+   total is the only figure that says how much of the run sits outside every
+   counterparty.
+8. *The error permissions sit too high.* =reporting::report_error_events:read= is
+   held by no role below =TenantAdmin= and =SuperAdmin=. A credit reader who can
+   open the counterparty view and its trades cannot read the errors that say what
+   is missing from their figures, which is the one warning this screen exists to
+   carry alongside the number.
+
+* Related journeys
+
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — the same run read by book and by trade, and the panel this view is a second reading of
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — the errors against a counterparty's trades, read as a set of their own rather than as a footnote to one name
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door that leads to the run this view belongs to
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run that produced these figures, and the terminal panel it lands on
+- [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] — the earlier runs of the same report, when the question is how a counterparty's share moved
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — the phases that produce the archive this view reads
+- [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] — what reading the archive, and so grouping it by counterparty, will become
+- [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] — what each report's output is meant to be, and which of them run =saccr=
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — the component
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how the screen composes its reads
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Task: Extract the ores.reporting user journeys]] — the work that owns it
+- [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] — the report a desk reads by book, and the one this view is read beside
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows

@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 6036e7f4-128f-476f-8bba-2b7941717bc2
+:END:
+#+title: Find out why a run went wrong prototype
+#+description: Three structural variants of a run's errors, rendering twenty-one real rows including one trade that failed in two analytics.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                |
+|---------------+------------------------------------------------------|
+| Prototype     | [[file:find-out-why-a-run-went-wrong/][the prototype]] |
+| Gemini review | none                                                 |
+| Group         | [[file:index.org][Reporting prototypes]]               |
+
+* Summary
+
+This prototype argues the sharpest question of the five: whether errors are a
+place you go, a panel beside the run, or a ledger across runs. It carries three
+structural variants switched with =?variant=, and it answers to
+[[file:../../knowledge/journeys/reporting/journey_find_out_why_a_run_went_wrong.org][Find out why a run went wrong]].
+
+It is throwaway. The rows are mock, copied from a real run whose market data was
+removed.
+
+* Detail
+
+** The question
+
+An error is not an entity a person manages. It is a fact about a run, and the
+person reading it arrived from somewhere: a failure they were told about, a
+number they do not believe, or a party-wide question about what is broken. Which
+of those the screen is built for decides its shape.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | A tab on the run | Errors are one tab of the run, beside the outputs and the timeline, with the count on the tab. You go there deliberately. |
+| =B= | A panel beside the run | The run stays visible and the errors sit beside it, filterable, so a failure is read against the run it belongs to. |
+| =C= | A ledger across runs | The errors are the screen, all runs together, grouped by scope and subject, with the run as a column. For "what is broken across my party right now". |
+
+** The rows
+
+The page renders twenty-one rows from one run: nineteen errors and two warnings,
+across one =Curve=, sixteen =Trade=, three =Analytics= and one =Configuration=
+row. The scopes are exactly the vocabulary the server holds: =Trade=,
+=Analytics=, =Curve=, =Configuration=, =Report=. The severities are exactly
+=error= and =warning=.
+
+** The row that makes this prototype worth having
+
+One trade failed in both =PRICING= and =SA_CCR=. The engine wrote the same
+scope, the same subject, the same trade UUID and the same message twice, and only
+=detail= tells the two apart. The page draws both rows, side by side and
+visibly, with a pair marker and a plain sentence that the two differ only in
+detail. A screen that collapses them loses a fact.
+
+** What the errors are not
+
+Immutable and read as a group. There is no edit, no delete and no acknowledge,
+and the page draws none of them. The run names who asked and when; an error
+carries =event_time= and no actor.
+
+** What is fake
+
+The rows, the run and the party are mock. Nothing reads a server, no operation
+serves a run's errors to a browser today, and the application has no reporting UI.
+The error model itself is real: the scopes, the severities, the subject and
+subject id pair, and the immutability are what the server enforces.
+
+** Where the code lives
+
+=doc/prototypes/reporting/find-out-why-a-run-went-wrong/=. Three files, plain
+HTML, CSS and JavaScript, no framework and no build step.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review. The
+requirement it settles whatever else changes is that two rows differing only in
+=detail= must both be visible.
+
+** What it does not settle
+
+Whether a person can reach a trade or an analytic from its error. The subject is
+a discriminator and a value, not a foreign key, so a link to the trade is a
+screen concern the server does not yet answer.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the five journeys these answer to.

@@ -1,0 +1,69 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING</b>
+  --
+  <b>HEADLINE POSITION - ACMCOR - ACCO Capital Markets</b>
+  --
+  {
+    <b>Party</b> ACMCOR | <b>Type</b> risk | <b>Schedule</b> 0 0 8 * * ? (daily 08:00) | <b>Owner</b> Tom Aldridge | [ Refresh ] | Watching report run events
+  }
+  --
+  <b>PREVIOUS FIRE TIMES - the last five, derived from runs</b>
+  --
+  {
+    Fri 17 Oct 08:00:02 | Thu 16 Oct 08:00:01 | Wed 15 Oct 08:00:02 | Mon 13 Oct 08:00:01 | Sun 12 Oct 08:00:00
+  }
+  --
+  Tue 14 Oct 08:00:00: there is no run. Either a firing produced no run, or no
+  firing happened. The screen cannot tell the two apart, because no read of
+  report_trigger_event exists.
+  --
+  {#
+    Newest | Started | Completed | Health | Errors
+    [LATEST] | 17 Oct 08:00:02 | 17 Oct 08:04:31 | completed clean | -
+     | 16 Oct 08:00:01 | 16 Oct 08:07:18 | completed while carrying errors | (4 errors)
+     | 15 Oct 08:00:02 | 15 Oct 08:03:40 | completed clean | -
+     | 13 Oct 08:00:01 | 13 Oct 08:01:02 | failed | (2 errors)
+     | 12 Oct 08:00:00 | 12 Oct 08:10:22 | completed while carrying errors | (11 errors)
+  }
+  --
+  <b>RUN OPEN: 16 OCT 08:00:01</b>
+  --
+  {
+    State completed | Started 16 Oct 08:00:01 | Completed 16 Oct 08:07:18 | Duration 7m 17s
+  }
+  {
+    [ Open the run's output ] | [ Open the run's errors ] | (4 errors) | "Headline position written, 4 trades skipped"
+  }
+  --
+  <b>A NEW RUN ARRIVES WHILE 16 OCT IS OPEN</b>
+  --
+  Notice, not a dialog: the run you have open is no longer the latest. A new run
+  started at 17 Oct 09:06:02. [ Open the latest run ] [ Dismiss ]
+  --
+  Refresh draws the eye because a change notification arrived. The page does not
+  move on its own and takes no focus. After the person reloads, the rows newer
+  than the previous load are marked for three seconds; the first load marks
+  nothing; a person can turn the marking off.
+}
+
+@enduml

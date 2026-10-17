@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: fa2acf89-13be-4681-ad6c-7b0c17aa8076
+:END:
+#+title: Run a report and watch it finish prototype
+#+description: Three structural variants of starting a run and waiting for it, with the six phases scripted on a timer.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                    |
+|---------------+----------------------------------------------------------|
+| Prototype     | [[file:run-a-report-and-watch-it-finish/][the prototype]] |
+| Gemini review | none                                                     |
+| Group         | [[file:index.org][Reporting prototypes]]                   |
+
+* Summary
+
+This prototype argues how a person starts a run and then knows when to stop
+waiting. It carries three structural variants switched with =?variant=, and it
+answers to
+[[file:../../knowledge/journeys/reporting/journey_run_a_report_and_watch_it_finish.org][Run a report and watch it finish]].
+
+It is throwaway. It reads no service, and the run it shows advances on a scripted
+timer so that the waiting can be judged at all.
+
+* Detail
+
+** The question
+
+Starting a run is easy to draw. Waiting is not. The journey is over when the run
+reaches a terminal state, and the open question is whether that state arrives
+where the person is looking or somewhere they have to go back to.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Modal and notify | Starting a run is a confirmation over the catalogue, and the run then reports itself in a strip so the person can keep working. Waiting is someone else's job. |
+| =B= | Run theatre | Starting a run opens a dedicated view of that run, with the six phases advancing left to right and the current one live. The person stays until it is terminal. |
+| =C= | Queue-first | Starting a run drops a row into a queue of that person's runs, each advancing in place, so several can be watched together. |
+
+** Six phases, seven steps
+
+The pipeline has six phases: Pre-processing, Submission, Execution, Retrieval,
+Post-processing, Finalisation. The workflow that implements them has seven steps,
+because pre-processing is four steps rather than one and retrieval and
+post-processing are a single step rather than two. The page shows both and says
+which is which, because a reader who confuses them will misread every run that
+has a step retried.
+
+Execution runs on a worker node and is not a step any ORE Studio service
+performs; the services submit the work and wait. The page marks that phase as the
+worker node's rather than the platform's. Only finalisation touches the state
+machine.
+
+** The two endings that matter
+
+A run reaches a terminal state with =output_message=, and the successful one
+reads exactly =Report execution completed.= A run can also complete and still
+carry errors, so the terminal state says so at the moment it arrives rather than
+leaving it to be discovered later. A failed run terminates with a report-scoped
+error rather than a phase stuck mid-flight.
+
+** Driving it
+
+The phases advance on a timer, one every 700 milliseconds, so a run reaches its
+end in about 4 seconds. There is a control to run the demonstration again. The
+timer is the point: a static picture of a half-finished run cannot be judged.
+
+** What is fake
+
+Everything, and the page is explicit about the part that matters: the per-phase
+position the ladder shows does not exist as a read. It lives in =ores.workflow=,
+and no reporting read serves it. The phases are scripted, nothing reads a
+server, and the definitions, parties, timings and errors are mock.
+
+** Where the code lives
+
+=doc/prototypes/reporting/run-a-report-and-watch-it-finish/=. Three files, plain
+HTML, CSS and JavaScript, no framework and no build step.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review. The
+phase ladder is the strongest part of =B= and the most likely thing to be taken
+into whichever variant wins.
+
+** What it does not settle
+
+Where the progress comes from. The screen can draw a run advancing, but the
+server does not yet serve a run's current phase, so the real build needs either a
+workflow read or a reporting-side projection of one. That is a server question,
+not a layout one.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the five journeys these answer to.

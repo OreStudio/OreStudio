@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 80ea7857-25e8-4c41-a041-5177f32d7f17
+:END:
+#+title: See the reports a party runs prototype
+#+description: Three structural variants of reporting's front door, with mock data, on a throwaway prototype page.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                 |
+|---------------+-------------------------------------------------------|
+| Prototype     | [[file:see-the-reports-a-party-runs/][the prototype]] |
+| Gemini review | none                                                  |
+| Group         | [[file:index.org][Reporting prototypes]]                |
+
+* Summary
+
+This prototype argues what the front door of reporting is, before any of it is
+built. It carries three structural variants of the same screen, switched with
+=?variant=, and it answers to
+[[file:../../knowledge/journeys/reporting/journey_see_the_reports_a_party_runs.org][See the reports a party runs]].
+
+It is throwaway. It is not production code, it reads no service, and every value
+on it is mock data.
+
+* Detail
+
+** The question
+
+A party runs a number of reports, some on a schedule and some on demand, and each
+of them has a latest run that either went well, went wrong, or never happened.
+The open question is what a person lands on when they open reporting. The
+journey can answer that five ways and still be true to itself, which is why this
+is a prototype and not a specification.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Index-first | The catalogue is the page: one row per report, its schedule, its owner, and the health of its latest run. A run is a detail reached from a report. |
+| =B= | Ledger-first | One dense table of runs across the party, newest first, report as a column. The catalogue is a filter, not a page. |
+| =C= | Attention-first | Only what needs a human: failed runs and runs that completed carrying errors. Clean runs exist behind a filter, off by default. |
+
+The variants disagree about structure, not colour. A starts from the thing that
+is scheduled. B starts from what happened. C starts from what is wrong, and is
+the only one that hides work rather than ranking it.
+
+** The health words, and the thing a reader gets wrong
+
+The latest run of a definition is one of five: =failed=, =completed with errors=,
+=running=, =never run=, =completed clean=. The summary tallies them, and each row
+carries its error count split into errors and warnings.
+
+The point the page exists to make is that **a completed run is not necessarily
+clean**. A row that completed while carrying errors is drawn apart from a clean
+one without opening anything. A definition that has never run is not clean
+either: nothing ran and nothing was checked.
+
+** What is fake
+
+Everything. The definitions, parties, schedules, owners, run times and error
+counts are mock. Nothing reads a server, and the application has no reporting UI
+today. The page says both, at the top, in the strip and the note.
+
+** Where the code lives
+
+=doc/prototypes/reporting/see-the-reports-a-party-runs/=. Three files, plain
+HTML, CSS and JavaScript, no framework and no build step. The site build finds
+the directory and deploys it where it sits.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+Whichever variant is chosen, the health tally and the split error count stay:
+they are the part the other four prototypes depend on.
+
+** What it does not settle
+
+Whether the five journeys become one area, one screen or two. This prototype
+argues the front door only, and the area behind it is judged from the other four.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the five journeys these answer to.

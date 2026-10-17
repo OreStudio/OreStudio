@@ -1,0 +1,467 @@
+:PROPERTIES:
+:ID: 7d062f46-83bf-4e87-89ec-22847f26a9c8
+:END:
+#+title: Read what a run produced prototype
+#+description: Three structural variants of a run's result, the plots that fit each number, a comparison against a previous run of the same definition, and the archive listing drawn as a stated fixture.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:read-what-a-run-produced/][the prototype]] |
+| Gemini review | [[file:read-what-a-run-produced/review/][the review]] |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype argues what "the result" of a run is, and how much of it belongs
+on the screen before a person goes looking for a file. It carries three
+structural variants switched with =?variant=, and it answers to
+[[file:../../knowledge/journeys/reporting/journey_read_what_a_run_produced.org][Read what a run produced]].
+
+It is throwaway. It reads no service, and the archive manifest it draws is a
+fixture, said so on the page. So is the book tree: the run's archive carries no
+book column, so a node's trade count and NPV are drawn rather than read.
+
+One scenario sits beside the six runs: =results-with-errors= takes the completed
+run that carries eleven problems and draws the connection between the errors and
+the results, so the results say they are partial.
+
+The result panel also compares. A completed run carries a control that chooses a
+previous run of the same definition, or no run, and every figure, every book row,
+every tree node and the total row then carries its change against that baseline.
+The page opens with the previous run chosen, so a reviewer meets the comparison
+without hunting for it, and =?baseline=none= turns it off.
+
+The result is also plotted, in variant =A=, in the form each set of numbers
+asks for, from a stated vocabulary and a stated rule rather than bars and lines
+alone: bars for NPV and for each Greek across books, a donut for each book's share
+of the run and a donut for the run's problems by scope, grouped bars for Delta
+against Gamma, a scatter of each book's Gamma against its Delta, stacked bars for
+the problems of the two runs the comparison pairs, a signed bar chart for the
+change against the baseline, and a line of NPV across the runs of the same
+definition. Every plot carries a caption saying why that form, keeps its exact
+numbers in the table or the legend beside it, and carries the =partial= marking
+when the errors made the figure it draws partial; a donut draws the excluded part
+as a hatched slice of its own.
+
+* Detail
+
+** The question
+
+A run produces an output message, an archive in storage, and a set of files
+inside that archive. Which of those is the thing a person came for? The three
+variants answer differently, and the difference decides how much of the screen is
+numbers and how much is files.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Figures first | The numbers are the screen: headline figures, then a results table, with the archive as a modest footer action. |
+| =B= | Artefact first | The screen is a manifest of what the run produced: the archive, the files inside it with row counts and sizes, and a download per file. The numbers are a preview of one selected file. |
+| =C= | Narrative first | A short written summary of what the run did and what it means, with the figures embedded and the files at the end, for a reader who wants the sentence before the spreadsheet. |
+
+** Two things the page refuses to fake quietly
+
+The run carries an =output_storage_key= of the form
+=reporting/runs/<instance-id>/output.tar.gz=, and the page shows that shape
+rather than a friendly invented name.
+
+Neither the file list nor the two downloads exist. **No operation lists the files
+inside a run's archive**, and there is no archive download and no ORE package
+download as operations either. Variant =B= draws a manifest and labels it a
+fixture on the panel itself, so the gap is visible rather than designed around.
+That is the honest shape of this journey today.
+
+** The drill-down: from the run's figures to one trade
+
+A run's result is not only an aggregate. The engine writes =npv.csv= into the
+archive, and that file carries one row per trade, with the columns =TradeId=,
+=TradeType=, =Maturity=, =MaturityTime=, =NPV=, =NpvCurrency=, =NPV(Base)=,
+=BaseCurrency=, =Notional=, =NotionalCurrency=, =Notional(Base)=,
+=NettingSet= and =CounterParty=. The page uses them, so a person can get from
+the run's total to the trade that made it.
+
+Each variant carries the drill-down in the shape it already argues. =A= puts the
+per-trade table under the aggregate figures and keeps both. =B= offers the rows
+when =npv.csv= is selected in the manifest, instead of a handful of preview
+lines. =C= links from the prose to the table rather than reproducing the
+figures in a sentence.
+
+A row shows six columns: =TradeId=, =TradeType=, =NPV=, =NPV(Base)=,
+=Notional= and =CounterParty=. Opening a row answers with that trade's result,
+and, where the run recorded an error against that =TradeId=, the error itself.
+The page reuses the run's own error fixtures for this, so a trade that failed
+is reachable and shows why: the table covers a good number and a bad one.
+
+A trade in the result is the trading trade with that id, so the row leads to the
+trade. =trading.v1.trades.get= is what resolves the id.
+
+The table is a fixture, and the panel that draws it says so. **No operation
+parses the archive.** =ores_compute_results_tbl= carries the archive's location
+and an outcome, not parsed rows. A built screen cannot serve these rows
+until a result store or an archive read exists, and the page draws the gap
+rather than hiding it.
+
+** The book tree: portfolio, sub-portfolio, book, trade
+
+A run's results have a third reading beside the figures and the trade rows: the
+hierarchy the trades sit in. The page draws it as a tree with four levels. A
+portfolio is the top, a portfolio nests under another portfolio, a book hangs off
+a portfolio, and a trade is booked to a book. Each node states its name, its
+trade count and its aggregate NPV, and a node expands to show the books under it.
+
+The roll-up is arithmetic, not a label. A book's figure is the sum of its trades
+and a portfolio's figure is the sum of its books, and the page computes a
+portfolio from its children every time it draws, so a parent that disagrees with
+its children cannot appear. The root is the group portfolio: for Headline
+Position, 18,204 trades and USD 88,402,114, which is also the run's NPV figure.
+That 18,204 is the run's population, and the per-trade table draws 8 of those
+rows. The page says so on the tree's footer rather than implying the tree sums
+those eight rows. The footer also states how the leaves are counted: the run's
+own figure counts ten books, the fixture groups the same trades into ten book
+nodes, unbooked among them, and a trade the engine could not build writes no
+NPV row, so every priced trade sits in exactly one node and the root still adds
+up to the run. An earlier fixture counted 24 books, and that figure was
+corrected for that reason.
+
+A trade booked to no book is a real state, so the tree draws an =Unbooked= node
+at the portfolio level and gives it a trade count and an NPV like any other node.
+Dropping those trades would make the tree's total smaller than the run's and
+would hide a population that a desk has to reconcile.
+
+Selecting a node filters the per-trade table to its subtree, and each variant
+carries that in its own shape. =A= moves the aggregate figures onto the selected
+node: its NPV, its trade count, its share of the run, and how many books sit
+under it. =B= treats the tree as a lens over npv.csv, so choosing a book narrows
+the rows read out of that file while the manifest stays the whole archive. =C=
+names the largest book in the prose and links into the tree.
+
+Two gaps make every node a fixture, and the panel says both.
+
+- *The archive carries no book column.* =npv.csv='s columns are exactly
+  =TradeId=, =TradeType=, =Maturity=, =MaturityTime=, =NPV=, =NpvCurrency=,
+  =NPV(Base)=, =BaseCurrency=, =Notional=, =NotionalCurrency=, =Notional(Base)=,
+  =NettingSet= and =CounterParty=. A built screen needs the join from =TradeId=
+  to =trade_bookings.book_id= through =trading.v1.trade_bookings.list=, and no
+  operation returns results already grouped by book.
+- *No operation parses the archive*, so no node has a figure behind it either.
+  The tree is drawn from the page's own fixture, like the figures and the rows.
+
+The portfolio level has a third limit, and the tree footer states it: there is no
+=portfolios.list_by_parent_portfolio_id=, so a client assembles the portfolio tree
+from =portfolios.list=, which carries =parent_portfolio_id=.
+
+** The figures come from the analytics the configuration names
+
+A report's numbers are not free choice. Its report configuration names a set of
+analytics, and those are what the report produces. Headline Position runs =npv=
+and =sensitivity=, so the run this prototype draws shows an NPV, a Delta and a
+Gamma, and says so on the screen: the figures are the output of those two
+analytics and no others.
+
+The archive follows the same rule. A run that runs only =npv= and =sensitivity=
+does not write =cashflow.csv= or =saccr.csv=, so the manifest holds neither, and
+a second fixture run on a report that does run =saccr= shows NPV and exposure
+instead of Delta and Gamma. A reader can watch the analytic set change the
+figures.
+
+** A run can complete and still carry errors
+
+The page draws one run that completed clean and one that completed carrying
+eleven rows, eight =Analytics= errors and three =Configuration= warnings. The
+second warns before the figures are trusted, and offers the way to see why.
+
+** The scenario: results that carry errors
+
+The eleventh-row run is not enough on its own. A reader can read the notice, then
+read USD 88,402,114 under it and take the total for the whole answer, because
+nothing on the figures, the book tree or the trade table says otherwise. The
+scenario =results-with-errors= draws the connection, and a reviewer finds it by
+its chip beside the run chips, or by the query parameter =scenario= set to
+=results-with-errors=.
+
+It exercises five things, in all three variants:
+
+- A banner above the results states that they are partial and why: the engine
+  could not build three trades, 412 positions carry an NPV and no Delta, and the
+  totals below exclude them. It names the count of error rows and offers the way
+  to see them, as the completed-with-errors notice does, and it carries no
+  dismiss.
+- The aggregate figures keep their number and carry a =partial= marker and a
+  footnote, so nobody reads a total as the whole answer.
+- A book whose trades include a failed one is marked and states that its figure
+  excludes the failed trades; a portfolio above it states that it inherits the
+  exclusion, because its figure is the sum of its books.
+- The per-trade table draws each failed trade as a row with its =TradeId=, its
+  =TradeType=, its =Notional=, its =CounterParty=, an empty =NPV= and =NPV(Base)=,
+  and an =error= tag. Opening the row shows the error recorded. A trade the
+  engine could not build writes no row into =npv.csv=, so the price cells are
+  empty by nature, and the panel says so.
+- The scenario's chip is labelled, and the amber note states that the scenario is
+  a fixture like the rest of the page.
+
+Why a completed run's totals can be incomplete: =Report execution completed.=
+is the system's sentence about the run, and it is true. It says the run ended and
+retrieval finished. It says nothing about what the engine could not build. The
+archive holds a row per trade it priced, so a trade it could not build is absent
+rather than zero, and every total read from that file is a total over the trades
+that survived. The sensitivity analytic skips positions it cannot shift, so a
+Delta total covers fewer positions than the NPV beside it. Both facts are rows of
+the run, read by
+=reporting.v1.report_error_events.list_by_report_instance_id=, and no operation
+is invented for the scenario. What the scenario cannot show honestly is the join
+from a failed trade to its own error: the two =SENSITIVITY= rows are recorded
+against the analytic, and the panel says so rather than implying a per-trade key
+the model does not store.
+
+** The comparison: what changed since the last run
+
+A run's numbers answer "what is it worth now". They do not answer "what changed",
+and the second question is the one a desk asks every morning. The result panel
+therefore compares the run in view with a previous run of the same definition.
+The control offers no comparison and every completed earlier instance of the
+definition, and it prints the chosen baseline's instance id and start time beside
+the control. The page opens with the previous run chosen; =?baseline=none= turns
+the comparison off, and a run whose definition has no earlier completed instance
+says so rather than offering an empty list.
+
+Every figure keeps its value and gains the change and the percentage against the
+baseline. The by-book table gains an =NPV change= column and a =Change= column on
+every row, and a total row that carries the same change as the difference of the
+two totals and as the sum of the ten book changes. The tree gains a change column,
+so a book compares with that book and a portfolio with that portfolio, and the
+selected node drives both sides: select GBP Rates and the figures and the tree row
+describe GBP Rates in both runs. The tile is the review's pattern, kept: a label,
+the value, a note under it, and the change badge.
+
+The two sides are two fixtures. The page draws two Headline Position runs of the
+same definition: 17 October at USD 88,402,114 of NPV, USD 1,846,818 of Delta,
+USD 52,350 of Gamma over 18,204 positions in 10 books; and 16 October at
+USD 87,219,062, USD 1,818,348, USD 51,510 over 18,162 positions in the same 10
+books. Ten books, ten different changes:
+
+| Book | NPV change (USD) | Change |
+|------+------------------+--------|
+| GBP Rates | +1,400,000 | +3.5% |
+| EUR Rates | -785,716 | -2.7% |
+| USD Rates | +779,902 | +6.4% |
+| FX Options | -97,238 | -2.3% |
+| Inflation | +134,086 | +13.6% |
+| Equity | -42,030 | -13.9% |
+| Liquidity Buffer Bonds | -171,000 | -42.5% |
+| Group FX Hedges | +58,284 | +30.7% |
+| Group Intercompany Loans | +10,086 | +9.3% |
+| Unbooked | -103,322 | -87.6% |
+| Total | +1,183,052 | +1.4% |
+
+The total is the difference of the two totals, and it is also the sum of the ten
+rows, because every number is a fixture figure of one run and the change is
+subtraction. The books do not move together, which is the point: a per-metric
+multiplier would make every row move by the same percentage and the change would
+be fiction.
+
+When either run in the comparison carried errors the change is partial, because
+a total over the trades that survived is not the whole answer. The badge carries
+a =partial= marker and the panel says so once in words, with the count of problems
+and what the current run's errors leave out. The =results-with-errors= scenario is
+the deliberate case: it marks the current run's changes as partial and names the
+three unbuildable trades and the 412 positions with an NPV and no Delta. The code
+marks a baseline that carries errors the same way, though this fixture's baseline
+completed clean, so the baseline branch is not exercised by a screenshot.
+
+** The plots, the vocabulary, and the rule that chooses a form
+
+A run's result is numbers in tables, and a reader can answer some questions from
+them faster as a picture. Variant =A= therefore plots the result, and the form of
+each plot follows the shape of the numbers rather than decorating them. Bars and
+lines alone were too narrow a vocabulary: parts of one whole, several wholes each
+split the same way, two series over one set of categories and two measures plotted
+against each other are four ordinary questions that neither a bar nor a line
+answers.
+
+The rule below is written on the page as well, in the panel that draws the plots,
+so a reader of the prototype meets it where the plots are and not only here.
+
+| The numbers are | Form | The rule that chooses it |
+|-----------------+------+--------------------------|
+| One whole, few parts | Donut | One whole in not more than about six parts becomes a donut. A seventh part and the ones after it join one =other= slice with its own legend row, and the hole carries the total. Each part states its percentage and its value in the legend beside the slice, never on it. |
+| One whole, many parts, or parts that must be compared precisely | Horizontal bars | One whole in more than about six parts, or parts that must be compared precisely, is horizontal bars. A pie of fifteen books is unreadable and its angles cannot be compared. |
+| Many wholes, each split the same way | Stacked bars | More than one whole, each decomposing by the same categories, is a stacked bar: one bar per whole and one segment per part. One whole is a donut; several wholes are stacked bars. |
+| Two series over the same categories | Grouped bars | Two series that share the same categories and the same unit are grouped bars, side by side, so two things are compared rather than one stacked on the other. |
+| Two measures against each other | Scatter | Two measures plotted against each other are a scatter, so an outlier is visible as a point away from the rest rather than as two numbers a reader has to find. |
+| A change over time | Line | A change over time is a line, and a single point is not a trend. |
+| A contribution that sums to a total | Waterfall | A contribution that adds up to a total is a waterfall, so the parts and the total are one reading. |
+| Exact and few | Table only | A handful of exact numbers stays a table, and nothing on this page replaces it: a chart of three figures is harder to check than the three figures. |
+
+What that rule draws on the page:
+
+| Numbers | Form | Why, and where it appears |
+|---------+------+---------------------------|
+| NPV by book | Horizontal bars, sorted largest first, signed, from a zero rule | A magnitude compared across categories is what bars compare, and the selection of the book tree narrows it. |
+| Each book's share of the run's NPV | Donut, with the total in the hole and the share in the legend | One whole, five or six parts: the books that make up the run. Beyond the sixth, the smallest join one =other= slice, so the rim never crowds. |
+| Delta and Gamma by book | The same bar form, twice | Each Greek is a magnitude across the same books, and two charts keep the two units apart. |
+| Delta against Gamma, by book | Grouped bars | The two Greeks share the books and the unit, so they are compared side by side rather than stacked: a stack would make Gamma a length from the end of Delta. |
+| A book's Gamma against its Delta | Scatter, one point per book, both axes log decades | Two measures against each other, so a book away from the line the rest make is a distance and not a row to find. The logs are stated because the books span two orders of magnitude. |
+| The change against the baseline, by book | Bars of their own, signed, from a zero rule that is the point of no change | A change and a level are different magnitudes on different scales, so the change is its own chart and not a second series stacked into the level chart. |
+| The run's problems by scope | Donut, with the count in the hole and the scope's count and share in the legend | One whole, two parts on the fixture run: the problems the run recorded, divided by scope. |
+| The run's problems by scope, across the runs the comparison pairs | Stacked bars | Two wholes, each split the same way, so one bar per run and one segment per scope in the same colour. |
+| NPV across the runs of the definition | A line, with the current run marked and named and the baseline marked | The runs of one definition in order are a change over time, and the line is what makes the delta control legible. |
+| Positions priced, books, counterparties | No plot | A count with no magnitude to compare is a figure, not a chart: a bar of it would be a bar of nothing. |
+| One book, on its own | No plot | A chart of one bar states nothing a sentence cannot. |
+| A run with one completed instance | No trend | One point is not a trend: a line through it would state a direction the data does not have. |
+| Anything that sums to a known total | Not drawn as a waterfall | No figure on this page is a contribution to a known total. The waterfall row of the rule is written and exercised nowhere, because inventing a total to reach would be the invention. |
+
+Every pie is a donut, never a solid disc: the hole carries the total, where a
+reader looks for it, and the slices keep the rim. Every donut carries its
+percentages and its values in the legend, never on the arc, because an angle is a
+bad place to read a number. Every plot carries a title, its unit, an
+=aria-label= that lists the values a screen reader would otherwise read off the
+bars, and a one-line caption that says what it shows and why that form was
+chosen, for example *one whole, five parts*. The exact values stay in text: the
+by-book table under the plots carries every bar's figure, the trend carries a
+table of the runs it plots, and every legend states the value beside its
+percentage. A plot never replaces the figures a reader checks.
+
+Four rules keep the drawing honest.
+
+- *A bar starts at zero.* Every bar is drawn from the zero rule, so a negative
+  book reads as a bar on the other side of it. A line of levels cannot start at
+  zero without flattening the series, so it states the range of its axis in a
+  tick and in the caption: the NPV line runs from USD 83.2 m to USD 89.3 m and
+  says so rather than truncating silently. The scatter states both axes as log
+  decades for the same reason, in the axis title and in the caption.
+- *Colour comes from the tokens, one colour per book and one per scope, and the
+  same across every plot on the page.* A book keeps its colour in the donut, in
+  the grouped bars and in the scatter; a scope keeps its colour in the donut and
+  in the stacked bars, and the scope with the most rows takes the first token so
+  the heaviest part is the one the eye reaches first. The accent is spent on
+  controls and never on data, and the one place a token is spent on something
+  that is not a category is the hatched exclusion, which is the bad token because
+  an exclusion is not a category.
+- *A partial result is never plotted as if it were whole.* A run that carried
+  errors wrote a figure over the trades that survived, so a bar or a point drawn
+  from one is a floor. The plot carries the same =partial= tag the figures carry,
+  the mark itself is dashed or hollow, and the caption names what the figure
+  leaves out. For a donut the excluded part is its own hatched slice, labelled
+  =excluded= with its own legend row, so the whole of the pie is not silently
+  smaller than the run: the share donut hatches the trades the engine could not
+  build, and the problem donut hatches them beside the recorded rows, which is
+  why its hole carries both counts.
+- *Nothing is drawn that the run did not produce.* A run whose configuration
+  names =npv= and =saccr= has no Greek, so it has no grouped bar and no scatter of
+  one, and the page says which analytic set decided that.
+
+The book tree selection drives the plots exactly as it drives the table: choosing
+a node narrows the bars, the donut and the Greeks to the books under it, and
+choosing a single book removes them in favour of the tile and the table row. The
+comparison drives them too: with a baseline in view the change chart appears, the
+stacked bars pair the two runs, and the trend marks the baseline's point; with
+=?baseline=none= the chart is gone and only the current run is marked on the line.
+
+Every plot is inline SVG written in the prototype's own script. A prototype opens
+from =file://= with no build, no CDN and no network, so no chart library is
+loaded and none is copied in.
+
+** What is fake
+
+The figures, the file names, the row counts, the sizes, the archive key, the book
+and portfolio nodes, and every trade row are mock. So are the plots: each mark is
+drawn from the same fixtures the tables carry, and the run series behind the
+trend is a fixture like the two runs it contains. Nothing reads a server. The
+file names are real ORE output names — =npv.csv=, =saccr.csv=,
+=pricingstats.csv=, =log_structured.json= and the rest — because an invented set
+would hide the shape of the thing being judged. The book and portfolio names are
+free text in the seed, so they are the kind of name a real party writes.
+
+** Where the code lives
+
+=doc/prototypes/reporting/read-what-a-run-produced/=. Three files, plain HTML,
+CSS and JavaScript, no framework and no build step.
+
+** The verdict
+
+No verdict yet. This page is on the branch that proposes it and has not been
+taken up.
+
+The review is the generated Gemini file, kept as it was produced in
+[[file:read-what-a-run-produced/review/gemini-dashboard.html][gemini-dashboard.html]]
+and listed at [[file:read-what-a-run-produced/review/][the review index]]. It proposes one
+screen rather than three readings of the same run: five figures across the top --
+NPV, Delta, Gamma, positions and books -- over a single table of NPV, Delta and
+Gamma by book, with a total row, and with every figure and every row carrying a
+change badge against a switchable baseline. It has no archive, no per-trade rows,
+no book tree and no error handling.
+
+What we take from it:
+
+1. *A change against a named baseline.* Every aggregate figure, every book row
+   and the total row carries its change and its percentage. This prototype does
+   that, and names the baseline by its run instance id and its start time, so a
+   reader knows exactly what they are compared against.
+2. *The tile pattern.* A label, the value, a note under it and a change badge.
+   The agreed design already had the first three; the badge is the review's
+   contribution and it is kept.
+
+What we refuse, and why:
+
+1. *Multiplier-synthesised baselines.* The review multiplies each current figure
+   by a constant per metric -- 0.972 for NPV, 0.976 for Delta, 1.023 for Gamma,
+   0.992 for positions -- to invent the previous run. Every book then moves by
+   the same percentage for a metric, so the deltas are fiction: they are the
+   constant written twice. This prototype carries a second fixture run with its
+   own figures so the changes are differences between two sets of numbers, and
+   ten books move by ten different percentages.
+2. *A stress scenario as a baseline.* A stress scenario is not a previous run of
+   this report: it has no archive, no instance and no error rows of its own, and
+   its numbers answer a different question. The only sound baseline is another
+   run of the same definition.
+3. *Yesterday's official close as a baseline.* The close belongs to a different
+   run, usually of a different definition. Comparing a run with it measures two
+   differences at once and names neither.
+4. *Run numbers.* The review names its baseline =Run #1042 (2026-10-17 10:30)=.
+   A run is identified by its instance id, and the id is what a reader can look
+   up. The review also collapses the two configured analytics into a chip,
+   =rannpvsensitivity=, as if the analytic set named the run; a run is named by
+   its instance and its definition, and the analytics are named separately.
+
+What the review omits that this design requires: the book tree, the trade-level
+drill-down, and the error and partial support. The tree is how a run rolls up
+from a trade to its book and a portfolio, and the review's seven-row table cannot
+show a book that exists in one run and not another. The per-trade table is the
+detail npv.csv carries. The errors are what make a completed run's totals a
+partial answer, and a comparison built without them presents an incomplete
+change as arithmetic.
+
+The review is kept as it was drawn, and it still disagrees with two facts this
+prototype states:
+
+1. *It counts 24 books.* The prototype counts 10. A trade the engine could not
+   build writes no =npv.csv= row, and the tree groups every trade into exactly
+   one node. The 24 was an earlier fixture figure, corrected for that reason, and
+   the review's own table draws seven book rows, so 24 is not the grouping it
+   displays either.
+2. *It presumes a parser pipeline.* It draws parsed NPV, Delta and Gamma per book
+   and a total computed from them, as if a pipeline supplied the rows. Nothing
+   parses the run archive. =ores_compute_results_tbl= holds the archive location,
+   an outcome and an error message, and no parsed rows. The result store that
+   would parse the archive is designed and not built, which is why this prototype
+   labels every figure and every row a fixture on the panel that draws it.
+
+** What it does not settle
+
+Whether the result is read in the application at all, or exported and read
+elsewhere. The archive listing, the per-trade rows and the two downloads are the
+operations this journey needs and does not have, and they are the first thing
+the real build would have to add.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the five journeys these answer to.

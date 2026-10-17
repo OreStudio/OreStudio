@@ -84,6 +84,8 @@ std::optional<document_kind> detect_document_kind(const std::filesystem::path& p
         return document_kind::calendar_adjustments;
     if (root == "Conventions")
         return document_kind::conventions;
+    if (root == "PricingEngines")
+        return document_kind::pricing_engines;
     return std::nullopt;
 }
 

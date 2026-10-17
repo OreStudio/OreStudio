@@ -174,8 +174,8 @@ TEST_CASE("every_pricing_engine_document_in_the_corpus_round_trips", tags) {
     for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
         if (!entry.is_regular_file() || entry.path().extension() != ".xml")
             continue;
-        if (entry.path().filename() != "pricingengine.xml" &&
-            entry.path().filename() != "pricingengines.xml")
+        if (ores::ore::xml::detect_document_kind(entry.path()) !=
+            ores::ore::xml::document_kind::pricing_engines)
             continue;
         ++files;
         INFO(entry.path().string());
@@ -200,5 +200,5 @@ TEST_CASE("every_pricing_engine_document_in_the_corpus_round_trips", tags) {
         CHECK_FALSE(difference);
     }
     BOOST_LOG_SEV(lg, info) << "pricing engine documents: " << files;
-    CHECK(files > 0);
+    CHECK(files == 125);
 }

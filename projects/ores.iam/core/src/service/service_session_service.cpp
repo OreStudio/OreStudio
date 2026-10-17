@@ -101,7 +101,7 @@ service_session_service::start_service_session(const boost::uuids::uuid& account
                             .id = session_id,
                             .start_time = now,
                             .account_id = account_id,
-                            .end_time = "",
+                            .end_time = std::nullopt,
                             .client_ip = boost::asio::ip::make_address("127.0.0.1"),
                             .client_identifier = client_identifier,
                             .client_version_major = 1,

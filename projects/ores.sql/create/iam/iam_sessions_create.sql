@@ -38,12 +38,13 @@
  * timestamp; the mapper, entity and generator templates gained the
  * timestamp key-column branches they were missing.
  *
- * end_time is text not null default '', not a nullable timestamp, and
- * client_ip is text, not inet. The model mirrors each column's real
- * type; the domain projection is the column's type too, so a session's
- * end_time is an empty string while the session is active and
- * client_ip is a string. The richer readings (an instant, an IP address)
- * belong to the consumer that needs them.
+ * end_time is a nullable timestamp with time zone: a session that has not
+ * ended has no closing instant at all, so the column holds NULL and the
+ * domain and protocol types hold std::optional<time_point>. There is no
+ * empty-string spelling and no other sentinel for "still open"; absence is the
+ * representation, and the wire carries null. client_ip is text, not
+ * inet, so the richer reading of an IP address belongs to the consumer that
+ * needs it.
  *
  * The hand-written domain struct also carried party_id,
  * visible_party_ids and username. No column backs any of them; they are
@@ -64,7 +65,7 @@ create table if not exists "ores_iam_sessions_tbl" (
     "start_time" timestamp with time zone not null,
     "tenant_id" uuid not null,
     "account_id" uuid not null,
-    "end_time" text not null default '',
+    "end_time" timestamp with time zone null,
     "client_ip" text not null,
     "client_identifier" text not null default '',
     "client_version_major" smallint not null default 0,
@@ -86,7 +87,7 @@ on "ores_iam_sessions_tbl" (account_id, start_time desc);
 
 create index if not exists sessions_active_idx
 on "ores_iam_sessions_tbl" (account_id)
-where end_time = '';
+where end_time is null;
 
 create index if not exists sessions_country_idx
 on "ores_iam_sessions_tbl" (country_code, start_time desc)

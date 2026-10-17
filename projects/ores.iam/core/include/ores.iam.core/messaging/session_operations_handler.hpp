@@ -95,7 +95,7 @@ public:
             auto rows = repo.read_latest(req_ctx);
             std::vector<domain::session> open;
             for (auto& row : rows) {
-                if (row.end_time.empty())
+                if (!row.end_time.has_value())
                     open.push_back(std::move(row));
             }
             BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
@@ -152,7 +152,7 @@ public:
                                            .message = "No such session in this tenant"});
                 return;
             }
-            if (!session->end_time.empty()) {
+            if (session->end_time.has_value()) {
                 reply(nats_,
                       msg,
                       end_session_response{.success = false, .message = "Session already ended"});

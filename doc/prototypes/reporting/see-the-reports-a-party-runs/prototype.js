@@ -104,7 +104,7 @@
         {
             id: 'r-board-risk-dashboard',
             name: 'Board Risk Dashboard',
-            type: 'grid',
+            type: 'risk',
             party: 'ACCOHK',
             schedule: '0 15 7 ? * MON-FRI',
             scheduleLabel: 'Weekdays 07:15',

@@ -59,10 +59,12 @@ describes does not exist, and the operations below are the ones it would send.
 * Steps
 
 1. *Name it and choose its report type.* The person types a =name= and a
-   =description=, and chooses a =report_type=. There are exactly two types,
-   =risk= and =grid=, and the type decides what the report is: a risk report
-   carries the analytics whose output a risk reader signs off, and a grid report
-   runs the work the compute grid is asked for. The name is unique within the
+   =description=, and chooses a =report_type=. The picker reads
+   =ores_reporting_report_types_tbl=, and the type is a category that also names
+   the workflow which runs the report. One type is registered today: =risk=, the
+   full ORE risk analytics run, which names =report_execution_workflow=. A second
+   type appears only when a row is added, so the screen must not hardcode the
+   list. The name is unique within the
    party, so the screen refuses a name the party already uses and says which row
    holds it. The definition is created official unless the person clears
    =is_official=, and an official report never reads a sandbox: its scope cannot

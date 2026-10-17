@@ -68,8 +68,8 @@ the screen is open updates itself.
    with no explanation.
 2. *Read the rows.* Each row states the definition's name, its report type, the
    schedule expression it carries, when its latest run started, and its health.
-   Every seeded definition is of type =risk=, and the two types the installation
-   registers are =risk= and =grid=. The names are the seed's thirty-one: Group
+   Every seeded definition is of type =risk=, and one type is registered: =risk=,
+   the full ORE risk analytics run. The names are the seed's thirty-one: Group
    Consolidated Exposure, Large Exposures, Liquidity Coverage, Headline Position,
    SA-CCR Exposure, Intraday Risk Monitor and the rest. A definition with a
    schedule expression is *scheduled*; one the party runs by hand is

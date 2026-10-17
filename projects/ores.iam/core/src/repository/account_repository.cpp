@@ -227,14 +227,17 @@ std::vector<domain::account> account_repository::read_any_by_username(context ct
     const auto query =
         sqlgen::read<std::vector<account_entity>> |
         where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "username"_c == username) |
-        order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+        order_by("valid_from"_c.desc());
 
-    return execute_read_query<account_entity, domain::account>(
+    auto found = execute_read_query<account_entity, domain::account>(
         ctx,
         query,
         [](const auto& entities) { return account_mapper::map(entities); },
         lg(),
         "Reading any account by username.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

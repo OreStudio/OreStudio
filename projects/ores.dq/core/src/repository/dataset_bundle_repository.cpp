@@ -230,14 +230,17 @@ std::vector<domain::dataset_bundle>
 dataset_bundle_repository::read_any_by_code(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading any dataset bundle by code: " << code;
     const auto query = sqlgen::read<std::vector<dataset_bundle_entity>> | where("code"_c == code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
+    auto found = execute_read_query<dataset_bundle_entity, domain::dataset_bundle>(
         ctx,
         query,
         [](const auto& entities) { return dataset_bundle_mapper::map(entities); },
         lg(),
         "Reading any dataset bundle by code.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

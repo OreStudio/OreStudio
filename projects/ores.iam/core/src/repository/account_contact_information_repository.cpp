@@ -259,15 +259,18 @@ account_contact_information_repository::read_any_by_email(context ctx, const std
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_contact_information_entity>> |
                        where("tenant_id"_c == tid && "email"_c == email) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<account_contact_information_entity,
-                              domain::account_contact_information>(
-        ctx,
-        query,
-        [](const auto& entities) { return account_contact_information_mapper::map(entities); },
-        lg(),
-        "Reading any account contact information by email.");
+    auto found =
+        execute_read_query<account_contact_information_entity, domain::account_contact_information>(
+            ctx,
+            query,
+            [](const auto& entities) { return account_contact_information_mapper::map(entities); },
+            lg(),
+            "Reading any account contact information by email.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

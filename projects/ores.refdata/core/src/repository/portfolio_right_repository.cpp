@@ -253,14 +253,17 @@ portfolio_right_repository::read_any_by_right_code(context ctx, const std::strin
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<portfolio_right_entity>> |
                        where("tenant_id"_c == tid && "right_code"_c == right_code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<portfolio_right_entity, domain::portfolio_right>(
+    auto found = execute_read_query<portfolio_right_entity, domain::portfolio_right>(
         ctx,
         query,
         [](const auto& entities) { return portfolio_right_mapper::map(entities); },
         lg(),
         "Reading any portfolio right by right_code.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

@@ -256,14 +256,17 @@ csa_eligible_currency_repository::read_any_by_currency_code(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<csa_eligible_currency_entity>> |
                        where("tenant_id"_c == tid && "currency_code"_c == currency_code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<csa_eligible_currency_entity, domain::csa_eligible_currency>(
+    auto found = execute_read_query<csa_eligible_currency_entity, domain::csa_eligible_currency>(
         ctx,
         query,
         [](const auto& entities) { return csa_eligible_currency_mapper::map(entities); },
         lg(),
         "Reading any CSA eligible currency by currency_code.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

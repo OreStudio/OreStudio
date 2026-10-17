@@ -223,14 +223,17 @@ std::vector<domain::permission> permission_repository::read_any_by_code(context 
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<permission_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<permission_entity, domain::permission>(
+    auto found = execute_read_query<permission_entity, domain::permission>(
         ctx,
         query,
         [](const auto& entities) { return permission_mapper::map(entities); },
         lg(),
         "Reading any permission by code.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

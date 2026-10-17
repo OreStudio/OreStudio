@@ -236,14 +236,17 @@ std::vector<domain::image> image_repository::read_any_by_code(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<image_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<image_entity, domain::image>(
+    auto found = execute_read_query<image_entity, domain::image>(
         ctx,
         query,
         [](const auto& entities) { return image_mapper::map(entities); },
         lg(),
         "Reading any asset image by code.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

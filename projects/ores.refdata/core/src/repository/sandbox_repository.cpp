@@ -240,14 +240,17 @@ std::vector<domain::sandbox> sandbox_repository::read_any_by_name(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<sandbox_entity>> |
                        where("tenant_id"_c == tid && "name"_c == name) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<sandbox_entity, domain::sandbox>(
+    auto found = execute_read_query<sandbox_entity, domain::sandbox>(
         ctx,
         query,
         [](const auto& entities) { return sandbox_mapper::map(entities); },
         lg(),
         "Reading any sandbox by name.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

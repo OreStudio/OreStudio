@@ -240,14 +240,17 @@ std::vector<domain::platform> platform_repository::read_any_by_code(context ctx,
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<platform_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "code"_c == code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<platform_entity, domain::platform>(
+    auto found = execute_read_query<platform_entity, domain::platform>(
         ctx,
         query,
         [](const auto& entities) { return platform_mapper::map(entities); },
         lg(),
         "Reading any compute platform by code.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

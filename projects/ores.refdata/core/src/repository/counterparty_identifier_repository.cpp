@@ -277,14 +277,18 @@ counterparty_identifier_repository::read_any_by_id_value(context ctx, const std:
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<counterparty_identifier_entity>> |
                        where("tenant_id"_c == tid && "id_value"_c == id_value) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
-        ctx,
-        query,
-        [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
-        lg(),
-        "Reading any counterparty identifier by id_value.");
+    auto found =
+        execute_read_query<counterparty_identifier_entity, domain::counterparty_identifier>(
+            ctx,
+            query,
+            [](const auto& entities) { return counterparty_identifier_mapper::map(entities); },
+            lg(),
+            "Reading any counterparty identifier by id_value.");
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

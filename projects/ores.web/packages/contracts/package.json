@@ -19,6 +19,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@ores/wire-protocol": "*",
     "zod": "4.6.5"
   },
   "devDependencies": {

@@ -24,7 +24,7 @@ The component is one npm workspace with five packages. Each package has one job.
 |---|---|---|
 | =@ores/web= | =packages/web= | The browser application: the shell, the session, the i18n catalogue, and the styling. |
 | =@ores/bff= | =packages/bff= | The Fastify server. It owns the NATS connection and the session token. |
-| =@ores/contracts= | =packages/contracts= | The HTTP shapes shared between the server and the interface. It has no Node dependency, so the browser can parse them. Only the BFF imports it today, and the browser parses with =@ores/wire-protocol/browser= instead; the intent is that both sides parse one schema and the split is not yet finished. |
+| =@ores/contracts= | =packages/contracts= | The HTTP shapes shared between the server and the interface. It has no Node dependency, so the browser can parse them. Only the BFF imports it today, and the browser parses with =@ores/wire-protocol/browser= instead; the intent is that both sides parse one schema and the split is not yet finished. It depends on =@ores/wire-protocol= through that package's =time= entry point, which imports nothing but Zod: an instant is spelled the same way on the bus and over HTTP, so both packages read the one owner of that spelling rather than keeping a tolerant copy each. |
 | =@ores/wire-protocol= | =packages/wire-protocol= | The ORE NATS protocol: the msgpack codec, the subjects, the schemas, the session lifecycle, and the mTLS transport. |
 | =@ores/org= | =packages/org= | Parses org text into a line-indexed outline and renders it as safe HTML. The outline entry has no dependency and serves the BFF, which reads and writes scenario docs. The =render= entry serves the browser. |
 

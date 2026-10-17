@@ -30,7 +30,10 @@
  * intent.
  *
  * It carries no Node dependency, so the browser can load it when the split is
- * finished.
+ * finished. The one package it depends on is `@ores/wire-protocol`, and only
+ * through its `time` entry point, which imports nothing but Zod: an instant is
+ * spelled the same way on the NATS bus and over HTTP, so both packages read the
+ * one owner of that spelling rather than keeping a tolerant copy each.
  */
 export * from './site.js';
 export * from './session.js';

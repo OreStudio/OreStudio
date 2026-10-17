@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 19B54929-1098-4FBD-B588-505CC7C3BBFB
+:END:
+#+title: Story: Give the web one way to handle time and timestamps
+#+description: ores.web has no single owner for time. The wire-protocol package validates only four timestamp fields with wireTimestampSchema; at least twelve timestamp-shaped fields are plain z.string(), including eventTime, three recordedAt, startTime, endTime, givenAt, assigned_at, occurred_at and two more recorded_at. Nothing checks those, so server drift reaches the browser silently. Worse, the server sometimes does not send the project's wire shape at all: auth_event.event_time is std::string in the operations protocol even though the domain holds a time_point, so it bypasses to_iso8601_utc and carries the database's textual rendering, '2026-10-17 15:27:23.511414+01' in a +01 session and '+00' in a UTC one. The same instant therefore serialises two ways depending on the reader's timezone. The accounts outage (GET /api/accounts 500, 'Not a wire timestamp' at every recorded_at) was this same class of drift caught loudly because that one field was validated; the unvalidated ones would have failed silently.
+#+type: story
+#+level: s2
+#+filetags: :web:timestamps:wire-protocol:sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person working in ores.web should have exactly one place that knows how a timestamp is written, read and converted, and no way to hand-roll a second. The server should send every instant in the project's wire shape, independent of the process timezone, and the client should reject anything that is not that shape instead of trusting a bare string.
+
+The web's convention must be the server's convention, not a second one written to agree with it. The server owns the definition - one serializer, one architecture page - and the web module mirrors it exactly: same separator, same optional fraction, same UTC marker, same timezone independence. Where the two disagree, the server is right and the web is the bug, and a disagreement must fail a test rather than be reconciled by loosening a pattern. A pattern that merely accepts whatever the server happens to emit today is not a shared convention; it is the same drift with a later alarm.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- ores.web has one module that owns parsing a server wire timestamp (a space separator, a Z suffix and an optional one-to-six digit fraction), formatting one for the wire, and converting to and from a JS Date and a branded WireTimestamp; no other module reimplements any of them
+- every time-valued field in the wire-protocol schemas is typed with that module's schema; none is a plain z.string(); absent values are modelled explicitly instead of passing an empty string that silently satisfies the type
+- the server sends every instant in the project's wire shape: auth_event.event_time no longer travels as a database textual rendering, it is formatted by one named function at the boundary, and the emitted string is identical whatever timezone the reading session uses
+- an endpoint test feeds a captured live payload through each schema, so server drift fails a test rather than a browser; and the shared module has unit tests for a fraction of six digits, one digit, no fraction, an absent value, a malformed value, an impossible calendar date, and timezone independence
+- the work is ordered producer first, then field types, so a silent bug is not converted into a crash and each change can be attributed; the sweep names every endpoint it touched and every field it left alone with a reason
+- doc/knowledge/architecture/time_architecture.org states the wire shape once, as the single source of truth, and the TypeScript and C++ references point at it rather than restating it
+- the web's convention IS the server's convention, not a parallel one written to agree with it: the definition is owned by the server's serializer and the architecture page, the web module mirrors it field for field - separator, optional fraction, UTC marker, timezone independence - and where the two disagree the server is right and the web is the bug
+- a golden payload captured from the live server is committed to the web package and asserted against the web parser byte for byte, so changing the server's serializer fails the web's tests and changing the web's parser fails against the captured server bytes; a test that only round-trips the web's own output does not satisfy this
+- the wire pattern accepts exactly what the server writes and no more - an optional one-to-six digit fraction as parse_utc_timestamp reads it - and it is never widened to whatever happens to arrive, since a pattern that accepts everything is the drift with a later alarm
+- the web module and the server serializer agree on one instant across a timezone change: a test runs the same instant through both with the process timezone set to UTC and to a non-UTC zone and requires identical bytes
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:E2549348-F4EB-4A86-AE92-3D866F039EEA][Scaffold story: Give the web one way to handle time and timestamps]] | STARTED | 2026-10-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B59F7206-31DB-4597-ACE5-7442BFC59AD3][Build one timestamp module and make every field use it]] | BACKLOG | | | Initial task for: Give the web one way to handle time and timestamps |
+
+* Decisions
+
+| Date       | Decision | Reason |
+|------------+----------+--------|
+| 2026-10-17 | The web follows the server's timestamp convention exactly; it does not define its own. | A client-side format written to match observed server output is a second definition, and two definitions drift. The accounts outage was one field of drift caught loudly; twelve unvalidated fields are the same drift caught never. |
+| 2026-10-17 | The server's serializer (to_iso8601_utc) and doc/knowledge/architecture/time_architecture.org own the definition; the web module mirrors it. | The server produces the bytes, so it must state what the bytes are. A client comment claiming to be wire truth went stale once already and caused the outage. |
+| 2026-10-17 | Server first, then field types. | Typing a field the server feeds with a non-wire shape turns a silent bug into a crash before the producer is fixed, and doing both together hides which change fixed what. |
+| 2026-10-17 | The abandoned fix `e29fe5cbca` was reimplemented inside the new module rather than cherry-picked. | That commit edits `primitives.ts`, which this story dissolves; carrying it across would leave two parsers during the move. Its captured live account fixture is kept and extended by the golden test. |
+| 2026-10-17 | Fields whose producer still writes database text or a T-separated form are named and left untyped for now. | Typing them would turn a silent bug into a crash against live traffic before their producers are fixed. Each is listed in the task with the producer file, so the next sweep has a starting point. |
+
+* Out of scope
+
+-

@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/share-one-copy-hook-between-the-oresmd-dialogs
-#+pr:
+#+pr: 3494
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3494][#3494]] | [web] Serve both oresmd dialogs from one copy hook |
 
 * Review
 

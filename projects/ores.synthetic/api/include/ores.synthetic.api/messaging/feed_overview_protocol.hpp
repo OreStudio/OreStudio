@@ -174,6 +174,44 @@ struct list_folder_feeds_response {
     std::vector<folder_feed> feeds;
 };
 
+/**
+ * @brief The feed that holds one series.
+ */
+struct series_owner {
+    /** @brief The series, as the oresmd URI that names it. */
+    std::string series;
+    /** @brief The source name of the running feed that holds the series; empty when no feed holds
+     * it. */
+    std::string source_name;
+};
+
+/**
+ * @brief Ask which running feed holds each of a list of series.
+ */
+struct resolve_series_owners_request {
+    using response_type = struct resolve_series_owners_response;
+    static constexpr std::string_view nats_subject = "synthetic.v1.ops.resolve_series_owners";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The series to resolve, each as the oresmd URI that names it. */
+    std::vector<std::string> series;
+};
+
+/**
+ * @brief The owner of each series asked about, in the order asked.
+ */
+struct resolve_series_owners_response {
+    bool success = false;
+    std::string message;
+    /** @brief The owner of each series asked about, in the order asked. */
+    std::vector<series_owner> owners;
+};
+
 }
 
 #endif

@@ -1,0 +1,200 @@
+:PROPERTIES:
+:ID: 56C389CB-A1EE-4E26-8EF7-B202440B9941
+:END:
+#+title: Task: Grant the report error permissions to the roles that need them
+#+description: The six report error permission codes are seeded but no role holds any of them, so nothing outside the reporting service can read or write a run's errors. The report error handlers are unreachable and the screen that should show them cannot be built on top.
+#+type: task
+#+level: s1
+#+filetags: :fix_the_defects_the_population_and_report_work_exposed:inbox:product_backlog:
+#+owner: marco
+#+branch: feature/grant-the-report-error-permissions
+#+pr: 3420
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A role holds each report error permission, chosen deliberately, so the error subjects are reachable and a screen has something to call them with.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:93BF0A2D-82AC-40A7-8D9C-6B644A3AB0AF][Fix the defects the population and report work exposed]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- reporting::report_errors and reporting::report_error_scopes are granted to the roles that own them, with the choice recorded and justified.
+- The grant is visible in the live database and survives a provision.
+- A caller holding the role can read a run's errors over the subject and a caller without it is refused.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** Blocked on a schema decision, found before any grant was written
+
+The grant cannot be made yet, because the table it protects is not scoped the
+way the table it hangs off is.
+
+=ores_reporting_report_instances_tbl= carries two policies: a permissive tenant
+policy, and a restrictive party policy keyed on its own =party_id= column.
+
+  ores_reporting_report_instances_tbl | report_instances_party_isolation_policy
+    ((ores_iam_visible_party_ids_fn() IS NULL)
+     OR (party_id = ANY (ores_iam_visible_party_ids_fn())))
+
+=ores_reporting_report_errors_tbl= carries the tenant policy and nothing else.
+It has no =party_id= column, so the same policy cannot be written for it.
+
+** Why this blocks the grant
+
+Choosing the role is the small half. The reach is the large half. Today no role
+below admin reads a report run at all, so the only candidate is the every-person
+role, =Member=. Granting it =report_errors:read= would let a member of one party
+read the errors of another party's run, because a run is party-scoped and its
+errors are not. That is a leak the grant would create rather than one it would
+close.
+
+** The decision
+
+Either an error carries the party of the run it belongs to, so the existing
+restrictive policy shape applies to it unchanged, or errors are declared
+tenant-wide on purpose and the grant is withheld until the screen states who
+may see another party's failures.
+
+The first is the shape the rest of =ores.reporting= uses. It costs a column on
+=ores.reporting.report_error=, populated from the run, and the policy that
+mirrors =report_instances=. It is a model change and a regeneration, not a seed
+edit.
+
+** Also worth recording
+
+=TenantAdmin= and =SuperAdmin= already hold =*=, which =ores::security::
+authorization::grants= applies to every code except =installation::=. So the six
+seeded codes are reachable by those two roles today. The gap is every other
+role, not the handlers.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3420][#3420]] | [reporting] Model a report error as an event entity |
+| [[https://github.com/OreStudio/OreStudio/pull/3411][#3411]] | [agile] Raise the report error screen and the role grants |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Done, by a route the task did not anticipate. Determining which role should
+read a run's errors led to the reason it could not be answered, and the answer
+was a domain correction rather than a seed edit.
+
+** The table was not scoped like the run it hangs off
+
+=ores_reporting_report_instances_tbl= carries a restrictive party policy keyed
+on its own =party_id=. =ores_reporting_report_errors_tbl= carried the tenant
+policy alone and had no =party_id= column, so it could not have one. Granting
+read on the errors to any party-level role would have shown one party another
+party's failures.
+
+** An error is an event, and modelling it as a CRUD entity caused the rest
+
+An error is a fact about an instant: written once, never changed. The
+convention in =doc/knowledge/architecture/entity_naming.org= says such an entity
+states =:current_state:= and =:immutable:=, so it has no validity window and no
+audit tail, and the actor and the time become columns of its own.
+=ores.reporting.report_trigger_event= is the worked precedent in this component.
+
+So the entity is now =ores.reporting.report_error_event= over
+=ores_reporting_report_error_events_tbl=, read-only, with eleven columns:
+=id=, =tenant_id=, =report_instance_id=, =party_id=, =scope_code=, =severity=,
+=message=, =subject=, =subject_id=, =detail=, =event_time=. The eight columns it
+loses are =version=, =modified_by=, =performed_by=, =change_reason_code=,
+=change_commentary=, =valid_from= and =valid_to=.
+
+** Why that is what actually fixed the party
+
+The first attempt derived the party from the run in the recorder and it did not
+survive: =report_error_service::save_errors= calls
+=ores::service::messaging::stamp=, which overwrites =party_id= from the JWT on
+every save, by a deliberate rule that the party is a security boundary and never
+client data. Proven with a run owned by one party and a caller acting as
+another, both visible: the row carried the caller's.
+
+A read-only event has no save service, so the recorder writes through the
+repository and sets =tenant_id=, =party_id= and =event_time= itself, exactly as
+=report_run_admission_service= writes its trigger event. Nothing overwrites the
+party now, and the rule that kept it safe is untouched rather than weakened.
+
+** The permissions
+
+Four codes, where the CRUD shape had six: =reporting::report_error_events:read=
+replaces =reporting::report_errors:read=, and the write and delete codes for the
+errors are gone with the write surface. The three =report_error_scopes= codes are
+unchanged. The role question this task set out to answer is deferred rather than
+answered: with the errors now party-scoped, granting =:read= to a party-level
+role is safe, and that is the open decision. =TenantAdmin= and =SuperAdmin= reach
+it today through =*=.
+
+** Proven
+
+Database recreated from the branch, fleet started, schema fingerprint
+=92cb42c829fb5fca=. Build exit 0. The =ores.reporting= suites pass 3 of 3, and
+the test that tells the run's party from the caller's, written while the answer
+was still wrong and hidden behind =[.]= until it passed, is now ordinary and
+passes. The gate set passes six of six: =codegen-tests=, =drift-sweep=,
+=tangle-shell=, =er-diagram=, =handler-permissions= and =backlog-indexes=.
+
+** Left open
+
+A re-read of the engine log would duplicate a run's errors, because an immutable
+log cannot be corrected. The collect step runs once and the recorder no longer
+deletes, so the guarantee sits in the step rather than in the table. The natural
+key would have to include the =detail= jsonb that separates a trade failing in
+two analytics, which is why the table was left alone.
+

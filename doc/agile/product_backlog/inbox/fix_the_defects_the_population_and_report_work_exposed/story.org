@@ -8,7 +8,7 @@
 #+filetags: :inbox:product_backlog:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -46,6 +46,8 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | [[id:2C115655-2E32-41D8-A19D-09AD7A43724D][Store the errors a report run produces]] | DONE | | 2026-10-16 | A run whose analytics fail is recorded as completed, and the failure survives only in the engine's log inside the output tarball. The report should carry its own errors in a table, so a reader opening the report sees them: trade-level errors such as a trade that would not build, report-level errors such as an analytic that failed, and whatever further level the engine distinguishes. |
 | [[id:0349A777-2F79-4DC2-BCFB-002E1D7E04D1][Stamp a workflow's completion and activity]] | DONE | | 2026-10-16 | completed_at and last_event_at are never written. All 50 workflow instances and all 828 steps have both NULL, while 25 instances sit in the completed FSM state with a populated result_json, and the tenant_setup instance that provisioned ACME is completed with its result and no timestamp. So a finished run and a hung run are indistinguishable to anything that polls, which is how a completed provision was twice reported as a stall at publish_bundle. Write the completion and the last event, and log every step transition so a reader can see where a run is. |
 | [[id:490E15BB-0779-4425-8702-7CCCCCA192BF][Mop up the report error drift]] | BACKLOG | | | Four gates went red on main when the report error model landed: the shell tangle was never committed, the recipe inventory was stale, the handler permissions were never seeded, and the ER diagrams and backlog indexes were never regenerated. |
+| [[id:56C389CB-A1EE-4E26-8EF7-B202440B9941][Grant the report error permissions to the roles that need them]] | DONE | 2026-10-17 | 2026-10-17 | The six report error permission codes are seeded but no role holds any of them, so nothing outside the reporting service can read or write a run's errors. The report error handlers are unreachable and the screen that should show them cannot be built on top. |
+| [[id:F5B50BF6-1FC2-44EA-B00B-F964FF44EE98][Build the screen that shows a report run's errors]] | BACKLOG | | | A run carries its errors in a table and nothing shows them. The task that stored them put the screen explicitly out of scope, so a person opening a report still sees a completed run and no sign that the numbers are wrong or which trades failed. |
 
 * Decisions
 

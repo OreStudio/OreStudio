@@ -43,17 +43,14 @@ namespace ores::trading::domain {
  *
  * One row per bond trade, reshaped from the wide legacy table per the
  * bond relational model deliverable
- * (doc/knowledge/architecture/trading_bond_relational_model.org). The
- * row carries the instrument's identity only: trade_id, the trade that
- * identifies both the trade and its instrument, trade_type_code over the
- * ten bond codes, party_id, and issue_id, the NOT NULL foreign key to the
- * bond issue row that holds every term of the bond. The economics
- * moved to the issue (one row per ISIN, shared by every instrument of
- * it), so an amendment to a term touches the issue row once, not every
- * open instrument (finding B11 of the deliverable). A product change is
- * a cancel and a rebook: the service closes the row's validity and
- * inserts a new instrument row with its fact rows; trade_type_code
- * never changes in place (review answer 2).
+ * (doc/agile/versions/v0/sprint_25/data-oriented-trading-model/design_bond_relational_model.org).
+ * The row carries the instrument's identity only: trade_id, the trade that identifies both the
+ * trade and its instrument, trade_type_code over the ten bond codes, party_id, and issue_id, the
+ * NOT NULL foreign key to the bond issue row that holds every term of the bond. The economics moved
+ * to the issue (one row per ISIN, shared by every instrument of it), so an amendment to a term
+ * touches the issue row once, not every open instrument (finding B11 of the deliverable). A product
+ * change is a cancel and a rebook: the service closes the row's validity and inserts a new
+ * instrument row with its fact rows; trade_type_code never changes in place (review answer 2).
  *
  * The ten codes, in seed order (trading_trade_types_populate.sql):
  * Bond, ForwardBond, BondFuture, BondOption, BondRepo, BondTRS,

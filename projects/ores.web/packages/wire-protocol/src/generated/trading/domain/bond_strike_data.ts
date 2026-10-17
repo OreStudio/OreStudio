@@ -33,6 +33,6 @@ export interface BondStrikeData {
     price_currency: string | null;
     yield_value: string | null;
     yield_compounding: string | null;
-    bare_value: number | null;
+    bare_value: string | null;
     bare_currency: string | null;
 }

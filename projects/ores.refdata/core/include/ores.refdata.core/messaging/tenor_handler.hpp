@@ -30,6 +30,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/tenor_protocol.hpp"
+#include "ores.refdata.core/service/tenor_resolution_service.hpp"
 #include "ores.refdata.core/service/tenor_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -479,6 +480,53 @@ public:
             // thing and is reported as such.
             BOOST_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
             get_tenor_version_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
+    /**
+     * @brief Serves refdata.v1.ops.resolve_tenor.
+     *
+     * A refusal is a normal typed reply carrying a non-ok =result=, not a
+     * thrown exception: a caller reads which step refused, the dates it had
+     * counted to, and the row at fault, out of the payload. Only the
+     * transport failing -- no session, no permission, an undecodable
+     * request -- is an error reply.
+     */
+    void resolve_tenor(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            tenor_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "refdata::tenors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<resolve_tenor_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_resolution_service svc(req_ctx);
+        try {
+            auto response = svc.resolve(*req);
+            BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resolve_tenor_response failure;
             failure.result.outcome = ores::utility::domain::outcome::failed;
             failure.result.code = "internal_error";
             failure.result.message = e.what();

@@ -148,6 +148,17 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.list_feeds(std::move(msg));
         }));
 
+    // Which running feed holds each of a list of series, so a binding is refused
+    // before the write rather than after it. The read of any kind's feed configs
+    // opens it, as it opens the feed reads.
+    subs.push_back(nats.queue_subscribe(
+        std::string(ores::synthetic::messaging::resolve_series_owners_request::nats_subject),
+        queue,
+        [&nats, ctrl, ctx, verifier, &registry](ores::nats::message msg) {
+            feed_overview_handler h(nats, ctrl, ctx, verifier, registry);
+            h.resolve_series_owners(std::move(msg));
+        }));
+
     // Start and stop of the feeds a person picked in the feed table, or the feeds
     // its filter matches. The read of every kind's feed configs opens them, as it
     // opens the folder verbs.

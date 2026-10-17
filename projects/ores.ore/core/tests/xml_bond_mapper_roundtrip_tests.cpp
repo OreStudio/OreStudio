@@ -97,7 +97,7 @@ TEST_CASE("mapper_roundtrip_bond_forward", tags) {
     REQUIRE(leg.rate.has_value());
     REQUIRE(leg.rate->fixed.has_value());
     REQUIRE(!leg.rate->fixed->rates.empty());
-    CHECK(leg.rate->fixed->rates.front().value == Approx(0.05).epsilon(0.0001));
+    CHECK(leg.rate->fixed->rates.front().value.to_double() == Approx(0.05).epsilon(0.0001));
     REQUIRE(!leg.schedule.rules.empty());
     CHECK(leg.schedule.rules.front().tenor == "1Y");
     CHECK(leg.schedule.rules.front().end_date == "2035-02-03");

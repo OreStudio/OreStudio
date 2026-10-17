@@ -135,7 +135,10 @@ struct base_correlation_config final {
     std::optional<std::string> index_term;
 
     /**
-     * @brief The quote of the credit index spread.
+     * @brief The credit index spread the surface calibrates to. The document writes the element
+     * empty when the surface does not set it, and the schema type must keep an empty element
+     * distinct from an absent one, so the column stays text. An exact decimal cannot carry an empty
+     * element, which is why the money check baselines this column.
      */
     std::optional<std::string> index_spread;
 

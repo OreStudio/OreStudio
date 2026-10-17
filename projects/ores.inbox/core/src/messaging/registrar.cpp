@@ -59,7 +59,6 @@
 #include "ores.inbox.core/messaging/notification_registrar.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
-#include <array>
 #include <memory>
 #include <string_view>
 #include <utility>
@@ -122,15 +121,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // The engine has proved the command, so the handler takes no verifier.
     {
         auto steps = std::make_shared<apply_step_handler>(nats, ctx);
-        static constexpr std::array step_subjects{ores::inbox::workflow::tell_apply_result_subject};
-        const auto step_stream =
-            ores::service::messaging::ensure_step_stream(nats, queue_group, step_subjects);
-        subs.push_back(ores::service::messaging::subscribe_step_command(
-            nats,
-            ores::inbox::workflow::tell_apply_result_subject,
-            queue_group,
-            step_stream,
-            [steps](ores::nats::message msg) { steps->tell(std::move(msg)); }));
+        ores::service::messaging::step_routes routes;
+        routes.on(ores::inbox::workflow::tell_apply_result_subject,
+                  [steps](ores::nats::message msg) { steps->tell(std::move(msg)); });
+        subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
 
     // The approval lifecycle is operations rather than entity verbs: raising,

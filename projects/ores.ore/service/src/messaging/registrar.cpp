@@ -27,7 +27,6 @@
 #include "ores.ore.service/messaging/run_configuration_handler.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
-#include <array>
 #include <memory>
 
 namespace ores::ore::service::messaging {
@@ -82,33 +81,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     auto rph = std::make_shared<report_package_handler>(nats, ctx, http_base_url, outbound_nats);
     auto rci = std::make_shared<run_configuration_import_handler>(nats, outbound_nats);
-    static constexpr std::array step_subjects{
-        ores::ore::messaging::run_configuration_import_execute_request::nats_subject,
-        ores::ore::messaging::run_configuration_import_rollback_request::nats_subject,
-        ores::ore::messaging::ore_import_execute_request::nats_subject,
-        ores::ore::messaging::ore_import_rollback_request::nats_subject,
-        ores::reporting::messaging::prepare_ore_package_request::nats_subject};
-    const auto step_stream = ores::service::messaging::ensure_step_stream(nats, qg, step_subjects);
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(ores::ore::messaging::run_configuration_import_execute_request::nats_subject),
-        qg,
-        step_stream,
-        [rci](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            rci->execute(std::move(msg));
-            ack.accept();
-        }));
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(ores::ore::messaging::run_configuration_import_rollback_request::nats_subject),
-        qg,
-        step_stream,
-        [rci](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            rci->rollback(std::move(msg));
-            ack.accept();
-        }));
     auto eh = std::make_shared<ore_import_execute_handler>(
         // Not std::move: the report package handler below takes the same
         // base URL, and moving it here leaves that one empty, so every
@@ -118,41 +90,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
         http_base_url,
         std::move(work_dir));
 
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(ores::ore::messaging::ore_import_execute_request::nats_subject),
-        qg,
-        step_stream,
-        [eh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            eh->execute(std::move(msg));
-            ack.accept();
-        }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(ores::ore::messaging::ore_import_rollback_request::nats_subject),
-        qg,
-        step_stream,
-        [eh](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            eh->rollback(std::move(msg));
-            ack.accept();
-        }));
-
-    // ----------------------------------------------------------------
-    // Report package preparation (workflow step for report execution).
-    // ----------------------------------------------------------------
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        std::string(ores::reporting::messaging::prepare_ore_package_request::nats_subject),
-        qg,
-        step_stream,
-        [rph](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            rph->prepare_package(std::move(msg));
-            ack.accept();
-        }));
+    // One durable consumer carries all five, and each handler answers its own
+    // delivery.
+    ores::service::messaging::step_routes routes;
+    routes
+        .on(ores::ore::messaging::run_configuration_import_execute_request::nats_subject,
+            [rci](ores::nats::message msg) { rci->execute(std::move(msg)); })
+        .on(ores::ore::messaging::run_configuration_import_rollback_request::nats_subject,
+            [rci](ores::nats::message msg) { rci->rollback(std::move(msg)); })
+        .on(ores::ore::messaging::ore_import_execute_request::nats_subject,
+            [eh](ores::nats::message msg) { eh->execute(std::move(msg)); })
+        .on(ores::ore::messaging::ore_import_rollback_request::nats_subject,
+            [eh](ores::nats::message msg) { eh->rollback(std::move(msg)); })
+        .on(ores::reporting::messaging::prepare_ore_package_request::nats_subject,
+            [rph](ores::nats::message msg) { rph->prepare_package(std::move(msg)); });
+    subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, routes));
 
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " ORE service message handlers.";
     return subs;

@@ -1,0 +1,38 @@
+:PROPERTIES:
+:ID: 63F2D2D7-58EA-47DF-A458-6A9B79089D5C
+:END:
+#+title: Register a stream for every workflow step subject
+#+description: Step dispatch moved to JetStream and only one step subject got a stream. Every other component's step subject publishes into nothing and times out, so provisioning stalls after the IAM step and the tenant is left bootstrapping. Affects refdata, reporting, ore, compute, inbox and the DQ publish subjects.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-15
+#+updated: 2026-10-15
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Every workflow step subject needs a stream, and the service that serves the
+subject needs a durable consumer on it. This was done, then generalised: a
+service now declares its whole family of step commands in one `step_routes`
+table, and `serve_step_commands` derives the stream coverage, the consumer
+filters and the dispatch from that one list.
+
+* Why
+
+The capture described the stalls that a step subject with no stream caused. The
+story [[id:6B5E348B-6B7A-46BF-AB56-33E4D5327AE4][Bring the service code onto the
+NATS patterns]] closed it. Coverage landed first, one consumer per subject; the
+work then replaced that with one consumer per family, so a service does not own
+a server-side object per subject.
+
+* References
+
+- [[id:6B5E348B-6B7A-46BF-AB56-33E4D5327AE4][Bring the service code onto the NATS patterns]] — the story that implemented this.
+- [[id:CE441C28-5ED0-45BF-B442-708AE4EFB1C5][At Least Once Prerequisites]] — the pattern the implementation follows.
+- [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable consumers]] — the catalogue of the streams and consumers now in place.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the library the implementation standard is written in.

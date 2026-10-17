@@ -23,6 +23,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/service/workflow_definition.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
+#include <chrono>
 #include <optional>
 #include <rfl/json.hpp>
 #include <string>
@@ -92,6 +93,21 @@ inline constexpr std::string_view identity_compensation_command_subject =
     "workflow.v1.ops.identity_compensate";
 
 /**
+ * @brief The deadline the fixture's own steps declare.
+ *
+ * The fixture's steps are held open on purpose: @c delay_seconds is what lets a
+ * run be watched in flight, and the claim's lease is 120 seconds, so a step that
+ * has to outlast a lease needs a deadline above it. The shared
+ * @c write_step_timeout is 120 seconds, which is exactly the lease, so a
+ * deadline that fires with the lease would fail the step before a redelivery
+ * could take the claim over -- the opposite of what a run waiting out a lease is
+ * trying to observe. 900 seconds is what the shortest real workflow here
+ * declares, so the fixture no longer asks the engine to give up sooner than the
+ * product does.
+ */
+inline constexpr std::chrono::seconds identity_step_timeout{900};
+
+/**
  * @brief Registers the identity_workflow definition.
  *
  * A fixture the component runs against itself. Its steps do no domain work: each
@@ -135,7 +151,7 @@ inline void register_identity_workflow(ores::workflow::service::workflow_registr
             // A step here answers as soon as it is handled, so its budget is
             // the write budget; the delay a step may declare is deliberately
             // short in the fixtures that use this workflow.
-            s.timeout = write_step_timeout;
+            s.timeout = identity_step_timeout;
 
             const auto behaviour = wanted.outcome();
             const auto delay = wanted.delay();

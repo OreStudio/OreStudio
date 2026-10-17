@@ -68,8 +68,9 @@ BEGIN
 
     -- ReportRun: the run document, the file types it names every file from, and
     -- the owners' configuration documents it reads, the trades and market data
-    -- it gathers, the storage objects it writes and reads, and its compute batch,
-    -- the workunits that batch dispatched and the results they returned.
+    -- it gathers, the storage objects it writes and reads, and its compute batch.
+    -- It writes the batch and its workunits, then reads both back with the
+    -- results to collect them, so it needs the read half as well as the write.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::run_documents:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'reporting::file_types:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'refdata::curve_configurations:read');

@@ -51,7 +51,7 @@ struct bond_forward_write {
     std::optional<ores::utility::decimal::decimal> dv01;
     std::optional<std::string> lock_rate_day_counter;
     std::optional<std::string> settlement_dirty;
-    std::optional<std::string> premium_amount;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
     std::optional<std::string> premium_date;
 };
 

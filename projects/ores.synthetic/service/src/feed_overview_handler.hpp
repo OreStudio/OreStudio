@@ -176,6 +176,55 @@ public:
         reply(nats_, msg, resp);
     }
 
+    void resolve_series_owners(ores::nats::message msg) {
+        using namespace ores::logging;
+        using namespace ores::synthetic::messaging;
+        using ores::service::messaging::decode;
+        using ores::service::messaging::error_reply;
+        using ores::service::messaging::has_permission;
+        using ores::service::messaging::reply;
+
+        auto ctx = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!ctx) {
+            error_reply(nats_, msg, ctx.error());
+            return;
+        }
+        const auto& kinds = registry_.all();
+        const bool may = std::ranges::any_of(
+            kinds, [&](const auto* k) { return has_permission(*ctx, k->config_permission); });
+        if (!may) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+
+        resolve_series_owners_response resp;
+        const auto req = decode<resolve_series_owners_request>(msg);
+        if (!req) {
+            resp.message = "Failed to decode the series request.";
+            BOOST_LOG_SEV(feed_overview_handler_lg(), warn)
+                << "resolve_series_owners refused: the request did not decode";
+            reply(nats_, msg, resp);
+            return;
+        }
+
+        try {
+            resp.owners.reserve(req->series.size());
+            for (const auto& series : req->series) {
+                series_owner owner;
+                owner.series = series;
+                if (const auto held = ctrl_->running_source_name_for_series({series}))
+                    owner.source_name = *held;
+                resp.owners.push_back(std::move(owner));
+            }
+            resp.success = true;
+        } catch (const std::exception& e) {
+            resp.message = "The request failed. The service log says why.";
+            BOOST_LOG_SEV(feed_overview_handler_lg(), error)
+                << "resolve_series_owners failed: " << e.what();
+        }
+        reply(nats_, msg, resp);
+    }
+
 private:
     using rows_t = std::vector<std::vector<std::optional<std::string>>>;
 

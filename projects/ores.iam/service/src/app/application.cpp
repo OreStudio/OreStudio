@@ -72,23 +72,10 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     nats.connect();
 
     // The provisioning step command is dispatched by the workflow engine and
-    // served here, on a durable subscription, so the stream that holds it must
-    // exist before the handlers are registered. A step published while this
-    // service was restarting used to be discarded with no trace on either side;
-    // on a stream the server keeps it until a consumer acknowledges it.
-    try {
-        const auto step_stream = nats.make_stream_name("iam_steps");
-        nats.make_admin().ensure_stream(
-            step_stream,
-            nats.covering_subjects({ores::iam::workflow::provision_tenant_step_subject}));
-        BOOST_LOG_SEV(lg(), info) << "IAM step JetStream stream ready: " << step_stream;
-    } catch (const std::exception& e) {
-        // Without the stream no step can be delivered, so fail loudly rather
-        // than run as a service that looks healthy and drops every step
-        // addressed to it.
-        BOOST_LOG_SEV(lg(), error) << "Failed to ensure the IAM step stream: " << e.what();
-        throw;
-    }
+    // served here on a durable subscription. The registrar declares the stream
+    // that holds it, from the same table it subscribes, so the two cannot
+    // disagree. On a stream the server keeps a step published while this service
+    // was restarting until a consumer acknowledges it.
 
     // Entity change event pipeline: PostgreSQL LISTEN/NOTIFY -> NATS publish.
     // The per-entity registrars are composed in event_registrar.cpp. Without

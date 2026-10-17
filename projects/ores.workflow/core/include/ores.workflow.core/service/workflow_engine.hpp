@@ -31,6 +31,7 @@
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/export.hpp"
+#include "ores.workflow.core/repository/step_claim_repository.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_plan_dependency_repository.hpp"
 #include "ores.workflow.core/repository/workflow_plan_step_repository.hpp"
@@ -450,6 +451,7 @@ private:
     repository::workflow_plan_step_repository plan_step_repo_;
     repository::workflow_plan_dependency_repository plan_dependency_repo_;
     repository::workflow_step_repository step_repo_;
+    repository::step_claim_repository claim_repo_;
 
     /**
      * @brief When each service last reported for duty, by canonical name.

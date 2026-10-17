@@ -265,7 +265,7 @@ void workflow_engine::publish_command(const domain::workflow_step& step,
     BOOST_LOG_SEV(lg(), info) << "Publishing step command:" << " workflow=" << inst_id_str
                               << " step_index=" << step.step_index << " step_name=" << step.name
                               << " step_id=" << step_id_str << " subject=" << step.command_subject
-                              << " (delivery unconfirmed: core NATS does not acknowledge)";
+                              << " via stream";
 
     const auto data = std::as_bytes(std::span{step.command_json.data(), step.command_json.size()});
 
@@ -458,12 +458,21 @@ void workflow_engine::set_step_state(const domain::workflow_step& step,
     }
     step_repo_.write(ctx_, updated);
 
-    BOOST_LOG_SEV(lg(), info)
-        << "step " << step.step_index << " (" << step.name << ")"
-        << " workflow=" << boost::uuids::to_string(step.workflow_id) << " step_id="
-        << boost::uuids::to_string(step.id) << " state="
-        << state_name(step_states_, from_state_id) << "->" << state_name(step_states_, state_id)
-        << " at=" << ores::platform::time::datetime::to_iso8601_utc(now);
+    // The claim exists only while the work is in flight, so the moment the step
+    // leaves in_progress the claim is taken away. The step's own state is what
+    // refuses a replay from here on, so a row left behind would say nothing the
+    // step does not already say, and the table would grow by one row for every
+    // step ever run. The release names no holder: the engine's write is what
+    // closes the window, and the holder is whichever process ran the work.
+    if (state_id != step_states_.require("in_progress"))
+        claim_repo_.release(ctx_, step.id);
+
+    BOOST_LOG_SEV(lg(), info) << "step " << step.step_index << " (" << step.name << ")"
+                              << " workflow=" << boost::uuids::to_string(step.workflow_id)
+                              << " step_id=" << boost::uuids::to_string(step.id)
+                              << " state=" << state_name(step_states_, from_state_id) << "->"
+                              << state_name(step_states_, state_id)
+                              << " at=" << ores::platform::time::datetime::to_iso8601_utc(now);
 }
 
 void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) {
@@ -659,12 +668,13 @@ void workflow_engine::dispatch_ready_steps(domain::workflow_instance& instance) 
         // Persist before publishing (ensures restart can re-dispatch).
         step_repo_.write(ctx_, step);
 
-        BOOST_LOG_SEV(lg(), info)
-            << "step " << step.step_index << " (" << step.name << ")"
-            << " workflow=" << id_str << " step_id=" << boost::uuids::to_string(new_id)
-            << " state=" << state_name(step_states_, step.state_id)
-            << " at=" << ores::platform::time::datetime::to_iso8601_utc(*step.started_at)
-            << " entered=created";
+        BOOST_LOG_SEV(lg(), info) << "step " << step.step_index << " (" << step.name << ")"
+                                  << " workflow=" << id_str
+                                  << " step_id=" << boost::uuids::to_string(new_id)
+                                  << " state=" << state_name(step_states_, step.state_id) << " at="
+                                  << ores::platform::time::datetime::to_iso8601_utc(
+                                         *step.started_at)
+                                  << " entered=created";
 
         note_awaiting(step, instance.id, instance.tenant_id.to_uuid());
         publish_command(step, instance.id, instance.tenant_id.to_uuid());
@@ -754,13 +764,15 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
         step_repo_.write(ctx_, comp_step);
 
         // Publish compensation command with tenant header.
-        BOOST_LOG_SEV(lg(), info)
-            << "step " << comp_step.step_index << " (" << comp_step.name << ")"
-            << " workflow=" << boost::uuids::to_string(instance.id)
-            << " step_id=" << boost::uuids::to_string(comp_id)
-            << " state=" << state_name(step_states_, comp_step.state_id)
-            << " at=" << ores::platform::time::datetime::to_iso8601_utc(*comp_step.started_at)
-            << " entered=created";
+        BOOST_LOG_SEV(lg(), info) << "step " << comp_step.step_index << " (" << comp_step.name
+                                  << ")"
+                                  << " workflow=" << boost::uuids::to_string(instance.id)
+                                  << " step_id=" << boost::uuids::to_string(comp_id)
+                                  << " state=" << state_name(step_states_, comp_step.state_id)
+                                  << " at="
+                                  << ores::platform::time::datetime::to_iso8601_utc(
+                                         *comp_step.started_at)
+                                  << " entered=created";
         BOOST_LOG_SEV(lg(), info) << "Dispatching compensation for step " << s.step_index << " ("
                                   << step_def.name << "_compensation)"
                                   << " workflow=" << boost::uuids::to_string(instance.id);
@@ -917,8 +929,7 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
                            log_json);
             break;
         case outcome::failed:
-            set_step_state(
-                step, step_states_.require("failed"), "", event.error_message, log_json);
+            set_step_state(step, step_states_.require("failed"), "", event.error_message, log_json);
             break;
     }
 

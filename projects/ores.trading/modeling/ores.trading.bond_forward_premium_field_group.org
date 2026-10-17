@@ -14,12 +14,14 @@
 #+created: 2026-10-08
 #+updated: 2026-10-08
 
-Both members are required strings, and the schema spells the amount as text
-rather than as a number.
+Both members are required. The amount is money, so it is an exact decimal; the
+schema spells it as text and the mapper parses those digits. The date is ISO
+8601 text.
 
 * Includes
 
 #+begin_src cpp :name includes
+#include "ores.utility/decimal/decimal.hpp"
 #include <string>
 #+end_src
 
@@ -27,10 +29,10 @@ rather than as a number.
 
 ** amount
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: ores::utility::decimal::decimal
 :END:
 
-The premium amount, as the document spells it.
+The premium amount.
 
 ** date
 :PROPERTIES:

@@ -20,7 +20,7 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.reporting.api/generators/report_instance_generator.hpp"
-#include "ores.reporting.core/repository/report_error_repository.hpp"
+#include "ores.reporting.core/repository/report_error_event_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_kind_repository.hpp"
 #include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.reporting.core/service/report_error_recorder.hpp"
@@ -95,9 +95,9 @@ std::string write_instance(const ores::database::context& party_ctx,
     return boost::uuids::to_string(instance.id);
 }
 
-std::vector<ores::reporting::domain::report_error>
+std::vector<ores::reporting::domain::report_error_event>
 errors_of(const ores::database::context& ctx, const std::string& instance_id) {
-    ores::reporting::repository::report_error_repository errors;
+    ores::reporting::repository::report_error_event_repository errors;
     return errors.read_latest_by_report_instance_id(ctx, instance_id, 0, 100);
 }
 
@@ -160,6 +160,8 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
     REQUIRE(analytic != rows.end());
     CHECK(analytic->subject == "analytic");
     CHECK(analytic->subject_id == "PRICING");
+    REQUIRE(ctx.party_id().has_value());
+    CHECK(analytic->party_id == *ctx.party_id());
 }
 
 TEST_CASE("a run the platform could not complete carries a report-scoped error and no subject",
@@ -182,6 +184,11 @@ TEST_CASE("a run the platform could not complete carries a report-scoped error a
     CHECK(rows.front().message == "Report execution failed during result collection");
     CHECK_FALSE(rows.front().subject.has_value());
     CHECK_FALSE(rows.front().subject_id.has_value());
+    // The error carries the run's party, not the caller's: the row-level policy
+    // on this table is what keeps one party's failures out of another's sight,
+    // and it reads this column.
+    REQUIRE(ctx.party_id().has_value());
+    CHECK(rows.front().party_id == *ctx.party_id());
 }
 
 TEST_CASE("a run that succeeded records no error at all", tags) {
@@ -216,4 +223,33 @@ TEST_CASE("an error whose scope the vocabulary does not hold is refused rather t
     CHECK_FALSE(failure.empty());
     CHECK(failure.find("Something the engine grew") != std::string::npos);
     CHECK(errors_of(ctx, instance_id).empty());
+}
+
+TEST_CASE("an error carries the party of its run and not the party of the caller", tags) {
+    scoped_database_helper h;
+    auto gen = ores::testing::make_generation_context(h);
+
+    // The run belongs to a party the session is not acting as, and both parties
+    // are visible to it. The recorder writes the run's own party rather than
+    // stamping the session's, so an error the run's own party cannot read is
+    // never written, which is the leak the party policy exists to close.
+    const auto run_ctx = write_test_party_and_scope_context(h, gen);
+    const auto caller_ctx = write_test_party_and_scope_context(h, gen);
+    const auto run_party_id = *run_ctx.party_id();
+    const auto caller_party_id = *caller_ctx.party_id();
+    REQUIRE(run_party_id != caller_party_id);
+
+    const auto instance_id = write_instance(run_ctx, h.db_user(), gen);
+
+    const auto mixed = caller_ctx.with_party(
+        h.tenant_id(), caller_party_id, {run_party_id, caller_party_id}, h.db_user());
+    ores::reporting::service::report_error_recorder recorder(mixed);
+    CHECK(recorder
+              .record_run_failure(instance_id, "Report execution failed during result collection")
+              .empty());
+
+    const auto rows = errors_of(mixed, instance_id);
+    REQUIRE(rows.size() == 1);
+    CHECK(rows.front().party_id == run_party_id);
+    CHECK(rows.front().party_id != caller_party_id);
 }

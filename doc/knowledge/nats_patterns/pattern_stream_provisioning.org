@@ -112,6 +112,7 @@ consumers]].
 
 - [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — what needs the stream.
 - [[id:27D8E9F0-A1B2-4C3D-8E5F-60718293A4B5][Commit Through the Stream]] — the publisher on the other side.
+- [[id:CE441C28-5ED0-45BF-B442-708AE4EFB1C5][At Least Once Prerequisites]] — how the retention policy you set here decides what removes a message.
 
 * Sources
 

@@ -43,6 +43,10 @@ namespace ores::ore::service::messaging {
  * The bearer_token field in the command payload is used to delegate the
  * original caller's identity to downstream domain services (save_currency,
  * save_trade, etc.).
+ *
+ * Each method answers its own durable delivery: @c ack.accept() once it has
+ * published the step's outcome, and no answer on any other exit, which leaves
+ * the delivery to be retried.
  */
 class ore_import_execute_handler {
 private:

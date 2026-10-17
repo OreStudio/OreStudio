@@ -3821,6 +3821,14 @@ const pt: SourceCatalogue = {
             seriesHint: 'A série em que este vínculo escreve e o URL oresmd que a nomeia.',
             vendorNote:
                 'Um vínculo de feed real é só de leitura aqui. Só um vínculo de feed sintético pode mudar.',
+            add: 'Adicionar vínculo',
+            addTitle: 'Adicionar vínculo',
+            sourceHelp: 'O feed sintético que esta parte vai consumir.',
+            enabledHelp:
+                'Enquanto está em Não, nenhum tick é guardado para esta parte. O feed continua a correr.',
+            held: '{source} já escreve esta série. Só um feed em execução pode escrever uma série, por isso esta fonte não pode ser vinculada enquanto ele corre.',
+            removeWarning:
+                'O vínculo é eliminado e a ingestão para esta parte para. A série e as suas observações ficam, e o histórico do vínculo também.',
             statuses: {
                 running: 'Em execução',
                 stopped: 'Parado',

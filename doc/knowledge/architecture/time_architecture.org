@@ -184,7 +184,8 @@ if (v.completed_at)
 
 #+begin_src cpp
 // ores.platform/time/datetime.hpp
-// Formats a time_point as "YYYY-MM-DD HH:MM:SS" (no timezone suffix).
+// Formats a time_point as "YYYY-MM-DD HH:MM:SS.ffffff" (no timezone
+// suffix), carrying six digits of microseconds.
 // PostgreSQL accepts this for TIMESTAMPTZ when the session is UTC.
 std::string datetime::to_db_string(
     const std::chrono::system_clock::time_point& tp);
@@ -210,9 +211,27 @@ if (domain.completed_at)
 For over-the-wire serialisation, a custom rfl parser is registered in
 =ores.utility/rfl/time_point_parser.hpp=:
 
-- *Write*: =time_point= → =to_iso8601_utc= → ="2026-06-03 10:57:32Z"=
+- *Write*: =time_point= → =to_iso8601_utc= → ="2026-06-03 10:57:32.652076Z"=
 - *Read*: ISO 8601 string with =Z=, =+00=, or =+00:00= suffix →
   =from_iso8601_utc= → =time_point=.  Throws on missing UTC designator.
+  A decimal fraction of one to six digits is read; PostgreSQL states none
+  when the microsecond is zero, so the dot is optional.
+
+** Microsecond precision
+
+=to_iso8601_utc= and =parse_utc_timestamp= carry six digits of microseconds,
+and they travel as a pair: the writer always states six digits, and the reader
+consumes one to six. A =time_point= therefore survives a round trip through
+the database or the wire to the microsecond, and loses only what a
+=microseconds= duration cannot hold.
+
+This is the platform and wire layers. The *entity* layer does not follow it,
+and cannot without a new type: =db_timestamp= is a =std::tm=, which has no
+sub-second field, so every audit column that is written or read through
+=mapper_helpers.hpp= still stops at the whole second. Stating the precision
+here without that caveat would misdescribe the system — a =valid_from= read
+back through =timestamp_to_timepoint= is a second-precision value, and a
+=microsecond= difference against one is not evidence of a defect.
 
 This parser is invoked automatically when rfl serialises or deserialises
 any struct containing a =time_point= field (NATS request/response types,

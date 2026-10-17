@@ -3846,6 +3846,14 @@ const fr: SourceCatalogue = {
             seriesHint: "La série dans laquelle cette liaison écrit, et l'URL oresmd qui la nomme.",
             vendorNote:
                 'Une liaison de flux réel est en lecture seule ici. Seule une liaison de flux synthétique peut changer.',
+            add: 'Ajouter une liaison',
+            addTitle: 'Ajouter une liaison',
+            sourceHelp: 'Le flux synthétique que cette partie consommera.',
+            enabledHelp:
+                "Tant qu'il est à Non, aucun tick n'est stocké pour cette partie. Le flux lui-même continue de tourner.",
+            held: "{source} écrit déjà cette série. Un seul flux en cours peut écrire une série, donc cette source ne peut pas être liée tant qu'il tourne.",
+            removeWarning:
+                "La liaison est supprimée et l'ingestion pour cette partie s'arrête. La série et ses observations restent, ainsi que l'historique de la liaison.",
             statuses: {
                 running: 'En cours',
                 stopped: 'Arrêté',

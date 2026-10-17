@@ -136,11 +136,11 @@ struct bond_forward final {
     /**
      * @brief Amount of the forward's premium.
      *
-     * The column is text because the schema states the amount as text. The premium block is present
-     * exactly when this member and the pay date are both not null, because the schema declares the
-     * two required together.
+     * The column is decimal because a premium is money. The premium block is present exactly when
+     * this member and the pay date are both not null, because the schema declares the two required
+     * together.
      */
-    std::optional<std::string> premium_amount;
+    std::optional<ores::utility::decimal::decimal> premium_amount;
 
     /**
      * @brief Date the forward's premium pays on.

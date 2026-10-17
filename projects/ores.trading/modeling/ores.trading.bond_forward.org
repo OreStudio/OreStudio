@@ -165,17 +165,17 @@ what export re-emits.
 
 ** premium_amount
 :PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
 :nullable: true
 :economic: true
 :END:
 
 Amount of the forward's premium.
 
-The column is text because the schema states the amount as text. The
-premium block is present exactly when this member and the pay date are
-both not null, because the schema declares the two required together.
+The column is decimal because a premium is money. The premium block is
+present exactly when this member and the pay date are both not null,
+because the schema declares the two required together.
 
 ** premium_date
 :PROPERTIES:

@@ -2,27 +2,39 @@
 :ID: 16FD540E-F5F6-4480-BA91-3342D436D3BC
 :END:
 #+title: The listener loss-window test races its own reconnect
-#+description: postgres_listener_service_reconnect_surfaces_loss_window kills the listener's backend, waits for the old backend to be gone, then sends a notification it asserts is lost forever. Nothing stops the listener reconnecting between those two steps, and when it does the notification is delivered like any other: received[0] is the lost payload and the test fails. Seen once in a full 94-suite run on 2026-10-07 (ores.database.tests, postgres_listener_service_tests.cpp:368) and passing on an immediate re-run of the suite alone and in an earlier full run of the same binary. The comment says the wait makes the loss 'guaranteed rather than racy', but expect_gone proves only that the old backend died, not that the listener has not already reissued its LISTEN. The fix is to make the window unambiguous rather than timing-dependent, for example by holding the listener from reconnecting until the lost notification has been sent, or by asserting on the connection-loss counter instead of on which payload arrived.
+#+description: postgres_listener_service_reconnect_surfaces_loss_window kills the listener's backend, waits for the old backend to be gone, then sends a notification it asserts is lost forever. Nothing stops the listener reconnecting between those two steps, and when it does the notification is delivered like any other: received[0] is the lost payload and the test fails. Seen once in a full 94-suite run on 2026-10-07 (ores.database.tests, postgres_listener_service_tests.cpp:368) and again on 2026-10-16 in a gate run for a branch that touches neither the database component nor the listener; both times it passed on an immediate re-run of the suite alone and in an earlier full run of the same binary. The comment says the wait makes the loss 'guaranteed rather than racy', but expect_gone proves only that the old backend died, not that the listener has not already reissued its LISTEN. The fix is to make the window unambiguous rather than timing-dependent, for example by holding the listener from reconnecting until the lost notification has been sent, or by asserting on the connection-loss counter instead of on which payload arrived.
 #+type: capture
 #+level: cross
-#+filetags: 
+#+filetags: :database:test:flake:tech_debt:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-16
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 
-(One paragraph: the idea.)
+Make =postgres_listener_service_reconnect_surfaces_loss_window= unambiguous, rather than timing-dependent. The case kills the listener's backend, waits for it to leave =pg_stat_activity=, sends the NOTIFY it expects to be lost, and asserts that the first payload the callback ever sees is the recovered one. The listener reconnects on its own, so between the "gone" check and the send it can already be listening again; the NOTIFY then lands on the new session and the callback sees the lost payload first.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The case has failed twice, both times inside a full run and never alone:
+
+#+begin_example
+postgres_listener_service_tests.cpp:368: failed:
+  received[0] == recovered_payload
+  for: "{"entity":"ores.database.lost"}" == "{"entity":"ores.database.recovered"}"
+#+end_example
+
+- 2026-10-07, in a full 94-suite run.
+- 2026-10-16, in the =./compass.sh check= gate, on a branch that touches neither =ores.database= nor the listener. The case then passed three runs alone and the whole suite twice, and the gate passed on the re-run.
+
+The race widens under the parallel load =ctest= applies, which is exactly when the gate runs it. The window cannot be held open from the test as the service stands: the reconnect is the listener's own loop and nothing suspends it. A fix therefore needs either a seam on =postgres_listener_service= that holds reconnection while the loss window is written to, or a test that states the weaker guarantee it can keep — that the recovered payload arrives and the loss counter rose — without asserting on which payload came first.
 
 * References
 
--
+- =projects/ores.database/tests/postgres_listener_service_tests.cpp= — the case, and the =expect_gone= check it races against.
+- =projects/ores.database/include/ores.database/service/postgres_listener_service.hpp= — the listener whose reconnect loop cannot be paused from the test.
 
 * See also
 
--
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what this bucket means.

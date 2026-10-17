@@ -153,6 +153,80 @@ ctx.random_int(1, 30)
 | unit                | ores_refdata_validate_tenor_unit_fn        |
 | change_reason_code  | ores_dq_validate_change_reason_fn          |
 
+* Messages
+
+The =resolve_tenor= pair, declared here so both the header and its
+TypeScript twin render it. It is a read of what the catalog implies rather
+than of a stored row, so its subject sits in the reserved =ops= namespace
+beside the other hand-written refdata operations instead of inside the
+generated per-entity one.
+
+** resolve_tenor_request
+:PROPERTIES:
+:subject: refdata.v1.ops.resolve_tenor
+:response: resolve_tenor_response
+:END:
+
+Asks what date a tenor resolves to, under one convention, on one calendar,
+as at one horizon. The tenant is the session's.
+
+*** tenor_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** convention_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calendar_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** horizon
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** spot
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::year_month_day>
+:END:
+
+** resolve_tenor_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** anchor_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** date_before_roll
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** adjusted_date
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** roll_rule
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** calendar
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
 * C++
 
 ** Flags
@@ -230,6 +304,86 @@ ctx.random_int(1, 30)
 
 Reads every tenor for the tenant ordered by =sort_order=, for populating
 a ladder or a tenor picker in display order.
+
+** Custom NATS protocol messages
+
+=tenor= declares one message pair beyond the standard CRUD surface and the
+generic facets, in the top-level =* Messages= section: =resolve_tenor=. The
+header and its TypeScript twin both render it from there.
+
+The handler is an adapter and decides nothing: it proves the request,
+checks the permission a read needs, decodes the canonical request, calls
+=tenor_resolution_service= and replies with the response the service
+filled. The arithmetic is the pure engine's, not a second copy of it here.
+
+#+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+#include <chrono>
+#include <optional>
+#+end_src
+
+** Custom NATS handler methods
+
+#+begin_src cpp :name handler_includes :implements F1D4A8E2-9C3B-4F7E-B2A0-5D8C1E6B4A3F
+#include "ores.refdata.core/service/tenor_resolution_service.hpp"
+#+end_src
+
+#+begin_src cpp :name custom_handler_methods :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    /**
+     * @brief Serves refdata.v1.ops.resolve_tenor.
+     *
+     * A refusal is a normal typed reply carrying a non-ok =result=, not a
+     * thrown exception: a caller reads which step refused, the dates it had
+     * counted to, and the row at fault, out of the payload. Only the
+     * transport failing -- no session, no permission, an undecodable
+     * request -- is an error reply.
+     */
+    void resolve_tenor(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            tenor_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "refdata::tenors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<resolve_tenor_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_resolution_service svc(req_ctx);
+        try {
+            auto response = svc.resolve(*req);
+            BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            // The service reports what it decided in the response; an
+            // exception here is the store failing, which is a different
+            // thing and is reported as such.
+            BOOST_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resolve_tenor_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+#+end_src
+
+** Custom NATS subscriptions
+
+#+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
+    subs.push_back(nats.queue_subscribe(
+        resolve_tenor_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->resolve_tenor(std::move(msg));
+        }));
+#+end_src
 
 * See also
 

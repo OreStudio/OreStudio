@@ -32,4 +32,5 @@
 \ir ./workflow_workflow_plan_dependencies_create.sql
 \ir ./workflow_workflow_plan_dependencies_notify_trigger_create.sql
 \ir ./workflow_workflow_steps_notify_trigger_create.sql
+\ir ./workflow_step_claims_create.sql
 \ir ./workflow_constraints_create.sql

@@ -121,7 +121,10 @@ struct inflation_curve_config final {
     std::string frequency;
 
     /**
-     * @brief The base rate of a year on year curve, as the document writes it.
+     * @brief The base rate of a year on year curve. The document writes the element empty when the
+     * curve does not set it, and the schema type must keep an empty element distinct from an absent
+     * one, so the column stays text. An exact decimal cannot carry an empty element, which is why
+     * the money check baselines this column.
      */
     std::optional<std::string> base_rate;
 

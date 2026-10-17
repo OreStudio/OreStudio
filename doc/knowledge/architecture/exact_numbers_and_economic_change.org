@@ -54,15 +54,19 @@ The rule is also enforced by the build, not only by review.
 =build/scripts/check_money_decimal_columns.py= runs as the
 =money-decimal-columns= check from =build/scripts/local_checks.py=. It reads
 the models, classifies each column by name, and checks both halves of the
-rule: a money column fails when its SQL type is floating point, or when its
-SQL type is exact with a =double= in the domain; a continuous column fails
-when its SQL type is exact. The second direction is not empty — ten columns
-are in it, four of them a =double= over a =numeric=, which is the shape that
-is exact at rest and lossy in the domain. Each direction has a baseline of
-the offenders that existed when the rule was written, so the debt is visible
-and cannot grow. The baselines are the authoritative inventory for the work
-that pays it down; do not restate them in prose, because a second copy drifts
-and it is the copy that goes stale.
+rule: a money column fails when its SQL type is floating point, when its SQL
+type is text, or when its SQL type is exact with a =double= in the domain; a
+continuous column fails when its SQL type is exact. A column is money only
+when the money word is the head noun of its name — =premium_amount= is money,
+=premium_date= and =price_type= are not — and a trailing qualifier sits after
+the quantity without replacing it, so =face_value= is money. A column the
+name rule cannot tell from money, because the model states it is a quote, an
+identity or a code, is recorded in the money baseline with its reason in that
+column's prose. Each direction has a baseline of the offenders that existed
+when the rule was written, so the debt is visible and cannot grow. The
+baselines are the authoritative inventory for the work that pays it down; do
+not restate them in prose, because a second copy drifts and it is the copy
+that goes stale.
 
 * Where the ORE boundary loses the amount
 

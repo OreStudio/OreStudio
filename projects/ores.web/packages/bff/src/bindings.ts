@@ -31,6 +31,7 @@ import {
     subjects as operationSubjects,
     type ListFeedBindingActivityResponse,
 } from '@ores/wire-protocol/generated/marketdata/protocol/operations_protocol';
+import { subjects as feedOverviewSubjects } from '@ores/wire-protocol/generated/synthetic/protocol/feed_overview_protocol';
 import { HttpFailure, invalidRequest, notFound, notPermitted } from './errors.js';
 import { NO_ORDER, idSchema, refusal, resultSchema } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
@@ -172,6 +173,38 @@ const activityReply = feedBindingActivityListSchema.extend({
     message: z.string().default(''),
 }) satisfies z.ZodType<Pick<ListFeedBindingActivityResponse, 'activities'>, unknown>;
 
+/** How many of the party's sources and bindings a bindable-sources read takes. */
+const SOURCE_LIMIT = 200;
+const BINDING_LIMIT = 1000;
+
+/** The synthetic sources the session's party holds, as the feed overview states them. */
+const sourcesReply = z.looseObject({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    feeds: z
+        .array(
+            z.looseObject({
+                source_name: z.string(),
+                oresmd_uri: z.string().default(''),
+                label: z.string().default(''),
+                provider_code: z.string().default(''),
+                asset_class_code: z.string().default(''),
+                enabled: z.boolean().default(false),
+                running: z.boolean().default(false),
+            }),
+        )
+        .default([]),
+});
+
+/** Which running feed holds each series asked about, empty for a series no feed holds. */
+const ownersReply = z.looseObject({
+    success: z.boolean().default(false),
+    message: z.string().default(''),
+    owners: z
+        .array(z.looseObject({ series: z.string(), source_name: z.string().default('') }))
+        .default([]),
+});
+
 /**
  * The route for what each binding has written: the series of its source's newest
  * observation and the time of that observation. The server reads for the session's
@@ -195,5 +228,102 @@ export function registerBindingRoutes(
             });
         }
         return { activities: reply.activities };
+    });
+
+    /**
+     * The synthetic sources the session's party may bind: the sources it holds with no
+     * binding, each with the series it would write, and the running feed that already
+     * holds that series where one does.
+     *
+     * The sources belong to the synthetic service and the bindings to the marketdata
+     * one, and no service user reads the other's tables, so the two are joined here
+     * rather than in the database. Which running feed holds a series is asked of the
+     * synthetic service, because only the running feed controller knows it.
+     */
+    server.get('/api/bindings/bindable-sources', async (request) => {
+        const session = requireSession(request);
+        const party = partyOf(session);
+
+        const sources = await session.client.callAuthenticated(
+            feedOverviewSubjects.list_folder_feeds_request,
+            {
+                folder_id: '',
+                provider_code: '',
+                should_run: false,
+                search: '',
+                state: '',
+                asset_class: '',
+                offset: 0,
+                limit: SOURCE_LIMIT,
+            },
+            sourcesReply,
+        );
+        if (!sources.success) {
+            throw new HttpFailure(502, {
+                code: 'upstream-unavailable',
+                message: sources.message === '' ? 'The feeds could not be read.' : sources.message,
+            });
+        }
+
+        const bound = await session.client.callAuthenticated(
+            subjects.list_feed_bindings_request,
+            {
+                offset: 0,
+                limit: BINDING_LIMIT,
+                order: NO_ORDER,
+                filter: { ...FEED_BINDINGS_RESOURCE.filter, party_id: party, search: null },
+                as_of: null,
+            },
+            z.looseObject({
+                result: resultSchema,
+                feed_bindings: z.array(z.looseObject({ source_name: z.string() })).default([]),
+            }),
+        );
+        if (bound.result.outcome !== 'ok') {
+            throw refusal(bound.result);
+        }
+
+        const held = new Set(bound.feed_bindings.map((one) => one.source_name));
+        const candidates = sources.feeds.filter((feed) => !held.has(feed.source_name));
+        const series = [...new Set(candidates.map((feed) => feed.oresmd_uri))].filter(
+            (uri) => uri !== '',
+        );
+
+        const owners = new Map<string, string>();
+        if (series.length > 0) {
+            const reply = await session.client.callAuthenticated(
+                feedOverviewSubjects.resolve_series_owners_request,
+                { series },
+                ownersReply,
+            );
+            if (!reply.success) {
+                throw new HttpFailure(502, {
+                    code: 'upstream-unavailable',
+                    message:
+                        reply.message === ''
+                            ? 'The running feeds could not be read.'
+                            : reply.message,
+                });
+            }
+            for (const owner of reply.owners) {
+                owners.set(owner.series, owner.source_name);
+            }
+        }
+
+        return {
+            sources: candidates.map((feed) => {
+                const owner = owners.get(feed.oresmd_uri) ?? '';
+                return {
+                    source_name: feed.source_name,
+                    oresmd_uri: feed.oresmd_uri,
+                    label: feed.label,
+                    provider_code: feed.provider_code,
+                    asset_class_code: feed.asset_class_code,
+                    enabled: feed.enabled,
+                    running: feed.running,
+                    held_by: owner === '' || owner === feed.source_name ? null : owner,
+                };
+            }),
+        };
     });
 }

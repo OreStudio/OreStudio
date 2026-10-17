@@ -487,17 +487,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // because the payload names the kind. The engine sends a step with no caller
     // token, so the handler mints its own from the run's administrator.
     //
-    // The subscription is durable, on the stream the service ensures at start.
-    // A step dispatched while this service is restarting now waits on the
-    // server for a consumer; as a core subscription it was discarded, with no
-    // trace on either side, and the run expired twenty minutes later.
-    subs.push_back(nats.js_queue_subscribe(
-        std::string(ores::iam::workflow::provision_tenant_step_subject),
-        "iam-provisioning-step",
-        qg,
-        [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); },
-        nats.make_stream_name("iam_steps"),
-        ores::service::messaging::step_max_deliver));
+    // The subscription is durable, on the stream the service declares from this
+    // same table. A step dispatched while this service is restarting waits on
+    // the server for a consumer; as a core subscription it was discarded, with
+    // no trace on either side, and the run expired twenty minutes later.
+    ores::service::messaging::step_routes provisioning_routes;
+    provisioning_routes.on(ores::iam::workflow::provision_tenant_step_subject,
+                           [tph](ores::nats::message msg) { tph->provision_step(std::move(msg)); });
+    subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, provisioning_routes));
     // The account-picture reconcile the attach_photos step runs is also a
     // subject, so an operator can re-run it from a client and a scope that is
     // not a provisioning run can be reconciled.
@@ -680,14 +677,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_accounts_from_dq_request::nats_subject,
             publish_account_contact_informations_from_dq_request::nats_subject,
         };
-        const auto step_stream =
-            ores::service::messaging::ensure_step_stream(nats, qg, publish_subjects, "from_dq");
-        for (const auto subject : publish_subjects) {
-            subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats, subject, qg, step_stream, [h](ores::nats::message msg) {
-                    h->handle(std::move(msg));
-                }));
-        }
+        ores::service::messaging::step_routes routes{"from_dq"};
+        for (const auto subject : publish_subjects)
+            routes.on(subject, [h](ores::nats::message msg) { h->handle(std::move(msg)); });
+        subs.push_back(ores::service::messaging::serve_step_commands(nats, qg, routes));
     }
 
     // ----------------------------------------------------------------

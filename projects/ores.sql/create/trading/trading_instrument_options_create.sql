@@ -64,7 +64,7 @@ create table if not exists "ores_trading_instrument_options_tbl" (
     "settlement" text null,
     "settlement_method" text null,
     "pay_off_at_expiry" text null,
-    "premium_amount" numeric(28, 10) null,
+    "premium_amount" numeric(38, 12) null,
     "premium_currency" text null,
     "premium_pay_date" date null,
     "exercise_fee_settlement_period" text null,

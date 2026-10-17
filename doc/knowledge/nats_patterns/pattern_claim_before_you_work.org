@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 7F0B8658-F96F-41E1-9938-C6B5FE63EDE2
+:END:
+#+title: Claim Before You Work
+#+description: A delivery takes a leased claim on the unit of work before it starts, so a second delivery of the same message finds the work owned and leaves it alone, and a holder that dies gives the claim back when its lease ends.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:ownership:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+pattern_group: ownership
+
+This page defines the NATS pattern *Claim Before You Work* in the
+[[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]] language. A handler
+that may be delivered a message more than once takes a claim on the unit of work
+before it does anything, and only the delivery holding the claim may do the
+work. The claim is a lease, so a holder that dies does not keep the work out of
+every other delivery for ever.
+
+* Also known as
+
+- NATS: /work queue/, /lease/.
+- The pattern language: [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]].
+
+* Context
+
+A durable consumer delivers a message at least once, and the receiver's work is
+not naturally repeatable: a batch is written, a package is built, a document is
+published. A read that asks "has this been done" is not enough, because two
+deliveries read the same answer at the same time and both go on to do the work.
+One subscription serialises deliveries inside one process, so the failure does
+not show until there are two of them.
+
+* Problem
+
+How does a receiver keep a second delivery of the same message from doing work
+the first is already doing?
+
+* Forces
+
+- Repeated delivery is the transport's contract, not a fault. The receiver
+  cannot ask for exactly-once.
+- Two deliveries can be in flight at once: one redelivered after its ack wait
+  while the first is still running, or a second command published by the
+  component that dispatched the first.
+- A read followed by a write is not a claim, because both readers see the same
+  "not done".
+- A claim that never expires turns a crash into work nobody may touch, which is
+  worse than the duplicate it prevented.
+
+* Solution
+
+Make the claim a row the store decides on, and give it a lease:
+
+#+begin_src sql :results verbatim
+INSERT INTO ores_workflow_step_claims_tbl
+    (step_id, work_tenant_id, owner, lease_expires_at)
+VALUES ($1::uuid, $2::uuid, $3::text, now() + make_interval(secs => $4::int))
+ON CONFLICT (step_id) DO UPDATE
+    SET owner = excluded.owner,
+        claimed_at = now(),
+        lease_expires_at = excluded.lease_expires_at
+    WHERE ores_workflow_step_claims_tbl.lease_expires_at <= now()
+RETURNING step_id
+#+end_src
+
+A returned row means this delivery owns the work. No row means another delivery
+holds a live lease, and this delivery comes back later rather than doing the
+work. The conditional update is the whole mechanism: the store serialises the
+two writers and the loser's update matches no row, so no read sits between a
+check and a write for anything to interleave with.
+
+Three properties define the pattern:
+
+- *The claim is taken before the work, not after it.* A claim taken at the end
+  is a record of what happened, not a guard.
+- *The claim is a lease.* The lease is the only thing that gives the work back
+  when the holder dies, because nothing else knows the holder is gone. Release
+  it when the outcome is recorded, so the table holds only what is in flight.
+- *The state of the work, not the claim, refuses a replay.* Once the outcome is
+  recorded the claim is gone, and a replayed message is refused by the work's
+  own state rather than by the claim.
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | A claim the store refuses is a normal answer, not an error. The loser returns to the queue; it does not fail. |
+| Timeouts | The lease is the timeout. A delivery that cannot reach the claim is not run unclaimed, because running unclaimed is what the pattern exists to prevent. |
+| Retries | The loser's retry must wait long enough that the deliveries outlast the lease, or it spends the delivery budget before the lease ends and the work is left claimed with nothing to take it. |
+| Idempotency | The claim prevents the concurrent duplicate. The work still has to be safe to repeat after a crash, because a takeover repeats it. |
+| Observability | The owner column names the process holding the work, which is what an operator needs when work reports itself held. |
+
+* Pitfalls
+
+- *A read followed by a write read as a claim.* Both deliveries pass the read.
+  The claim has to be one conditional statement, not a check.
+- *A lease longer than the retries can cover.* Deliveries are bounded; if the
+  lease outlives every one of them, a dead holder leaves the work claimed and no
+  delivery is left to take it, so the work waits for a deadline that fails it.
+- *A lease longer than the work's deadline.* The deadline fails the work before
+  a takeover can happen, so the lease never does its job.
+- *A lease shorter than the work.* A second delivery takes over work that is
+  still running, and both do it.
+- *Releasing the claim by owner when the work's owner is not the releaser.* The
+  component that records the outcome is often not the component that took the
+  claim. An owner-conditional release then deletes nothing, and the table grows
+  by one row for every unit of work ever run.
+
+* Security
+
+The claim holds an identifier, a name and two times, and no business data. It
+belongs to the installation rather than to a tenant, because a claim that any
+tenant's work can take cannot be a query over the rows of all of them, so it is
+read and written by a session of the system tenant and the policy admits no
+other. No security consequence beyond that.
+
+* Resulting context
+
+- Benefits :: The work happens once even when the message is delivered twice,
+  and the concurrent case is decided by the store rather than by timing.
+- Liabilities :: The work now depends on a shared row and on a lease that has to
+  be reconciled with the delivery bound and with the work's own deadline.
+
+* In ORE Studio
+
+Every service that serves a workflow step command takes a claim on the step
+before it dispatches to its handler, in
+=projects/ores.service/include/ores.service/messaging/step_command_stream.hpp=.
+The claim is served by the workflow service on
+=nats_subject workflow.v1.ops.claim_step=, held in
+=ores_workflow_step_claims_tbl=, and taken through
+=ores.workflow.core::step_claim_repository=. The lease and the hold off a loser
+waits are stated together in
+=projects/ores.workflow/api/include/ores.workflow.api/messaging/workflow_claim_messages.hpp=,
+which is where the invariant between them is written down.
+
+* Related patterns
+
+- [[id:CE441C28-5ED0-45BF-B442-708AE4EFB1C5][At Least Once Prerequisites]] — the three things a durable consumer needs around it, of which this is one.
+- [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — the consumer whose repeats this pattern survives.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — where the claim is released.
+- [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] — the identity the claim is keyed on.
+
+* Sources
+
+- [[https://docs.nats.io/learn/jetstream/delivery-and-acknowledgment][NATS documentation, Delivery and acknowledgment]] — the at-least-once delivery this pattern guards.
+- [[https://docs.nats.io/learn/jetstream/acknowledgment][NATS documentation, Ack responses and redelivery]] — the redelivery timer the hold off is bound to.
+- [[https://docs.nats.io/learn/jetstream/retention-policies][NATS documentation, Retention policies]] — what becomes of the message once the work is done.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

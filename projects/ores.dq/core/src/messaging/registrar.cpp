@@ -460,14 +460,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             "dq.v1.ops.publish_badge_definitions_from_dq",
             "dq.v1.ops.publish_code_domains_from_dq",
             "dq.v1.ops.publish_badge_mappings_from_dq"};
-        const auto step_stream =
-            ores::service::messaging::ensure_step_stream(nats, queue_group, subjects);
-        for (const auto subject : subjects) {
-            subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats, subject, queue_group, step_stream, [pdq](ores::nats::message msg) {
-                    pdq->handle(std::move(msg));
-                }));
-        }
+        ores::service::messaging::step_routes routes;
+        for (const auto subject : subjects)
+            routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+        subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
     }
 
     return subs;

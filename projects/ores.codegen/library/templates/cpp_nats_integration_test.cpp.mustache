@@ -283,9 +283,9 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto {{column}}_parent = ores::{{parent_component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
-{{#parent_has_audit_group}}
+{{#parent_has_change_reason_code}}
     {{column}}_parent.{{{parent_audit_prefix}}}change_reason_code = "system.test";
-{{/parent_has_audit_group}}
+{{/parent_has_change_reason_code}}
 {{#parent_supplies_party}}
     // The {{entity_singular}} derives its own party from this
     // {{parent_entity_singular}}, so the {{parent_entity_singular}} carries the
@@ -348,9 +348,9 @@ TEST_CASE("write_{{entity_singular}}_publishes_an_event", tags) {
 {{#parent_required_fks}}
 {{^use_system_tenant}}
     auto {{var}} = ores::{{parent_component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
-{{#parent_has_audit_group}}
+{{#has_change_reason_code}}
     {{var}}.{{{audit_prefix}}}change_reason_code = "system.test";
-{{/parent_has_audit_group}}
+{{/has_change_reason_code}}
 {{/use_system_tenant}}
 {{/parent_required_fks}}
 {{#parent_required_fks}}

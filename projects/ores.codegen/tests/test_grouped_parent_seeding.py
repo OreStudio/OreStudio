@@ -61,6 +61,7 @@ def test_the_seed_plan_carries_both_sides_of_a_patch(monkeypatch):
             "entity_singular": "workunit",
             "generator_facet_name": "generators",
             "has_audit_group": False,
+            "no_audit_columns": False,
             "component": "compute",
             "column_prefixes": workunit_prefixes,
             "mandatory_fks": [],
@@ -69,6 +70,7 @@ def test_the_seed_plan_carries_both_sides_of_a_patch(monkeypatch):
             "entity_singular": "app_version",
             "generator_facet_name": "generators",
             "has_audit_group": True,
+            "no_audit_columns": False,
             "component": "compute",
             "column_prefixes": {"id": "identity.",
                                 "change_reason_code": "audit."},
@@ -108,3 +110,24 @@ def test_the_integration_template_writes_every_parent_member_through_a_prefix():
     # The old hardcoded guess: a parent that nests its columns anywhere other
     # than the identity group was written flat and did not compile.
     assert "{{#parent_has_identity_group}}identity.{{/parent_has_identity_group}}" not in text
+
+
+def test_the_integration_template_guards_the_audit_stamp_on_a_parent_that_has_none():
+    """A parent that keeps no audit columns has no change_reason_code to set.
+
+    Setting it regardless does not compile, and a trigger event is exactly such
+    a parent: it declares :no_audit_columns: and its domain type carries no
+    audit tail at all.
+    """
+    text = TEMPLATE.read_text()
+
+    assert ("{{#parent_has_change_reason_code}}\n"
+            "    {{column}}_parent.{{{parent_audit_prefix}}}change_reason_code"
+            in text)
+    assert ("{{#has_change_reason_code}}\n"
+            "    {{var}}.{{{audit_prefix}}}change_reason_code" in text)
+    # The flag has to read the column list rather than the prefix: an absent
+    # column and a flat one both give the prefix ''.
+    source = (REPO_ROOT / "projects/ores.codegen/src/codegen/core.py").read_text()
+    assert "'change_reason_code' in parent['column_prefixes']" in source
+    assert "'change_reason_code' in gp_prefixes" in source

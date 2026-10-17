@@ -75,8 +75,8 @@
 \ir ./reporting_report_instances_create.sql
 \ir ./reporting_report_instances_fsm_guard_create.sql
 \ir ./reporting_report_instances_notify_trigger_create.sql
-\ir ./reporting_report_errors_create.sql
-\ir ./reporting_report_errors_notify_trigger_create.sql
+\ir ./reporting_report_error_events_create.sql
+\ir ./reporting_report_error_events_notify_trigger_create.sql
 \ir ./reporting_report_input_bundles_create.sql
 \ir ./reporting_in_flight_instance_fn_create.sql
 \ir ./reporting_resolve_book_ids_fn_create.sql

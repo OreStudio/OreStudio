@@ -168,20 +168,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         admin.ensure_stream(
             nats.make_stream_name("synthetic_sandbox_ticks"),
             nats.covering_subjects({ores::marketdata::domain::synthetic_sandbox_tick_subject}));
-        // The workflow engine dispatches a step command as a JetStream message,
-        // so the subjects this service's publish-from-DQ steps are addressed on
-        // need a stream of their own: the engine's dispatch fails outright when
-        // no stream covers the subject, and the run that asked for the step is
-        // stopped with it. The subscriptions that serve these steps are durable
-        // on this stream, in the registrar.
-        admin.ensure_stream(
-            nats.make_stream_name("synthetic_steps"),
-            nats.covering_subjects(
-                {ores::synthetic::domain::publish_feeds_from_dq_step_subject,
-                 ores::synthetic::domain::publish_market_data_providers_from_dq_step_subject}));
+        // synthetic_steps is not ensured here. The service's own registrar
+        // declares it, from the same table it subscribes, so the stream's
+        // coverage and the consumer's filters cannot disagree.
         BOOST_LOG_SEV(lg(), info)
-            << "JetStream streams ready: synthetic_ticks, synthetic_sandbox_ticks, "
-               "synthetic_steps";
+            << "JetStream streams ready: synthetic_ticks, synthetic_sandbox_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream stream: " << e.what();
         throw;

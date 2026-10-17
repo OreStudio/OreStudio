@@ -38,6 +38,7 @@
 #include <chrono>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace {
 
@@ -228,7 +229,7 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) 
 
     market_observation_repository obs_repo;
     const auto observations = obs_repo.read_latest_for_series(f.h.context(), series.front().id);
-    const auto recorded_at = observation_dates(tick.observation_time);
+    auto recorded_at = observation_dates(tick.observation_time);
     REQUIRE(observations.size() == recorded_at.size());
 
     // The store returns the rows oldest first, which is the order the design
@@ -238,12 +239,11 @@ TEST_CASE("a_bound_synthetic_tick_writes_the_series_and_the_observation", tags) 
     auto expected = recorded_at;
     std::sort(expected.begin(), expected.end());
     for (std::size_t i = 0; i < observations.size(); ++i) {
-        // The canonical storage format is ISO 8601 to the second
-        // (ores::platform::time::datetime::to_iso8601_utc), so a whole second
-        // is what the round trip may lose. The column is a microsecond
-        // timestamptz; the precision is the write format's, not the column's.
+        // to_iso8601_utc writes six digits of microseconds, which is the
+        // precision the column keeps, so the round trip loses nothing a
+        // time_point held below the microsecond.
         const auto delta = observations[i].observation_datetime - expected[i];
-        CHECK(std::chrono::abs(delta) < std::chrono::seconds(1));
+        CHECK(std::chrono::abs(delta) < std::chrono::milliseconds(1));
         CHECK(observations[i].series_id == series.front().id);
         CHECK(observations[i].oresmd_uri == quote_uri);
         CHECK(observations[i].source == bound_source);

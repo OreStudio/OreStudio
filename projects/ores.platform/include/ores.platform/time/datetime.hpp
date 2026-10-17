@@ -46,7 +46,9 @@ public:
     /**
      * @brief Serialises a time point to ISO 8601 UTC string with 'Z' suffix.
      *
-     * Output format: "YYYY-MM-DD HH:MM:SSZ"
+     * Output format: "YYYY-MM-DD HH:MM:SS.ffffffZ", always six digits of
+     * microseconds, so the microsecond the database column keeps survives the
+     * round trip.
      * Use this for all wire protocol and database writes.
      *
      * @param tp Time point to format (treated as UTC per C++20 definition).

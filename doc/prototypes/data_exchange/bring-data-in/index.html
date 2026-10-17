@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bring data in — Data exchange prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Bring data in: one entry screen for every import journey. The argument is
+  that the journeys differ in their trigger, their payload and who may act,
+  and not in their first step, which is always "name a source and a scope".
+  The states are chosen from the query string, as every prototype here does:
+
+    ?case=onboard|seed|defect|feed|one-dataset|promote|party   the trigger
+    ?actor=admin|ops|maintainer|support      who may act, and what is refused
+    ?state=source|families|refused           the step under review
+    ?family=<key>                            the family left open
+    ?scan=0                                  hide the scanner result (seed)
+
+  The bar at the foot switches both. The two refusals are the actor's missing
+  permission and the row the validator refuses before the commit.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

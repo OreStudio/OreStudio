@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 108C5030-7134-4025-B6CD-09B8EC164B9B
+:END:
+#+title: One import run prototype
+#+description: The record of one attempt: per-family outcome, what a failure left behind, the retry and the live rows after it.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:data_exchange:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                        |
+|---------------+--------------------------------------------------------------|
+| Prototype     | [[file:one-import-run/][the prototype]]                                    |
+| Gemini review | none                                                         |
+| Group         | [[id:1034E1CB-D639-4489-A16A-931549228D8A][Data exchange prototypes]] |
+| Journeys      | [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]], [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]], [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect]], [[id:64DCC69B-113C-4766-BC4E-DD6CC3CC912D][Import market data from a feed]], [[id:388355DD-6437-44CB-B48B-63B25B48CF1F][Seed a fresh environment]], [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment]] |
+
+* Summary
+
+After the commit there is one question, and it is per family: what was written,
+what was refused, what was skipped, and what a failure left behind. Four
+journeys ask it about the same attempt record, so this is one screen in
+different states. It also draws the difference the design decision turns on:
+one atomic commit, or today's write per family.
+
+It is throwaway. Open [[file:one-import-run/][the run]].
+
+* Detail
+
+** What it argues
+
+- A family is a row. The record names every family, including the one that
+  refused and the one that was skipped, and every part that crosses a service.
+- The mechanism is visible on the screen. The toggle between "one commit" and
+  "per-family writes" changes what a failure left behind: nothing, or every
+  family written before it.
+- The failed family is named. The design draft's reply carries the family and
+  the counts; today's save does not, and the gap is printed where the family
+  name would be.
+- A retry is the same import, not a new file. The applied families do not run
+  again, and the retry control sits on the record rather than on a workflow
+  screen the person must find.
+- The trade retry still doubles the trades. The seed's second run is drawn with
+  its counts, because no trade is matched by its ORE id today.
+- Who may read the run is scoped. The maker, the decider and the same party
+  see it; another party's run is absent.
+
+** Variants and states
+
+=?case=onboard|seed|defect|feed|one-dataset|promote|party=,
+=?state=applied|failed|partial|expired=,
+=?mode=proposed|today=, =?fail=<part>=, =?attempt=1|2=. The bar switches the
+trigger, the outcome, the mechanism and the attempt.
+
+** What is real and what is not
+
+The parts, the family names, the FX skip, the operation subjects and the
+atomic-versus-per-family difference are the journeys' and the draft design's.
+The ids, counts, timestamps, sample names and duplicate fixings are invented.
+The per-family reply and the import record do not exist; the screen shows the
+shape they would need.
+
+** The verdict
+
+Not signed off. The owner must answer the question this screen puts in the
+middle: is a half-applied ORE file ever acceptable? The trade import says yes
+by design and the conventions import says no, and the two cannot both be true
+under one mechanism.
+
+* See also
+
+- [[file:index.org][Data exchange prototypes]] — the group page, and the journeys each screen serves.
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] — the journeys this screen answers.

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review before it lands — Data exchange prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Review before it lands: one staged import, read per family and per row
+  before a single live row moves. A second person decides the publish, and the
+  maker cannot. The states are chosen from the query string:
+
+    ?case=onboard|seed|defect|feed|one-dataset|promote|party   the trigger
+    ?actor=admin|ops|maintainer|support   who staged it (the maker)
+    ?state=review|decide|declined|applied|expired      the import's state
+    ?family=swap                         the family whose rows are open
+    ?decider=m.risk|o.ops               who answers on the decide state
+    ?check=lookup                        break the lookup check on decide
+
+  The bar at the foot switches the trigger, the maker, the state and the
+  failing check. The staged plan is the draft design's begin / stage / commit.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

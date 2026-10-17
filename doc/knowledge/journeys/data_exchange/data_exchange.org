@@ -60,5 +60,6 @@ message with 27 typed arrays.
 * See also
 
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] - the corpus index.
+- [[file:../../../prototypes/data_exchange/index.org][Data exchange prototypes]] - the five screens that serve these journeys.
 - [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
 - [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]

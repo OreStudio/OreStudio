@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One import run — Data exchange prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  One import run: the record of one attempt, per family — written, refused,
+  skipped — plus what a failure left behind and what a retry does to it. The
+  states are chosen from the query string:
+
+    ?case=onboard|seed|defect|feed|one-dataset|promote|party
+    ?state=applied|failed|partial|expired
+    ?mode=proposed|today    one atomic commit, or today's write per family
+    ?fail=<part key>        which family refuses
+    ?attempt=1|2            the first attempt, or the retry of it
+
+  The bar at the foot switches the trigger, the outcome, the mechanism and the
+  attempt. The "today" mechanism is drawn beside the proposed one because that
+  difference is the question the prototype exists to ask.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

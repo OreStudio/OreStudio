@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 3CA011FD-CBBD-4A86-BC18-3C5D8EA99DE0
+:END:
+#+title: Stage an import and review it prototype
+#+description: One staged import read per family and per row before a live row moves, with a second person deciding the publish.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:data_exchange:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                        |
+|---------------+--------------------------------------------------------------|
+| Prototype     | [[file:stage-an-import/][the prototype]]                                  |
+| Gemini review | none                                                         |
+| Group         | [[id:1034E1CB-D639-4489-A16A-931549228D8A][Data exchange prototypes]] |
+| Journeys      | [[id:4FD3AE3D-27DE-4984-890A-CD78852D32FC][Review an import before it is applied]], [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party]], [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset]], [[id:EEACF799-D2A9-45E0-AF82-BF9168C057A4][Import as a party-scoped user]], [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] |
+
+* Summary
+
+The review is not a step inside the import form. It is its own screen, because
+a second person decides there and the maker must not. One staged import shows,
+per family and per dataset, what is new, what replaces a live row, what is
+unchanged and what is refused, before any live row moves. Publish applies every
+staged family in one transaction; discard removes the staged rows and touches
+nothing.
+
+It is throwaway. Open [[file:stage-an-import/][the staged import]].
+
+* Detail
+
+** What it argues
+
+- Staged is a state, not a copy of the live screen. The import id, the expiry
+  and the visibility rule sit above every panel, and "live rows changed: 0" is
+  the fact the review rests on.
+- The plan is per family, with four counts: new, replaced, unchanged, refused.
+  The row detail compares the staged row with the live row under the same key.
+- Refusals come before the write. A row whose named value left its list, or
+  whose currency the tenant does not hold, is named with the family, the row
+  and the reason. The commit refuses the file whole.
+- Omission is not a delete. The parts the file does not carry keep their live
+  rows, and the screen counts them.
+- The maker cannot decide. A convention every report reads draws Market Risk;
+  the maker is shown beside the decider, and the publish button is the
+  decider's.
+- The staged rows, not the file, are the commitment. The file may change after
+  staging; the commit reads these rows.
+
+** Variants and states
+
+=?case=onboard|seed|defect|feed|one-dataset|promote|party=,
+=?actor=admin|ops|maintainer|support=,
+=?state=review|decide|declined|applied|expired=, =?family=swap=,
+=?check=lookup=. Discard and expiry are states, not tooltips: a discarded
+import leaves no live row, and an expired one is swept with its record intact.
+
+** What is real and what is not
+
+The mechanism is the draft design's begin / stage per family / commit once, and
+the per-family reply it promises (=world_kept=, =fx_skipped=, write counts, the
+failing family). The family names, the FX skip and the merge policies are real.
+The counts, the import id, the expiry and the row values are invented.
+
+The screen has no server. No staging table, no begin, stage, commit or discard
+verb and no sweep exists. That absence is exactly what the screen shows.
+
+** The verdict
+
+Not signed off. This screen asks the owner the hardest question: does a staged
+import that only its owner and its decider can see count as "nothing changed",
+or must the person see the staged rows to decide at all? It also asks whether
+the trade import joins the atomic commit or keeps its partial behaviour.
+
+* See also
+
+- [[file:index.org][Data exchange prototypes]] — the group page, and the journeys each screen serves.
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] — the journeys this screen answers.
+- [[file:../conventions/index.org][Conventions prototypes]] — the authoring screen the review follows.

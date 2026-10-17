@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: A6E85800-137D-4CBC-BC32-AB248B0F4B78
+:END:
+#+title: Bring data in prototype
+#+description: One entry screen for every import journey: the source, the scope, the families and who may act.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:data_exchange:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                        |
+|---------------+--------------------------------------------------------------|
+| Prototype     | [[file:bring-data-in/][the prototype]]                                    |
+| Gemini review | none                                                         |
+| Group         | [[id:1034E1CB-D639-4489-A16A-931549228D8A][Data exchange prototypes]] |
+| Journeys      | [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party]], [[id:388355DD-6437-44CB-B48B-63B25B48CF1F][Seed a fresh environment]], [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect]], [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset]], [[id:64DCC69B-113C-4766-BC4E-DD6CC3CC912D][Import market data from a feed]], [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment]], [[id:EEACF799-D2A9-45E0-AF82-BF9168C057A4][Import as a party-scoped user]] |
+
+* Summary
+
+Every import journey begins the same way: name a source and a scope. What
+differs is the trigger, the payload and who may act. This screen is the one
+entry step, with those three as variants: seven triggers, four actors, and the
+family picker that shows what the file carries. Staging writes no live row.
+
+It is throwaway. It reads no service. Open [[file:bring-data-in/][the source screen]].
+
+* Detail
+
+** What it argues
+
+- The trigger is a variant, not a screen. Onboarding, a seed, a defect
+  reproduction, a vendor feed, one corrected file and a promotion differ in
+  their source files and their scope; none differs in what the person does
+  first.
+- The scope comes from the session. The file carries no party, the shell
+  refuses a party other than the session's, and the screen shows the party as a
+  read-only field rather than a picker.
+- The scan is visible before the write. For the sample-folder trigger the table
+  lists what the scanner read and what it ignored, with the reason. The seed
+  journey says the person cannot see this today.
+- The family picker is the missing scope. The onboarding journey needs the
+  conventions and the portfolio and nothing else, so the parts the file carries
+  but the journey does not want are unchecked and named in the refusal reason.
+- Who may act is a panel, not a footnote. The operations user holds the
+  conventions write and not the trade or market writes; the screen shows the
+  permission that is missing instead of hiding the button.
+
+** Variants and states
+
+=?case=onboard|seed|defect|feed|one-dataset|promote|party=,
+=?actor=admin|ops|maintainer|support=,
+=?state=source|families|refused=, =?scan=0=. The bar at the foot switches the
+trigger and the actor; the two refusals are the missing permission and the row
+the validator refuses.
+
+** What is real and what is not
+
+The subjects and the permission model are the journeys': =ore upload=,
+=ore import=, =ore import-run=, =marketdata import=, =compute download-input=,
+and the four writes each import borrows. The convention family names and the
+27-family count come from the modelling tree; the merge policies (replace by
+key, add missing world, skip) come from the draft design. The row counts, file
+sizes, request ids and checksums are invented.
+
+The screen itself has no server. No upload route, no scan route and no staging
+verb exists. The journey lists them as gaps, and the screen says so in its
+banner.
+
+** The verdict
+
+Not signed off. The screen asks the owner two things: whether the trigger
+belongs on one screen at all, and whether the operations user is given a
+permission that means "may import for a party" or stays out of the trade and
+market imports.
+
+* See also
+
+- [[file:index.org][Data exchange prototypes]] — the group page, and the journeys each screen serves.
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] — the journeys this screen answers.

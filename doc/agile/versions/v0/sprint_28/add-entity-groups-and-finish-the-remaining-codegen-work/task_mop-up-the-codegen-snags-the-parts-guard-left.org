@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr: 3400
+#+branch: feature/mop-up-the-codegen-snags-the-parts-guard-left
+#+pr: 3424
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Delete the guard in generate.py that keeps the codegen graph out of a sub-compon
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
@@ -64,6 +64,55 @@ task and name that file in the Command column.
 
 * Notes
 
+Work in progress on =feature/mop-up-the-codegen-snags-the-parts-guard-left=.
+The guard is lifted, the link libraries are modelled, and no
+=src/CMakeLists.txt= loses a link. It does not build yet, and the reason is
+the finding below.
+
+** Lifting the guard exposed more than link lists
+
+Two things the task did not anticipate.
+
+1. No part declared =#+component_kind:=, so all of them defaulted to =flat= and
+   the flat archetype served every one -- deleting the service executables and
+   using the wrong baseline. 47 parts now declare =api=, =core= or =service=,
+   and the 17 that became =service= carry =:ores.cpp.service-app.enabled: nil=
+   so the service-app facet does not overwrite the =app=, =config= and
+   =main.cpp= they own by hand. =ores.telemetry/core= stays flat on purpose:
+   the core template links a sibling =ores.telemetry.api.lib= and there is no
+   api part.
+
+2. 59 components lost links -- 281 tokens -- because the hand-maintained files
+   carry links the baseline does not. 56 =extra_dependencies= blocks now
+   declare them.
+
+** Still open: hand-written CMake that is not a link
+
+Regeneration also deletes hand-written content the templates cannot express.
+Each of these needs a paste point, the mechanism =ores.storage/service= uses:
+
+- Every api part loses =-fvisibility=hidden -fvisibility-inlines-hidden=, which
+  the hand files carry and =ores.cmake.component.api_src= does not emit.
+- =ores.http/server= loses the block that installs =scripts/generate_keys.sh=
+  into the runtime directory.
+- =ores.ore/core= and =ores.dq/core= lose MSVC =/bigobj=; =ores.ore/core= also
+  loses =set_source_files_properties(... -Wno-unused-const-variable ...)=.
+- =ores.trading/api= loses MSVC =/constexpr:= and Clang =-fbracket-depth=;
+  =ores.trading/core= loses its WIN32 =STATIC= handling and platform-conditional
+  install.
+- =ores.telemetry/database= loses two =target_include_directories= entries
+  (=ores.telemetry/core/include=, =ores.logging/include=); they should arrive
+  transitively through the linked targets, but that is not proven.
+- =ores.synthetic/core= loses =${CMAKE_CURRENT_SOURCE_DIR}= from its include
+  dirs.
+
+Five =tests/CMakeLists.txt= were materialised for =ores.compute/client=,
+=ores.compute/wrapper=, =ores.http/core=, =ores.http/server= and
+=ores.iam/client=; their roots gained =add_subdirectory(tests)=.
+
+*v --sweep* is clean and =--component= is clean for =history=, =geo=,
+=storage-cpp= and =refdata=. The whole-tree build has not been run.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -79,6 +128,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3424][#3424]] | [agile] Close the codegen mop-up task |
+| [[https://github.com/OreStudio/OreStudio/pull/3422][#3422]] | [codegen] Model the part CMake content and lift the guard |
 | [[https://github.com/OreStudio/OreStudio/pull/3400][#3400]] | [agile] File the codegen mop-up task |
 
 * Review
@@ -88,3 +139,59 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The parts declare their CMake in the model and the templates render it, so no
+part carries hand-maintained CMake any more. The CMake facet guard is gone:
+every part renders its own =CMakeLists.txt=.
+
+The model gained:
+
+- =extra_dependencies= and =extra_test_dependencies= on 50 components, carrying
+  the hand file link block verbatim: the link sections, the visibility of each
+  library, and the =find_package= calls that define the imported targets.
+- =cmake_prologue= and =cmake_finalize= paste points on every src archetype and
+  on both branches of the header-only ones, so a hand-written prologue and a
+  hand-written install rule survive regeneration.
+- =#+component_kind:= on 47 parts, =#+test_fixture: none= on
+  =ores.analytics/quant=, =#+win32_static_library: true= on =ores.trading/core=,
+  and =:ores.cpp.service-app.enabled: nil= on the 17 service parts that keep a
+  hand-owned =src/app=, =src/config= and =main.cpp=.
+- =component_files.cmake= for the five test directories the parts materialised.
+
+Merged as =8a876fbda8=: 356 files, 7083 insertions, 818 deletions, 11 commits.
+
+The verification state is not a whole-tree build. CMake configure completed for
+all 5901 targets with no error, and =git merge-tree= reported no conflict with
+the main the PR merged into. Compilation reached object 980 of 5901 --
+=ores.dq/api=, =ores.iam/api=, =ores.telemetry/core= and =ores.refdata/api= --
+with no compile error, then stopped on request. The remaining 4921 objects never
+compiled, =./compass.sh check= never ran, and the branch was 107 commits behind
+main when it merged.
+
+* Remaining
+
+The merge landed without a whole-tree build. Nothing else in this task remains,
+but the merge is unproven until that build runs. The four layers the hand part
+CMake carried are link lists, link visibility, =find_package= calls, and
+compiler options, includes and install rules. The first three are now modelled.
+The fourth still comes from the per-component paste points, so a part that
+hand-sets a compiler flag or an include directory keeps it by declaration, not by
+model.
+
+The CMake content is now covered. Two paste points, =cmake_prologue= before
+the library target and =cmake_finalize= before its install rule, are in every
+src archetype and in both branches of the header-only ones. The seven places
+that lost content declare it, and =ores.trading/core= declares
+=#+win32_static_library: true= because its WIN32 =STATIC= choice replaces the
+template's =add_library= rather than adding to it.
+
+What still stood in the way when the merge landed:
+
+1. =test_handler_permissions= fails two tests on main: six permission codes are
+   not seeded and the handlers added in =c759acec1f= reference them. Captured,
+   and not caused by this branch.
+2. The whole-tree build has not been run. It is the only thing that can prove
+   the link lists, the compile options and the includes all still hold.
+3. =ores.telemetry/database= lost two =target_include_directories= entries that
+   are now redeclared; whether they were needed at all, given the linked
+   targets, was not established.

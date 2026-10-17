@@ -62,3 +62,27 @@ hand-authored and codegen writes only the two =component_files.cmake= lists.
 
 - [[id:0AB97FD9-D248-46FE-9E14-E7F772637A51][ores.shell.refdata]] — the same shape
   for another domain.
+
+#+begin_src cmake :name extra_dependencies
+find_package(cli CONFIG REQUIRED)
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.shell.api.lib
+        ores.nats.lib
+        ores.logging.lib
+    PRIVATE
+        ores.dq.api.lib
+        ores.platform.lib
+        ores.utility.lib
+        cli::cli)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.testing.lib
+        Catch2::Catch2
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

@@ -7,6 +7,7 @@
 #+description: Domain types, feeds, generators, and NATS protocol schemas for the synthetic data component.
 #+brief: Synthetic data types, feeds, and protocol schemas
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :synthetic:api:component:
 #+created: 2026-05-19
@@ -85,7 +86,51 @@ The facet cannot depend on =ores.synthetic.core=, because core links api.
 Anything that reads a synthetic repository therefore lives in the service
 facet.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — repositories, services, and NATS handlers.
 - [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.analytics.quant.lib
+        ores.dq.api.lib
+        ores.iam.api.lib
+        ores.refdata.api.lib
+        ores.eventing.api.lib
+        ores.platform.lib
+        ores.nats.lib
+        ores.marketdata.api.lib
+        ores.database.lib
+    PRIVATE
+        ores.utility.lib
+        ores.marketdata.client.lib
+        ores.marketdata.core.lib
+        ores.refdata.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ores.synthetic.api.lib
+        ores.utility.lib
+        ores.testing.lib
+        faker-cxx::faker-cxx
+        Catch2::Catch2
+        Threads::Threads)
+#+end_src

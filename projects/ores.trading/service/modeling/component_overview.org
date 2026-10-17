@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 0EBAD7F6-F0DF-4FF5-8404-C3F0EA8E8BBD
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.trading.service
 #+description: NATS service entrypoint for the trading domain — wires handlers, repositories, and configuration.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :trading:service:component:
 #+created: 2026-05-19
@@ -54,8 +56,45 @@ is responsible only for bootstrap, dependency injection, and graceful shutdown.
 - =ores.logging= — structured logging infrastructure.
 - =nats.c= — NATS client for connection management.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
 
 - [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]] — all business logic for the trading domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.trading.core.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

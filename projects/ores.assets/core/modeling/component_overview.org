@@ -7,6 +7,7 @@
 #+description: Asset management — SVG images, tags, currency-image associations, and NATS message handlers.
 #+brief: Asset image and tag management core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :assets:core:component:
 #+created: 2026-05-19
@@ -59,8 +60,54 @@ ships a synthetic-data generator for test and development use.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:34DDEE6A-915F-404B-8721-01376903D3E4][ores.assets.api]] — protocol types and domain entities.
 - [[id:6D1AA78F-F37B-4030-B32C-B8B5EB4B0EEE][ores.assets.service]] — NATS service entrypoint.
 - [[id:F5E6A7B8-C9D0-1234-EFAB-345678901234][ores.assets Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.assets.api.lib
+        ores.nats.lib
+    PRIVATE
+        ores.dq.api.lib
+        ores.service.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.database.lib
+        ores.security.lib
+        ores.history.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.logging.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.testing.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

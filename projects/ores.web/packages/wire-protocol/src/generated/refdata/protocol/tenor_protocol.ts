@@ -23,6 +23,8 @@
  * To modify, update the template and regenerate.
  */
 import type { Tenor } from '../domain/tenor.js';
+import type { TenorConvention } from '../domain/tenor_convention.js';
+import type { TenorConventionResolution } from '../domain/tenor_convention_resolution.js';
 import type { ChangeIntent } from '../../../utility/protocol.js';
 import type { Order } from '../../../utility/protocol.js';
 import type { Precondition } from '../../../utility/protocol.js';
@@ -191,6 +193,15 @@ export interface ResolveTenorResponse {
     calendar: string;
 }
 
+export interface PreviewTenorResolutionRequest {
+    tenor: Tenor;
+    convention: TenorConvention;
+    resolution: TenorConventionResolution;
+    calendar_code: string;
+    horizon: string;
+    spot: string | null;
+}
+
 export const subjects = {
     list_tenors_request: 'refdata.v1.tenors.list',
     get_tenor_request: 'refdata.v1.tenors.get',
@@ -202,6 +213,7 @@ export const subjects = {
     list_tenor_versions_request: 'refdata.v1.tenors_versions.list',
     get_tenor_version_request: 'refdata.v1.tenors_versions.get',
     resolve_tenor_request: 'refdata.v1.ops.resolve_tenor',
+    preview_tenor_resolution_request: 'refdata.v1.ops.preview_tenor_resolution',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -219,6 +231,7 @@ export const requiresSession = {
     list_tenor_versions_request: true,
     get_tenor_version_request: true,
     resolve_tenor_request: true,
+    preview_tenor_resolution_request: true,
 } as const;
 
 /**

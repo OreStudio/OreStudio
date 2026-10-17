@@ -7,6 +7,8 @@
 #+description: Trade booking and lifecycle management — domain model, repositories, services, and NATS message handlers.
 #+brief: Trade booking and lifecycle core
 #+type: ores.codegen.component
+#+component_kind: core
+#+win32_static_library: true
 #+level: cross
 #+filetags: :trading:core:component:
 #+created: 2026-05-19
@@ -67,6 +69,13 @@ component also ships synthetic-data generators for test and development use.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
@@ -76,3 +85,49 @@ component also ships synthetic-data generators for test and development use.
 - [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how the lifecycle is held in the database.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states, transitions and activity types themselves.
 - [[id:0D9D09ED-2FD1-402A-9624-31E26D10812E][ores.trading Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.trading.api.lib
+        ores.nats.lib
+        ores.diff.lib
+    PRIVATE
+        ores.service.lib
+        ores.storage.core.lib
+        ores.database.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        ores.diff.lib
+        ores.utility.lib
+        ores.security.lib
+        sqlgen::sqlgen
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.dq.api.lib
+        ores.dq.core.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

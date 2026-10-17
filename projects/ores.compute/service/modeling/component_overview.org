@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 152C4A5E-9947-4EE1-A5D4-893305D235B5
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.compute.service
 #+name: compute.service
@@ -7,6 +8,7 @@
 #+description: NATS service entrypoint for the compute domain.
 #+brief: Compute orchestrator service entrypoint
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :compute:service:component:
 #+created: 2026-05-19
@@ -41,8 +43,48 @@ handlers from =ores.compute.core=, and runs the event loop.
 
 - =ores.compute.core=, =ores.compute.api=, =ores.logging=, =nats.c=.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
 
 - [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — all orchestration logic.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.compute.core.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib
+    PRIVATE
+        ores.workflow.api.lib
+        ores.iam.client.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 1AF4AEC8-70EC-496C-821E-4E2E1BB303E5
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.workflow.service
 #+description: NATS service entrypoint for the workflow domain.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :workflow:service:component:
 #+created: 2026-05-19
@@ -42,8 +44,45 @@ message handlers from =ores.workflow.core=, and runs the event loop.
 
 - =ores.workflow.core=, =ores.workflow.api=, =ores.logging=, =nats.c=.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] — component group overview.
 
 - [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]] — all business logic for the workflow domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.workflow.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.eventing.core.lib
+        ores.telemetry.core.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

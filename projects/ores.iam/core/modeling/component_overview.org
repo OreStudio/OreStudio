@@ -7,6 +7,7 @@
 #+description: Identity and access management — account lifecycle, authentication, multi-tenancy, and NATS handlers.
 #+brief: Identity and access management core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :iam:core:component:
 #+created: 2026-05-19
@@ -59,6 +60,13 @@ data generator produces test accounts for development and CI use.
 - =nats.c= — NATS messaging client.
 - =libsodium= / scrypt — secure password hashing.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.
@@ -70,3 +78,59 @@ data generator produces test accounts for development and CI use.
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant isolation and bootstrap design.
 - [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — multi-party authentication sequence.
 - [[id:126F3756-77E8-9D14-B8EB-E0FF7C19A384][IAM Account]] — account entity design and state transitions.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+find_package(Immer CONFIG REQUIRED)
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.iam.api.lib
+        ores.geo.lib
+        ores.variability.core.lib
+        ores.database.lib
+        ores.dq.api.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.platform.lib
+        ores.security.lib
+        ores.nats.lib
+        ores.workflow.api.lib
+        ores.assets.api.lib
+    PRIVATE
+        ores.history.core.lib
+        ores.iam.client.lib
+        ores.inbox.api.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
+        ores.synthetic.api.lib
+        ores.synthetic.core.lib
+        ores.marketdata.api.lib
+        ores.marketdata.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort
+        immer)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.refdata.core.lib
+        ores.assets.core.lib
+        ores.telemetry.core.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.testing.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

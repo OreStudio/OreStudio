@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: EF8FD20D-0B9C-4379-8BBD-B4FCF2F5F0C7
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.ore.service
 #+description: The runnable host for the ORE integration — configuration, the import worklist, execute and rollback handlers, and the report package handler.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :ore:service:component:
 #+created: 2026-05-19
@@ -61,9 +63,54 @@ and the report package handler that assembles an ORE run's inputs.
   =ores.iam.client=, =ores.refdata.api=, =ores.trading.api=,
   =ores.reporting.api= and Boost — linked privately.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:9A71F1F5-C3ED-4C07-9D7D-C5B42D4A1332][ores.ore.core]] — the engine the handlers drive.
 - [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]] — the protocol this part serves.
 - [[id:5F280C8C-8C50-40A2-8C84-C85B8821D33E][ores.ore]] — the composite this part belongs to.
 - [[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE document through the database?]] — the workflow an operator drives through this service.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib
+        ores.eventing.core.lib
+    PRIVATE
+        ores.ore.core.lib
+        ores.ore.api.lib
+        ores.storage.core.lib
+        ores.workflow.api.lib
+        ores.iam.client.lib
+        ores.refdata.api.lib
+        ores.trading.api.lib
+        ores.reporting.api.lib
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

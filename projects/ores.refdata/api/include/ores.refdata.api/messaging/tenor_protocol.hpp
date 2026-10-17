@@ -26,6 +26,8 @@
 #define ORES_REFDATA_API_MESSAGING_TENOR_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/tenor.hpp"
+#include "ores.refdata.api/domain/tenor_convention.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
@@ -287,6 +289,24 @@ struct resolve_tenor_response {
     std::chrono::year_month_day adjusted_date;
     std::string roll_rule;
     std::string calendar;
+};
+
+struct preview_tenor_resolution_request {
+    using response_type = struct resolve_tenor_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.preview_tenor_resolution";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    ores::refdata::domain::tenor tenor;
+    ores::refdata::domain::tenor_convention convention;
+    ores::refdata::domain::tenor_convention_resolution resolution;
+    std::string calendar_code;
+    std::chrono::year_month_day horizon;
+    std::optional<std::chrono::year_month_day> spot;
 };
 
 /**

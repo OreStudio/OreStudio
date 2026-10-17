@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -9,12 +9,16 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_tests.mustache
+# To modify, update the template and regenerate.
 set(name "ores.ore.core")
 set(lib_target_name ${name}.lib)
 set(tests_binary_name ${name}.tests)
@@ -26,19 +30,19 @@ add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
-# The xsdcpp XML parser in domain.cpp uses deep recursion (parseElement calls
-# itself for each nested child element). In release mode, Clang inlines
-# aggressively, increasing per-frame stack usage. Windows default stack is 1MB;
-# bump to 8MB to prevent stack overflow on complex ORE XML documents.
-if(WIN32)
-    if(MSVC)
-        # MSVC and clang-cl: /STACK is a native linker flag
-        target_link_options(${tests_target_name} PRIVATE /STACK:8388608)
-    else()
-        # Plain clang++ on Windows uses lld; pass via -Wl,
-        target_link_options(${tests_target_name} PRIVATE -Wl,/STACK:8388608)
-    endif()
-endif()
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+
+# A component's suites may use facilities the profile cannot know about --
+# a scoped temporary file, a compression helper -- so the component declares
+# them here rather than the profile carrying every component's needs.
 
 target_link_libraries(${tests_target_name}
     PRIVATE
@@ -77,7 +81,8 @@ add_test(NAME ${tests_target_name}
 set_tests_properties(${tests_target_name} PROPERTIES
     PROCESSORS 1
     ENVIRONMENT "${ORES_TEST_ENV}"
-    ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
+    ATTACHED_FILES_ON_FAIL
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
 )
 
 set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)

@@ -7,6 +7,7 @@
 #+description: Domain types and NATS protocol schemas for the scheduler component.
 #+brief: Scheduler domain types and NATS protocol schemas
 #+type: ores.codegen.component
+#+component_kind: api
 #+level: cross
 #+filetags: :scheduler:api:component:
 #+created: 2026-05-19
@@ -61,9 +62,43 @@ job-status types behind the two operational views.
 - =fort= — formatted table rendering.
 - =croncpp= — cron expression validation and next-occurrence computation.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — component group overview.
 
 - [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler.core]] — business logic, scheduling loop, and NATS handlers.
 - [[id:220199A4-5460-491F-AF48-6264D721C25D][ores.scheduler Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.platform.lib
+    PRIVATE
+        ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ores.scheduler.api.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.testing.lib
+        faker-cxx::faker-cxx
+        Catch2::Catch2
+        Threads::Threads)
+#+end_src

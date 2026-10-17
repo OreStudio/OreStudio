@@ -53,9 +53,42 @@ route, and no other component consumes it.
 - =ores_geo_ip2country_lookup_fn= over =ores_geo_ip2country_tbl=, defined
   under =projects/ores.sql/create/geo/=.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] — the connection and query layer the service reads through.
 - [[id:869526B6-6C82-430E-95E1-776D4A11A56B][ores.http.core]] — the login route that calls the lookup.
 - [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] — the process that constructs the service.
 - [[id:C5F35442-A2C3-415A-80F2-C09CAA0842FF][System Model: Foundation Layer]] — the layer this component belongs to.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.database.lib
+        ores.telemetry.core.lib
+    PRIVATE
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.telemetry.core.lib
+        ores.testing.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

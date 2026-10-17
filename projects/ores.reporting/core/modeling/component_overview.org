@@ -7,6 +7,7 @@
 #+description: Report management and ORE risk execution — report types, definitions, instances, and scheduling.
 #+brief: Report lifecycle and ORE run core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :reporting:core:component:
 #+created: 2026-05-19
@@ -55,6 +56,13 @@ persists all report metadata to the =ores_reporting= schema.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
@@ -62,3 +70,59 @@ persists all report metadata to the =ores_reporting= schema.
 - [[id:E5AC5738-0694-494E-823E-0322F4902AD2][ores.reporting.api]] — protocol types and domain entities.
 - [[id:544947D0-7E23-4145-8F62-EC8341ED42FF][ores.reporting.service]] — NATS service entrypoint.
 - [[id:B1A5C952-B709-444B-8A63-5FD834D87D52][ores.reporting Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.reporting.api.lib
+        ores.database.lib
+        ores.logging.lib
+        ores.nats.lib
+        ores.scheduler.api.lib
+        ores.service.lib
+    PRIVATE
+        ores.compute.api.lib
+        ores.diff.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        ores.iam.api.lib
+        ores.iam.client.lib
+        ores.marketdata.api.lib
+        ores.platform.lib
+        ores.storage.api.lib
+        ores.storage.core.lib
+        ores.trading.api.lib
+        ores.utility.lib
+        ores.workflow.core.lib
+        ores.security.lib
+        sqlgen::sqlgen
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost
+        Boost::json)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.refdata.core.lib
+        ores.scheduler.core.lib
+        ores.storage.api.lib
+        ores.storage.core.lib
+        ores.utility.lib
+        ores.workflow.core.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

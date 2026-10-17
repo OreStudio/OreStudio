@@ -50,7 +50,44 @@ Both take a connected =nats_client= and own no state beyond it.
 - =ores.nats= for the transport and the wire codec.
 - =ores.marketdata.api= for the protocol and domain types.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — the handlers these requests reach.
 - [[id:57182ECE-6364-421A-A46F-73841F9961B4][ores.marketdata.service]] — the process that composes them.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.nats.lib
+        ores.marketdata.api.lib
+        ores.refdata.api.lib
+        ores.refdata.client.lib
+    PRIVATE
+        ores.logging.lib
+        ores.utility.lib
+        libfort::fort)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ores.marketdata.client.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.testing.lib
+        Catch2::Catch2
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

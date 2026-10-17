@@ -24,26 +24,25 @@
  *
  * The person opens or starts a tenor, opens or starts a convention of one, says
  * which tenors that convention resolves and from where each is measured, reads
- * the one review, and confirms. The confirm is a sequence of writes and records
- * a refusal naming the step to walk back to.
+ * the date the rule as it stands resolves to, reads the one review, and
+ * confirms. The confirm is a sequence of writes and records a refusal naming
+ * the step to walk back to.
  *
  * The convention is the second half of the same rail rather than a journey of
  * its own, because a tenor and the rule that resolves it are read together: the
  * review draws one difference list over both.
  *
- * The server serves no operation that resolves a tenor to a date, so no step
- * shows a resolved date.
- *
  * The steps are data, which is why this is a function and not a component.
  */
 
 import { useState, type ReactNode } from 'react';
-import { Button, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
+import { Button, Detail, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
 import { Picker } from './pickers.js';
 import {
     changeText,
     CONVENTION_ENTITY_TYPE,
+    resolutionDraftOf,
     TENOR_ENTITY_TYPE,
     tenorProblems,
     writePlan,
@@ -63,6 +62,7 @@ export const TENOR_STEP_IDS = [
     'tenor',
     'convention',
     'schedule',
+    'test',
     'review',
     'outcome',
     'history',
@@ -631,6 +631,138 @@ function ScheduleStep({
     );
 }
 
+/* --------------------------------------------------------------------- test */
+
+/**
+ * Resolves the rule as the form holds it.
+ *
+ * The answer describes the draft, not the saved row, so a person reads the date
+ * before they write it. A refusal is an answer too and carries the dates it
+ * reached, so the step shows it beside them and keeps every field it held.
+ */
+function TestStep({
+    t,
+    server,
+    state,
+    pickLists,
+}: {
+    readonly t: Translator['t'];
+    readonly server: TenorsServer;
+    readonly state: TenorDetails;
+    readonly pickLists: TenorPickLists | undefined;
+}): ReactNode {
+    const [busy, setBusy] = useState(false);
+    if (!state.tenorActive && !state.conventionActive) {
+        return <Notice tone="info">{t('journey.tenors.test.open')}</Notice>;
+    }
+    const ready = state.testHorizon.trim() !== '' && state.testCalendar !== '';
+    const run = async (): Promise<void> => {
+        setBusy(true);
+        try {
+            state.recordTestPreview(await server.previewResolution(resolutionDraftOf(state)));
+        } catch (error) {
+            state.recordTestFailure(error instanceof Error ? error.message : String(error));
+        } finally {
+            setBusy(false);
+        }
+    };
+    const preview = state.testPreview;
+    const refused = preview !== undefined && preview.result.outcome !== 'ok';
+    return (
+        <div className="space-y-5">
+            <p className="text-xs text-ink-faint">{t('journey.tenors.test.note')}</p>
+            <div className="grid gap-4 md:grid-cols-3">
+                <Field label={t('journey.tenors.test.horizon')}>
+                    <Input
+                        type="date"
+                        value={state.testHorizon}
+                        onChange={(event) => state.setTestHorizon(event.target.value)}
+                    />
+                </Field>
+                <Field
+                    label={t('journey.tenors.test.spot')}
+                    hint={t('journey.tenors.test.spotHint')}
+                >
+                    <Input
+                        type="date"
+                        value={state.testSpot}
+                        onChange={(event) => state.setTestSpot(event.target.value)}
+                    />
+                </Field>
+                <Picker
+                    label={t('journey.tenors.test.calendar')}
+                    value={state.testCalendar}
+                    options={optionsOf(pickLists?.calendars)}
+                    empty={t('journey.tenors.test.calendarNone')}
+                    onChange={(value) => state.setTestCalendar(value)}
+                />
+            </div>
+            <Button variant="primary" pending={busy} disabled={!ready} onClick={() => void run()}>
+                {t('journey.tenors.test.run')}
+            </Button>
+            {state.testFailure !== undefined && (
+                <Notice tone="error">
+                    {t('journey.tenors.test.failed', { message: state.testFailure })}
+                </Notice>
+            )}
+            {preview !== undefined && (
+                <div className="space-y-4">
+                    {refused ? (
+                        <Notice tone="error">
+                            <p className="font-semibold">{t('journey.tenors.test.refused')}</p>
+                            <p className="text-sm">
+                                <span className="font-mono text-xs">{preview.result.code}</span>{' '}
+                                {preview.result.message}
+                            </p>
+                            {preview.result.fields.length > 0 && (
+                                <ul className="text-sm">
+                                    {preview.result.fields.map((failure) => (
+                                        <li key={`${failure.field}:${failure.code}`}>
+                                            {t('journey.tenors.test.atFault')} {failure.field}:{' '}
+                                            {failure.message}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </Notice>
+                    ) : (
+                        <Notice tone="success">{t('journey.tenors.test.resolved')}</Notice>
+                    )}
+                    {/*
+                     * The dates travel on a refusal too, so they are drawn
+                     * whether the rule was accepted or declined.
+                     */}
+                    <dl className="grid gap-3 md:grid-cols-3">
+                        <Detail
+                            label={t('journey.tenors.test.anchor')}
+                            value={preview.anchorDate}
+                            mono
+                        />
+                        <Detail
+                            label={t('journey.tenors.test.beforeRoll')}
+                            value={preview.dateBeforeRoll}
+                            mono
+                        />
+                        <Detail
+                            label={t('journey.tenors.test.adjusted')}
+                            value={preview.adjustedDate}
+                            mono
+                        />
+                        <Detail
+                            label={t('journey.tenors.test.rollRule')}
+                            value={preview.rollRule}
+                        />
+                        <Detail
+                            label={t('journey.tenors.test.calendar')}
+                            value={preview.calendar}
+                        />
+                    </dl>
+                </div>
+            )}
+        </div>
+    );
+}
+
 /* ------------------------------------------------------------------- review */
 
 function ReviewStep({
@@ -989,6 +1121,13 @@ export function tenorSteps(input: TenorStepsInput): readonly JourneyStep<ReactNo
             lead: t('journey.tenors.schedule.lead'),
             body: <ScheduleStep t={t} state={state} catalogue={input.catalogue} />,
             next: { label: t('common.continue'), enabled: state.conventionActive },
+        },
+        {
+            id: 'test',
+            title: t('journey.tenors.test.title'),
+            lead: t('journey.tenors.test.lead'),
+            body: <TestStep t={t} server={server} state={state} pickLists={pickLists} />,
+            next: { label: t('common.continue'), enabled: true },
         },
         {
             id: 'review',

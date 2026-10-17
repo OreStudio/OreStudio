@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 57182ECE-6364-421A-A46F-73841F9961B4
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.marketdata.service
 #+description: NATS service entrypoint for the market-data domain.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :marketdata:service:component:
 #+created: 2026-05-19
@@ -41,6 +43,46 @@ domain. It opens database and NATS connections, registers handlers from
 
 - =ores.marketdata.core=, =ores.marketdata.api=, =ores.logging=, =nats.c=.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — all market-data business logic.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.marketdata.core.lib
+        ores.refdata.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib
+        ores.eventing.core.lib
+        ores.iam.client.lib
+        ores.analytics.quant.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

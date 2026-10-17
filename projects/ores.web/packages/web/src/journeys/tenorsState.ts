@@ -26,15 +26,15 @@
  * system computes under a convention. The draft holds the tenor row, the
  * convention row and the convention's set of tenors, each as the text a form
  * holds, and the review is a function of the differences from what was read.
- * The server serves no operation that resolves a tenor to a date, so the draft
- * holds no resolved date.
+ * The test step holds the dates it asks the server to resolve the draft from,
+ * and the answer the server gave.
  */
 
 import { useReducer } from 'react';
 import type { Tenor } from '@ores/wire-protocol/generated/refdata/domain/tenor';
 import type { TenorConvention } from '@ores/wire-protocol/generated/refdata/domain/tenor_convention';
 import type { TenorConventionResolution } from '@ores/wire-protocol/generated/refdata/domain/tenor_convention_resolution';
-import type { TenorIntent } from './tenorsServer.js';
+import type { TenorIntent, TenorResolutionDraft, TenorResolutionPreview } from './tenorsServer.js';
 
 /** The reason a correction is filed under until the person states another. */
 export const TENOR_REASON = 'common.non_material_update';
@@ -103,6 +103,13 @@ export interface TenorDraft {
     readonly conventionOpened: TenorConvention | undefined;
     readonly convention: ConventionFields;
     readonly members: readonly Member[];
+    /** The test step's answers: the dates it resolves from and the calendar it rolls on. */
+    readonly testHorizon: string;
+    readonly testSpot: string;
+    readonly testCalendar: string;
+    /** The rule's answer as the server gave it, or the reason the call did not arrive. */
+    readonly testPreview: TenorResolutionPreview | undefined;
+    readonly testFailure: string | undefined;
     readonly reasonCode: string;
     readonly commentary: string;
     readonly refusal: TenorRefusal | undefined;
@@ -141,6 +148,11 @@ export function blankDraft(): TenorDraft {
         conventionOpened: undefined,
         convention: blankConvention(),
         members: [],
+        testHorizon: '',
+        testSpot: '',
+        testCalendar: '',
+        testPreview: undefined,
+        testFailure: undefined,
         reasonCode: TENOR_REASON,
         commentary: '',
         refusal: undefined,
@@ -189,6 +201,11 @@ export type TenorAction =
       }
     | { readonly kind: 'toggle-member'; readonly tenorCode: string }
     | { readonly kind: 'set-anchor'; readonly tenorCode: string; readonly value: string }
+    | { readonly kind: 'set-test-horizon'; readonly value: string }
+    | { readonly kind: 'set-test-spot'; readonly value: string }
+    | { readonly kind: 'set-test-calendar'; readonly value: string }
+    | { readonly kind: 'record-test-preview'; readonly preview: TenorResolutionPreview }
+    | { readonly kind: 'record-test-failure'; readonly failure: string }
     | { readonly kind: 'set-reason'; readonly reasonCode: string }
     | { readonly kind: 'set-commentary'; readonly commentary: string }
     | { readonly kind: 'record-written' }
@@ -276,6 +293,16 @@ export function reduceTenor(draft: TenorDraft, action: TenorAction): TenorDraft 
             };
         case 'set-reason':
             return { ...draft, reasonCode: action.reasonCode };
+        case 'set-test-horizon':
+            return { ...draft, testHorizon: action.value };
+        case 'set-test-spot':
+            return { ...draft, testSpot: action.value };
+        case 'set-test-calendar':
+            return { ...draft, testCalendar: action.value };
+        case 'record-test-preview':
+            return { ...draft, testPreview: action.preview, testFailure: undefined };
+        case 'record-test-failure':
+            return { ...draft, testFailure: action.failure, testPreview: undefined };
         case 'set-commentary':
             return { ...draft, commentary: action.commentary };
         case 'record-written':
@@ -560,44 +587,102 @@ const STAMP = {
     recorded_at: '',
 } as const;
 
+/** The member the draft's own tenor stands for, where the convention's set holds it. */
+function draftMember(draft: TenorDraft): Member | undefined {
+    const code = draft.tenorOpened?.code ?? draft.tenor.code.trim();
+    return draft.members.find((member) => member.tenorCode === code);
+}
+
+/** The anchor override a resolution carries, or null where the convention's own anchor stands. */
+function anchorOverrideOf(member: Member | undefined): string | null {
+    return member === undefined || member.anchorOverride === '' ? null : member.anchorOverride;
+}
+
+/** The rows a draft stands for, as the form holds them, whether or not they changed.
+ *
+ * `writePlan` writes the rows that changed; the preview resolves the rule as it
+ * stands. Both assemble a row here, so a field the form gains reaches both.
+ * The resolution keeps the offset and schedule the set was read with, and takes
+ * the anchor the form holds, because that is the one field this screen edits.
+ */
+function draftRows(
+    draft: TenorDraft,
+    member: Member | undefined,
+): {
+    readonly tenor: Tenor;
+    readonly convention: TenorConvention;
+    readonly resolution: TenorConventionResolution;
+} {
+    const t = draft.tenor;
+    const c = draft.convention;
+    const original = member?.original;
+    return {
+        tenor: {
+            ...STAMP,
+            ...(draft.tenorOpened ?? {}),
+            code: draft.tenorOpened?.code ?? t.code.trim(),
+            display_name: t.displayName.trim(),
+            description: t.description,
+            sort_order: Number(t.sortOrder),
+            kind: t.kind,
+            unit: t.unit,
+            multiplier: numberOrNull(t.multiplier),
+        },
+        convention: {
+            ...STAMP,
+            ...(draft.conventionOpened ?? {}),
+            code: draft.conventionOpened?.code ?? c.code.trim(),
+            description: c.description,
+            measured_from: c.measuredFrom,
+            resolution_algorithm: c.resolutionAlgorithm,
+            business_day_convention_type: c.rollRule,
+            oresmd_uri: c.oresmdUri.trim() === '' ? null : c.oresmdUri,
+        },
+        resolution: {
+            ...STAMP,
+            ...(original ?? {}),
+            convention_code: draft.conventionOpened?.code ?? c.code.trim(),
+            tenor_code: member?.tenorCode ?? draft.tenorOpened?.code ?? t.code.trim(),
+            anchor_override: anchorOverrideOf(member),
+            offset_unit: original?.offset_unit ?? null,
+            offset_multiplier: original?.offset_multiplier ?? null,
+            schedule_code: original?.schedule_code ?? null,
+            schedule_step_count: original?.schedule_step_count ?? null,
+        },
+    };
+}
+
+/** The preview request the draft stands for: its rows as the form holds them and the dates asked for. */
+export function resolutionDraftOf(draft: TenorDraft): TenorResolutionDraft {
+    const rows = draftRows(draft, draftMember(draft));
+    return {
+        tenor: rows.tenor,
+        convention: rows.convention,
+        resolution: rows.resolution,
+        calendar_code: draft.testCalendar,
+        horizon: draft.testHorizon,
+        spot: draft.testSpot.trim() === '' ? null : draft.testSpot,
+    };
+}
+
 /** The plan the confirm runs, or undefined before anything is being shaped. */
 export function writePlan(draft: TenorDraft): WritePlan | undefined {
     if (!draft.tenorActive && !draft.conventionActive) {
         return undefined;
     }
-    const t = draft.tenor;
-    const c = draft.convention;
     const changed = memberChanges(draft);
+    const rows = draftRows(draft, draftMember(draft));
     return {
         intent: { reason_code: draft.reasonCode, commentary: draft.commentary },
         tenor: tenorChanged(draft)
             ? {
-                  write: {
-                      ...STAMP,
-                      ...(draft.tenorOpened ?? {}),
-                      code: draft.tenorOpened?.code ?? t.code.trim(),
-                      display_name: t.displayName.trim(),
-                      description: t.description,
-                      sort_order: Number(t.sortOrder),
-                      kind: t.kind,
-                      unit: t.unit,
-                      multiplier: numberOrNull(t.multiplier),
-                  },
+                  write: rows.tenor,
                   version: draft.tenorOpened === undefined ? null : draft.tenorOpened.version,
               }
             : undefined,
         convention: conventionChanged(draft)
             ? {
-                  write: {
-                      ...STAMP,
-                      ...(draft.conventionOpened ?? {}),
-                      code: draft.conventionOpened?.code ?? c.code.trim(),
-                      description: c.description,
-                      measured_from: c.measuredFrom,
-                      resolution_algorithm: c.resolutionAlgorithm,
-                      business_day_convention_type: c.rollRule,
-                      oresmd_uri: c.oresmdUri.trim() === '' ? null : c.oresmdUri,
-                  },
+                  write: rows.convention,
                   version:
                       draft.conventionOpened === undefined ? null : draft.conventionOpened.version,
               }
@@ -606,7 +691,7 @@ export function writePlan(draft: TenorDraft): WritePlan | undefined {
             .filter((member) => member.wanted)
             .map((member) => ({
                 tenorCode: member.tenorCode,
-                anchorOverride: member.anchorOverride === '' ? null : member.anchorOverride,
+                anchorOverride: anchorOverrideOf(member),
                 version: member.original === undefined ? null : member.original.version,
             })),
         unlinks: changed.flatMap((member) =>
@@ -631,6 +716,11 @@ export interface TenorDetails extends TenorDraft {
     readonly setConventionField: (field: ConventionField, value: string) => void;
     readonly toggleMember: (tenorCode: string) => void;
     readonly setAnchor: (tenorCode: string, value: string) => void;
+    readonly setTestHorizon: (value: string) => void;
+    readonly setTestSpot: (value: string) => void;
+    readonly setTestCalendar: (value: string) => void;
+    readonly recordTestPreview: (preview: TenorResolutionPreview) => void;
+    readonly recordTestFailure: (failure: string) => void;
     readonly setReason: (reasonCode: string) => void;
     readonly setCommentary: (commentary: string) => void;
     readonly recordWritten: () => void;
@@ -653,6 +743,11 @@ export function useTenor(): TenorDetails {
             dispatch({ kind: 'set-convention-field', field, value }),
         toggleMember: (tenorCode) => dispatch({ kind: 'toggle-member', tenorCode }),
         setAnchor: (tenorCode, value) => dispatch({ kind: 'set-anchor', tenorCode, value }),
+        setTestHorizon: (value) => dispatch({ kind: 'set-test-horizon', value }),
+        setTestSpot: (value) => dispatch({ kind: 'set-test-spot', value }),
+        setTestCalendar: (value) => dispatch({ kind: 'set-test-calendar', value }),
+        recordTestPreview: (preview) => dispatch({ kind: 'record-test-preview', preview }),
+        recordTestFailure: (failure) => dispatch({ kind: 'record-test-failure', failure }),
         setReason: (reasonCode) => dispatch({ kind: 'set-reason', reasonCode }),
         setCommentary: (commentary) => dispatch({ kind: 'set-commentary', commentary }),
         recordWritten: () => dispatch({ kind: 'record-written' }),

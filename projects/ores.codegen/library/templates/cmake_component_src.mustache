@@ -4,10 +4,29 @@
 set(name "{{full_name}}")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
+{{#header_only}}
+# Headers only: component_files.cmake lists no source, so the part is an
+# INTERFACE library that carries its include path and no compiled body.
+<<paste:E0158572-D743-43E2-B5CD-D93BF6223ABA>>
+add_library(${lib_target_name} INTERFACE)
+
+target_include_directories(${lib_target_name} INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+# A header-only part still declares what the profile cannot know: the
+# libraries its interface headers need in their consumers.
+
+{{{extra_dependencies}}}
+
+<<paste:FDEE629F-F8BA-4940-AA1B-6671AF332D82>>
+install(TARGETS ${lib_target_name})
+{{/header_only}}
+{{^header_only}}
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
+<<paste:E0158572-D743-43E2-B5CD-D93BF6223ABA>>
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE {{full_name_upper}}_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -33,5 +52,9 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
+{{{extra_dependencies}}}
+
+<<paste:FDEE629F-F8BA-4940-AA1B-6671AF332D82>>
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+{{/header_only}}
 {{/component}}

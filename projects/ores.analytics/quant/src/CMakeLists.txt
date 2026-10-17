@@ -16,10 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-find_package(Immer CONFIG REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
-find_package(Eigen3 CONFIG REQUIRED)
-
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.analytics.quant")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -41,8 +40,20 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
-# Deliberately minimal: no ores.database, ores.service, NATS, or refdata
-# linkage. This is a pure computation library, consumable standalone.
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        sqlgen::sqlgen
+        ores.logging.lib
+        ores.platform.lib
+    PRIVATE
+        ores.utility.lib)
+
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+
+find_package(Immer CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         Boost::boost

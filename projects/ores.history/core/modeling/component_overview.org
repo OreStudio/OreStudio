@@ -78,6 +78,13 @@ auth-context threading.
 - =ores.nats= / =ores.service= / =ores.logging= — the NATS
   subscribe/decode/reply plumbing.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]] — the group overview.
@@ -85,3 +92,31 @@ auth-context threading.
 - [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the design this component implements.
 - [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern this component's
   dispatch registry reapplies as a runtime lookup table.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.history.api.lib
+        ores.database.lib
+        ores.logging.lib
+        ores.nats.lib
+        ores.security.lib
+        ores.service.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

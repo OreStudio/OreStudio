@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Add an entity group annotation to the model and a group flag to codegen, and fin
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -51,7 +51,7 @@ Add an entity group annotation to the model and a group flag to codegen, and fin
 | [[id:A92C8CA5-3BDA-4888-B27F-F439143A7C76][Fix workflow entity model drift: update to latest format and regenerate]] | BACKLOG | | | Following the same pattern as the refdata sweep (task fix-refdata-model-drift): regenerate every ores.workflow domain_entity and junction model against current codegen templates, updating any model found using an outdated format/convention before regenerating, and commit the resulting drift-free tree. compass build and rat must pass after. |
 | [[id:15D464C7-3C99-4512-8A65-621EE3839DAA][Split every codegen template org into commented literate blocks]] | BACKLOG | 2026-07-29 | | For every template org under ores.codegen/library/templates, split the single mustache tangle block into multiple same-target blocks interleaved with detailed human-level prose explaining what each block does and why; generated code stays comment-free. |
 | [[id:704D8C2E-0D2C-46C1-BC8D-754EAF320730][Make the umbrella header a permanent artefact]] | DONE | | 2026-10-16 | Salvaged from the retired branch feature/codegen-improvements: land the umbrella-header restructure, which already exists as a clean cherry-pick of 875df5ff79 on branch feature/codegen-umbrella-headers. The umbrella header sits in the disabled ores.cpp.scaffold facet, so no regeneration emits it and no gate covers it; 46 copies survive in the tree, stale. |
-| [[id:7CAF12CD-807D-47FB-B481-81394268513F][Mop up the codegen snags the parts guard left]] | BACKLOG | | | The parts now generate their presence files, but not their CMake: generate.py holds the graph off every ores.cmake.* facet for a sub-component project, because 93 of the 94 checked-in src/CMakeLists.txt diverge from the template baseline and regenerating one deletes behaviour. The same shape leaves ores.geo's hand-migrated CMake and ores.history/api's hand-written header-only INTERFACE library reconciling against templates that no longer match them. Sources: the captures bring-the-part-cmake-link-lists-under-the-model and reconcile-the-generated-files-main-hand-edited. |
+| [[id:7CAF12CD-807D-47FB-B481-81394268513F][Mop up the codegen snags the parts guard left]] | DONE | 2026-10-16 | 2026-10-17 | The parts now generate their presence files, but not their CMake: generate.py holds the graph off every ores.cmake.* facet for a sub-component project, because 93 of the 94 checked-in src/CMakeLists.txt diverge from the template baseline and regenerating one deletes behaviour. The same shape leaves ores.geo's hand-migrated CMake and ores.history/api's hand-written header-only INTERFACE library reconciling against templates that no longer match them. Sources: the captures bring-the-part-cmake-link-lists-under-the-model and reconcile-the-generated-files-main-hand-edited. |
 
 * Decisions
 

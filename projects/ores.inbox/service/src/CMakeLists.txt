@@ -23,16 +23,17 @@ set(name "ores.inbox.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
-set(files "")
-file(GLOB_RECURSE files RELATIVE
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_INBOX_SERVICE_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
@@ -53,17 +54,16 @@ target_link_libraries(${lib_target_name}
 
 # A component declares here what the profile cannot know: the libraries it
 # needs beyond the baseline above, and the find_package calls they bring.
-#
-# The service registers its expiry job with the scheduler and reads the
-# schedule from variability, both as itself, so it holds a service token and
-# speaks the two protocols those components own.
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.eventing.core.lib
-        ores.iam.client.lib
-        ores.scheduler.api.lib
-        ores.variability.api.lib)
+        ores.service.lib
+        ores.security.lib
+        ores.inbox.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

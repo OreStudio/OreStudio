@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 61006041-E30D-484C-9E47-358B1BBACB83
+:END:
+#+title: test_handler_permissions fails two tests on main: six permis…
+#+description: test_handler_permissions fails two tests on main: six permission codes are unseeded, all in ores.reporting/core. reporting::report_errors:read|write|delete in report_error_handler.hpp, and reporting::report_error_scopes:read|write|delete in report_error_scope_handler.hpp. The handlers arrived on 2026-10-16 18:32 with c759acec1f [reporting] Store the errors a report run produces, and their codes were not added to the seeds; the reporting populate has report_error_scope rows but no matching permission rows. Any branch whose codegen check runs sees this: codegen-tests was 1431 passed before that commit and is 1429 passed, 2 failed after it.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

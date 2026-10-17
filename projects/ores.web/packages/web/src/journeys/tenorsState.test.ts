@@ -28,11 +28,13 @@ import {
     changeText,
     changesOf,
     reduceTenor,
+    resolutionDraftOf,
     tenorProblems,
     writePlan,
     type TenorAction,
     type TenorDraft,
 } from './tenorsState.js';
+import type { TenorResolutionPreview } from './tenorsServer.js';
 
 const STAMP = {
     tenant_id: 'tenant-1',
@@ -369,5 +371,58 @@ describe('the write plan', () => {
             reason_code: 'common.correction',
             commentary: 'fix the name',
         });
+    });
+});
+
+describe('the test step', () => {
+    const preview: TenorResolutionPreview = {
+        result: { outcome: 'ok', code: 'ok', message: '', fields: [] },
+        anchorDate: '2026-01-31',
+        dateBeforeRoll: '2026-02-28',
+        adjustedDate: '2026-02-27',
+        rollRule: 'ModifiedFollowing',
+        calendar: 'TARGET',
+    };
+
+    it('assembles the draft rows and the dates asked for, whatever changed', () => {
+        const draft = walk(
+            { kind: 'open-tenor', tenor: overnight },
+            { kind: 'open-convention', convention, resolutions: [resolution], tenorCodes: ['O/N'] },
+            { kind: 'set-test-horizon', value: '2026-01-15' },
+            { kind: 'set-test-calendar', value: 'TARGET' },
+        );
+        expect(resolutionDraftOf(draft)).toEqual({
+            tenor: overnight,
+            convention,
+            resolution,
+            calendar_code: 'TARGET',
+            horizon: '2026-01-15',
+            spot: null,
+        });
+    });
+
+    it('takes the anchor override the form holds and a blank spot as absent', () => {
+        const draft = walk(
+            { kind: 'open-tenor', tenor: overnight },
+            { kind: 'open-convention', convention, resolutions: [resolution], tenorCodes: ['O/N'] },
+            { kind: 'set-anchor', tenorCode: 'O/N', value: 'today' },
+            { kind: 'set-test-spot', value: '  ' },
+        );
+        const request = resolutionDraftOf(draft);
+        expect(request.resolution.anchor_override).toBe('today');
+        expect(request.spot).toBeNull();
+    });
+
+    it('keeps the answer and the reason the call failed apart', () => {
+        const answered = walk({ kind: 'record-test-preview', preview });
+        expect(answered.testPreview).toBe(preview);
+        expect(answered.testFailure).toBeUndefined();
+
+        const failed = walk(
+            { kind: 'record-test-preview', preview },
+            { kind: 'record-test-failure', failure: 'offline' },
+        );
+        expect(failed.testPreview).toBeUndefined();
+        expect(failed.testFailure).toBe('offline');
     });
 });

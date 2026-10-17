@@ -7,6 +7,7 @@
 #+description: Server-side implementation of the synthetic entities: repositories, services, NATS handlers, and the original catalog generators.
 #+brief: Synthetic entity repositories, services, and handlers
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :synthetic:core:component:
 #+created: 2026-05-19
@@ -56,8 +57,62 @@ produce synthetic test data for the DQ pipeline.
 - =ores.database= — execution context and party scope.
 - =nats.c= — NATS messaging client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:44039E5B-3435-4BCB-824F-3990AF341FBE][ores.synthetic.api]] — protocol types and domain entities.
 - [[id:702753E8-0E07-4690-AFAB-D75514ADE660][ores.synthetic.service]] — NATS service entrypoint.
 - [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] — full NATS subject and message catalogue.
+
+* CMake
+
+Its own sources sit beside the public headers, so src/ is on the private
+include path.
+
+#+begin_src cmake :name cmake_finalize :implements FDEE629F-F8BA-4940-AA1B-6671AF332D82
+target_include_directories(${lib_target_name} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR})
+#+end_src
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.synthetic.api.lib
+        ores.trading.api.lib
+        ores.nats.lib
+        ores.dq.api.lib
+        ores.iam.api.lib
+        ores.refdata.core.lib
+        ores.database.lib
+    PRIVATE
+        ores.history.core.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

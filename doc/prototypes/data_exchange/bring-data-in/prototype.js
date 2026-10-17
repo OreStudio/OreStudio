@@ -14,6 +14,7 @@
  *   ?state=source|families|refused
  *   ?family=<key>                       the family row left open
  *   ?scan=1|0                           hide the scanner result (seed only)
+ *   ?target=<sandbox id>                the sandbox the import targets
  *
  * The sources are the shell verbs the journeys name today: ore upload, ore
  * import, ore import-run, marketdata import, compute download-input. The
@@ -280,6 +281,93 @@
         run: { name: 'stage_run', label: 'Stage run documents', subject: 'configure.v1.steps.stage_run_documents' }
     };
 
+    /* The book tree, official and sandbox. An import publishes, and it
+     * publishes inside a sandbox: a sandbox is not a node of the official
+     * portfolio tree, it is anchored at one official portfolio and owns a
+     * subtree of its own. Only a sandbox is an import target. The model keeps
+     * the two trees apart: a book and its portfolio share one sandbox, a
+     * sandbox's root portfolios have no parent, and a virtual book carries no
+     * ledger reference and is not sweepable. */
+    var OFFICIAL = [
+        { id: 'GLOBAL', name: 'Global Trading', parent: null, purpose: 'Risk', ccy: 'USD' },
+        { id: 'RATES', name: 'Global Rates', parent: 'GLOBAL', purpose: 'Risk', ccy: 'USD' },
+        { id: 'RATES.EUR', name: 'EUR Rates', parent: 'RATES', purpose: 'Risk', ccy: 'EUR' },
+        { id: 'RATES.USD', name: 'USD Rates', parent: 'RATES', purpose: 'Risk', ccy: 'USD' },
+        { id: 'CREDIT', name: 'APAC Credit', parent: 'GLOBAL', purpose: 'Regulatory', ccy: 'USD' },
+        { id: 'CREDIT.CN', name: 'China Credit', parent: 'CREDIT', purpose: 'Regulatory', ccy: 'CNY' }
+    ];
+
+    var OFFICIAL_BOOKS = [
+        { name: 'EUR_SWAPS_01', portfolio: 'RATES.EUR', gl: 'GL-10150-IRS' },
+        { name: 'EUR_VOL_01', portfolio: 'RATES.EUR', gl: 'GL-10150-VOL' },
+        { name: 'USD_SWAPS_01', portfolio: 'RATES.USD', gl: 'GL-10150-USD' },
+        { name: 'USD_FUNDING', portfolio: 'RATES.USD', gl: 'GL-10160-FND' },
+        { name: 'CN_CREDIT_01', portfolio: 'CREDIT.CN', gl: 'GL-10200-CN' },
+        { name: 'SWEEP_TARGET', portfolio: 'GLOBAL', gl: 'GL-10000-SWP' }
+    ];
+
+    /* A sandbox's own subtree. Every portfolio here carries the sandbox's id,
+     * so a root portfolio has no parent, and every book is virtual. */
+    var SANDBOXES = [
+        {
+            id: 'sb-import-repro', name: 'Reproduce 2026-10-16', anchor: 'RATES.EUR',
+            purpose: 'import', status: 'open', visibility: 'private', owner: 'D. Osei',
+            roots: [
+                { id: 'sb-repro-root', name: 'Repro 2026-10-16', parent: null, ccy: 'EUR',
+                  books: [{ name: 'EUR_SWAPS_SB_01' }] },
+                { id: 'sb-repro-defect', name: 'Defect capture', parent: 'sb-repro-root', ccy: 'EUR',
+                  books: [{ name: 'EUR_VOL_SB_02' }] }
+            ]
+        },
+        {
+            id: 'sb-import-onboard', name: 'Onboard Acme 2026-10-17', anchor: 'RATES',
+            purpose: 'import', status: 'open', visibility: 'shared', owner: 'J. Smith',
+            roots: [
+                { id: 'sb-onboard-root', name: 'Acme onboarding 2026-10-17', parent: null, ccy: 'EUR',
+                  books: [{ name: 'ACME_EUR_SWAPS_SB_01' }] }
+            ]
+        },
+        {
+            id: 'sb-sample-seed', name: 'Seed samples 2026-10', anchor: 'GLOBAL',
+            purpose: 'sample', status: 'open', visibility: 'private', owner: 'K. Mori',
+            roots: [
+                { id: 'sb-seed-root', name: 'ORE samples 2026-10', parent: null, ccy: 'USD',
+                  books: [{ name: 'SAMPLE_EUR_SWAPS_SB_01' }, { name: 'SAMPLE_USD_SWAPS_SB_02' }] }
+            ]
+        },
+        {
+            id: 'sb-import-feed', name: 'Vendor feed 2026-10-17', anchor: 'RATES.USD',
+            purpose: 'import', status: 'open', visibility: 'shared', owner: 'J. Smith',
+            roots: [
+                { id: 'sb-feed-root', name: 'Commodity feed 2026-10-17', parent: null, ccy: 'USD',
+                  books: [{ name: 'USD_FEED_SB_01' }] }
+            ]
+        },
+        {
+            id: 'sb-archived-feed', name: 'Vendor feed 2026-10-09', anchor: 'RATES.USD',
+            purpose: 'sample', status: 'archived', visibility: 'private', owner: 'K. Mori',
+            roots: [
+                { id: 'sb-archived-root', name: 'Commodity feed 2026-10-09', parent: null, ccy: 'USD',
+                  books: [{ name: 'USD_FEED_SB_00' }] }
+            ]
+        }
+    ];
+
+    var TARGET_BY_CASE = {
+        onboard: 'sb-import-onboard', seed: 'sb-sample-seed', defect: 'sb-import-repro',
+        feed: 'sb-import-feed', 'one-dataset': 'sb-import-onboard',
+        promote: 'sb-import-repro', party: 'sb-import-onboard'
+    };
+
+    /* What a completed import creates inside the sandbox. The number of books
+     * follows the file, not the number of portfolios. */
+    var CREATES = {
+        onboard: { portfolios: 3, books: 4 }, seed: { portfolios: 3, books: 12 },
+        defect: { portfolios: 47, books: 103 }, feed: { portfolios: 0, books: 0 },
+        'one-dataset': { portfolios: 0, books: 0 }, promote: { portfolios: 47, books: 103 },
+        party: { portfolios: 3, books: 4 }
+    };
+
     var S = readQuery();
 
     function readQuery() {
@@ -291,12 +379,16 @@
             var v = decodeURIComponent(i < 0 ? '' : pair.slice(i + 1));
             q[k] = v;
         });
+        var name = CASES[q['case']] ? q['case'] : 'onboard';
+        var wanted = sandboxById(q.target);
         var state = {
-            'case': CASES[q['case']] ? q['case'] : 'onboard',
+            'case': name,
             actor: ACTORS[q.actor] ? q.actor : null,
             step: q.state === 'families' || q.state === 'refused' ? q.state : 'source',
             family: q.family || null,
-            scan: q.scan !== '0'
+            scan: q.scan !== '0',
+            target: wanted && wanted.status === 'open' ? wanted.id : TARGET_BY_CASE[name],
+            refuse: null
         };
         if (!state.actor) state.actor = state['case'] === 'party' ? 'ops' : 'admin';
         return state;
@@ -310,6 +402,7 @@
         if (S.step !== 'source') params.push('state=' + S.step);
         if (S.family) params.push('family=' + S.family);
         if (!S.scan) params.push('scan=0');
+        if (S.target !== TARGET_BY_CASE[S['case']]) params.push('target=' + S.target);
         var url = window.location.pathname + (params.length ? '?' + params.join('&') : '');
         window.history.replaceState(null, '', url);
         render();
@@ -354,6 +447,184 @@
         return a.can.trades && a.can.conventions && a.can.market && a.can.run;
     }
 
+    /* --------------------------------------------------------- the book tree */
+
+    function sandboxById(id) {
+        return SANDBOXES.filter(function (s) { return s.id === id; })[0];
+    }
+
+    function officialById(id) {
+        return OFFICIAL.filter(function (p) { return p.id === id; })[0];
+    }
+
+    function officialChildren(id) {
+        return OFFICIAL.filter(function (p) { return p.parent === id; });
+    }
+
+    function officialBooks(id) {
+        return OFFICIAL_BOOKS.filter(function (b) { return b.portfolio === id; });
+    }
+
+    function sandboxesAt(id) {
+        return SANDBOXES.filter(function (s) { return s.anchor === id; });
+    }
+
+    function sandboxBooks(sb) {
+        var out = [];
+        sb.roots.forEach(function (p) { out = out.concat(p.books || []); });
+        return out;
+    }
+
+    function anchorPath(sb) {
+        var names = [], p = officialById(sb.anchor);
+        while (p) { names.unshift(p.name); p = officialById(p.parent); }
+        return names.join(' \u203a ');
+    }
+
+    function targetPath(sb) { return anchorPath(sb) + ' \u203a ' + sb.name; }
+
+    function plural(count, one, many) { return count + ' ' + (count === 1 ? one : many); }
+
+    function selectedSandbox() { return sandboxById(S.target); }
+
+    var OPEN = {};
+
+    function treeOpen(id) { return OPEN[id] !== false; }
+
+    function bookTree() {
+        var html = '';
+
+        function pad(depth) { return 'padding-left:' + (8 + depth * 16) + 'px'; }
+
+        function walk(id, depth) {
+            var p = officialById(id);
+            var kids = officialChildren(id);
+            var books = officialBooks(id);
+            var open = treeOpen(id);
+            var hasKids = kids.length > 0 || books.length > 0 || sandboxesAt(id).length > 0;
+            html += '<div class="trow official" style="' + pad(depth) + '" data-act="pick-official" data-node="' + esc(p.name) + '">' +
+                '<button type="button" class="twisty' + (hasKids ? '' : ' leaf') + '" data-act="tree-toggle" data-node="' + esc(id) + '">' +
+                (open ? '\u25be' : '\u25b8') + '</button>' +
+                '<span class="tname">' + esc(p.name) + '</span>' +
+                '<span class="count">' + (officialBooks(id).length ? officialBooks(id).length + ' books' : '') + '</span>' +
+                '<span class="tmeta"><span class="tag off">official</span> not an import target</span></div>';
+            if (!open) return;
+            kids.forEach(function (c) { walk(c.id, depth + 1); });
+            books.forEach(function (b) {
+                html += '<div class="trow bk official" style="' + pad(depth + 1) + '" data-act="pick-official" data-node="' + esc(b.name) + '">' +
+                    '<span class="twisty leaf">\u25b8</span>' +
+                    '<span class="tname">' + esc(b.name) + '</span>' +
+                    '<span class="tmeta">official \u00b7 ledger ' + esc(b.gl) + '</span></div>';
+            });
+            sandboxesAt(id).forEach(function (sb) { sandboxBranch(sb, depth + 1); });
+        }
+
+        function sandboxBranch(sb, depth) {
+            var open = treeOpen(sb.id);
+            var locked = sb.status === 'archived';
+            var books = sandboxBooks(sb);
+            html += '<div class="trow sandbox' + (S.target === sb.id ? ' on' : '') + (locked ? ' locked' : '') +
+                '" style="' + pad(depth) + '" ' + (locked ? 'data-act="pick-archived"' : 'data-act="pick-sandbox"') +
+                ' data-sb="' + esc(sb.id) + '">' +
+                '<button type="button" class="twisty" data-act="tree-toggle" data-node="' + esc(sb.id) + '">' +
+                (open ? '\u25be' : '\u25b8') + '</button>' +
+                '<span class="tname">' + esc(sb.name) + '</span>' +
+                '<span class="tag ' + (locked ? 'lock' : 'sb') + '">' +
+                (locked ? 'archived \u00b7 read-only' : 'sandbox \u00b7 import target') + '</span>' +
+                '<span class="tmeta">' + esc(sb.purpose) + ' \u00b7 ' + plural(sb.roots.length, 'portfolio', 'portfolios') +
+                ' \u00b7 ' + plural(books.length, 'virtual book', 'virtual books') + '</span></div>';
+            if (!open) return;
+            sb.roots.forEach(function (p) {
+                var parent = p.parent ? sb.roots.filter(function (x) { return x.id === p.parent; })[0] : null;
+                html += '<div class="trow sandbox" style="' + pad(depth + 1) + '" data-act="pick-inside" data-node="' + esc(p.name) + '">' +
+                    '<span class="twisty leaf">\u25b8</span><span class="tname">' + esc(p.name) + '</span>' +
+                    '<span class="tag off">' + (parent ? 'sandbox portfolio' : 'root \u00b7 no parent') + '</span>' +
+                    '<span class="tmeta">' + esc(p.ccy) + (parent ? ' \u00b7 under ' + esc(parent.name) : '') + '</span></div>';
+                (p.books || []).forEach(function (b) {
+                    html += '<div class="trow bk sandbox" style="' + pad(depth + 2) + '" data-act="pick-inside" data-node="' + esc(b.name) + '">' +
+                        '<span class="twisty leaf">\u25b8</span><span class="tname">' + esc(b.name) + '</span>' +
+                        '<span class="tmeta">virtual \u00b7 no ledger ref \u00b7 not sweepable</span></div>';
+                });
+            });
+        }
+
+        OFFICIAL.filter(function (p) { return p.parent === null; }).forEach(function (p) { walk(p.id, 0); });
+
+        return '<div class="tree scroll" role="tree" aria-label="Book tree">' + html +
+            '<div class="treelegend">' +
+            '<span><span class="tag sb">sandbox</span> selectable: the import writes inside it</span>' +
+            '<span><span class="tag off">official</span> not selectable: nothing official changes</span>' +
+            '<span><span class="tag lock">archived</span> read-only by the insert trigger</span>' +
+            '<span>A sandbox you cannot see is absent, not empty.</span>' +
+            '</div></div>';
+    }
+
+    function refusalNotice() {
+        if (!S.refuse) return '';
+        var why;
+        if (S.refuse.kind === 'official') {
+            why = 'An official node is read-only for an import. An import publishes inside a sandbox, so no official book and no official portfolio moves. ' +
+                'The target is a sandbox branch.';
+        } else if (S.refuse.kind === 'archived') {
+            why = 'This sandbox is archived. The insert trigger refuses a portfolio or a book in an archived sandbox, so it cannot receive an import. ' +
+                'Choose an open sandbox.';
+        } else {
+            why = 'The import target is the sandbox, not one of its portfolios or books. The import creates its own portfolios inside the sandbox.';
+        }
+        return '<div class="notice error mt"><span class="title">' + esc(S.refuse.name) + ' is not a target</span>' + why + '</div>';
+    }
+
+    /* What the import will create in the selected sandbox, and what stays
+     * official. The counts are the case's; the sandbox fields are the model's. */
+    function targetDetail() {
+        var sb = selectedSandbox();
+        var created = CREATES[S['case']];
+        var books = sandboxBooks(sb), pfs = sb.roots;
+        var out = '<div class="notice success"><span class="title">Selected sandbox</span>' +
+            '<span class="sbpath"><b>' + esc(targetPath(sb)) + '</b></span><br>' +
+            '<span class="faint">Anchored at ' + esc(anchorPath(sb)) + '. The sandbox is not a node of the official tree.</span></div>' +
+            '<table class="kv">' +
+            '<tr><td>Sandbox</td><td class="mono">' + esc(sb.id) + '</td></tr>' +
+            '<tr><td>Purpose</td><td>' + esc(sb.purpose) + ' \u00b7 ' + esc(sb.status) + ' \u00b7 ' + esc(sb.visibility) + '</td></tr>' +
+            '<tr><td>Owner</td><td>' + esc(sb.owner) + '</td></tr>' +
+            '<tr><td>Anchor</td><td>' + esc(anchorPath(sb)) + '</td></tr>' +
+            '<tr><td>Root portfolio</td><td>' + esc(pfs[0].name) + ' <span class="faint">\u2014 no parent</span></td></tr>' +
+            '<tr><td>In the sandbox now</td><td>' + plural(pfs.length, 'portfolio', 'portfolios') + ' \u00b7 ' +
+            plural(books.length, 'virtual book', 'virtual books') + '</td></tr>' +
+            '</table>';
+        if (created.books || created.portfolios) {
+            out += '<div class="makerbox mt"><span class="who">This import creates, inside ' + esc(sb.name) + '</span>' +
+                '<ul class="sbcontents">' +
+                '<li><b>' + created.portfolios + ' virtual portfolios</b> \u2014 each written with <span class="mono">sandbox_id = ' + esc(sb.id) + '</span>; the root it creates has no parent.</li>' +
+                '<li><b>' + created.books + ' virtual books</b> \u2014 each written with <span class="mono">sandbox_id = ' + esc(sb.id) + '</span>, no ledger reference, not sweepable.</li>' +
+                '<li><b>0 official rows</b> \u2014 no official book, portfolio or ledger balance changes.</li>' +
+                '</ul></div>';
+        } else {
+            out += '<div class="notice warn mt"><span class="title">This file creates nothing in the sandbox</span>' +
+                'It carries no books and no portfolios. The sandbox target covers the book-tree families; this file carries none of them, ' +
+                'so the sandbox keeps the rows it already holds.</div>';
+        }
+        out += '<div class="notice warn"><span class="title">The conventions and market families have no sandbox column</span>' +
+            'The model gives <span class="mono">sandbox_id</span> to books and portfolios only. The convention, curve, market and run families ' +
+            'in this file still publish to the party, not into the sandbox. The selected sandbox governs the book-tree families alone.</div>';
+        return out;
+    }
+
+    function targetCard() {
+        return '<div class="card mt"><h2>The target: a sandbox on the book tree</h2>' +
+            '<p class="lead">An import always publishes. It publishes inside a sandbox, never into the official tree, so the person picks a ' +
+            'sandbox branch and sees the official nodes it hangs from. A sandbox is anchored at one official portfolio; it is not a node of the official tree.</p>' +
+            '<div class="split"><div>' + bookTree() + refusalNotice() +
+            '<div class="notice info mt mb0"><span class="title">The two trees cannot mix</span>' +
+            'A book and its portfolio belong to the same sandbox or both to none. A sandbox\u2019s root portfolios have no parent. ' +
+            'A virtual book carries no ledger reference and is not sweepable \u2014 the store refuses one that does. ' +
+            'The sandbox\u2019s rows are read only by the account that may see the sandbox.</div></div>' +
+            '<div>' + targetDetail() + '</div></div>' +
+            '<div class="proto-hint">Mock: the tree, the sandbox ids and the counts are invented. The rules are the model\u2019s: a sandbox is anchored ' +
+            'at an official portfolio, an official book never sits under a sandbox portfolio, and a book and its portfolio share one sandbox.</div>' +
+            '</div>';
+    }
+
     /* ------------------------------------------------------------- render */
 
     function render() {
@@ -371,7 +642,7 @@
             '<div class="tenant">Signed in as <b>' + esc(actor().name) + '</b> \u00b7 ' +
             esc(actor().part) + ' \u00b7 party <b>' + esc(actor().party) + '</b></div>' +
             '<h1>Bring data in</h1>' +
-            '<p class="lede">' + esc(c.gist) + ' The screen names the source, the scope and the families before anything is staged. ' +
+            '<p class="lede">' + esc(c.gist) + ' The screen names the source, the scope, the families and the sandbox target before anything is staged. ' +
             'Staging writes no live row.</p>' +
             gapbanner() +
             stepstrip() +
@@ -431,7 +702,7 @@
         return '<div class="split">' +
             '<div>' + scopeCard() + sourceCard() + '</div>' +
             '<div>' + whoCard() + orderCard() + '</div>' +
-            '</div>' + workflowCard() + foot();
+            '</div>' + targetCard() + workflowCard() + foot();
     }
 
     /* The definition the import will run under, and the steps it declares.
@@ -511,7 +782,7 @@
             '<div class="stepfoot"><span class="hint">Progress lives on the run screen, because the run is the attempt and the ' +
             'engine exposes one attempt per instance.</span>' +
             '<span class="ml-auto"><a class="btn ghost" href="../one-import-run/index.html?case=' + esc(S['case']) +
-            '&amp;wf=staged">Follow the run</a></span></div>' +
+            '&amp;target=' + esc(S.target) + '&amp;wf=staged">Follow the run</a></span></div>' +
             '<div class="proto-hint">Mock: the type, the step subjects and the budgets are a proposal. The state names and the ' +
             'progress read are the engine\u2019s own, and the run screen draws them.</div>' +
             '</div>';
@@ -522,7 +793,7 @@
         return '<div class="card"><h2>The scope</h2>' +
             '<p class="lead">The session decides the party. The file does not carry one.</p>' +
             '<div class="grid2">' +
-            field('Target party', a.party + ' (the session\u2019s party)', true) +
+            field('Party', a.party + ' (the session\u2019s party)', true) +
             field('Source', c.env) +
             field('Source kind', c.sourceKind) +
             field('Content', c.sourceName) +
@@ -677,8 +948,14 @@
 
     function summaryCard(chosen) {
         var rows = chosen.reduce(function (a, f) { return a + f.rows; }, 0);
+        var sb = selectedSandbox(), created = CREATES[S['case']];
         return '<div class="card"><h2>What will be staged</h2>' +
             '<p class="lead">A staged import is durable and costs nothing to retry. Nothing here touches the live tables.</p>' +
+            '<div class="notice info"><span class="title">It publishes inside ' + esc(sb.name) + '</span>' +
+            '<span class="sbpath">' + esc(targetPath(sb)) + '</span><br>' +
+            'The book-tree part creates ' + created.portfolios + ' virtual portfolios and ' + created.books +
+            ' virtual books there, every row with <span class="mono">sandbox_id = ' + esc(sb.id) + '</span>. ' +
+            'No official row changes. <button class="btn small ghost" data-act="back">Change the sandbox</button></div>' +
             '<div class="countgrid"><div class="c"><div class="k">Families</div><div class="v">' + chosen.length + '</div></div>' +
             '<div class="c"><div class="k">Staged rows</div><div class="v">' + n(rows) + '</div></div>' +
             '<div class="c"><div class="k">Live rows changed</div><div class="v">0</div></div></div>' +
@@ -757,7 +1034,7 @@
                 'Promotion bundle': 'promote', 'Folder of sample trees': 'seed',
                 'Two market-data files': 'feed', 'One ORE file': 'one-dataset'
             };
-            if (map[t.value]) go({ 'case': map[t.value], step: 'source', family: null });
+            if (map[t.value]) go({ 'case': map[t.value], step: 'source', family: null, refuse: null, target: TARGET_BY_CASE[map[t.value]] });
         }
     });
 
@@ -777,7 +1054,7 @@
         var t = e.target.closest('[data-act]');
         if (!t) return;
         var act = t.dataset.act;
-        if (act === 'case') go({ 'case': t.dataset.case, step: 'source', family: null });
+        if (act === 'case') go({ 'case': t.dataset.case, step: 'source', family: null, refuse: null, target: TARGET_BY_CASE[t.dataset.case] });
         else if (act === 'actor') go({ actor: t.dataset.actor });
         else if (act === 'step') go({ step: t.dataset.step });
         else if (act === 'families' && !t.disabled) go({ step: 'families' });
@@ -786,7 +1063,27 @@
         else if (act === 'scan') go({ scan: t.dataset.on === '1' });
         else if (act === 'stage') {
             window.location.href = '../stage-an-import/index.html?case=' + encodeURIComponent(S['case']) +
+                '&target=' + encodeURIComponent(S.target) +
                 (S['case'] === 'party' ? '&actor=ops' : '');
+        }
+        else if (act === 'tree-toggle') {
+            OPEN[t.dataset.node] = !treeOpen(t.dataset.node);
+            render();
+        }
+        else if (act === 'pick-sandbox') {
+            go({ target: t.dataset.sb, refuse: null });
+        }
+        else if (act === 'pick-official') {
+            S.refuse = { kind: 'official', name: t.dataset.node };
+            render();
+        }
+        else if (act === 'pick-archived') {
+            S.refuse = { kind: 'archived', name: sandboxById(t.dataset.sb).name };
+            render();
+        }
+        else if (act === 'pick-inside') {
+            S.refuse = { kind: 'inside', name: t.dataset.node };
+            render();
         }
     });
 

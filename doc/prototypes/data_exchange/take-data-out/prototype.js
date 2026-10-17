@@ -12,6 +12,7 @@
  *   ?state=ready|written|refused|partial
  *   ?instant=one|apart       one read instant, or today's parts read apart
  *   ?actor=reader|ops        any reader, or an operations user
+ *   ?sandbox=official|<sandbox id>   the official tree, or a sandbox to export
  *
  * There is no export screen in the product today, and no bundle, manifest,
  * redaction, as-of read or export record.
@@ -55,6 +56,25 @@
         }
     };
 
+    /* Sandboxes that may be exported from. A sandbox hangs from an official
+     * portfolio and owns a subtree; it is not a node of the official tree.
+     * Exporting one is how a defect is reproduced elsewhere, so it sits beside
+     * the official scope rather than instead of it. */
+    var SANDBOXES = [
+        { id: 'sb-import-repro', name: 'Reproduce 2026-10-16', anchor: 'Global Trading \u203a Global Rates \u203a EUR Rates',
+            path: 'Global Trading \u203a Global Rates \u203a EUR Rates \u203a Reproduce 2026-10-16',
+            purpose: 'import', status: 'open', portfolios: 2, books: 2 },
+        { id: 'sb-import-onboard', name: 'Onboard Acme 2026-10-17', anchor: 'Global Trading \u203a Global Rates',
+            path: 'Global Trading \u203a Global Rates \u203a Onboard Acme 2026-10-17',
+            purpose: 'import', status: 'open', portfolios: 1, books: 1 },
+        { id: 'sb-sample-seed', name: 'Seed samples 2026-10', anchor: 'Global Trading',
+            path: 'Global Trading \u203a Seed samples 2026-10',
+            purpose: 'sample', status: 'open', portfolios: 1, books: 2 },
+        { id: 'sb-import-feed', name: 'Vendor feed 2026-10-17', anchor: 'Global Trading \u203a Global Rates \u203a USD Rates',
+            path: 'Global Trading \u203a Global Rates \u203a USD Rates \u203a Vendor feed 2026-10-17',
+            purpose: 'import', status: 'open', portfolios: 1, books: 1 }
+    ];
+
     var PARTS = [
         { key: 'trades', name: 'Portfolio and trades', op: 'trading.v1.ops.export_portfolio', rows: '47 portfolios \u00b7 1,642 trades', bytes: '12.4 MB', read: '10:31:02', grants: '3 books excluded: rights', include: true },
         { key: 'conventions', name: 'Conventions document', op: 'ore.v1.ops.export_run_configuration', rows: '12 families \u00b7 344 conventions', bytes: '48 KB', read: '10:31:04', include: true },
@@ -78,7 +98,8 @@
             purpose: PURPOSES[q.purpose] ? q.purpose : 'share',
             state: ['ready', 'written', 'refused'].indexOf(q.state) >= 0 ? q.state : 'ready',
             instant: q.instant === 'apart' ? 'apart' : 'one',
-            actor: q.actor === 'ops' ? 'ops' : 'reader'
+            actor: q.actor === 'ops' ? 'ops' : 'reader',
+            sandbox: q.sandbox === 'official' || SANDBOXES.some(function (s) { return s.id === q.sandbox; }) ? q.sandbox : 'official'
         };
     }
 
@@ -89,6 +110,7 @@
         if (S.state !== 'ready') p.push('state=' + S.state);
         if (S.instant !== 'one') p.push('instant=' + S.instant);
         if (S.actor !== 'reader') p.push('actor=' + S.actor);
+        if (S.sandbox !== 'official') p.push('sandbox=' + S.sandbox);
         window.history.replaceState(null, '', window.location.pathname + (p.length ? '?' + p.join('&') : ''));
         render();
     }
@@ -99,6 +121,10 @@
     }
     function pur() { return PURPOSES[S.purpose]; }
     function actor() { return ACTORS[S.actor]; }
+    function sandboxSource() {
+        return S.sandbox === 'official' ? null : SANDBOXES.filter(function (s) { return s.id === S.sandbox; })[0];
+    }
+    function scopeLabel() { var sb = sandboxSource(); return sb ? sb.path : pur().scopeLabel; }
 
     function included() {
         return PARTS.filter(function (p) { return p.include && !(S.purpose === 'share' && p.key === 'run'); });
@@ -141,7 +167,8 @@
         var rows = 0;
         included().forEach(function (p) { rows += 1; });
         return '<div class="strip">' +
-            '<div class="cell"><div class="k">Scope</div><div class="v" style="font-size:14px">' + esc(pur().scopeLabel) + '</div><div class="s">party ' + esc(PARTY) + '</div></div>' +
+            '<div class="cell"><div class="k">Scope</div><div class="v" style="font-size:14px">' + esc(scopeLabel()) + '</div><div class="s">' +
+            (sandboxSource() ? 'sandbox ' + esc(S.sandbox) + ' \u00b7 party ' + esc(PARTY) : 'the official tree \u00b7 party ' + esc(PARTY)) + '</div></div>' +
             '<div class="cell"><div class="k">Parts</div><div class="v">' + rows + '</div><div class="s">' + (S.instant === 'one' ? 'read at one instant' : 'read apart, as today') + '</div></div>' +
             '<div class="cell"><div class="k">Rows the session cannot read</div><div class="v">0</div><div class="s">3 books excluded and named</div></div>' +
             '<div class="cell"><div class="k">Manifest</div><div class="v" style="font-size:14px">man_01J9Z7\u2026</div><div class="s">' + (S.state === 'written' ? 'written with the bundle' : 'not written yet') + '</div></div>' +
@@ -161,13 +188,21 @@
             '<p class="lead">The export reads what the session may read. A book whose rights exclude the person is refused, not returned empty.</p>' +
             '<div class="grid2">' +
             '<div class="field ro"><span class="lbl">Party</span><input value="' + esc(PARTY) + '" readonly></div>' +
+            '<div class="field"><span class="lbl">Export from</span><select data-act="sandbox">' +
+            '<option value="official"' + (S.sandbox === 'official' ? ' selected' : '') + '>Official tree \u2014 the party</option>' +
+            SANDBOXES.map(function (s) {
+                return '<option value="' + esc(s.id) + '"' + (S.sandbox === s.id ? ' selected' : '') + '>Sandbox \u2014 ' +
+                    esc(s.name) + ' \u00b7 ' + esc(s.anchor) + '</option>';
+            }).join('') + '</select><span class="hint">A sandbox export names its source sandbox and reads its subtree. The official tree is ' +
+            'exportable too: unlike an import, an export may read it.</span></div>' +
             '<div class="field"><span class="lbl">What to export</span><select data-act="scope">' +
-            ['One book', 'One portfolio', 'One report definition', 'One series', 'The whole party']
+            ['One book', 'One portfolio', 'One report definition', 'One series', 'The whole party', 'One sandbox']
                 .map(function (o) {
-                    var sel = (p.defaultScope === 'party' && o === 'The whole party') || (p.defaultScope === 'book' && o === 'One book') || (p.defaultScope === 'report' && o === 'One report definition');
+                    var sel = sandboxSource() ? o === 'One sandbox'
+                        : (p.defaultScope === 'party' && o === 'The whole party') || (p.defaultScope === 'book' && o === 'One book') || (p.defaultScope === 'report' && o === 'One report definition');
                     return '<option' + (sel ? ' selected' : '') + '>' + o + '</option>';
                 }).join('') + '</select></div>' +
-            '<div class="field span2"><span class="lbl">Node or definition</span><input value="' + esc(p.scopeLabel) + '"' +
+            '<div class="field span2"><span class="lbl">Node or definition</span><input value="' + esc(scopeLabel()) + '"' +
             (S.purpose === 'share' ? '' : ' readonly') + '></div>' +
             '<div class="field"><span class="lbl">As of</span><input value="2026-10-17 10:31:00Z" readonly></div>' +
             '<div class="field"><span class="lbl">Read at</span><input value="' + (S.instant === 'one' ? 'one snapshot (snapshot_id 8f21\u2026)' : '10:31:02 \u2026 10:38:41, four independent reads') + '" readonly></div>' +
@@ -177,22 +212,50 @@
                 'A PostgreSQL backup is the only complete copy, and it is taken outside the shell.' :
                 S.purpose === 'promote' ? 'A promotion bundle moves through files only. Production never reads development\u2019s database, message bus or object storage.' :
                     'The smallest set that shows the problem. The ticket rarely needs the whole party.') +
-            '</div></div>';
+            '</div>' +
+            (sandboxSource() ? '<div class="notice info mt"><span class="title">This export reads a sandbox, and that is how a defect travels</span>' +
+                'The bundle names <b>' + esc(sandboxSource().name) + '</b> and its anchor. The receiving import creates a new sandbox and writes the virtual ' +
+                'books there; a sandbox id is fixed for life, so it is never reused. The sandbox\u2019s root portfolios have no parent, and every virtual book ' +
+                'in it carries no ledger reference and is not sweepable.</div>' : '') +
+            '</div>';
+    }
+
+    function plural(count, one, many) { return count + ' ' + (count === 1 ? one : many); }
+
+    function partWhere(p) {
+        var sb = sandboxSource();
+        if (!sb) return '<span class="pill">official tree</span>';
+        if (p.key === 'trades') {
+            return '<span class="pill info">sandbox</span> <span class="sub">' + plural(sb.portfolios, 'portfolio', 'portfolios') +
+                ' \u00b7 ' + plural(sb.books, 'virtual book', 'virtual books') + '</span>';
+        }
+        return '<span class="pill">party-wide</span> <span class="sub">no sandbox column</span>';
+    }
+
+    function partRows(p) {
+        var sb = sandboxSource();
+        return sb && p.key === 'trades' ? plural(sb.portfolios, 'portfolio', 'portfolios') + ' \u00b7 ' +
+            plural(sb.books, 'virtual book', 'virtual books') : p.rows;
     }
 
     function partsCard() {
         return '<div class="card mt"><div class="row between"><h2>What goes in</h2>' +
             '<span class="pill info">' + included().length + ' parts</span></div>' +
-            '<p class="lead">Every part names the read that produced it. A part left out is named in the manifest, never silently absent.</p>' +
-            '<table class="grid"><thead><tr><th></th><th>Part</th><th>Rows</th><th>Size</th><th>Read at</th></tr></thead><tbody>' +
+            '<p class="lead">Every part names the read that produced it, and where it sits. A part left out is named in the manifest, never silently absent.</p>' +
+            '<table class="grid"><thead><tr><th></th><th>Part</th><th>Where</th><th>Rows</th><th>Size</th><th>Read at</th></tr></thead><tbody>' +
             PARTS.map(function (p) {
                 var on = included().indexOf(p) >= 0;
                 return '<tr' + (on ? '' : ' class="off"') + '><td class="chk"><input type="checkbox" data-act="part" data-key="' + p.key + '"' +
                     (on ? ' checked' : '') + (p.key === 'job' ? ' disabled' : '') + '></td>' +
                     '<td class="nm">' + esc(p.name) + '<span class="ent mono" style="font-size:10px">' + esc(p.op) + '</span>' +
                     (p.why ? '<span class="ent">' + esc(p.why) + '</span>' : '') + (p.grants ? '<span class="ent">' + esc(p.grants) + '</span>' : '') + '</td>' +
-                    '<td class="n">' + esc(p.rows) + '</td><td class="n">' + esc(p.bytes) + '</td><td class="mono" style="font-size:11px">' + esc(p.read) + '</td></tr>';
+                    '<td>' + partWhere(p) + '</td>' +
+                    '<td class="n">' + esc(partRows(p)) + '</td><td class="n">' + esc(p.bytes) + '</td><td class="mono" style="font-size:11px">' + esc(p.read) + '</td></tr>';
             }).join('') + '</tbody></table>' +
+            (sandboxSource() ? '<div class="notice info mt"><span class="title">The two trees cannot mix, and this export proves it</span>' +
+                'The sandbox part holds only rows that carry the sandbox id: ' + plural(sandboxSource().portfolios, 'portfolio', 'portfolios') + ' and ' +
+                plural(sandboxSource().books, 'virtual book', 'virtual books') + '. It never holds an official book, because a book and its portfolio share one sandbox or both to none. ' +
+                'The other parts are party-wide reference data and carry no sandbox column; the export names that rather than pretending otherwise.</div>' : '') +
             '<div class="notice warn mt"><span class="title">3 books are excluded by rights, and the export refuses rather than returns nothing</span>' +
             'RATES.USD / USD_CROSS_01, RATES.USD / USD_CORP_02 and CREDIT / CDS_HY_03 carry rights that exclude this session. ' +
             'The export names them; a support bundle with no rows and no explanation is worse than a refusal.' +
@@ -206,6 +269,8 @@
             '<table class="kv">' +
             kv('Manifest', 'man_01J9Z7K2Q4RT (would be minted by the export)') +
             kv('Party', PARTY) +
+            kv('Sandbox', sandboxSource() ? sandboxSource().name + ' (' + sandboxSource().id + ')' : 'none \u2014 the official tree') +
+            kv('Sandbox anchor', sandboxSource() ? sandboxSource().anchor : 'not applicable') +
             kv('Source installation', 'development \u00b7 ores.build 0.28.4 \u00b7 schema 2026-10-16') +
             kv('As of', '2026-10-17 10:31:00Z, snapshot 8f21\u2026') +
             kv('Parts', included().map(function (p) { return p.name; }).join(', ')) +
@@ -271,18 +336,21 @@
         return '<div class="stepfoot"><span class="hint">The receiving side is the import prototype: the same bundle is its source. ' +
             'Nothing is written until the person takes it away.</span>' +
             '<span class="ml-auto"><a class="btn ghost" href="../bring-data-in/index.html?case=' +
-            (S.purpose === 'promote' ? 'promote' : 'defect') + '">Open the receiving screen</a> ' +
+            (S.purpose === 'promote' ? 'promote' : 'defect') + (sandboxSource() ? '&amp;target=' + esc(S.sandbox) : '') +
+            '">Open the receiving screen</a> ' +
             '<button class="btn primary" data-act="state" data-state="written">Take it away</button></span></div>';
     }
 
     function writtenState() {
         return '<div class="card"><div class="outcome"><div class="mark ok">\u2713</div><h2>' +
-            (S.purpose === 'archive' ? 'Archive written' : S.purpose === 'promote' ? 'Bundle written' : 'Files written') + '</h2>' +
+            (sandboxSource() ? 'Sandbox bundle written' : S.purpose === 'archive' ? 'Archive written' : S.purpose === 'promote' ? 'Bundle written' : 'Files written') + '</h2>' +
             '<p>' + included().length + ' parts, ' + (S.instant === 'one' ? 'read at one instant, ' : 'read apart, ') +
-            'with a manifest, written to the person\u2019s own file system. The platform keeps no export record.</p></div>' +
+            'with a manifest, written to the person\u2019s own file system. ' +
+            (sandboxSource() ? 'The bundle names sandbox ' + esc(sandboxSource().name) + ' and its anchor; the receiving import creates a new sandbox. ' : '') +
+            'The platform keeps no export record.</p></div>' +
             '<table class="grid mt"><thead><tr><th>File</th><th>Rows</th><th>Size</th><th>sha256</th></tr></thead><tbody>' +
             included().map(function (p, i) {
-                return '<tr><td class="mono">' + esc(fileName(p.key)) + '</td><td class="n">' + esc(p.rows) + '</td><td class="n">' + esc(p.bytes) +
+                return '<tr><td class="mono">' + esc(fileName(p.key)) + '</td><td class="n">' + esc(partRows(p)) + '</td><td class="n">' + esc(p.bytes) +
                     '</td><td class="mono" style="font-size:11px">' + ('8d41c2' + (i + 1) + 'f9\u2026') + '</td></tr>';
             }).join('') +
             '<tr><td class="mono">manifest.json</td><td class="n">1</td><td class="n">6 KB</td><td class="mono" style="font-size:11px">4b71e0\u2026</td></tr>' +
@@ -291,6 +359,9 @@
             'Nothing lists what the person exported and when. For an archive, the retention register is the only record. ' +
             'For a support ticket, the attachment is. For a promotion, the ticket and the target\u2019s import register are.' +
             '</div>' +
+            (sandboxSource() ? '<div class="notice info mt"><span class="title">A sandbox id is fixed for its life</span>' +
+                'The bundle names the source sandbox, not a copy of its id. The receiving import opens a new sandbox at its own anchor and writes the ' +
+                'portfolios and virtual books there, so two installments never share one sandbox id. The official tree is untouched on both sides.</div>' : '') +
             '<div class="stepfoot"><button class="btn ghost" data-act="state" data-state="ready">Back to the checks</button>' +
             '<span class="ml-auto"><a class="btn primary" href="../import-register/index.html?variant=' +
             (S.purpose === 'promote' ? 'promotion' : 'list') + '">Open the register</a></span></div></div>';
@@ -341,6 +412,7 @@
             render();
         }
         if (t.dataset.act === 'scope') render();
+        if (t.dataset.act === 'sandbox') go({ sandbox: t.value, state: 'ready' });
     });
 
     document.addEventListener('click', function (e) {

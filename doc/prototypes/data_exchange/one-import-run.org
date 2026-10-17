@@ -24,7 +24,9 @@ journeys ask it about the same attempt record, so this is one screen in
 different states. It also draws the difference the design decision turns on:
 one atomic commit, or today's write per family. Above the record sits the
 workflow instance that performed the import, so the person sees the run while
-it runs and not only after it ends.
+it runs and not only after it ends. Beside it sits the sandbox the run fills,
+so the same view shows the virtual portfolios and books appearing when the
+commit completes.
 
 It is throwaway. Open [[file:one-import-run/][the run]].
 
@@ -47,6 +49,11 @@ It is throwaway. Open [[file:one-import-run/][the run]].
   its counts, because no trade is matched by its ORE id today.
 - Who may read the run is scoped. The maker, the decider and the same party
   see it; another party's run is absent.
+- The sandbox is part of the record. The attempt names the sandbox it targeted,
+  and the tree below the workflow region shows the sandbox's existing virtual
+  books and the ones the commit creates. A stage step creates no row there; the
+  commit is the step that makes the imported tree live. If the run compensates,
+  the tree stays as it was.
 
 ** The workflow run
 
@@ -89,6 +96,10 @@ screen would split the retry from the record it resumes.
   silent before a pass fires, whether the service that owns the subject is
   alive, and whether a late completion is real. It draws =started_at= and the
   budget, and says the pass decides.
+- The sandbox tree is driven by the same state, not by a second clock. It shows
+  the created portfolios and virtual books only when the commit reached a
+  terminal success state, and it says that a stage step writes nothing into the
+  tree. The sandbox path and id sit beside the instance identity.
 
 ** Variants and states
 
@@ -96,9 +107,13 @@ screen would split the retry from the record it resumes.
 =?state=applied|failed|partial|expired=,
 =?mode=proposed|today=, =?fail=<part>=, =?attempt=1|2=,
 =?wf=staged|in_progress|waiting|failed|retrying|completed|warnings|compensated=,
-=?play=1=. The bar switches the trigger, the outcome, the mechanism, the
-workflow state and the attempt; Play walks the workflow states one every
-1.6 s. =?wf=staged= is the state with no instance at all: it is what "staged
+=?play=1=,
+=?target=sb-import-onboard|sb-sample-seed|sb-import-repro|sb-import-feed=.
+The bar switches the trigger, the outcome, the mechanism, the workflow state
+and the attempt; Play walks the workflow states one every 1.6 s. The sandbox
+tree follows the attempt record: an applied outcome fills it, a failed or
+compensated one leaves it empty, and a completed workflow region against a
+failed record says which of the two the tree follows. =?wf=staged= is the state with no instance at all: it is what "staged
 and awaiting review" means to the engine.
 
 ** What is real and what is not
@@ -110,8 +125,11 @@ progress read are the engine's. The workflow type
 =data_exchange_import_workflow=, its step subjects and the per-family stage
 replies are the draft's and are not registered: the engine holds
 =ore_import_workflow= and =run_configuration_import_workflow=, one step each.
-The ids, counts, timestamps, sample names and duplicate fixings are invented,
-and the whole workflow region is a script on a clock.
+The sandbox rules are the model's: a sandbox is anchored at an official
+portfolio, a sandbox root portfolio has no parent, and a virtual book carries
+no ledger reference and is not sweepable. The ids, counts, timestamps, sample
+names and duplicate fixings are invented, and the whole workflow region is a
+script on a clock.
 
 ** Screens the workflow connection touches
 
@@ -147,7 +165,10 @@ and the whole workflow region is a script on a clock.
 Not signed off. The owner must answer the question this screen puts in the
 middle: is a half-applied ORE file ever acceptable? The trade import says yes
 by design and the conventions import says no, and the two cannot both be true
-under one mechanism.
+under one mechanism. The sandbox makes a second question visible: when a run
+fails after the book-tree rows landed, the sandbox holds them and the
+conventions published to the party do not roll back. Is that a clean failure,
+or does the sandbox only hide the half-import?
 
 * See also
 

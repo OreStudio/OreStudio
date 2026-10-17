@@ -15,6 +15,7 @@
  *   ?family=swap                         the family whose rows are open
  *   ?decider=m.risk|o.ops               who answers on the decide state
  *   ?check=lookup|none                   make one check fail on the decide state
+ *   ?target=<sandbox id>                 the sandbox the import targets
  *
  * The proposed mechanism is the draft design's: begin, stage per family, commit
  * once. The screen is the one the journeys say does not exist.
@@ -72,6 +73,31 @@
     var CASE_ORDER = ['onboard', 'seed', 'defect', 'feed', 'one-dataset', 'promote', 'party'];
     var MAKER_ORDER = ['admin', 'ops', 'maintainer', 'support'];
 
+    /* The chosen sandbox, read from the book tree on the entry screen. A
+     * sandbox is anchored at an official portfolio and owns a subtree; it is
+     * not a node of the official tree. Only books and portfolios carry a
+     * sandbox_id, so the rows grouped below say which of them land inside. */
+    var TARGETS = {
+        'sb-import-repro': { name: 'Reproduce 2026-10-16', anchor: 'Global Trading \u203a Global Rates \u203a EUR Rates',
+            path: 'Global Trading \u203a Global Rates \u203a EUR Rates \u203a Reproduce 2026-10-16',
+            purpose: 'import', status: 'open', owner: 'D. Osei', portfolios: 2, books: 2 },
+        'sb-import-onboard': { name: 'Onboard Acme 2026-10-17', anchor: 'Global Trading \u203a Global Rates',
+            path: 'Global Trading \u203a Global Rates \u203a Onboard Acme 2026-10-17',
+            purpose: 'import', status: 'open', owner: 'J. Smith', portfolios: 1, books: 1 },
+        'sb-sample-seed': { name: 'Seed samples 2026-10', anchor: 'Global Trading',
+            path: 'Global Trading \u203a Seed samples 2026-10',
+            purpose: 'sample', status: 'open', owner: 'K. Mori', portfolios: 1, books: 2 },
+        'sb-import-feed': { name: 'Vendor feed 2026-10-17', anchor: 'Global Trading \u203a Global Rates \u203a USD Rates',
+            path: 'Global Trading \u203a Global Rates \u203a USD Rates \u203a Vendor feed 2026-10-17',
+            purpose: 'import', status: 'open', owner: 'J. Smith', portfolios: 1, books: 1 }
+    };
+
+    var CASE_TARGET = {
+        onboard: 'sb-import-onboard', seed: 'sb-sample-seed', defect: 'sb-import-repro',
+        feed: 'sb-import-feed', 'one-dataset': 'sb-import-onboard',
+        promote: 'sb-import-repro', party: 'sb-import-onboard'
+    };
+
     var S = readQuery();
 
     function readQuery() {
@@ -82,13 +108,15 @@
             var k = decodeURIComponent(i < 0 ? pair : pair.slice(0, i));
             q[k] = decodeURIComponent(i < 0 ? '' : pair.slice(i + 1));
         });
+        var name = CASES[q['case']] ? q['case'] : 'onboard';
         var st = {
-            'case': CASES[q['case']] ? q['case'] : 'onboard',
+            'case': name,
             maker: MAKERS[q.actor] ? q.actor : (q['case'] === 'party' ? 'ops' : 'admin'),
             state: ['review', 'decide', 'declined', 'applied', 'expired'].indexOf(q.state) >= 0 ? q.state : 'review',
             family: q.family || null,
             decider: DECIDERS.conventions.id === q.decider || DECIDERS.trades.id === q.decider ? q.decider : 'm.risk',
-            check: q.check === 'lookup' ? 'lookup' : 'none'
+            check: q.check === 'lookup' ? 'lookup' : 'none',
+            target: TARGETS[q.target] ? q.target : CASE_TARGET[name]
         };
         return st;
     }
@@ -102,6 +130,7 @@
         if (S.family) p.push('family=' + S.family);
         if (S.decider !== 'm.risk') p.push('decider=' + S.decider);
         if (S.check !== 'none') p.push('check=' + S.check);
+        if (S.target !== CASE_TARGET[S['case']]) p.push('target=' + S.target);
         window.history.replaceState(null, '', window.location.pathname + (p.length ? '?' + p.join('&') : ''));
         render();
     }
@@ -114,6 +143,11 @@
     function cas() { return CASES[S['case']]; }
     function maker() { return MAKERS[S.maker]; }
     function deciderFor(part) { return DECIDERS[part] || DECIDERS.conventions; }
+    function target() { return TARGETS[S.target]; }
+
+    /* A part lands in the sandbox only when it is a book-tree family. The
+     * conventions, curve, market and run rows carry no sandbox_id. */
+    function landsIn(p) { return p.key === 'trades' ? 'sandbox' : 'party'; }
 
     /* The staged plan. The numbers are the ones the mock file would produce; the
      * shape is what matters: per family, new, replaced, unchanged, refused. */
@@ -204,8 +238,8 @@
     function head() {
         var t = totals();
         return '<div class="brand">' + esc(TENANT) + '</div>' +
-            '<div class="tenant">Party <b>' + esc(PARTY) + '</b> \u00b7 source <b>' + esc(cas().source) + '</b> \u00b7 staged by ' +
-            esc(maker().name) + ' \u00b7 import <span class="mono">' + IMPORT_ID + '</span></div>' +
+            '<div class="tenant">Party <b>' + esc(PARTY) + '</b> \u00b7 source <b>' + esc(cas().source) + '</b> \u00b7 target <b>' +
+            esc(target().name) + '</b> \u00b7 staged by ' + esc(maker().name) + ' \u00b7 import <span class="mono">' + IMPORT_ID + '</span></div>' +
             '<h1>Review before it lands</h1>' +
             '<p class="lede">One staged import. Per family: what is new, what replaces a live row, what is unchanged and what is refused. ' +
             'Nothing here is visible to a reader of the party.</p>' +
@@ -248,27 +282,75 @@
     }
 
     function body() {
-        if (S.state === 'expired') return expiredState();
-        if (S.state === 'declined') return declinedState();
-        if (S.state === 'applied') return appliedState();
+        var top = targetCard();
+        if (S.state === 'expired') return top + expiredState();
+        if (S.state === 'declined') return top + declinedState();
+        if (S.state === 'applied') return top + appliedState();
         var left = '<div>' + planCard() + untouchedCard() + '</div>';
         var right = '<div>' + (S.state === 'decide' ? decideCard() : decisionCard()) + refusalCard() + '</div>';
-        return '<div class="split">' + left + right + '</div>';
+        return top + '<div class="split">' + left + right + '</div>';
+    }
+
+    function targetCard() {
+        var t = target();
+        var made = { onboard: [3, 4], seed: [3, 12], defect: [47, 103], promote: [47, 103],
+            party: [3, 4], feed: [0, 0], 'one-dataset': [0, 0] }[S['case']];
+        var bookRows = plan().filter(function (p) { return p.key === 'trades'; });
+        var partyRows = plan().filter(function (p) { return p.key !== 'trades'; });
+        var bookCount = bookRows.reduce(function (a, p) { return a + p.staged; }, 0);
+        return '<div class="card"><h2>The sandbox these rows land in</h2>' +
+            '<p class="lead">The import publishes into the sandbox chosen on the book tree. A sandbox hangs from an official portfolio; ' +
+            'it is not a node of the official tree, and the rows inside carry its id.</p>' +
+            '<div class="strip">' +
+            '<div class="cell"><div class="k">Sandbox</div><div class="v" style="font-size:14px">' + esc(t.name) + '</div>' +
+            '<div class="s">' + esc(t.id) + ' \u00b7 ' + esc(t.purpose) + ' \u00b7 ' + esc(t.status) + '</div></div>' +
+            '<div class="cell"><div class="k">Anchor</div><div class="v" style="font-size:13px">' + esc(t.anchor) + '</div>' +
+            '<div class="s">fixed for the sandbox\u2019s life</div></div>' +
+            '<div class="cell"><div class="k">Inside, after</div><div class="v">' + made[0] + ' / ' + made[1] + '</div>' +
+            '<div class="s">virtual portfolios / virtual books created</div></div>' +
+            '<div class="cell"><div class="k">Official rows changed</div><div class="v">0</div>' +
+            '<div class="s">no official book or portfolio moves</div></div>' +
+            '</div>' +
+            '<div class="split"><div class="notice success mb0"><span class="title">Inside the sandbox</span>' +
+            (bookRows.length
+                ? 'Book-tree family: <b>Trades and portfolios</b> \u2014 ' + n(bookCount) + ' rows, creating ' + made[0] +
+                  ' virtual portfolios and ' + made[1] + ' virtual books under <span class="sbpath"><b>' + esc(t.path) + '</b></span>. ' +
+                  'Each book is written with <span class="mono">sandbox_id = ' + esc(S.target) + '</span>, no ledger reference and ' +
+                  '<span class="mono">is_sweepable = false</span>. The root portfolio it creates has no parent.'
+                : '<b>No book-tree family</b> in this file. The sandbox keeps the ' + t.portfolios + ' portfolios and ' + t.books + ' virtual books it holds.') +
+            '</div>' +
+            '<div class="notice warn mb0"><span class="title">Outside the sandbox</span>' +
+            (partyRows.length
+                ? 'The model gives a sandbox column to books and portfolios only. These families still publish to the party and have no sandbox id: ' +
+                  esc(partyRows.map(function (p) { return p.name; }).join(', ')) + '. ' +
+                  'Nothing else in the party changes: every other book, portfolio and ledger row keeps its values.'
+                : 'Nothing else in the party changes. The file carries only book-tree rows.') +
+            '</div></div>' +
+            '<div class="notice info mt"><span class="title">The two trees cannot mix</span>' +
+            'A book and its portfolio belong to the same sandbox or both to none, so an official book never sits under a sandbox portfolio. ' +
+            'A sandbox\u2019s root portfolios have no parent. A virtual book carries no ledger reference and is not sweepable.</div>' +
+            '</div>';
     }
 
     function planCard() {
         var c = cas();
         return '<div class="card"><h2>The plan, part by part</h2>' +
             '<p class="lead">Every staged row is counted once. A refused row is named; it is never counted as written.</p>' +
-            '<table class="grid famtable"><thead><tr><th>Part</th><th>Staged</th><th>New</th><th>Replace</th><th>Same</th><th>Refused</th><th>Live now</th></tr></thead><tbody>' +
+            '<table class="grid famtable"><thead><tr><th>Part</th><th>Lands in</th><th>Staged</th><th>New</th><th>Replace</th><th>Same</th><th>Refused</th><th>Live now</th></tr></thead><tbody>' +
             plan().map(function (p) {
                 var slow = p.skipped ? ' class="off"' : '';
                 return '<tr class="click' + (S.state !== 'decide' ? '' : '') + '" data-act="family" data-key="' + esc(p.key) + '"' + slow + '>' +
                     '<td class="nm">' + esc(p.name) + '<span class="ent">' + esc(p.family ? 'refdata.' + p.ent : p.policy) + '</span></td>' +
+                    '<td>' + (landsIn(p) === 'sandbox'
+                        ? '<span class="pill info">sandbox</span><span class="sub">' + esc(target().name) + '</span>'
+                        : '<span class="pill">party-wide</span><span class="sub">no sandbox column</span>') + '</td>' +
                     '<td class="n">' + n(p.staged) + '</td><td class="n">' + n(p.add) + '</td><td class="n">' + n(p.replace) + '</td>' +
                     '<td class="n">' + n(p.unchanged) + '</td><td class="n">' + (p.refused ? '<span class="pill bad">' + n(p.refused) + '</span>' : '0') + '</td>' +
                     '<td class="n">' + n(p.live) + '</td></tr>';
             }).join('') + '</tbody></table>' +
+            '<div class="proto-hint">Every row names where it lands. Only the trades and portfolios family is a book-tree family; ' +
+            'the convention, curve, market and run families carry no sandbox column in the model, so they publish to the party. ' +
+            'The screen draws that boundary instead of hiding it.</div>' +
             (skippedFamilies().length ? '<div class="notice warn mt"><span class="title">One family is skipped, and the screen says so</span>' +
                 'The file carries 6 FX conventions. The target has no FX conventions store, so the family is skipped with merge policy ' +
                 '<span class="mono">skip</span>. Today the reply carries <span class="mono">fx_skipped</span> and no screen and no shell line prints it. ' +
@@ -350,7 +432,10 @@
             (c.omittedWhy ? '<p class="hint">' + esc(c.omittedWhy) + '.</p>' : '') +
             (S['case'] === 'onboard' ? '<div class="notice success mb0"><span class="title">This is how the onboarding journey knows it worked</span>' +
                 'The conventions are stored and the portfolio reads, and no market data, curve or pricing engine came with them. ' +
-                'The screen proves the negative: the parts it did not touch are counted, not assumed.</div>' : '') +
+                'The screen proves the negative: the parts it did not touch are counted, not assumed.</div>' :
+                '<div class="notice success mb0"><span class="title">The official tree is not a target</span>' +
+                'The six official books and six official portfolios keep their rows, their ledger references and their versions. ' +
+                'The publish writes only inside ' + esc(target().name) + ', and the rows it writes there are the rows the review counted.</div>') +
             '</div>';
     }
 
@@ -418,8 +503,9 @@
 
     function appliedState() {
         var t = totals();
-        return '<div class="card"><div class="outcome"><div class="mark ok">\u2713</div><h2>Published to ' + esc(PARTY) + '</h2>' +
+        return '<div class="card"><div class="outcome"><div class="mark ok">\u2713</div><h2>Published into ' + esc(target().name) + '</h2>' +
             '<p>' + n(t.staged - t.refused) + ' rows written across ' + plan().length + ' parts, in one transaction, at 16:02Z. ' +
+            'The book-tree rows landed in the sandbox and carry its id; the convention, curve, market and run rows published to ' + esc(PARTY) + '. ' +
             'The refused rows were held back; the import applied everything else as one unit.</p></div>' +
             '<div class="countgrid mt"><div class="c"><div class="k">Written</div><div class="v">' + n(t.staged - t.refused) + '</div></div>' +
             '<div class="c"><div class="k">Replaced</div><div class="v">' + n(t.replace) + '</div></div>' +
@@ -428,7 +514,8 @@
             'The difference between staged and live is the audit: each written row carries the import id, the party and the actor. ' +
             'Open the run to read it per family.</div>' +
             '<div class="stepfoot"><button class="btn ghost" data-act="state" data-state="review">Back to the plan</button>' +
-            '<span class="ml-auto"><a class="btn primary" href="../one-import-run/index.html?case=' + esc(S['case']) + '&state=applied">Open the run</a></span></div>' +
+            '<span class="ml-auto"><a class="btn primary" href="../one-import-run/index.html?case=' + esc(S['case']) +
+            '&amp;target=' + esc(S.target) + '&state=applied">Open the run</a></span></div>' +
             '</div>';
     }
 
@@ -481,7 +568,7 @@
         var t = e.target.closest('[data-act]');
         if (!t) return;
         var act = t.dataset.act;
-        if (act === 'case') go({ 'case': t.dataset.case, state: 'review', family: null, check: 'none' });
+        if (act === 'case') go({ 'case': t.dataset.case, state: 'review', family: null, check: 'none', target: CASE_TARGET[t.dataset.case] });
         else if (act === 'maker') go({ maker: t.dataset.maker });
         else if (act === 'state') go({ state: t.dataset.state });
         else if (act === 'family') go({ family: S.family === t.dataset.key ? null : t.dataset.key });

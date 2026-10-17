@@ -16,6 +16,7 @@
  *   ?attempt=1|2             first attempt, or the retry of it
  *   ?wf=staged|in_progress|waiting|failed|retrying|completed|warnings|compensated
  *   ?play=1                  simulate the run on a timer
+ *   ?target=<sandbox id>     the sandbox the attempt targeted
  *
  * The screen is the import record the journeys say does not exist: today the
  * only record is a workflow instance and a service reply.
@@ -62,6 +63,40 @@
 
     var CASE_ORDER = ['onboard', 'seed', 'defect', 'feed', 'one-dataset', 'promote', 'party'];
 
+    /* The sandbox the attempt targeted. A sandbox is anchored at an official
+     * portfolio, owns a subtree, and is not a node of the official tree. Only
+     * books and portfolios carry its id, so only those rows appear below. */
+    var TARGETS = {
+        'sb-import-repro': { name: 'Reproduce 2026-10-16', anchor: 'Global Trading \u203a Global Rates \u203a EUR Rates',
+            purpose: 'import', status: 'open', owner: 'D. Osei',
+            existing: ['EUR_SWAPS_SB_01', 'EUR_VOL_SB_02'], portfolios: 2 },
+        'sb-import-onboard': { name: 'Onboard Acme 2026-10-17', anchor: 'Global Trading \u203a Global Rates',
+            purpose: 'import', status: 'open', owner: 'J. Smith',
+            existing: ['ACME_EUR_SWAPS_SB_01'], portfolios: 1 },
+        'sb-sample-seed': { name: 'Seed samples 2026-10', anchor: 'Global Trading',
+            purpose: 'sample', status: 'open', owner: 'K. Mori',
+            existing: ['SAMPLE_EUR_SWAPS_SB_01', 'SAMPLE_USD_SWAPS_SB_02'], portfolios: 1 },
+        'sb-import-feed': { name: 'Vendor feed 2026-10-17', anchor: 'Global Trading \u203a Global Rates \u203a USD Rates',
+            purpose: 'import', status: 'open', owner: 'J. Smith',
+            existing: ['USD_FEED_SB_01'], portfolios: 1 }
+    };
+
+    var CASE_TARGET = {
+        onboard: 'sb-import-onboard', seed: 'sb-sample-seed', defect: 'sb-import-repro',
+        feed: 'sb-import-feed', 'one-dataset': 'sb-import-onboard',
+        promote: 'sb-import-repro', party: 'sb-import-onboard'
+    };
+
+    var CREATES = {
+        onboard: { portfolios: 3, books: 4, sample: ['ACME_EUR_SWAPS_IMP_01'] },
+        seed: { portfolios: 3, books: 12, sample: ['SAMPLE_EUR_SWAPS_IMP_01', 'SAMPLE_USD_SWAPS_IMP_02'] },
+        defect: { portfolios: 47, books: 103, sample: ['EUR_SWAPS_IMP_01', 'EUR_VOL_IMP_02'] },
+        promote: { portfolios: 47, books: 103, sample: ['EUR_SWAPS_IMP_01', 'EUR_VOL_IMP_02'] },
+        party: { portfolios: 3, books: 4, sample: ['ACME_EUR_SWAPS_IMP_01'] },
+        feed: { portfolios: 0, books: 0, sample: [] },
+        'one-dataset': { portfolios: 0, books: 0, sample: [] }
+    };
+
     var FAMILIES = [
         { key: 'swap', name: 'Swap', rows: 214, live: 1891, refused: 2 },
         { key: 'ois', name: 'OIS', rows: 38, live: 402, refused: 0 },
@@ -95,7 +130,8 @@
             fail: q.fail || defaultFail(name),
             attempt: q.attempt === '2' ? 2 : 1,
             wf: WF_STATES.indexOf(q.wf) >= 0 ? q.wf : null,
-            play: q.play === '1'
+            play: q.play === '1',
+            target: TARGETS[q.target] ? q.target : CASE_TARGET[name]
         };
     }
 
@@ -114,6 +150,7 @@
         if (S.attempt !== 1) p.push('attempt=' + S.attempt);
         if (S.wf) p.push('wf=' + S.wf);
         if (S.play) p.push('play=1');
+        if (S.target !== CASE_TARGET[S['case']]) p.push('target=' + S.target);
         window.history.replaceState(null, '', window.location.pathname + (p.length ? '?' + p.join('&') : ''));
         render();
     }
@@ -124,6 +161,7 @@
     }
     function n(v) { return Number(v).toLocaleString('en-GB'); }
     function cas() { return CASES[S['case']]; }
+    function target() { return TARGETS[S.target]; }
 
     function parts() {
         var out = [];
@@ -376,6 +414,7 @@
             '<span>Instance ' + (none ? '<b>none</b>' : '<b class="mono">' + INSTANCE_ID + '</b>') + '</span>' +
             '<span>Type <b class="mono">' + WF_TYPE + '</b></span>' +
             '<span>Target <b class="mono">data_exchange_import \u00b7 ' + RUN_ID + '</b></span>' +
+            '<span>Sandbox <b class="mono">' + esc(S.target) + '</b></span>' +
             '<span>Steps <b>' + created + ' of ' + f.steps.length + '</b> created</span>' +
             '<span>Created <span class="mono">' + (f.created || '\u2014') + '</span></span>' +
             '<span>Last event <span class="mono">' + (f.lastEvent || '\u2014') + '</span></span>' +
@@ -392,7 +431,7 @@
                 state === 'in_progress' ? 'writing the record' : '';
         if (st.kind === 'commit') {
             if (state === 'completed' || state === 'completed_with_warnings')
-                return 'one transaction \u00b7 ' + n(wfCommitted().written) + ' rows live' +
+                return 'one transaction \u00b7 ' + n(wfCommitted().written) + ' rows live in ' + esc(target().name) +
                     (state === 'completed_with_warnings' ? ' \u00b7 warnings' : '');
             if (state === 'in_progress') return 'no family counts until it commits';
             if (state === 'failed') return 'refused at ' + esc(failKey()) + ' \u00b7 rolled back';
@@ -507,6 +546,68 @@
             wfHead(f) + wfRail(f) + wfNote(f) + wfFoot(f) + '</div>';
     }
 
+    /* The sandbox the run fills. The tree changes only at the commit: a stage
+     * step holds its rows in the import's own area, and the commit writes the
+     * portfolios and virtual books under the sandbox. */
+    function sandboxPanel() {
+        var t = target(), made = CREATES[S['case']], key = wfKey();
+        var regionDone = key === 'completed' || key === 'warnings';
+        var live = regionDone && (S.state === 'applied' || isRetry());
+        var unwound = key === 'compensated';
+        var rows = '<div class="trow sandbox on"><span class="twisty leaf">\u25b8</span>' +
+            '<span class="tname">' + esc(t.name) + '</span><span class="tag sb">sandbox</span>' +
+            '<span class="tmeta">' + esc(t.purpose) + ' \u00b7 ' + esc(t.status) + '</span></div>';
+        t.existing.forEach(function (b) {
+            rows += '<div class="trow bk sandbox" style="padding-left:24px"><span class="twisty leaf">\u25b8</span>' +
+                '<span class="tname">' + esc(b) + '</span>' +
+                '<span class="tmeta">virtual \u00b7 no ledger ref \u00b7 not sweepable</span></div>';
+        });
+        if (live) {
+            rows += '<div class="trow sandbox" style="padding-left:24px"><span class="twisty leaf">\u25b8</span>' +
+                '<span class="tname">' + esc(RUN_ID) + '_root</span>' +
+                '<span class="tag off">created \u00b7 root \u00b7 no parent</span>' +
+                '<span class="tmeta">sandbox_id = ' + esc(S.target) + '</span></div>';
+            made.sample.forEach(function (b) {
+                rows += '<div class="trow bk sandbox" style="padding-left:40px"><span class="twisty leaf">\u25b8</span>' +
+                    '<span class="tname">' + esc(b) + '</span>' +
+                    '<span class="tag sb">new</span>' +
+                    '<span class="tmeta">virtual \u00b7 sandbox_id = ' + esc(S.target) + ' \u00b7 no ledger ref \u00b7 not sweepable</span></div>';
+            });
+        }
+        var created = live ? made.portfolios + ' / ' + made.books : '0 / 0';
+        var note;
+        if (key === 'staged') {
+            note = 'No workflow instance exists, so the sandbox has no new row. The staged rows are not live; the tree is unchanged.';
+        } else if (live) {
+            note = 'The commit completed. ' + made.portfolios + ' virtual portfolios and ' + made.books +
+                ' virtual books are now live under the sandbox, each written with its id. No official row moved.';
+        } else if (unwound) {
+            note = 'The run compensated. The staged rows were discarded, so the sandbox is exactly as it was. Nothing was created.';
+        } else if (regionDone) {
+            note = 'The workflow region reads completed, but the attempt record still reads ' + S.state + '. The tree follows the record, not the region.';
+        } else {
+            note = 'The commit has not completed, so no portfolio and no virtual book is live yet. The staged rows are held in the import\u2019s own area; ' +
+                'only the commit writes them into the sandbox.';
+        }
+        return '<div class="card mt"><h2>The sandbox this run fills</h2>' +
+            '<p class="lead">The attempt targeted <span class="sbpath"><b>' + esc(t.anchor + ' \u203a ' + t.name) + '</b></span>. ' +
+            'The sandbox is anchored at an official portfolio; it is not a node of the official tree.</p>' +
+            '<div class="strip">' +
+            '<div class="cell"><div class="k">Sandbox</div><div class="v" style="font-size:14px">' + esc(t.name) + '</div><div class="s">' + esc(S.target) + '</div></div>' +
+            '<div class="cell"><div class="k">Anchor</div><div class="v" style="font-size:13px">' + esc(t.anchor) + '</div><div class="s">fixed for its life</div></div>' +
+            '<div class="cell"><div class="k">Created by this run</div><div class="v">' + created + '</div><div class="s">virtual portfolios / virtual books</div></div>' +
+            '<div class="cell"><div class="k">Official rows changed</div><div class="v">0</div><div class="s">no official book or portfolio moves</div></div>' +
+            '</div>' +
+            '<div class="tree">' + rows + '</div>' +
+            '<div class="notice ' + (live ? 'success' : unwound ? 'warn' : 'info') + ' mt"><span class="title">' +
+            (live ? 'The imported tree is live under the sandbox' : unwound ? 'The compensated run left no row' : 'The tree fills at the commit, not before') +
+            '</span>' + note + '</div>' +
+            '<div class="proto-hint">A stage step creates no row in the tree. The commit is the step that makes the portfolios and virtual books live. ' +
+            'Move the workflow state in the bar to see the tree fill. Mock: the rows are the case\u2019s; the invariants are the model\u2019s \u2014 ' +
+            'a sandbox root portfolio has no parent, and every row above carries the sandbox id.</div>' +
+            '</div>';
+    }
+
     function render() {
         document.getElementById('proto-note').textContent =
             'Prototype \u00b7 Data exchange \u00b7 One import run \u00b7 mock data, no backend';
@@ -519,11 +620,11 @@
         var t = totals();
         return '<div class="brand">' + esc(TENANT) + '</div>' +
             '<div class="tenant">Party <b>' + esc(PARTY) + '</b> \u00b7 import <span class="mono">' + RUN_ID + '</span> \u00b7 attempt ' +
-            S.attempt + ' \u00b7 source <b>' + esc(cas().source) + '</b></div>' +
+            S.attempt + ' \u00b7 sandbox <b>' + esc(target().name) + '</b> \u00b7 source <b>' + esc(cas().source) + '</b></div>' +
             '<h1>' + esc(cas().title) + ': one import run</h1>' +
             '<p class="lede">The record of one attempt, per family: what was written, what was refused, what was skipped, and what a failure left behind. ' +
             'The retry runs against these staged rows, not against the file again.</p>' +
-            gapbanner() + wfPanel() + runStrip(t) + timeline();
+            gapbanner() + wfPanel() + sandboxPanel() + runStrip(t) + timeline();
     }
 
     function gapbanner() {
@@ -696,7 +797,9 @@
             '<div class="c"><div class="k">A party-scoped user</div><div class="v" style="font-size:14px">own party only</div><div class="k" style="margin-top:4px">another party is absent, not empty</div></div>' +
             '<div class="c"><div class="k">Tenant administrator</div><div class="v" style="font-size:14px">every party</div><div class="k" style="margin-top:4px">after switching party</div></div></div>' +
             '<div class="notice info mt mb0">The party is the scope of every row the import wrote. A refusal is never reported as an empty success, ' +
-            'and another party\u2019s run is never shown. Today no import permission exists: each import borrows the write permission of every row it creates.</div>' +
+            'and another party\u2019s run is never shown. A sandbox\u2019s portfolios and virtual books are read only by the account that may see the sandbox, ' +
+            'which is why the tree on this screen can be empty for a reader who may not see it. Today no import permission exists: each import borrows ' +
+            'the write permission of every row it creates.</div>' +
             '</div>';
     }
 
@@ -756,7 +859,7 @@
         var t = e.target.closest('[data-act]');
         if (!t || t.disabled) return;
         var act = t.dataset.act;
-        if (act === 'case') go({ 'case': t.dataset.case, state: CASES[t.dataset.case].state, fail: defaultFail(t.dataset.case), attempt: 1 });
+        if (act === 'case') go({ 'case': t.dataset.case, state: CASES[t.dataset.case].state, fail: defaultFail(t.dataset.case), attempt: 1, target: CASE_TARGET[t.dataset.case] });
         else if (act === 'state') go({ state: t.dataset.state });
         else if (act === 'mode') go({ mode: t.dataset.mode });
         else if (act === 'attempt') {

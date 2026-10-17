@@ -21,8 +21,10 @@
 Four journeys need a question no per-import screen can answer: what has
 happened in this party? A failed family is found here, a retry is told from a
 first attempt here, a promotion records its hops here, and a party-scoped user
-is kept out of another party's rows here. The register is its own screen even
-though no journey names it as its destination.
+is kept out of another party's rows here. Each row also names the sandbox the
+attempt targeted, so the history answers "where did this land?" as well as
+"what ran?". The register is its own screen even though no journey names it as
+its destination.
 
 It is throwaway. Open [[file:import-register/][the register]].
 
@@ -42,6 +44,11 @@ It is throwaway. Open [[file:import-register/][the register]].
   the decider may retry, because no import permission exists to grant.
 - A first attempt is never hidden. The failed row stays beside its retry, with
   both counts, so the person can see the difference.
+- A row names its sandbox. The column shows the sandbox and its path, and the
+  rows it received. An attempt that carries only conventions names its sandbox
+  and says it created no row inside it, because conventions have no
+  =sandbox_id= in the model. The promotion record names the sandbox each hop
+  targeted for the same reason.
 
 ** Variants and states
 
@@ -52,8 +59,11 @@ selector appears only for the tenant administrator.
 ** What is real and what is not
 
 The attempt shapes, the promotion hops, the party scoping rule and the retry
-duplication are taken from the journeys. The request ids, manifest ids, times,
-counts and people are invented. There is no import history, no promotion
+duplication are taken from the journeys. The sandbox rules are the model's: a
+sandbox is anchored at an official portfolio, an official book never sits under
+a sandbox portfolio, a sandbox root portfolio has no parent, and a virtual book
+has no ledger reference and is not sweepable. The sandbox names, request ids,
+manifest ids, times, counts and people are invented. There is no import history, no promotion
 record and no party-scoped import read today; that absence is the screen's
 subject.
 
@@ -71,7 +81,9 @@ instance's, and a retry of it keeps the same instance id.
 Not signed off. The screen survives though no journey names it, because four
 journeys need it as a secondary surface. The owner must decide whether it is an
 import register, a workflow history, or both — and whether it is the place the
-promotion record lives.
+promotion record lives. The sandbox column also asks whether a register is read
+by party, by sandbox, or by both: a sandbox belongs to a party through its
+anchor, and the screen has no sandbox filter.
 
 * See also
 

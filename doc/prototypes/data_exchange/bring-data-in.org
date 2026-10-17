@@ -2,7 +2,7 @@
 :ID: A6E85800-137D-4CBC-BC32-AB248B0F4B78
 :END:
 #+title: Bring data in prototype
-#+description: One entry screen for every import journey: the source, the scope, the families and who may act.
+#+description: One entry screen for every import journey: the source, the scope, the families, the sandbox target chosen on the book tree, and who may act.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:data_exchange:
@@ -18,11 +18,12 @@
 
 * Summary
 
-Every import journey begins the same way: name a source and a scope. What
-differs is the trigger, the payload and who may act. This screen is the one
+Every import journey begins the same way: name a source, a scope and a target.
+What differs is the trigger, the payload and who may act. This screen is the one
 entry step, with those three as variants: seven triggers, four actors, the
-family picker that shows what the file carries, and the workflow the import
-will start. Staging writes no live row.
+family picker that shows what the file carries, the workflow the import will
+start, and the book tree that names the sandbox the import publishes into.
+Staging writes no live row.
 
 It is throwaway. It reads no service. Open [[file:bring-data-in/][the source screen]].
 
@@ -50,6 +51,36 @@ It is throwaway. It reads no service. Open [[file:bring-data-in/][the source scr
   start message, the failure policy and every step the definition would
   declare, so the person can see what the import will do and where progress
   will appear.
+- The target is a sandbox, not a free choice. The book tree draws the official
+  tree and the sandbox subtrees anchored on it. An official node is visibly not
+  selectable for import and says why; a sandbox node is selectable and shows
+  the path and the virtual books and portfolios the import will create inside
+  it.
+
+** The target is a sandbox on the book tree
+
+An import always publishes, and it publishes inside a sandbox. A sandbox is not
+a node of the official portfolio tree: it is anchored at one official
+portfolio and owns a subtree of its own. The control draws both in one tree, so
+the person sees the anchor and the sandbox branch together.
+
+- Only a sandbox is selectable. An official portfolio and an official book are
+  drawn with a tag that says "not an import target", and a click on one is
+  refused with the reason: nothing official moves. A sandbox's own portfolio
+  and virtual book are refused too, because the target is the sandbox, not a
+  node inside it.
+- An archived sandbox is refused. The model's insert trigger makes an archived
+  sandbox read-only, so the row is drawn locked and a click explains the
+  trigger.
+- The selected sandbox is shown by its full path, its anchor, its purpose, its
+  owner and its root portfolio, which has no parent.
+- The screen states what the import creates inside it: the virtual portfolios
+  and virtual books, each written with the sandbox id; the root portfolio has
+  no parent; a virtual book has no ledger reference and is not sweepable.
+- The model gives =sandbox_id= to books and portfolios only. The convention,
+  curve, market and run families carry none, so they still publish to the
+  party, not into the sandbox. The screen names that boundary rather than
+  hiding it.
 
 ** The workflow this import starts
 
@@ -73,9 +104,12 @@ state, where the progress begins at that publish.
 
 =?case=onboard|seed|defect|feed|one-dataset|promote|party=,
 =?actor=admin|ops|maintainer|support=,
-=?state=source|families|refused=, =?scan=0=. The bar at the foot switches the
-trigger and the actor; the two refusals are the missing permission and the row
-the validator refuses.
+=?state=source|families|refused=, =?scan=0=,
+=?target=sb-import-onboard|sb-sample-seed|sb-import-repro|sb-import-feed=.
+The bar at the foot switches the trigger and the actor; the target is chosen in
+the tree and kept in the query string. The two refusals are the missing
+permission and the row the validator refuses; a click on an official node or on
+an archived sandbox adds a third, the target refusal.
 
 ** What is real and what is not
 
@@ -86,8 +120,11 @@ and the four writes each import borrows. The convention family names and the
 key, add missing world, skip) come from the draft design. The step states,
 their names, the budgets and the failure policies are the workflow engine's.
 The workflow type, its stage subjects and the per-family stage replies are the
-draft's and are not registered. The row counts, file sizes, request ids and
-checksums are invented.
+draft's and are not registered. The sandbox rules are the model's: a sandbox is
+anchored at an official portfolio, a book and its portfolio share one sandbox,
+a sandbox root portfolio has no parent, and a virtual book has no ledger
+reference and is not sweepable. The tree, the sandbox ids and the counts are
+invented. The row counts, file sizes, request ids and checksums are invented.
 
 The screen itself has no server. No upload route, no scan route and no staging
 verb exists. The journey lists them as gaps, and the screen says so in its
@@ -107,7 +144,11 @@ workflow will this file start, and what will it do.
 Not signed off. The screen asks the owner two things: whether the trigger
 belongs on one screen at all, and whether the operations user is given a
 permission that means "may import for a party" or stays out of the trade and
-market imports.
+market imports. The sandbox target adds a third, and it is the blocking one:
+only books and portfolios have a =sandbox_id= in the model, so a conventions
+import cannot publish into the selected sandbox. Either the sandbox covers the
+book-tree families alone, or the model grows a sandbox column for every
+imported family.
 
 * See also
 

@@ -681,3 +681,51 @@ table.grid .sub { color: var(--ink-faint); font-size: 12px; }
 
 /* A button that is a link keeps the button's look and loses the underline. */
 a.btn { text-decoration: none; }
+
+/* ---------------------------------------------------------------
+   The book tree: an import target is a sandbox node, never an
+   official node. Official nodes read as read-only, a sandbox is
+   selectable, and an archived sandbox is locked by the model.
+   --------------------------------------------------------------- */
+.trow.official { cursor: not-allowed; }
+.trow.official:hover { background: none; }
+.trow.official .tname { color: var(--ink-dim); font-weight: 400; }
+.trow.official.bk .tname { color: var(--ink-faint); }
+.trow.sandbox { background: #12161f; cursor: pointer; }
+.trow.sandbox:hover { background: #172033; }
+.trow.sandbox.on { background: var(--accent-dim); box-shadow: inset 2px 0 0 var(--accent); }
+.trow.sandbox .tname { font-weight: 600; }
+.trow.sandbox.locked { cursor: not-allowed; opacity: 0.62; }
+.trow.sandbox.locked:hover { background: #12161f; }
+.trow.bk.sandbox { background: #10141c; cursor: default; }
+.trow.bk.sandbox:hover { background: #10141c; }
+.trow .tag {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 1px 7px;
+    color: var(--ink-faint);
+    white-space: nowrap;
+}
+.trow .tag.sb { border-color: #24344d; color: var(--accent-bright); }
+.trow .tag.off { border-color: var(--line-soft); }
+.trow .tag.lock { border-color: #5c2a24; color: #f0b7ae; }
+.tree.scroll { max-height: 460px; overflow: auto; }
+.treelegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    padding: 9px 12px;
+    border-top: 1px solid var(--line-soft);
+    background: #16161a;
+    font-size: 11px;
+    color: var(--ink-faint);
+}
+.sbpath { font-size: 12px; color: var(--ink-dim); }
+.sbpath b { color: var(--ink); font-weight: 600; }
+.sbcontents { list-style: none; margin: 8px 0 0; padding: 0; }
+.sbcontents li { padding: 5px 0; border-bottom: 1px solid var(--line-soft); font-size: 12px; }
+.sbcontents li:last-child { border-bottom: none; }
+.sbcontents .mono { font-size: 11px; }

@@ -150,11 +150,16 @@ document of a kind a run takes, cannot be drawn as a working interaction when
 the server has nowhere to put the choice: a screen that staged one would be
 drawing a write that fails.
 
-The existing
-[[file:../../prototypes/reporting/manage-the-conventions/][manage the
-conventions]] prototype draws the table this journey opens from, and its design
-note records the same absence. It is the design record for the reading; this
-journey is the design intent for the writing.
+Conventions are named convention sets, and what a set holds is decided in
+authoring, which has its own UX and is deferred. No prototype here draws a
+per-kind table or a choice per kind. The decision, and the missing default
+marker, are recorded in the story
+[[file:../../../agile/versions/v0/sprint_28/name-the-convention-sets-a-report-chooses/story.org][Name
+the convention sets a report chooses]] (DE6C0BDA-D12A-4E31-AA86-C323F5A7E016).
+The report side of the choice is drawn in
+[[file:../../prototypes/reporting/create-a-report/][Create a report]] and
+[[file:../../prototypes/reporting/change-what-a-report-runs/][Change what a
+report runs]], which choose a set and never a document.
 
 * Entities composed
 

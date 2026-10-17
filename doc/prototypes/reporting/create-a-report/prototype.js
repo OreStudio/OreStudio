@@ -13,9 +13,9 @@
  *
  *   1  What it is                  the name, the description, the report type,
  *                                  is_official, and the concurrency policy
- *   2  The conventions it binds    the set the bound configuration carries:
- *   3  The pricing engines it binds  counts, the kinds with no document, and a
- *   4  The market data it binds      link to Manage the conventions. No picker.
+ *   2  The conventions it binds    the named convention sets the party holds,
+ *   3  The pricing engines it binds  one row each with a radio, and a link out
+ *   4  The market data it binds      to the authoring UX. No per-kind table.
  *   5  The curve configuration it binds
  *   6  The run settings it binds     the other four are pickers, because binding
  *                                  a configuration means something different for
@@ -40,8 +40,10 @@
  * Four of the five configuration steps carry the same four parts: what binding
  * a configuration of that type means, where its data lives, the picker for the
  * configuration this report binds, and what the binding reaches and does not.
- * The conventions step is the exception: it is an entry point to Manage the
- * conventions, so it reads the set and links there and draws no picker.
+ * The conventions step is the exception: it is one page of named convention
+ * sets, and choosing one with the radio is the whole of the binding. It draws
+ * no per-kind row, because what a set holds is decided in authoring, which has
+ * its own UX and is not in this MR.
  *
  * Deep links: ?step=N is numeric over the current rail, and ?analytic=<code>
  * resolves to that analytic's step whatever its number. Navigation rewrites both,
@@ -86,13 +88,13 @@
         {
             code: 'conventions',
             title: 'The conventions it binds',
-            sub: '26 kinds, all bound, 25 of them from a DQ publish',
-            lead: 'This step reads the conventions set the bound configuration carries and hands ' +
-                'the work to Manage the conventions, which owns the table of the 26 kinds, the ' +
-                'page for each kind and the create route.',
+            sub: 'named sets, one of them bound',
+            lead: 'This step lists the convention sets this party holds and chooses the one this ' +
+                'report binds. A set is named and purposed and covers some of the 26 kinds. ' +
+                'Deciding what a set holds is authoring, which has its own UX.',
             /* The four fields the other four types carry are not read here: the
-               summary is drawn by conventionsSummary, because the conventions
-               step is an entry point rather than a picker. */
+               page is drawn by conventionsSummary, because the conventions step
+               chooses a named set rather than a configuration by its detail. */
             means: [],
             data: [],
             reaches: [],
@@ -393,9 +395,25 @@
 
     /* Configurations the party holds, by type. A risk report config carries the
        analytic set and the scope, which is why the analytics belong to the
-       configuration in the slot and not to the definition. */
+       configuration in the slot and not to the definition.
+
+       A conventions configuration is a named convention set. A system holds few
+       of them, and each one is named, purposed and described, so a person
+       chooses between them by reading a short list. `kinds` is how many of the
+       26 convention kinds the set covers. */
     var CONFIGS = [
-        { id: 'cfg-conv-group', type: 'conventions', name: 'Group conventions', detail: '26 convention kinds, all bound', scope: null, boundBy: 31, analytics: null },
+        { id: 'cfg-conv-group', type: 'conventions', name: 'Group conventions',
+          purpose: 'The kinds every ACME book prices with',
+          description: 'Every instrument family the group trades, at the terms the group has agreed.',
+          kinds: 26, detail: '26 convention kinds', scope: null, boundBy: 31, analytics: null },
+        { id: 'cfg-conv-treasury', type: 'conventions', name: 'Treasury portfolio conventions',
+          purpose: 'The kinds the Group Treasury Portfolio prices with',
+          description: 'The funding and FX families the treasury book reads, and no other.',
+          kinds: 9, detail: '9 convention kinds', scope: null, boundBy: 4, analytics: null },
+        { id: 'cfg-conv-trading', type: 'conventions', name: 'Trading book conventions',
+          purpose: 'The kinds the Trading Book prices with',
+          description: 'The traded families the trading book reads, at the terms its desk has agreed.',
+          kinds: 14, detail: '14 convention kinds', scope: null, boundBy: 11, analytics: null },
         { id: 'cfg-pe-group', type: 'pricing_engines', name: 'Group pricing engines', detail: '42 products', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-tm-group', type: 'todays_market', name: 'Group today\u2019s market', detail: '3 collections, 118 entries', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-cc-group', type: 'curve_configuration', name: 'Group curve configuration', detail: '2 sections, 61 curves', scope: null, boundBy: 31, analytics: null },
@@ -516,8 +534,15 @@
 
     var NO_CONFIG_SCREEN = 'Only conventions has a screen. PATHS.conventions is ' +
         '/refdata/conventions. pricing_engines, todays_market, curve_configuration and ' +
-        'risk_report_config have no screen in the application, and this page states that rather ' +
+        'risk_report_config have no screen in the application, and their steps state that rather ' +
         'than drawing a link that would not resolve.';
+
+    var CONVENTIONS_FIXTURE = 'A convention set has a name, a purpose and a description, and ' +
+        'no table stores any of them: the name is derived from the terms of the document in use, ' +
+        'and a purpose has no home at all. Nothing marks the document a run reads for a kind, and ' +
+        'the conventions configuration carries no children. So the sets on step 2, their names, ' +
+        'purposes, descriptions and kind counts are a fixture until the story Name the convention ' +
+        'sets a report chooses lands.';
 
     var DEFERRED_EDITORS = 'simulation and pfe each need a purpose-built editor: one for the cube, ' +
         'one for the shift and one for the time grid. Manage the analytics draws those settings as ' +
@@ -672,7 +697,9 @@
             var bound = configById(S.draft.binds[type.code]);
             list.push({
                 id: 'slot-' + type.code,
-                what: 'It binds a ' + type.code + ' configuration',
+                what: type.code === 'conventions'
+                    ? 'It binds a named convention set'
+                    : 'It binds a ' + type.code + ' configuration',
                 met: !!bound,
                 state: bound ? bound.name : 'nothing bound'
             });
@@ -958,54 +985,6 @@
             'page is the seeder\u2019s.</p></div>';
     }
 
-    /* The conventions set the bound configuration carries, for the read-only
-       summary this step draws. Twenty-six kinds. ACME is provisioned: the tenant
-       holds 10,991 convention rows and every kind is bound, 25 of them from a DQ
-       publish. docs is the party's own documents; the four kinds whose table has
-       no party column are held by the tenant and say so. */
-    var CONVENTIONS_KINDS = [
-        { name: 'Deposit', docs: 163, prov: 'dq' },
-        { name: 'FRA', docs: 42, prov: 'dq' },
-        { name: 'Future', docs: 7, prov: 'dq' },
-        { name: 'OIS', docs: 52, prov: 'dq' },
-        { name: 'Average OIS', docs: 5, prov: 'dq' },
-        { name: 'Swap', docs: 320, prov: 'dq' },
-        { name: 'Tenor basis swap', docs: 37, prov: 'dq' },
-        { name: 'Tenor basis two swap', docs: 4, prov: 'dq' },
-        { name: 'Cross-currency basis', docs: 207, prov: 'dq' },
-        { name: 'Cross-currency fix-float', docs: 24, prov: 'dq' },
-        { name: 'Bond yield', docs: 5, prov: 'dq' },
-        { name: 'CDS', docs: 4, prov: 'dq' },
-        { name: 'CMS spread option', docs: 1, prov: 'dq' },
-        { name: 'Commodity forward', docs: 4, prov: 'dq' },
-        { name: 'Commodity future', docs: 790, prov: 'dq' },
-        { name: 'FX option', docs: 173, prov: 'dq' },
-        { name: 'BMA basis swap', docs: 3, prov: 'dq' },
-        { name: 'Zero', docs: 38, prov: 'dq' },
-        { name: 'Inflation swap', docs: 22, prov: 'dq' },
-        { name: 'Intraday power load', docs: 2, prov: 'dq' },
-        { name: 'IBOR index', docs: 10, prov: 'dq', tenantWide: true },
-        { name: 'Overnight index', docs: 23, prov: 'dq', tenantWide: true },
-        { name: 'Named swap index', docs: 243, prov: 'dq' },
-        { name: 'Currency pair', docs: 179, prov: 'pair', tenantWide: true },
-        { name: 'Zero inflation index', docs: 9, prov: 'dq' },
-        { name: 'Tenor', docs: 4, prov: 'system', tenantWide: true }
-    ];
-
-    /* A count a reader reads: 2155 is 2,155. */
-    function num(value) {
-        return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
-
-    /* Where the set came from, in one place: the two publish subjects, and the
-       one kind no publish reaches. */
-    var CONVENTIONS_PUBLISH = {
-        dq: { subject: 'refdata.v1.ops.publish_conventions_from_dq',
-              dataset: 'ORE Instrument Conventions' },
-        pair: { subject: 'refdata.v1.ops.publish_currency_pair_conventions_from_dq',
-                dataset: 'Standard Currency Pair Conventions' }
-    };
-
     function reachList(items, bound) {
         return '<ul>' + items.map(function (item) {
             return '<li>' + esc(item).replace(/#bound/g, String(bound ? bound.boundBy : 0)) +
@@ -1013,84 +992,64 @@
         }).join('') + '</ul>';
     }
 
-    /* The conventions step is an entry point, not a second implementation of
-       the conventions. It reads the set the bound configuration carries, states
-       that every kind is bound and where the documents came from, and hands the
-       work to the shared prototype. It draws no picker. */
-    function conventionsRow(kind) {
-        var held = '<span class="tag ok">' + kind.docs +
-            (kind.docs === 1 ? ' document' : ' documents') + '</span>' +
-            (kind.tenantWide ? ' <span class="tag muted">tenant-wide</span>' : '');
-        var prov = kind.prov === 'system'
-            ? '<span class="tag warn">copied from the system tenant</span> No DQ route for ' +
-              'this kind.'
-            : '<span class="tag ok">DQ publish</span> ' +
-              esc(CONVENTIONS_PUBLISH[kind.prov].dataset);
-        return '<tr><td>' + esc(kind.name) + '</td>' +
-            '<td class="code">' + held + '</td>' +
-            '<td class="wrap">' + prov + '</td></tr>';
+    /* One row of the conventions page: the set, its purpose, how many kinds it
+       covers, and whether it is the one this report uses. The radio is the
+       choice, so the marking and the control are one thing. */
+    function conventionRow(set) {
+        var used = S.draft.binds.conventions === set.id;
+        return '<tr>' +
+            '<td><input type="radio" name="convention-set" data-act="bind" ' +
+            'data-slot="conventions" value="' + esc(set.id) + '"' + (used ? ' checked' : '') +
+            ' aria-label="Bind ' + esc(set.name) + '"></td>' +
+            '<td><b>' + esc(set.name) + '</b>' +
+            '<div class="dim">' + esc(set.description) + '</div></td>' +
+            '<td class="wrap">' + esc(set.purpose) + '</td>' +
+            '<td class="code">' + set.kinds + ' of 26 kinds</td>' +
+            '<td>' + (used ? '<span class="tag ok">this report uses it</span>' : '') + '</td>' +
+            '</tr>';
     }
 
+    /* The conventions step is one page: the named convention sets this party
+       holds, and the one this report binds. A set carries a name, a purpose, a
+       description and the kinds it covers, and choosing one is the whole of the
+       binding. The page draws no per-kind row and no alternative per kind,
+       because what a set holds is decided in authoring, which has its own UX. */
     function conventionsSummary(type) {
+        var sets = configsOf(type.code);
         var bound = configById(S.draft.binds[type.code]);
-        var partyDocs = CONVENTIONS_KINDS.reduce(function (sum, kind) {
-            return kind.tenantWide ? sum : sum + kind.docs;
-        }, 0);
-        var tenantDocs = CONVENTIONS_KINDS.reduce(function (sum, kind) {
-            return kind.tenantWide ? sum + kind.docs : sum;
-        }, 0);
-        return '<div class="notice"><b>The conventions are managed on another screen.</b> ' +
-            'This step reads the set the bound configuration carries and hands the work to ' +
-            'Manage the conventions. It draws no picker and edits nothing, because one screen ' +
-            'owns the interaction and this wizard should not repeat it.</div>' +
+        return '<div class="notice"><b>The report chooses a convention set, and nothing else.</b> ' +
+            'A set is named and purposed: it holds a group of convention kinds under one name, so ' +
+            'a person chooses between a few sets rather than assembling 26 kinds. Every run of ' +
+            'this report reads the set chosen here.</div>' +
             '<div class="card" style="margin-top:14px;background:var(--bg)">' +
-            '<div class="sectionhead"><h3>The set this report binds</h3>' +
-            '<span class="meta">refdata.v1.conventions_documents.get \u00b7 fixture</span></div>' +
-            '<div class="notice ok"><b>ACME is provisioned and every kind is bound.</b> The ' +
-            'tenant holds 10,991 convention rows across the 26 kinds, and a party holds ' +
-            num(partyDocs) + ' of them, with ' + num(tenantDocs) + ' more held by the tenant because those ' +
-            'tables carry no party column. <b>25 of the 26 kinds came from a DQ publish</b>; ' +
-            'tenor did not, and its 4 rows were copied from the system tenant. No kind reads ' +
-            'none.</div>' +
-            '<div class="statgrid" style="margin-top:12px">' +
-            '<div><span class="lbl">configuration</span><span class="val">' +
-            esc(bound ? bound.name : 'nothing is bound in this slot') + '</span></div>' +
-            '<div><span class="lbl">convention kinds</span><span class="val">' +
-            CONVENTIONS_KINDS.length + '</span></div>' +
-            '<div><span class="lbl">kinds with a document</span><span class="val">' +
-            '<span class="tag ok">' + CONVENTIONS_KINDS.length + ' held</span></span></div>' +
-            '<div><span class="lbl">definitions bound</span><span class="val">' +
-            (bound ? bound.boundBy : 0) + '</span></div>' +
-            '</div>' +
+            '<div class="sectionhead"><h3>The convention sets this party holds</h3>' +
+            '<span class="meta">fixture until the story lands</span></div>' +
+            '<div class="notice warn"><b>Every name, purpose, description and count below is a ' +
+            'fixture.</b> No table carries a name or a purpose column for a convention set, no ' +
+            'table marks the document a run reads for a kind, and the conventions configuration ' +
+            'carries no children. The list stands in for those columns until the story Name the ' +
+            'convention sets a report chooses lands.</div>' +
             '<table style="margin-top:12px"><thead><tr>' +
-            '<th>Kind</th><th>Documents ACME holds</th><th>Where they came from</th>' +
-            '</tr></thead><tbody>' + CONVENTIONS_KINDS.map(conventionsRow).join('') +
+            '<th>Use</th><th>Set</th><th>Purpose</th><th>Kinds covered</th><th>This report</th>' +
+            '</tr></thead><tbody>' + sets.map(conventionRow).join('') +
             '</tbody></table>' +
-            '<p class="rowfoot">A published document is a copy of a row of the DQ dataset, so ' +
-            'a kind holds many documents rather than one: swap 320, commodity future 790. The ' +
-            'name of a convention is derived from its terms, because no table stores one; a ' +
-            'kind\u2019s page on Manage the conventions names its documents and says how many ' +
-            'it holds. <b>Nothing records which of them a run reads</b>: no table has a default ' +
-            'marker.</p>' +
+            '<p class="rowfoot">The party holds 2,155 convention rows across the 26 kinds, and the ' +
+            'tenant holds 216 more in the kinds whose table carries no party column. A set names ' +
+            'the kinds a report of this party reads. <b>What a set holds is decided in authoring, ' +
+            'not here</b>, so this page draws no row per kind.</p>' +
             '</div>' +
-            '<div class="notice" style="margin-top:12px"><b>How a configuration names one document ' +
-            'per kind.</b> The reporting model does not say. ores_reporting_configurations_tbl ' +
-            'carries a name, a configuration_type_code and an owning_component, and no document ' +
-            'column; the conventions document refdata owns is read per party with ' +
-            '<span class="mono">refdata.v1.conventions_documents.get</span> and carries one vector ' +
-            'per kind. The per-kind binding is a fixture on the shared prototype, which says so.</div>' +
             '<div class="draftrow" style="margin-top:14px">' +
-            '<a class="btn primary" href="../manage-the-conventions/?from=create-a-report">' +
-            'Manage the conventions \u2192</a>' +
-            '<span class="hint">The shared prototype owns the 26 rows, the page for each kind and ' +
-            'the create route. It sits at ' +
-            'doc/prototypes/reporting/manage-the-conventions/.</span></div>' +
-            '<p class="rowfoot">The candidates in this slot come from ' +
+            '<a class="btn" href="#" data-act="noop">Author a convention set \u2192</a>' +
+            '<span class="tag warn">not in this MR</span>' +
+            '<span class="hint">No set fits: authoring has its own UX, and it is deferred. This ' +
+            'prototype draws the choice and not the authoring.</span></div>' +
+            '<p class="rowfoot">The set this report binds is <b>' +
+            esc(bound ? bound.name : 'none') + '</b>. The candidates come from ' +
             '<span class="mono">reporting.v1.configurations.list_by_configuration_type_code</span>, ' +
             'and the binding is written with ' +
-            '<span class="mono">reporting.v1.report_configurations.put</span>. This page reads the ' +
-            'set with <span class="mono">refdata.v1.conventions_documents.get</span> and states ' +
-            'that the per-kind document is not a reporting column.</p>';
+            '<span class="mono">reporting.v1.report_configurations.put</span>. The application ' +
+            'route for conventions is <span class="mono">PATHS.conventions</span>, ' +
+            '/refdata/conventions.</p>';
     }
 
     /* One configuration step. Every one of the other four carries the same four
@@ -1405,6 +1364,9 @@
             'choice.</dd>' +
             '<dt>Only one configuration type has a screen</dt>' +
             '<dd>' + esc(NO_CONFIG_SCREEN) + '</dd>' +
+            '<dt>The convention sets are a fixture</dt>' +
+            '<dd>' + esc(CONVENTIONS_FIXTURE) + ' Authoring a set has its own UX, and it is ' +
+            'deferred: the link on step 2 says so and opens nothing.</dd>' +
             '<dt>No route, and nothing creates a report</dt>' +
             '<dd>No BFF route serves reporting, and nothing in the application creates a report ' +
             'today: every definition that exists was seeded.</dd>' +
@@ -1551,9 +1513,10 @@
             '<span>pfe without simulation: <b>' + (pfeWithoutSimulation() ? 'yes' : 'no') + '</b></span>' +
             '</div>' +
             '<p class="state-note">One party, because a definition belongs to one party. The ' +
-            'configurations, their scopes and every analytic setting are a fixture. Nothing reads a ' +
-            'server, no operation writes the scope, the pfe rule lives in the seeder, and only ' +
-            'conventions has a screen among the five configuration types.</p>' +
+            'configurations, their scopes, every analytic setting and the convention sets are a ' +
+            'fixture. Nothing reads a server, no operation writes the scope, the pfe rule lives in ' +
+            'the seeder, and only conventions has a screen among the five configuration types. ' +
+            'Authoring a convention set is deferred and is not in this MR.</p>' +
             (S.log.length === 0
                 ? '<p class="state-note">No action yet.</p>'
                 : '<ol>' + S.log.map(function (entry, index) {

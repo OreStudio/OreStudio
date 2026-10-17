@@ -15,11 +15,17 @@ The reports a party runs, what each produced, what went wrong, and when the next
 one starts. Seven journeys describe that work, and there is no reporting surface
 in the application at all today, so nothing here has prior art to copy.
 
-11 prototypes answer to this group: one per journey, one that two of them
-hand the analytics to, and one that two of them hand the conventions to. Each is a static page under =doc/prototypes/=, opens with
+10 prototypes answer to this group: one per journey, and one that two of them
+hand the analytics to. Each is a static page under =doc/prototypes/=, opens with
 no build and no session, and reads mock data only. The table below opens each one
 and says what it argues. Where a prototype carries a Gemini review, the last
 column opens it.
+
+The conventions have no prototype of their own. They are named convention sets,
+and the report chooses one: Create a report and Change what a report runs each
+carry that choice on one page. Authoring a set is its own UX, addressed outside
+this work, and the prototype that used to argue a per-kind interaction inside the
+reporting group has been retired.
 
 [[file:../index.org][Prototypes]] is the top page and the only inventory.
 
@@ -63,9 +69,8 @@ answers can be compared.
 | [[file:find-out-why-a-run-went-wrong.org][Find out why a run went wrong]] | The sharpest question of them: are errors a place you go, a panel beside the run, or a ledger across runs. It renders twenty real error rows, including one trade failing in two analytics with the same message. | [[file:find-out-why-a-run-went-wrong/][prototype]] | none |
 | [[file:choose-when-a-report-runs.org][Choose when a report runs]] | Where scheduling lives: on the report, in a schedule list, or on a calendar. It keeps run now, pause, play and unschedule apart, and states that the schedule has no time zone, that no scheduler read exists for this screen, and that pause and play have no operation. | [[file:choose-when-a-report-runs/][prototype]] | none |
 | [[file:look-back-over-a-reports-history.org][Look back over a report's history]] | The runs of one report newest first, each with its timestamp, the newest marked latest, the last five fire times, and a notice when the run being read stops being the newest. A trend line of the report's exposure sits above the list, with the latest run's point marked and named, every point a run's errors left partial drawn hollow and dashed, and a run that produced no figure breaking the line. Beside it sits the page's plot vocabulary and the rule that picks a form: a donut of the latest run's problems by scope, stacked bars of the problems by scope across the runs, grouped bars of the errors against the warnings, and a scatter of how long a run took against how many positions it placed. | [[file:look-back-over-a-reports-history/][prototype]] | none |
-| [[file:create-a-report.org][Create a report]] | Creating a report on the standard steps UI: seven fixed steps (what it is, one step for each of the five configurations it binds, and the analytics that configuration carries), then a final review that states every value and reads the row back. Step 7 is the entry point to the analytics and not a second implementation of them: it reads the set the bound configuration holds, with the count that is on, the display order, the rows kept off and the incompatibility state, and it hands the work to Manage the analytics. Step 2 is the same kind of entry point for the conventions: it reads the set the bound configuration carries, states that all 26 kinds are bound and that 25 of them came from a DQ publish, and hands the work to Manage the conventions. | [[file:create-a-report/][prototype]] | none |
-| [[file:change-what-a-report-runs.org][Change what a report runs]] | A wizard over three panels: the definition and the configurations it binds, each linking to the screen that holds its data, then the analytics of the bound configuration as a read-only summary, then what a change to that set reaches. It draws no analytic control: the switchboard and the add-analytic flow are gone, and step 2 hands the analytics to Manage the analytics and states what the change reaches. Its conventions row reads the set, states that every kind is bound and which DQ publish wrote it, and hands the conventions to Manage the conventions. Incompatibility is a visible state, so pfe without simulation is marked and the rule is named. | [[file:change-what-a-report-runs/][prototype]] | none |
-| [[file:manage-the-conventions.org][Manage the conventions]] | The one prototype that owns the conventions interaction of a conventions configuration, as a table rather than a wizard: one row per convention kind with the name derived from the terms of the document in use, what its terms say in words, where the kind came from, and one button that opens that kind alone. No table stores a name, so the name is derived and the page shows the rule and the fields it read. ACME is provisioned, so every kind is bound: the tenant holds 10,991 convention rows across 26 kinds, and a party holds 2,155 with 216 more held tenant-wide. 25 of the 26 kinds came from a DQ publish, which the row states with its subject and dataset; =tenor= is the exception, with no DQ artefact table, its 4 rows copied from the system tenant. Every kind holds many documents and nothing records which one a run reads, so the absence the page argues is the missing default. A kind's page carries its documents with their provenance, which one is the default (none is modelled, and the page names the two places one would have to live), and a create route that leaves the report flow. Three readings behind =?variant=A|B|C=: described list, compare, and search and filter for the 320-document swap kind. A new party starts with none, which =?state=none= still draws. | [[file:manage-the-conventions/][prototype]] | none |
+| [[file:create-a-report.org][Create a report]] | Creating a report on the standard steps UI: seven fixed steps (what it is, one step for each of the five configurations it binds, and the analytics that configuration carries), then a final review that states every value and reads the row back. Step 7 is the entry point to the analytics and not a second implementation of them: it reads the set the bound configuration holds, with the count that is on, the display order, the rows kept off and the incompatibility state, and it hands the work to Manage the analytics. Step 2 is one page of named convention sets: a row per set with its name, its purpose, the kinds it covers and whether this report uses it, a radio to choose the set the report binds, and one link out to the convention authoring UX marked as not in this MR. It draws no per-kind table, and every name, purpose and count in it is a fixture, because no table stores a set's name or purpose, nothing marks the document a run reads for a kind, and the conventions configuration carries no children. | [[file:create-a-report/][prototype]] | none |
+| [[file:change-what-a-report-runs.org][Change what a report runs]] | A wizard over three panels: the definition and the configurations it binds, with where each one's data lives, then the analytics of the bound configuration as a read-only summary, then what a change to that set reaches. It draws no analytic control: the switchboard and the add-analytic flow are gone, and step 2 hands the analytics to Manage the analytics and states what the change reaches. A conventions configuration is a named convention set, so its row shows the set chosen on the card below, and that card is the same one page of sets the create flow draws: name, purpose, kinds covered, whether this report uses it, a radio to bind one, and one link out to authoring marked as not in this MR. Incompatibility is a visible state, so pfe without simulation is marked and the rule is named. | [[file:change-what-a-report-runs/][prototype]] | none |
 | [[file:manage-the-analytics.org][Manage the analytics]] | The one prototype that owns the analytic interaction of a run settings configuration: a switchboard of the fourteen types with the on/off control, the =display_order= and a one-line summary, a rail step for each analytic that is on in =display_order=, and a final step that reads the set back. Turning one off asks first and sets =active= false rather than deleting the row. pfe without simulation is a state with both rows marked, the refused toggle and a final step that refuses to read the set back. Three readings of the per-analytic step behind =?variant=A|B|C=: a document, two columns, and a guided walk one parameter at a time. | [[file:manage-the-analytics/][prototype]] | none |
 
 * What none of them settle
@@ -75,11 +80,17 @@ decision this set exists to inform, and it is taken after the review rather than
 here. Each prototype argues one journey; the area they share is drawn only far
 enough to judge the journey inside it.
 
-One thing is settled: analytic management has one screen. Create a report and
+Two things are settled. Analytic management has one screen: Create a report and
 Change what a report runs used to draw the same switchboard, the same parameters
 and the same incompatibility state, in two vocabularies for the same three
 states — on, off, and a type with no row. Both now read the set and link to
 Manage the analytics, which owns it.
+
+And the conventions are chosen, not assembled. A convention set carries a name, a
+purpose and a description, a system holds few of them, and a report binds one by
+choosing it. Authoring a set is its own UX, deferred to its own work, so no
+prototype here draws a per-kind table, an alternative per kind, a provenance card
+or a migration state.
 
 * Adding a prototype
 

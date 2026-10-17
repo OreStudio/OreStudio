@@ -125,8 +125,10 @@ per-kind choice.
    an owning component and no document column. The conventions document refdata
    owns is one document for the party, read with
    =refdata.v1.conventions_documents.get=, which takes a party and not a
-   configuration, and it holds one vector per convention kind. The per-kind
-   choice is owned by the shared screen, not by a column of the configuration.
+   configuration, and it holds one vector per convention kind. There is no
+   per-kind choice in a report: conventions are named convention sets, a system
+   holds few of them, and what a set holds is decided in authoring, which is its
+   own UX and is deferred.
 
    The convention entities live in =projects/ores.refdata/modeling/= as
    =ores.refdata.<instrument>_convention.org=. There are 25 curated kinds: 25
@@ -139,14 +141,19 @@ per-kind choice.
    =doc/knowledge/journeys/conventions/= states what a convention is, and which
    reference data lists it picks from.
 
-   The person picks one configuration the party holds, from the candidates
+   The person chooses one convention set the party holds, from the candidates
    =reporting.v1.configurations.list_by_configuration_type_code= returns, and the
-   binding is written with =reporting.v1.report_configurations.put=. This step
-   then reads the set: how many kinds are bound, and the ones that are not. It
-   draws no picker and edits nothing. The interaction is owned by
-   =doc/prototypes/reporting/manage-the-conventions/=, which this step links to,
-   and the prototype says that the per-kind binding is a fixture because the
-   model does not state it.
+   binding is written with =reporting.v1.report_configurations.put=. This step is
+   one page of sets: a row per set with its name, its purpose, the number of kinds
+   it covers and whether it is the one this report uses, and a radio that chooses
+   it. It draws no per-kind table and no alternative per kind, because what a set
+   holds is decided in authoring. One link leaves the page for that authoring UX,
+   and it is marked as not in this MR. The names, purposes and counts on the page
+   are a fixture: no table stores a set's name or purpose, nothing marks the
+   document a run reads for a kind, and the configuration carries no children.
+   [[file:../../prototypes/reporting/create-a-report/][Create a report]] draws the
+   page, and the story [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the
+   convention sets a report chooses]] holds the decision and the gaps.
 
    The binding reaches every instrument family the set covers, on every run of
    every definition that binds the configuration, and the day count and calendars

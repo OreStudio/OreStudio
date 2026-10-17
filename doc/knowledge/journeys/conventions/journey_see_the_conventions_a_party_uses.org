@@ -157,21 +157,28 @@ that no row needs opening to be understood.
 
 * Prototype
 
-A prototype already exists and is the design record for this screen:
-[[file:../../prototypes/reporting/manage-the-conventions/][manage the
-conventions]], with
-[[file:../../prototypes/reporting/manage-the-conventions.org][its design note]].
-This pass writes no prototype and changes none.
+No prototype answers this journey today. The prototype that used to draw the
+26-kind table inside the reporting group has been retired: it was built on a
+conventions configuration that carries no children, and the conventions are now
+named convention sets rather than a per-kind list a person assembles. This pass
+writes no prototype.
 
-The prototype argues this journey as a table rather than a wizard, because 26
-steps is not a screen a person can read. It draws the 26 rows, the two document
-counts, the provenance marks, the derived name beside the row key, and the state
-a party with no conventions opens on. Two points where the journey and the
-prototype diverge are recorded rather than smoothed over: the prototype's note
-says a party with no conventions falls back to the curated document for the
-kind, and no such fallback exists (see *What is missing*); and the note says
-thirty-one definitions bind the conventions configuration, which was true when
-it was written and is 78 now.
+Conventions are named convention sets: a set carries a name, a purpose and a
+description, a system holds few of them, and a report binds one by choosing it.
+The choosing surface is drawn in
+[[file:../../prototypes/reporting/create-a-report/][Create a report]] and
+[[file:../../prototypes/reporting/change-what-a-report-runs/][Change what a
+report runs]]: one page of sets, a radio to bind one, and one link out to the
+authoring UX. The authoring prototype is deferred to its own work and is not in
+this MR. The decision, and the three absences this journey records — no default
+marker, no name, and a configuration that holds nothing — are stated in the story
+[[file:../../../agile/versions/v0/sprint_28/name-the-convention-sets-a-report-chooses/story.org][Name
+the convention sets a report chooses]] (DE6C0BDA-D12A-4E31-AA86-C323F5A7E016).
+Two points the retired prototype raised are kept here rather than lost: a party
+with no conventions does not fall back to the curated document for the kind, and
+no such fallback exists (see *What is missing*); and the retired note said
+thirty-one definitions bind the conventions configuration, where each of ACME's
+78 definitions binds one.
 
 * Entities composed
 

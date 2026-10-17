@@ -85,7 +85,7 @@ many items a save would refuse, because the runtime never asks it to.
 | Position | Step | What it draws |
 |----------+------+---------------|
 | 1 | What it is | The name, the description, the report type as a combo box over the type table, =is_official=, and the concurrency policy. |
-| 2 | The conventions it binds | What binding a conventions configuration means, where the convention entities live, the picker, the route to =PATHS.conventions=, and what the binding reaches. |
+| 2 | The conventions it binds | One page of named convention sets: a row per set with its name, its purpose, the kinds it covers and whether this report uses it, a radio to choose one, and one link out to the authoring UX. |
 | 3 | The pricing engines it binds | The same four parts for =pricing_engines=, with no screen stated plainly. |
 | 4 | The market data it binds | The same four parts for =todays_market=, with no screen stated plainly. |
 | 5 | The curve configuration it binds | The same four parts for =curve_configuration=, with no screen stated plainly. |
@@ -156,9 +156,9 @@ have just chosen — on the screen that owns it.
 
 A definition binds configurations of exactly five types: =conventions=,
 =pricing_engines=, =todays_market=, =curve_configuration= and
-=risk_report_config=. Each of them owns a step, and every one of those steps
-carries the same four parts, so a reader comparing two of them compares like with
-like:
+=risk_report_config=. Four of them own a step that carries the same four parts, so
+a reader comparing two of them compares like with like. Conventions is the
+exception and is described at the end of this section.
 
 1. *What binding it means.* The argument, in plain words and grounded in the
    type's own model, because the five do not decide the same thing. Binding
@@ -191,6 +191,25 @@ has one*, at =PATHS.conventions=, =/refdata/conventions=. =pricing_engines=,
 the application, and their steps say so rather than drawing a link that would not
 resolve.
 
+** The conventions step is one page of named sets
+
+Conventions are named convention sets. A set carries a name, a purpose and a
+description, and it covers some of the 26 convention kinds. A system holds few of
+them, and each one is clearly named and clearly purposed, so the report's whole
+conventions UX is a choice: one row per set, a radio to bind one, and one link
+out for the person who finds that no set fits.
+
+The step draws nothing else. There is no per-kind table, no alternative per kind
+for a person to weigh, no provenance card and no migration state. Those belong to
+authoring a set, which is a separate UX: it is not in this MR, the link to it is
+marked as such, and it opens nothing. The story *Name the convention sets a
+report chooses* holds the decision and the gaps.
+
+Every name, purpose, description and kind count in the list is a fixture, and the
+page says so. No table carries a name or a purpose column for a set, nothing marks
+the document a run reads for a kind, and the conventions configuration carries no
+children, so the list stands in for those columns until the story lands.
+
 ** The scope is read off the configuration
 
 The scope is not a field of the definition. It is a column of the
@@ -220,7 +239,10 @@ demand, and that it has never run.
 The complex editors for =simulation= and =pfe= — the cube, the shift and the time
 grid — are drawn as plain fields on Manage the analytics, and that page labels
 each one a deferred editor. This page says only that they are deferred and names
-the screen that draws them. Likewise the scope: a person who needs a portfolio no
+the screen that draws them. Authoring a convention set is deferred too, and to its
+own work: this page draws the choice between sets and the link to that UX, and it
+draws no way to name a set, state its purpose or choose the kinds it holds.
+Likewise the scope: a person who needs a portfolio no
 configuration carries cannot state it here, because no operation writes the
 scope, and that is a gap the journey records rather than this page invents round.
 
@@ -239,7 +261,8 @@ journey's own; no subject is invented for the gaps.
 ** What is fake
 
 Every value is a fixture: the party, the configurations and their binding counts,
-the scopes, the analytic settings, and the identifier the save would return.
+the scopes, the analytic settings, the identifier the save would return, and the
+convention sets with their names, purposes, descriptions and kind counts.
 Nothing reads a server and nothing is written. =?pfe=without-simulation= opens
 the draft with the rule broken, so the state can be read without changing two
 rows by hand. =?step=N= lands on a step.

@@ -103,4 +103,5 @@ by nothing finer than that.
 - [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections each page fills
 - [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the staged table, the dataset, the artefact type and the publish contract
 - [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the bundle a starting point publishes per party
-- [[id:529d0061-fa74-4ad6-a6c6-a9456650ba75][Manage the conventions prototype]] — the screen design that already exists for the reading journey
+- [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the convention sets a report chooses]] — the decision that conventions are named sets, and the gaps that block choosing one
+- [[file:../../prototypes/reporting/create-a-report/][Create a report]] and [[file:../../prototypes/reporting/change-what-a-report-runs/][Change what a report runs]] — the choosing surface: one page of named sets, and the link out to the authoring UX, which is deferred

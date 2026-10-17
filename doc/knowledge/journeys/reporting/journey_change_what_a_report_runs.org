@@ -73,17 +73,19 @@ journey is that screen's owner.
    market data of the valuation date; curve_configuration says how each curve is
    built; and risk_report_config carries the analytics, their order and their
    parameters.
-3. *Follow each to the screen that holds it, where one exists.* Each of the five
-   links to the screen that holds its data. **Only one such screen exists today**:
-   conventions is a real route, =PATHS.conventions=, which is
-   =/refdata/conventions=. Its row also points at the shared prototype
-   =doc/prototypes/reporting/manage-the-conventions/=, which owns the conventions
-   interaction and states that the reporting model names no document per kind.
-   The row reads that set: the 26 kinds, how many are bound, and the ones that
-   are not. The other four, =pricing_engines=, =todays_market=,
-   =curve_configuration= and =risk_report_config=, have no screen and no route,
-   so the panel states the link as missing rather than drawing one that would not
-   resolve. The panel never invents a route.
+3. *See where each configuration's data lives, and follow it where a screen
+   exists.* A conventions configuration is a named convention set, so the panel
+   shows the set this report uses and one page of the sets the party holds: a row
+   per set with its name, its purpose, the kinds it covers and whether it is the
+   one this report uses, and a radio that chooses it. One link leaves that page
+   for the authoring UX, and it is marked as not in this MR. The panel draws no
+   per-kind table, because what a set holds is decided in authoring. The names,
+   purposes and counts on the page are a fixture: no table stores a set's name or
+   purpose, nothing marks the document a run reads for a kind, and the
+   configuration carries no children. The other four, =pricing_engines=,
+   =todays_market=, =curve_configuration= and =risk_report_config=, have no
+   screen and no route, so the panel states the link as missing rather than
+   drawing one that would not resolve. The panel never invents a route.
 4. *Read who else is bound to the analytics.* The configurations in the first four
    slots are the party's own. The one in the fifth, =risk_report_config=, carries
    the analytics, and it is shared: three other definitions bind the same

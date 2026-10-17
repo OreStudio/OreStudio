@@ -133,12 +133,17 @@ form over one table and there is no open interaction question in it, which is
 the condition for spending a prototype; the questions that are open here are
 about the server and are recorded in /What is missing/.
 
-The existing
-[[file:../../prototypes/reporting/manage-the-conventions/][manage the
-conventions]] prototype draws a create route for authoring, and its note says so.
-It is not the design record for this journey: it was drawn from the reporting
-side and it begins from a configuration. This journey begins from a kind and a
-party, which is where the rows actually live.
+Conventions are named convention sets: a set carries a name, a purpose and a
+description, a system holds few of them, and a report binds one by choosing it.
+Authoring a set is its own UX, and its prototype is deferred to its own work. It
+is not in this MR, and nothing here draws it. The decision, and the gaps that
+block it, are recorded in the story
+[[file:../../../agile/versions/v0/sprint_28/name-the-convention-sets-a-report-chooses/story.org][Name
+the convention sets a report chooses]] (DE6C0BDA-D12A-4E31-AA86-C323F5A7E016).
+The report side of the choice is drawn in
+[[file:../../prototypes/reporting/create-a-report/][Create a report]] and
+[[file:../../prototypes/reporting/change-what-a-report-runs/][Change what a
+report runs]], and those two pages are the choosing surface this journey feeds.
 
 * Entities composed
 

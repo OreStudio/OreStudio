@@ -6,6 +6,13 @@
  * reads the five configurations it binds, reads the analytics its run settings
  * configuration carries, and reads what a change there does and does not reach.
  *
+ * Conventions are named convention sets. Step 1's conventions card is one page of
+ * them: a row per set with its name, its purpose, the kinds it covers and whether
+ * it is the one this report uses, a radio to choose it, and one link out to the
+ * authoring UX marked as not in this MR. It draws no per-kind row, because what a
+ * set holds is decided in authoring, which is deferred. Every name, purpose and
+ * count in that list is a fixture, and the page says so.
+ *
  * The prototype no longer draws the analytics. Manage the analytics owns them
  * (doc/prototypes/reporting/manage-the-analytics/): the switchboard, a step for
  * each analytic that is on, every parameter, the refused pfe and simulation
@@ -44,72 +51,42 @@
 
     var SHARED_WITH = ['Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity'];
 
-    /* The conventions set, for the read-only summary this step draws. Twenty-six
-       kinds. ACME is provisioned: the tenant holds 10,991 convention rows and
-       every kind is bound, 25 of them from a DQ publish. docs is the party's own
-       documents; the four kinds whose table has no party column are held by the
-       tenant and say so. */
-    var CONVENTIONS_KINDS = [
-        { name: 'Deposit', docs: 163, prov: 'dq' },
-        { name: 'FRA', docs: 42, prov: 'dq' },
-        { name: 'Future', docs: 7, prov: 'dq' },
-        { name: 'OIS', docs: 52, prov: 'dq' },
-        { name: 'Average OIS', docs: 5, prov: 'dq' },
-        { name: 'Swap', docs: 320, prov: 'dq' },
-        { name: 'Tenor basis swap', docs: 37, prov: 'dq' },
-        { name: 'Tenor basis two swap', docs: 4, prov: 'dq' },
-        { name: 'Cross-currency basis', docs: 207, prov: 'dq' },
-        { name: 'Cross-currency fix-float', docs: 24, prov: 'dq' },
-        { name: 'Bond yield', docs: 5, prov: 'dq' },
-        { name: 'CDS', docs: 4, prov: 'dq' },
-        { name: 'CMS spread option', docs: 1, prov: 'dq' },
-        { name: 'Commodity forward', docs: 4, prov: 'dq' },
-        { name: 'Commodity future', docs: 790, prov: 'dq' },
-        { name: 'FX option', docs: 173, prov: 'dq' },
-        { name: 'BMA basis swap', docs: 3, prov: 'dq' },
-        { name: 'Zero', docs: 38, prov: 'dq' },
-        { name: 'Inflation swap', docs: 22, prov: 'dq' },
-        { name: 'Intraday power load', docs: 2, prov: 'dq' },
-        { name: 'IBOR index', docs: 10, prov: 'dq', tenantWide: true },
-        { name: 'Overnight index', docs: 23, prov: 'dq', tenantWide: true },
-        { name: 'Named swap index', docs: 243, prov: 'dq' },
-        { name: 'Currency pair', docs: 179, prov: 'pair', tenantWide: true },
-        { name: 'Zero inflation index', docs: 9, prov: 'dq' },
-        { name: 'Tenor', docs: 4, prov: 'system', tenantWide: true }
+    /* The named convention sets this party holds. A set carries a name, a
+       purpose and a description, and it covers some of the 26 convention kinds.
+       A system holds few of them, and the report chooses one: that choice is the
+       whole of the conventions interaction here. Every name, purpose, description
+       and count is a fixture, because no table stores a set's name or purpose,
+       nothing marks the document a run reads for a kind, and the conventions
+       configuration carries no children. */
+    var CONVENTION_SETS = [
+        { id: 'cfg-conv-group', name: 'Group conventions',
+          purpose: 'The kinds every ACME book prices with',
+          description: 'Every instrument family the group trades, at the terms the group has agreed.',
+          kinds: 26 },
+        { id: 'cfg-conv-treasury', name: 'Treasury portfolio conventions',
+          purpose: 'The kinds the Group Treasury Portfolio prices with',
+          description: 'The funding and FX families the treasury book reads, and no other.',
+          kinds: 9 },
+        { id: 'cfg-conv-trading', name: 'Trading book conventions',
+          purpose: 'The kinds the Trading Book prices with',
+          description: 'The traded families the trading book reads, at the terms its desk has agreed.',
+          kinds: 14 }
     ];
 
-    /* A count a reader reads: 2155 is 2,155. */
-    function num(value) {
-        return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
 
-    /* Where the set came from, in one place: the two publish subjects, and the
-       one kind no publish reaches. */
-    var CONVENTIONS_PUBLISH = {
-        dq: { subject: 'refdata.v1.ops.publish_conventions_from_dq',
-              dataset: 'ORE Instrument Conventions' },
-        pair: { subject: 'refdata.v1.ops.publish_currency_pair_conventions_from_dq',
-                dataset: 'Standard Currency Pair Conventions' }
-    };
-
-    /* The five configuration types a definition binds. Only conventions has a
-       screen in the application; PATHS.conventions is /refdata/conventions. The
-       other four are stated as missing. The conventions row points at the shared
-       prototype, which owns the interaction; the application route is named
-       beside it, because it is still the only real route. */
+    /* The five configuration types a definition binds. A conventions
+       configuration is a named convention set, so its row shows the set chosen
+       on the card below rather than a name of its own. The other four types have
+       no screen in the application, and this page states that rather than drawing
+       a link that would not resolve. */
     var CONFIG_TYPES = [
         {
             type: 'conventions',
-            name: 'Group conventions',
-            supplies: 'The set of 26 convention kinds the run reads. Every kind is bound: ' +
-                '25 of them from a DQ publish and tenor copied from the system tenant. ' +
-                'The terms, not the market data, the curves or the engines.',
-            route: {
-                path: '../manage-the-conventions/?from=change-what-a-report-runs',
-                screen: 'Manage the conventions',
-                hint: 'shared prototype \u00b7 the application route is PATHS.conventions, ' +
-                    '/refdata/conventions'
-            }
+            set: true,
+            supplies: 'The named convention set the run reads: the kinds it covers and the terms ' +
+                'of those kinds. The terms, not the market data, the curves or the engines.',
+            where: 'the set is chosen on the card below',
+            whereHint: 'authoring a set is deferred \u00b7 not in this MR'
         },
         {
             type: 'pricing_engines',
@@ -242,9 +219,12 @@
     var SHARED = 'A configuration is shared. Three other definitions bind Group risk configuration, so ' +
         'the next run of each of them produces the changed set too, and none of them was opened here.';
 
-    var NO_CONFIG_SCREEN = 'No screen exists for four of the five configuration types. Only ' +
-        'conventions has a route, PATHS.conventions, which is /refdata/conventions. The other four ' +
-        'are named here and stated as missing rather than drawn as working links.';
+    var NO_CONFIG_SCREEN = 'No screen exists for four of the five configuration types. A ' +
+        'conventions configuration is a named set, and this page chooses one from the sets above. ' +
+        'Authoring a set is a separate UX, deferred and not in this MR, so the link to it is drawn ' +
+        'and opens nothing. pricing_engines, todays_market, curve_configuration and ' +
+        'risk_report_config are named here and stated as missing rather than drawn as working ' +
+        'links.';
 
     var HANDED_OFF = 'The analytics are not drawn on this page. Manage the analytics owns them: the ' +
         'switchboard of every analytic type, a step for each one that is on, every parameter with a ' +
@@ -260,12 +240,16 @@
                 'screen is done.'
         },
         {
-            title: 'No screen exists for four of the five configuration types',
-            body: 'Step 1 names the five configurations the definition binds and links each to the ' +
-                'screen that holds its data. Only one such screen exists: conventions, at ' +
-                'PATHS.conventions, /refdata/conventions. pricing_engines, todays_market, ' +
-                'curve_configuration and risk_report_config have no screen in the application, and ' +
-                'this page states that instead of drawing a link that would not resolve.'
+            title: 'The convention sets are a fixture, and no screen authors one',
+            body: 'A convention set carries a name, a purpose and a description, and no table ' +
+                'stores any of them: the name is derived from the terms of the document in use, ' +
+                'and a purpose has no home at all. Nothing marks the document a run reads for a ' +
+                'kind, and the conventions configuration carries no children. So the sets, their ' +
+                'names, purposes, descriptions and kind counts are a fixture, and the story Name ' +
+                'the convention sets a report chooses holds the decision. Authoring a set has its ' +
+                'own UX, deferred and not in this MR. The other four configuration types have no ' +
+                'screen in the application at all, and this page states that instead of drawing a ' +
+                'link that would not resolve.'
         },
         {
             title: 'Nothing validates the pfe rule',
@@ -314,6 +298,7 @@
 
     var S = {
         step: 1,
+        conventions: 'cfg-conv-group',
         showState: false,
         activity: 'rest',
         log: []
@@ -438,13 +423,17 @@
                 '<span class="arrow">\u2192</span>' + esc(binding.route.screen) + '</a>' +
                 '<div class="hint">' + esc(binding.route.hint ||
                     ('real route \u00b7 ' + binding.route.symbol)) + '</div>';
+        } else if (binding.where) {
+            where = '<span class="tag muted">' + esc(binding.where) + '</span>' +
+                '<div class="hint">' + esc(binding.whereHint) + '</div>';
         } else {
             where = '<span class="tag muted">no screen</span>' +
                 '<div class="hint">no route exists</div>';
         }
+        var name = binding.set ? boundSet().name : binding.name;
         return '<div class="configrow' + (binding.shared ? ' shared' : '') + '">' +
             '<span class="cftype">' + esc(binding.type) + '</span>' +
-            '<span class="cfname">' + esc(binding.name) +
+            '<span class="cfname">' + esc(name) +
             (binding.shared ? '<span class="tag accent">carries the analytics</span>' : '') + '</span>' +
             '<span class="cfwhat">' + esc(binding.supplies) + '</span>' +
             '<span class="cfwhere">' + where + '</span>' +
@@ -452,54 +441,52 @@
     }
 
 
-    /* The conventions row is an entry point. This card reads the set the bound
-       configuration carries, states that every kind is bound and where the
-       documents came from, and hands the work to the shared prototype. It draws
-       no picker. */
-    function conventionsRow(kind) {
-        var held = '<span class="tag ok">' + kind.docs +
-            (kind.docs === 1 ? ' document' : ' documents') + '</span>' +
-            (kind.tenantWide ? ' <span class="tag muted">tenant-wide</span>' : '');
-        var prov = kind.prov === 'system'
-            ? '<span class="tag warn">copied from the system tenant</span> No DQ route for ' +
-              'this kind.'
-            : '<span class="tag ok">DQ publish</span> ' +
-              esc(CONVENTIONS_PUBLISH[kind.prov].dataset);
-        return '<tr><td>' + esc(kind.name) + '</td>' +
-            '<td class="code">' + held + '</td>' +
-            '<td class="wrap">' + prov + '</td></tr>';
+    /* The conventions page of this step: the named convention sets the party
+       holds, and the one this report uses. A row carries the set's name, its
+       purpose, the kinds it covers and whether it is the bound one, and the radio
+       is the choice. There is no per-kind row, because what a set holds is
+       decided in authoring, which has its own UX and is not in this MR. */
+    function boundSet() {
+        var found = CONVENTION_SETS.filter(function (set) { return set.id === S.conventions; });
+        return found.length === 1 ? found[0] : null;
+    }
+
+    function conventionsRow(set) {
+        var used = S.conventions === set.id;
+        return '<tr>' +
+            '<td><input type="radio" name="convention-set" data-act="convention-set" value="' +
+            esc(set.id) + '"' + (used ? ' checked' : '') +
+            ' aria-label="Bind ' + esc(set.name) + '"></td>' +
+            '<td><b>' + esc(set.name) + '</b>' +
+            '<div class="dim">' + esc(set.description) + '</div></td>' +
+            '<td class="wrap">' + esc(set.purpose) + '</td>' +
+            '<td class="code">' + set.kinds + ' of 26 kinds</td>' +
+            '<td>' + (used ? '<span class="tag ok">this report uses it</span>' : '') + '</td>' +
+            '</tr>';
     }
 
     function conventionsCard() {
-        var partyDocs = CONVENTIONS_KINDS.reduce(function (sum, kind) {
-            return kind.tenantWide ? sum : sum + kind.docs;
-        }, 0);
-        var tenantDocs = CONVENTIONS_KINDS.reduce(function (sum, kind) {
-            return kind.tenantWide ? sum + kind.docs : sum;
-        }, 0);
         return '<div class="card" style="margin-top:12px;background:var(--bg)">' +
-            '<div class="sectionhead"><h3>The conventions set this report binds</h3>' +
-            '<span class="meta">refdata.v1.conventions_documents.get \u00b7 fixture</span></div>' +
-            '<div class="notice ok"><b>ACME is provisioned and every kind is bound.</b> The ' +
-            'tenant holds 10,991 convention rows across the 26 kinds; a party holds ' +
-            num(partyDocs) + ' of them, and the tenant holds ' + num(tenantDocs) + ' more in the four ' +
-            'kinds whose table carries no party column. <b>25 of the 26 kinds came from a DQ ' +
-            'publish</b>; tenor did not, and its 4 rows were copied from the system tenant.</div>' +
+            '<div class="sectionhead"><h3>The convention sets this party holds</h3>' +
+            '<span class="meta">fixture until the story lands</span></div>' +
+            '<div class="notice warn"><b>Every name, purpose, description and count below is a ' +
+            'fixture.</b> No table carries a name or a purpose column for a convention set, no ' +
+            'table marks the document a run reads for a kind, and the conventions configuration ' +
+            'carries no children. The list stands in for those columns until the story Name the ' +
+            'convention sets a report chooses lands.</div>' +
             '<table style="margin-top:12px"><thead><tr>' +
-            '<th>Kind</th><th>Documents ACME holds</th><th>Where they came from</th>' +
-            '</tr></thead><tbody>' + CONVENTIONS_KINDS.map(conventionsRow).join('') +
+            '<th>Use</th><th>Set</th><th>Purpose</th><th>Kinds covered</th><th>This report</th>' +
+            '</tr></thead><tbody>' + CONVENTION_SETS.map(conventionsRow).join('') +
             '</tbody></table>' +
-            '<p class="rowfoot">A published document is a copy of a row of the DQ dataset, so a ' +
-            'kind holds many documents rather than one: swap 320, commodity future 790. The name ' +
-            'of a convention is derived from its terms, because no table stores one; the shared ' +
-            'prototype names each kind\u2019s documents and says how many it holds. ' +
-            '<b>Nothing records which of them a run reads</b>, and the per-kind binding is a ' +
-            'fixture: the reporting model names no document per kind.</p>' +
+            '<p class="rowfoot">The party holds 2,155 convention rows across the 26 kinds, and the ' +
+            'tenant holds 216 more in the kinds whose table carries no party column. A set names ' +
+            'the kinds a report of this party reads. <b>What a set holds is decided in authoring, ' +
+            'not here</b>, so this card draws no row per kind.</p>' +
             '<div class="draftrow" style="margin-top:10px">' +
-            '<a class="btn primary" href="../manage-the-conventions/?from=change-what-a-report-runs">' +
-            'Manage the conventions \u2192</a>' +
-            '<span class="hint">One screen owns the 26 rows, the page for each kind and the ' +
-            'create route. This wizard reads the set and links there.</span></div></div>';
+            '<a class="btn" href="#" data-act="noop">Author a convention set \u2192</a>' +
+            '<span class="tag warn">not in this MR</span>' +
+            '<span class="hint">No set fits: authoring has its own UX, and it is deferred. This ' +
+            'page draws the choice and not the authoring.</span></div></div>';
     }
 
     function stepOne() {
@@ -515,17 +502,16 @@
             '<span>what it supplies</span><span>where that data lives</span></div>' +
             '<div class="configs">' + CONFIG_TYPES.map(configRow).join('') + '</div>' +
             conventionsCard() +
-            '<div class="notice" style="margin-top:12px">' + esc(NO_CONFIG_SCREEN) +
-            ' The conventions link opens the shared prototype, which stands in for ' +
-            '<span class="mono">PATHS.conventions</span>; the other four rows stay stated as ' +
-            'missing.</div>' +
+            '<div class="notice" style="margin-top:12px">' + esc(NO_CONFIG_SCREEN) + '</div>' +
             '<div class="notice" style="margin-top:8px"><b>' + esc(CONFIGURATION.name) + '</b> ' +
             '<span class="mono">' + esc(CONFIGURATION.id) + '</span> carries the analytics, and four ' +
             'definitions bind it: this one, ' + esc(SHARED_WITH.join(', ')) + '. ' + esc(SHARED) +
             ' The analytics are not on the definition, so a change to them reaches all four.</div>' +
-            '<p class="rowfoot">A definition binds configurations of exactly these five types. To ' +
-            'change another configuration, or to rebind the definition to a different one, is a ' +
-            'different change, and this wizard does not offer it.</p>' +
+            '<p class="rowfoot">A definition binds configurations of exactly these five types. The ' +
+            'convention set is the one rebinding this wizard offers: the radio on the card above ' +
+            'chooses it. To change another configuration, or to rebind the definition to a ' +
+            'different one of the other four, is a different change, and this wizard does not ' +
+            'offer it.</p>' +
             stepNav('Next: the analytics', 2, null) +
             '</section>';
     }
@@ -805,6 +791,18 @@
             S.showState = !S.showState;
             render();
         }
+    });
+
+    document.addEventListener('change', function (event) {
+        var element = event.target.closest('[data-act]');
+        if (!element) return;
+        if (element.getAttribute('data-act') !== 'convention-set') return;
+        S.conventions = element.value;
+        var set = boundSet();
+        S.activity = 'conventions \u00b7 ' + (set ? set.name : 'none');
+        logStep('the report would bind ' + (set ? set.name : 'no set') +
+            ' \u2014 this page stages nothing');
+        render();
     });
 
     readParams();

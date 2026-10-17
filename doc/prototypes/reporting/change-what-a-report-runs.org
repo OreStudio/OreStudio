@@ -39,9 +39,13 @@ deferred.
 ** The wizard's three panels
 
 1. *The definition and the configurations it binds.* The definition's name, type
-   and party, then the five configuration types with what each supplies and a
-   link to the screen that holds its data. Only conventions has a screen today:
-   =PATHS.conventions=, =/refdata/conventions=. The other four are stated as
+   and party, then the five configuration types with what each supplies and where
+   its data lives. A conventions configuration is a named convention set, so its
+   row shows the set chosen below, and below the table sits the one page of sets
+   the report chooses between: a row each with its name, its purpose, the kinds it
+   covers and whether this report uses it, a radio to bind one, and one link out
+   to the authoring UX marked as not in this MR. It draws no per-kind row. The
+   other four types have no screen in the application, and they are stated as
    missing, never drawn as working. The panel also names the other definitions
    bound to the shared configuration, because the analytics belong to it and not
    to the definition that was opened.
@@ -137,13 +141,15 @@ case at all.
 
 ** What is fake**
 
-The definition, the five bindings, the eight analytic rows, the runs, the
-versions and the clock are fixtures. Nothing reads a server and the page sends
-nothing. The rules are not fixtures: =active = false= is how the model turns an
-analytic off, and =pfe= without =simulation= is a rule the seeder enforces and no
-service does. The link on step 1 points at the application route
-=/refdata/conventions= and does not resolve from =file://=; it is drawn because
-the route is real.
+The definition, the five bindings, the eight analytic rows, the convention sets
+with their names, purposes, descriptions and kind counts, the runs, the versions
+and the clock are fixtures. Nothing reads a server and the page sends nothing.
+The rules are not fixtures: =active = false= is how the model turns an analytic
+off, and =pfe= without =simulation= is a rule the seeder enforces and no service
+does. The convention sets are a fixture for a reason the page states: no table
+stores a set's name or purpose, nothing marks the document a run reads for a
+kind, and the conventions configuration carries no children. Authoring a set is
+deferred to its own work, so the link out on that page opens nothing.
 
 ** Where the code lives**
 

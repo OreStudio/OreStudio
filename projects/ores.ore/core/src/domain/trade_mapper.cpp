@@ -31,26 +31,6 @@ namespace ores::ore::domain {
 
 using namespace ores::logging;
 
-namespace {
-
-// A total return swap states its product as an underlying sub-trade rather
-// than as a top-level trade. Only an equity position selects the equity
-// family here; every other sub-trade stays with the composite mapper.
-std::string underlying_sub_trade_type(const trade& v) {
-    if (!v.TotalReturnSwapData)
-        return {};
-    const auto& ud = v.TotalReturnSwapData->UnderlyingData;
-    for (const auto& group : ud.subTradeGroup)
-        if (group.SubTrade)
-            return to_string(group.SubTrade->SubTradeType);
-    for (const auto& derivative : ud.Derivative)
-        if (derivative.subTradeGroup.SubTrade)
-            return to_string(derivative.subTradeGroup.SubTrade->SubTradeType);
-    return {};
-}
-
-} // namespace
-
 std::optional<trading::domain::swap_instrument_data>
 trade_mapper::map_swap_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
@@ -165,14 +145,6 @@ trade_mapper::map_equity_instrument(const trade& v) {
         return equity_instrument_mapper::forward_equity_position(v);
     if (type == "EquityOptionPosition")
         return equity_instrument_mapper::forward_equity_option_position(v);
-    if (type == "TotalReturnSwap") {
-        const auto sub_type = underlying_sub_trade_type(v);
-        if (sub_type == "EquityPosition")
-            return equity_instrument_mapper::forward_equity_position(v);
-        if (sub_type == "EquityOptionPosition")
-            return equity_instrument_mapper::forward_equity_option_position(v);
-        return std::nullopt;
-    }
     if (type == "EquityOption")
         return wrap(equity_instrument_mapper::forward_equity_option(v));
     if (type == "EquityForward")

@@ -42,6 +42,7 @@ set(files
     "scanner_directory_scanner_tests.cpp"
     "stress_test_database_roundtrip_tests.cpp"
     "todays_market_database_roundtrip_tests.cpp"
+    "xml_binding_tests.cpp"
     "xml_bond_fact_mapper_roundtrip_tests.cpp"
     "xml_bond_golden_roundtrip_tests.cpp"
     "xml_bond_mapper_roundtrip_tests.cpp"

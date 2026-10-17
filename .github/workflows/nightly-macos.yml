@@ -143,7 +143,6 @@ jobs:
           submodules: true
 
       - name: Select Xcode 16
-        # Newest Xcode 16.x on the image; the default it ships can lag behind.
         run: |
           xcode16=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
           if [[ -z "$xcode16" ]]; then

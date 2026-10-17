@@ -3,24 +3,33 @@
  *
  * See doc/knowledge/journeys/reporting/journey_create_a_report.org.
  *
- * The shape is decided: this screen is four steps on the standard steps UI, the
+ * The shape is decided: this screen is eight steps on the standard steps UI, the
  * one the system bootstrap journey uses. The rail, its done/current/ahead marks
  * and the step foot are copied from doc/prototypes/setup/first-run/, which
  * copies JourneyPage.tsx. It is not restyled here.
  *
- *   1  What it is     the name, the description, the report type, is_official,
- *                     and the concurrency policy
- *   2  What it reads  the five configuration types the definition binds, what
- *                     each supplies, and where its data lives
- *   3  What it runs   the fourteen analytic types with active toggles, and the
- *                     add-analytic flow the change journey carries
- *   4  Review and save  every field value, the bindings and the analytics, then
- *                     report_definitions.put and the read-back. It is the final
- *                     step, so it draws no Back.
+ *   1  What it is                  the name, the description, the report type,
+ *                                  is_official, and the concurrency policy
+ *   2  The conventions it binds    one step per configuration type, because
+ *   3  The pricing engines it binds  binding a configuration means something
+ *   4  The market data it binds      different for each of the five
+ *   5  The curve configuration it binds
+ *   6  The run settings it binds
+ *   7  What it runs                the fourteen analytic types with active
+ *                                  toggles, and the add-analytic flow the change
+ *                                  journey carries
+ *   8  Review and save             every field value, the bindings and the
+ *                                  analytics, then report_definitions.put and
+ *                                  the read-back. It is the final step, so it
+ *                                  draws no Back.
+ *
+ * The five configuration steps carry the same four parts: what binding a
+ * configuration of that type means, where its data lives, the picker for the
+ * configuration this report binds, and what the binding reaches and does not.
  *
  * The three structural variants (?variant=A|B|C: one form, a wizard, a
  * checklist) were dropped when the product owner chose the standard steps UI.
- * The design note records that. ?step=1..4 still lands on a step, and
+ * The design note records that. ?step=1..8 still lands on a step, and
  * ?pfe=without-simulation still opens the draft with the rule broken.
  *
  * Three absences the copy never hides:
@@ -48,31 +57,239 @@
     var TENANT = 'ACME Group (the session\u2019s tenant)';
     var PERSON = { name: 'Anneke Vos', role: 'Tenant administrator' };
 
-    /* The whole configuration vocabulary: five types, and no more. `supplies`
-       is the sentence the screen uses, because a person choosing between two
-       configurations needs to know what the choice decides. `where` is the
-       screen that holds the data, and only conventions has one. */
+    /* The whole configuration vocabulary: five types, and no more, in the order
+       report_type_configuration_types states and the seeder writes. Each type
+       owns one step of the rail, and every one of those steps carries the same
+       parts: `means` says what binding a configuration of the type decides,
+       `data` says where the data lives, `where` is the screen that holds it,
+       and `reaches` and `doesNot` say what the binding does and does not touch.
+       `#bound` is the count of definitions that already bind the configuration
+       this report picks, so the step states the reach rather than implying it.
+       Only conventions has a screen. */
     var CONFIG_TYPES = [
         {
             code: 'conventions',
-            supplies: 'The instrument conventions the trades are read with, one document for each convention kind.',
-            where: { symbol: 'PATHS.conventions', path: '/refdata/conventions', screen: 'Conventions' }
+            title: 'The conventions it binds',
+            sub: 'one document per convention kind',
+            lead: 'A conventions configuration names the market terms every trade in the run ' +
+                'is read with. Choose the set this report reads.',
+            means: [
+                'A convention is the set of market terms an instrument is built on: the day ' +
+                'count, the calendars, the payment frequency, the index, and the other terms ' +
+                'its instrument family fixes before a trade exists.',
+                'A conventions configuration holds that set as one document per convention kind. ' +
+                'Binding it decides what every trade in the run means. The same trade read ' +
+                'under two convention sets gives two different numbers, and neither of them is ' +
+                'a mistake.'
+            ],
+            data: [
+                'projects/ores.refdata/modeling/ores.refdata.<instrument>_convention.org \u2014 ' +
+                'one document per instrument family, 25 of them, from ' +
+                'ores.refdata.deposit_convention.org to ' +
+                'ores.refdata.cross_currency_basis_convention.org.',
+                'ores.refdata.bond_yield_convention.org, ores.refdata.cds_convention.org and ' +
+                'ores.refdata.average_ois_convention.org are three of the 25. A conventions ' +
+                'configuration names one such document for each convention kind.',
+                'doc/knowledge/journeys/conventions/ states what a convention is, and which ' +
+                'reference data lists it picks from.'
+            ],
+            where: { symbol: 'PATHS.conventions', path: '/refdata/conventions', name: 'Conventions' },
+            reaches: [
+                'Every instrument family the set covers, on every run of every definition ' +
+                'binding this configuration.',
+                'The day count and the calendars every analytic below reads through it, so npv ' +
+                'and everything built on npv move with the choice.',
+                '#bound definitions already bind this configuration, so a change to it reaches ' +
+                'their next run too.'
+            ],
+            doesNot: [
+                'It creates no convention and edits none. The reference data lists a convention ' +
+                'picks from, such as calendars, tenors and classifications, are untouched.',
+                'It names no market data. The market data and the curves are the two steps after ' +
+                'this one.',
+                'It does not make a trade readable. A trade whose family the set does not cover ' +
+                'has no terms in this run.'
+            ]
         },
         {
             code: 'pricing_engines',
-            supplies: 'The pricing model of each product, and its parameters.'
+            title: 'The pricing engines it binds',
+            sub: 'one model and one engine per product',
+            lead: 'A pricing engine configuration names the model and the engine each product is ' +
+                'priced with. Choose the one this report prices through.',
+            means: [
+                'A pricing engine configuration is ORE\u2019s pricingengine.xml. For each product ' +
+                'it names the pricing model, the numerical engine that evaluates the model, and ' +
+                'the parameters the two take.',
+                'Binding it decides how a trade is priced, not what it is priced from. A European ' +
+                'swaption mapped to BlackBachelier and a Grid engine carries a different number ' +
+                'from the same swaption mapped to LGM and AMC, and the two are not expected to ' +
+                'agree.',
+                'A product the configuration carries no row for has no model in this run.'
+            ],
+            data: [
+                'projects/ores.analytics/modeling/ores.analytics.pricing_model_config.org \u2014 ' +
+                'the document: one row per named configuration, which is ORE\u2019s ' +
+                'pricingengine.xml.',
+                'projects/ores.analytics/modeling/ores.analytics.pricing_model_product.org \u2014 ' +
+                'one row per pricing engine type, naming the model (DiscountedCashflows, LGM, ' +
+                'BlackBachelier, CrossAssetModel) and the engine (DiscountingSwapEngine, Grid, ' +
+                'AMC).',
+                'projects/ores.analytics/modeling/' +
+                'ores.analytics.pricing_model_product_parameter.org \u2014 the model, engine and ' +
+                'global parameters as name and value rows, each in a scope.'
+            ],
+            reaches: [
+                'Every analytic that prices a trade: npv first, then sensitivity, VaR and every ' +
+                'exposure figure built on them.',
+                'The model parameters of every product in the document, which no screen anywhere ' +
+                'in the application shows today.',
+                '#bound definitions already bind this configuration, so their next run prices ' +
+                'the same way.'
+            ],
+            doesNot: [
+                'It does not choose the market data or the curves. A model fits to the curves the ' +
+                'run builds, and those come from the two steps after this one.',
+                'It does not make a product priceable. A product with no row here is priced by no ' +
+                'model, and the run fails when it reaches it.'
+            ]
         },
         {
             code: 'todays_market',
-            supplies: 'The market data a run prices against, by market role.'
+            title: 'The market data it binds',
+            sub: 'collections of quotes, by market role',
+            lead: 'A today\u2019s market configuration names the data a run prices against, and a ' +
+                'block of collections for each market role. Choose the one this report reads.',
+            means: [
+                'A today\u2019s market configuration is ORE\u2019s todaysmarket.xml. It holds the ' +
+                'data a run prices against as up to twenty-four collections, such as ' +
+                'DiscountingCurves, FxSpots and SwaptionVolatilities. Each collection holds its ' +
+                'own ordered entries.',
+                'It also holds named configuration blocks. A block selects one collection of each ' +
+                'kind by id, so a report names a coherent set of curves and volatilities instead ' +
+                'of restating them.',
+                'Binding it decides which block each market role reads. The role is ORE\u2019s own, ' +
+                'pricing and simulation among them. Reporting holds the binding, not the data it ' +
+                'names.'
+            ],
+            data: [
+                'projects/ores.analytics/modeling/ores.analytics.todays_market_collection.org ' +
+                '\u2014 one collection, with its identity, its kind and its entries. A document ' +
+                'may write the same kind twice under different ids, which is how one block ' +
+                'selects a curve set and another selects a second.',
+                'projects/ores.analytics/modeling/ores.analytics.todays_market_configuration.org ' +
+                'and ores.analytics.todays_market_configuration_binding.org \u2014 one ' +
+                'configuration block, and the one collection of each kind it selects.',
+                'projects/ores.reporting/modeling/ores.reporting.configuration_market_binding.org ' +
+                '\u2014 the market role a run binds, written with ' +
+                'reporting.v1.configuration_market_bindings.put.'
+            ],
+            reaches: [
+                'Every price the run produces, because every analytic reads the market through it.',
+                'The curves as they are built: the quotes a curve recipe names come from here, so ' +
+                'this step and the curve step together decide the curve.',
+                '#bound definitions already bind this configuration, so their next run reads the ' +
+                'same market.'
+            ],
+            doesNot: [
+                'It holds references by name, not prices. The recipe that turns a quote into a ' +
+                'curve is the curve configuration, which is the next step.',
+                'It does not name the data of a role nothing binds. A role with no binding reads ' +
+                'no market data, and the run fails where it needs one.',
+                'It does not fix a valuation date. The date the run reads is a setting of the last ' +
+                'configuration step.'
+            ]
         },
         {
             code: 'curve_configuration',
-            supplies: 'The curves: their definitions, bootstrapping, segments and quotes, and the volatility and correlation configuration.'
+            title: 'The curve configuration it binds',
+            sub: 'the recipes the run builds its curves from',
+            lead: 'A curve configuration names the recipes a run builds its curves from, with ' +
+                'their bootstrapping, segments and quotes. Choose the one this report builds.',
+            means: [
+                'A curve configuration is ORE\u2019s curveconfig.xml: the recipes a run builds its ' +
+                'curves from.',
+                'A recipe names a curve, its definition, the segments it is built from, the quotes ' +
+                'that feed each segment, and how it is bootstrapped. The document also writes the ' +
+                'volatility and correlation sections that the option analytics read.',
+                'Binding it decides which recipes this run has. Without the recipe the curve is not ' +
+                'built, whatever the market quotes.'
+            ],
+            data: [
+                'projects/ores.refdata/modeling/ores.refdata.curve_configuration.org \u2014 the ' +
+                'document: its identity and the sections it writes. The curves themselves are ' +
+                'rows of curve_definition, and the segments and quotes hang off those.',
+                'projects/ores.refdata/modeling/ores.refdata.curve_configuration_section.org ' +
+                '\u2014 one row per section element the document writes, empty or not. ' +
+                'BaseCorrelations and Correlations appear empty fifteen times each in the corpus, ' +
+                'and the export writes them back.',
+                'A curve configuration is registered as a reporting configuration, which is how a ' +
+                'definition binds it. The document belongs to refdata; the name belongs to ' +
+                'reporting.'
+            ],
+            reaches: [
+                'Every analytic that discounts, projects or reads a volatility: npv, cashflow, ' +
+                'curves, simulation, and the exposure analytics above them.',
+                'What the curves analytic writes, which is the one place where a curve built the ' +
+                'wrong way can be seen.',
+                '#bound definitions already bind this configuration, so their next run builds the ' +
+                'same curves.'
+            ],
+            doesNot: [
+                'It holds no quote. The quotes a segment names are entries of the today\u2019s ' +
+                'market configuration.',
+                'It builds nothing. The run builds the curves from the recipe, and this page ' +
+                'creates no run.',
+                'It does not choose the model that reads a volatility. That is the pricing engine ' +
+                'configuration.'
+            ]
         },
         {
             code: 'risk_report_config',
-            supplies: 'The run settings the party shares: base currency, observation model, VaR and SIMM settings, and threading. It carries the analytics and the scope.'
+            title: 'The run settings it binds',
+            sub: 'the settings, the analytics and the scope',
+            lead: 'A risk report configuration carries the run settings the party shares, the ' +
+                'analytics the run produces and the portfolio scope it reads. Choose the one this ' +
+                'report shares.',
+            means: [
+                'A risk report configuration holds the ORE-level run settings a party shares: the ' +
+                'base currency, the observation model, the number of threads, the market data ' +
+                'type and date, and the ORE flags such as continue_on_error and ' +
+                'imply_todays_fixings. It also carries the VaR and SIMM settings.',
+                'Binding it decides how the run behaves rather than what it reads: the currency ' +
+                'the figures are stated in, how many threads price them, and what happens to a ' +
+                'trade that fails to price.',
+                'It also carries the analytics this report runs, and the portfolio and book scope. ' +
+                'The scope lives here and not on the definition, which is why the definition ' +
+                'chooses no portfolio.'
+            ],
+            data: [
+                'projects/ores.reporting/modeling/ores.reporting.risk_report_config.org \u2014 the ' +
+                'settings above, one row per named configuration of a party. Its name is also the ' +
+                'name of the reporting configuration a definition binds.',
+                'projects/ores.reporting/modeling/ores.reporting.configuration.org \u2014 the ' +
+                'named, reusable configuration a report binds. The kind of configuration it is ' +
+                'comes from configuration_type by foreign key, not from a text code.',
+                'The scope is two junction tables keyed by the settings row: ' +
+                'ores_reporting_risk_report_config_portfolios_tbl and ' +
+                'ores_reporting_risk_report_config_books_tbl.'
+            ],
+            reaches: [
+                'The behaviour of every run of every definition bound to it: #bound definitions ' +
+                'today.',
+                'The analytics the run produces, which the next step changes, and the portfolio ' +
+                'and book scope the run reads.',
+                'Every figure in the report, because the base currency the settings name is the ' +
+                'currency a reader sees.'
+            ],
+            doesNot: [
+                'It carries no market data, no curve and no model. Those are the four steps before ' +
+                'this one.',
+                'No operation in this journey\u2019s set writes these settings or the scope. Both ' +
+                'come from the seeder, and this step reads them rather than offering a choice.',
+                'It does not give this report a scope of its own. Two definitions that bind one ' +
+                'configuration read one scope, and the definition holds no portfolio field at all.'
+            ]
         }
     ];
 
@@ -565,7 +782,7 @@
        analytic set and the scope, which is why the analytics belong to the
        configuration in the slot and not to the definition. */
     var CONFIGS = [
-        { id: 'cfg-conv-group', type: 'conventions', name: 'Group conventions', detail: '24 convention kinds', scope: null, boundBy: 31, analytics: null },
+        { id: 'cfg-conv-group', type: 'conventions', name: 'Group conventions', detail: '25 convention kinds', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-pe-group', type: 'pricing_engines', name: 'Group pricing engines', detail: '42 products', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-tm-group', type: 'todays_market', name: 'Group today\u2019s market', detail: '3 collections, 118 entries', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-cc-group', type: 'curve_configuration', name: 'Group curve configuration', detail: '2 sections, 61 curves', scope: null, boundBy: 31, analytics: null },
@@ -616,10 +833,11 @@
         { code: 'fail', label: 'Fail: a firing is recorded as failed, and does not run' }
     ];
 
-    /* The four steps, in the order the rail draws them. A step carries an id, a
+    /* The eight steps, in the order the rail draws them. A step carries an id, a
        title for the rail, a lead sentence and a body; `final` marks the step the
-       person may not walk back from. The rail and the steps cannot disagree,
-       because the rail is drawn from this list. */
+       person may not walk back from. The five configuration steps are drawn
+       from CONFIG_TYPES, so the rail, the configuration order and the seeder
+       cannot disagree. */
     var STEPS = [
         {
             id: 'what-it-is',
@@ -627,13 +845,15 @@
             lead: 'Name the report, describe it in one sentence, choose the report type it ' +
                 'draws its requirements from, and say whether it is official and what happens ' +
                 'when two runs collide.'
-        },
-        {
-            id: 'what-it-reads',
-            title: 'What it reads',
-            lead: 'A report of the risk type binds all five configuration types, so every slot ' +
-                'names what its configuration supplies and the screen that holds its data.'
-        },
+        }
+    ].concat(CONFIG_TYPES.map(function (type) {
+        return {
+            id: 'binds-' + type.code,
+            title: type.title,
+            lead: type.lead,
+            configType: type.code
+        };
+    })).concat([
         {
             id: 'what-it-runs',
             title: 'What it runs',
@@ -647,7 +867,7 @@
                 'with their settings, then the write and the row read back.',
             final: true
         }
-    ];
+    ]);
 
     var PFE_RULE = 'pfe reads a cube that simulation writes, so a report that enables pfe without ' +
         'simulation cannot work. The rule lives in the ACME seeder, in ' +
@@ -945,8 +1165,9 @@
             '<div>' +
             '<div class="crumbs">Reporting / Reports / <span class="mono">new definition</span></div>' +
             '<h1>Create a report</h1>' +
-            '<p class="lede">Four steps on the standard rail: what the report is, what it reads, ' +
-            'what it runs, and a review that states every value before it is written.</p>' +
+            '<p class="lede">Eight steps on the standard rail: what the report is, the five ' +
+            'configurations it binds \u2014 one step each \u2014 what it runs, and a review that ' +
+            'states every value before it is written.</p>' +
             '</div>' +
             '<div class="actions">' +
             '<span class="tag warn">fixture</span>' +
@@ -1041,15 +1262,27 @@
             concurrencyField() + officialField() + '</div>';
     }
 
-    // ---------------------------------------------------------- step two
+    // ------------------------------------- steps two to six: the five slots
 
+    /* The screen that holds a configuration type's data. Only conventions has
+       one; the other four are stated as missing rather than drawn as a link
+       that would not resolve. */
     function whereHtml(type) {
         if (!type.where) {
-            return '<span class="noscr">No screen exists for <span class="mono">' +
-                esc(type.code) + '</span>.</span>';
+            return '<span class="noscr">No screen holds a <span class="mono">' +
+                esc(type.code) + '</span> configuration. The application has no route that ' +
+                'reads or edits one, so this page states that rather than drawing a link that ' +
+                'would not resolve.</span>';
         }
-        return '<a href="#" data-act="noop" class="route">' + esc(type.where.screen) + ' \u00b7 ' +
+        return '<a href="#" data-act="noop" class="route">' + esc(type.where.name) + ' \u00b7 ' +
             esc(type.where.symbol) + ' = ' + esc(type.where.path) + '</a>';
+    }
+
+    function slotIndex(type) {
+        for (var i = 0; i < CONFIG_TYPES.length; i += 1) {
+            if (CONFIG_TYPES[i].code === type.code) return i + 1;
+        }
+        return 0;
     }
 
     function slotHtml(type) {
@@ -1057,9 +1290,9 @@
         var candidates = configsOf(type.code);
         return '<div class="slot">' +
             '<div class="type"><code>' + esc(type.code) + '</code>' +
-            '<span class="req">required by ' + esc(S.draft.reportType) + '</span></div>' +
-            '<div class="supplies">' + esc(type.supplies) +
-            '<div class="where">' + whereHtml(type) + '</div></div>' +
+            '<span class="req">required by ' + esc(S.draft.reportType) + ' \u00b7 slot ' + slotIndex(type) +
+            ' of 5 \u00b7 ' + esc(type.sub) + '</span></div>' +
+            '<div class="where">' + whereHtml(type) + '</div>' +
             '<div class="pick">' +
             '<select data-act="bind" data-slot="' + esc(type.code) + '">' +
             '<option value=""' + (bound ? '' : ' selected') + '>not bound</option>' +
@@ -1078,7 +1311,9 @@
 
     function scopeReadout() {
         var config = boundRiskConfig();
-        return '<h3 style="margin:20px 0 10px;font-size:14px">The scope the report reads</h3>' +
+        return '<div class="card" style="margin-top:16px;background:var(--bg)">' +
+            '<div class="sectionhead"><h3>The scope the report reads</h3>' +
+            '<span class="meta"><span class="tag warn">no operation writes it</span></span></div>' +
             '<div class="statgrid">' +
             '<div><span class="lbl">portfolio</span><span class="val">' +
             esc(boundScope() || 'none: the bound configuration is scoped to no portfolio') + '</span></div>' +
@@ -1088,20 +1323,59 @@
             '<span class="tag warn">no operation</span></span></div>' +
             '</div>' +
             '<p class="rowfoot">The scope is not a field of the definition. It is a column of the ' +
-            'risk report config in the slot, held in that row\u2019s portfolio and book junction ' +
+            'risk report config in this slot, held in that row\u2019s portfolio and book junction ' +
             'tables, so choosing a configuration chooses the portfolio the report reads. ' +
             '<b>No operation in this journey\u2019s set writes the scope</b>, so the scope on this ' +
-            'page is the seeder\u2019s.</p>';
+            'page is the seeder\u2019s.</p></div>';
     }
 
-    function stepTwoBody() {
-        return '<div class="slots">' + CONFIG_TYPES.map(slotHtml).join('') + '</div>' +
-            scopeReadout() +
-            '<p class="rowfoot">The configuration types are read with ' +
+    function reachList(items, bound) {
+        return '<ul>' + items.map(function (item) {
+            return '<li>' + esc(item).replace(/#bound/g, String(bound ? bound.boundBy : 0)) +
+                '</li>';
+        }).join('') + '</ul>';
+    }
+
+    /* One configuration step. Every one of the five carries the same four parts,
+       so a reader comparing two steps compares like with like. */
+    function configStepBody(type) {
+        var bound = configById(S.draft.binds[type.code]);
+        return '<div class="doc"><div class="explain">' +
+            '<h3>What binding a ' + esc(type.code) + ' configuration means</h3>' +
+            type.means.map(function (paragraph) {
+                return '<p>' + esc(paragraph) + '</p>';
+            }).join('') +
+            '<h3>Where the data lives</h3>' +
+            type.data.map(function (paragraph) {
+                return '<p class="mono">' + esc(paragraph) + '</p>';
+            }).join('') +
+            '</div></div>' +
+            '<div class="sectionhead" style="margin-top:16px">' +
+            '<h3>The configuration this report binds</h3>' +
+            '<span class="meta">reporting.v1.configurations.list_by_configuration_type_code ' +
+            '\u00b7 fixture</span></div>' +
+            '<div class="slots">' + slotHtml(type) + '</div>' +
+            (type.code === 'risk_report_config' ? scopeReadout() : '') +
+            '<div class="reach" style="margin-top:18px">' +
+            '<div class="does"><h3>What the binding reaches</h3>' + reachList(type.reaches, bound) +
+            '</div>' +
+            '<div class="not"><h3>What it does not</h3>' + reachList(type.doesNot, bound) +
+            '</div></div>' +
+            '<p class="rowfoot">The configuration types come from ' +
             '<span class="mono">reporting.v1.report_type_configuration_types.list</span> for ' +
-            esc(S.draft.reportType) + ', and the candidates in each slot with ' +
-            '<span class="mono">reporting.v1.configurations.list_by_configuration_type_code</span>. ' +
-            esc(NO_CONFIG_SCREEN) + '</p>';
+            esc(S.draft.reportType) + ', the candidates in this slot from ' +
+            '<span class="mono">reporting.v1.configurations.list_by_configuration_type_code</span>, ' +
+            'and the binding is written with ' +
+            '<span class="mono">reporting.v1.report_configurations.put</span>. ' +
+            (type.where
+                ? 'The data is reached through ' + esc(type.where.symbol) + ' today, which is ' +
+                  esc(type.where.path) + '.'
+                : 'The data has no screen today. This page states that rather than drawing a ' +
+                  'link that would not resolve.') +
+            (type.code === 'risk_report_config'
+                ? ' The analytics this configuration carries are changed on the next step.'
+                : '') +
+            '</p>';
     }
 
     // -------------------------------------------------------- step three
@@ -1609,14 +1883,14 @@
         return '<div class="card gaps"><div class="sectionhead"><h2>What this page cannot show</h2></div>' +
             '<dl>' +
             '<dt>The analytic rule is the screen\u2019s own</dt>' +
-            '<dd>' + esc(PFE_RULE) + ' The refusal on step 3 is drawn because the journey asks for ' +
+            '<dd>' + esc(PFE_RULE) + ' The refusal on step 7 is drawn because the journey asks for ' +
             'it, and a build would have to carry the rule in the screen.</dd>' +
             '<dt>No operation answers what a report needs</dt>' +
             '<dd>' + esc(WAIVER) + '</dd>' +
             '<dt>No operation writes the scope</dt>' +
             '<dd>The scope lives on the risk report config, in its portfolio and book junction ' +
             'tables, and no operation in this set touches them. Every configuration on this page, ' +
-            'with its scope, is the seeder\u2019s, so step 2 reads the scope rather than offering a ' +
+            'with its scope, is the seeder\u2019s, so step 6 reads the scope rather than offering a ' +
             'choice.</dd>' +
             '<dt>Only one configuration type has a screen</dt>' +
             '<dd>' + esc(NO_CONFIG_SCREEN) + '</dd>' +
@@ -1645,26 +1919,23 @@
             }).join('') + '</ol></nav>';
     }
 
-    function nextOf(step) {
-        if (step.id === 'what-it-is') return { label: 'Next: what it reads', enabled: true };
-        if (step.id === 'what-it-reads') return { label: 'Next: what it runs', enabled: true };
-        if (step.id === 'what-it-runs') return { label: 'Next: review and save', enabled: true };
-        if (step.id === 'review' && !S.saved) {
-            return { label: 'Save the report', enabled: ready() };
+    function nextOf(step, at) {
+        if (at === STEPS.length - 1) {
+            return S.saved ? null : { label: 'Save the report', enabled: ready() };
         }
-        return null;
+        return { label: 'Next: ' + STEPS[at + 1].title.toLowerCase(), enabled: true };
     }
 
-    /* Going back is refused at the first step, and when the step before the
-       current one is final. This journey's last step is the one that writes, so
-       it carries final and draws no Back either: once the review has stated
-       every value, there is no earlier state to return to. */
+    /* Going back is refused at the first step, and at a step that is final. This
+       journey's last step is the one that writes, so it carries final and draws
+       no Back either: once the review has stated every value, there is no
+       earlier state to return to. */
     function backAllowed(at) {
         return at > 0 && STEPS[at - 1].final !== true && STEPS[at].final !== true;
     }
 
     function footHtml(step, at) {
-        var next = nextOf(step);
+        var next = nextOf(step, at);
         var back = backAllowed(at);
         if (next === null && !back) return '';
         return '<div class="stepfoot">' +
@@ -1677,7 +1948,12 @@
 
     function stepBody(step) {
         if (step.id === 'what-it-is') return stepOneBody();
-        if (step.id === 'what-it-reads') return stepTwoBody();
+        if (step.configType) {
+            var type = CONFIG_TYPES.filter(function (one) {
+                return one.code === step.configType;
+            })[0];
+            return configStepBody(type);
+        }
         if (step.id === 'what-it-runs') return stepThreeBody();
         return stepFourBody();
     }
@@ -1695,7 +1971,8 @@
         var position = at();
         document.getElementById('proto-note').textContent =
             'PROTOTYPE \u00b7 fixture data, nothing reads a server, nothing is written \u00b7 ' +
-            'step ' + (position + 1) + ' of 4, ' + STEPS[position].title + ' \u00b7 ' + S.activity +
+            'step ' + (position + 1) + ' of ' + STEPS.length + ', ' + STEPS[position].title +
+            ' \u00b7 ' + S.activity +
             ' \u00b7 ' + PERSON.name + ', ' + PERSON.role + ', party ' + PARTY.code;
     }
 
@@ -1706,7 +1983,7 @@
                 (position === index ? ' class="on"' : '') + '>' + (index + 1) + ' ' +
                 esc(step.title) + '</button>';
         }).join('');
-        var stateLine = '<span class="label">step <b>' + (position + 1) + ' of 4</b> \u00b7 ' +
+        var stateLine = '<span class="label">step <b>' + (position + 1) + ' of ' + STEPS.length + '</b> \u00b7 ' +
             esc(STEPS[position].title) + ' \u00b7 state: <b>' + esc(S.activity) + '</b></span>';
         var statePanel = !S.showState ? '' : '<div class="state-panel">' +
             '<div class="state-grid">' +
@@ -1951,13 +2228,13 @@
         if (act === 'step') {
             S.step = element.getAttribute('data-step');
             S.flow = null;
-            setActivity(stepIndex(S.step) === 3 ? 'reviewing what will be written'
-                : 'step ' + (stepIndex(S.step) + 1) + ' of 4');
+            setActivity(stepIndex(S.step) === STEPS.length - 1 ? 'reviewing what will be written'
+                : 'step ' + (stepIndex(S.step) + 1) + ' of ' + STEPS.length);
             render();
         } else if (act === 'back') {
             S.step = STEPS[Math.max(0, at() - 1)].id;
             S.flow = null;
-            setActivity('step ' + (at() + 1) + ' of 4');
+            setActivity('step ' + (at() + 1) + ' of ' + STEPS.length);
             render();
         } else if (act === 'next') {
             if (STEPS[at()].id === 'review') {
@@ -1965,7 +2242,7 @@
             } else {
                 S.step = STEPS[Math.min(STEPS.length - 1, at() + 1)].id;
                 S.flow = null;
-                setActivity('step ' + (at() + 1) + ' of 4');
+                setActivity('step ' + (at() + 1) + ' of ' + STEPS.length);
                 render();
             }
         } else if (act === 'toggle-state') {

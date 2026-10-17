@@ -23,13 +23,17 @@ salt
   --
   New definition | Party ACMCOR | Tenant administrator
   --
-  <b>THE RAIL: ONE ENTRY PER STEP, IN THE ORDER THE STEPS DECLARE</b>
+  <b>THE RAIL: EIGHT ENTRIES, ONE PER STEP, IN THE ORDER THE STEPS DECLARE</b>
   {#
-    Mark | Step | State
-    Y | What it is | done
-    2 | What it reads | current
-    3 | What it runs | ahead
-    4 | Review and save | ahead
+    Step | State
+    Y  What it is | done
+    Y  The conventions it binds | done
+    Y  The pricing engines it binds | done
+    4  The market data it binds | current
+    5  The curve configuration it binds | ahead
+    6  The run settings it binds | ahead
+    7  What it runs | ahead
+    8  Review and save | ahead, final
   }
   The current entry carries aria-current step. The last entry is final. The rail
   is drawn from the step list, so the rail and the steps cannot disagree, and it
@@ -50,32 +54,96 @@ salt
   types are expected, so the control reads the table rather than a fixed pair.
   The party comes from the session and is not a choice.
   --
-  <b>STEP 2 - WHAT IT READS</b>
+  <b>STEPS 2 TO 6 - ONE STEP FOR EACH CONFIGURATION TYPE</b>
+  --
+  Five steps, in the order report_type_configuration_types states and the seeder
+  writes: conventions, pricing_engines, todays_market, curve_configuration,
+  risk_report_config. Every one carries the same four parts, so two steps can be
+  read side by side: what binding that configuration means, where its data
+  lives, the picker, and what the binding reaches and what it does not.
+  --
+  <b>STEP 2 - THE CONVENTIONS IT BINDS</b>
   --
   {#
-    Configuration type | Screen that holds its data
-    conventions | PATHS.conventions
-    pricing_engines | no screen exists
-    todays_market | no screen exists
-    curve_configuration | no screen exists
-    risk_report_config | no screen exists
+    Part | What the step says
+    Means | The market terms every trade in the run is read with
+    Data | ores.refdata.bond_yield_convention.org, and 24 more
+    Screen | PATHS.conventions = /refdata/conventions
+    Reaches | Every instrument family, its day count and its calendars
+    Not | It creates no convention and names no market data
   }
-  A risk report binds all five configuration types. Each row states what its
-  configuration supplies: the conventions the trades are read with, the pricing
-  model of each product, the market data a run prices against, the curves with
-  their bootstrap and quotes, and the run settings the party shares. Each row
-  also names the screen that holds the data, and only conventions has one, at
-  /refdata/conventions. The other four are stated as missing rather than drawn
-  as links.
   {
-    [ Bind a configuration ]
+    [ Group conventions ]
   }
-  The binding is written with report_configurations.put, from the candidates
-  configurations.list_by_configuration_type_code returns. The portfolio scope is
-  Group Treasury Portfolio, carried by the bound risk report config, and no
-  operation in this journey's set writes it.
+  Binding it decides what a trade means. The same trade read under two convention
+  sets gives two different numbers, and neither of them is a mistake.
   --
-  <b>STEP 3 - WHAT IT RUNS</b>
+  <b>STEP 3 - THE PRICING ENGINES IT BINDS</b>
+  --
+  {#
+    Part | What the step says
+    Means | The model and the engine each product is priced with
+    Data | pricing_model_config, pricing_model_product, its parameters
+    Screen | no screen holds a pricing engine configuration
+    Reaches | Every analytic that prices a trade, npv first
+    Not | It names no market data and builds no curve
+  }
+  {
+    [ Group pricing engines ]
+  }
+  Binding it decides how a trade is priced. A product the configuration carries no
+  row for has no model in this run.
+  --
+  <b>STEP 4 - THE MARKET DATA IT BINDS</b>
+  --
+  {#
+    Part | What the step says
+    Means | The data a run prices against, by market role
+    Data | todays_market_collection, configuration and its bindings
+    Screen | no screen holds a today's market configuration
+    Reaches | Every price, and the quotes each curve is built from
+    Not | It holds references by name, and fixes no valuation date
+  }
+  {
+    [ Group today's market ]
+  }
+  Binding it decides which configuration block each market role reads, and the
+  role binding is written with configuration_market_bindings.put.
+  --
+  <b>STEP 5 - THE CURVE CONFIGURATION IT BINDS</b>
+  --
+  {#
+    Part | What the step says
+    Means | The recipes a run builds its curves from
+    Data | curve_configuration and curve_configuration_section
+    Screen | no screen holds a curve configuration
+    Reaches | Every analytic that discounts, projects or reads a volatility
+    Not | It holds no quote, and it builds nothing
+  }
+  {
+    [ Group curve configuration ]
+  }
+  Binding it decides which recipes the run has. Without the recipe the curve is
+  not built, whatever the market quotes.
+  --
+  <b>STEP 6 - THE RUN SETTINGS IT BINDS</b>
+  --
+  {#
+    Part | What the step says
+    Means | Base currency, observation model, threading, VaR and SIMM settings
+    Data | risk_report_config, and its portfolio and book junction tables
+    Screen | no screen holds a risk report configuration
+    Reaches | Run behaviour, the analytics, and the portfolio and book scope
+    Not | It carries no market data, no curve and no model
+  }
+  {
+    [ Exposure simulation - Group Treasury Portfolio ]
+  }
+  The scope lives here and not on the definition, which is why the definition
+  chooses no portfolio. No operation in this journey's set writes the settings or
+  the scope: both come from the seeder.
+  --
+  <b>STEP 7 - WHAT IT RUNS</b>
   --
   {#
     On | Analytic | Order | Settings
@@ -83,11 +151,10 @@ salt
     Y | simulation | 2 | paths, grid
     Y | pfe | 3 | horizon, quantile
     N | saccr | 4 | row kept
-    | eleven more types | | one row each
   }
-  Fourteen analytic types, each with an active toggle and a display_order. An
-  analytic is turned off by setting active false; nothing is deleted, and its
-  settings stay readable.
+  Fourteen analytic types, each with an active toggle and a display_order, one
+  row each: the four above and eleven more. An analytic is turned off by setting
+  active false; nothing is deleted, and its settings stay readable.
   {
     [ Add an analytic ]
   }
@@ -104,14 +171,14 @@ salt
   validates it when a definition is written: the flow refuses it, and the server
   would accept it.
   --
-  <b>STEP 4 - REVIEW AND SAVE</b>
+  <b>STEP 8 - REVIEW AND SAVE</b>
   --
   {#
     Written | Operation
     definition | report_definitions.put
     five binds | report_configurations.put
     analytic rows | configuration_analytics.put_many
-    parameter rows | configuration_analytic_parameters.put
+    param rows | configuration_analytic_parameters.put
     the scope | no operation
   }
   Every field value is named, including the ones that stay empty: name Intraday
@@ -127,16 +194,15 @@ salt
   The read-back states the stored row with report_definitions.get, that the
   definition is on demand, and that it has never run.
   This step is final, so its foot carries no Back and the rail marks it final.
-  Going back is refused at the first step and when the step before the current
-  one is final.
+  Going back is refused at the first step and at a final step.
   --
   <b>WHAT THIS SCREEN CANNOT SHOW</b>
   --
   No operation answers what a report needs in order to run beyond the
   configuration types its report type requires. Nothing validates the
-  pfe-needs-simulation rule on write. No operation writes the portfolio scope.
-  Four of the five configuration types have no screen. No BFF route serves
-  reporting, and nothing in the application creates a report today.
+  pfe-needs-simulation rule on write. No operation writes the portfolio scope or
+  the run settings. Four of the five configuration types have no screen. No BFF
+  route serves reporting, and nothing in the application creates a report today.
 }
 
 @enduml

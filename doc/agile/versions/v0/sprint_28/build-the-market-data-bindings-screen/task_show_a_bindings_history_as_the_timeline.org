@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/show-a-bindings-history-as-the-timeline
-#+pr:
+#+pr: 3452
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -88,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3452][#3452]] | [web] Draw a binding's history as the shared timeline |
 
 * Review
 

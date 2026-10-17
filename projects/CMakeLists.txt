@@ -83,6 +83,12 @@ set(ORES_CATCH2_ARGS --allow-running-no-tests --durations yes --filenames-as-tag
 #
 # Projects
 #
+# The XML benchmark measures code from projects/ores.ore, so it is added from
+# here and inherits this directory's compile options rather than duplicating
+# them. It is an executable, never a test.
+add_subdirectory(${CMAKE_SOURCE_DIR}/benchmarks/xml
+    ${CMAKE_BINARY_DIR}/benchmarks/xml)
+
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/ores.utility)
 
 # Interface library for RFL precompiled headers. Link PRIVATE to any target

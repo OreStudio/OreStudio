@@ -28,23 +28,40 @@ of scanning.
 | =tape= | builds the transient document model |
 | =pugi= | loads a pugixml DOM, the baseline the model is judged against |
 
-Every count is divided by the repeat count before it is recorded, so a row for
-one input is comparable with a row for another. The repeat count is a column
-of its own, so the division can be undone.
+* It is a CMake target, built like everything else
+
+=ores.ore.xml.benchmarks= is an executable defined in this directory's
+=CMakeLists.txt= and added from =projects/CMakeLists.txt=. It links
+=ores.ore.core.lib= and =pugixml::pugixml=, and it inherits that directory's
+compile options, so it is built with the same warnings, the same =-Werror= and
+the same build type as the code it measures. Its compile command is identical
+to the one for =ores.ore.core.tests=, =-O3 -DNDEBUG -std=c++23 -Wall -Wextra
+-Werror=.
+
+That is not a detail. A benchmark built with its own flags measures a program
+nobody ships, and the first version of this one did exactly that: it appended
+=-O2= after the tree's =-O3=.
+
+There is no =add_test=, so =ctest= does not run it.
+
+The project's release optimisation is *=-O3=*, which comes from
+=CMAKE_BUILD_TYPE=Release= in the preset rather than from a project override.
+The benchmark uses it and does not change it. Changing it is a project-wide
+performance decision that would invalidate every number recorded here.
 
 * Running it
 
 #+begin_src sh
+./compass.sh build ores.ore.xml.benchmarks
 ./benchmarks/xml/run.sh              # measure and append to history.tsv
 ./benchmarks/xml/run.sh --no-record  # measure and print, leave the history alone
 ./benchmarks/xml/compare.py <older-commit> [<newer-commit>]
 XML_BENCH_BUILD=build/output/other-preset ./benchmarks/xml/run.sh
 #+end_src
 
-=run.sh= builds the benchmark from the product sources using the build tree's
-own flags, including its optimisation level, so it needs a configured tree but
-no CMake target. It is not part of =ctest= and not part of any check: it takes
-minutes and it is not a pass or fail.
+=run.sh= builds nothing. It runs the binary CMake produced, which is what makes
+the numbers describe the program the project ships. It is not part of =ctest=
+and not part of any check.
 
 =history.tsv= is long-form: one row per case, metric, repeat count, commit,
 date and compiler. Appending is safe, and =compare.py= prints the delta between
@@ -53,6 +70,16 @@ any two commits that appear in it, using the most recent run for each.
 The commit column names the tree that was measured, and every name in it must
 be reachable from =main= or the row is untraceable.
 
+* Dropping the process start-up
+
+The benchmark links a library that initialises boost, postgres and the rest
+before =main= runs. In a short run that start-up is most of the work: measured
+naively, the first-level miss count was seventy times the parse's own.
+
+Each case is therefore measured twice, at =n= repeats and at one, and the
+difference is divided by =n - 1=. Start-up cancels and what remains is the
+parse. This is why a row carries its repeat count.
+
 * Cache tooling, and what it does not cover
 
 =cachegrind= simulates the first level and one last level, and counts
@@ -60,14 +87,9 @@ instructions. It has no second-level model, so a miss that leaves L1 is either
 served by the last level or counted as an LL miss. *L2 is not measured*, and
 nothing in this directory claims to measure it.
 
-It needs no privileges and its counts are stable to a few hundred instructions
-of process startup. Over a run of a million instructions that is noise; over a
-run of two thousand it is not, which is why the inputs are repeated until each
-run is in the millions.
-
-The miss rates cachegrind prints are recorded as well as the counts.
-Utilisation is a rate, and a count alone does not say whether the working set
-fits.
+The miss rates are recorded as well as the counts, because utilisation is a
+rate. =d1_miss_rate= is D1 misses over data references, and =ll_miss_rate= is
+LL misses over the accesses that missed L1.
 
 =perf= is installed but =/proc/sys/kernel/perf_event_paranoid= is 3, so
 unprivileged processes cannot read hardware cache counters. That is the only
@@ -86,53 +108,56 @@ whatever else is adopted.
 | Catch2 =BENCHMARK= | already a dependency | the case is trivial and you want it beside the tests |
 
 This directory uses none of them yet. Adding a dependency means a =vcpkg
-install= against a build tree that is behind, and the measurement works
-without it. The hand-rolled loop records the one statistic that matters on a
-shared machine, best of five. Google Benchmark is the right home for the time
-axis once the tree is current, because it writes a baseline file a script can
-diff.
+install=, and the measurement works without it. The hand-rolled loop records
+the one statistic that matters on a shared machine, best of five. Google
+Benchmark is the right home for the time axis once the dependency is in,
+because it writes a baseline file a script can diff.
 
-* The baseline at 32864d66de
+* The baseline at the first CMake-built run
 
-Counts are per parse. One 478 KB portfolio, one 63 KB currency file, and the
-6.3 MB calendar file.
+Counts are per parse, with start-up removed. One 63 KB currency file, a
+478 KB portfolio, the 206 KB script library, and the 6.3 MB calendar file.
 
 | Input | Mode | ns/parse | Instructions | D1 misses | LL misses | D1 miss rate |
 |-------+------+----------+--------------+-----------+-----------+--------------|
-| small | scan | 101,815 | 1,547,849 | 1,130 | 76 | 0.2% |
-| small | tape | 116,591 | 1,832,536 | 5,286 | 97 | 0.7% |
-| small | pugi | 63,395 | 790,891 | 6,281 | 89 | 1.7% |
-| portfolio | scan | 594,546 | 8,418,553 | 8,524 | 685 | 0.3% |
-| portfolio | tape | 700,254 | 10,070,097 | 34,787 | 1,527 | 0.8% |
-| portfolio | pugi | 921,256 | 5,340,115 | 39,480 | 1,352 | 1.5% |
-| large | scan | 11,040,601 | 283,470,610 | 279,771 | 117,019 | 0.3% |
-| large | tape | 16,839,946 | 317,511,465 | 1,228,316 | 1,104,749 | 1.0% |
-| large | pugi | 14,794,060 | 193,358,570 | 906,683 | 774,798 | 1.2% |
+| small | scan | 103,935 | 1,539,630 | 1,022 | 0 | 0.2% |
+| small | tape | 121,726 | 1,824,414 | 5,190 | 5 | 0.7% |
+| small | pugi | 49,699 | 769,379 | 6,174 | 0 | 1.7% |
+| portfolio | scan | 628,019 | 7,989,585 | 7,505 | 0 | 0.3% |
+| portfolio | tape | 739,794 | 9,640,786 | 33,782 | 229 | 0.8% |
+| portfolio | pugi | 923,550 | 4,841,973 | 38,521 | 192 | 1.6% |
+| scripts | scan | 62,152 | 747,295 | 3,262 | 0 | 1.4% |
+| scripts | tape | 77,664 | 1,053,780 | 10,739 | 0 | 1.5% |
+| scripts | pugi | 101,172 | 1,545,454 | 11,075 | 0 | 1.4% |
+| large | scan | 11,565,060 | 166,455,617 | 98,384 | 0 | 0.2% |
+| large | tape | 20,318,928 | 200,497,153 | 1,047,567 | 1,032,985 | 1.4% |
+| large | pugi | 15,525,438 | 74,759,475 | 727,010 | 702,823 | 2.6% |
 
 Two readings.
 
 *The tape is the cache cost.* Building it multiplies first-level data misses by
-4.1 on the portfolio and 4.4 on the 6.3 MB file, and last-level misses by 2.2
-and 9.4. A token is twenty bytes, so the 478 KB document becomes a 721 KB tape
-and the 6.3 MB document becomes a 15.9 MB tape. The scan-only column is the
-floor and it is far below both trees. This qualifies the claim that the
-generated DOM is the expensive artefact: it is expensive relative to scanning,
-and so is the tape.
+4.5 on the portfolio and 10.6 on the 6.3 MB file. A token is twenty bytes, so
+the 478 KB document becomes a 721 KB tape and the 6.3 MB document becomes a
+15.9 MB tape. The scan-only column is the floor and it is far below both trees.
 
-*The scanner executes about 1.6 times pugixml's instructions* on the same
-document, though it is now faster in wall time on both the large files. It wins
-on allocated bytes and on time, and loses on work per byte.
+*The scanner executes about 1.6 times pugixml's instructions* on the portfolio
+and 2.2 times on the large file, while being faster in wall time on both. It
+wins on time, loses on work per byte, and the difference is a named target
+rather than a mystery.
 
-* What the first measurements changed
+The zero LL misses on the scan rows mean the working set of a scan fits the
+last level on this machine. They are a measurement, not a missing value.
 
-The suite was first run before the stack was rebased, with a runner that
-recorded totals rather than per-parse counts and that appended =-O2= after the
-tree's =-O3=. Those rows were removed rather than relabelled, because a
-comparison across two optimisation levels says nothing. What they found is
-recorded in the message of =ef31c41f11= and in the scanner itself: the
-=normalise= pre-scan was forty percent of the parse, and =memcmp= on the tag
-path was another tenth. Both were fixed and the scanner's instructions fell by
-48% on the portfolio and 25% on the 6.3 MB file.
+* What the earlier measurements changed
+
+The first runs used a hand-built binary at =-O2= with totals rather than
+per-parse counts. They found two things that were then fixed, and the fixes
+are recorded in =ef31c41f11=: the =normalise= pre-scan was forty percent of the
+parse, and =memcmp= on the tag path was another tenth. The scanner's
+instructions fell by 48% on the portfolio and 25% on the large file.
+
+Their rows are not in the history. A number taken at a different optimisation
+level, from a differently linked binary, is not a baseline.
 
 * What is not a gate
 

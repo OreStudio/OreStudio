@@ -20,31 +20,29 @@ cd "$root"
 build="${XML_BENCH_BUILD:-build/output/linux-clang-release-ninja}"
 [[ -d "$build" ]] || { echo "no build tree at $build" >&2; exit 1; }
 
-flags="$(python3 - "$build" <<'PY'
+# The benchmark is a CMake target, so the same configure step builds it with
+# the same warnings, the same -Werror and the same build type as the code it
+# measures. This script builds nothing: it runs what CMake produced, which is
+# what makes the numbers describe the program the project ships.
+target=ores.ore.xml.benchmarks
+binary="$build/publish/bin/$target"
+if [[ ! -x "$binary" ]]; then
+    echo "no $target in $build/publish/bin; build it first:" >&2
+    echo "    ./compass.sh build $target" >&2
+    exit 1
+fi
+
+opt="$(python3 - "$build" <<'PYINNER'
 import json, re, sys
-commands = json.load(open(sys.argv[1] + "/compile_commands.json"))
-for entry in commands:
-    if entry["file"].endswith("xml/importer.cpp"):
-        text = re.sub(r"-o\s+\S+\.o", "", entry["command"])
-        text = re.sub(r"-c\s+\S+$", "", text)
-        text = re.sub(r"^\S*/clang\+\+", "", text)
-        print(" ".join(text.split()))
+for entry in json.load(open(sys.argv[1] + "/compile_commands.json")):
+    if entry["file"].endswith("benchmarks/xml/bench.cpp"):
+        found = re.findall(r"-O[0-9s]", entry["command"])
+        print(found[-1] if found else "-O0")
         break
-PY
+else:
+    print("-O0")
+PYINNER
 )"
-
-# The tree's own flags decide the optimisation level; appending another -O
-# here would silently override it and make the history incomparable with the
-# product build. -g only adds symbols, which cachegrind needs for the profile.
-opt="$(printf '%s' "$flags" | grep -oE '\-O[0-9s]' | tail -1)"
-opt="${opt:--O0}"
-
-binary="$here/bench"
-clang++ $flags -std=c++23 -g \
-    "$here/bench.cpp" \
-    projects/ores.ore/core/src/xml/document.cpp \
-    projects/ores.ore/core/src/xml/scanner.cpp \
-    -o "$binary" -L"$build/vcpkg_installed/x64-linux/lib" -lpugixml
 
 commit="$(git rev-parse --short HEAD)"
 date="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -59,6 +57,20 @@ record=1
 
 declare -a rows=()
 
+counts() {
+    # One cachegrind run, one repeat count, five counts. Collected into the
+    # caller's variables through the echo, in a fixed order.
+    local mode="$1" path="$2" runs="$3" trace
+    trace="$(valgrind --tool=cachegrind --cache-sim=yes --branch-sim=no \
+        --cachegrind-out-file=/dev/null "$binary" "$mode" "$path" "$runs" 2>&1)"
+    local pattern
+    for pattern in 'I +refs:' 'D +refs:' 'I1 +misses:' 'D1 +misses:' 'LL +misses:'; do
+        printf '%s ' "$(printf '%s' "$trace" |
+            { grep -m1 -E "^==[0-9]+== $pattern" || true; } |
+            sed 's/.*://; s/(.*//; s/[ ,]//g')"
+    done
+}
+
 measure() {
     local mode="$1" input="$2" path="$3" repeats="$4"
 
@@ -72,57 +84,41 @@ measure() {
         fi
     done
 
-    local trace
-    trace="$(valgrind --tool=cachegrind --cache-sim=yes --branch-sim=no \
-        --cachegrind-out-file=/dev/null "$binary" "$mode" "$path" "$repeats" 2>&1)"
-    # A grep that finds nothing returns 1, and with pipefail that would end the
-    # run before the guard below could say why.
-    extract() {
-        printf '%s' "$trace" |
-            { grep -m1 -E "^==[0-9]+== $1" || true; } |
-            sed 's/.*://; s/(.*//; s/[ ,]//g'
-    }
-
-    # Cachegrind simulates the first level and one last level. It has no
-    # second-level model, so a miss that leaves L1 is either served by the
-    # last level or counted as an LL miss. The rates are recorded as well as
-    # the counts because utilisation is a rate and a count alone does not say
-    # whether the working set fits.
-    local metrics=()
-    for spec in \
-        'ir|I +refs:' \
-        'i1_misses|I1 +misses:' \
-        'd1_misses|D1 +misses:' \
-        'll_misses|LL +misses:' \
-        'd1_miss_rate|D1 +miss rate:' \
-        'll_miss_rate|LL +miss rate:'
-    do
-        local name="${spec%%|*}" pattern="${spec#*|}" value
-        value="$(extract "$pattern")"
-        if [[ -z "$value" ]]; then
-            echo "could not read $name from the cachegrind summary for $mode $input" >&2
+    # The process is loaded once and its start-up dominates a short run: the
+    # library this links initialises boost, postgres and the rest before main.
+    # Running the same work twice, at n and at 1, and dividing the difference
+    # by n - 1 measures the parse and drops the start-up. Without this the
+    # first-level miss count was seventy times the parse's own.
+    local big small
+    read -r -a big <<< "$(counts "$mode" "$path" "$repeats")"
+    read -r -a small <<< "$(counts "$mode" "$path" 1)"
+    local ir dr i1 d1 ll i
+    for i in 0 1 2 3 4; do
+        if [[ -z "${big[$i]}" || -z "${small[$i]}" ]]; then
+            echo "could not read the cachegrind summary for $mode $input" >&2
             return 1
         fi
-        # Counts cover the whole run; the time is per parse. Dividing here makes
-        # a row comparable with a row for a different input, which is the only
-        # reason to keep a history at all. Rates are already ratios and stay.
-        case "$name" in
-            *_rate) ;;
-            ir|i1_misses|d1_misses|ll_misses)
-                value="$(awk -v v="$value" -v n="$repeats" 'BEGIN { printf "%.1f", v / n }')" ;;
-        esac
-        metrics+=("$name" "$value")
     done
+    ir="$(awk -v a="${big[0]}" -v b="${small[0]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
+    dr="$(awk -v a="${big[1]}" -v b="${small[1]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
+    i1="$(awk -v a="${big[2]}" -v b="${small[2]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
+    d1="$(awk -v a="${big[3]}" -v b="${small[3]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
+    ll="$(awk -v a="${big[4]}" -v b="${small[4]}" -v n="$repeats" 'BEGIN{printf "%.1f", (a-b)/(n-1)}')"
+    local d1_rate ll_rate
+    d1_rate="$(awk -v m="$d1" -v r="$dr" 'BEGIN{printf "%.1f%%", (r > 0 ? 100*m/r : 0)}')"
+    ll_rate="$(awk -v m="$ll" -v a="$i1" -v b="$d1" 'BEGIN{printf "%.1f%%", ((a+b) > 0 ? 100*m/(a+b) : 0)}')"
 
     local shared="	$repeats	$commit	$date	$cc"
     rows+=("$mode	$input	ns_per_parse	$best$shared")
-    printf '%-6s %-10s ns/parse %10s' "$mode" "$input" "$best"
-    local i
-    for ((i = 0; i < ${#metrics[@]}; i += 2)); do
-        rows+=("$mode	$input	${metrics[$i]}	${metrics[${i}+1]}$shared")
-        printf '  %s %s' "${metrics[$i]}" "${metrics[${i}+1]}"
-    done
-    printf '\n' 
+    rows+=("$mode	$input	ir	$ir$shared")
+    rows+=("$mode	$input	dr	$dr$shared")
+    rows+=("$mode	$input	i1_misses	$i1$shared")
+    rows+=("$mode	$input	d1_misses	$d1$shared")
+    rows+=("$mode	$input	ll_misses	$ll$shared")
+    rows+=("$mode	$input	d1_miss_rate	$d1_rate$shared")
+    rows+=("$mode	$input	ll_miss_rate	$ll_rate$shared")
+    printf '%-6s %-10s ns/parse %10s  ir %12s  d1 %10s  ll %8s  d1 rate %6s\n' \
+        "$mode" "$input" "$best" "$ir" "$d1" "$ll" "$d1_rate"
 }
 
 while IFS=$'\t' read -r name path repeats; do

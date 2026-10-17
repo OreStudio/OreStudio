@@ -319,7 +319,7 @@
                 { value: 'USD 1,846,818', label: 'Delta', note: 'sensitivity, summed over the books' },
                 { value: 'USD 52,350', label: 'Gamma', note: 'sensitivity, summed over the books' },
                 { value: '18,204', label: 'positions priced', note: 'the rows npv.csv carries' },
-                { value: '24', label: 'books', note: 'the grouping the engine applied' }
+                { value: '10', label: 'books', note: 'each trade in exactly one' }
             ],
             table: {
                 title: 'NPV, Delta and Gamma by book',
@@ -350,7 +350,7 @@
             ],
             story: [
                 'Headline Position finished at <span class="fig">09:06:40</span>, <span class="fig">four minutes and twenty-nine seconds</span> after ACCOUK asked for it. It was a production run: pre-processing gathered the party\u2019s trades and market data, the engine priced them on the grid, and retrieval put the result at <span class="key">reporting/runs/3f7a91c4-6c2e-4b1d-9a84-0e5c2b7d18f3/output.tar.gz</span>.',
-                'Its configuration names two analytics, <span class="mono">npv</span> and <span class="mono">sensitivity</span>, and no others. npv priced <span class="fig">18,204 positions</span> across <span class="fig">24 books</span>; sensitivity took the Delta and Gamma of each book. The Greek set is configurable \u2014 the report page calls these a deliberately shallow and wide first look \u2014 and this run took Delta and Gamma.',
+                'Its configuration names two analytics, <span class="mono">npv</span> and <span class="mono">sensitivity</span>, and no others. npv priced <span class="fig">18,204 positions</span> across <span class="fig">10 books</span>; sensitivity took the Delta and Gamma of each book. The Greek set is configurable \u2014 the report page calls these a deliberately shallow and wide first look \u2014 and this run took Delta and Gamma.',
                 'NPV was <span class="fig">USD 88,402,114</span>. Delta was <span class="fig">USD 1,846,818</span> and Gamma <span class="fig">USD 52,350</span>, summed over the books, both for a one basis point shift. GBP Rates was the largest book, at <span class="fig">USD 41,204,118</span> of NPV.',
                 'Eleven problems came with it: <span class="fig">8 Analytics errors</span> and <span class="fig">3 Configuration warnings</span>. The engine could not build a market for PRICING or SENSITIVITY because no quotes were available for 16 October 2026, and three trades would not build at all, so 412 positions carry an NPV and no Delta. The warnings name the market binding and the portfolio filter. None of them stopped the archive; all of them narrow what it can answer.',
                 'The archive is the run\u2019s whole answer: <span class="fig">{{files}} files</span>, <span class="fig">{{bytes}}</span> before compression. Two of them are the analytics\u2019 own output \u2014 npv.csv and sensitivity.csv \u2014 and the rest are the market data the run read and the logs it wrote. A run of this configuration writes no cashflow.csv and no saccr.csv. The figures above are a reading of those two files, not a table this screen can query. Read the errors before the figures.'
@@ -554,6 +554,130 @@
        because a renamed column would hide the shape of what a run writes. */
     var TRADE_COLUMNS = ['TradeId', 'TradeType', 'NPV', 'NPV(Base)', 'Notional', 'CounterParty'];
 
+    /* The book tree: the third reading of a run's result, beside the aggregate
+       figures and the one-row-per-trade table. Positions roll up from a trade to
+       its book, from a book to its portfolio, and from a portfolio to the group
+       portfolio above it.
+
+       The hierarchy is the live schema's. ores_refdata_portfolios_tbl carries
+       parent_portfolio_id, so portfolios nest. ores_refdata_books_tbl carries
+       parent_portfolio_id, so a book hangs off a portfolio.
+       ores_trading_trade_bookings_tbl carries trade_id and book_id, so a trade is
+       booked to a book.
+
+       Every number below is a fixture, and the shape of the fixture is the point.
+       The run's archive carries no book column: npv.csv's columns are exactly
+       TradeId, TradeType, Maturity, MaturityTime, NPV, NpvCurrency, NPV(Base),
+       BaseCurrency, Notional, NotionalCurrency, Notional(Base), NettingSet and
+       CounterParty. Attributing a result to a book needs the join from TradeId to
+       trade_bookings.book_id through trading.v1.trade_bookings.list, and no
+       operation returns results already grouped by book. The portfolio side has
+       its own gap: there is no portfolios.list_by_parent_portfolio_id, so a client
+       assembles the portfolio tree from portfolios.list, which carries
+       parent_portfolio_id.
+
+       A portfolio node writes no trades and no npv of its own: buildNode sums both
+       from its children, so a parent that disagrees with its children cannot be
+       drawn. A book's trades is its whole population in npv.csv and its npv is the
+       sum of those trades' NPV. rows names the fixture rows this page renders that
+       are booked to that book; they are a sample of the book, never the book. A
+       trade booked to no book is a real state, so Unbooked is a node like any
+       other and is drawn rather than dropped. Book and portfolio names are free
+       text in the seed, and these are ACME's. */
+    var BOOK_TREES = {
+        '3f7a91c4-6c2e-4b1d-9a84-0e5c2b7d18f3': {
+            name: 'Group Treasury Portfolio',
+            children: [
+                {
+                    name: 'Trading Portfolio',
+                    children: [
+                        {
+                            name: 'Rates Portfolio',
+                            children: [
+                                { name: 'GBP Rates', trades: 4218, npv: 41204118, delta: 612404, gamma: 18204,
+                                    rows: ['c9d2b571-3a84-4e16-8f57-1b9c6d0e2384',
+                                        '8d5b0e74-2c69-4a13-9e88-5f1b7c3d6a92'] },
+                                { name: 'EUR Rates', trades: 3904, npv: 28118402, delta: 488120, gamma: 14118,
+                                    rows: [] },
+                                { name: 'USD Rates', trades: 5128, npv: 12884020, delta: 412884, gamma: 9204,
+                                    rows: [] }
+                            ]
+                        },
+                        {
+                            name: 'Markets Portfolio',
+                            children: [
+                                { name: 'FX Options', trades: 1820, npv: 4204880, delta: 168204, gamma: 6118,
+                                    rows: [] },
+                                { name: 'Inflation', trades: 1104, npv: 1118204, delta: 94118, gamma: 2884,
+                                    rows: [] },
+                                { name: 'Equity', trades: 610, npv: 260088, delta: 12884, gamma: 402,
+                                    rows: [] }
+                            ]
+                        }
+                    ]
+                },
+                { name: 'Liquidity Buffer Bonds', trades: 610, npv: 231118, delta: 24000, gamma: 500,
+                    rows: ['2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05',
+                        '5a17c8e2-9d3b-4f60-8c21-7e4b0a9d2f18',
+                        '7b3e28d4-1c95-4a72-9f03-6d8e5b1a4c27',
+                        '0e4f9a63-8b17-4d25-a3c9-2f7b1e8d5a04'] },
+                { name: 'Group FX Hedges', trades: 502, npv: 248402, delta: 18000, gamma: 470, rows: [] },
+                { name: 'Group Intercompany Loans', trades: 280, npv: 118204, delta: 14000, gamma: 400,
+                    rows: [] },
+                { name: 'Unbooked', kind: 'unbooked', trades: 28, npv: 14678, delta: 2204, gamma: 50,
+                    rows: ['4f1a6c38-7e2b-4d91-b605-9c3a8e2f7d15',
+                        '1b7c4f20-6a39-4e58-9d02-8c6f2b5a7e31'] }
+            ]
+        },
+        '4b7e1a02-8d61-4f3c-b2a7-9c1e5d0f7a63': {
+            name: 'Group Treasury Portfolio',
+            children: [
+                {
+                    name: 'Group Investment Portfolio',
+                    children: [
+                        { name: 'Liquidity Buffer Bonds', trades: 3846, npv: 4118204,
+                            rows: ['6a2d9f41-7b58-4c03-9e17-2d4a8b6f0c93',
+                                'b73f0c85-4e19-4a26-8d70-5c1e9b3a7f24'] },
+                        { name: 'Sovereign Ladder', trades: 2358, npv: 3085914,
+                            rows: ['3e9a1d67-2f84-4b50-a6c3-9d7b1e0c5a48',
+                                '9c4b6e02-5a17-4d83-bf92-7e0a2c8d1546'] }
+                    ]
+                },
+                {
+                    name: 'Group Trading Portfolio',
+                    children: [
+                        { name: 'Group FX Hedges', trades: 2804, npv: 3118402, rows: [] },
+                        { name: 'Rates Swaps', trades: 1708, npv: 2299802, rows: [] }
+                    ]
+                },
+                { name: 'Group Intercompany Loans', trades: 540, npv: 248118, rows: [] },
+                { name: 'Unbooked', kind: 'unbooked', trades: 30, npv: 13662,
+                    rows: ['07d5a8f3-6c29-4e14-8b35-1f9d2a7c0e61',
+                        '5f8e3b17-9d02-4a68-9c41-6b3e0d2a8754'] }
+            ]
+        },
+        '9a20c7d1-4f68-4e93-b7c5-1d8e6f2a4b03': {
+            name: 'Group Treasury Portfolio',
+            children: [
+                {
+                    name: 'Asia Pacific Portfolio',
+                    children: [
+                        { name: 'Liquidity Buffer Bonds', trades: 1104, npv: 204118402,
+                            rows: ['d41a0f86-3b97-4c52-8e10-7a5d2c9b6f35',
+                                '2b7e5a09-8c14-4d37-9f62-0e8b3a1d5c74',
+                                '6c9d2e48-1a75-4b03-8e29-5f7c0b6a3d81'] },
+                        { name: 'Group FX Hedges', trades: 604, npv: 118204118,
+                            rows: ['84f1b6c3-7e20-4a95-9d18-3c5b2f0e7a69'] },
+                        { name: 'Group Intercompany Loans', trades: 556, npv: 61402118, rows: [] }
+                    ]
+                },
+                { name: 'Unbooked', kind: 'unbooked', trades: 28, npv: 128440,
+                    rows: ['a09c3f57-4b18-4e26-8c93-1d6f5a2b0e74',
+                        '5e3a7d90-2c64-4b18-af07-9e1d6b8c3a52'] }
+            ]
+        }
+    };
+
     var GAPS = [
         {
             title: 'No operation lists the archive\u2019s contents',
@@ -566,6 +690,10 @@
         {
             title: 'No operation parses the archive',
             body: 'Per-trade results are real: npv.csv holds one row per trade with its NPV, its base-currency NPV, its notional and its counterparty, and the archive at the run\u2019s output_storage_key holds that file. What is missing is the read. ores_compute_results_tbl carries the archive\u2019s output_uri, an outcome and an error_message, and no parsed rows. Nothing in the platform parses the archive, so A\u2019s figures, A\u2019s aggregate table, the per-trade table and C\u2019s numbers have no read behind them. The result store that would parse it is designed in Report post-processing and not built, so a screen needs a result store or an archive read before it can serve a trade row. Which figures a run has is decided by the analytics the configuration names \u2014 npv and sensitivity write NPV, Delta and Gamma; saccr writes EAD \u2014 and that list is a fixture here too, because no operation returns the configuration either.'
+        },
+        {
+            title: 'The archive carries no book column',
+            body: 'npv.csv\u2019s columns are exactly TradeId, TradeType, Maturity, MaturityTime, NPV, NpvCurrency, NPV(Base), BaseCurrency, Notional, NotionalCurrency, Notional(Base), NettingSet and CounterParty. None of them names a book, and no operation returns results already grouped by book. A built screen needs the join from TradeId to trade_bookings.book_id through trading.v1.trade_bookings.list, and then the book to its portfolio through ores_refdata_books_tbl.parent_portfolio_id. The portfolio tree has its own gap: there is no portfolios.list_by_parent_portfolio_id, so a client assembles the tree from portfolios.list, which carries parent_portfolio_id. Every node figure in A, B and C\u2019s tree is a fixture, because the archive is still unparsed.'
         },
         {
             title: 'No read of the ORE package',
@@ -582,12 +710,15 @@
     ];
 
     var DEPENDENCY = {
-        A: 'A needs the result store. Every figure, every row of the aggregate table and every row of the per-trade table is a reading of the archive the two configured analytics wrote, and nothing parses an archive: post-processing is designed and not built. Built with today\u2019s operations, A is the archive footer with an empty screen above it.',
-        B: 'B is the only variant buildable from today\u2019s reads, and only down to the run: the state, the output message, the storage key and the errors are all fields of the run. What B cannot have is its own centre \u2014 the manifest, the per-trade rows behind npv.csv, and any download \u2014 because no operation lists, parses or serves the archive. Its file list is inferred from the configured analytics, not observed inside the tar.',
-        C: 'C needs what A needs \u2014 the parsed numbers and the per-trade rows \u2014 and then a writer trusted to keep a figure and its caveat in the same sentence. It is the easiest of the three to make wrong and the hardest to check: a column can be inspected, a sentence is believed.'
+        A: 'A needs the result store. Every figure, every row of the aggregate table, every node of the book tree and every row of the per-trade table is a reading of the archive the two configured analytics wrote, and nothing parses an archive: post-processing is designed and not built. The tree needs one read more than the table: the archive has no book column, so a node is only reachable by joining each TradeId to trade_bookings.book_id through trading.v1.trade_bookings.list. Built with today\u2019s operations, A is the archive footer with an empty screen above it.',
+        B: 'B is the only variant buildable from today\u2019s reads, and only down to the run: the state, the output message, the storage key and the errors are all fields of the run. What B cannot have is its own centre \u2014 the manifest, the per-trade rows behind npv.csv, the book tree\u2019s grouping and any download \u2014 because no operation lists, parses or serves the archive, and none groups a result by book. Its file list is inferred from the configured analytics, not observed inside the tar.',
+        C: 'C needs what A needs \u2014 the parsed numbers, the trade rows and the book grouping \u2014 and then a writer trusted to keep a figure and its caveat in the same sentence. It is the easiest of the three to make wrong and the hardest to check: a column can be inspected, a sentence is believed.'
     };
 
-    var S = { variant: 'A', runId: DEFAULT_RUN, file: 'npv.csv', trade: null, showErrors: false, note: null };
+    var S = {
+        variant: 'A', runId: DEFAULT_RUN, file: 'npv.csv', trade: null, showErrors: false, note: null,
+        book: null, collapsed: []
+    };
 
     // ------------------------------------------------------------- helpers
 
@@ -762,12 +893,263 @@
         return f ? f.rows : 0;
     }
 
+    /* ---------------------------------------------------------- book tree */
+
+    var TREE_CACHE = {};
+
+    function bookTree(run) {
+        var spec = BOOK_TREES[run.id];
+        if (!spec) return null;
+        if (!TREE_CACHE[run.id]) TREE_CACHE[run.id] = buildNode(spec, spec.name);
+        return TREE_CACHE[run.id];
+    }
+
+    /* A portfolio's trade count and NPV are the sum of its children's, computed
+       here and never written down, so the figure a reader sees at a parent is the
+       one its children add up to. */
+    function buildNode(spec, id) {
+        var node = {
+            id: id,
+            name: spec.name,
+            kind: spec.kind || (spec.children && spec.children.length ? 'portfolio' : 'book'),
+            children: [],
+            rows: spec.rows || [],
+            trades: spec.trades || 0,
+            npv: spec.npv || 0
+        };
+        if (spec.delta !== undefined) node.delta = spec.delta;
+        if (spec.gamma !== undefined) node.gamma = spec.gamma;
+        if (spec.children && spec.children.length) {
+            node.children = spec.children.map(function (child) {
+                return buildNode(child, id + ' / ' + child.name);
+            });
+            node.trades = 0;
+            node.npv = 0;
+            node.rows = [];
+            node.children.forEach(function (child) {
+                node.trades += child.trades;
+                node.npv += child.npv;
+                node.rows = node.rows.concat(child.rows);
+            });
+        }
+        return node;
+    }
+
+    function findNode(node, id) {
+        if (!node) return null;
+        if (node.id === id) return node;
+        for (var i = 0; i < node.children.length; i += 1) {
+            var found = findNode(node.children[i], id);
+            if (found) return found;
+        }
+        return null;
+    }
+
+    /* The books and unbooked nodes under a node, in tree order. */
+    function bookLeaves(node) {
+        if (!node) return [];
+        if (!node.children.length) return [node];
+        return node.children.reduce(function (all, child) {
+            return all.concat(bookLeaves(child));
+        }, []);
+    }
+
+    function selectedBookNode(run) {
+        var root = bookTree(run);
+        if (!root) return null;
+        return findNode(root, S.book) || root;
+    }
+
+    function treeIsRoot(run) {
+        var root = bookTree(run);
+        return !root || S.book === null || root.id === S.book;
+    }
+
+    /* The rendered trade rows under the selected node. At the root that is every
+       rendered row; at a book it is the rows booked to it. */
+    function tradesInView(run) {
+        var trades = tradesFor(run);
+        var node = selectedBookNode(run);
+        if (!node || treeIsRoot(run)) return trades;
+        return trades.filter(function (t) { return node.rows.indexOf(t.id) !== -1; });
+    }
+
+    function money(n) {
+        if (n === null || n === undefined) return '\u2014';
+        return (n < 0 ? '-' : '') + 'USD ' + num(Math.abs(n));
+    }
+
+    function share(part, whole) {
+        if (!whole) return '0.0%';
+        return (part / whole * 100).toFixed(1) + '%';
+    }
+
+    function isCollapsed(id) {
+        return S.collapsed.indexOf(id) !== -1;
+    }
+
+    function treeRows(node, depth) {
+        var rows = [];
+        var hasChildren = node.children.length > 0;
+        var collapsed = isCollapsed(node.id);
+        var kind = node.kind === 'unbooked' ? 'no booking' : node.kind;
+        rows.push('<div class="bnode ' + esc(node.kind) + (S.book === node.id ? ' sel' : '') +
+            '" data-act="book" data-book="' + esc(node.id) + '" style="padding-left:' + (10 + depth * 18) + 'px">' +
+            (hasChildren
+                ? '<span class="twisty" data-act="twisty" data-book="' + esc(node.id) + '" title="' +
+                    (collapsed ? 'Expand' : 'Collapse') + '">' + (collapsed ? '\u25b8' : '\u25be') + '</span>'
+                : '<span class="twisty pad"></span>') +
+            '<span class="bname">' + esc(node.name) + '</span>' +
+            '<span class="bkind">' + esc(kind) + '</span>' +
+            '<span class="btrades">' + num(node.trades) + '</span>' +
+            '<span class="bnpv">' + esc(money(node.npv)) + '</span>' +
+            '</div>');
+        if (hasChildren && !collapsed) {
+            node.children.forEach(function (child) {
+                rows = rows.concat(treeRows(child, depth + 1));
+            });
+        }
+        return rows;
+    }
+
+    function treeTable(run) {
+        var root = bookTree(run);
+        if (!root) return '';
+        return '<div class="booktree">' +
+            '<div class="bhead" aria-hidden="true">' +
+            '<span class="twisty pad"></span>' +
+            '<span class="bname">Portfolio, book or trade</span>' +
+            '<span class="bkind">Level</span>' +
+            '<span class="btrades">Trades</span>' +
+            '<span class="bnpv">Aggregate NPV</span>' +
+            '</div>' + treeRows(root, 0).join('') + '</div>';
+    }
+
+    /* The tree's own notice: the label that says fixture, and the two reads that
+       do not exist. Both are said here, on the panel that draws the tree. */
+    function bookTreeNotice() {
+        return '<div class="notice warn"><strong>The archive carries no book column.</strong> ' +
+            'npv.csv\u2019s columns are exactly <span class="mono">TradeId, TradeType, Maturity, ' +
+            'MaturityTime, NPV, NpvCurrency, NPV(Base), BaseCurrency, Notional, NotionalCurrency, ' +
+            'Notional(Base), NettingSet, CounterParty</span>, so no row of it names a book. A built screen ' +
+            'needs the join from <span class="mono">TradeId</span> to ' +
+            '<span class="mono">trade_bookings.book_id</span> through ' +
+            '<span class="mono">trading.v1.trade_bookings.list</span>, and no operation returns results ' +
+            'already grouped by book. This tree is a fixture.</div>';
+    }
+
+    function bookTreeSummary(run) {
+        var root = bookTree(run);
+        var node = selectedBookNode(run);
+        if (!root || !node) return '';
+        return '<span class="tag warn">fixture</span>' +
+            '<span class="tag accent">selected: ' + esc(node.name) + '</span>' +
+            '<span>' + num(node.trades) + ' trades \u00b7 ' + esc(money(node.npv)) +
+            ' \u00b7 ' + share(node.npv, root.npv) + ' of the run\u2019s NPV \u00b7 ' +
+            bookLeaves(node).length + ' book' + (bookLeaves(node).length === 1 ? '' : 's') + ' in this subtree</span>';
+    }
+
+    function bookTreeFooter(run) {
+        var root = bookTree(run);
+        var leaves = bookLeaves(root);
+        var unbooked = leaves.filter(function (b) { return b.kind === 'unbooked'; })[0];
+        var all = tradesFor(run).length;
+        var engineBooks = (run.figures || []).filter(function (f) {
+            return f.label === 'books';
+        })[0];
+        return '<p class="rowfoot">Portfolios nest, a book hangs off a portfolio, and a trade is booked to a ' +
+            'book. A portfolio\u2019s figure is the sum of its books and a book\u2019s is the sum of its trades, both ' +
+            'rolled up on this page and neither written down. The tree sums the run\u2019s whole population of ' +
+            num(root.trades) + ' trades; the table below draws ' + all + ' of those rows, so the tree does not ' +
+            'sum them.' + (engineBooks
+                ? ' The run\u2019s own figure counts ' + esc(engineBooks.value) + ' books, and this fixture groups the ' +
+                  'same trades into ' + leaves.length + ' book nodes, unbooked among them. Every trade sits in one ' +
+                  'node, so the root still adds up to the run.'
+                : '') + (unbooked
+                ? ' ' + num(unbooked.trades) + ' trades are booked to no book. That is a real state, so ' +
+                  '<span class="mono">Unbooked</span> is a node like any other and it is drawn, not dropped: a ' +
+                  'built screen gets the same node from the trades whose TradeId has no ' +
+                  '<span class="mono">trade_bookings</span> row.'
+                : '') +
+            ' There is also no <span class="mono">portfolios.list_by_parent_portfolio_id</span>, so a client ' +
+            'assembles the portfolio tree from <span class="mono">portfolios.list</span>, which carries ' +
+            '<span class="mono">parent_portfolio_id</span>.</p>';
+    }
+
+    function bookTreeHead(run, tier) {
+        var title = 'By book: portfolio, sub-portfolio, book, trade';
+        if (tier === 'h3') {
+            return '<div class="sectionhead" style="margin-top:14px"><h3 class="subhead">' + title + '</h3>' +
+                '<span class="meta">' + bookTreeSummary(run) + '</span></div>';
+        }
+        return '<header class="sectionhead"><h2>' + title + '</h2>' +
+            '<span class="meta">' + bookTreeSummary(run) + '</span></header>';
+    }
+
+    function bookTreeBody(run) {
+        return bookTreeNotice() + '<div style="margin-top:12px">' + treeTable(run) + '</div>' +
+            bookTreeFooter(run);
+    }
+
+    /* A draws the tree inside the result card, above the per-trade table; B and C
+       give it a card of its own. */
+    function bookTreeBlock(run) {
+        if (!bookTree(run)) return '';
+        return '<div id="booktree">' + bookTreeHead(run, 'h3') + bookTreeBody(run) + '</div>';
+    }
+
+    function bookTreeCard(run, blurb) {
+        if (!bookTree(run)) return '';
+        return '<section class="card" id="booktree">' + bookTreeHead(run, 'h2') +
+            (blurb ? '<p class="hint" style="margin-top:8px">' + esc(blurb) + '</p>' : '') +
+            bookTreeBody(run) +
+            '</section>';
+    }
+
+    /* The aggregate tile set. At the root it is the run's figures; below it, the
+       figures are the selected node's, read off the tree the screen just drew. */
+    function tilesFor(run) {
+        var root = bookTree(run);
+        var node = selectedBookNode(run);
+        if (!root || !node || treeIsRoot(run)) return run.figures;
+        var leaves = bookLeaves(node);
+        return [
+            { value: money(node.npv), label: 'NPV', note: 'the selected node, rolled up from its children' },
+            { value: num(node.trades), label: 'trades priced',
+                note: 'of the ' + num(root.trades) + ' this run priced' },
+            { value: share(node.npv, root.npv), label: 'of the run\u2019s NPV',
+                note: 'the selected node against ' + root.name },
+            { value: String(leaves.length), label: leaves.length === 1 ? 'book in this subtree' : 'books in this subtree',
+                note: 'each book\u2019s figure is the sum of its trades' }
+        ];
+    }
+
+    /* The by-book table is the tree's books, in tree order, so the aggregate
+       table and the tree cannot disagree about a book's name or its figures. */
+    function bookTableData(run) {
+        var root = bookTree(run);
+        if (!root) return run.table;
+        var leaves = bookLeaves(root);
+        var complete = leaves.every(function (b) {
+            return b.delta !== undefined && b.gamma !== undefined;
+        });
+        if (!complete || !run.table) return run.table;
+        return {
+            title: run.table.title,
+            note: run.table.note,
+            columns: run.table.columns,
+            rows: leaves.map(function (b) {
+                return [b.name, num(b.trades), num(b.npv), num(b.delta), num(b.gamma)];
+            })
+        };
+    }
+
     function selectedTrade(run) {
         return S.trade ? tradeById(run, S.trade) : null;
     }
 
     function tradeTable(run) {
-        var trades = tradesFor(run);
+        var trades = tradesInView(run);
         if (!trades.length) return '';
         var head = TRADE_COLUMNS.map(function (c, i) {
             return '<th' + (i > 2 && i < 5 ? ' class="num"' : '') + '>' + esc(c) + '</th>';
@@ -792,15 +1174,43 @@
             '</tr></thead><tbody>' + body + '</tbody></table></div>';
     }
 
+    /* The tree's book for a rendered row: the join this page cannot make from
+       the archive, so it reads the fixture booking instead. */
+    function bookOfTrade(run, tradeId) {
+        var root = bookTree(run);
+        if (!root) return null;
+        var found = bookLeaves(root).filter(function (b) {
+            return b.rows.indexOf(tradeId) !== -1;
+        })[0];
+        return found || null;
+    }
+
     function tradeNotice(run) {
+        var all = tradesFor(run).length;
+        var view = tradesInView(run).length;
+        var node = selectedBookNode(run);
+        var scope = (!node || treeIsRoot(run))
+            ? ''
+            : ' The tree has narrowed it to <span class="mono">' + esc(node.name) +
+              '</span>, which holds ' + num(node.trades) + ' trades.';
         return '<div class="notice warn"><strong>No operation parses the archive.</strong> ' +
             'This per-trade table is a fixture, and the columns are npv.csv\u2019s own: ' +
             '<span class="mono">TradeId, TradeType, NPV, NPV(Base), Notional, CounterParty</span>. ' +
             'Per-trade results are real \u2014 a run writes one row per trade into npv.csv inside its archive \u2014 ' +
             'but <span class="mono">ores_compute_results_tbl</span> carries only the archive\u2019s location and an ' +
             'outcome, and no operation parses the archive. A built screen cannot serve these rows until a result ' +
-            'store or an archive read exists. It shows the first ' + tradesFor(run).length + ' of ' +
-            num(npvRows(run)) + ' rows.</div>';
+            'store or an archive read exists. It shows ' + view + ' of the ' + all + ' rows this page draws, ' +
+            'and this page draws ' + all + ' of the ' + num(npvRows(run)) + ' rows npv.csv carries.' + scope + '</div>';
+    }
+
+    /* Selecting a book with no rendered row is an answer, not an empty table: the
+       rows this page draws are a sample, and the book's own population is larger. */
+    function tradeEmpty(run) {
+        var node = selectedBookNode(run);
+        if (!node || treeIsRoot(run)) return '';
+        return '<p class="emptyline">None of the ' + tradesFor(run).length + ' rows this page draws is booked to ' +
+            '<span class="mono">' + esc(node.name) + '</span>. The book holds ' + num(node.trades) +
+            ' trades in npv.csv; the tree\u2019s figure for it is their sum, and the table\u2019s sample is not.</p>';
     }
 
     /* Opening a row answers with the trade's own result and, where the run
@@ -813,11 +1223,13 @@
                 'NPV, its notional, its counterparty, and any error the run recorded against it.</p>';
         }
         var errs = tradeErrors(run, t.id);
+        var book = bookOfTrade(run, t.id);
         var fields = [
             ['TradeType', t.type],
             ['Maturity', t.maturity],
             ['NettingSet', t.netting],
             ['CounterParty', t.cp],
+            ['Book', book ? book.name : '\u2014 no booking'],
             ['NPV', t.npv === null ? '\u2014 no price' : t.npv + ' ' + t.ccy],
             ['NPV(Base)', t.npvBase === null ? '\u2014 no price' : t.npvBase + ' USD'],
             ['Notional', t.notional + ' ' + t.notionalCcy],
@@ -871,26 +1283,34 @@
     }
 
     function tradesBlock(run) {
-        return tradeNotice(run) + tradeTable(run) + tradeDetail(run) + tradeFootnote(run);
+        return tradeNotice(run) + tradeTable(run) + tradeEmpty(run) + tradeDetail(run) + tradeFootnote(run);
     }
 
     /* The card B and C give the per-trade table. A draws the same block inside
        its result card, under the aggregate figures. */
     function tradesCard(run) {
+        var view = tradesInView(run).length;
+        var all = tradesFor(run).length;
         return '<section class="card" id="trades">' +
             '<header class="sectionhead"><h2>One row per trade</h2>' +
-            '<span class="meta"><span class="tag warn">fixture</span>' + tradesFor(run).length + ' of ' +
-            num(npvRows(run)) + ' rows \u00b7 one row per trade \u00b7 select a row</span></header>' +
+            '<span class="meta"><span class="tag warn">fixture</span>' + view + ' of ' + all +
+            ' drawn rows \u00b7 ' + all + ' of ' + num(npvRows(run)) + ' rows in npv.csv \u00b7 one row per trade ' +
+            '\u00b7 select a row</span></header>' +
             tradesBlock(run) +
             '</section>';
     }
 
     /* The heading A and C put above the block, and the count B puts in its
        preview: one row per trade, drawn from a file no operation parses. */
-    function tradesHead() {
+    function tradesHead(run) {
+        var view = tradesInView(run).length;
+        var all = tradesFor(run).length;
+        var node = selectedBookNode(run);
+        var scope = (!node || treeIsRoot(run)) ? 'all books' : esc(node.name);
         return '<div class="sectionhead" style="margin-top:20px"><h3 class="subhead">One row per trade</h3>' +
             '<span class="meta"><span class="tag warn">fixture</span>' +
-            '<span>npv.csv, one row per trade \u00b7 select a row to read the trade</span></span></div>';
+            '<span>npv.csv, one row per trade \u00b7 ' + view + ' of ' + all + ' drawn rows \u00b7 ' + scope +
+            ' \u00b7 select a row to read the trade</span></span></div>';
     }
 
     function selectedFile(run) {
@@ -1003,7 +1423,9 @@
             'an outcome, not parsed rows. ' +
             'There is no operation that lists the files inside a run\u2019s archive, so no file list can be served \u2014 ' +
             'variant B draws one as a fixture and says so on it. No operation returns the archive or the ORE package, ' +
-            'so every download is drawn, not wired.' +
+            'so every download is drawn, not wired. ' +
+            'The book tree is a fixture for one reason more: the archive carries no book column, so a built screen ' +
+            'joins each TradeId to trade_bookings.book_id through trading.v1.trade_bookings.list.' +
             '</div>';
     }
 
@@ -1069,17 +1491,18 @@
             '</div>';
     }
 
-    /* A treats the figures and the tables as one thing: the run's result is a
-       set of numbers, the aggregate table is where they come from, and the
-       per-trade table under it is the same result one trade at a time. */
+    /* A treats the figures, the book tree and the tables as one thing: the run's
+       result is a set of numbers, the tree is how they roll up from a trade to a
+       book to a portfolio, and the per-trade table under it is the same result one
+       trade at a time. Selecting a node changes the figures and the rows together. */
     function resultCard(run) {
-        var tiles = run.figures.map(function (f) {
+        var tiles = tilesFor(run).map(function (f) {
             return '<div class="fig"><div class="v">' + esc(f.value) + '</div>' +
                 '<div class="l">' + esc(f.label) + '</div>' +
                 '<div class="n">' + esc(f.note) + '</div></div>';
         }).join('');
 
-        var t = run.table;
+        var t = bookTableData(run);
         var table = '';
         if (t) {
             var head = t.columns.map(function (c, i) {
@@ -1100,8 +1523,9 @@
             '<span class="meta"><span class="tag accent">' + esc(analyticsText(run)) + '</span>' +
             '<span class="tag warn">fixture</span><span>no measure below comes from any other analytic</span></span></header>' +
             analyticsLine(run) +
-            '<div class="figs" style="margin-top:16px">' + tiles + '</div>' + table +
-            (tradesFor(run).length ? tradesHead() + tradesBlock(run) : '') +
+            '<div class="figs" style="margin-top:16px">' + tiles + '</div>' +
+            bookTreeBlock(run) + table +
+            (tradesFor(run).length ? tradesHead(run) + tradesBlock(run) : '') +
             '<p class="rowfoot">No operation returns these figures or rows. They are what the archive says once something ' +
             'parses it \u2014 <span class="mono">' + esc(analyticsText(run)) + '</span> wrote them \u2014 and the result ' +
             'store that would parse it is designed and not built.</p>' +
@@ -1294,6 +1718,8 @@
             return saidBlock(run) + errorBlock(run) + nothingToTake(run) + packageBlock(run);
         }
         return saidBlock(run) + errorBlock(run) +
+            bookTreeCard(run, 'The tree is the lens over npv.csv: choose a book and the rows read out of it below narrow ' +
+                'to that subtree, while the manifest above stays the whole archive.') +
             '<div class="split">' + manifestCard(run) + previewPanel(run) + '</div>' +
             (selectedFile(run).name === 'npv.csv' && tradesFor(run).length ? tradesCard(run) : '') +
             packageBlock(run);
@@ -1318,6 +1744,26 @@
                     ? 'the ' + carrying + ' of these rows that carries an error the run recorded against it'
                     : 'no error against any of these rows') +
                 '. It is a fixture, because nothing parses the archive.</p>';
+        }
+
+        /* C names the largest book in the prose and links into the tree, rather
+           than reproducing a hundred rows in a sentence. */
+        var tree = bookTree(run);
+        if (tree) {
+            var largest = bookLeaves(tree).slice().sort(function (a, b) { return b.npv - a.npv; })[0];
+            var unbooked = bookLeaves(tree).filter(function (b) { return b.kind === 'unbooked'; })[0];
+            paragraphs += '<p>The trades roll up too: each one is booked to a book, a book hangs off a portfolio, ' +
+                'and the portfolios nest. The largest book is <span class="fig">' + esc(largest.name) + '</span>, at ' +
+                '<span class="fig">' + num(largest.trades) + ' trades</span> and <span class="fig">' +
+                money(largest.npv) + '</span>. ' +
+                '<a href="#booktree" data-act="goto-booktree">The book tree</a> rolls the run from ' +
+                '<span class="fig">' + esc(tree.name) + '</span> down to a book and then to a trade, and a reader ' +
+                'who selects a node narrows the rows below to that subtree.' +
+                (unbooked
+                    ? ' ' + num(unbooked.trades) + ' of the run\u2019s trades are booked to no book: they sit in an ' +
+                      '<span class="mono">Unbooked</span> node rather than vanishing from the tree.'
+                    : '') +
+                ' It is a fixture. The archive carries no book column, so the numbers in it are drawn, not read.</p>';
         }
 
         var filesCard;
@@ -1355,14 +1801,20 @@
 
         /* The warning comes before the prose, because the prose carries the
            figures: a narrative screen must not let a sentence be trusted
-           before the run's own account of what went wrong. */
+           before the run's own account of what went wrong. The tree stands
+           beside the prose so the sentence and the roll-up it links to are
+           read together. */
         return errorBlock(run) +
+            '<div class="split">' +
             '<section class="card">' +
             '<div class="said"><span class="lbl">What the system said</span>' +
             '<span class="q">' + (run.state === 'running' ? '\u2014 no output message yet' : esc(run.outputMessage)) + '</span></div>' +
             analyticsLine(run) +
             '<div class="prose" style="margin-top:18px">' + paragraphs + '</div>' +
             '</section>' +
+            bookTreeCard(run, 'The prose names the largest book; this tree is where the run rolls up from a trade to ' +
+                'its book, a book to its portfolio, and a portfolio to the group portfolio above it.') +
+            '</div>' +
             (trades.length ? tradesCard(run) : '') +
             filesCard + packageBlock(run);
     }
@@ -1448,8 +1900,28 @@
         S.trade = null;
         S.file = 'npv.csv';
         S.note = null;
+        S.book = null;
+        S.collapsed = [];
         render();
         writeParams();
+    }
+
+    /* Selecting a node filters the per-trade table to that subtree and, in A,
+       moves the aggregate figures onto it. The trade in view may not be under the
+       new node, so the selection closes. */
+    function setBook(id) {
+        var node = findNode(bookTree(currentRun()), id);
+        S.book = node ? node.id : null;
+        S.trade = null;
+        render();
+        writeParams();
+    }
+
+    function toggleTree(id) {
+        var at = S.collapsed.indexOf(id);
+        if (at === -1) S.collapsed.push(id);
+        else S.collapsed.splice(at, 1);
+        render();
     }
 
     /* Opening a row is a toggle: the same row closes it again, and the trade it
@@ -1494,10 +1966,19 @@
             render();
         } else if (act === 'trade') {
             setTrade(el.getAttribute('data-trade'));
+        } else if (act === 'book') {
+            setBook(el.getAttribute('data-book'));
+        } else if (act === 'twisty') {
+            toggleTree(el.getAttribute('data-book'));
         } else if (act === 'goto-trades') {
             var trades = document.getElementById('trades');
             if (trades && trades.scrollIntoView) {
                 trades.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else if (act === 'goto-booktree') {
+            var tree = document.getElementById('booktree');
+            if (tree && tree.scrollIntoView) {
+                tree.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         } else if (act === 'open-trade') {
             setNote('info', 'Nothing was opened. trading.v1.trades.get resolves a trade by its id, and this page ' +
@@ -1539,6 +2020,8 @@
         if (f && filesFor(currentRun()).some(function (x) { return x.name === f; })) S.file = f;
         var t = p.get('trade');
         if (t && tradeById(currentRun(), t)) S.trade = t;
+        var b = p.get('book');
+        if (b && findNode(bookTree(currentRun()), b)) S.book = b;
         if (p.get('errors') === '1') S.showErrors = true;
     }
 
@@ -1548,6 +2031,7 @@
         p.set('run', currentRun().id);
         if (S.file !== 'npv.csv') p.set('file', S.file);
         if (S.trade) p.set('trade', S.trade);
+        if (S.book) p.set('book', S.book);
         try {
             /* A file:// document has a null origin and Chrome refuses to
                replace its history entry. The bar already prints the state,

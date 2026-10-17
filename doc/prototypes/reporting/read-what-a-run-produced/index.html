@@ -38,6 +38,20 @@
   answers with that trade's result, and with the error the run recorded against
   its TradeId where it recorded one.
 
+  The book tree is the third reading: the run's result rolled up from a trade to
+  its book, a book to its portfolio, and a portfolio to the group portfolio
+  above it. It is a fixture for two reasons the panel states. The archive carries
+  no book column -- npv.csv's columns are exactly TradeId, TradeType, Maturity,
+  MaturityTime, NPV, NpvCurrency, NPV(Base), BaseCurrency, Notional,
+  NotionalCurrency, Notional(Base), NettingSet and CounterParty -- so a built
+  screen joins each TradeId to trade_bookings.book_id through
+  trading.v1.trade_bookings.list, and no operation returns results already
+  grouped by book. And no operation parses the archive, so no node has a figure
+  behind it. The portfolio tree is assembled from portfolios.list, which carries
+  parent_portfolio_id, because there is no
+  portfolios.list_by_parent_portfolio_id. A trade booked to no book is a real
+  state, so the tree draws an Unbooked node rather than dropping the row.
+
   The figures are not free invention: each run names the analytics its report
   configuration runs (Headline Position runs npv and sensitivity, Large
   Exposures runs npv and saccr), and every measure and every manifest row is an

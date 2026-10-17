@@ -23,7 +23,8 @@ structural variants switched with =?variant=, and it answers to
 [[file:../../knowledge/journeys/reporting/journey_read_what_a_run_produced.org][Read what a run produced]].
 
 It is throwaway. It reads no service, and the archive manifest it draws is a
-fixture, said so on the page.
+fixture, said so on the page. So is the book tree: the run's archive carries no
+book column, so a node's trade count and NPV are drawn rather than read.
 
 * Detail
 
@@ -86,6 +87,53 @@ and an outcome, not parsed rows. A built screen cannot serve these rows
 until a result store or an archive read exists, and the page draws the gap
 rather than hiding it.
 
+** The book tree: portfolio, sub-portfolio, book, trade
+
+A run's results have a third reading beside the figures and the trade rows: the
+hierarchy the trades sit in. The page draws it as a tree with four levels. A
+portfolio is the top, a portfolio nests under another portfolio, a book hangs off
+a portfolio, and a trade is booked to a book. Each node states its name, its
+trade count and its aggregate NPV, and a node expands to show the books under it.
+
+The roll-up is arithmetic, not a label. A book's figure is the sum of its trades
+and a portfolio's figure is the sum of its books, and the page computes a
+portfolio from its children every time it draws, so a parent that disagrees with
+its children cannot appear. The root is the group portfolio: for Headline
+Position, 18,204 trades and USD 88,402,114, which is also the run's NPV figure.
+That 18,204 is the run's population, and the per-trade table draws 8 of those
+rows. The page says so on the tree's footer rather than implying the tree sums
+those eight rows. The footer also states where the
+fixture is coarser than the run: the run's own figure counts 24 books, and the
+fixture groups the same trades into ten book nodes, unbooked among them, so the
+root still adds up to the run.
+
+A trade booked to no book is a real state, so the tree draws an =Unbooked= node
+at the portfolio level and gives it a trade count and an NPV like any other node.
+Dropping those trades would make the tree's total smaller than the run's and
+would hide a population that a desk has to reconcile.
+
+Selecting a node filters the per-trade table to its subtree, and each variant
+carries that in its own shape. =A= moves the aggregate figures onto the selected
+node: its NPV, its trade count, its share of the run, and how many books sit
+under it. =B= treats the tree as a lens over npv.csv, so choosing a book narrows
+the rows read out of that file while the manifest stays the whole archive. =C=
+names the largest book in the prose and links into the tree.
+
+Two gaps make every node a fixture, and the panel says both.
+
+- *The archive carries no book column.* =npv.csv='s columns are exactly
+  =TradeId=, =TradeType=, =Maturity=, =MaturityTime=, =NPV=, =NpvCurrency=,
+  =NPV(Base)=, =BaseCurrency=, =Notional=, =NotionalCurrency=, =Notional(Base)=,
+  =NettingSet= and =CounterParty=. A built screen needs the join from =TradeId=
+  to =trade_bookings.book_id= through =trading.v1.trade_bookings.list=, and no
+  operation returns results already grouped by book.
+- *No operation parses the archive*, so no node has a figure behind it either.
+  The tree is drawn from the page's own fixture, like the figures and the rows.
+
+The portfolio level has a third limit, and the tree footer states it: there is no
+=portfolios.list_by_parent_portfolio_id=, so a client assembles the portfolio tree
+from =portfolios.list=, which carries =parent_portfolio_id=.
+
 ** The figures come from the analytics the configuration names
 
 A report's numbers are not free choice. Its report configuration names a set of
@@ -108,10 +156,12 @@ second warns before the figures are trusted, and offers the way to see why.
 
 ** What is fake
 
-The figures, the file names, the row counts, the sizes, the archive key and every
-trade row are mock. Nothing reads a server. The file names are real ORE output
-names — =npv.csv=, =saccr.csv=, =pricingstats.csv=, =log_structured.json= and the
-rest — because an invented set would hide the shape of the thing being judged.
+The figures, the file names, the row counts, the sizes, the archive key, the book
+and portfolio nodes, and every trade row are mock. Nothing reads a server. The
+file names are real ORE output names — =npv.csv=, =saccr.csv=,
+=pricingstats.csv=, =log_structured.json= and the rest — because an invented set
+would hide the shape of the thing being judged. The book and portfolio names are
+free text in the seed, so they are the kind of name a real party writes.
 
 ** Where the code lives
 

@@ -41,6 +41,10 @@ the table rather than in the engine.
 - A repeated child fills a contiguous run, not one heap object per element.
 - An attribute on a leaf element is a field like any other.
 - Content the schema does not name is captured and written back, not skipped.
+- The engine fills a record as the document streams past it. It does not build
+  the tape first: the tape costs 4.5 times the first-level cache misses of
+  scanning on the portfolio and 10.6 times on the 6.3 MB file, and the entity
+  path needs none of it.
 
 * Plan
 

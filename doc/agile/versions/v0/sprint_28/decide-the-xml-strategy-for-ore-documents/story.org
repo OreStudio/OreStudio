@@ -34,9 +34,9 @@ the work that follows is broken into tasks.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The prototype is built and measured. The route is recommended, not yet approved. |
+| Now           | The prototype is measured and the corpus is gated. The migration is cut into nine tasks, none started. |
 | Waiting on    | A decision on the recommendation.      |
-| Next          | Review [[id:B5B38025-C893-4712-9312-11400AC62B58][the investigation]] and approve or reject route C. |
+| Next          | Approve route C, then start with the corpus gate and the log-formatting fix, which are the two small ones. |
 | Last touched  | 2026-10-17                               |
 
 * Acceptance
@@ -48,6 +48,10 @@ the work that follows is broken into tasks.
   the document it covers.
 - The follow-on work is expressed as tasks with sizes, or the route is
   declined with the reason recorded.
+- Every XML document in the repository parses with the new scanner, and the
+  check that proves it fails the build when one does not.
+- The write direction is specified, including the one place where shortest
+  round-trip formatting is wrong.
 
 * Tasks
 

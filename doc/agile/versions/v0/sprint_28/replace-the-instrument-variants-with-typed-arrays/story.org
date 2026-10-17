@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: F0E82898-CCA7-4E6F-B60D-69B3A4CED280
+:END:
+#+title: Story: Replace the credit fact variant with typed arrays
+#+description: The credit carrier holds a std::variant field, credit_fact_variant, for the product fact row. The data-oriented design checklist forbids a polymorphic payload field and asks for one typed array per concrete type, joined by key. Replace it with per-type arrays and migrate its consumers. The rates, equity and fx variants are out of scope: other environments own them.
+#+type: story
+#+level: s2
+#+filetags: :trading:data-model:data-oriented:instrument:credit:refactor:sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No credit payload carries a polymorphic field. The credit carrier holds one
+typed array per concrete fact type, joined by key, so a reader of the credit
+family reads a plain array instead of unwrapping a variant. The rates, equity
+and fx variants are not touched here; other environments own them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- No credit payload carries a std::variant field; the credit carrier holds one typed array per concrete fact type, joined by key.
+- credit_fact_variant.hpp is deleted and no consumer references it.
+- The ORE import and export round trip and the credit suites pass unchanged.
+- The rates, equity and fx variants are untouched by this work.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B4CC636C-FF97-422A-991E-47CAB36A8F99][Scaffold story: Replace the instrument variants with typed arrays]] | STARTED | 2026-10-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:4B474F5E-8F38-488E-AD62-806C4CA167C6][Implement Replace the instrument variants with typed arrays]] | BACKLOG | | | Initial task for: Replace the instrument variants with typed arrays |
+
+* Decisions
+
+* Out of scope
+
+-

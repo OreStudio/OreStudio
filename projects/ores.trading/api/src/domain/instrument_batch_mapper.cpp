@@ -62,21 +62,33 @@ credit_instrument_data as_credit(const instrument_batch& batch,
                                  const credit_instrument& header,
                                  const Leaf& leaf,
                                  boost::uuids::uuid trade_id) {
-    return credit_instrument_data{header,
-                                  leaf,
-                                  find_all(batch.swap_legs, trade_id),
-                                  find_all(batch.swap_leg_amounts, trade_id),
-                                  find_all(batch.swap_leg_rates, trade_id),
-                                  find_all(batch.credit_basket_constituents, trade_id),
-                                  find_all(batch.instrument_strikes, trade_id),
-                                  find_all(batch.instrument_schedules, trade_id),
-                                  find_all(batch.instrument_schedule_dates, trade_id),
-                                  find_all(batch.instrument_options, trade_id),
-                                  find_all(batch.instrument_option_premiums, trade_id),
-                                  find_all(batch.instrument_option_exercise_fees, trade_id),
-                                  find_all(batch.instrument_option_payment_dates, trade_id),
-                                  find_all(batch.instrument_option_exercise_prices, trade_id),
-                                  std::nullopt};
+    credit_instrument_data data;
+    data.instrument = header;
+    if constexpr (std::is_same_v<Leaf, credit_default_swap_instrument>)
+        data.credit_default_swap_instruments.push_back(leaf);
+    else if constexpr (std::is_same_v<Leaf, index_credit_default_swap_instrument>)
+        data.index_credit_default_swap_instruments.push_back(leaf);
+    else if constexpr (std::is_same_v<Leaf, index_credit_default_swap_option_instrument>)
+        data.index_credit_default_swap_option_instruments.push_back(leaf);
+    else if constexpr (std::is_same_v<Leaf, synthetic_cdo_instrument>)
+        data.synthetic_cdo_instruments.push_back(leaf);
+    else if constexpr (std::is_same_v<Leaf, credit_linked_swap_instrument>)
+        data.credit_linked_swap_instruments.push_back(leaf);
+    else
+        data.risk_participation_agreement_instruments.push_back(leaf);
+    data.legs = find_all(batch.swap_legs, trade_id);
+    data.leg_amounts = find_all(batch.swap_leg_amounts, trade_id);
+    data.leg_rates = find_all(batch.swap_leg_rates, trade_id);
+    data.constituents = find_all(batch.credit_basket_constituents, trade_id);
+    data.strikes = find_all(batch.instrument_strikes, trade_id);
+    data.schedules = find_all(batch.instrument_schedules, trade_id);
+    data.schedule_dates = find_all(batch.instrument_schedule_dates, trade_id);
+    data.options = find_all(batch.instrument_options, trade_id);
+    data.option_premiums = find_all(batch.instrument_option_premiums, trade_id);
+    data.option_exercise_fees = find_all(batch.instrument_option_exercise_fees, trade_id);
+    data.option_payment_dates = find_all(batch.instrument_option_payment_dates, trade_id);
+    data.option_exercise_prices = find_all(batch.instrument_option_exercise_prices, trade_id);
+    return data;
 }
 
 /**
@@ -174,7 +186,29 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.credit_basket_constituents.insert(batch.credit_basket_constituents.end(),
                                                         v.constituents.begin(),
                                                         v.constituents.end());
-                append_variant(batch, v.facts);
+                batch.credit_default_swap_instruments.insert(
+                    batch.credit_default_swap_instruments.end(),
+                    v.credit_default_swap_instruments.begin(),
+                    v.credit_default_swap_instruments.end());
+                batch.index_credit_default_swap_instruments.insert(
+                    batch.index_credit_default_swap_instruments.end(),
+                    v.index_credit_default_swap_instruments.begin(),
+                    v.index_credit_default_swap_instruments.end());
+                batch.index_credit_default_swap_option_instruments.insert(
+                    batch.index_credit_default_swap_option_instruments.end(),
+                    v.index_credit_default_swap_option_instruments.begin(),
+                    v.index_credit_default_swap_option_instruments.end());
+                batch.synthetic_cdo_instruments.insert(batch.synthetic_cdo_instruments.end(),
+                                                       v.synthetic_cdo_instruments.begin(),
+                                                       v.synthetic_cdo_instruments.end());
+                batch.credit_linked_swap_instruments.insert(
+                    batch.credit_linked_swap_instruments.end(),
+                    v.credit_linked_swap_instruments.begin(),
+                    v.credit_linked_swap_instruments.end());
+                batch.risk_participation_agreement_instruments.insert(
+                    batch.risk_participation_agreement_instruments.end(),
+                    v.risk_participation_agreement_instruments.begin(),
+                    v.risk_participation_agreement_instruments.end());
                 batch.instrument_strikes.insert(
                     batch.instrument_strikes.end(), v.strikes.begin(), v.strikes.end());
                 batch.instrument_schedules.insert(

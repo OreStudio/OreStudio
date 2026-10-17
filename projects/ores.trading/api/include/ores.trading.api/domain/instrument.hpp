@@ -28,11 +28,14 @@
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/credit_basket_constituent.hpp"
-#include "ores.trading.api/domain/credit_fact_variant.hpp"
+#include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
+#include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
+#include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
@@ -43,9 +46,11 @@
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
+#include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
+#include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <concepts>
 #include <type_traits>
@@ -128,13 +133,20 @@ struct commodity_instrument_data {
 // A credit trade states its legs as rows of the shared leg tables, and an index
 // swap or a synthetic CDO states a basket of names beside the instrument. The
 // header is the family's routed instrument and the product's own fields are its
-// fact row. An index option states a strike and its exercise dates in the
-// shared strike and schedule tables. The carrier holds the header with those
-// rows, so each travels with the trade it belongs to. A credit product that
-// states none of them leaves the collection empty.
+// typed fact arrays, one array per product, each row joined to the header by the
+// trade id it carries flat. An index option states a strike and its exercise
+// dates in the shared strike and schedule tables. The carrier holds the header
+// with those rows, so each travels with the trade it belongs to. A credit
+// product that states none of them leaves the collection empty.
 struct credit_instrument_data {
     credit_instrument instrument;
-    credit_fact_variant facts;
+    std::vector<credit_default_swap_instrument> credit_default_swap_instruments;
+    std::vector<index_credit_default_swap_instrument> index_credit_default_swap_instruments;
+    std::vector<index_credit_default_swap_option_instrument>
+        index_credit_default_swap_option_instruments;
+    std::vector<synthetic_cdo_instrument> synthetic_cdo_instruments;
+    std::vector<credit_linked_swap_instrument> credit_linked_swap_instruments;
+    std::vector<risk_participation_agreement_instrument> risk_participation_agreement_instruments;
     std::vector<swap_leg> legs;
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
@@ -148,10 +160,67 @@ struct credit_instrument_data {
     std::vector<instrument_option_payment_date> option_payment_dates;
     std::vector<instrument_option_exercise_price> option_exercise_prices;
     // An index option wraps an index swap, which has fact fields of its own.
-    // The option's fact row is the carrier's fact; the wrapped swap's row is
-    // here. A product that wraps no swap leaves it empty.
+    // The option's fact row is one of the carrier's fact arrays; the wrapped
+    // swap's row is here. A product that wraps no swap leaves it empty.
     std::optional<index_credit_default_swap_instrument> wrapped_index_swap;
 };
+
+// The typed array a credit fact type lives in. A reader that names the fact
+// type once reaches its own array, so no reader needs a discriminator and the
+// type-to-array map has one home.
+template <typename T>
+[[nodiscard]] const std::vector<T>& fact_rows(const credit_instrument_data& data) {
+    if constexpr (std::is_same_v<T, credit_default_swap_instrument>)
+        return data.credit_default_swap_instruments;
+    else if constexpr (std::is_same_v<T, index_credit_default_swap_instrument>)
+        return data.index_credit_default_swap_instruments;
+    else if constexpr (std::is_same_v<T, index_credit_default_swap_option_instrument>)
+        return data.index_credit_default_swap_option_instruments;
+    else if constexpr (std::is_same_v<T, synthetic_cdo_instrument>)
+        return data.synthetic_cdo_instruments;
+    else if constexpr (std::is_same_v<T, credit_linked_swap_instrument>)
+        return data.credit_linked_swap_instruments;
+    else
+        return data.risk_participation_agreement_instruments;
+}
+
+// Drives a per-product visitor over the credit fact arrays. A credit carrier
+// states exactly one fact row per trade, joined by trade id, so the visitor
+// sees the one row that is. A carrier that states none calls nothing, and the
+// result is the visitor's own, so a caller that asks a question gets an
+// answer.
+template <typename Visitor>
+auto visit_credit_facts(Visitor&& visitor, const credit_instrument_data& data) {
+    using Result = std::invoke_result_t<Visitor, const credit_default_swap_instrument&>;
+    if constexpr (std::is_void_v<Result>) {
+        if (!data.credit_default_swap_instruments.empty())
+            visitor(data.credit_default_swap_instruments.front());
+        else if (!data.index_credit_default_swap_instruments.empty())
+            visitor(data.index_credit_default_swap_instruments.front());
+        else if (!data.index_credit_default_swap_option_instruments.empty())
+            visitor(data.index_credit_default_swap_option_instruments.front());
+        else if (!data.synthetic_cdo_instruments.empty())
+            visitor(data.synthetic_cdo_instruments.front());
+        else if (!data.credit_linked_swap_instruments.empty())
+            visitor(data.credit_linked_swap_instruments.front());
+        else if (!data.risk_participation_agreement_instruments.empty())
+            visitor(data.risk_participation_agreement_instruments.front());
+    } else {
+        if (!data.credit_default_swap_instruments.empty())
+            return visitor(data.credit_default_swap_instruments.front());
+        if (!data.index_credit_default_swap_instruments.empty())
+            return visitor(data.index_credit_default_swap_instruments.front());
+        if (!data.index_credit_default_swap_option_instruments.empty())
+            return visitor(data.index_credit_default_swap_option_instruments.front());
+        if (!data.synthetic_cdo_instruments.empty())
+            return visitor(data.synthetic_cdo_instruments.front());
+        if (!data.credit_linked_swap_instruments.empty())
+            return visitor(data.credit_linked_swap_instruments.front());
+        if (!data.risk_participation_agreement_instruments.empty())
+            return visitor(data.risk_participation_agreement_instruments.front());
+        return Result{};
+    }
+}
 
 // An equity position states an entry collection beside the instrument that
 // owns it, so the carrier holds the two together and each entry travels
@@ -284,7 +353,24 @@ inline void stamp_ids(credit_instrument_data& data,
         constituent.trade_id = trade_id;
         constituent.trade_activity_id = activity_id;
     }
-    stamp_ids(data.facts, trade_id, activity_id);
+    for (auto& fact : data.credit_default_swap_instruments) {
+        stamp_ids(fact, trade_id, activity_id);
+    }
+    for (auto& fact : data.index_credit_default_swap_instruments) {
+        stamp_ids(fact, trade_id, activity_id);
+    }
+    for (auto& fact : data.index_credit_default_swap_option_instruments) {
+        stamp_ids(fact, trade_id, activity_id);
+    }
+    for (auto& fact : data.synthetic_cdo_instruments) {
+        stamp_ids(fact, trade_id, activity_id);
+    }
+    for (auto& fact : data.credit_linked_swap_instruments) {
+        stamp_ids(fact, trade_id, activity_id);
+    }
+    for (auto& fact : data.risk_participation_agreement_instruments) {
+        stamp_ids(fact, trade_id, activity_id);
+    }
     for (auto& strike : data.strikes) {
         stamp_ids(strike, trade_id, activity_id);
     }

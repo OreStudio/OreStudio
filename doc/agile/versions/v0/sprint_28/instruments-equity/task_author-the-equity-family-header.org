@@ -26,11 +26,11 @@ The equity family has one header keyed by the trade, carrying the identity, the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -102,13 +102,10 @@ rows the catalogue does not name. The routing, the coverage check and the fact
 tables' duplicated identity columns all move with the mapper migration, which
 the operator deferred to the xsdcpp removal.
 
-Verification is partial, and for a reason outside this unit. Documentation
-checks pass and the codegen drift for the trading component regenerates what is
-committed. The build could not link: =main= at 2ec7644db7 does not compile,
-because =ores.refdata.core= declares =apply_families_by_id= and its siblings in
-=convention_family_apply.hpp= and calls them from =conventions_document_service.cpp=,
-while the translation unit that defines them, =convention_family_apply.cpp=, is
-registered in no =component_files.cmake=. That is the conventions refactor's
-in-flight work, owned by another environment, so it is reported rather than
-fixed here.
+Verification. The trunk was broken when the unit was built, in two independent
+ways, both from the conventions refactor rather than from this change. The C++
+half is fixed by #3474 and the TypeScript half by #3482, both mergeable and now
+merged, after which this unit's full build passes and the whole suite passes 96
+of 96 with the database recreated for the new table. The codegen drift for the
+trading component regenerates exactly what is committed.
 

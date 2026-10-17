@@ -43,6 +43,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | [[id:B1C4EB87-A3D4-42A6-94A6-73FDC56C868E][Replace the web family list with the registry]] | BACKLOG | | | The web BFF stops carrying a hand-maintained family table and reads the generated registry, so adding a family needs no edit there. |
 | [[id:264CDF6F-0674-4951-BCEA-334EBE68114F][Prove the Windows build]] | BACKLOG | | | An MSVC job compiles the new translation units. Success is the C1202 failure gone with the old aggregate, and the build green on Windows, Linux and macOS. |
 | [[id:2DAA2FFE-2346-42DB-B865-32ACAEB2FB64][Use as_of consistently for reads]] | BACKLOG | | | Every exported set is read at one bitemporal instant. Route paged reads through the generated as_of path and record the instant in the manifest. |
+| [[id:6E7E20DA-D08B-410B-B1B8-A571C40F83CF][Apply the same shape to the curve configuration document]] | BACKLOG | | | The curve configuration document is the same defect: one aggregate carrying every curve family, still on the wire in the translation unit that failed on MSVC. Move it onto its families and a bundle, as the conventions document was moved. |
 
 * Decisions
 

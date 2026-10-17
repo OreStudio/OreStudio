@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:modelling:performance:data_oriented_design:
 #+created: 2026-09-08
-#+updated: 2026-10-03
+#+updated: 2026-10-17
 
 * Summary
 
@@ -159,6 +159,39 @@ today the category exists only as hand-written core types in
 instantiates it yet. Revisit this paragraph if an entity model ever
 persists document trees.
 
+A document is not a classification of data on its own. It is an
+*artefact* at the boundary, and the data it becomes is classified
+separately, per the next section.
+
+** Classification precedes the pattern
+
+The three regimes say where an axiom applies. They do not say what a
+set of data is, and they are not a substitute for asking. A modeller
+classifies the data first, then chooses the pattern for that
+classification:
+[[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle and artefact]].
+It is a closed set of five: an entity, a list of one entity kind, a
+family written in one transaction, a bundle that arrives at one instant
+across owners, and a boundary artefact. The same page names the
+anti-type — a hand-written union of unrelated entities presented as one
+struct — and the test that refuses it.
+
+The rule that decides a set of different types is one question: *does
+the set have a cross-type invariant that must hold at one instant?* With
+no invariant, split the set into per-family or per-entity messages. With
+an invariant and one owner, use a family. With an invariant and several
+owners, use a bundle. A file's contents are not an invariant; a file is
+an artefact.
+
+The form a modeller fills in, and the review artefact, is
+[[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]].
+
+Classification precedes the pattern, and it also outranks a compile
+error. A type that is correctly classified and still does not compile
+has a technical problem; denormalise for the compiler if the shape needs
+it, and keep the classification. A compile error never reclassifies the
+data.
+
 ** Decomposition and the MSVC C1202 ceiling
 
 A struct that =rfl= reflects for JSON has a hard shape limit that
@@ -208,6 +241,12 @@ equal to the sum of them, so name one family per document model and
 split a document that covers two. A component's per-entity protocols do
 not help here, because a document protocol includes the domain headers
 directly and re-aggregates what the per-entity split separated.
+
+That rule keeps a document message that a real invariant sanctions. It
+does not sanction a message that carries families the document merely
+lists. Where there is no cross-type invariant, the file is an artefact
+and each family has its own message, per
+[[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]].
 
 ** The data model of a component
 
@@ -331,4 +370,15 @@ component's regime is a review error, not a finding.
   component and PR review.
 - [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][compass-code-review-component]] — the broad whole-component audit this lens
   complements.
+- [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central
+  row and its parts]] — the shape the Entity classification selects.
+- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity,
+  list, family, bundle and artefact]] — the closed set a modeller picks
+  from before choosing a pattern, and the anti-type.
+- [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification
+  checklist]] — the numbered form a modeller fills in.
+- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] — how a
+  set of several owners' types arrives at one instant.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a
+  model shape]] — the pattern library a classification selects from.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this page belongs to.

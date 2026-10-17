@@ -1,0 +1,364 @@
+:PROPERTIES:
+:ID: B2D74E96-0353-4A3D-8CE5-3FC3C30D864C
+:END:
+#+title: Data classifications: entity, list, family, bundle and artefact
+#+description: The closed set of data classifications a modeller picks from before choosing a pattern: what each one is, when it is sanctioned, the pattern and wire shape that carry it, its atomicity scope, and the anti-pattern it replaces, with the decision rule and the anti-type.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:modelling:classification:data_oriented_design:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+* Summary
+
+There are two modes of operation, and they are two consistency scopes,
+not two data models. Most work is discrete: one entity, or a
+homogeneous list of one kind. Some work is a set of different types
+that only mean something together: a structure with its trades,
+instruments and legs, a portfolio destined for ORE XML, an environment
+export. The rows and the types are the same in both modes. What
+changes is what must hold at one instant, and therefore what a message
+may carry.
+
+This page defines a small, closed set of data classifications. Each one
+states what it is, the sanction to use it, the sanctioned pattern, the
+wire shape, the atomicity scope, and the anti-pattern it replaces.
+Classify first; then choose the pattern for that classification. A data
+set that fits no classification is a finding to report, not a shape to
+invent.
+
+The set is closed for the same reason the codegen patterns are: an
+invented classification is a second type system, and it fails where the
+first one is not looking. The MSVC build failure that motivated this
+page is recorded below. It was a symptom, not the fault.
+
+* Detail
+
+** Two consistency scopes, not two data models
+
+The discrete scope is well covered today. One entity is one central row
+and its parts, with the entity protocol, one typed array per component
+and a transaction at the row. A homogeneous list is one kind of entity
+read with the list verbs, paged, filtered and ordered on the server.
+Both are ordinary work and need no new vocabulary.
+
+The composed scope is the gap. A set of different types means something
+only together when one of these is true:
+
+- A cross-type invariant must hold at one instant. A structure, its
+  trades, its instruments and its legs must describe the same deal at
+  the same instant, or the set is not a structure.
+- A boundary format needs the set at once. A portfolio destined for ORE
+  XML carries every instrument kind the book holds.
+- An environment export reconstructs a working system from one
+  snapshot: reference data, configuration and market data together.
+
+The word scope is deliberate. A composed set is not a new kind of data.
+It is ordinary entities whose consistency requirement spans several
+owners, and that requirement decides the message.
+
+** What happened, and what the gap was
+
+A message carried 27 different entity types in one aggregate, the ORE
+conventions document. On MSVC it did not compile: =rfl='s
+=no_duplicate_field_names= is a constexpr check over reflected field
+names whose cost grows with the square of the name count, and the
+instantiation exceeded the compiler's limit. It compiles on clang and on
+gcc.
+
+The compiler was not the design fault. The aggregate bundled 27
+unrelated entity types because one ORE file contains them: every
+convention kind the document lists. File shape was mistaken for a
+consistency requirement.
+
+The conventions have no cross-family invariant. A zero convention and a
+CDS convention never had to travel together; the document listed them
+side by side because the file does. Nothing in the durable documents
+gave a modeller a way to notice that. That is the gap this page closes.
+
+** The classifications at a glance
+
+#+ATTR_HTML: :class hug-leading
+| Classification | Scope | Wire shape | Atomicity |
+|----------------+-------+------------+-----------|
+| Entity | one row and its parts | derived verbs, one typed array per part | the row |
+| List | one entity kind, many rows | one typed array, a page and a total | per element |
+| Family | one entity with parts written together | =<family>_item= and =<family>_write= | one owner, one transaction |
+| Bundle | many kinds, one instant, several owners | manifest plus part references | per owner |
+| Artefact | an interchange file at the boundary | none: bytes in object storage | none, the conversion is |
+
+The five are exhaustive for the data this system moves. A set that
+needs two of them is two messages, not one shape.
+
+** Entity
+
+*What it is.* One keyed row and its parts: one identity, one lifecycle,
+one owner. The parts change for their own reason, but the entity is the
+unit of reading and writing.
+
+*The sanction.* Use it when the set is one thing the system keeps. It
+has one key, one owner, and parts that differ by access rather than by
+ownership.
+
+*The sanctioned pattern.* The entity protocol and the entity pattern of
+[[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]], with the composite pattern
+when the parts move on their own change reason. The target shape is in
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]].
+
+*The wire shape.* The derived verbs, flat, with one typed array per part
+aligned over one page. A part's fields never appear as nested objects
+inside another part.
+
+*The atomicity scope.* The row. One transaction writes the central row
+and the parts it changes, and bumps the central version so no instant
+exists at which they disagree.
+
+*The anti-pattern it replaces.* One aggregate struct that holds the
+whole entity as nested members, or a read-time aggregate type that is
+treated as the entity. See
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]].
+
+** List
+
+*What it is.* A homogeneous collection of one entity kind: all
+currencies, all books of a party, all trades on one book. The caller
+wants many rows of one type, with filtering, ordering and paging.
+
+*The sanction.* Use it when every element has the same type and no
+invariant joins the elements. A list asserts nothing about the set as a
+whole; it is a page of rows.
+
+*The sanctioned pattern.* The list and read verbs of
+[[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]]. The server keeps filtering,
+ordering, paging and the total.
+
+*The wire shape.* One typed array, a page offset, and a total. A list of
+several kinds is not a list: it is a bundle or several lists.
+
+*The atomicity scope.* Per element. A write to one element succeeds or
+fails on its own; there is no cross-element invariant, and a batch that
+claims one is a bundle or a family in disguise.
+
+*The anti-pattern it replaces.* Reading a homogeneous set as one
+aggregate so that the aggregate can be saved whole; and a
+row-at-a-time callback where a page would do.
+
+** Family
+
+*What it is.* One entity with parts that must be written together: one
+central row, one key, and one typed array per part. The parts are
+separate tables with their own change reason, and the family names the
+set of them that one write covers.
+
+*The sanction.* Use it when a cross-type invariant holds at one instant
+and one owner holds every type. The invariant is internal to one
+entity: the central row and its parts must agree, and the absence of one
+part changes the meaning of the others.
+
+*The sanctioned pattern.* The generated =ores.codegen.family= model. It
+derives =<family>_key= (copied from the central entity's key record),
+=<family>_item= (the key, the central row and one typed array per part)
+and =<family>_write= (the central change and one typed array of part
+changes per part), then the =get=, =get_many=, =put= and =put_many=
+pairs. Each part is an entity model whose foreign key names the central
+entity with =:bump_parent_version:=, =:list_by:=, =:list_by_uuid:= and
+=:list_by_as_of:=. The syntax is in
+[[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]].
+
+*The wire shape.* =<family>_item= for a read and =<family>_write= for a
+write. The item holds the key, the central row and one typed array per
+part. It is a container of typed arrays, not a nested object graph: each
+part stays a type of its own and none of its fields is inlined into
+another. The family plural owns the subjects, so they do not collide with
+the central entity's own verbs.
+
+The item is the one shape that looks like the aggregate
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]]
+forbids, and it is not one. That rule forbids an aggregate whose members
+are another type's fields, which produces one wide type and one wide
+reflected literal. The item's members are a key, a central row and
+arrays, so each part keeps its own type, key and codec. It is a unit of
+one family's read and write, not a second copy of the parts' fields.
+
+*The atomicity scope.* One owner, one transaction, over the central row
+and every part the write names. The family put is a domain operation
+because it spans several tables; its =put_many= is one transaction for
+the batch, and the version precondition stays a property of each
+element.
+
+*The anti-pattern it replaces.* A hand-written struct that restates the
+family's shape, and a field group that nests the parts inside one C++
+type to fake a family. See
+[[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns]] and
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity]].
+
+** Bundle
+
+*What it is.* Many entities of different kinds that must arrive
+together because a genuine cross-type invariant holds at one instant: an
+environment export, an archive, a portfolio-wide conversion. The kinds
+are open: a portfolio may span every instrument type the system holds,
+so no closed set of member types can name the bundle.
+
+*The sanction.* Use it when a cross-type invariant holds at one instant
+and several owners hold the types. Each owner has its own database and
+its own write path, and no owner may write another's rows.
+
+*The sanctioned pattern.* An artefact in object storage, content
+addressed, with a manifest. A coordinator reads only the manifest and
+dispatches one message per owner. Each message carries a part reference,
+never the data. Each owner loads its part, validates it, and applies it
+atomically in its own transaction. The full transport is in
+[[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]].
+
+*The wire shape.* The manifest, which is a modelled operation type, and
+one part-reference message per owner. The bundle's data never sits in a
+message field.
+
+*The atomicity scope.* Per owner, by construction. Global atomicity
+across owners is not available, because no transaction spans two
+databases. Consistency comes from sequencing, a stated =as_of= instant,
+and a sandbox for examine-before-live. Progress and retry are per part.
+
+*The anti-pattern it replaces.* One struct with a typed array per kind,
+built because one file, screen or workflow step lists the kinds
+together; and an opaque self-describing archive carried as a message
+field.
+
+** Artefact (document-shaped)
+
+*What it is.* An interchange file at the stack boundary: ORE XML, an
+FpML document, an org file. The format is external, the stack does not
+own it, and it is transient.
+
+*The sanction.* Use it only at a boundary where the bytes arrive or
+leave. The document is evidence of a format, not a data model.
+
+*The sanctioned pattern.* A mapping layer converts the document to and
+from the classifications above. An ORE XML input becomes per-family and
+per-entity messages; an FpML trade becomes a =trade= and its instrument
+entities; an org file parsed into a heading tree becomes the rows it
+describes. Where the bytes must be kept, they go to
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] as an
+artefact with a key, not into a table and not into a message.
+
+*The wire shape.* None. An artefact is never a durable wire type. A
+message field that holds encoded document bytes is forbidden: it defeats
+validation, routing, per-part retry, and the rule that no message field
+holds an encoded value.
+
+*The atomicity scope.* None of its own. The conversion's writes carry
+the atomicity of the classifications they are converted into.
+
+*The anti-pattern it replaces.* Treating the document tree as the model,
+so the file's element structure becomes the schema; and a field of
+self-describing archive bytes inside a message.
+
+** The anti-type: the hand-written union**
+
+Name it, because it is what the missing classification produced. The
+anti-type is a hand-written union of unrelated entities presented as one
+struct: several typed arrays or optional members, one per entity kind, in
+a struct named after a file, a screen or a workflow step. The 27-array
+conventions document is one.
+
+It is not a family, because no key joins its members and no single
+transaction gives them one meaning. It is not a bundle, because it has no
+manifest, no owner boundary and no instant. It is a second type system
+written by hand, and the generator cannot check it.
+
+*The test.* Fill in this sentence without naming a file, a screen, a
+workflow step or a boundary format:
+
+#+begin_quote
+One member may not be written without the others because __________
+must hold at one instant.
+#+end_quote
+
+- If the sentence needs a file, a screen, a workflow step or a format to
+  be true, the set is an artefact's contents or a display concern, not a
+  data type. Split it.
+- If the sentence names an invariant that covers only some members, the
+  set is two or more classifications. Split it at the invariant.
+- If the sentence names an invariant that covers every member and one
+  owner holds them, it is a family.
+- If it covers every member and several owners hold them, it is a bundle.
+
+A union that answers none of these is refused. Do not carry it, and do
+not rename it.
+
+*The key test, and the rule it must not be confused with.*
+[[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]]
+sanctions one typed array per concrete type in a message, joined by key.
+That rule is for a heterogeneous read of one subject, and the join is
+what makes it a read. A union's arrays carry no shared key: a zero
+convention and a CDS convention in the conventions document are not
+joined by anything, because each is an independent population. If the
+arrays cannot be joined on a key, the set is not a read; it is the
+anti-type.
+
+** The decision rule**
+
+This is the spine of the
+[[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][data classification checklist]].
+
+1. *Does the set have a cross-type invariant that must hold at one
+   instant?*
+   - *No.* Split it into per-family or per-entity messages. A member of
+     the set is an Entity, a List, or part of a Family. The members
+     travel together only if a caller needs them at one instant, and
+     that need is a read, not an invariant.
+   - *Yes, and one owner.* A Family.
+   - *Yes, and several owners.* A Bundle.
+2. *A file's contents are not an invariant. A file is an artefact.* The
+   document lists conventions because the format lists them. That is a
+   fact about ORE XML, not about conventions.
+3. *An aggregate list of entities in one struct is a second type system
+   and is forbidden.* The generator cannot see it, so it drifts, and the
+   compiler pays for it in a diagnostic that names no field.
+
+#+caption: How to classify a data set. The first question is the only one that can sanction a set of different types travelling together; a file, a screen or a workflow step sanctions nothing.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/architecture/data_classification_decision_tree.png]]
+
+Source: [[./data_classification_decision_tree.puml][=data_classification_decision_tree.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/data_classification_decision_tree.puml=.
+
+** Compilation errors do not reclassify data
+
+If a type that is correctly classified still fails to compile, that is a
+technical problem. Further denormalisation for technical reasons is
+acceptable: split a wide literal, write parts separately, lower the
+number of names one reflected literal reaches.
+
+A compile error does not invalidate the modelling. It must not be used to
+reclassify the data. Fix the shape the compiler objects to, keep the
+classification, and record the technical step as a technical step.
+
+There is no field-count rule and no measuring control. The count that
+matters depends on how a type is written, it moves with the compiler, and
+a threshold would license the same union under a different name. The
+control is the classification and the invariant, not a number.
+
+* See also
+
+- [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the numbered form a modeller
+  fills in, with the worked examples.
+- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] — the manifest, the coordinator and the
+  per-owner transaction that deliver the bundle classification.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the three regimes, the
+  criterion that classification precedes pattern choice, and the C1202
+  ceiling.
+- [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — the pattern library a
+  classification selects from.
+- [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity: a central row and its parts]] — the target shape
+  behind the Entity classification.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the verbs and envelopes the
+  Entity and List classifications use.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]] — one typed array per concrete type,
+  joined by key, and the rule that a hand-written aggregate of typed
+  arrays is a second type system.
+- [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — the syntax of
+  =ores.codegen.family= and of every pattern named here.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — where the bundle artefact lives.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this page belongs to.

@@ -56,6 +56,20 @@ download as operations either. Variant =B= draws a manifest and labels it a
 fixture on the panel itself, so the gap is visible rather than designed around.
 That is the honest shape of this journey today.
 
+** The figures come from the analytics the configuration names
+
+A report's numbers are not free choice. Its report configuration names a set of
+analytics, and those are what the report produces. Headline Position runs =npv=
+and =sensitivity=, so the run this prototype draws shows an NPV, a Delta and a
+Gamma, and says so on the screen: the figures are the output of those two
+analytics and no others.
+
+The archive follows the same rule. A run that runs only =npv= and =sensitivity=
+does not write =cashflow.csv= or =saccr.csv=, so the manifest holds neither, and
+a second fixture run on a report that does run =saccr= shows NPV and exposure
+instead of Delta and Gamma. A reader can watch the analytic set change the
+figures.
+
 ** A run can complete and still carry errors
 
 The page draws one run that completed clean and one that completed carrying

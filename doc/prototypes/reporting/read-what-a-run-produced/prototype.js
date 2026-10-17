@@ -20,6 +20,14 @@
  * note and the gaps panel say so on the page, because a prototype that draws
  * a file list must not imply the server served it.
  *
+ * The figures are not free: a report's numbers are the outputs of the
+ * analytics its configuration names, and this file says which ones on every
+ * run. Headline Position configures npv and sensitivity, so its measures are
+ * NPV, Delta and Gamma and its archive holds npv.csv and sensitivity.csv and
+ * no saccr.csv. Board Risk Dashboard configures npv, parametricVar and saccr;
+ * Large Exposures configures npv and saccr. The manifest follows the same
+ * rule, so a reader can see why these figures and not others.
+ *
  * Field shapes are the model's: output_message, output_storage_key,
  * reporting/runs/<instance-id>/output.tar.gz, report error scope codes
  * Analytics / Configuration / Report, and severities error / warning. The
@@ -34,7 +42,7 @@
             id: 'A',
             name: 'A · figures',
             kind: 'figures-first',
-            gist: 'The run\u2019s numbers are the screen: headline figures, a results table, and the archive as a modest footer action.'
+            gist: 'The run\u2019s numbers are the screen: the figures the configured analytics wrote, a results table, and the archive as a modest footer action.'
         },
         {
             id: 'B',
@@ -54,7 +62,14 @@
        fixture's; a listing of a real archive is the operation that does not
        exist. rows/bytes are for the largest of the mock runs and are scaled
        per run, because three completed runs need three sizes and inventing
-       three full tables would add noise and no honesty. */
+       three full tables would add noise and no honesty.
+
+       Each run names the subset it writes. The subset follows the analytics
+       its configuration runs: npv.csv and pricingstats.csv come from npv,
+       sensitivity.csv from sensitivity, saccr.csv and saccrdetail.csv from
+       saccr. Files whose analytic the run does not configure -- cashflow.csv,
+       capital_crif.csv, todaysmarketcalibration_cashflows.csv -- are absent
+       from that run's manifest. */
     var BASE_FILES = [
         {
             name: 'marketdata.csv', kind: 'csv', rows: 1208, bytes: 96432,
@@ -89,14 +104,13 @@
             }
         },
         {
-            name: 'runtimes.csv', kind: 'csv', rows: 14, bytes: 1122,
+            name: 'runtimes.csv', kind: 'csv', rows: 0, bytes: 1122,
+            /* One row per phase and per analytic the run configured, built in
+               filesFor because the analytic list is the run's, not a
+               constant. */
             preview: {
                 columns: ['Key', 'Total', 'Count', 'Max', 'Min', 'Average'],
-                sample: [
-                    ['PRICING|Run PRICINGAnalytic', '0', '1', '0', '0', '0.00'],
-                    ['PRICING|buildMarket()', '0', '1', '0', '0', '0.00'],
-                    ['SA_CCR|Run SA_CCRAnalytic', '0', '1', '0', '0', '0.00']
-                ]
+                sample: []
             }
         },
         {
@@ -123,13 +137,26 @@
         {
             name: 'npv.csv', kind: 'csv', rows: 18204, bytes: 3900000,
             preview: {
-                columns: ['TradeId', 'TradeType', 'Npv', 'Npv (USD)', 'Delta (USD)'],
+                /* No Greek column: Delta and Gamma are sensitivity.csv's, and a
+                   run that did not configure sensitivity has neither. */
+                columns: ['TradeId', 'TradeType', 'Npv', 'Npv (USD)'],
                 sample: [
-                    ['8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', 'Swap', '-184204.18', '-240812.44', '-0.0412'],
-                    ['c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', 'Swap', '88204.55', '115284.18', '0.0188'],
-                    ['2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', 'Bond', '612402.00', '612402.00', '0.0000'],
-                    ['6b19d702-3c4a-4e18-8f2b-1d7c9a0e5b36', 'Swap', '44102.80', '57664.06', '0.0091'],
-                    ['0a8e4f21-7b3d-4c95-9e61-4f2a8b0d7c53', 'FXOption', '-9204.40', '-12038.20', '-0.0024']
+                    ['8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', 'Swap', '-184204.18', '-240812.44'],
+                    ['c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', 'Swap', '88204.55', '115284.18'],
+                    ['2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', 'Bond', '612402.00', '612402.00'],
+                    ['6b19d702-3c4a-4e18-8f2b-1d7c9a0e5b36', 'Swap', '44102.80', '57664.06'],
+                    ['0a8e4f21-7b3d-4c95-9e61-4f2a8b0d7c53', 'FXOption', '-9204.40', '-12038.20']
+                ]
+            }
+        },
+        {
+            name: 'sensitivity.csv', kind: 'csv', rows: 21842, bytes: 4800000,
+            preview: {
+                columns: ['TradeId', 'TradeType', 'RiskType', 'RiskFactor', 'Shift', 'Base', 'Shifted', 'Sensitivity'],
+                sample: [
+                    ['8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', 'Swap', 'IR', 'IR/RATE/GBP/10Y', '0.0001', '-184204.18', '-184481.02', '-2768400.00'],
+                    ['c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', 'Swap', 'FX', 'FX/RATE/EUR/USD', '0.01', '88204.55', '88420.18', '21563.00'],
+                    ['2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', 'Bond', 'IR', 'IR/RATE/GBP/5Y', '0.0001', '612402.00', '612430.88', '288800.00']
                 ]
             }
         },
@@ -141,17 +168,6 @@
                     ['NS-ACMCOR-001', '8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', '184203.40', '42008.12', '110284.66', '336496.18', 'GBP'],
                     ['NS-ACMCOR-001', 'c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', '88402.10', '18402.00', '62004.18', '168808.28', 'GBP'],
                     ['NS-ACCOUK-004', '2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', '54002.00', '12004.60', '38002.14', '104008.74', 'EUR']
-                ]
-            }
-        },
-        {
-            name: 'saccr_detail.csv', kind: 'csv', rows: 62318, bytes: 17900000,
-            preview: {
-                columns: ['NettingSetId', 'TradeId', 'IM', 'RC', 'AddOn', 'EAD', 'Currency', 'SACCRVersion'],
-                sample: [
-                    ['NS-ACMCOR-001', '8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', '184203.40', '42008.12', '110284.66', '336496.18', 'GBP', '1.8.17.0'],
-                    ['NS-ACMCOR-001', 'c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', '88402.10', '18402.00', '62004.18', '168808.28', 'GBP', '1.8.17.0'],
-                    ['NS-ACCOUK-004', '2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', '54002.00', '12004.60', '38002.14', '104008.74', 'EUR', '1.8.17.0']
                 ]
             }
         },
@@ -233,8 +249,8 @@
         {
             id: '4b7e1a02-8d61-4f3c-b2a7-9c1e5d0f7a63',
             short: '4b7e1a02',
-            report: 'Group Consolidated Exposure',
-            definition: 'Group Consolidated Exposure',
+            report: 'Board Risk Dashboard',
+            definition: 'Board Risk Dashboard',
             party: 'ACMCOR',
             kind: 'production',
             reportType: 'risk',
@@ -245,33 +261,37 @@
             outputMessage: 'Report execution completed.',
             key: 'reporting/runs/4b7e1a02-8d61-4f3c-b2a7-9c1e5d0f7a63/output.tar.gz',
             preProcessing: 'execute',
+            analytics: ['npv', 'parametricVar', 'saccr'],
+            files: ['npv.csv', 'saccr.csv', 'saccrdetail.csv', 'pricingstats.csv',
+                'marketdata.csv', 'todaysmarketcalibration.csv', 'fixings.csv',
+                'dividends.csv', 'runtimes.csv', 'log.txt', 'log_structured.json'],
             fileScale: 0.62,
             figures: [
-                { value: '11,286', label: 'trades', note: 'ACMCOR, all netting sets' },
-                { value: '168', label: 'counterparties', note: 'in scope' },
-                { value: '412', label: 'netting sets', note: 'priced' },
-                { value: 'USD 12,884,102', label: 'net present value', note: 'sum of npv.csv' },
-                { value: 'USD 41.2 m', label: 'expected shortfall 95%', note: 'one-day' }
+                { value: 'USD 12,884,102', label: 'NPV', note: 'npv, base currency USD' },
+                { value: 'USD 41.2 m', label: 'VaR 95%, one day', note: 'parametricVar, across the six entities' },
+                { value: 'USD 2.76 bn', label: 'EAD', note: 'saccr, sum of the rows' },
+                { value: '11,286', label: 'positions priced', note: 'the rows npv.csv carries, ACMCOR' }
             ],
             table: {
-                title: 'Exposure by counterparty',
-                note: 'A reading of npv.csv, which nothing parses yet.',
-                columns: ['Counterparty', 'Rating', 'Trades', 'NPV (USD)', 'EAD (USD)', 'ES 95% (USD)'],
+                title: 'NPV, VaR and EAD by legal entity',
+                note: 'A reading of npv.csv and saccr.csv, which nothing parses yet. VaR does not add across rows: parametricVar applies the covariance matrix.',
+                columns: ['Legal entity', 'Positions', 'NPV (USD)', 'VaR 95% (USD)', 'EAD (USD)'],
                 rows: [
-                    ['ACME BANK PLC', 'A', '2,840', '4,118,204', '884,204,118', '12,884,204'],
-                    ['NORTHGATE CLEARING', 'AA-', '3,120', '3,904,118', '764,118,402', '9,204,118'],
-                    ['MERIDIAN CAPITAL', 'BBB+', '2,104', '2,884,020', '512,884,204', '7,118,902'],
-                    ['HANSA PFANDBRIEF', 'A+', '1,420', '1,204,118', '284,118,904', '4,884,118'],
-                    ['PACIFIC TRUST', 'BBB', '1,104', '612,402', '198,204,118', '3,402,884'],
-                    ['KESTREL ASSURANCE', 'A-', '698', '161,240', '118,884,020', '2,884,402']
+                    ['ACME BANK PLC', '2,840', '4,118,204', '12,884,204', '884,204,118'],
+                    ['NORTHGATE CLEARING', '3,120', '3,904,118', '9,204,118', '764,118,402'],
+                    ['MERIDIAN CAPITAL', '2,104', '2,884,020', '7,118,902', '512,884,204'],
+                    ['HANSA PFANDBRIEF', '1,420', '1,204,118', '4,884,118', '284,118,904'],
+                    ['PACIFIC TRUST', '1,104', '612,402', '3,402,884', '198,204,118'],
+                    ['KESTREL ASSURANCE', '698', '161,240', '2,884,402', '118,884,020']
                 ]
             },
             errors: [],
             story: [
-                'Group Consolidated Exposure finished at <span class="fig">08:15:02</span>, <span class="fig">two minutes and eighteen seconds</span> after ACMCOR asked for it. It was a production run: pre-processing gathered the party\u2019s trades and market data, the engine priced them on the grid, and retrieval put the result at <span class="key">reporting/runs/4b7e1a02-8d61-4f3c-b2a7-9c1e5d0f7a63/output.tar.gz</span>.',
-                'It priced <span class="fig">11,286 trades</span> against <span class="fig">168 counterparties</span> in <span class="fig">412 netting sets</span>. Net present value was <span class="fig">USD 12,884,102</span> and one-day expected shortfall at the 95th percentile was <span class="fig">USD 41.2 m</span>. ACME BANK PLC was the largest counterparty on both measures.',
+                'Board Risk Dashboard finished at <span class="fig">08:15:02</span>, <span class="fig">two minutes and eighteen seconds</span> after ACMCOR asked for it. It was a production run: pre-processing gathered the party\u2019s trades and market data, the engine priced them on the grid, and retrieval put the result at <span class="key">reporting/runs/4b7e1a02-8d61-4f3c-b2a7-9c1e5d0f7a63/output.tar.gz</span>.',
+                'Its configuration names three analytics \u2014 <span class="mono">npv</span>, <span class="mono">parametricVar</span> and <span class="mono">saccr</span> \u2014 and there is no measure on this page that is not one of their outputs. npv priced <span class="fig">11,286 positions</span> and returned NPV of <span class="fig">USD 12,884,102</span>; parametricVar returned one-day 95% VaR of <span class="fig">USD 41.2 m</span>; saccr returned total EAD of <span class="fig">USD 2.76 bn</span>.',
+                'ACME BANK PLC was the largest legal entity on all three measures. VaR is a portfolio figure and does not add down the column: the analytic applies the covariance matrix, so the whole is not the sum of the six rows.',
                 'The engine reported nothing. No error and no warning sits beside this output, so the archive is the whole account of the run.',
-                'The archive is the run\u2019s answer: fifteen files before compression. The figures above are a reading of npv.csv, not a table this screen can query \u2014 the result store that would parse the archive is designed and not built.'
+                'The archive is the run\u2019s answer: <span class="fig">{{files}} files</span>, <span class="fig">{{bytes}}</span> before compression. The figures above are a reading of npv.csv and saccr.csv, not a table this screen can query \u2014 the result store that would parse the archive is designed and not built. A run that configures no cashflow analytic writes no cashflow.csv, and this manifest holds none.'
             ]
         },
         {
@@ -289,53 +309,58 @@
             outputMessage: 'Report execution completed.',
             key: 'reporting/runs/3f7a91c4-6c2e-4b1d-9a84-0e5c2b7d18f3/output.tar.gz',
             preProcessing: 'execute',
+            analytics: ['npv', 'sensitivity'],
+            files: ['npv.csv', 'sensitivity.csv', 'pricingstats.csv', 'marketdata.csv',
+                'todaysmarketcalibration.csv', 'fixings.csv', 'dividends.csv',
+                'runtimes.csv', 'log.txt', 'log_structured.json'],
             fileScale: 1,
             figures: [
-                { value: '18,204', label: 'positions priced', note: 'ACCOUK, all books' },
-                { value: '24', label: 'books', note: 'in the report' },
-                { value: 'USD 1.84 bn', label: 'gross position', note: 'signed notional' },
-                { value: 'USD 412.6 m', label: 'net position', note: 'after netting' },
-                { value: 'USD 8.42 m', label: 'unrealised P&L', note: 'against close' }
+                { value: 'USD 88,402,114', label: 'NPV', note: 'npv, base currency USD, all books' },
+                { value: 'USD 1,846,818', label: 'Delta', note: 'sensitivity, summed over the books' },
+                { value: 'USD 52,350', label: 'Gamma', note: 'sensitivity, summed over the books' },
+                { value: '18,204', label: 'positions priced', note: 'the rows npv.csv carries' },
+                { value: '24', label: 'books', note: 'the grouping the engine applied' }
             ],
             table: {
-                title: 'Position by book',
-                note: 'A reading of npv.csv, which nothing parses yet.',
-                columns: ['Book', 'Instrument class', 'Positions', 'Gross (USD)', 'Net (USD)', 'Unrealised P&L (USD)'],
+                title: 'NPV, Delta and Gamma by book',
+                note: 'A reading of npv.csv and sensitivity.csv, which nothing parses yet. Delta and Gamma are the NPV change for a one basis point shift.',
+                columns: ['Book', 'Positions', 'NPV (USD)', 'Delta (USD)', 'Gamma (USD)'],
                 rows: [
-                    ['GBP Rates', 'Rates', '4,218', '612,404,118', '118,402,664', '3,118,402'],
-                    ['EUR Rates', 'Rates', '3,904', '488,120,504', '96,118,402', '2,004,118'],
-                    ['USD Rates', 'Rates', '5,128', '412,884,020', '88,204,118', '1,884,020'],
-                    ['FX Options', 'FX', '1,820', '168,204,880', '52,118,904', '804,118'],
-                    ['Inflation', 'Inflation', '1,104', '94,118,204', '38,204,118', '402,004'],
-                    ['Credit', 'Credit', '1,420', '58,204,118', '14,204,118', '118,402'],
-                    ['Equity', 'Equity', '610', '12,884,118', '5,118,204', '88,118']
+                    ['GBP Rates', '4,218', '41,204,118', '612,404', '18,204'],
+                    ['EUR Rates', '3,904', '28,118,402', '488,120', '14,118'],
+                    ['USD Rates', '5,128', '12,884,020', '412,884', '9,204'],
+                    ['FX Options', '1,820', '4,204,880', '168,204', '6,118'],
+                    ['Inflation', '1,104', '1,118,204', '94,118', '2,884'],
+                    ['Credit', '1,420', '612,402', '58,204', '1,420'],
+                    ['Equity', '610', '260,088', '12,884', '402']
                 ]
             },
             errors: [
                 { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'PRICING', message: 'Failed to build market: There are no quotes available for date October 16th, 2026' },
-                { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'SA_CCR', message: 'Failed to build market: There are no quotes available for date October 16th, 2026' },
                 { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'PRICING', message: 'Portfolio does not contain any built trades, context is \'analytic/PRICING\'' },
-                { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'SA_CCR', message: 'Portfolio does not contain any built trades, context is \'analytic/SA_CCR\'' },
+                { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'SENSITIVITY', message: 'Failed to build market: There are no quotes available for date October 15th, 2026' },
+                { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'SENSITIVITY', message: 'Sensitivity run skipped 412 positions: the base scenario has no price to bump' },
                 { severity: 'error', scope: 'Analytics', subject: 'trade', subjectId: '8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', message: 'Failed to build trade: no index curve covers GBP-SONIA beyond 2031-04-15' },
                 { severity: 'error', scope: 'Analytics', subject: 'trade', subjectId: 'c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', message: 'Failed to build trade: missing credit curve for issuer XS0298371204' },
                 { severity: 'error', scope: 'Analytics', subject: 'trade', subjectId: '2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', message: 'Failed to build trade: fixing for GBP-SONIA on 2026-10-15 is not in the fixings set' },
-                { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'CASHFLOW', message: 'Failed to compute cashflows: leg 1 of trade 6b19d702 has an unresolvable schedule end date' },
+                { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'SENSITIVITY', message: 'Failed to compute delta for risk factor IR/RATE/GBP/10Y: the shifted scenario did not price' },
                 { severity: 'warning', scope: 'Configuration', subject: 'configuration', subjectId: 'EUR', message: 'Market data binding for currency EUR has no credit curve set; the run used the default calibration' },
                 { severity: 'warning', scope: 'Configuration', subject: 'configuration', subjectId: 'GBP', message: 'No volatility surface is bound for GBP; the equity analytic ran with a flat surface' },
                 { severity: 'warning', scope: 'Configuration', subject: 'configuration', subjectId: 'portfolio', message: 'Risk report configuration states no portfolio filter; the run priced every trade in ACCOUK' }
             ],
             story: [
                 'Headline Position finished at <span class="fig">09:06:40</span>, <span class="fig">four minutes and twenty-nine seconds</span> after ACCOUK asked for it. It was a production run: pre-processing gathered the party\u2019s trades and market data, the engine priced them on the grid, and retrieval put the result at <span class="key">reporting/runs/3f7a91c4-6c2e-4b1d-9a84-0e5c2b7d18f3/output.tar.gz</span>.',
-                'It priced <span class="fig">18,204 positions</span> across <span class="fig">24 books</span>. Gross position was <span class="fig">USD 1.84 bn</span>, net position <span class="fig">USD 412.6 m</span>, and unrealised P&amp;L <span class="fig">USD 8.42 m</span>. GBP Rates was the largest book, at <span class="fig">USD 612.4 m</span> gross.',
-                'Eleven problems came with it: <span class="fig">8 Analytics errors</span> and <span class="fig">3 Configuration warnings</span>. The engine could not build a market for PRICING or SA_CCR because no quotes were available for 16 October 2026, and three trades would not build at all. The warnings name the market binding and the portfolio filter. None of them stopped the archive; all of them narrow what it can answer.',
-                'The archive is the run\u2019s whole answer: fifteen files, <span class="fig">120.4 MB</span> before compression. The figures above are a reading of npv.csv and the run\u2019s own log, not a table this screen can query. Read the errors before the figures.'
+                'Its configuration names two analytics, <span class="mono">npv</span> and <span class="mono">sensitivity</span>, and no others. npv priced <span class="fig">18,204 positions</span> across <span class="fig">24 books</span>; sensitivity took the Delta and Gamma of each book. The Greek set is configurable \u2014 the report page calls these a deliberately shallow and wide first look \u2014 and this run took Delta and Gamma.',
+                'NPV was <span class="fig">USD 88,402,114</span>. Delta was <span class="fig">USD 1,846,818</span> and Gamma <span class="fig">USD 52,350</span>, summed over the books, both for a one basis point shift. GBP Rates was the largest book, at <span class="fig">USD 41,204,118</span> of NPV.',
+                'Eleven problems came with it: <span class="fig">8 Analytics errors</span> and <span class="fig">3 Configuration warnings</span>. The engine could not build a market for PRICING or SENSITIVITY because no quotes were available for 16 October 2026, and three trades would not build at all, so 412 positions carry an NPV and no Delta. The warnings name the market binding and the portfolio filter. None of them stopped the archive; all of them narrow what it can answer.',
+                'The archive is the run\u2019s whole answer: <span class="fig">{{files}} files</span>, <span class="fig">{{bytes}}</span> before compression. Two of them are the analytics\u2019 own output \u2014 npv.csv and sensitivity.csv \u2014 and the rest are the market data the run read and the logs it wrote. A run of this configuration writes no cashflow.csv and no saccr.csv. The figures above are a reading of those two files, not a table this screen can query. Read the errors before the figures.'
             ]
         },
         {
             id: '8c1d2e47-0a35-4b6f-9e12-5d4c3a2b1f90',
             short: '8c1d2e47',
-            report: 'Liquidity Buffer Bonds',
-            definition: 'Liquidity Buffer Bonds',
+            report: 'NPV',
+            definition: 'NPV',
             party: 'ACCOUS',
             kind: 'production',
             reportType: 'risk',
@@ -346,6 +371,8 @@
             outputMessage: 'Run failed: submission could not find a compute app version visible to party ACCOUS.',
             key: null,
             preProcessing: 'execute',
+            analytics: ['npv'],
+            files: [],
             fileScale: 1,
             figures: [],
             table: null,
@@ -353,8 +380,8 @@
                 { severity: 'error', scope: 'Report', subject: null, subjectId: null, message: 'report_execution: submit_compute failed: no compute app version is visible to party ACCOUS.' }
             ],
             story: [
-                'Liquidity Buffer Bonds failed at <span class="fig">09:21:40</span>, <span class="fig">three minutes and thirty-eight seconds</span> after ACCOUS asked for it. It prepared its input and then stopped: submission could not find a compute app version visible to the party, so the engine never ran.',
-                'Nothing came out. There is no archive, no ORE package to hand over and no figure to read, and the run\u2019s one error row says why. The system put it in its own words: \u201cRun failed: submission could not find a compute app version visible to party ACCOUS.\u201d',
+                'NPV failed at <span class="fig">09:21:40</span>, <span class="fig">three minutes and thirty-eight seconds</span> after ACCOUS asked for it. It prepared its input and then stopped: submission could not find a compute app version visible to the party, so the engine never ran.',
+                'Its configuration names one analytic, <span class="mono">npv</span>. There is no NPV on this page because no npv analytic ran, and no npv.csv because no archive came back. Nothing came out, and the run\u2019s one error row says why. The system put it in its own words: \u201cRun failed: submission could not find a compute app version visible to party ACCOUS.\u201d',
                 'That is the whole answer this journey can give for this run: nothing to take, and a reason. The error is scope <span class="fig">Report</span>, because no engine saw the failure.'
             ]
         },
@@ -373,14 +400,16 @@
             outputMessage: '',
             key: null,
             preProcessing: 'execute',
+            analytics: ['npv', 'saccr'],
+            files: [],
             fileScale: 1,
             figures: [],
             table: null,
             errors: [],
             story: [
-                'Large Exposures has been running since <span class="fig">09:44:12</span>. It has no output message, no archive and no key, because output does not exist until retrieval: the run writes its <span class="key">output_storage_key</span> only once its results come back.',
+                'Large Exposures has been running since <span class="fig">09:44:12</span>. Its configuration names <span class="mono">npv</span> and <span class="mono">saccr</span>, and neither has written anything yet: it has no output message, no archive and no key, because output does not exist until retrieval. The run writes its <span class="key">output_storage_key</span> only once its results come back.',
                 'This page will fill when the run completes. It does not draw an empty archive, because an empty folder and a run that has not finished look the same on a screen and mean opposite things.',
-                'What a reader has today is the run: its definition, its party, its state and the time it started.'
+                'What a reader has today is the run: its definition, its analytics, its party, its state and the time it started.'
             ]
         },
         {
@@ -399,32 +428,35 @@
             key: 'reporting/runs/9a20c7d1-4f68-4e93-b7c5-1d8e6f2a4b03/output.tar.gz',
             preProcessing: 'substitute',
             preparedInputKey: 'external/ore/packages/large-exposures/input.tar.gz',
+            analytics: ['npv', 'saccr'],
+            files: ['npv.csv', 'saccr.csv', 'saccrdetail.csv', 'pricingstats.csv',
+                'marketdata.csv', 'todaysmarketcalibration.csv', 'fixings.csv',
+                'dividends.csv', 'runtimes.csv', 'log.txt', 'log_structured.json'],
             fileScale: 0.18,
             figures: [
-                { value: '6', label: 'counterparties in scope', note: 'ACCOHK' },
-                { value: 'USD 2.14 bn', label: 'total exposure', note: 'sum of EAD' },
-                { value: 'USD 612.4 m', label: 'largest exposure', note: 'ACME BANK PLC' },
-                { value: '1', label: 'limit breached', note: 'ACME BANK PLC' },
-                { value: 'USD 388.2 m', label: 'collateral held', note: 'against exposures' }
+                { value: 'USD 383,853,078', label: 'NPV', note: 'npv, base currency USD' },
+                { value: 'USD 2.14 bn', label: 'EAD', note: 'saccr, sum of the rows' },
+                { value: '2,292', label: 'positions priced', note: 'the rows npv.csv carries' },
+                { value: '6', label: 'counterparties in scope', note: 'the grouping saccr applied' }
             ],
             table: {
-                title: 'Exposure by counterparty',
-                note: 'A reading of npv.csv, which nothing parses yet.',
-                columns: ['Counterparty', 'Rating', 'Exposure (USD)', 'Limit (USD)', 'Utilisation', 'Breach'],
+                title: 'NPV and EAD by counterparty',
+                note: 'A reading of npv.csv and saccr.csv, which nothing parses yet.',
+                columns: ['Counterparty', 'Positions', 'NPV (USD)', 'EAD (USD)'],
                 rows: [
-                    ['ACME BANK PLC', 'A', '612,404,118', '600,000,000', '102.1%', 'yes'],
-                    ['NORTHGATE CLEARING', 'AA-', '488,118,402', '520,000,000', '93.9%', 'no'],
-                    ['MERIDIAN CAPITAL', 'BBB+', '412,884,204', '450,000,000', '91.8%', 'no'],
-                    ['HANSA PFANDBRIEF', 'A+', '284,118,904', '340,000,000', '83.6%', 'no'],
-                    ['PACIFIC TRUST', 'BBB', '198,204,118', '260,000,000', '76.2%', 'no'],
-                    ['KESTREL ASSURANCE', 'A-', '144,270,254', '160,000,000', '90.2%', 'no']
+                    ['ACME BANK PLC', '684', '118,204,118', '612,404,118'],
+                    ['NORTHGATE CLEARING', '512', '96,118,402', '488,118,402'],
+                    ['MERIDIAN CAPITAL', '428', '88,204,118', '412,884,204'],
+                    ['HANSA PFANDBRIEF', '302', '41,118,204', '284,118,904'],
+                    ['PACIFIC TRUST', '218', '28,204,118', '198,204,118'],
+                    ['KESTREL ASSURANCE', '148', '12,004,118', '144,270,254']
                 ]
             },
             errors: [],
             story: [
                 'Large Exposures finished at <span class="fig">18:05:40</span>, <span class="fig">three minutes and twenty-nine seconds</span> after ACCOHK asked for it. It resolved a prepared input rather than preparing one: pre-processing was substituted, and the archive it submitted is the one its definition already names, <span class="key">external/ore/packages/large-exposures/input.tar.gz</span>.',
-                'Six counterparties were in scope. Total exposure was <span class="fig">USD 2.14 bn</span>, the largest single exposure <span class="fig">USD 612.4 m</span> to ACME BANK PLC, and that is the one limit the run says is breached. Collateral held against those exposures was <span class="fig">USD 388.2 m</span>.',
-                'The engine reported nothing. The output is at <span class="key">reporting/runs/9a20c7d1-4f68-4e93-b7c5-1d8e6f2a4b03/output.tar.gz</span>, and the figures above are a reading of it that nothing yet parses.'
+                'Its configuration names two analytics, <span class="mono">npv</span> and <span class="mono">saccr</span>. npv priced <span class="fig">2,292 positions</span> and returned NPV of <span class="fig">USD 383,853,078</span>; saccr returned an EAD of <span class="fig">USD 2.14 bn</span> over <span class="fig">6 counterparties</span>. ACME BANK PLC carried the largest EAD, at <span class="fig">USD 612.4 m</span>.',
+                'The engine reported nothing. The output is at <span class="key">reporting/runs/9a20c7d1-4f68-4e93-b7c5-1d8e6f2a4b03/output.tar.gz</span>, and the figures above are a reading of npv.csv and saccr.csv that nothing yet parses. This configuration writes no cashflow.csv and no capital_crif.csv, and the archive holds neither.'
             ]
         }
     ];
@@ -440,7 +472,7 @@
         },
         {
             title: 'No parsed results to read',
-            body: 'The result store that would parse the archive is designed in Report post-processing and not built, so A\u2019s figures, A\u2019s table and C\u2019s numbers have no read behind them. The archive is the only result that exists, and it exists as bytes the screen cannot fetch.'
+            body: 'The result store that would parse the archive is designed in Report post-processing and not built, so A\u2019s figures, A\u2019s table and C\u2019s numbers have no read behind them. Which figures they are is decided by the analytics the configuration names \u2014 npv and sensitivity write NPV, Delta and Gamma; saccr writes EAD \u2014 and that list is a fixture here too, because no operation returns the configuration either. The archive is the only result that exists, and it exists as bytes the screen cannot fetch.'
         },
         {
             title: 'No read of the ORE package',
@@ -457,8 +489,8 @@
     ];
 
     var DEPENDENCY = {
-        A: 'A needs the result store. Every figure and every row above is a reading of an archive that nothing parses: post-processing is designed and not built. Built with today\u2019s operations, A is the archive footer with an empty screen above it.',
-        B: 'B is the only variant buildable from today\u2019s reads: the state, the output message, the storage key and the errors are all fields of the run. What B cannot have is its own centre \u2014 the manifest \u2014 and any download, because no operation lists or serves the archive.',
+        A: 'A needs the result store. Every figure and every row above is a reading of the output of the two analytics this run configured, and nothing parses an archive: post-processing is designed and not built. Built with today\u2019s operations, A is the archive footer with an empty screen above it.',
+        B: 'B is the only variant buildable from today\u2019s reads: the state, the output message, the storage key and the errors are all fields of the run. What B cannot have is its own centre \u2014 the manifest \u2014 and any download, because no operation lists or serves the archive. Its file list is also inferred from the configured analytics, not observed inside the tar.',
         C: 'C needs what A needs \u2014 the parsed numbers \u2014 and then a writer trusted to keep a figure and its caveat in the same sentence. It is the easiest of the three to make wrong and the hardest to check: a column can be inspected, a sentence is believed.'
     };
 
@@ -558,16 +590,55 @@
 
     function filesFor(run) {
         var scale = run.fileScale === undefined ? 1 : run.fileScale;
-        return BASE_FILES.map(function (f) {
-            var rows = f.kind === 'json' ? run.errors.length : Math.round(f.rows * scale);
+        var names = run.files || [];
+        return BASE_FILES.filter(function (f) {
+            return names.indexOf(f.name) !== -1;
+        }).map(function (f) {
+            var preview = previewFor(f, run);
+            var rows;
+            if (f.kind === 'json') rows = run.errors.length;
+            else if (f.kind === 'log') rows = 0;
+            else if (f.preview.sample.length === 0) rows = preview.sample.length;
+            else rows = Math.round(f.rows * scale);
             return {
                 name: f.name,
                 kind: f.kind,
                 rows: rows,
                 bytes: Math.round(f.bytes * scale),
-                preview: f.preview
+                preview: preview
             };
         });
+    }
+
+    /* runtimes.csv carries one row per phase and per analytic, so its first
+       rows are the run's own analytics. A fixture, like the rest of the file. */
+    function previewFor(f, run) {
+        if (f.name !== 'runtimes.csv') return f.preview;
+        var sample = [['buildMarket()', '0', '1', '0', '0', '0.00'],
+            ['runReporting()', '0', '1', '0', '0', '0.00']];
+        (run.analytics || []).forEach(function (a) {
+            sample.push([a + '|Run ' + a + 'Analytic', '0', '1', '0', '0', '0.00']);
+        });
+        return { columns: f.preview.columns, sample: sample };
+    }
+
+    function analyticsText(run) {
+        return (run.analytics || []).join(', ');
+    }
+
+    function analyticsChips(run) {
+        return (run.analytics || []).map(function (a) {
+            return '<span class="ana-chip">' + esc(a) + '</span>';
+        }).join('');
+    }
+
+    /* The line every variant carries: a run's figures are only as good as the
+       analytics its configuration named, so the screen names them. */
+    function analyticsLine(run) {
+        return '<div class="analytics-line">' +
+            '<span class="lbl">Analytics this run ran</span>' + analyticsChips(run) +
+            '<span class="hint">the figures on this screen are the output of these analytics and no others</span>' +
+            '</div>';
     }
 
     function totalBytes(files) {
@@ -577,7 +648,19 @@
     function selectedFile(run) {
         var files = filesFor(run);
         var found = files.filter(function (f) { return f.name === S.file; })[0];
-        return found || files.filter(function (f) { return f.name === 'npv.csv'; })[0] || files[0];
+        return found || files.filter(function (f) { return f.name === 'npv.csv'; })[0] || files[0] ||
+            { name: '\u2014', kind: 'csv', rows: 0, bytes: 0, preview: { columns: [], sample: [] } };
+    }
+
+    /* A story is written once and prints a file count and a size that belong
+       to its own run's manifest; the tokens keep the prose and the manifest
+       from disagreeing. */
+    function storyFor(run) {
+        var files = filesFor(run);
+        return (run.story || []).map(function (p) {
+            return p.replace(/\{\{files\}\}/g, esc(String(files.length)))
+                .replace(/\{\{bytes\}\}/g, esc(bytesText(totalBytes(files))));
+        });
     }
 
     function rowText(f) {
@@ -609,6 +692,7 @@
             return '<button class="chipbtn' + (r.id === currentRun().id ? ' on' : '') +
                 '" data-act="run" data-run="' + r.id + '">' +
                 '<span class="p">' + esc(r.party) + '</span>' + esc(r.report) +
+                '<span class="an">' + esc(analyticsText(r)) + '</span>' +
                 '<span class="st">\u00b7 ' + esc(shortState(r)) + '</span></button>';
         }).join('');
         return '<div class="fixturebar">' +
@@ -654,15 +738,19 @@
             '<a class="btn linklike" href="../index.org">Back to ../index.org</a>' +
             '</div></div>' +
             '<div class="metaline">' + metaline + '</div>' +
+            analyticsLine(run) +
             '<nav class="surfacenav">' + nav +
             '<span class="navhint">one run surface \u00b7 five journeys as sections, not five screens</span>' +
             '</nav>' +
             '</header>';
     }
 
-    function amberNote() {
+    function amberNote(run) {
         return '<div class="notice warn"><strong>What is fixture.</strong> ' +
             'Every figure, file name, row count, size and error below is mock, and nothing on this page reads a server. ' +
+            'The figures are fixtures standing in for the output of the analytics this run\u2019s configuration names \u2014 ' +
+            '<span class="mono">' + esc(analyticsText(run)) + '</span> \u2014 and the result store that would parse the ' +
+            'archive and read them out is designed and not built. ' +
             'There is no operation that lists the files inside a run\u2019s archive, so no file list can be served \u2014 ' +
             'variant B draws one as a fixture and says so on it. No operation returns the archive or the ORE package, ' +
             'so every download is drawn, not wired.' +
@@ -739,11 +827,11 @@
         var table = '';
         if (t) {
             var head = t.columns.map(function (c, i) {
-                return '<th' + (i > 1 ? ' class="num"' : '') + '>' + esc(c) + '</th>';
+                return '<th' + (i > 0 ? ' class="num"' : '') + '>' + esc(c) + '</th>';
             }).join('');
             var body = t.rows.map(function (row) {
                 return '<tr>' + row.map(function (cell, i) {
-                    return '<td' + (i > 1 ? ' class="num"' : '') + '>' + esc(cell) + '</td>';
+                    return '<td' + (i > 0 ? ' class="num"' : '') + '>' + esc(cell) + '</td>';
                 }).join('') + '</tr>';
             }).join('');
             table = '<div class="sectionhead" style="margin-top:20px"><h3 class="subhead">' + esc(t.title) + '</h3>' +
@@ -753,10 +841,13 @@
 
         return '<section class="card">' +
             '<header class="sectionhead"><h2>The result</h2>' +
-            '<span class="meta"><span class="tag warn">fixture</span><span>a reading of npv.csv</span></span></header>' +
-            '<div class="figs">' + tiles + '</div>' + table +
+            '<span class="meta"><span class="tag accent">' + esc(analyticsText(run)) + '</span>' +
+            '<span class="tag warn">fixture</span><span>no measure below comes from any other analytic</span></span></header>' +
+            analyticsLine(run) +
+            '<div class="figs" style="margin-top:16px">' + tiles + '</div>' + table +
             '<p class="rowfoot">No operation returns these figures or rows. They are what the archive says once something ' +
-            'parses it, and the result store that would parse it is designed and not built.</p>' +
+            'parses it \u2014 <span class="mono">' + esc(analyticsText(run)) + '</span> wrote them \u2014 and the result ' +
+            'store that would parse it is designed and not built.</p>' +
             '</section>';
     }
 
@@ -859,10 +950,12 @@
             '</div>';
     }
 
-    function manifestNote() {
+    function manifestNote(run) {
         return '<div class="notice warn"><strong>No operation lists the archive\u2019s contents.</strong> ' +
             'This manifest is a fixture: one row per file, its row count and size. Nothing here opened the tar, ' +
-            'and no read serves a file from inside it.</div>';
+            'and no read serves a file from inside it. The list follows the configured analytics \u2014 this run\u2019s ' +
+            'configuration names <span class="mono">' + esc(analyticsText(run)) + '</span>, so the fixture holds their ' +
+            'output files and no file that an analytic it did not run would write.</div>';
     }
 
     function manifestCard(run) {
@@ -880,9 +973,10 @@
         }).join('');
         return '<section class="card">' +
             archiveHeroNote(run) +
+            analyticsLine(run) +
             '<div class="sectionhead" style="margin-top:16px"><h3 class="subhead">Inside the archive</h3>' +
             '<span class="meta"><span class="tag warn">fixture manifest</span><span>select a file to preview it</span></span></div>' +
-            manifestNote() +
+            manifestNote(run) +
             '<div class="table-wrap" style="margin-top:12px"><table class="manifest"><thead><tr>' +
             '<th>File</th><th>Type</th><th class="num">Rows</th><th class="num">Size</th><th></th>' +
             '</tr></thead><tbody>' + body + '</tbody></table></div>' +
@@ -938,7 +1032,7 @@
     // ------------------------------------------------------------ variant C
 
     function narrativeFirst(run) {
-        var paragraphs = (run.story || []).map(function (p) {
+        var paragraphs = storyFor(run).map(function (p) {
             return '<p>' + p + '</p>';
         }).join('');
 
@@ -982,6 +1076,7 @@
             '<section class="card">' +
             '<div class="said"><span class="lbl">What the system said</span>' +
             '<span class="q">' + (run.state === 'running' ? '\u2014 no output message yet' : esc(run.outputMessage)) + '</span></div>' +
+            analyticsLine(run) +
             '<div class="prose" style="margin-top:18px">' + paragraphs + '</div>' +
             '</section>' +
             filesCard + packageBlock(run);
@@ -1008,7 +1103,7 @@
 
     function render() {
         var run = currentRun();
-        var body = fixtureBar() + runHead(run) + amberNote() +
+        var body = fixtureBar() + runHead(run) + amberNote(run) +
             ({ A: figuresFirst, B: artefactFirst, C: narrativeFirst }[S.variant] || figuresFirst)(run) +
             gapsPanel(run);
 

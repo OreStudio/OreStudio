@@ -309,6 +309,34 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-
 .runhead .metaline b { color: var(--ink-dim); font-weight: 500; font-family: var(--mono); }
 .runhead .metaline .k { color: var(--ink-faint); }
 
+/* The analytics a run's configuration names. Every variant prints this line,
+   because a figure is only as good as the analytic that wrote it. */
+.analytics-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px solid var(--line-soft);
+}
+.analytics-line .lbl {
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+}
+.ana-chip {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.5;
+    border-radius: 999px;
+    border: 1px solid rgba(88, 166, 255, 0.5);
+    background: rgba(88, 166, 255, 0.1);
+    color: var(--accent-bright);
+    padding: 1px 9px;
+    white-space: nowrap;
+}
+
 .statepill {
     display: inline-flex;
     align-items: center;
@@ -385,6 +413,8 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-
 .chipbtn.on .p { color: var(--accent-bright); }
 .chipbtn .st { color: var(--ink-faint); font-size: 10.5px; }
 .chipbtn.on .st { color: var(--ink-dim); }
+.chipbtn .an { font-family: var(--mono); font-size: 10.5px; color: var(--accent-bright); opacity: 0.75; }
+.chipbtn.on .an { opacity: 1; }
 
 /* ------------------------------------------------------ what it said */
 

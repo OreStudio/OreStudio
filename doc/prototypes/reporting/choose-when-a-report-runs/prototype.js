@@ -57,8 +57,8 @@
         },
         {
             id: 'rpt-2b7de915',
-            name: 'Liquidity Buffer Bonds',
-            short: 'LBB',
+            name: 'Bucketed DV01',
+            short: 'BDV',
             expression: '0 */2 * * *',
             jobId: 'sched.job.9e02b6d3',
             runs: 1204

@@ -49,15 +49,25 @@ journey's *What is missing*.
 
 A report is one of the report types the installation registers: =risk= and
 =grid=. Every definition the seed creates is of type =risk=, and the names a
-reader meets are the ones the seed writes: Group Consolidated Exposure, Group FX
-Hedges, Group Intercompany Loans, Liquidity Buffer Bonds, Large Exposures,
-Leverage Ratio, Liquidity Coverage, Board Risk Dashboard, Data Quality
-Completeness, System Health, Audit Trail Summary, Group Treasury, Headline
-Position and Sample bundle smoke test. The report page states the cycle a report
-serves, =intraday= or =eod=, and its frequency, =on-demand= or =scheduled=. Its
-audience is one of =trading-desk=, =market-risk=, =engineer= or =release check=.
-The definition row carries the report type and the schedule expression, which is
-what a screen can list; the cycle and the audience live on the report page.
+reader meets are the thirty-one the seed writes. They include Group Consolidated
+Exposure, Cross-Entity Counterparty Concentration, Intercompany Exposure Matrix,
+Large Exposures, Leverage Ratio, Liquidity Coverage, Board Risk Dashboard, Data
+Quality Completeness, System Health, Audit Trail Summary, Headline Position,
+SA-CCR Exposure, Intraday Risk Monitor, FRTB SA Capital, Stressed VaR,
+CVA/DVA/FVA, Bucketed DV01, Delta and Gamma, NPV, Exposure, Cashflows, Yield
+Curves, Volatility Surfaces and Credit Curves. A report page states the cycle a
+report serves, =intraday= or =eod=, and its frequency, =on-demand= or
+=scheduled=. Its audience is one of =trading-desk=, =market-risk=, =engineer= or
+=release check=. The definition row carries the report type and the schedule
+expression, which is what a screen can list; the cycle and the audience live on
+the report page.
+
+The analytics a report runs are not free choice either. A report configuration
+names a set of them, and the set is what the report's numbers come from: Headline
+Position runs =npv= and =sensitivity=, Board Risk Dashboard runs =npv=,
+=parametricVar= and =saccr=, Large Exposures runs =npv= and =saccr=, and
+Cashflows runs =cashflow=. A screen that shows a report's figures is showing
+those analytics' output and should name them.
 
 The names are not shared between parties. A definition is owned by one party,
 and the parties of a group run different reports; a reader at ACMCOR and a

@@ -39,8 +39,8 @@ A person authoring a tenor's resolution reads the date it produces before they w
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E6F83232-432D-42FC-9E6B-E930E85D7A40][Scaffold story: Test the tenor rule before saving it]] | STARTED | 2026-10-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:181B794B-BCCC-4ED3-BF27-A8035A35D8B1][Build the draft-rule resolve step]] | STARTED | 2026-10-17 | | Initial task for: Test the tenor rule before saving it |
+| [[id:E6F83232-432D-42FC-9E6B-E930E85D7A40][Scaffold story: Test the tenor rule before saving it]] | DONE | 2026-10-17 | 2026-10-17 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:181B794B-BCCC-4ED3-BF27-A8035A35D8B1][Build the draft-rule resolve step]] | DONE | 2026-10-17 | 2026-10-17 | Initial task for: Test the tenor rule before saving it |
 
 * Decisions
 

@@ -26,11 +26,11 @@ A person authoring a tenor's resolution reads the date it produces before they w
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:55C8F1C7-EAD5-4BAC-8465-8F613BB8408F][Test the tenor rule before saving it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -86,3 +86,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The tenor journey carries a test step between the schedule and the review.
+A person sets a horizon, an optional spot date and a calendar, and reads the
+date the draft resolves to: the anchor it counted from, the date before the
+roll, the adjusted date, the roll rule and the calendar. A refusal is drawn
+beside the dates it reached, naming the row at fault, and the form keeps
+every value it had.
+
+The step tests the draft and not the saved row, because that is the question
+a person authoring a rule is asking. It reaches it through
+=refdata.v1.ops.preview_tenor_resolution=, which takes the three rows whole
+and is served by the same =resolve_rows= as the stored path, so there is one
+implementation of the arithmetic and the step cannot resolve anything other
+than what the confirm would save.
+
+Verified end to end except for one thing, stated rather than glossed: no
+authenticated call was made from a browser against a live fleet. The step,
+the BFF route and the service are covered by tests on both sides of the wire,
+and the C++ suite that carries the preview cases passes.

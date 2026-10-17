@@ -181,9 +181,17 @@ auth_event_log::read_events(const context& ctx,
      * parameter, so the read has to name the cast. It goes through nullif
      * so the empty value stays the filter turned off -- casting the empty
      * string on its own raises instead of yielding null.
+     *
+     * event_time is rendered in UTC here, in the project's one wire shape.
+     * A bare timestamptz column carries the reading session's text
+     * rendering, which changes with its timezone; to_char at time zone 'UTC'
+     * states the microsecond and appends the Z that from_iso8601_utc
+     * requires. See doc/knowledge/architecture/time_architecture.org.
      */
     static const std::string sql =
-        "select id, event_time, tenant_id, account_id, event_type, username, "
+        "select id, "
+        "to_char(event_time at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z', "
+        "tenant_id, account_id, event_type, username, "
         "session_id, party_id, error_detail "
         "from ores_iam_auth_events_tbl "
         "where tenant_id = $1 "

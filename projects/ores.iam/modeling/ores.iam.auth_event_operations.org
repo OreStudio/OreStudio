@@ -33,6 +33,7 @@ no generated CRUD. The message shape here is the whole of its protocol.
 * Includes
 
 #+begin_src cpp :name includes
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -45,8 +46,10 @@ no generated CRUD. The message shape here is the whole of its protocol.
 /**
  * @brief One authentication event, as the log records it.
  *
- * The timestamps are ISO 8601 strings: that is the storage form, and the
- * screen reads them as text rather than as an instant.
+ * The event time is an instant, so it crosses the wire in the project's one
+ * timestamp shape: the rfl parser writes it with `to_iso8601_utc`, and the
+ * bytes do not depend on the timezone of the session that read the row. See
+ * =doc/knowledge/architecture/time_architecture.org=.
  */
 #+end_src
 
@@ -57,7 +60,7 @@ no generated CRUD. The message shape here is the whole of its protocol.
 
 *** event_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 *** account_id

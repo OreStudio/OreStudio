@@ -56,14 +56,6 @@ std::vector<ores::nats::service::subscription> register_configuration_document_h
         delete_curve_configuration_document_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->delete_curve_configuration_document(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        save_conventions_document_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->save_conventions_document(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        get_conventions_document_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->get_conventions_document(std::move(msg));
-        }));
     return subs;
 }
 

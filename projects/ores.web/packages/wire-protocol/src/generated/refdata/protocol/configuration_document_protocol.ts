@@ -231,53 +231,10 @@ export interface DeleteCurveConfigurationDocumentResponse {
     message: string;
 }
 
-/**
- * @brief Stores a conventions document.
- *
- * The instrument conventions belong to the session's party and replace any
- * it holds under the same id. A world convention the tenant lacks is added;
- * one it holds is left as it is.
- */
-export interface SaveConventionsDocumentRequest {
-    document: ConventionsDocument;
-}
-
-/**
- * @brief What the save did not store, and why.
- */
-export interface SaveConventionsDocumentResponse {
-    success: boolean;
-    message: string;
-    /** World conventions the tenant already held, left unchanged. */
-    world_kept: string[];
-    /** FX conventions, by ORE id, which have no store yet. */
-    fx_skipped: string[];
-}
-
-/**
- * @brief Reads every convention the party sees: its instrument conventions
- * and the tenant's world conventions.
- */
-export interface GetConventionsDocumentRequest {
-    /** When the session acts for no party, as a workflow step's does, the party whose rows to read. */
-    party_id: string;
-}
-
-/**
- * @brief The conventions the party sees.
- */
-export interface GetConventionsDocumentResponse {
-    success: boolean;
-    message: string;
-    document: ConventionsDocument;
-}
-
 export const subjects = {
     save_curve_configuration_document_request: 'refdata.v1.curve_configuration_documents.put',
     get_curve_configuration_document_request: 'refdata.v1.curve_configuration_documents.get',
     delete_curve_configuration_document_request: 'refdata.v1.curve_configuration_documents.delete',
-    save_conventions_document_request: 'refdata.v1.conventions_documents.put',
-    get_conventions_document_request: 'refdata.v1.conventions_documents.get',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -288,6 +245,4 @@ export const requiresSession = {
     save_curve_configuration_document_request: true,
     get_curve_configuration_document_request: true,
     delete_curve_configuration_document_request: true,
-    save_conventions_document_request: true,
-    get_conventions_document_request: true,
 } as const;

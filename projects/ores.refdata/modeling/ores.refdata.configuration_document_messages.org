@@ -2,7 +2,7 @@
 :ID: BB690F37-423E-4FBC-AC93-5F5577DF7B10
 :END:
 #+title: ores.refdata.configuration_document_messages
-#+description: Codegen operation model for the configuration documents refdata owns: save, get and delete a curve configuration document, and save and get the conventions.
+#+description: Codegen operation model for the configuration documents refdata owns: save, get and delete a curve configuration document. The conventions document type stays here for the ORE mapper, but its wire operations live in the conventions import model.
 #+type: ores.codegen.operation
 #+component: refdata
 #+subcomponent: api
@@ -14,9 +14,14 @@
 #+updated: 2026-10-04
 
 The configuration documents refdata owns, as operations: the curve
-configuration and the conventions. Another service reaches them only through
-these, never through refdata's tables. The handler stamps the session's party
-on every row it stores.
+configuration. Another service reaches it only through these, never through
+refdata's tables. The handler stamps the session's party on every row it
+stores.
+
+The conventions document type stays in this model because the ORE mapper
+builds it at the file boundary. It is not a message: the conventions import
+operations carry one family per stage, and no request or response carries the
+whole document.
 
 * Includes
 
@@ -579,110 +584,6 @@ on every row it stores.
 *** message
 :PROPERTIES:
 :cpp_type: std::string
-:END:
-
-** save_conventions_document_request
-:PROPERTIES:
-:subject: refdata.v1.conventions_documents.put
-:response: save_conventions_document_response
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief Stores a conventions document.
- *
- * The instrument conventions belong to the session's party and replace any
- * it holds under the same id. A world convention the tenant lacks is added;
- * one it holds is left as it is.
- */
-#+end_src
-
-*** document
-:PROPERTIES:
-:cpp_type: conventions_document
-:END:
-
-** save_conventions_document_response
-
-#+begin_src cpp :name comment
-/**
- * @brief What the save did not store, and why.
- */
-#+end_src
-
-*** success
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** message
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** world_kept
-:PROPERTIES:
-:cpp_type: std::vector<std::string>
-:END:
-
-#+begin_src cpp :name comment
-/** World conventions the tenant already held, left unchanged. */
-#+end_src
-
-*** fx_skipped
-:PROPERTIES:
-:cpp_type: std::vector<std::string>
-:END:
-
-#+begin_src cpp :name comment
-/** FX conventions, by ORE id, which have no store yet. */
-#+end_src
-
-** get_conventions_document_request
-:PROPERTIES:
-:subject: refdata.v1.conventions_documents.get
-:response: get_conventions_document_response
-:END:
-
-#+begin_src cpp :name comment
-/**
- * @brief Reads every convention the party sees: its instrument conventions
- * and the tenant's world conventions.
- */
-#+end_src
-
-*** party_id
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-#+begin_src cpp :name comment
-/** When the session acts for no party, as a workflow step's does, the party whose rows to read. */
-#+end_src
-
-** get_conventions_document_response
-
-#+begin_src cpp :name comment
-/**
- * @brief The conventions the party sees.
- */
-#+end_src
-
-*** success
-:PROPERTIES:
-:cpp_type: bool
-:default: false
-:END:
-
-*** message
-:PROPERTIES:
-:cpp_type: std::string
-:END:
-
-*** document
-:PROPERTIES:
-:cpp_type: conventions_document
 :END:
 
 * See also

@@ -50,10 +50,6 @@ std::vector<ores::nats::service::subscription> register_tenor_basis_swap_convent
     auto h = std::make_shared<tenor_basis_swap_convention_handler>(
         nats, std::move(ctx), std::move(verifier));
     subs.push_back(nats.queue_subscribe(
-        list_tenor_basis_swap_conventions_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->list_tenor_basis_swap_conventions(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
         get_tenor_basis_swap_convention_request::nats_subject,
         queue_group,
         [h](ores::nats::message msg) { h->get_tenor_basis_swap_convention(std::move(msg)); }));
@@ -73,28 +69,6 @@ std::vector<ores::nats::service::subscription> register_tenor_basis_swap_convent
                                             h->put_many_tenor_basis_swap_conventions(
                                                 std::move(msg));
                                         }));
-    subs.push_back(nats.queue_subscribe(
-        delete_tenor_basis_swap_convention_request::nats_subject,
-        queue_group,
-        [h](ores::nats::message msg) { h->delete_tenor_basis_swap_convention(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(delete_many_tenor_basis_swap_conventions_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) {
-                                 h->delete_many_tenor_basis_swap_conventions(std::move(msg));
-                             }));
-    subs.push_back(
-        nats.queue_subscribe(list_tenor_basis_swap_convention_versions_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) {
-                                 h->list_tenor_basis_swap_convention_versions(std::move(msg));
-                             }));
-    subs.push_back(
-        nats.queue_subscribe(get_tenor_basis_swap_convention_version_request::nats_subject,
-                             queue_group,
-                             [h](ores::nats::message msg) {
-                                 h->get_tenor_basis_swap_convention_version(std::move(msg));
-                             }));
     return subs;
 }
 

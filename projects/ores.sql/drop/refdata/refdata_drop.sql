@@ -183,8 +183,12 @@
 \ir ./refdata_cross_currency_basis_conventions_drop.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_notify_trigger_drop.sql
 \ir ./refdata_tenor_basis_two_swap_conventions_drop.sql
-\ir ./refdata_tenor_basis_swap_conventions_notify_trigger_drop.sql
-\ir ./refdata_tenor_basis_swap_conventions_drop.sql
+\ir ./refdata_tenor_basis_swap_pay_receives_notify_trigger_drop.sql
+\ir ./refdata_tenor_basis_swap_pay_receives_drop.sql
+\ir ./refdata_tenor_basis_swap_long_shorts_notify_trigger_drop.sql
+\ir ./refdata_tenor_basis_swap_long_shorts_drop.sql
+\ir ./refdata_conventions_notify_trigger_drop.sql
+\ir ./refdata_conventions_drop.sql
 \ir ./refdata_zero_conventions_notify_trigger_drop.sql
 \ir ./refdata_zero_conventions_drop.sql
 \ir ./refdata_deposit_conventions_notify_trigger_drop.sql
@@ -352,6 +356,8 @@
 \ir ./refdata_monetary_natures_drop.sql
 \ir ./refdata_rounding_types_notify_trigger_drop.sql
 \ir ./refdata_rounding_types_drop.sql
+\ir ./refdata_convention_kinds_notify_trigger_drop.sql
+\ir ./refdata_convention_kinds_drop.sql
 
 -- Calendar-date materialisation (depends on calendars; drop before it)
 \ir ./refdata_calendar_date_drop.sql

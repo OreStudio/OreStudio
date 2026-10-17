@@ -2824,6 +2824,26 @@ const pt: SourceCatalogue = {
                 empty: 'Nenhum eixo de calendário é servido.',
                 inUse: 'Em uso por um prazo aqui',
             },
+            test: {
+                title: 'Teste',
+                lead: 'Resolva a regra tal como o formulário a apresenta, antes de guardar.',
+                note: 'O servidor resolve o rascunho que escreveu, não a linha que detém. Nada é escrito.',
+                open: 'Abra ou comece primeiro um prazo ou uma convenção.',
+                horizon: 'Data de horizonte',
+                spot: 'Data de spot',
+                spotHint: 'Deixe em branco se a convenção não se mede a partir do spot.',
+                calendar: 'Calendário',
+                calendarNone: 'Sem calendário',
+                run: 'Resolver o rascunho',
+                failed: 'A regra não pôde ser resolvida. {message}',
+                refused: 'O servidor recusou a regra.',
+                resolved: 'A regra resolve para esta data.',
+                atFault: 'Em causa:',
+                anchor: 'Data de âncora',
+                beforeRoll: 'Data antes do reporte',
+                adjusted: 'Data ajustada',
+                rollRule: 'Regra de reporte',
+            },
             review: {
                 title: 'Revisão',
                 lead: 'Nada é escrito antes de confirmar.',
@@ -3256,6 +3276,9 @@ const pt: SourceCatalogue = {
         'Load the staff': 'Carregar o pessoal',
         'Creates an account for each person the starting point lists, each in its own party.':
             'Cria uma conta para cada pessoa que o ponto de partida lista, cada uma na sua própria entidade.',
+        'Set the staff passwords': 'Definir as palavras-passe do pessoal',
+        "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.":
+            'Define a palavra-passe de cada conta do pessoal através da API de palavra-passe do servidor, para que o pessoal do inquilino de demonstração possa iniciar sessão.',
         'Attach the photographs': 'Anexar as fotografias',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             'Dá as fotografias às contas e o logótipo à entidade do inquilino.',

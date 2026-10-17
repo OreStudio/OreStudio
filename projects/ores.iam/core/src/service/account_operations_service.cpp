@@ -868,7 +868,7 @@ std::string account_operations_service::reset_password(const boost::uuids::uuid&
     if (existing && !existing->password_hash.get().empty() &&
         crypto::password_hasher::verify(new_password, existing->password_hash.get())) {
         BOOST_LOG_SEV(lg(), debug) << "New password matches current password";
-        return "New password must be different from current password";
+        return std::string(password_unchanged_message);
     }
 
     // A password change is a credential write and nothing else. The account

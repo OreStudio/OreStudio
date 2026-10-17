@@ -136,14 +136,17 @@ begin
             current_timestamp, ores_utility_infinity_timestamp_fn()
         );
 
-        -- The staged hash is the one credential the import carries, and it
-        -- belongs in the account's credential row rather than on the account.
+        -- An account published without staged material gets no password hash
+        -- rather than an empty one: the credential row still exists, and the
+        -- provisioning step that follows sets the account's password through
+        -- the server's own API.
         insert into ores_iam_account_credentials_tbl (
             id, tenant_id, version, account_id, password_hash,
             modified_by, performed_by, change_reason_code, change_commentary,
             valid_from, valid_to
         ) values (
-            gen_random_uuid(), p_target_tenant_id, 0, v_account_id, r.password_hash,
+            gen_random_uuid(), p_target_tenant_id, 0, v_account_id,
+            nullif(r.password_hash, ''),
             coalesce(ores_iam_current_service_fn(), current_user), current_user,
             'system.external_data_import', 'Published from organisation dataset',
             current_timestamp, ores_utility_infinity_timestamp_fn()

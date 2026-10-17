@@ -419,22 +419,6 @@ KINDS = {
         ("Conventions", "conventions", "text"),
         ("FixingCalendar", "fixing_calendar", "text"),
     ]),
-    "TenorBasisSwap": ("tenor_basis_swap", [
-        ("PayIndex", "pay_index", "text"),
-        ("PayFrequency", "pay_frequency", "text"),
-        ("ReceiveIndex", "receive_index", "text"),
-        ("ReceiveFrequency", "receive_frequency", "text"),
-        ("SpreadOnRec", "spread_on_rec", "bool"),
-        ("IncludeSpread", "include_spread", "bool"),
-        ("SubPeriodsCouponType", "sub_periods_coupon_type", "text"),
-        ("PayIsAveraged", "pay_is_averaged", "bool"),
-        ("RecIsAveraged", "rec_is_averaged", "bool"),
-        ("LongIndex", "long_index", "text"),
-        ("LongPayTenor", "long_pay_tenor", "text"),
-        ("ShortIndex", "short_index", "text"),
-        ("ShortPayTenor", "short_pay_tenor", "text"),
-        ("SpreadOnShort", "spread_on_short", "bool"),
-    ]),
     "TenorBasisTwoSwap": ("tenor_basis_two_swap", [
         ("Calendar", "calendar", "text"),
         ("LongFixedFrequency", "long_fixed_frequency", "frequency"),
@@ -478,6 +462,50 @@ CUT_KINDS = {
           "task of its own.",
 }
 
+# Kinds whose live shape is a composite: one canonical entry becomes a central
+# convention row plus one row in exactly one of the kind's part tables. Each
+# live table gets its own artefact table, and a part names the central row by
+# its name and kind rather than by a uuid, because the uuid is made by the
+# publish. The form is the mapper's choice: a row that carries PayIndex or
+# ReceiveIndex is the paying and receiving form, every other row is the long
+# and short form.
+COMPOSITE_KINDS = {
+    "TenorBasisSwap": {
+        "kind_code": "TENOR_BASIS_SWAP",
+        "central_table": "ores_dq_conventions_artefact_tbl",
+        "parts": {
+            "pay_receive": {
+                "table":
+                    "ores_dq_tenor_basis_swap_pay_receives_artefact_tbl",
+                "mapping": [
+                    ("PayIndex", "pay_index", "text"),
+                    ("PayFrequency", "pay_frequency", "text"),
+                    ("ReceiveIndex", "receive_index", "text"),
+                    ("ReceiveFrequency", "receive_frequency", "text"),
+                    ("SpreadOnRec", "spread_on_rec", "bool"),
+                    ("IncludeSpread", "include_spread", "bool"),
+                    ("SubPeriodsCouponType", "sub_periods_coupon_type", "text"),
+                    ("PayIsAveraged", "pay_is_averaged", "bool"),
+                    ("RecIsAveraged", "rec_is_averaged", "bool"),
+                ],
+            },
+            "long_short": {
+                "table":
+                    "ores_dq_tenor_basis_swap_long_shorts_artefact_tbl",
+                "mapping": [
+                    ("LongIndex", "long_index", "text"),
+                    ("LongPayTenor", "long_pay_tenor", "text"),
+                    ("ShortIndex", "short_index", "text"),
+                    ("ShortPayTenor", "short_pay_tenor", "text"),
+                    ("SpreadOnShort", "spread_on_short", "bool"),
+                    ("IncludeSpread", "include_spread", "bool"),
+                    ("SubPeriodsCouponType", "sub_periods_coupon_type", "text"),
+                ],
+            },
+        },
+    },
+}
+
 # Columns that are world data: the live table has no party_id.
 WORLD_KINDS = {"ibor_index", "overnight_index"}
 
@@ -501,7 +529,9 @@ INDEX_KINDS = ("IborIndex", "OvernightIndex", "ZeroInflationIndex", "SwapIndex")
 # The field a row's single oresmd_uri is written from, in priority order, when
 # the kind does not define the index in its id. The model doc string names the
 # same field. A kind absent here names no index, so its rows carry no URI: it is
-# a requirement, per the model doc string.
+# a requirement, per the model doc string. An atomised kind is not a flat row
+# and is not listed here: its central row stages no URI, because the kind names
+# two indices and the column holds the URI of a kind that names one.
 PRIMARY_INDEX = {
     "AverageOIS": ("Index",),
     "BMABasisSwap": ("Index", "BMAIndex"),
@@ -514,7 +544,6 @@ PRIMARY_INDEX = {
     "InflationSwap": ("Index",),
     "OIS": ("Index",),
     "Swap": ("Index",),
-    "TenorBasisSwap": ("PayIndex", "ReceiveIndex", "LongIndex", "ShortIndex"),
     "TenorBasisTwoSwap": ("LongIndex", "ShortIndex"),
 }
 
@@ -560,7 +589,7 @@ def check_index_references(rows, index_map):
     missing = {}
     for row in rows:
         kind = row["kind"]
-        if kind not in KINDS:
+        if kind not in KINDS and kind not in COMPOSITE_KINDS:
             continue
         fields = parse_signature(row["signature"])
         for name in referenced_index_names(kind, row["id"], fields):
@@ -763,6 +792,67 @@ def build_rows(rows, kind, spec, index_map):
     return out
 
 
+def build_composite_rows(rows, kind):
+    """Return the staging blocks an atomised convention kind seeds.
+
+    One canonical entry stages a central convention row and one row in exactly
+    one of the kind's part tables. The part names the central row by the
+    convention's name and kind, never by a uuid: the uuid is made by the
+    publish, and the kind is part of the central identity.
+
+    The central row stages no oresmd_uri. The column holds the URI of a kind
+    that names one index, and an atomised kind names two: PayIndex and
+    ReceiveIndex, or LongIndex and ShortIndex. The live write path leaves the
+    column null for every kind, so staging null here keeps the corpus and the
+    store in agreement.
+    """
+    spec = COMPOSITE_KINDS[kind]
+    kind_code = sql_literal(spec["kind_code"])
+    blocks = {
+        "central": {
+            "table": spec["central_table"],
+            "columns": ["dataset_id", "tenant_id", "kind_code", "name",
+                        "oresmd_uri"],
+            "rows": [],
+            "guard": f" and kind_code = {kind_code}",
+            "label": f"{kind} central",
+        },
+    }
+    for part, part_spec in spec["parts"].items():
+        blocks[part] = {
+            "table": part_spec["table"],
+            "columns": ["dataset_id", "tenant_id", "convention_name",
+                        "kind_code"]
+                       + [c for _, c, _ in part_spec["mapping"]],
+            "rows": [],
+            "guard": "",
+            "label": f"{kind} {part.replace('_', ' ')}",
+        }
+
+    for row in rows:
+        if row["kind"] != kind:
+            continue
+        fields = parse_signature(row["signature"])
+        name = sql_literal(row["id"])
+        blocks["central"]["rows"].append(
+            ["v_dataset_id", "v_tenant_id", kind_code, name, "null"])
+
+        pay_receive = (fields.get("PayIndex", "").strip()
+                       or fields.get("ReceiveIndex", "").strip())
+        part = "pay_receive" if pay_receive else "long_short"
+        part_spec = spec["parts"][part]
+        cells = ["v_dataset_id", "v_tenant_id", name, kind_code]
+        for field, column, ptype in part_spec["mapping"]:
+            if field not in fields:
+                cells.append("null")
+                continue
+            raw = fields[field]
+            parsed = raw if ptype == "text" else PARSERS[ptype](kind, field, raw)
+            cells.append(sql_literal(parsed))
+        blocks[part]["rows"].append(cells)
+    return list(blocks.values())
+
+
 def all_referenced_index_names(rows):
     """Every index name the seeded kinds reference, sorted and unique.
 
@@ -772,7 +862,7 @@ def all_referenced_index_names(rows):
     names = set()
     for row in rows:
         kind = row["kind"]
-        if kind not in KINDS:
+        if kind not in KINDS and kind not in COMPOSITE_KINDS:
             continue
         fields = parse_signature(row["signature"])
         names |= referenced_index_names(kind, row["id"], fields)
@@ -787,19 +877,38 @@ def read_canonical_rows(tsv_path):
 def generate(tsv_path, index_map_path=DEFAULT_MAP):
     rows = read_canonical_rows(tsv_path)
     kinds = sorted({r["kind"] for r in rows})
-    unknown = [k for k in kinds if k not in KINDS and k not in CUT_KINDS]
+    unknown = [k for k in kinds
+               if k not in KINDS and k not in COMPOSITE_KINDS
+               and k not in CUT_KINDS]
     if unknown:
         raise GenError(
             "kinds with no mapping: " + ", ".join(unknown)
-            + "; add them to KINDS or CUT_KINDS in generate_dq_seed.py")
+            + "; add them to KINDS, COMPOSITE_KINDS or CUT_KINDS in "
+            "generate_dq_seed.py")
 
     index_map = load_index_map(index_map_path)
     check_index_references(rows, index_map)
 
-    seeded = [k for k in kinds if k in KINDS]
+    seeded = [k for k in kinds if k in KINDS or k in COMPOSITE_KINDS]
     seeded.sort()
-    per_kind = {k: build_rows(rows, k, KINDS[k], index_map) for k in seeded}
+    per_kind = {}
+    for k in seeded:
+        if k in COMPOSITE_KINDS:
+            per_kind[k] = build_composite_rows(rows, k)
+        else:
+            per_kind[k] = build_rows(rows, k, KINDS[k], index_map)
     return seeded, per_kind
+
+
+def count_rows(per_kind):
+    """The number of artefact rows the seed writes, across every block."""
+    total = 0
+    for kind, value in per_kind.items():
+        if kind in COMPOSITE_KINDS:
+            total += sum(len(block["rows"]) for block in value)
+        else:
+            total += len(value)
+    return total
 
 
 HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
@@ -829,14 +938,95 @@ HEADER = """/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*
 --   ./projects/ores.codegen/venv/bin/python tools/ore_conventions/generate_dq_seed.py
 --
 -- The single ore.conventions dataset carries the one canonical instrument
--- convention set. One artefact table per convention kind holds the rows; the
--- publish function ores_refdata_publish_conventions_from_dq_fn resolves each
--- artefact table to its live table by name. Each row's oresmd_uri is the oresmd
--- fixing URI of the ORE index the row names, read from
+-- convention set. One artefact table per live convention table holds the rows;
+-- the publish function ores_refdata_publish_conventions_from_dq_fn resolves
+-- each artefact table to its live table by name. The atomised tenor basis swap
+-- stages into the central convention artefact table and its two part artefact
+-- tables. Each block is seeded only when its own table holds no rows for the
+-- dataset, so a block added later still seeds. Each flat row's oresmd_uri is
+-- the oresmd fixing URI of the ORE index the row names, read from
 -- tools/ore_conventions/oresmd_index_map.tsv; a kind that names no index (a
--- requirement) carries null.
+-- requirement) carries null. The atomised convention's central row stages
+-- null, because the kind names two indices and the live write path leaves the
+-- column null.
 
 """
+
+
+# Columns a flat kind contributes only through its nested decoder.
+NESTED_COLUMNS = {
+    "CommodityFuture": [
+        "valid_contract_months", "anchor_day_of_month",
+        "anchor_calendar_days_before", "anchor_business_days_after",
+        "anchor_nth_nth", "anchor_nth_weekday", "anchor_last_weekday",
+        "anchor_weekly_day_of_the_week", "off_peak_index", "peak_index",
+        "off_peak_hours", "peak_calendar",
+        "averaging_commodity_name", "averaging_period",
+        "averaging_pricing_calendar", "averaging_conventions",
+        "averaging_use_business_days", "averaging_delivery_roll_days",
+        "averaging_future_month_offset", "averaging_daily_expiry_offset",
+        "prohibited_expiries", "future_continuation_mappings",
+        "option_continuation_mappings",
+    ],
+    "IntradayPowerLoad": ["explicit_load_profile", "business_day_load_rules"],
+}
+
+
+def _flat_block(kind, rows):
+    """The one staging block a flat convention kind seeds."""
+    stem, mapping = KINDS[kind]
+    party = stem not in WORLD_KINDS
+    base = ["dataset_id", "tenant_id", "id", "version"]
+    if party:
+        base.append("party_id")
+    columns = base + [c for _, c, _ in mapping]
+    for c in NESTED_COLUMNS.get(kind, []):
+        if c not in columns:
+            columns.append(c)
+    if "oresmd_uri" not in columns:
+        columns.append("oresmd_uri")
+
+    tuples = []
+    for _, values, _ in rows:
+        cells = ["v_dataset_id", "v_tenant_id", values["id"], "1"]
+        if party:
+            cells.append("v_party_id")
+        for c in columns[len(base):]:
+            cells.append(values.get(c, "null"))
+        tuples.append(cells)
+    return {
+        "table": f"ores_dq_{stem}_conventions_artefact_tbl",
+        "columns": columns,
+        "rows": tuples,
+        "guard": "",
+        "label": kind,
+    }
+
+
+def _emit_block(out, block):
+    """Emit one idempotent insert.
+
+    Every block guards itself instead of the seed guarding the whole dataset on
+    one table. A block added to the generator after the dataset was first
+    seeded must still seed, and an early return on the first table would skip
+    it forever. A block whose table is shared by several kinds guards on the
+    kind as well, so a new kind's rows are not skipped when an earlier kind
+    already filled that table.
+    """
+    rows = block["rows"]
+    if not rows:
+        return
+    out.append(f"\n    -- {block['label']}: {len(rows)} rows\n")
+    out.append(
+        f"    if not exists (\n"
+        f"        select 1 from {block['table']}\n"
+        f"        where dataset_id = v_dataset_id{block['guard']}\n"
+        f"    ) then\n")
+    out.append(f"        insert into {block['table']} (\n            "
+               + ", ".join(block["columns"]) + "\n        ) values\n")
+    out.append(",\n".join(
+        "            (" + ", ".join(cells) + ")" for cells in rows))
+    out.append(";\n    end if;\n")
 
 
 def render(seeded, per_kind):
@@ -876,8 +1066,11 @@ do $$
 declare
     v_dataset_id uuid;
     v_tenant_id uuid := ores_utility_system_tenant_id_fn();
-    -- The live tables take their party from the publish, not from the artefact.
-    -- The artefact's party_id is a placeholder for its not-null constraint.
+    -- The live convention tables take their party from the publish, not from
+    -- the artefact. The flat artefact tables carry a placeholder party_id for
+    -- their not-null constraint. The atomised convention stages no party at
+    -- all: its central row and its parts are written for the party the
+    -- publish names.
     v_party_id uuid := ores_utility_nil_uuid_fn();
 begin
     select id into v_dataset_id
@@ -889,61 +1082,14 @@ begin
     if v_dataset_id is null then
         raise exception 'Dataset not found: ore.conventions';
     end if;
-
-    if exists (
-        select 1 from ores_dq_fra_conventions_artefact_tbl
-        where dataset_id = v_dataset_id
-    ) then
-        raise debug 'Conventions artefact already populated for dataset %', v_dataset_id;
-        return;
-    end if;
 """)
 
     for kind in seeded:
-        stem, mapping = KINDS[kind]
-        table = f"ores_dq_{stem}_conventions_artefact_tbl"
-        party = stem not in WORLD_KINDS
-        base = ["dataset_id", "tenant_id", "id", "version"]
-        if party:
-            base.append("party_id")
-        columns = base + [c for _, c, _ in mapping]
-        # Columns contributed only by the nested decoder.
-        nested_cols = {
-            "CommodityFuture": [
-                "valid_contract_months", "anchor_day_of_month",
-                "anchor_calendar_days_before", "anchor_business_days_after",
-                "anchor_nth_nth", "anchor_nth_weekday", "anchor_last_weekday",
-                "anchor_weekly_day_of_the_week", "off_peak_index", "peak_index",
-                "off_peak_hours", "peak_calendar",
-                "averaging_commodity_name", "averaging_period",
-                "averaging_pricing_calendar", "averaging_conventions",
-                "averaging_use_business_days", "averaging_delivery_roll_days",
-                "averaging_future_month_offset", "averaging_daily_expiry_offset",
-                "prohibited_expiries", "future_continuation_mappings",
-                "option_continuation_mappings",
-            ],
-            "IntradayPowerLoad": ["explicit_load_profile", "business_day_load_rules"],
-        }.get(kind, [])
-        for c in nested_cols:
-            if c not in columns:
-                columns.append(c)
-        if "oresmd_uri" not in columns:
-            columns.append("oresmd_uri")
-
-        rows = per_kind[kind]
-        out.append(f"\n    -- {kind}: {len(rows)} rows\n")
-        out.append(f"    insert into {table} (\n        "
-                   + ", ".join(columns) + "\n    ) values\n")
-        tuples = []
-        for _, values, _ in rows:
-            cells = [f"v_dataset_id", f"v_tenant_id", values["id"], "1"]
-            if party:
-                cells.append("v_party_id")
-            for c in columns[len(base):]:
-                cells.append(values.get(c, "null"))
-            tuples.append("        (" + ", ".join(cells) + ")")
-        out.append(",\n".join(tuples))
-        out.append(";\n")
+        if kind in COMPOSITE_KINDS:
+            for block in per_kind[kind]:
+                _emit_block(out, block)
+        else:
+            _emit_block(out, _flat_block(kind, per_kind[kind]))
 
     out.append("end $$;\n")
     return "".join(out)
@@ -980,7 +1126,7 @@ def main(argv=None):
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
-    total = sum(len(v) for v in per_kind.values())
+    total = count_rows(per_kind)
     Path(args.out).write_text(render(seeded, per_kind), encoding="utf-8")
     print(f"wrote {args.out}: kinds={len(seeded)} rows={total}")
     return 0

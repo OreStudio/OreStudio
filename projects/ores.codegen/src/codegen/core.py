@@ -51,6 +51,7 @@ _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.service_registry":  "service_registry",
     "ores.codegen.dataset":           "dataset",
     "ores.codegen.operation":         "operation",
+    "ores.codegen.family":            "family",
     "ores.codegen.asset_class_catalogue": "asset_class_catalogue",
     "ores.codegen.trade_type_catalogue": "trade_type_catalogue",
     "ores.codegen.outcome_catalogue": "outcome_catalogue",
@@ -647,7 +648,8 @@ def get_model_type(model_filename, model_path=None):
 
     Returns:
         str: The model type ('domain_entity', 'junction', 'enum', 'schema',
-             'component', 'field_group', 'service_registry', or 'unknown')
+             'component', 'field_group', 'service_registry', 'operation',
+             'family', or 'unknown')
 
     Raises:
         ValueError: if the file contains a #+type: header with an unrecognised value.
@@ -827,6 +829,18 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{entity_plural}', junction_name)
         result = result.replace('{shell_menu}',
                                 shell_menu_name('junction', model_data))
+
+    elif model_type == 'family' and 'family' in model_data:
+        family = model_data['family']
+        path_vars = _component_path_vars(family)
+        entity_singular = family.get('entity_singular', 'unknown')
+        entity_plural = family.get('entity_plural', entity_singular + 's')
+
+        for placeholder, value in path_vars.items():
+            result = result.replace('{' + placeholder + '}', value)
+        result = result.replace('{entity_plural}', entity_plural)
+        result = result.replace('{entity}', entity_singular)
+        result = result.replace('{EntityPascal}', snake_to_pascal(entity_singular))
 
     elif model_type == 'field_group' and 'field_group' in model_data:
         fg = model_data['field_group']
@@ -1194,6 +1208,7 @@ def load_model(model_path):
             load_org_component_overview_model,
             load_org_dataset_model,
             load_org_operation_model,
+            load_org_family_model,
             load_org_asset_class_catalogue_model,
             load_org_trade_type_catalogue_model,
             load_org_outcome_catalogue_model,
@@ -1218,6 +1233,8 @@ def load_model(model_path):
             return load_org_model(model_path)
         if org_type == 'operation':
             return load_org_operation_model(model_path)
+        if org_type == 'family':
+            return load_org_family_model(model_path)
         if org_type == 'asset_class_catalogue':
             return load_org_asset_class_catalogue_model(model_path)
         if org_type == 'trade_type_catalogue':
@@ -2426,6 +2443,46 @@ def _service_include_gates(entity: dict[str, Any]) -> dict[str, bool]:
     }
 
 
+def _and_list(names: list[str]) -> str:
+    """Join column names as an English list: 'a', 'a and b', 'a, b and c'."""
+    if len(names) <= 1:
+        return names[0] if names else ''
+    return ', '.join(names[:-1]) + ' and ' + names[-1]
+
+
+def _prepare_finder_render(finder: dict[str, Any]) -> None:
+    """Precompute the C++ fragments a finder's templates state.
+
+    A finder addresses a row by a parent column (optional) and one or more
+    code columns. Joining the parameter list, the where clause and the log
+    expression here is the same shape a compound primary key already uses,
+    so a composite finder renders through the one template as a
+    single-column one. Called on every entry of ``key_finders`` and on
+    ``service_find_by_code``; both are stated once, from the model's finder
+    flags.
+
+    A prefixed ``service_`` field is the service surface's, which types the
+    parent as a uuid and the code columns as text.
+    """
+    columns = list(finder.get('columns')
+                   or ([finder['column']] if finder.get('column') else []))
+    parent = finder.get('parent_column')
+    keys = ([parent] if parent else []) + columns
+    finder['params'] = ', '.join(f'const std::string& {c}' for c in keys)
+    finder['where_and'] = ' && '.join(f'"{c}"_c == {c}' for c in keys)
+    finder['log_label'] = '/'.join(keys)
+    finder['log_fields'] = ' << "/" << '.join(keys)
+    finder['columns_label'] = '/'.join(columns)
+    finder['key_label'] = _and_list(keys)
+    finder['key_tail'] = _and_list(columns)
+    finder['key_noun'] = {2: 'pair', 3: 'triple'}.get(len(keys), 'key')
+    finder['service_params'] = ', '.join(
+        f'const boost::uuids::uuid& {c}' if c == parent
+        else f'const std::string& {c}' for c in keys)
+    finder['service_call_args'] = ', '.join(
+        f'boost::uuids::to_string({c})' if c == parent else c for c in keys)
+
+
 def _key_as_text(expression: str, column: dict[str, Any]) -> str:
     """One key column's value in the text form a key parameter takes it in.
 
@@ -2627,6 +2684,217 @@ def shell_command_surface(projects_dir, component):
     return enabled, local_units
 
 
+# The templates whose body reads the composite family's service view. The
+# protocol twins read the family records alone, so the view is built only for
+# the templates that state a service method, a handler dispatch or a
+# subscription -- and a family whose central row is outside the shape the
+# service can render still generates its protocol.
+_FAMILY_SERVICE_TEMPLATES = frozenset({
+    "cpp_service.hpp.mustache",
+    "cpp_service.cpp.mustache",
+    "cpp_nats_handler.hpp.mustache",
+    "cpp_nats_registrar.hpp.mustache",
+    "cpp_nats_registrar.cpp.mustache",
+})
+
+
+def _family_text_expr(expression: str, column: dict[str, Any]) -> str:
+    """One key column's value in the text form a key parameter takes it in.
+
+    The part repositories take every key parameter as text, so a member of any
+    other type converts here. The raw entity model a family names carries its
+    columns with ``type``/``cpp_type`` rather than the enriched flags the
+    entity templates read, so this reads the raw spelling.
+    """
+    if (column.get("type") == "uuid"
+            or "boost::uuids::uuid" in (column.get("cpp_type") or "")):
+        return f"boost::uuids::to_string({expression})"
+    if (column.get("type") in ("timestamp", "timestamptz",
+                               "timestamp with time zone")
+            or "time_point" in (column.get("cpp_type") or "")):
+        return f"ores::platform::time::datetime::to_db_string({expression})"
+    if (column.get("cpp_type") or "") in _NUMERIC_CPP_TYPES:
+        return f"std::to_string({expression})"
+    return expression
+
+
+def _family_entity_view(model, role, owner):
+    """The facts the family service reads for one central row or part.
+
+    Deliberately a subset of the entity enrichment. The family service
+    addresses a row by exactly one key column, builds flat domain objects from
+    the write records and reads a part by its parent, so a model outside that
+    shape is refused here rather than rendered into code that cannot work.
+    """
+    from .org_loader import (  # deferred to avoid a circular import
+        _column_name,
+        declared_key_field,
+        key_is_primary,
+        key_record_fields,
+        write_record_columns,
+        write_record_for,
+    )
+    entity = model.get("entity_singular", "")
+    component = model.get("component", "")
+    sql = model.get("sql") or {}
+    current_state = bool(sql.get("current_state"))
+    has_audit = not sql.get("no_audit_columns", False) and not current_state
+    if model.get("domain_groups"):
+        raise ValueError(
+            f"{owner}: the {role} '{entity}' is a grouped entity; the composite "
+            f"family service writes flat domain objects")
+    primary_key = model.get("primary_key") or {}
+    columns = primary_key.get("columns") or []
+    if len(columns) != 1:
+        raise ValueError(
+            f"{owner}: the {role} '{entity}' has {len(columns)} primary-key "
+            f"columns; the composite family service addresses a row by one key "
+            f"column")
+    pk = columns[0]
+    pk_column = _column_name(pk)
+    pk_cpp = pk.get("cpp_type") or (
+        "boost::uuids::uuid" if pk.get("type") == "uuid" else "std::string")
+    pk_is_uuid = (pk.get("type") == "uuid"
+                  or "boost::uuids::uuid" in pk_cpp)
+    pk_member = (pk.get("group_prefix") or "") + pk_column
+
+    key_fields = key_record_fields(model)
+    key_field = key_fields[0] if key_fields else {
+        "name": pk_column, "cpp_type": pk_cpp}
+    declared = declared_key_field(model)
+    by_primary = key_is_primary(model) or not declared
+    if by_primary:
+        read_method = "read_latest"
+        read_key_expr = _family_text_expr(f"key.{key_field['name']}", pk)
+        key_member = pk_member
+    else:
+        declared_column = next(
+            (column for column in write_record_columns(model)
+             if _column_name(column) == declared),
+            {"type": "text", "cpp_type": "std::string"})
+        read_method = f"read_latest_by_{declared}"
+        read_key_expr = _family_text_expr(f"key.{declared}", declared_column)
+        key_member = (declared_column.get("group_prefix") or "") + declared
+
+    write_fields = write_record_for(model)
+    model["write_fields"] = write_fields
+    _prepare_enum_write_fields(model)
+    _prepare_date_write_fields(model)
+
+    return {
+        "entity": entity,
+        "entity_plural": model.get("entity_plural", entity + "s"),
+        "domain": f"ores::{component}::domain::{entity}",
+        "key_record": f"{entity}_key",
+        "write_record": f"{entity}_write",
+        "change_record": f"{entity}_change",
+        "key_fields": key_fields,
+        "key_field": key_field,
+        "key_is_primary": by_primary,
+        "declared_key": declared or pk_column,
+        "read_method": read_method,
+        "read_key_expr": read_key_expr,
+        "key_member": key_member,
+        "pk_column": pk_column,
+        "pk_member": pk_member,
+        "pk_cpp_type": pk_cpp,
+        "pk_is_uuid": pk_is_uuid,
+        "pk_text_expr": _family_text_expr(f"row.{pk_member}", pk),
+        "write_fields": write_fields,
+        "has_audit_columns": has_audit,
+        "has_party_id": "party_id" in _declared_columns(model),
+        "version_member": "version" if has_audit else pk_column,
+        "commentary_member": "change_commentary" if has_audit else "",
+    }
+
+
+def _family_service_view(family, model_path):
+    """Derive the family's service operations and per-entity facts.
+
+    A family read needs the central entity's read code and a family write its
+    write code, so the permission prefix is the central row's own, not the
+    family's -- a family is not a resource anyone was granted.
+    """
+    from .org_loader import (  # deferred to avoid a circular import
+        _column_name,
+        _family_entity_model,
+        operations_by_verb,
+        protocol_operations,
+        write_record_columns,
+    )
+    owner = family.get("entity_singular") or Path(model_path).name
+    model_dir = Path(model_path).resolve().parent
+    central_entity = family.get("central_entity", "")
+    _, central_model = _family_entity_model(model_dir, central_entity, owner)
+    central = _family_entity_view(central_model, "central row", owner)
+    family["central"] = central
+
+    for part in family.get("parts") or []:
+        _, part_model = _family_entity_model(model_dir, part["entity"], owner)
+        view = _family_entity_view(
+            part_model, f"part '{part['part']}'", owner)
+        foreign_key = next(
+            (fk for fk in (part_model.get("foreign_keys") or [])
+             if fk.get("parent_entity") == central_entity),
+            None)
+        if foreign_key is None:
+            raise ValueError(
+                f"{owner}: the part '{part['part']}' ({part['entity']}) has no "
+                f"foreign key whose :parent_entity: is '{central_entity}'")
+        fk_column = foreign_key.get("column", "")
+        fk_dict = next(
+            (column for column in write_record_columns(part_model)
+             if _column_name(column) == fk_column),
+            {"type": "uuid", "cpp_type": "boost::uuids::uuid"})
+        fk_is_uuid = (fk_dict.get("type") == "uuid"
+                      or "boost::uuids::uuid" in (fk_dict.get("cpp_type") or ""))
+        if fk_is_uuid and not central["pk_is_uuid"]:
+            raise ValueError(
+                f"{owner}: the part '{part['part']}' foreign key '{fk_column}' "
+                f"is a uuid but the central key is not; the family service "
+                f"cannot join them")
+        # The repository takes every key parameter as text, so the parent id
+        # converts here whatever the column's own type is. The uuid overload on
+        # the service is a service-level spelling, not a repository one.
+        if central["pk_is_uuid"]:
+            fk_read_expr = (
+                f"boost::uuids::to_string(central.{central['pk_member']})")
+        elif central["pk_cpp_type"] in _NUMERIC_CPP_TYPES:
+            fk_read_expr = f"std::to_string(central.{central['pk_member']})"
+        else:
+            fk_read_expr = f"central.{central['pk_member']}"
+        fk_assign_expr = (
+            f"central.{central['pk_member']}" if fk_is_uuid else fk_read_expr)
+        view.update({
+            "part": part["part"],
+            "fk_column": fk_column,
+            "fk_member": (fk_dict.get("group_prefix") or "") + fk_column,
+            "fk_is_uuid": fk_is_uuid,
+            "fk_list_by_uuid": bool(foreign_key.get("list_by_uuid")) and fk_is_uuid,
+            "fk_read_expr": fk_read_expr,
+            "fk_assign_expr": fk_assign_expr,
+            # A part and the central row both carrying the owning party is the
+            # rule, not a hard-coded member name: the part's policy reads its
+            # own column, so the write copies the central row's value when
+            # both declare one.
+            "copy_party_id": central["has_party_id"] and view["has_party_id"],
+        })
+        part.update(view)
+
+    operations = protocol_operations(family.get("messages") or [], frozenset())
+    permission_prefix = f"{family.get('component', '')}::{central['entity_plural']}"
+    for operation in operations:
+        operation["permission_code"] = (
+            f"{permission_prefix}:{operation['permission']}")
+    family["operations"] = operations
+    for verb, verb_operations in operations_by_verb(operations).items():
+        family[f"{verb}_operations"] = verb_operations
+    family["permission_prefix"] = permission_prefix
+    family["entity_singular_words"] = family.get("entity_singular", "").replace("_", " ")
+    family["entity_plural_words"] = family.get("entity_plural", "").replace("_", " ")
+    return family
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None, extra_model_paths=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -2702,6 +2970,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_service_registry = model_type == 'service_registry'
     is_field_group = model_type == 'field_group'
     is_operation = model_type == 'operation'
+    is_family = model_type == 'family'
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_')
@@ -2748,6 +3017,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             templates_to_process = [target_template]
         else:
             print(f"Operation model '{model_filename}' requires --address "
+                  "(ores.cpp.protocol for C++, ores.ts.protocol for TypeScript)")
+            return
+    elif is_family:
+        # A composite family only derives a protocol, so it too must be used
+        # via an address rather than a default template set.
+        if target_template:
+            templates_to_process = [target_template]
+        else:
+            print(f"Family model '{model_filename}' requires --address "
                   "(ores.cpp.protocol for C++, ores.ts.protocol for TypeScript)")
             return
     elif is_schema_model:
@@ -4744,10 +5022,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # exclusion constraint and the versioning triggers, so two
             # parties can each hold a row with the same id; the repository
             # and protocol stay keyed by the primary key alone, because row
-            # level security already confines a session to its own rows.
+            # level security already confines a session to its own rows. A
+            # column can be both a sql key and a natural key -- the party of
+            # a party-scoped identity is -- so scan both buckets.
             sql_key_columns = pk_columns + [
                 {'column': c.get('name') or c.get('column')}
-                for c in domain_entity.get('columns', []) or []
+                for c in (list(domain_entity.get('columns', []) or [])
+                          + list(domain_entity.get('natural_keys', []) or []))
                 if c.get('sql_key')]
             pk['column_list'] = ', '.join(c['column'] for c in sql_key_columns)
             pk['index_suffix'] = '_'.join(c['column'] for c in pk_columns)
@@ -5572,6 +5853,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # row. Stated as one list because the two are the same method with a
         # different column and suffix, and the template states the query once.
         domain_entity['key_finders'] = key_finders(domain_entity)
+        # The finder templates state a parameter list, a where clause and a
+        # log expression, which a composite finder needs joined once rather
+        # than through nested mustache loops per branch.
+        for _finder in domain_entity['key_finders']:
+            _prepare_finder_render(_finder)
+        if domain_entity.get('service_find_by_code'):
+            _prepare_finder_render(domain_entity['service_find_by_code'])
         # The reads that resolve a declared key without the transaction-time
         # window, which is what history needs so that a closed row is still
         # addressable. Kept apart from key_finders because a model that states
@@ -6124,6 +6412,32 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 op.get('entity_singular', ''),
                 _menu)
         data['operation'] = op
+
+    if is_family and isinstance(model, dict) and 'family' in model:
+        family = model['family']
+        # The same component/sub-component path variables every other model
+        # kind carries, derived here rather than in the loader because they are
+        # the renderer's addressing, not the model's content.
+        family.update(_component_path_vars(family))
+        for path_var in ('component', 'component_include', 'component_core',
+                         'component_service'):
+            family[f'{path_var}_upper'] = (
+                family[path_var].replace('.', '_').upper())
+        if 'entity_singular' in family:
+            family['entity_singular_upper'] = family['entity_singular'].upper()
+        # The operations and the per-entity facts the family service and its
+        # handler read. Built only for the templates that state them; the
+        # protocol twins ignore it.
+        if target_template in _FAMILY_SERVICE_TEMPLATES:
+            _family_service_view(family, model_path)
+        # A field the protocol projection cannot express would render an
+        # interface with the field missing. Only the TypeScript twin refuses
+        # the model; the C++ header has no such gap, so the check is scoped to
+        # its render, exactly as the entity and junction blocks scope theirs.
+        if target_template == 'ts_protocol.ts.mustache':
+            from .org_loader import _reject_silent_ts_gap  # noqa: PLC0415
+            _reject_silent_ts_gap(model_path, family['messages'], {})
+        data['family'] = family
 
     # Special processing for enum models
     if is_enum and isinstance(model, dict) and 'enum' in model:

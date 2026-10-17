@@ -42,6 +42,19 @@
 namespace ores::iam::service {
 
 /**
+ * @brief The refusal reset_password states when the new password is the one the
+ * account already holds.
+ *
+ * The reset refuses a password equal to the current one, which is a user-facing
+ * rule rather than a failure of the write. A caller that sets a password
+ * idempotently -- provisioning sets every staff account's password the same way
+ * on every run -- reads this answer as "already set" rather than as an error,
+ * and names the sentence from here rather than repeating it.
+ */
+inline constexpr std::string_view password_unchanged_message =
+    "New password must be different from current password";
+
+/**
  * @brief Service for managing user accounts including creation, listing, and deletion.
  */
 /**

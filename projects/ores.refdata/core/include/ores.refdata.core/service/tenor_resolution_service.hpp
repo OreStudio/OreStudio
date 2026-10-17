@@ -68,7 +68,32 @@ public:
     [[nodiscard]] messaging::resolve_tenor_response
     resolve(const messaging::resolve_tenor_request& request) const;
 
+    /**
+     * @brief Resolves rows that have not been stored, so a person editing a
+     * rule reads its answer before writing it.
+     *
+     * The same question as @c resolve and the same answer, asked about the
+     * draft instead of the stored row. Only the calendar is read from the
+     * database; the three rows arrive in the request.
+     *
+     * @param request The three rows as the form holds them, the calendar to
+     * roll on, the horizon to count from, and the spot date when the
+     * convention's anchor needs one.
+     */
+    [[nodiscard]] messaging::resolve_tenor_response
+    preview(const messaging::preview_tenor_resolution_request& request) const;
+
 private:
+    /// The whole of the resolution, once the three rows are in hand, whatever
+    /// put them there. Both entry points above are ways of arriving here.
+    [[nodiscard]] messaging::resolve_tenor_response
+    resolve_rows(const domain::tenor& tenor,
+                 const domain::tenor_convention& convention,
+                 const domain::tenor_convention_resolution& resolution_rule,
+                 const std::string& calendar_code,
+                 std::chrono::year_month_day horizon,
+                 const std::optional<std::chrono::year_month_day>& spot) const;
+
     context ctx_;
 };
 

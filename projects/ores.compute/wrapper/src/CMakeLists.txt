@@ -56,7 +56,6 @@ target_link_libraries(${lib_target_name}
 # needs beyond the baseline above, and the find_package calls they bring.
 
 find_package(LibArchive REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.compute.api.lib

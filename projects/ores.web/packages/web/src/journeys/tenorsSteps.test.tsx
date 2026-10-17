@@ -20,6 +20,8 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { TranslationProvider } from '../i18n/Provider.js';
 import { createTranslator } from '../i18n/translate.js';
 import { enFlat } from '../i18n/locales/en.js';
 import { TENOR_STEP_IDS, tenorStepIndex, tenorSteps } from './tenorsSteps.js';
@@ -31,7 +33,13 @@ import {
     type TenorDetails,
     type TenorDraft,
 } from './tenorsState.js';
-import type { TenorCatalogue, TenorWriteOutcome, TenorsServer } from './tenorsServer.js';
+import type {
+    TenorCatalogue,
+    TenorPickLists,
+    TenorResolutionPreview,
+    TenorWriteOutcome,
+    TenorsServer,
+} from './tenorsServer.js';
 import type { Tenor } from '@ores/wire-protocol/generated/refdata/domain/tenor';
 import type { TenorConvention } from '@ores/wire-protocol/generated/refdata/domain/tenor_convention';
 
@@ -92,6 +100,9 @@ function fakeServer(overrides: Partial<TenorsServer> = {}): TenorsServer {
             throw new Error('not read here');
         }),
         resolutions: vi.fn(async () => []),
+        previewResolution: vi.fn(async () => {
+            throw new Error('not read here');
+        }),
         amendReasons: vi.fn(async () => []),
         writeTenor: vi.fn(async () => ok({ ...overnight, version: 4 })),
         writeConvention: vi.fn(async () => ok({ ...convention, version: 8 })),
@@ -115,6 +126,11 @@ function asDetails(draft: TenorDraft): TenorDetails {
         setConventionField: never,
         toggleMember: never,
         setAnchor: never,
+        setTestHorizon: never,
+        setTestSpot: never,
+        setTestCalendar: never,
+        recordTestPreview: never,
+        recordTestFailure: never,
         setReason: never,
         setCommentary: never,
         recordWritten: vi.fn(),
@@ -127,14 +143,14 @@ function draftOf(...actions: readonly TenorAction[]): TenorDraft {
     return actions.reduce(reduceTenor, blankDraft());
 }
 
-function stepsFor(state: TenorDetails, server: TenorsServer) {
+function stepsFor(state: TenorDetails, server: TenorsServer, pickLists?: TenorPickLists) {
     return tenorSteps({
         t,
         server,
         state,
         catalogue,
         catalogueFailure: undefined,
-        pickLists: undefined,
+        pickLists,
         pickFailure: undefined,
         reasons: [],
         onMove: vi.fn(),
@@ -150,14 +166,23 @@ function reviewOf(steps: ReturnType<typeof stepsFor>) {
     return review;
 }
 
+function testStepOf(steps: ReturnType<typeof stepsFor>) {
+    const step = steps[tenorStepIndex('test')];
+    if (step === undefined) {
+        throw new Error('no test step');
+    }
+    return step;
+}
+
 describe('the tenor steps', () => {
-    it('draws the rail the spec names: the list, the tenor, its convention, the schedule, the review, the outcome and the history', () => {
+    it('draws the rail the spec names: the list, the tenor, its convention, the schedule, the test, the review, the outcome and the history', () => {
         const steps = stepsFor(asDetails(blankDraft()), fakeServer());
         expect(steps.map((step) => step.id)).toEqual([
             'choose',
             'tenor',
             'convention',
             'schedule',
+            'test',
             'review',
             'outcome',
             'history',
@@ -296,5 +321,79 @@ describe('the tenor steps', () => {
                 written: ['refdata.v1.tenors.put'],
             }),
         );
+    });
+
+    it('shows the resolved dates when the server answers ok', () => {
+        const preview: TenorResolutionPreview = {
+            result: { outcome: 'ok', code: 'ok', message: '', fields: [] },
+            anchorDate: '2026-01-31',
+            dateBeforeRoll: '2026-02-28',
+            adjustedDate: '2026-02-27',
+            rollRule: 'ModifiedFollowing',
+            calendar: 'TARGET',
+        };
+        const state = asDetails(
+            draftOf(
+                { kind: 'open-tenor', tenor: overnight },
+                { kind: 'open-convention', convention, resolutions: [], tenorCodes: ['O/N'] },
+                { kind: 'set-test-horizon', value: '2026-01-15' },
+                { kind: 'set-test-calendar', value: 'TARGET' },
+                { kind: 'record-test-preview', preview },
+            ),
+        );
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                {testStepOf(stepsFor(state, fakeServer())).body}
+            </TranslationProvider>,
+        );
+
+        expect(html).toContain('2026-01-31');
+        expect(html).toContain('2026-02-28');
+        expect(html).toContain('2026-02-27');
+        expect(html).toContain('ModifiedFollowing');
+        expect(html).toContain('TARGET');
+        expect(html).toContain('The rule resolves to this date.');
+    });
+
+    it('shows a refusal beside the dates it reached, without losing the draft', () => {
+        const preview: TenorResolutionPreview = {
+            result: {
+                outcome: 'invalid',
+                code: 'missing_spot_date',
+                message: 'The rule did not resolve.',
+                fields: [{ field: 'spot', code: 'missing_spot_date', message: 'No spot date.' }],
+            },
+            anchorDate: '2026-01-31',
+            dateBeforeRoll: '',
+            adjustedDate: '',
+            rollRule: 'ModifiedFollowing',
+            calendar: 'TARGET',
+        };
+        const state = asDetails(
+            draftOf(
+                { kind: 'open-tenor', tenor: overnight },
+                { kind: 'set-tenor-field', field: 'displayName', value: 'O/N spot' },
+                { kind: 'open-convention', convention, resolutions: [], tenorCodes: ['O/N'] },
+                { kind: 'set-test-horizon', value: '2026-01-15' },
+                { kind: 'set-test-calendar', value: 'TARGET' },
+                { kind: 'record-test-preview', preview },
+            ),
+        );
+        const html = renderToStaticMarkup(
+            <TranslationProvider>
+                {testStepOf(stepsFor(state, fakeServer())).body}
+            </TranslationProvider>,
+        );
+
+        expect(html).toContain('The server declined the rule.');
+        expect(html).toContain('missing_spot_date');
+        expect(html).toContain('The rule did not resolve.');
+        expect(html).toContain('spot');
+        expect(html).toContain('2026-01-31');
+        // The form and the answer are still in the draft.
+        expect(html).toContain('value="2026-01-15"');
+        expect(state.tenor.displayName).toBe('O/N spot');
+        expect(state.testHorizon).toBe('2026-01-15');
+        expect(state.testPreview).toBe(preview);
     });
 });

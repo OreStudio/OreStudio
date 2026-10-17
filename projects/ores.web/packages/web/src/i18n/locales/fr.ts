@@ -2833,6 +2833,26 @@ const fr: SourceCatalogue = {
                 empty: 'Aucun axe de calendrier n’est servi.',
                 inUse: 'Utilisé par un ténor ici',
             },
+            test: {
+                title: 'Test',
+                lead: 'Résolvez la règle telle que le formulaire la porte, avant tout enregistrement.',
+                note: "Le serveur résout le brouillon que vous avez saisi, pas la ligne qu'il détient. Rien n'est écrit.",
+                open: "Ouvrez ou commencez d'abord un ténor ou une convention.",
+                horizon: 'Date d’horizon',
+                spot: 'Date de spot',
+                spotHint: 'Laissez vide si la convention ne se mesure pas à partir du spot.',
+                calendar: 'Calendrier',
+                calendarNone: 'Aucun calendrier',
+                run: 'Résoudre le brouillon',
+                failed: "La règle n'a pas pu être résolue. {message}",
+                refused: 'Le serveur a refusé la règle.',
+                resolved: 'La règle se résout à cette date.',
+                atFault: 'En cause :',
+                anchor: 'Date d’ancrage',
+                beforeRoll: 'Date avant le report',
+                adjusted: 'Date ajustée',
+                rollRule: 'Règle de report',
+            },
             review: {
                 title: 'Revue',
                 lead: "Rien n'est écrit avant votre confirmation.",
@@ -3271,6 +3291,9 @@ const fr: SourceCatalogue = {
         'Load the staff': 'Charger le personnel',
         'Creates an account for each person the starting point lists, each in its own party.':
             'Crée un compte pour chaque personne que le point de départ liste, chacune dans sa propre entité.',
+        'Set the staff passwords': 'Définir les mots de passe du personnel',
+        "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.":
+            "Définit le mot de passe de chaque compte du personnel via l'API de mot de passe du serveur, afin que le personnel du locataire de démonstration puisse se connecter.",
         'Attach the photographs': 'Joindre les photographies',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Donne aux comptes leurs photographies et à l'entité du locataire son logo.",

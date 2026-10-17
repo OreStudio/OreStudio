@@ -158,7 +158,6 @@ TEST_CASE("write_run_grant_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto grantor_account_id_parent = ores::iam::generators::generate_synthetic_account(ctx);
-    grantor_account_id_parent.change_reason_code = "system.test";
     ores::iam::repository::account_repository grantor_account_id_repo;
     grantor_account_id_repo.write(party_ctx, grantor_account_id_parent);
     v.grantor_account_id = grantor_account_id_parent.id;
@@ -166,7 +165,6 @@ TEST_CASE("write_run_grant_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto role_id_parent = ores::iam::generators::generate_synthetic_role(ctx);
-    role_id_parent.change_reason_code = "system.test";
     ores::iam::repository::role_repository role_id_repo;
     role_id_repo.write(party_ctx, role_id_parent);
     v.role_id = role_id_parent.id;

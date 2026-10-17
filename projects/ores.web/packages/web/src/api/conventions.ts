@@ -35,7 +35,10 @@ import { request } from './transport.js';
  *
  * A convention row is the refdata service's, passed through the BFF under its
  * own field names. The 25 families have 25 shapes, so a row here is a record of
- * its columns and the screen reads the columns it draws by name.
+ * its columns and the screen reads the columns it draws by name. A family whose
+ * entity is a composite answers one row per convention: the BFF lists the
+ * central rows and zips the terms of whichever part the convention fills onto
+ * them, so the row carries the same columns a flat family's row does.
  */
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;

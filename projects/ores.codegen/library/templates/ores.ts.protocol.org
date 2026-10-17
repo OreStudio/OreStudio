@@ -4,7 +4,7 @@
 #+title: ores.ts.protocol
 #+description: Wire payload interfaces and NATS subject constants.
 #+type: facet
-#+model_types: domain_entity junction operation
+#+model_types: domain_entity junction operation family
 #+level: cross
 #+facet_group: ores.ts
 #+filetags: :codegen:physical-space:typescript:

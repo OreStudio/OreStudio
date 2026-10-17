@@ -159,7 +159,6 @@ TEST_CASE("write_curve_definition_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto curve_configuration_id_parent =
         ores::refdata::generators::generate_synthetic_curve_configuration(ctx);
-    curve_configuration_id_parent.change_reason_code = "system.test";
     // The curve_configuration is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.
@@ -171,7 +170,6 @@ TEST_CASE("write_curve_definition_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto section_code_parent = ores::refdata::generators::generate_synthetic_curve_section(ctx);
-    section_code_parent.change_reason_code = "system.test";
     ores::refdata::repository::curve_section_repository section_code_repo;
     section_code_repo.write(party_ctx, section_code_parent);
     v.section_code = section_code_parent.code;

@@ -153,7 +153,6 @@ TEST_CASE("write_sandbox_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto anchor_portfolio_id_parent = ores::refdata::generators::generate_synthetic_portfolio(ctx);
-    anchor_portfolio_id_parent.change_reason_code = "system.test";
     // portfolio's own mandatory party_id FK (session-set in
     // production) needs an active party too: seed one, attached under the
     // tenant's root party like the direct-party branch below.

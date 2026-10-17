@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 434D8720-5764-4815-8148-693567A75AA1
+:END:
+#+title: The :has_batch_read: flag is inert. Twenty trading instrumen…
+#+description: The :has_batch_read: flag is inert. Twenty trading instrument models set it, and template_variables.org documents it as 'Repository exposes a batch read method', but no generator source and no template reads it. The batch read read_latest(context, <primary key vectors>) is declared in cpp_domain_type_repository.hpp.mustache and implemented in cpp_domain_type_repository.cpp.mustache unconditionally, with no guard. So the flag changes nothing, and it reads as if it did. Either delete the flag from the models and from template_variables.org, or give it a consumer. Found while scoping the composite family get and put in the atomise-the-convention pilot.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

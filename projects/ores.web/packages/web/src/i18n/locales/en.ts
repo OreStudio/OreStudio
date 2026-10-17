@@ -2799,6 +2799,26 @@ export const en: SourceCatalogue = {
                 empty: 'No schedule axis is served.',
                 inUse: 'In use by a tenor here',
             },
+            test: {
+                title: 'Test',
+                lead: 'Resolve the rule as the form holds it, before anything is saved.',
+                note: 'The server resolves the draft you have typed, not the row it holds. Nothing is written.',
+                open: 'Open or start a tenor or a convention first.',
+                horizon: 'Horizon date',
+                spot: 'Spot date',
+                spotHint: 'Leave blank where the convention does not measure from spot.',
+                calendar: 'Calendar',
+                calendarNone: 'No calendar',
+                run: 'Resolve the draft',
+                failed: 'The rule could not be resolved. {message}',
+                refused: 'The server declined the rule.',
+                resolved: 'The rule resolves to this date.',
+                atFault: 'At fault:',
+                anchor: 'Anchor date',
+                beforeRoll: 'Date before the roll',
+                adjusted: 'Adjusted date',
+                rollRule: 'Roll rule',
+            },
             review: {
                 title: 'Review',
                 lead: 'Nothing is written until you confirm.',
@@ -3231,6 +3251,9 @@ export const en: SourceCatalogue = {
         'Load the staff': 'Load the staff',
         'Creates an account for each person the starting point lists, each in its own party.':
             'Creates an account for each person the starting point lists, each in its own party.',
+        'Set the staff passwords': 'Set the staff passwords',
+        "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.":
+            "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.",
         'Attach the photographs': 'Attach the photographs',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Gives the accounts their photographs, and the tenant's party its logo.",

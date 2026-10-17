@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: dq_staging
-Tables: 131
+Tables: 133
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -765,6 +765,19 @@ package "dq_staging" #F3E5F5 {
 
     note right of ores_dq_configuration_market_bindings_artefact_tbl
     One Parameter of the Markets block in a run document: a market role, and the market configuration the run binds to it. The block belongs to the configuration that describes the run, so reports that share a configuration share its market roles. The role is a free string in ORE's schema, and the value names a configuration set built in todaysmarket.xml, which ores.analytics owns. This table holds the binding, not the configuration it names. - Artefact Table
+    end note
+
+    entity ores_dq_conventions_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * kind_code : text
+        * name : text
+          oresmd_uri : text
+    }
+
+    note right of ores_dq_conventions_artefact_tbl
+    The central row of the atomised convention. Every convention kind -- a swap, a deposit, a tenor basis swap -- is one row here plus the parts its family names. The row carries the key, the party that owns the row, the kind the row is, and the name it carries in the source document. The name is the identifier the source document gives the convention, the <Id> element of that document. It is kept so a round trip through the ORE XML is lossless, and it is part of the convention's identity: the party, the kind and the name together are what make a convention the one a caller means. Two kinds may hold the same name, because the kind is part of that identity. A convention's kind-specific fields live in that kind's parts, reached from this row by its key. The central row carries no kind-specific column. - Artefact Table
     end note
 
     entity ores_dq_counterparty_identifiers_artefact_tbl  #F7E5FF {
@@ -2526,13 +2539,31 @@ package "dq_staging" #F3E5F5 {
     A tag classifies an image. A tag belongs to one tenant, names a single category such as flag, currency or commodity, and its name is unique within that tenant. Images carry tags through the image_tag junction, so a tag has no lifecycle of its own beyond its own version history. - Artefact Table
     end note
 
-    entity ores_dq_tenor_basis_swap_conventions_artefact_tbl  #F7E5FF {
+    entity ores_dq_tenor_basis_swap_long_shorts_artefact_tbl  #F7E5FF {
         --
         * dataset_id : uuid <<FK>>
         * tenant_id : uuid <<FK>>
-        * id : text
-        * version : integer
-        * party_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
+          long_index : text
+          long_pay_tenor : text
+          short_index : text
+          short_pay_tenor : text
+          spread_on_short : boolean
+          include_spread : boolean
+          sub_periods_coupon_type : text
+    }
+
+    note right of ores_dq_tenor_basis_swap_long_shorts_artefact_tbl
+    The long and short leg form of a tenor basis swap. ORE writes a tenor basis swap as LongIndex and ShortIndex with an optional payment tenor each, plus the spread flag. The corpus also writes IncludeSpread and SubPeriodsCouponType alongside both forms, so this part declares them too rather than the shared central row. A row of this part holds that form. The paying and receiving form lives in tenor_basis_swap_pay_receive, and a convention fills exactly one of the two. - Artefact Table
+    end note
+
+    entity ores_dq_tenor_basis_swap_pay_receives_artefact_tbl  #F7E5FF {
+        --
+        * dataset_id : uuid <<FK>>
+        * tenant_id : uuid <<FK>>
+        * convention_name : text
+        * kind_code : text
           pay_index : text
           pay_frequency : text
           receive_index : text
@@ -2542,16 +2573,10 @@ package "dq_staging" #F3E5F5 {
           sub_periods_coupon_type : text
           pay_is_averaged : boolean
           rec_is_averaged : boolean
-          long_index : text
-          long_pay_tenor : text
-          short_index : text
-          short_pay_tenor : text
-          spread_on_short : boolean
-          oresmd_uri : text
     }
 
-    note right of ores_dq_tenor_basis_swap_conventions_artefact_tbl
-    Describes how ORE builds the two legs of a tenor basis swap, where each leg pays a different tenor off its own index and the two legs may differ in more than the tenor. Corresponds to the <TenorBasisSwap> element in ORE conventions.xml. The id field is the natural key (ORE <Id> element). ORE lets a tenor basis swap be written two ways, and the corpus uses both. The paying and receiving form names PayIndex and ReceiveIndex with an optional frequency each, and adds the averaging and sub-periods fields. The long and short form names LongIndex and ShortIndex with an optional payment tenor each, and adds the spread flags. The two forms do not share a field, so the table carries every field of both and each row fills one form. - Artefact Table
+    note right of ores_dq_tenor_basis_swap_pay_receives_artefact_tbl
+    The paying and receiving leg form of a tenor basis swap. ORE writes a tenor basis swap as PayIndex and ReceiveIndex with an optional frequency each, plus the averaging and sub-periods fields. A row of this part holds that form. The long and short form lives in tenor_basis_swap_long_short, and a convention fills exactly one of the two. - Artefact Table
     end note
 
     entity ores_dq_tenor_basis_two_swap_conventions_artefact_tbl  #F7E5FF {

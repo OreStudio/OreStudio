@@ -66,14 +66,13 @@ NAMESPACE = uuid.UUID("6f2a6c1e-6b8c-4e6a-9b8e-2b6b6b6b6b6b")
 # GLEIF's reserved pre-LOU test prefix -- never assigned to a real entity.
 LEI_TEST_PREFIX = "9695"
 
-# Real scrypt hash of "Secure-Password-123", computed via the actual
-# ores::security::crypto::password_hasher (same convention as
-# barclays_system_provision.ores's tenant_admin/super_admin password).
-# Every generated account shares this single hash/password.
-FIXED_PASSWORD_HASH = (
-    "$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q=="
-    "$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw=="
-)
+# The account artefact carries no password material. An account's password is
+# set after it is published, by the provisioning step that follows load_staff,
+# which calls the server's own password API so the hasher, its parameters and
+# its salt stay the server's business. The column below is required by the
+# artefact table but is deliberately empty: the publish function stores no
+# password hash for an account that stages none.
+NO_STAGED_PASSWORD = ""
 
 HK_GIVEN_NAMES = [
     "Wai Ming", "Siu Fung", "Ka Yee", "Chi Wing", "Man Yee", "Tsz Ching",
@@ -393,7 +392,7 @@ def build_group_accounts():
         "email": f"{username}@acmecorp.com",
         "full_name": "Adrian Vance",
         "gender": "male",
-        "password_hash": FIXED_PASSWORD_HASH,
+        "password_hash": NO_STAGED_PASSWORD,
         "account_type": "user",
         "role": "Operations",
         "job_title": "Group Chief Executive Officer",
@@ -491,7 +490,7 @@ def build_office(office, faker, group_ceo_username=None):
             "email": email,
             "full_name": full_name,
             "gender": gender,
-            "password_hash": FIXED_PASSWORD_HASH,
+            "password_hash": NO_STAGED_PASSWORD,
             "account_type": "user",
             "role": rbac_role,
             "job_title": job_title,

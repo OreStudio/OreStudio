@@ -130,7 +130,6 @@ TEST_CASE("write_account_contact_information_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto account_id_parent = ores::iam::generators::generate_synthetic_account(ctx);
-    account_id_parent.change_reason_code = "system.test";
     ores::iam::repository::account_repository account_id_repo;
     account_id_repo.write(party_ctx, account_id_parent);
     v.account_id = account_id_parent.id;

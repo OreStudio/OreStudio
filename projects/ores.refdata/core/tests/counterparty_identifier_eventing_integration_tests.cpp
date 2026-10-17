@@ -130,7 +130,6 @@ TEST_CASE("write_counterparty_identifier_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto counterparty_id_parent = ores::refdata::generators::generate_synthetic_counterparty(ctx);
-    counterparty_id_parent.change_reason_code = "system.test";
     ores::refdata::repository::counterparty_repository counterparty_id_repo;
     counterparty_id_repo.write(party_ctx, counterparty_id_parent);
     v.counterparty_id = counterparty_id_parent.id;

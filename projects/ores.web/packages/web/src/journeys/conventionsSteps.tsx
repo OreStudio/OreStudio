@@ -39,6 +39,7 @@ import { Picker } from './pickers.js';
 import {
     entityTypeOf,
     specsOf,
+    summaryColumnsOf,
     termProblems,
     writePlan,
     type ConventionRefusal,
@@ -129,16 +130,12 @@ function optionsFor(
 
 /** A one-line summary of a convention's terms. */
 function summaryOf(family: string, row: ConventionRow): string {
-    const specs = specsOf(family);
-    if (specs.length === 0) {
-        return row.id;
-    }
-    return specs
-        .map((spec) => row[spec.column])
+    const drawn = specsOf(family).length > 0;
+    const terms = summaryColumnsOf(family)
+        .map((column) => row[column])
         .filter((value) => value !== null && value !== undefined && value !== '')
-        .map(String)
-        .slice(0, 4)
-        .join(' · ');
+        .map(String);
+    return (drawn ? terms.slice(0, 4) : terms).join(' · ');
 }
 
 /** Stands above every step once a family is chosen, so the record stays in view. */
@@ -375,7 +372,7 @@ function ConventionStep({
                                 }}
                             >
                                 <td className="px-3 py-2 font-mono text-xs">
-                                    {row.id.slice(0, 8)}
+                                    {String(row['name'] ?? row.id).slice(0, 8)}
                                 </td>
                                 <td className="px-3 py-2">{summaryOf(family, row)}</td>
                                 <td className="px-3 py-2 text-xs text-ink-muted">

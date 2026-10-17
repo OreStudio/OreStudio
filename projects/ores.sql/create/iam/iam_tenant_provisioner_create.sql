@@ -36,6 +36,7 @@
 --   - book_statuses, regulatory_book_types, book_purpose_types,
 --     ledger_feed_types, purpose_types: Book and purpose lookups
 --   - business_day_convention_types: Business day adjustment conventions
+--   - convention_kinds: The kinds an atomised convention row may name
 --   - day_count_fraction_types: Day count fraction conventions
 --   - day_counters, calendar_names, curve_sections, curve_segment_types: ORE
 --     curve configuration vocabulary
@@ -571,6 +572,24 @@ begin
 
     get diagnostics v_copied_count = row_count;
     raise notice 'Copied % instrument codes', v_copied_count;
+
+    -- Convention kinds (e.g. TENOR_BASIS_SWAP). A central convention row
+    -- names one of these, and the insert trigger validates it for the row's
+    -- own tenant, so every tenant needs the catalogue.
+    insert into ores_refdata_convention_kinds_tbl (
+        code, tenant_id, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary
+    )
+    select
+        code, v_tenant_id, 0, name, description, display_order,
+        v_actor, v_actor, 'system.new_record',
+        'Copied from system tenant during provisioning'
+    from ores_refdata_convention_kinds_tbl t
+    where t.tenant_id = v_system_tenant_id
+      and t.valid_to = ores_utility_infinity_timestamp_fn();
+
+    get diagnostics v_copied_count = row_count;
+    raise notice 'Copied % convention kinds', v_copied_count;
 
     -- Tenor kinds (e.g. PERIOD, SPECIAL)
     insert into ores_refdata_tenor_kinds_tbl (

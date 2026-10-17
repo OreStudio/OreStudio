@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: F32D2B7E-31F1-5983-9ECF-FEFC74F9EEB5
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the convention_kinds commands from the shell?
+#+description: Every command the convention_kinds submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:convention_kinds:
+
+This file documents the convention_kinds resource at the shell, one section per command. Every command is a subcommand of =convention_kinds=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: E8D5F290-079D-53BA-A434-1DD36EBC6E0F
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds.list=.
+
+#+name: convention_kinds-list
+#+begin_src ores-shell :tangle convention_kinds-list.ores :exports none
+convention_kinds list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: D4C4D8CD-1CDC-5F47-8D3C-B641287C96FE
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds get <code>
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds.get=.
+
+#+name: convention_kinds-get
+#+begin_src ores-shell :tangle convention_kinds-get.ores :exports none
+convention_kinds get __none__
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: 97EBAF06-A6A4-5630-919B-06D544437B5E
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds get-many <code>
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds.get_many=.
+
+#+name: convention_kinds-get-many
+#+begin_src ores-shell :tangle convention_kinds-get-many.ores :exports none
+convention_kinds get-many __none__
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: B90BD7F8-B153-5D43-989C-5393F3346B34
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds add <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds.put=.
+
+#+name: convention_kinds-add
+#+begin_src ores-shell :tangle convention_kinds-add.ores :exports none
+convention_kinds add __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: EBF42B44-54EB-535B-9B2A-F515E541FA23
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds set <code> <name> <description> <display_order> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds.put=.
+
+#+name: convention_kinds-set
+#+begin_src ores-shell :tangle convention_kinds-set.ores :exports none
+convention_kinds set __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 4A36FAAA-A3CF-562F-A8C5-B46B72801740
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds put-many --count <n> <code> <name> <description> <display_order> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds.put_many=.
+
+#+name: convention_kinds-put-many
+#+begin_src ores-shell :tangle convention_kinds-put-many.ores :exports none
+convention_kinds put-many --count 1 __none__ __none__ __none__ 0 system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 89E6FF3A-88FD-5538-927D-E219F167316E
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds delete <code> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds.delete=.
+
+#+name: convention_kinds-delete
+#+begin_src ores-shell :tangle convention_kinds-delete.ores :exports none
+convention_kinds delete __none__ system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 88AC0C77-9704-57DB-908E-5A2FAA6D06E7
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds delete-many <code> <reason> <commentary>
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds.delete_many=.
+
+#+name: convention_kinds-delete-many
+#+begin_src ores-shell :tangle convention_kinds-delete-many.ores :exports none
+convention_kinds delete-many __none__ system.new_record generated_script
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: E0ACA07D-A852-5D19-AF41-A6499DA2CE35
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds versions <code> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds_versions.list=.
+
+#+name: convention_kinds-versions
+#+begin_src ores-shell :tangle convention_kinds-versions.ores :exports none
+convention_kinds versions __none__ --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: FE802F71-EC19-5A31-A450-02DAB2CC48AB
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+convention_kinds version <code> --version <n>
+#+end_example
+
+It is addressed at =refdata.v1.convention_kinds_versions.get=.
+
+#+name: convention_kinds-version
+#+begin_src ores-shell :tangle convention_kinds-version.ores :exports none
+convention_kinds version __none__ --version 1
+#+end_src
+

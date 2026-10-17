@@ -823,6 +823,10 @@ ORES_WEB_PORT={web_port}
 ORES_WEB_BFF_HOST={web_bff_host}
 # Log level for the ores.web BFF (pino: trace, debug, info, warn or error).
 ORES_WEB_LOG_LEVEL={web_log_level}
+# The folder holding the org documents the BFF reads: the QA scenarios and the
+# agile tree. Without it the QA validation runner and the agile browser are
+# off, because the BFF has no tree to serve.
+ORES_WEB_DOC_ROOT={checkout_root}/doc
 # Log level for every generated compiled-service unit (trace, debug, info,
 # warn or error). `compass systemd generate` bakes it into each unit's
 # --log-level, so `compass services restart` applies a change. Raise it to

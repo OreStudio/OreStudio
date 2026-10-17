@@ -106,6 +106,19 @@ function precondition(version: number | null): unknown {
 }
 
 /**
+ * The tenors in their own order: O/N before T/N before 1M, not alphabetically.
+ *
+ * The table holds that order in `sort_order`, and the server refuses to order a
+ * tenor list by it ("A list of tenors cannot be ordered by sort_order"), so the
+ * order is applied here, where the list is shaped for the screen.
+ */
+function orderBy(rows: readonly Record<string, unknown>[]): readonly Record<string, unknown>[] {
+    return [...rows].sort(
+        (left, right) => Number(left['sort_order'] ?? 0) - Number(right['sort_order'] ?? 0),
+    );
+}
+
+/**
  * The tenor routes: the catalogue with its conventions and schedules, the pick
  * lists, one convention's set, the resolution of a drafted rule, and the writes
  * of a tenor, a convention and a membership row.
@@ -122,20 +135,23 @@ export function registerTenorRoutes(
     server.get('/api/tenors/catalogue', async (request) => {
         const session = requireSession(request);
         return {
-            tenors: await readAll(session, tenorSubjects.list_tenors_request, 'tenors', {
-                filter: null,
-            }),
+            tenors: orderBy(
+                await readAll(session, tenorSubjects.list_tenors_request, 'tenors', {
+                    filter: null,
+                    as_of: null,
+                }),
+            ),
             conventions: await readAll(
                 session,
                 tenorConventionSubjects.list_tenor_conventions_request,
                 'conventions',
-                { filter: null },
+                { filter: null, as_of: null },
             ),
             schedules: await readAll(
                 session,
                 tenorScheduleSubjects.list_tenor_schedules_request,
                 'schedules',
-                { filter: null },
+                { filter: null, as_of: null },
             ),
         };
     });
@@ -144,7 +160,10 @@ export function registerTenorRoutes(
         const session = requireSession(request);
         const lists: Record<string, readonly Record<string, unknown>[]> = {};
         for (const list of PICK_LISTS) {
-            lists[list.key] = await readAll(session, list.subject, list.rows, { filter: null });
+            lists[list.key] = await readAll(session, list.subject, list.rows, {
+                filter: null,
+                as_of: null,
+            });
         }
         return lists;
     });

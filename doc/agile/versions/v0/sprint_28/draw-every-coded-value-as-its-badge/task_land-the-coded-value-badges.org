@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: D651CC6F-F3AC-4510-B484-586C2FB520A5
+:END:
+#+title: Task: Land the coded-value badges and the shared control
+#+description: Task for: Draw every coded value as its badge
+#+type: task
+#+level: s1
+#+filetags: :draw-every-coded-value-as-its-badge:sprint_28:v0:
+#+owner: marco
+#+branch: feature/draw-every-coded-value-as-its-badge
+#+pr: 3443
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:98A55407-7C62-46F7-8E75-07547537CE1D][Draw every coded value as its badge]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every coded value is drawn as its badge, wherever it is read, and chosen the same way: one renderer and one shared control, so a list and its badge cannot be two renderings of one fact that drift apart. The badge story described the work; this lands it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:98A55407-7C62-46F7-8E75-07547537CE1D][Draw every coded value as its badge]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- One shared renderer draws every coded value, resolving a field's badge through the code domain that owns it.
+- One shared control chooses a coded value, drawing its options as badges rather than as text.
+- The tenor kinds and units carry their own badges rather than borrowing another domain's.
+- The tenor journey uses both, and the web and BFF suites pass with the i18n key sets equal across the three locales.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3443][#3443]] | [web] Draw every coded value as its badge, and choose one the same way |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The tenor-routes doc sat above =orderBy= after the merge | bff/src/tenors.ts | Accepted | Fixed. The doc belongs above its function. |
+| 2 | The step-order doc headed =TENOR_FIELD_DOMAINS= | journeys/tenorsSteps.tsx | Accepted | Fixed. An orphan from the auto-merge. |
+| 3 | The tenor kind and unit drew "The convention default" as their empty face | journeys/tenorsSteps.tsx | Accepted | Fixed. That face belongs to the anchor override on another step; these fields have no empty state. |
+| 4 | The journey comment said RowLabel where the code draws CodedValue | journeys/TenorJourney.tsx | Accepted | Fixed. |
+| 5 | Sizing: 29 files against the documented ~10 | - | Accepted, recorded | This squashes an abandoned worktree branch that could not be split after the fact without inventing a history that never happened. |
+| 6 | The task record said "not yet started" with an empty Result while the PR was open | this page | Accepted | Fixed. |
+| 7 | The QA scenario claimed a seven-step rail, cited a commit that no longer exists after the squash, and said the server served no resolve operation | scenario_verify-the-tenor-resolution-screen.org | Accepted | Fixed: nine steps with their new names, no hash, and the Test step described as the answer. |
+| 8 | The census fixed the mappings in one seed and not the system tenant's | dq_badge_system_populate.sql | Accepted | Fixed. The system tenant now maps to =tenor_kind_*= and =tenor_unit_*=; the "reuses" comment went with it. |
+| 9 | Only the tenor journey uses =CodedValue=; =LabelPicker= and =FeedTreeTab= still draw badges by hand | web/src | Accepted, deferred | The story's remaining task. Recorded below rather than claimed done. |
+| 10 | =tenor_resolution_algorithm= and =business_day_convention_type= have no badges, so they draw bare codes | web/src | Accepted, deferred | Both were captured as tasks by the user's own decision; the record now says so instead of the commit claiming every field. |
+| 11 | The republish defect leaves two current rows, and the new =mapped= read takes the last one silently | dq SQL, classifications.ts | Accepted, deferred | Captured as its own task. The last-wins map is what makes the defect invisible, so it is named here. |
+| 12 | =CodedValue= and =BadgeChoiceMark= are the same renderer twice | shared.tsx, BadgeSelect.tsx | Declined | They draw at different sizes in different places; one is a value in a table, the other an option in a list. Worth revisiting if a third caller appears. |
+| 13 | The type of the mapped catalogue is spelled out four times | wire/client/shared | Accepted, deferred | Real, and the right fix is one exported type in the wire protocol. Small, but it touches the generated boundary. |
+
+* Result
+
+The badge story lands: one renderer for coded values wherever they are read,
+one shared control for choosing one, and the tenor kinds and units carrying
+badges of their own in every seed that maps them. The tenor journey uses both
+and splits choosing a tenor from choosing its convention. =ORES_WEB_DOC_ROOT=
+reaches a generated =.env= (format 32), and the services page asks for a class
+that exists.
+
+Two review axes ran over the diff and found thirteen things. Eight are fixed
+(seven code and doc defects, most of them merge artifacts, plus the system
+tenant's borrowed badges). Two are deferred to the story's remaining work: the
+other screens that still draw badges by hand, and the two convention domains
+with no badges. Two more are recorded: the republish defect that leaves two
+current rows, and the missing type for the mapped catalogue. One is declined.
+None is left silent.
+
+Web: 141 files and 1583 tests pass, typecheck is clean, prettier is clean, and
+the local gate is green once the backlog indexes are regenerated.

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: AE7788BC-810F-458C-A55C-E8018D019EE0
+:END:
+#+title: The import register prototype
+#+description: Every attempt in one party: the retry told from a first attempt, the promotion hops, and the party boundary.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:data_exchange:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                        |
+|---------------+--------------------------------------------------------------|
+| Prototype     | [[file:import-register/][the prototype]]                                    |
+| Gemini review | none                                                         |
+| Group         | [[id:1034E1CB-D639-4489-A16A-931549228D8A][Data exchange prototypes]] |
+| Journeys      | [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]], [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment]], [[id:EEACF799-D2A9-45E0-AF82-BF9168C057A4][Import as a party-scoped user]], [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] |
+
+* Summary
+
+Four journeys need a question no per-import screen can answer: what has
+happened in this party? A failed family is found here, a retry is told from a
+first attempt here, a promotion records its hops here, and a party-scoped user
+is kept out of another party's rows here. Each row also names the sandbox the
+attempt targeted, so the history answers "where did this land?" as well as
+"what ran?". The register is its own screen even though no journey names it as
+its destination.
+
+It is throwaway. Open [[file:import-register/][the register]].
+
+* Detail
+
+** What it argues
+
+- A row is an attempt, not a file. A retry keeps the source and still gets its
+  own row, which is the one thing the shell cannot do.
+- The promotion record is a view of the register, not a second screen. Each hop
+  is an import from files, and the row carries the source environment, the
+  target, the manifest and the actor.
+- The party boundary is the screen's structure. The operations user has no
+  party selector and sees one party; the tenant administrator switches party
+  and then reads that party and no other. Another party is refused, not empty.
+- "May retry" is inferred, and the screen says how thin that is: the maker and
+  the decider may retry, because no import permission exists to grant.
+- A first attempt is never hidden. The failed row stays beside its retry, with
+  both counts, so the person can see the difference.
+- A row names its sandbox. The column shows the sandbox and its path, and the
+  rows it received. An attempt that carries only conventions names its sandbox
+  and says it created no row inside it, because conventions have no
+  =sandbox_id= in the model. The promotion record names the sandbox each hop
+  targeted for the same reason.
+
+** Variants and states
+
+=?variant=list|promotion|compare|failed|refused=,
+=?actor=admin|ops=, =?party=acme-trading|acme-capital-markets=. The party
+selector appears only for the tenant administrator.
+
+** What is real and what is not
+
+The attempt shapes, the promotion hops, the party scoping rule and the retry
+duplication are taken from the journeys. The sandbox rules are the model's: a
+sandbox is anchored at an official portfolio, an official book never sits under
+a sandbox portfolio, a sandbox root portfolio has no parent, and a virtual book
+has no ledger reference and is not sweepable. The sandbox names, request ids,
+manifest ids, times, counts and people are invented. There is no import history, no promotion
+record and no party-scoped import read today; that absence is the screen's
+subject.
+
+** The workflow behind a row
+
+A row is a workflow instance. The register reads
+=workflow.v1.instances.list= scoped to the party's imports — =target_kind= and
+=target_id= name what each run acts on — and
+=workflow.v1.ops.get_workflow_steps= answers one row's rail on the
+[[file:one-import-run.org][Run]] screen. The state a row shows is the
+instance's, and a retry of it keeps the same instance id.
+
+** The verdict
+
+Not signed off. The screen survives though no journey names it, because four
+journeys need it as a secondary surface. The owner must decide whether it is an
+import register, a workflow history, or both — and whether it is the place the
+promotion record lives. The sandbox column also asks whether a register is read
+by party, by sandbox, or by both: a sandbox belongs to a party through its
+anchor, and the screen has no sandbox filter.
+
+* See also
+
+- [[file:index.org][Data exchange prototypes]] — the group page, and the journeys each screen serves.
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] — the journeys this screen answers.

@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: 0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8
+:END:
+#+title: Data exchange journeys
+#+description: Importing and exporting ORE and other data: the whole-environment copy, the party onboarding, the promotion, the single dataset, the retry, and the export for support or archive.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:data_exchange:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+* Summary
+
+A person imports data so a party, an environment or a single dataset can be
+built, repaired, promoted or reproduced. A person exports data so it can be
+shared with support, archived, or moved to another installation. The journeys
+here name what the person is trying to do, what the shell and the web UI offer
+today, and what they leave undone.
+
+The entry points are the =ore= command family, =marketdata import= and
+=marketdata export= in the shell, and the workflow instance screens in the web
+UI. There is no import or export screen in the web UI.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect from an exported environment]] | support engineer | Move a whole environment's data, with the job inputs, into development and reproduce the failure |
+| [[id:388355DD-6437-44CB-B48B-63B25B48CF1F][Seed a fresh environment from ORE sample directories]] | operations user | Load the ORE sample input trees into an empty party |
+| [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party with its conventions and portfolio]] | tenant administrator | Bring one party's conventions and portfolio, and nothing else |
+| [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment between systems]] | operations user | Move accepted data from development to staging to production |
+| [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset in isolation]] | reference-data maintainer | Replace only the conventions or only the curves |
+| [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]] | the importer | Run the same file again without doubling it |
+| [[id:EEACF799-D2A9-45E0-AF82-BF9168C057A4][Import as a party-scoped user]] | operations user | Import into the session's party, and see only that party |
+| [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] | the importer | Read which family refused and what is now stored |
+| [[id:64DCC69B-113C-4766-BC4E-DD6CC3CC912D][Import market data from an external feed]] | market-data maintainer | Load vendor quotes and fixings in the ORE text shape |
+| [[id:EBB81C0A-54C2-410A-865D-2DCDD1E8EDCE][Export to share with support]] | any reader | Export the smallest set that shows the problem |
+| [[id:33AF3CCA-50BE-4CAD-A4DA-4C3917E4EA9F][Export for archival]] | operations user | Take a dated copy that can be read back later |
+| [[id:4FD3AE3D-27DE-4984-890A-CD78852D32FC][Review an import before it is applied]] | the importer or a decider | See the effect of a file before it writes |
+
+* Detail
+
+The journeys read together as three questions. The first is scope: a whole
+environment, one party, one dataset, or the data of one party versus the tenant.
+The second is ownership: conventions belong to refdata, trades to trading, quotes
+to marketdata, and a run binds documents from three services. The third is the
+aftermath: what the person can read after a failure, and what the server can undo.
+
+No current entry point offers all three. The =ore= verbs move one component at a
+time. The run import is the one that carries several configuration documents, and
+its undo covers the curves, the market data, the pricing engines and the run
+document but not the conventions. The conventions document itself is still one
+message with 27 typed arrays.
+
+* Patterns used
+
+- [[id:EA249899-6611-407F-A43A-B37019EBD1A7][Service architecture patterns]] - the import boundary follows one operation per owning service, which is why a whole-environment move has no single transaction.
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] - the corpus index.
+- [[file:../../../prototypes/data_exchange/index.org][Data exchange prototypes]] - the five screens that serve these journeys.
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]

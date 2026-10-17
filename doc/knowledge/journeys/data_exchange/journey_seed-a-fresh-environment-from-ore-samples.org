@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 388355DD-6437-44CB-B48B-63B25B48CF1F
+:END:
+#+title: User Journey: Seed a fresh environment from ORE sample directories
+#+description: An operations user imports the ORE sample input directories into an empty party so the installation has trades, portfolios and their conventions to work with.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:trading:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations user imports the ORE sample input directories into an empty party so the installation has trades, portfolios and their conventions to work with.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I have a fresh party and no trades. I want the ORE sample directories loaded so
+I can book, price and report without building data by hand." The journey is done
+when the sample trades read in books under a named portfolio, the sample
+conventions are stored, and the person has the counts of what arrived.
+
+* Actor and trigger
+
+The actor is an operations user or tenant administrator who is signed in to the
+new party and holds the import permissions. The trigger is a new installation, a
+reset environment, or a new party that should start from known data. The journey
+starts with the ORE sample directories on disk and ends when the person has read
+the import counts and run one report.
+
+This is not the same thing as the 2016 ORE Samples synthetic collection. That
+collection generates market data from a named feed. This journey imports the
+sample trade and configuration files.
+
+* Steps
+
+1. *Choose the directories.* The person picks one ORE sample tree, or several,
+   in the layout ORE ships: =Example_1/Input/portfolio.xml=,
+   =conventions.xml=, =curveconfig.xml=, =todaysmarket.xml=,
+   =pricingengine.xml= and =ore.xml=. The person may skip =Output= and other
+   folders that hold results rather than inputs.
+2. *Upload the trade tree.* The person runs =ore upload <src_dir> --request-id
+   <uuid>=. The system packs and uploads it and prints the request id and the
+   object key.
+3. *Import the trades.* The person runs =ore import <request_id>
+   --parent-portfolio-name "<name>" --official= or targets the open sample
+   sandbox. The system scans every XML file, classifies it by root element,
+   builds portfolios and books from the folder names, creates missing currencies,
+   and books the trades. The shell waits for the workflow.
+4. *Import the configuration.* For each sample the person runs =ore import-run
+   <report_definition_id> <src_dir>=. The system creates the binding under the
+   report definition and stores the conventions, curves, today's market and
+   pricing engines. Repeat for each sample that carries a run.
+5. *Load the market.* The person either runs =marketdata import= with the
+   sample's =market.txt= and =fixings.txt=, or starts the synthetic collection
+   the party is seeded with. Only one source of the same series should run at a
+   time.
+6. *Read the result.* The person reads the counts and runs one report to prove
+   the data is usable.
+
+* On success
+
+The shell prints the saved currency, portfolio, book and trade counts, the run
+import's stored files, and the market data counts. The trade list shows the
+imported trades in their books under the named portfolio. The conventions
+screens show the stored families. A report runs against the seeded data.
+
+* On failure
+
+A directory with no =portfolio.xml= imports no trades and says so through the
+counts. A file with an unexpected root element is ignored by the scanner, and the
+person sees fewer trades than expected, not an error. A run import refuses when
+the run document names a file the input does not hold, or when a file does not
+parse, before it writes. A trade whose counterparty cannot be resolved is
+reported per item and left out. A missing engine package stops the report, not
+the import.
+
+* What must never happen
+
+- A second run of the same seed must never double the trades. Today nothing
+  matches an imported trade by its ORE id, so a retry does duplicate it.
+- An import must never overwrite a live portfolio's trades. The default
+  re-import mode attaches new trades and leaves existing books alone.
+- A currency the tenant already holds must never be replaced.
+- A sample's conventions must never be stored as another party's rows.
+
+* Screens and entry points
+
+There is no screen. The entry points are the shell verbs =ore upload=,
+=ore import=, =ore import-run= and =marketdata import=. The web UI has a
+conventions screen and a market data screen, but neither has a seed or import
+action.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =currency= | The currencies the sample config names | |
+| =portfolio=, =book= | The tree built from the directory layout | |
+| =trade= | The sample trades and their ORE identifiers | |
+| =conventions_document= | The sample's convention families | |
+| =run_document= | The sample's run settings and file bindings | |
+| =market_observation= | The sample's quotes | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the directories | Scan a directory and classify its XML files | inside =ore_import_execute= | exists |
+| Upload the trade tree | Pack and upload the tarball | the =ore= bucket at =ore/imports/{request_id}.tar.gz= | exists |
+| Import the trades | Start the import workflow | =workflow.v1.ops.ore_import= | exists |
+| Import the trades | Execute the import | =ore.v1.ops.ore_import_execute= | exists |
+| Import the configuration | Start the run import | =ore.v1.ops.import_run_configuration= | exists |
+| Import the configuration | Store the conventions | =refdata.v1.conventions_documents.put= | exists |
+| Load the market | Import quotes and fixings | =marketdata.v1.ops.import_market_data= | exists |
+
+* What is missing
+
+1. *No batch seed.* Each sample is two or three separate commands. Nothing takes
+   a root folder of samples and imports the whole set in one run.
+2. *The scan is invisible.* The person cannot list the files the scanner found,
+   or the ones it ignored, before the import. The existing portfolio import
+   journey carries the same gap.
+3. *No trade identity check.* A re-import creates new trade ids, so there is no
+   way to say "this ORE trade is already here".
+4. *No dry run.* The counts are available only after the writes.
+
+* Related journeys
+
+- [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] - the detailed trade import.
+- [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]] - what to do when a seed stops.
+- [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party with its conventions and portfolio]] - the smaller version for one party.
+
+* Related knowledge
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

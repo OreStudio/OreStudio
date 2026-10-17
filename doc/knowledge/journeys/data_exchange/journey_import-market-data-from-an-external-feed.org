@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 64DCC69B-113C-4766-BC4E-DD6CC3CC912D
+:END:
+#+title: User Journey: Import market data from an external feed
+#+description: A market-data user loads quotes and fixings produced by a non-ORE feed, and reads what was stored and what was refused.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:marketdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-data user loads quotes and fixings produced by a non-ORE feed, and reads what was stored and what was refused.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I have a file of quotes and fixings from our data vendor. I want it in the
+platform, tagged with where it came from, and I want to know which rows were
+refused." The journey is done when the observations and fixings read in the
+market data screens and the person has read the counts and the warnings.
+
+* Actor and trigger
+
+The actor is a market-data maintainer who holds =marketdata::import:write=,
+which in the seeded roles only the tenant administrator and super administrator
+hold. The trigger is a new vendor file, a daily fixing load, or a backfill after
+a gap. The journey starts with two files on disk and ends when the person has
+confirmed the stored counts.
+
+The file must be in ORE's text shape: =market.txt= holds
+=DATE<TAB>KEY<TAB>VALUE= and =fixings.txt= holds =DATE<TAB>INDEX<TAB>VALUE=.
+A vendor that writes CSV or JSON needs a conversion outside the platform. No
+CSV, JSON or HTTP API feed import exists today. The feed bindings in the market
+data screens author and run synthetic feeds; they do not consume a vendor feed.
+
+* Steps
+
+1. *Convert the feed to the ORE shape.* The person, or a script the person
+   runs, writes the two tab-separated files. The person checks the date format
+   and the series keys.
+2. *Import the files.* The person runs =marketdata import --file market.txt
+   --fixings fixings.txt --source <tag>=. The system resolves each series, stores
+   the observations and the fixings, and tags them with the source.
+3. *Read the counts.* The shell prints the series, observation and fixing
+   counts, the message, and any warnings.
+4. *Read a series.* The person opens *Market data*, then the series or the
+   evolution screen, and reads the imported points with their source.
+5. *Handle duplicates.* If the file may repeat rows, the person passes
+   =--duplicates-are-errors=. The system refuses the duplicate rows as errors
+   and keeps the sections that had none.
+
+* On success
+
+The shell prints the counts and any warnings. The series and observations read
+with the source tag. The fixings read against their index. A curve that depends
+on the points can be bootstrapped.
+
+* On failure
+
+A file that cannot be opened is refused before the import. A duplicate row is an
+error only when =--duplicates-are-errors= is passed, and the errors are listed per
+row. The reply may report =success=false= after some sections were already
+stored, and the shell still prints the counts it stored. A series that cannot be
+resolved is reported as a warning or an error, depending on the section. A
+refused write names the missing permission.
+
+* What must never happen
+
+- A duplicate in one section must never discard a section that had no duplicate.
+  The service keeps the clean sections, and the shell says so.
+- A fixing must never be stored under the wrong index. The index is the key.
+- A partial load must never be reported as a complete one. The counts are printed
+  even when the reply is a failure.
+- A quote must never be written into another party's series.
+- The import must never invent a source tag. The person names it, or it stays
+  empty.
+
+* Screens and entry points
+
+The entry points are =marketdata import=, =marketdata export= and the market
+data screens that read the result. There is no upload screen and no vendor
+connector. The market watch screen shows the raw points and the exceptions, but
+it does not import.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =market_series= | The series each quote belongs to | |
+| =market_observation= | The quotes, with time, value and source | |
+| =market_fixing= | The fixings, with date, index and value | |
+| =feed_binding= | The synthetic source binding, not the vendor file | |
+| =observation_lineage= | The provenance of a derived point | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Convert the feed | No operation: the person writes the files | none | n/a |
+| Import the files | Import the quotes and fixings | =marketdata.v1.ops.import_market_data= | exists |
+| Read the counts | No operation: the reply carries the counts | none | n/a |
+| Read a series | Read a series slice | =marketdata.v1.ops.get_series_slice= | exists |
+| Read a series | Read a series evolution | =marketdata.v1.ops.get_series_evolution= | exists |
+| Handle duplicates | Import with duplicate errors | =marketdata.v1.ops.import_market_data= | exists |
+
+* What is missing
+
+1. *No native CSV or JSON import.* Every vendor file is converted to ORE text
+   first. The conversion is outside the platform and outside its audit.
+2. *No vendor connector.* A feed binding starts a synthetic feed. No binding
+   consumes a vendor URL or a drop folder.
+3. *No per-section result.* The counts are totals and the errors are strings.
+   Nothing says which series or fixing was refused and why.
+4. *No dry run.* The person cannot see what would be stored before the write.
+5. *No import record.* Nothing lists who loaded which file and when, beyond the
+   source tag on the rows.
+
+* Related journeys
+
+- [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] - what the person does with the loaded points.
+- [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] - the same question for an ORE import.
+- [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]] - after a duplicate refusal.
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]] - the trades a fixing prices.
+
+* Related knowledge
+
+- [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]]
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

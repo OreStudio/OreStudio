@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 8E23A435-96D8-4FF8-80FF-FB9894A2B68A
+:END:
+#+title: User Journey: See what a failed family left behind
+#+description: A person reads which family of an import failed validation, what the system refused, and what of the file is now stored.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person reads which family of an import failed validation, what the system refused, and what of the file is now stored.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"The import refused. I want to know which family it refused, why, and what of my
+file is now in the database." The journey is done when the person can say which
+rows landed, which did not, and whether the party is in a usable state.
+
+* Actor and trigger
+
+The actor is the person who ran the import, or the person asked to clean up after
+it, signed in to the same party. The trigger is a failed step, a refused
+document, or a warning that the import completed with errors. The journey starts
+at the failure and ends with the person choosing to retry, repair or accept the
+partial state.
+
+* Steps
+
+1. *Find the failure.* The shell prints the failed step and the message, or the
+   workflow instance's step log carries it. For a trade import the log lists each
+   item error with its source file and ORE id.
+2. *Name the family.* For a run import the message names the file, and the file
+   names the document type: conventions, curves, today's market or pricing
+   engines. Within conventions, the server knows which family failed but the
+   reply does not carry the family name.
+3. *Read what stored.* For a trade import the step result lists the saved
+   currencies, portfolios, books and trades, plus the trades that failed. For a
+   run import the reply lists the stored files. For a conventions save the shell
+   sees a plain error, and nothing lists the families written before it.
+4. *Check the live rows.* The person opens the conventions screens, the curve
+   screens or the trade list and reads the rows that are there. The person
+   compares them with the file.
+5. *Decide.* The person retries the same file, repairs the input and retries, or
+   accepts what landed and records the gap by hand.
+6. *Clean up.* There is no delete verb for a partial import. The person deletes
+   rows one at a time, or imports a corrected file over them, or asks for a
+   database restore.
+
+* On success
+
+The person can name the family that refused, the row or field that failed, the
+count of rows that landed before it, and the state of the party after the failure.
+The convention rows carry versions, so a later corrected import is visible in the
+history.
+
+* On failure
+
+The trade import reports per-item errors and keeps the rest. The run import
+refuses before writing when a file is missing or does not parse. A failure after
+the first write triggers the undo of curves, market data, pricing engines and the
+run document, and does not undo conventions. The conventions service writes each
+family in its own write, so a failure in a later family leaves earlier families
+stored with no rollback. FX conventions are skipped, and =fx_skipped= is not
+printed by the shell. A file with a family the server cannot model is ignored.
+
+* What must never happen
+
+- A failure must never leave the person believing the file was applied in full.
+- A rollback must never be claimed when a family was not rolled back. Conventions
+  are the case today.
+- A skipped family must never be silent. FX conventions are listed in the reply
+  and not shown by any screen or by the shell.
+- A partial import must never leave a run binding pointing at a document that
+  was deleted.
+- A family that failed must never be retried as if the earlier families had not
+  been written.
+
+* Screens and entry points
+
+There is no failure screen and no import history screen. The entry points are the
+shell output, the workflow instance in the web UI, and the conventions, curve and
+trade lists where the person reads what landed. The conventions screen shows one
+family at a time, so finding a partially written document is a manual sweep.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =workflow_instance=, =workflow_step= | The failure, its log and the saved ids | |
+| =conventions_document= | The families that were written before the failure | |
+| =run_document=, =configuration_binding= | The binding the undo removes | |
+| =trade= | The per-item failures and the saved rows | |
+| =market_observation=, =market_fixing= | The sections a market import kept | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Find the failure | Read the workflow instance and its steps | =workflow.v1.ops.get_workflow_steps= | exists |
+| Find the failure | Read the step result | the step's =response_json= | exists |
+| Name the family | No operation: the reply carries the file, not the family | none | missing |
+| Read what stored | Read the conventions of the party | =refdata.v1.conventions_documents.get= | exists |
+| Read what stored | Read the trades | =trading.v1.trades.list= | exists |
+| Clean up | No delete operation for an import | none | missing |
+
+* What is missing
+
+1. *No per-family result.* The conventions save returns =world_kept= and
+   =fx_skipped= but no per-family counts, no family name on failure and no list
+   of rows written.
+2. *No rollback of conventions.* The run import's undo skips the conventions
+   document.
+3. *No atomicity across families.* Each family is a separate write, so a later
+   failure leaves earlier families stored.
+4. *No import record.* Nothing lists a past import, its file, its counts and its
+   failures, so the person reconstructs it from a log.
+5. *No cleanup verb.* A partial import is removed by hand or by a database
+   restore.
+
+* Related journeys
+
+- [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]] - what to do next.
+- [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset in isolation]] - the import that most often fails this way.
+- [[id:4FD3AE3D-27DE-4984-890A-CD78852D32FC][Review an import before it is applied]] - the preview that would prevent the surprise.
+- [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect from an exported environment]] - where a partial import misleads the reproduction.
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 4FD3AE3D-27DE-4984-890A-CD78852D32FC
+:END:
+#+title: User Journey: Review an import before it is applied
+#+description: A person sees what an import would change, and how much, before it writes to the live tables.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person sees what an import would change, and how much, before it writes to the live tables.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Before this file touches the party, I want to see what it will add, replace and
+leave alone." The journey is done when the person has read a per-family summary
+and a few rows, and has decided to apply the import or to abandon it.
+
+* Actor and trigger
+
+The actor is the person who will apply the import, or a second person who decides
+it. The trigger is a file whose effect is not obvious: a vendor conventions update,
+a whole-environment promotion, or a party onboarding. The journey starts when the
+file is chosen and ends when the person commits or discards.
+
+There is no staging surface today. This journey names the one the import
+mechanism has to provide, and it says where the current product stops.
+
+* Steps
+
+1. *Choose the file and the scope.* The person names the file, the party and,
+   where it matters, the families in it. The system would read the file without
+   writing.
+2. *Read the summary.* The system would show, per family, the count of rows that
+   are new, the count that replace an existing row, and the count that would be
+   left alone. It would show the same for the trades, the curves and the market
+   data when the file carries them.
+3. *Read the detail.* The person would open one family and read the rows that
+   differ, with the current value and the incoming value. A row whose key matches
+   an existing row would be marked as a replacement, not an insert.
+4. *Read the refusals.* The system would name every row that cannot be applied,
+   before anything is written: a convention that names a value the list no longer
+   holds, a trade whose counterparty does not resolve, a curve whose pillar is
+   missing.
+5. *Decide.* The person applies the import, or discards it. A discard would
+   remove the staged rows and leave the live tables untouched.
+6. *Apply.* The system would write every family in one step, or refuse and leave
+   nothing written.
+
+What exists today is only the rehearsal. The person can import the file into an
+open sample sandbox, read the result, and delete the sandbox. That approximates
+a preview, but it writes real rows and it still cannot show a per-family summary
+before the writes.
+
+* On success
+
+The person would see the family counts, the rows that differ, and the refusals,
+all before applying. After applying, the same counts would appear as the result.
+A discard would leave the party exactly as it was.
+
+* On failure
+
+The file would be refused whole if it cannot be parsed, with the file named. A
+staged import would expire and be swept, and the person would be told it is gone.
+A commit that fails would leave the staged rows and no live row. Today the person
+has no such screen, so a refused import is discovered after the fact, and a
+rehearsal in a sandbox is the only preview.
+
+* What must never happen
+
+- A staged row must never be visible to a normal reader.
+- A preview must never apply a row as a side effect of reading it.
+- A commit must never apply half the file and report success.
+- A discard must never delete a live row.
+- The same file must never be applied twice from one staging area.
+- A preview must never be shown as a commitment if the file can change between
+  staging and commit. The staged rows are the commitment.
+
+* Screens and entry points
+
+No screen exists. The proposed entry points are the import verbs with a staging
+step: begin an import, stage the file, read the staged summary, then commit or
+discard. The shell would need a verb for each. The current shell has only the
+one-shot imports, and the web UI has no import route at all.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =conventions_document= | The families and rows a preview summarises | |
+| =trade=, =portfolio= | The rows a trade preview would compare | |
+| =curve_configuration_document= | The curves a run preview would compare | |
+| =market_observation= | The points a market preview would compare | |
+| the import record | The staged rows and the state of the import | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the file and the scope | Begin a staged import | no subject today | missing |
+| Read the summary | Stage one family and read the counts | no subject today | missing |
+| Read the detail | Read the staged rows and their current counterparts | no subject today | missing |
+| Read the refusals | Read the per-row validation result | no subject today | missing |
+| Decide | Discard the staged import | no subject today | missing |
+| Apply | Commit the staged import | no subject today | missing |
+| Rehearse instead | Import into a sample sandbox | =workflow.v1.ops.ore_import= | exists |
+
+* What is missing
+
+1. *Everything.* There is no staging table, no begin, stage, commit or discard
+   verb, no per-family summary and no row-level diff.
+2. *No visible refusals before the write.* The current imports discover a bad row
+   while writing it.
+3. *No expiry.* A staging area would need an idle expiry and a sweep. Neither
+   exists.
+4. *No UI.* Not even a read-only preview screen exists.
+
+* Related journeys
+
+- [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]] - what the preview would prevent.
+- [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] - the after-the-fact read.
+- [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment between systems]] - where a preview matters most.
+- [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset in isolation]] - the small case.
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

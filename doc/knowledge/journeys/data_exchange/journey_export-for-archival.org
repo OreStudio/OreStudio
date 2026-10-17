@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 33AF3CCA-50BE-4CAD-A4DA-4C3917E4EA9F
+:END:
+#+title: User Journey: Export for archival
+#+description: A person takes a complete, dated copy of a party's data that can be read back years later, and checks it before storing it.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person takes a complete, dated copy of a party's data that can be read back years later, and checks it before storing it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want a copy of this party's data, as it stands today, that we can read back
+after the installation is gone." The journey is done when the person has a dated
+file set, a readable manifest, and a check that the files open in the platform's
+importer.
+
+* Actor and trigger
+
+The actor is an operations user or tenant administrator. The trigger is a
+retention obligation, a migration off the installation, the end of a tenant, or
+an incident that asks for a point-in-time copy. The journey starts with a party
+and a date and ends when the archive is stored and the manifest signed off.
+
+The platform has no archival export. The ORE export verbs produce ORE-shaped
+files, not a database archive. A PostgreSQL backup is the only complete copy,
+and it is taken outside the shell.
+
+* Steps
+
+1. *Fix the scope and the date.* The person names the party and the cut-off. No
+   export takes an =as_of= instant today, so the cut-off is the time the commands
+   run, and the parts can be read minutes apart.
+2. *Export the trades.* The person runs =ore export= once per portfolio or once
+   for the whole tree. The output is ORE portfolio XML for the trades under each
+   node.
+3. *Export the runs.* The person runs =ore export-run= for every report
+   definition that carries conventions, curves, today's market and pricing
+   engines. A definition with no binding writes no configuration.
+4. *Export the market.* The person runs =marketdata export= for the quotes and
+   fixings.
+5. *Write the manifest.* The person writes down the party, the time, each file,
+   its size and the tool build. No command writes this.
+6. *Check the archive.* The person opens the files in the platform's importer, or
+   loads them into a scratch environment, and compares the counts with the live
+   screens.
+7. *Store it.* The person copies the set to the archive location, with the
+   manifest, and records the archive id in the retention register.
+
+* On success
+
+The files parse, the counts match the live rows for the scope, and the manifest
+names every part. A later import of the set into a scratch environment
+reproduces the trades, the conventions and the market data.
+
+* On failure
+
+An export of a node the session cannot read is refused or returns nothing. A run
+export refuses a binding whose configuration type it cannot write. A large
+portfolio is exported in pages, so a failure partway leaves a partial XML file
+that still parses. Nothing checks that the parts were read at the same instant.
+
+* What must never happen
+
+- The ORE export must never be described as a full backup. It carries no audit
+  columns, no row versions, no history and no party or book rights.
+- An archive must never lose the difference between world conventions and the
+  party's own. The export writes the party's document, and the world rows are
+  added on import only if missing.
+- A partial archive must never be signed off as complete. The manifest must name
+  what was not exported.
+- The archive must never depend on the source installation being alive.
+
+* Screens and entry points
+
+There is no archive screen and no archive command. The entry points are =ore
+export=, =ore export-run=, =marketdata export=, the person's file system, and
+the retention register. The web UI has no export route.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =trade=, =instrument= | The trades and their economics | |
+| =portfolio=, =book=, =business_unit= | The tree the export walks | |
+| =conventions_document= | The 27 convention families | |
+| =run_document=, =configuration_binding= | The report configuration | |
+| =market_observation=, =market_fixing= | The market data | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Fix the scope and the date | No operation: no =as_of= read | none | missing |
+| Export the trades | Export the trades under a node | =trading.v1.ops.export_portfolio= | exists |
+| Export the runs | Export the run directory | =ore.v1.ops.export_run_configuration= | exists |
+| Export the market | Export quotes and fixings | =marketdata.v1.ops.export_market_data= | exists |
+| Write the manifest | No operation: the person writes it | none | missing |
+| Check the archive | Import into a scratch environment | the import verbs | exists |
+| Store it | No operation | none | missing |
+
+* What is missing
+
+1. *No archival export.* There is no command that writes one dated, complete set
+   with a manifest and a checksum.
+2. *No history or audit in the export.* The version and audit columns are not in
+   any ORE-shaped file, so the archive cannot answer who changed what or when.
+3. *No instant.* The exports read at their own times, so the set never existed
+   together.
+4. *No verification.* Nothing compares the archived counts with the live ones, or
+   writes a digest the archive can be checked against.
+5. *No retention record.* The product does not know an archive exists.
+
+* Related journeys
+
+- [[id:EBB81C0A-54C2-410A-865D-2DCDD1E8EDCE][Export to share with support]] - the small version of this export.
+- [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment between systems]] - the same parts, moved to another live environment.
+- [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect from an exported environment]] - the same parts, moved for a defect.
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.
+
+* Related knowledge
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+
+* See also
+
+- =doc/knowledge/journeys/trades/journey_export_a_portfolio_to_ore.org=

@@ -35,6 +35,7 @@ export interface ReportError {
     tenant_id: string;
     id: string;
     report_instance_id: string;
+    party_id: string;
     scope_code: string;
     severity: string;
     message: string;

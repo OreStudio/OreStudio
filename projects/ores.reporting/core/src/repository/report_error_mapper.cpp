@@ -48,6 +48,7 @@ domain::report_error report_error_mapper::map(const report_error_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(v.report_instance_id);
+    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.scope_code = v.scope_code;
     r.severity = v.severity;
     r.message = v.message;
@@ -72,6 +73,7 @@ report_error_entity report_error_mapper::map(const domain::report_error& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.report_instance_id = boost::uuids::to_string(v.report_instance_id);
+    r.party_id = boost::uuids::to_string(v.party_id);
     r.scope_code = v.scope_code;
     r.severity = v.severity;
     r.message = v.message;

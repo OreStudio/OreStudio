@@ -46,6 +46,7 @@ struct report_error_entity {
     std::string tenant_id;
     int version = 0;
     std::string report_instance_id;
+    std::string party_id;
     std::string scope_code = "Report";
     std::string severity = "error";
     std::string message;

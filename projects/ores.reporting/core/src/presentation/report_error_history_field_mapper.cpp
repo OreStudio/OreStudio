@@ -41,6 +41,7 @@ render_report_error_fields(const domain::report_error& v) {
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back(
         {.name = "Report Instance ID", .value = boost::uuids::to_string(v.report_instance_id)});
+    fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
     fields.push_back({.name = "Scope Code", .value = v.scope_code});
     fields.push_back({.name = "Severity", .value = v.severity});
     fields.push_back({.name = "Message", .value = v.message});

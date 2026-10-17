@@ -68,6 +68,7 @@ create table if not exists "ores_reporting_report_errors_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "report_instance_id" uuid not null,
+    "party_id" uuid not null,
     "scope_code" text not null default 'Report',
     "severity" text not null default 'error',
     "message" text not null,

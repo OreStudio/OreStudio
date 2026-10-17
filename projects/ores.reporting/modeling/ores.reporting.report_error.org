@@ -69,6 +69,19 @@ table rather than two: a reader opening a report wants its errors in one place.
 The run the error belongs to. It is a column and not part of the key: a run's
 errors are its own rows, and the id of an error is what addresses one.
 
+** party_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this error (inherited from the run it belongs to).
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
 ** id
 :PROPERTIES:
 :type:        uuid

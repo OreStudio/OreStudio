@@ -45,6 +45,7 @@ domain::report_error generate_synthetic_report_error(utility::generation::genera
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.report_instance_id = ctx.generate_uuid();
+    r.party_id = ctx.generate_uuid();
     r.scope_code = std::string("Report");
     r.severity = std::string("warning");
     r.message = std::string(faker::word::noun());

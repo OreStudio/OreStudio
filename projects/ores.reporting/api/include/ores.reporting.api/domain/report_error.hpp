@@ -98,6 +98,11 @@ struct report_error final {
     boost::uuids::uuid report_instance_id;
 
     /**
+     * @brief Party that owns this error (inherited from the run it belongs to).
+     */
+    boost::uuids::uuid party_id;
+
+    /**
      * @brief What the error is about, as the engine grouped it. Refers to
      * ores_reporting_report_error_scopes_tbl by its code. The column is scope_code rather than
      * scope because scope is a reserved query parameter of the generated list read, and a

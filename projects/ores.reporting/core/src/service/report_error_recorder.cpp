@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/service/report_error_recorder.hpp"
 #include "ores.reporting.api/domain/report_error.hpp"
+#include "ores.reporting.core/repository/report_instance_repository.hpp"
 #include "ores.reporting.core/service/report_error_service.hpp"
 #include <boost/uuid/uuid_generators.hpp>
 #include <format>
@@ -48,8 +49,26 @@ boost::uuids::uuid parse_instance_id(const std::string& report_instance_id) {
     return generate(report_instance_id);
 }
 
+/// The party the run belongs to.
+///
+/// An error is the run's own fact, so it carries the run's party rather than the
+/// caller's. The callers cannot supply it either: one holds a tenant and an
+/// instance id, and the other holds a reason and nothing else. Reading it from
+/// the run keeps the two in step, which is what the row-level policy on the
+/// errors table depends on.
+boost::uuids::uuid party_of_run(const ores::database::context& ctx,
+                                const std::string& report_instance_id) {
+    const auto runs =
+        repository::report_instance_repository().read_latest(ctx, report_instance_id);
+    if (runs.empty())
+        throw std::runtime_error(std::format(
+            "No active report instance found with this id: {}", report_instance_id));
+    return runs.front().party_id;
+}
+
 domain::report_error
 make_error(const boost::uuids::uuid& instance_id,
+           const boost::uuids::uuid& party_id,
            std::string scope,
            std::string severity,
            std::string message,
@@ -58,6 +77,7 @@ make_error(const boost::uuids::uuid& instance_id,
            std::string detail) {
     domain::report_error error;
     error.report_instance_id = instance_id;
+    error.party_id = party_id;
     error.id = boost::uuids::random_generator()();
     error.scope_code = std::move(scope);
     error.severity = std::move(severity);
@@ -83,6 +103,7 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
 
     try {
         const auto instance_id = parse_instance_id(report_instance_id);
+        const auto party_id = party_of_run(ctx_, report_instance_id);
         std::vector<domain::report_error> rows;
         rows.reserve(errors.size());
         for (const auto& error : errors) {
@@ -93,6 +114,7 @@ report_error_recorder::record_engine_errors(const std::string& report_instance_i
                                    error.scope,
                                    error.message);
             rows.push_back(make_error(instance_id,
+                                      party_id,
                                       error.scope,
                                       error.severity,
                                       error.message,
@@ -117,8 +139,10 @@ std::string report_error_recorder::record_run_failure(const std::string& report_
                                                       const std::string& reason) {
     try {
         const auto instance_id = parse_instance_id(report_instance_id);
+        const auto party_id = party_of_run(ctx_, report_instance_id);
         report_error_service service(ctx_);
         service.save_errors({make_error(instance_id,
+                                        party_id,
                                         std::string(scope_report),
                                         "error",
                                         reason,

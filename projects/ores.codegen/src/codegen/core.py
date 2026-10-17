@@ -2208,6 +2208,7 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
         'seed_currency': bool(de.get('seed_currency')),
         'component': de.get('component'),
         'column_prefixes': prefixes,
+        'no_audit_columns': bool((de.get('sql') or {}).get('no_audit_columns', False)),
         'mandatory_fks': mandatory,
         'immutable': bool((de.get('sql') or {}).get('immutable')),
         'immutable_tenant_key': _immutable_tenant_key(de),
@@ -2304,6 +2305,13 @@ def _plan_required_seeds(mfks, parent_var, org_by_table, component, path, owner_
                 grandparent['generator_facet_name'] or 'generators'),
             'target_column': mfk.get('target_column'),
             'parent_has_audit_group': grandparent['has_audit_group'],
+            # An ancestor that keeps no audit columns has no change_reason_code
+            # member to set. Kept beside the prefix for the same reason as the
+            # direct-parent flag: the prefix reads '' for an absent column and
+            # for a flat one alike.
+            'has_change_reason_code': (
+                'change_reason_code' in gp_prefixes
+                and not grandparent['no_audit_columns']),
             # The member each side reaches its column through: the ancestor
             # writes its own audit stamp and party, the referencing row
             # patches its FK, and the ancestor's key is read back.
@@ -4272,6 +4280,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     parent['generator_facet_name'] or 'generators')
                 fk['parent_is_party'] = parent['entity_singular'] == 'party'
                 fk['parent_has_audit_group'] = parent['has_audit_group']
+                # A parent that keeps no audit columns at all, such as an event
+                # row, has no change_reason_code member for the test to set.
+                # The prefix cannot say so: an absent column and a flat one both
+                # read as '' here, so the key's presence is what distinguishes
+                # them, and no_audit_columns is what drops the member from the
+                # domain type the test would assign to.
+                fk['parent_has_change_reason_code'] = (
+                    'change_reason_code' in parent['column_prefixes']
+                    and not parent['no_audit_columns'])
                 fk['parent_has_identity_group'] = parent['has_identity_group']
                 # The members the parent reaches the columns below through.
                 fk['parent_audit_prefix'] = parent['column_prefixes'].get(

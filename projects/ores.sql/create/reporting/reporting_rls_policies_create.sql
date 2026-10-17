@@ -214,6 +214,22 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Party isolation (RESTRICTIVE — ANDed with the permissive tenant policy).
+-- Same null-bypass semantics as report_instances: when no party context is
+-- set, the policy passes through for compatibility with service contexts.
+-- The party is the run's, carried on the error so that a member of one party
+-- cannot read the failures of another party's run.
+drop policy if exists report_errors_party_isolation_policy
+    on ores_reporting_report_errors_tbl;
+
+create policy report_errors_party_isolation_policy
+on ores_reporting_report_errors_tbl
+as restrictive
+for select using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- -----------------------------------------------------------------------------
 -- Report Error Scopes
 -- System-owned vocabulary: seeded by the system tenant and read by every

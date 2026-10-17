@@ -34,10 +34,12 @@
 #include <algorithm>
 #include <cli/cli.h>
 #include <expected>
+#include <functional>
 #include <map>
 #include <optional>
 #include <ostream>
 #include <ranges>
+#include <rfl/json.hpp>
 #include <sstream>
 #include <thread>
 #include <vector>
@@ -52,6 +54,17 @@ namespace {
 constexpr std::chrono::seconds poll_interval(3);
 constexpr std::chrono::seconds default_timeout(300);
 constexpr int max_consecutive_poll_failures = 5;
+
+/// The reply the steps read gives for an instance it has no row for yet. The
+/// engine answers the start before it creates the row, so a first poll can see
+/// this and the next one succeed.
+constexpr std::string_view instance_not_found = "Workflow instance not found.";
+
+/// The field a step's result carries when it starts the run that finishes its
+/// work. A step that hands nothing on leaves the field out.
+struct step_handoff {
+    std::optional<std::string> child_instance_id;
+};
 
 /// How long a start waits for the engine to create its instance before
 /// reporting that the request was refused.
@@ -79,6 +92,38 @@ fetch_steps(nats_client& session, const std::string& instance_id) {
         if (!result)
             return std::unexpected("Failed to parse response: " + result.error().what());
         return *result;
+    } catch (const std::exception& e) {
+        return std::unexpected(e.what());
+    }
+}
+
+/**
+ * @brief The run a step's result names as the one it handed its work to.
+ *
+ * A step's result is the step's own JSON, so only the step knows what shape it
+ * has. A result that is not an object, or is an object with no child, simply
+ * names no handoff: that is an answer, not an error. A response that cannot be
+ * read or decoded is an error, because then the step's result is unknown and
+ * the caller must not assume it held no child.
+ */
+std::expected<std::optional<std::string>, std::string>
+handoff_of_step(nats_client& session, const std::string& step_id, const std::string& tenant_id) {
+    workflow::messaging::get_step_result_request req;
+    req.step_id = step_id;
+    req.tenant_id = tenant_id;
+
+    try {
+        auto result = ores::nats::service::authenticated_request_and_decode<
+            workflow::messaging::get_step_result_response>(
+            session, std::string(req.nats_subject), req);
+        if (!result)
+            return std::unexpected("Failed to parse the step result: " + result.error().what());
+        if (!result->found || result->result_json.empty())
+            return std::optional<std::string>{};
+        const auto handoff = rfl::json::read<step_handoff>(result->result_json);
+        if (!handoff || !handoff->child_instance_id || handoff->child_instance_id->empty())
+            return std::optional<std::string>{};
+        return *handoff->child_instance_id;
     } catch (const std::exception& e) {
         return std::unexpected(e.what());
     }
@@ -235,10 +280,23 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                 BOOST_LOG_SEV(lg(), info)
                     << "Treating unsuccessful steps reply as transient: " << reason;
             ++consecutive_failures;
-            out << "⚠ Poll failed (" << consecutive_failures << "/" << max_consecutive_poll_failures
-                << "): " << reason << std::endl;
-            BOOST_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
-                                      << instance_id << ": " << reason;
+            // A run's row appears after the request that named it is answered,
+            // so the first poll can miss it. The retry budget absorbs that
+            // race, and reporting it would mark a healthy command broken. A
+            // later miss, and a miss the budget runs out on, is still reported.
+            const bool first_miss = consecutive_failures == 1 && result && !result->success &&
+                                    reason == instance_not_found;
+            if (!first_miss) {
+                out << "⚠ Poll failed (" << consecutive_failures << "/"
+                    << max_consecutive_poll_failures << "): " << reason << std::endl;
+            }
+            if (first_miss) {
+                BOOST_LOG_SEV(lg(), info) << "First poll missed instance " << instance_id
+                                          << "; the engine creates the row after it answers.";
+            } else {
+                BOOST_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
+                                          << instance_id << ": " << reason;
+            }
             if (consecutive_failures >= max_consecutive_poll_failures) {
                 fail(out) << "Aborting wait after " << max_consecutive_poll_failures
                           << " consecutive poll failures." << std::endl;
@@ -319,6 +377,52 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
         }
         std::this_thread::sleep_for(poll_interval);
     }
+}
+
+bool workflow_run_commands::follow_child_instance(std::ostream& out,
+                                                  nats_client& session,
+                                                  const std::string& instance_id,
+                                                  std::chrono::seconds timeout) {
+    const auto steps = fetch_steps(session, instance_id);
+    if (!steps || !steps->success) {
+        const auto reason = !steps ? steps.error() : steps->message;
+        fail(out) << "Could not read the steps of workflow instance " << instance_id
+                  << " to see whether it handed work on: " << reason << std::endl;
+        return false;
+    }
+
+    // The handoff is the last thing a run does, so the last completed step is
+    // read first. Older steps are searched only because a definition may place
+    // the handoff before its own tail; a run with no handoff costs one read.
+    std::vector<const workflow::messaging::workflow_step_summary*> completed;
+    for (const auto& step : steps->steps) {
+        if (step.status == "completed" || step.status == "completed_with_warnings")
+            completed.push_back(&step);
+    }
+    std::ranges::sort(
+        completed, std::greater<>{}, &workflow::messaging::workflow_step_summary::step_index);
+
+    const auto tenant_id = session.auth().tenant_id;
+    for (const auto* step : completed) {
+        const auto handoff = handoff_of_step(session, step->id, tenant_id);
+        if (!handoff) {
+            fail(out) << "Could not read the result of step '" << step->name
+                      << "' of workflow instance " << instance_id
+                      << ", so whether it handed work on is unknown: " << handoff.error()
+                      << std::endl;
+            return false;
+        }
+        if (!*handoff)
+            continue;
+
+        out << "  The run handed its work to instance " << **handoff << "; following it."
+            << std::endl;
+        // The same budget, measured from the child's start: the flag states how
+        // long one run may take, and the child is a run of its own.
+        return wait_for_instance(out, session, **handoff, timeout);
+    }
+
+    return true;
 }
 
 void workflow_run_commands::process_start(std::ostream& out,

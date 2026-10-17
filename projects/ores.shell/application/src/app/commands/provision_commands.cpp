@@ -171,8 +171,13 @@ iam::messaging::provision_tenant_command build_tenant_request(const parsed_args&
  * progress read the browser's journey renders, so both clients watch the same
  * record of the same work.
  *
- * @return true when the run ended with every step complete, false after
- * reporting why not.
+ * A provisioning run is two runs: the one the request starts, and the tenant's
+ * own setup, which the system-side run hands its work to and records as the
+ * child of its last step. Only the child finishing makes the tenant ready, so
+ * the command follows it too before answering.
+ *
+ * @return true when the run, and any run it handed work to, ended with every
+ * step complete; false after reporting why not.
  */
 template <typename Request>
 bool run_and_follow(std::ostream& out,
@@ -188,7 +193,10 @@ bool run_and_follow(std::ostream& out,
     }
 
     out << "  Run started: " << started->instance_id << std::endl;
-    return workflow_run_commands::wait_for_instance(out, session, started->instance_id, timeout);
+    if (!workflow_run_commands::wait_for_instance(out, session, started->instance_id, timeout))
+        return false;
+    return workflow_run_commands::follow_child_instance(
+        out, session, started->instance_id, timeout);
 }
 
 /// The timeout a command was given, or nothing after reporting a value it

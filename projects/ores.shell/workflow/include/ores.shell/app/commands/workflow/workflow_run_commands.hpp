@@ -79,7 +79,12 @@ public:
      * requires that many steps to exist.
      *
      * Transport and parse errors are tolerated for a few consecutive
-     * polls, because a long wait routinely survives a network blip.
+     * polls, because a long wait routinely survives a network blip. An
+     * instance that is not found yet is the same kind of transient: the
+     * engine creates the row after the request that names it is answered,
+     * so the first poll of a fresh run can legitimately miss it, and that
+     * first miss is not reported as a warning. A miss that persists is
+     * still reported, and the retry budget still runs out loudly.
      *
      * @param expected_state When non-empty, the wait asserts the instance's own
      * terminal state instead of step completion. A run that is meant to fail
@@ -96,6 +101,30 @@ public:
                                   std::chrono::seconds timeout,
                                   std::size_t expected_steps = 0,
                                   const std::string& expected_state = {});
+
+    /**
+     * @brief Follow the run a completed instance handed its work to.
+     *
+     * A run finishes its own steps by starting another: its last step records
+     * that run's id as @c child_instance_id in the step's result. Followed
+     * only to the handover, the command that started the first run reports work
+     * as done while the second run is still doing it. This reads the result of
+     * the run's last completed step, and follows the child to completion by the
+     * same rules as any other wait, so both are reported the same way.
+     *
+     * A run whose steps hand nothing on returns immediately, and so does a step
+     * whose result names no child. A result that cannot be read is reported as
+     * a failure: reporting success for work the run may have handed on is the
+     * defect this exists to prevent.
+     *
+     * @return true when nothing was handed on, or when the child run completed;
+     * false after reporting a child that failed, timed out, or could not be
+     * followed.
+     */
+    static bool follow_child_instance(std::ostream& out,
+                                      ores::nats::service::nats_client& session,
+                                      const std::string& instance_id,
+                                      std::chrono::seconds timeout);
 
     /**
      * @brief Start a workflow by type and print the instance id to follow.

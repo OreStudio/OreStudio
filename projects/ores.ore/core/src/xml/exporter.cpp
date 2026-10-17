@@ -404,7 +404,8 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                                     matched = true;
                                 }
                             } else if constexpr (std::is_same_v<I, fx_accumulator_instrument>) {
-                                xsd_t = fx_instrument_mapper::reverse_fx_accumulator(instr);
+                                xsd_t = fx_instrument_mapper::reverse_fx_accumulator(
+                                    instr, r.range_bounds);
                                 matched = true;
                             } else if constexpr (std::is_same_v<I, fx_variance_swap_instrument>) {
                                 xsd_t = fx_instrument_mapper::reverse_fx_variance_swap(instr);

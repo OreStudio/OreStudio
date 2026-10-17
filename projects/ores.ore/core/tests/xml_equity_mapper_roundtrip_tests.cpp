@@ -295,9 +295,9 @@ TEST_CASE("equity_mapper_roundtrip_accumulator", tags) {
     const auto rt = equity_instrument_mapper::reverse_equity_accumulator(inst);
     REQUIRE(rt.EquityAccumulatorData);
     REQUIRE(rt.EquityAccumulatorData->RangeBounds.RangeBound.size() == 2);
-    CHECK(rt.EquityAccumulatorData->RangeBounds.RangeBound[0].RangeTo == 4000.0f);
+    CHECK((*rt.EquityAccumulatorData->RangeBounds.RangeBound[0].RangeTo) == 4000.0f);
     CHECK(rt.EquityAccumulatorData->RangeBounds.RangeBound[0].Leverage == 1.0f);
-    CHECK(rt.EquityAccumulatorData->RangeBounds.RangeBound[1].RangeFrom == 4000.0f);
+    CHECK((*rt.EquityAccumulatorData->RangeBounds.RangeBound[1].RangeFrom) == 4000.0f);
     CHECK(rt.EquityAccumulatorData->RangeBounds.RangeBound[1].Leverage == 2.0f);
 
     BOOST_LOG_SEV(lg, info) << "EquityAccumulator roundtrip passed. Amount: " << inst.fixing_amount;

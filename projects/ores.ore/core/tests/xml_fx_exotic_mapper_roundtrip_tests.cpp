@@ -242,18 +242,59 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     CHECK(!instr.underlying_code.empty());
     CHECK(!instr.currency.empty());
     CHECK(instr.fixing_amount.to_double() > 0.0);
-    CHECK(!instr.range_bounds_json.empty());
 
-    const auto rt = fx_instrument_mapper::reverse_fx_accumulator(instr);
+    // The RangeBounds list is the accumulator's child, so the rows arrive
+    // beside the fact row and the reverse mapper needs them passed.
+    REQUIRE(r.range_bounds.size() == 2);
+    CHECK(r.range_bounds[0].sequence_number == 1);
+    CHECK(r.range_bounds[1].sequence_number == 2);
+    CHECK(r.range_bounds[0].range_to.has_value());
+    CHECK(r.range_bounds[0].range_to->to_string() == "122");
+    CHECK(r.range_bounds[1].range_from.has_value());
+    CHECK(r.range_bounds[1].range_from->to_string() == "122");
+
+    const auto rt = fx_instrument_mapper::reverse_fx_accumulator(instr, r.range_bounds);
     const bool has_data = rt.FxAccumulatorData.operator bool();
     REQUIRE(has_data);
     REQUIRE(rt.FxAccumulatorData->RangeBounds.RangeBound.size() == 2);
-    CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[0].RangeTo == 122.0f);
+    CHECK((*rt.FxAccumulatorData->RangeBounds.RangeBound[0].RangeTo) == 122.0f);
     CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[0].Leverage == 2.0f);
-    CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[1].RangeFrom == 122.0f);
+    CHECK((*rt.FxAccumulatorData->RangeBounds.RangeBound[1].RangeFrom) == 122.0f);
     CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[1].Leverage == 1.0f);
 
     BOOST_LOG_SEV(lg, info) << "FxAccumulator roundtrip passed. Amount: " << instr.fixing_amount;
+}
+
+TEST_CASE("fx_exotic_mapper_keeps_a_range_bound_level_digits", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A float carries at most nine significant digits, so a level the document
+    // states with more digits survives only if the binding keeps the text and
+    // the column stores the decimal. The document here states the level with
+    // twelve digits after the point.
+    using ores::platform::filesystem::file;
+    auto content = file::read_content(example_path("Exotic_FxAccumulator.xml"));
+    const std::string as_written = "<RangeTo>122</RangeTo>";
+    const std::string with_digits = "<RangeTo>122.123456789012</RangeTo>";
+    const auto at = content.find(as_written);
+    REQUIRE(at != std::string::npos);
+    content.replace(at, as_written.size(), with_digits);
+
+    portfolio p;
+    ores::ore::domain::load_data(content, p);
+    REQUIRE(!p.Trade.empty());
+    const auto mapped = ores::ore::domain::trade_mapper::map_fx_instrument(p.Trade.front());
+    REQUIRE(mapped.has_value());
+    REQUIRE(mapped->range_bounds.size() == 2);
+    REQUIRE(mapped->range_bounds[0].range_to.has_value());
+    CHECK(mapped->range_bounds[0].range_to->to_string() == "122.123456789012");
+
+    auto rt = fx_instrument_mapper::reverse_fx_accumulator(mapped->accumulators.front(),
+                                                           mapped->range_bounds);
+    portfolio out;
+    out.Trade.push_back(std::move(rt));
+    const auto written = ores::ore::domain::save_data(out);
+    CHECK(written.contains("<RangeTo>122.123456789012</RangeTo>"));
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {

@@ -10528,11 +10528,11 @@ struct accumulatorData_SettlementLag_t : xsd::string {};
 
 struct rangeBound {
     xsd::optional<xsd::string> startDate;
-    xsd::optional<float> RangeFrom;
-    xsd::optional<float> RangeTo;
+    xsd::optional<domain::moneyFloat> RangeFrom;
+    xsd::optional<domain::moneyFloat> RangeTo;
     xsd::optional<float> Leverage;
-    xsd::optional<float> Strike;
-    xsd::optional<float> StrikeAdjustment;
+    xsd::optional<domain::moneyFloat> Strike;
+    xsd::optional<domain::moneyFloat> StrikeAdjustment;
 };
 
 struct accumulatorData_Barriers_t {

@@ -51,6 +51,7 @@
 #include "ores.trading.api/domain/instrument_schedule.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
+#include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
@@ -298,7 +299,9 @@ struct equity_instrument_data {
  * product, joined by trade id, rather than an aggregate with a discriminator:
  * the array an element sits in states its type, so nothing needs a tag, and a
  * child the family gains is one more array here. A trade that states no FX
- * instrument leaves every array empty.
+ * instrument leaves every array empty. A product's children, such as an
+ * accumulator's range bounds, sit beside the product arrays in their own
+ * arrays, keyed by the same trade.
  */
 struct fx_instrument_data {
     /**
@@ -337,6 +340,14 @@ struct fx_instrument_data {
     std::vector<fx_variance_swap_instrument> variance_swaps;
 
     /**
+     * @brief The range_bound rows: the RangeBounds list an accumulator states.
+     *
+     * A child of the product rather than a product, so it states no type and
+     * the visitor that picks the product never reads it.
+     */
+    std::vector<range_bound> range_bounds;
+
+    /**
      * @brief Value equality.
      *
      * A carrier is a value like the entity that holds it: the entity's
@@ -363,6 +374,16 @@ inline constexpr auto fx_instrument_arrays = std::tuple{&fx_instrument_data::for
                                                         &fx_instrument_data::asian_forwards,
                                                         &fx_instrument_data::accumulators,
                                                         &fx_instrument_data::variance_swaps};
+
+/**
+ * @brief The family's child arrays: rows a product owns rather than rows a
+ * product is.
+ *
+ * A child states no product, so no walk that picks the product reads this
+ * list. Every walk that stamps or joins the carrier reads it, because a child
+ * row is keyed by the same trade the product row is.
+ */
+inline constexpr auto fx_instrument_child_arrays = std::tuple{&fx_instrument_data::range_bounds};
 
 /**
  * @brief Calls a function on the first row the carrier holds, and on no other.
@@ -586,6 +607,8 @@ inline void stamp_ids(fx_instrument_data& data,
     };
     std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
                detail::fx_instrument_arrays);
+    std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
+               detail::fx_instrument_child_arrays);
 }
 
 } // namespace ores::trading::domain

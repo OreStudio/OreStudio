@@ -82,6 +82,10 @@ std::optional<trading::domain::fx_instrument_data> trade_mapper::map_fx_instrume
         data.asian_forwards.push_back(fx_instrument_mapper::forward_fx_average_forward(v));
     } else if (type == "FxAccumulator") {
         data.accumulators.push_back(fx_instrument_mapper::forward_fx_accumulator(v));
+        // The RangeBounds list is the accumulator's child, so the rows land
+        // beside the fact row rather than inside it.
+        if (v.FxAccumulatorData)
+            data.range_bounds = fx_instrument_mapper::forward_range_bounds(*v.FxAccumulatorData);
     } else if (type == "FxTaRF") {
         data.asian_forwards.push_back(fx_instrument_mapper::forward_fx_tarf(v));
     } else if (type == "FxGenericBarrierOption") {

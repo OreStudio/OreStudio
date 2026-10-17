@@ -30,6 +30,7 @@
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/range_bound.hpp"
 
 namespace ores::ore::domain {
 
@@ -85,6 +86,15 @@ public:
     static trading::domain::fx_variance_swap_instrument forward_fx_variance_swap(const trade& t);
     static trading::domain::fx_asian_forward_instrument forward_fx_average_forward(const trade& t);
     static trading::domain::fx_accumulator_instrument forward_fx_accumulator(const trade& t);
+    /**
+     * @brief Reads the document's RangeBounds list into its child rows.
+     *
+     * @details The list is a child table, so the rows are not part of the fact
+     * row. The trade id is stamped after mapping, the same way the fact row's
+     * is, so the rows leave the mapper with no trade id and their ordinals set.
+     */
+    static std::vector<trading::domain::range_bound>
+    forward_range_bounds(const accumulatorData& data);
     static trading::domain::fx_asian_forward_instrument forward_fx_tarf(const trade& t);
 
     // Reverse mappings (typed domain object → ORE XSD)
@@ -112,8 +122,16 @@ public:
     reverse_fx_variance_swap(const ores::trading::domain::fx_variance_swap_instrument& instr);
     static trade
     reverse_fx_average_forward(const ores::trading::domain::fx_asian_forward_instrument& instr);
+    /**
+     * @brief Writes the fact row and its RangeBounds list back to the document.
+     *
+     * @throws std::runtime_error when the trade holds no range bound, because
+     * the ORE schema requires at least one and a document without it cannot be
+     * read back.
+     */
     static trade
-    reverse_fx_accumulator(const ores::trading::domain::fx_accumulator_instrument& instr);
+    reverse_fx_accumulator(const ores::trading::domain::fx_accumulator_instrument& instr,
+                           const std::vector<ores::trading::domain::range_bound>& range_bounds);
     static trade reverse_fx_tarf(const ores::trading::domain::fx_asian_forward_instrument& instr);
 
 private:

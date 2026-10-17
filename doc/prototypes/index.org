@@ -48,7 +48,7 @@ This page is the top of the tree and the only inventory.
 | [[file:tenors/][Tenors]] | Tenor codes and the resolution the system computes from them | 1 |
 | [[file:market_data/][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time | 22 |
 | [[file:trades/][Trades]] | What a person does with a trade: structure-based booking and pricing, amending, reading, ORE import and export, lifecycle events, and structures and packages | 5 |
-| [[file:reporting/][Reporting]] | The reports a party runs, what each produced, what went wrong, and when the next one starts | 6 |
+| [[file:reporting/][Reporting]] | The reports a party runs, what each produced, what went wrong, and when the next one starts | 7 |
 | [[file:testing/][Testing]] | Working through a test scenario in the browser, what waits for a tester, and the agile tree | 2 |
 
 Two groups have no prototype yet: Currencies and FX, and

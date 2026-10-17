@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/write-the-exporter-from-the-same-tables
-#+pr:
+#+pr: 3447
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -137,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3447][#3447]] | [ore] Write the document back from the same tables |
 
 * Review
 

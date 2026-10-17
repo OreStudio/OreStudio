@@ -157,9 +157,9 @@ and different detail. That is the design rule this screen must not lose.
 
 * Prototype
 
-None yet. This journey is the design intent for the run's error screen, and its
+The [[file:../../prototypes/reporting/find-out-why-a-run-went-wrong/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/find-out-why-a-run-went-wrong.org][its design note]] says what each argues and what is fake. This journey is the design intent for the run's error screen, and its
 prototype belongs at
-=doc/prototypes/reporting/find_out_why_a_run_went_wrong/=. The prototype must
+=doc/prototypes/reporting/find-out-why-a-run-went-wrong/=. The prototype must
 draw a run whose market data was removed, with its twenty rows: one =Curve=
 error, sixteen =Trade= errors across eight trades and two analytics, two
 =Analytics= errors and one =Analytics= warning. It must draw the two Trade rows

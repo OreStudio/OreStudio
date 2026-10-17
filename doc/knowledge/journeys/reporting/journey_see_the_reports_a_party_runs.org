@@ -147,8 +147,8 @@ understood.
 
 * Prototype
 
-None yet. This journey is the design intent for the reporting front door, and
-its prototype belongs at =doc/prototypes/reporting/see_the_reports_a_party_runs/=.
+The [[file:../../prototypes/reporting/see-the-reports-a-party-runs/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/see-the-reports-a-party-runs.org][its design note]] says what each argues and what is fake. This journey is the design intent for the reporting front door, and
+its prototype belongs at =doc/prototypes/reporting/see-the-reports-a-party-runs/=.
 The prototype must draw five states, one per health word, in one table so the
 five can be compared side by side: a definition that has never run, one whose
 run is in flight, one completed with no errors, one completed carrying errors

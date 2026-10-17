@@ -120,9 +120,9 @@ it cannot show rather than drawing a next-run time it did not read.
 
 * Prototype
 
-None yet. This journey is the design intent for the schedule panel, and its
+The [[file:../../prototypes/reporting/choose-when-a-report-runs/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/choose-when-a-report-runs.org][its design note]] says what each argues and what is fake. This journey is the design intent for the schedule panel, and its
 prototype belongs at
-=doc/prototypes/reporting/choose_when_a_report_runs/=. The prototype must draw a
+=doc/prototypes/reporting/choose-when-a-report-runs/=. The prototype must draw a
 definition that is on-demand with no scheduler job; the confirmation that sets a
 schedule; the same definition scheduled, with its expression and its job; the
 change of an expression; the confirmation that unschedules; and the definition

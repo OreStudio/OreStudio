@@ -119,8 +119,8 @@ a run in flight with no output yet, and a failed run with nothing to take.
 
 * Prototype
 
-None yet. This journey is the design intent for the run's outputs screen, and
-its prototype belongs at =doc/prototypes/reporting/read_what_a_run_produced/=.
+The [[file:../../prototypes/reporting/read-what-a-run-produced/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/read-what-a-run-produced.org][its design note]] says what each argues and what is fake. This journey is the design intent for the run's outputs screen, and
+its prototype belongs at =doc/prototypes/reporting/read-what-a-run-produced/=.
 The prototype must draw a completed run with an archive and a package; a
 completed run carrying errors, where the archive and the error summary sit
 together; a run in flight with no output yet; and a failed run with nothing to

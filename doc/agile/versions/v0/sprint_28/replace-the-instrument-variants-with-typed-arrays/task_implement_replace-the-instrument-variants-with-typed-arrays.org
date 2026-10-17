@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :replace-the-instrument-variants-with-typed-arrays:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/replace-the-instrument-variants-with-typed-arrays
 #+pr:
 #+blocked_on:
 #+blocked_since:

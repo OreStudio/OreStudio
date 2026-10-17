@@ -12,6 +12,7 @@
 #+entity_plural: tenor_basis_swap_pay_receives
 #+entity_title: Tenor Basis Swap Pay Receive
 #+convention_family: tenor_basis_swap_pay_receive
+#+convention_write: by_id
 #+brief: The paying and receiving leg form of a tenor basis swap convention.
 #+created: 2026-10-14
 #+updated: 2026-10-14

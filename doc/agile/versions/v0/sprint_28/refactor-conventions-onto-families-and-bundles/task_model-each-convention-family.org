@@ -58,6 +58,23 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+- The pin holds. Comparing the service's hand-written calls with the generated
+  registry gives 26 families against 26 entries, no disagreement about which
+  families are party-scoped and which are world-scoped, and no registry row the
+  service never writes. =fx= is skipped and unregistered, as decided. The
+  registry is therefore equivalent to the hand list before the hand list is
+  deleted.
+- The registry cannot replace the calls by itself. A table of strings cannot
+  call =replace_party_rows(ctx, zero_convention_repository(), ...)=, because
+  each family needs its own repository type. The dispatch has to be generated.
+  Codegen must emit one apply function per scope from the same registry:
+  party families through =replace_party_rows=, world families through
+  =add_missing_world_rows=, and the skipped families collected. The service
+  then calls two generated functions instead of listing 26.
+- The work splits. First the generated apply functions, which delete the
+  service's hand list with behaviour unchanged and the pin green. Then the
+  aggregate itself, which is what forces the mapper, the run store and the BFF
+  to move in one wave.
 
 - =fx= needs no entity and no registry entry. The document carries an
   =fx_convention= that is the pair, its =currency_pair_convention=, a spot lag

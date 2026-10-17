@@ -19,16 +19,20 @@
  *
  */
 
-import { type ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
 import { useTranslation } from '../../i18n/Provider.js';
+import { bindings } from '../../api/bindings.js';
 import { RecordList, useRecordSource, type ListFilter } from '../../refdata/RecordList.js';
+import { RecordDialog, show } from '../../refdata/records.js';
 import { RecordStoreProvider, syntheticStore } from '../../refdata/store.js';
-import { show } from '../../refdata/records.js';
 import { useSeriesTitle } from '../../oresmd/useSeriesTitle.js';
 import { useAreaRoot } from '../../shell/AreaTrail.js';
 import { RelativeTime } from '../../ui/Time.js';
-import { SYNTHETIC } from './bindingView.js';
+import { SYNTHETIC, heldBy } from './bindingView.js';
 import { BINDINGS, VENDOR, bindingPath } from './bindingPaths.js';
+import { BINDING_DIALOG_FIELDS } from './BindingPage.js';
 import { StatusTag } from './StatusTag.js';
 import { useBindingFacts } from './useBindings.js';
 
@@ -43,8 +47,14 @@ export function BindingsPage(): ReactNode {
 
 function BindingsList(): ReactNode {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const titled = useSeriesTitle();
     const facts = useBindingFacts();
+    const [adding, setAdding] = useState(false);
+    const candidates = useQuery({
+        queryKey: ['bindings', 'sources'],
+        queryFn: bindings.sources,
+    });
     const base = useRecordSource(BINDINGS);
     const filters: readonly ListFilter[] = [
         {
@@ -59,73 +69,95 @@ function BindingsList(): ReactNode {
         },
     ];
     return (
-        <RecordList
-            source={{ ...base, filters, mayAdd: false }}
-            title={t('marketdata.bindings.title')}
-            lead={t('marketdata.bindings.lead')}
-            crumbs={[...useAreaRoot('marketdata'), { label: t('marketdata.bindings.title') }]}
-            pathOf={(row) => bindingPath(show(row['id']))}
-            // The output the binding writes leads; the source it consumes follows.
-            columns={[
-                {
-                    id: 'series',
-                    header: t('marketdata.bindings.series'),
-                    cell: (row) => {
-                        const listed = facts.seriesOf(show(row['source_name']));
-                        return listed === undefined ? (
-                            <span className="text-ink-faint">{'\u2014'}</span>
-                        ) : (
-                            titled(listed.identity)
-                        );
+        <>
+            <RecordList
+                source={{ ...base, filters }}
+                title={t('marketdata.bindings.title')}
+                lead={t('marketdata.bindings.lead')}
+                crumbs={[...useAreaRoot('marketdata'), { label: t('marketdata.bindings.title') }]}
+                pathOf={(row) => bindingPath(show(row['id']))}
+                addLabel={t('marketdata.bindings.add')}
+                onAdd={() => setAdding(true)}
+                // The output the binding writes leads; the source it consumes follows.
+                columns={[
+                    {
+                        id: 'series',
+                        header: t('marketdata.bindings.series'),
+                        cell: (row) => {
+                            const listed = facts.seriesOf(show(row['source_name']));
+                            return listed === undefined ? (
+                                <span className="text-ink-faint">{'\u2014'}</span>
+                            ) : (
+                                titled(listed.identity)
+                            );
+                        },
                     },
-                },
-                {
-                    id: 'source_name',
-                    header: t('refdata.fields.source_name'),
-                    cell: (row) => show(row['source_name']),
-                    mono: true,
-                    sort: 'source_name',
-                },
-                {
-                    id: 'producer_kind',
-                    header: t('refdata.fields.producer_kind'),
-                    cell: (row) => t(`refdata.choices.producer_kind.${show(row['producer_kind'])}`),
-                },
-                {
-                    id: 'enabled',
-                    header: t('refdata.fields.enabled'),
-                    cell: (row) =>
-                        row['enabled'] === true
-                            ? t('refdata.records.yes')
-                            : t('refdata.records.no'),
-                    sort: 'enabled',
-                },
-                {
-                    id: 'status',
-                    header: t('marketdata.bindings.status'),
-                    cell: (row) => (
-                        <StatusTag
-                            status={facts.statusOf({
-                                source_name: show(row['source_name']),
-                                producer_kind: show(row['producer_kind']),
-                                enabled: row['enabled'] === true,
-                            })}
-                        />
-                    ),
-                },
-                {
-                    id: 'last_tick',
-                    header: t('marketdata.bindings.lastTick'),
-                    cell: (row) => {
-                        const at = facts.lastTickOf(show(row['source_name']));
-                        return at === '' ? (
-                            <span className="text-ink-faint">{'\u2014'}</span>
-                        ) : (
-                            <RelativeTime at={at} />
-                        );
+                    {
+                        id: 'source_name',
+                        header: t('refdata.fields.source_name'),
+                        cell: (row) => show(row['source_name']),
+                        mono: true,
+                        sort: 'source_name',
                     },
-                },
-            ]}
-        />
+                    {
+                        id: 'producer_kind',
+                        header: t('refdata.fields.producer_kind'),
+                        cell: (row) =>
+                            t(`refdata.choices.producer_kind.${show(row['producer_kind'])}`),
+                    },
+                    {
+                        id: 'enabled',
+                        header: t('refdata.fields.enabled'),
+                        cell: (row) =>
+                            row['enabled'] === true
+                                ? t('refdata.records.yes')
+                                : t('refdata.records.no'),
+                        sort: 'enabled',
+                    },
+                    {
+                        id: 'status',
+                        header: t('marketdata.bindings.status'),
+                        cell: (row) => (
+                            <StatusTag
+                                status={facts.statusOf({
+                                    source_name: show(row['source_name']),
+                                    producer_kind: show(row['producer_kind']),
+                                    enabled: row['enabled'] === true,
+                                })}
+                            />
+                        ),
+                    },
+                    {
+                        id: 'last_tick',
+                        header: t('marketdata.bindings.lastTick'),
+                        cell: (row) => {
+                            const at = facts.lastTickOf(show(row['source_name']));
+                            return at === '' ? (
+                                <span className="text-ink-faint">{'\u2014'}</span>
+                            ) : (
+                                <RelativeTime at={at} />
+                            );
+                        },
+                    },
+                ]}
+            />
+            {adding && (
+                <RecordDialog
+                    title={t('marketdata.bindings.addTitle')}
+                    resource={BINDINGS}
+                    specs={BINDING_DIALOG_FIELDS}
+                    row={undefined}
+                    given={{ id: crypto.randomUUID() }}
+                    check={(values) => {
+                        const held = heldBy(candidates.data, values['source_name'] ?? '');
+                        return held === undefined
+                            ? []
+                            : [t('marketdata.bindings.held', { source: held })];
+                    }}
+                    onClose={() => setAdding(false)}
+                    onSaved={(write) => void navigate(bindingPath(show(write['id'])))}
+                />
+            )}
+        </>
     );
 }

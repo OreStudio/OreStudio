@@ -3792,6 +3792,14 @@ export const en: SourceCatalogue = {
             seriesHint: 'The series this binding writes to, and the oresmd URL that names it.',
             vendorNote:
                 'A binding of a real feed is read only here. Only a binding of a synthetic feed can change.',
+            add: 'Add binding',
+            addTitle: 'Add binding',
+            sourceHelp: 'The synthetic feed this party will consume.',
+            enabledHelp:
+                'While it is No, no tick is stored for this party. The feed itself keeps running.',
+            held: '{source} already writes this series. Only one running feed may write a series, so this source cannot be bound while it runs.',
+            removeWarning:
+                "The binding is deleted and ingestion for this party stops. The series and its observations stay, and so does the binding's history.",
             statuses: {
                 running: 'Running',
                 stopped: 'Stopped',

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :follow_the_child_run_a_workflow_hands_off:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/follow-the-child-run-a-workflow-hands-off
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F601BA2C-C879-4880-95C2-02110E5D168E][Follow the child run a workflow hands off]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,19 +26,22 @@ A person who provisions a tenant should not be told it is ready while its setup 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F601BA2C-C879-4880-95C2-02110E5D168E][Follow the child run a workflow hands off]] |
-| Now          | Not yet started.                       |
+| Now          | Implementation done on the branch; PR #3442 review round addressed. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Close the task once PR #3442 merges.   |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
 
-- run_and_follow follows a non-empty child_instance_id from the last completed step's response, so provision tenant and bootstrap setup both wait for the tenant setup to finish
-- the success message is only printed once the child run has completed, and a failing child run fails the command
+- run_and_follow reads the last completed step's child_instance_id and follows the child run when this session can read that run's tenant
+- bootstrap setup, and a provision tenant run from the system tenant, print the tenant ready only after the child run completed
+- a child run in another tenant is reported, naming its instance id, and the command exits successfully without claiming the tenant is ready
+- an unreadable step result fails the command; a readable result that names no child is no handoff
+- the wait counts every step the instance planned, so a run is never called finished while a step it owes is missing
 - the transient 'Workflow instance not found' first-poll warning is not printed as a warning
-- proven by provisioning a tenant on a recreated database and showing the command does not return until tenant_setup_workflow has completed with 0 step errors
+- proven by live runs as super_admin (bootstrap setup) and as tenant_admin@acme_corporation (provision tenant) on a recreated database
 
 * Plan
 
@@ -58,9 +61,29 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Unit tests for this change | 10 new cases, 38 assertions, 0 failures | =publish/bin/ores.shell.workflow.tests "workflow_run_commands*"= | 6d0d53b1e1 |
+| Whole component suite | 103 cases, 279 assertions, 0 failures | =compass test run -- -R ores.shell.workflow.tests= | 6d0d53b1e1 |
+| Step reads per follow | 2 (one steps read, one step-result read) | =follow_child_instance= reads =last_completed_step= only | 6d0d53b1e1 |
+| Steps waited for, provision tenant | 2 of 2 planned steps, then the handoff | =provision tenant --tenant-code rev3442_final ...= as tenant_admin@acme_corporation | 6d0d53b1e1 |
+| Child runs followed, bootstrap setup | 1 child run, 4 of 4 steps completed | =bootstrap setup super_admin ...= on a recreated database | 6d0d53b1e1 |
+| Child runs reported, provision tenant | 1 child run, exit code 0 | =provision tenant ...= as tenant_admin@acme_corporation | 6d0d53b1e1 |
+| provision party reads removed | 0 extra reads (was 1 steps read plus 1 result read per completed step) | =provision party "System Party" ...= in the shell | 6d0d53b1e1 |
 
 * Notes
+
+The review finding about the child's tenant was confirmed live before
+the fix: signed in as =tenant_admin@acme_corporation=, =workflow wait
+<child instance>= printed =Workflow instance not found.= five times and
+aborted with exit code 1, while the same id read as =super_admin=
+reached four completed steps. The child run belongs to the tenant that
+was created, so only the system tenant may read it.
+
+The wait's step count was also wrong: the engine creates a step row
+when it dispatches the step, so a poll can see every visible step
+complete while a later step does not exist yet. A live run declared
+=✓ All 1 step(s) completed= for a two-step run and returned while the
+tenant's setup was still running. The wait now counts the instance's
+=step_count=.
 
 * Test Scenarios
 
@@ -71,18 +94,34 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:5BA0964E-4FF2-46BC-BE6D-83AFCFA4F424][Provision a tenant as a non-system administrator]] | PASSED | Run live at 6d0d53b1e1, exit code 0. |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3442 | Follow the child run a provisioning run hands off |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Following a child in the new tenant cannot work: the steps read refuses a cross-tenant instance to anyone but the system tenant, so provision tenant run by a tenant administrator polls a run it cannot read and aborts a healthy provisioning. | workflow_run_commands.cpp | Accepted | Confirmed live as tenant_admin@acme_corporation (five refusals, exit 1). The shell now compares the tenant recorded in the handoff step with its own: it follows a child it may read, and otherwise reports that the setup continues and exits successfully. No cross-tenant read is added. |
+| 2 | The follow reads every completed step and sorts them, so a handoff-free run costs one read per step, an older step's child can be followed, and an unreadable older step fails a command whose last step said no handoff. | workflow_run_commands.cpp | Accepted | last_completed_step picks the highest completed index; only that step's result is read. |
+| 3 | The header promises that an unreadable result is a failure, but found=false and an empty result were both treated as no handoff. | workflow_run_commands.hpp/.cpp | Accepted | found=false and a transport or decode error now fail; an empty result is a step that recorded nothing, which is no handoff, and the header says so. |
+| 4 | Changed code has no unit test coverage. | workflow_run_commands_tests.cpp | Accepted | Ten cases added: handoff, no handoff, unreadable result, last-step narrowing, first-poll refusal, planned step count, an unreadable run, and tenant ownership. |
+| 5 | The child gets a fresh timeout budget, so --timeout 3600 can take 7200 s. | provision_commands.cpp | Accepted | One budget per command, documented on default_run_timeout and run_and_follow. |
+| 6 | provision party pays for a handoff it never has and can fail on an unreadable result. | provision_commands.cpp | Accepted | process_party calls run_and_wait, which starts the run and blocks on it only. |
+| 7 | Duplicated completed-step predicate; error identity matched by an English string; inverted first_miss branches; comments that describe an earlier implementation. | workflow_run_commands.hpp/.cpp | Accepted | is_step_complete is the single predicate; the first refusal is recognised by position and by whether the server answered, not by its text; the print branch is a single if/else; comments describe what the code does now. |
+| 8 | The proof lives only in the PR body; the task's Measurements and Test Scenarios tables are empty and the story says Not yet started. | task and story org files | Accepted | This page and the story record the live runs, the measurements and the scenario. |
 
 * Result
+
+The shell follows the run a provisioning run hands its work to when the
+session can read that run. A tenant administrator's session cannot read
+a run in the tenant being created, so the command names that run and
+says the setup continues there, and exits successfully. bootstrap setup
+runs as the system tenant and follows the child to its last step. The
+wait counts the steps the run planned, so it no longer returns while a
+step it owes is missing. Proven live on a recreated database as both
+super_admin and tenant_admin@acme_corporation.

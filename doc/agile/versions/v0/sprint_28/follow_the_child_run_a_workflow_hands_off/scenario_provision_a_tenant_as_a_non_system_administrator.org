@@ -1,0 +1,124 @@
+:PROPERTIES:
+:ID: 5BA0964E-4FF2-46BC-BE6D-83AFCFA4F424
+:END:
+#+title: Test Scenario: Provision a tenant as a non-system administrator
+#+description: Run provision tenant as an existing tenant's administrator and check that the command waits for the whole provisioning run, reports the run it hands work to, and exits successfully while that run continues in the new tenant.
+#+type: test_scenario
+#+level: s1
+#+filetags: :follow_the_child_run_a_workflow_hands_off:sprint_28:v0:
+#+target_dialog:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: brave_hopper
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:8FCC9994-9B12-433F-B142-750D07A5D070][Follow child_instance_id from the handoff step]] in [[id:F601BA2C-C879-4880-95C2-02110E5D168E][Follow the child run a workflow hands off]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- The database holds a tenant whose administrator can sign in. The
+  cheapest way is a recreated database brought up by =bootstrap setup=,
+  which leaves =acme_corporation= and =tenant_admin= in place.
+- Select a tenant code not already used in this environment, for example
+  =review_scenario=. The command creates the tenant, so a code that
+  exists fails before any run starts.
+- The shell binary must be the one built from this branch, because the
+  behaviour under test lives in the shell.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:8FCC9994-9B12-433F-B142-750D07A5D070][Follow child_instance_id from the handoff step]] |
+| Parent story  | [[id:F601BA2C-C879-4880-95C2-02110E5D168E][Follow the child run a workflow hands off]]   |
+| Target screen | Shell: =provision tenant=               |
+| Clients       |                                          |
+| State         | PASSED                                   |
+
+* Steps
+
+** Log in as the existing tenant's administrator
+
+- Start the shell against this environment and sign in as
+  =tenant_admin@acme_corporation= / =Secure-Password-123=.
+- The banner must name a tenant other than =Root Tenant=; the system
+  tenant is the one case where the child run is readable, so a system
+  session does not exercise this scenario.
+
+** Run provision tenant for a new code
+
+- Run =provision tenant --tenant-code review_scenario --tenant-name
+  "Review Scenario" --tenant-hostname review_scenario
+  --tenant-admin-password Secure-Password-123 --profile
+  empty_operational --timeout 900=.
+- The progress must show both steps of =provision_tenant_workflow=,
+  =system_provision= then =start_tenant_setup=, and only then
+  =✓ All 2 step(s) completed.= A command that returns after one step
+  has not waited for the run.
+
+** Check the handoff is reported, not followed
+
+- The command must print =The run handed its work to instance <id>,
+  which belongs to tenant <uuid>.= followed by a line saying that run
+  continues in that tenant and this session cannot read its steps.
+- The command must not print a poll failure or abort. The child run is
+  healthy; it is simply outside this session's tenant.
+
+** Check the closing message does not claim the tenant is ready
+
+- The closing lines must read =✓ Tenant 'Review Scenario' created; its
+  setup continues.= and the sign-in hint must point at the run to
+  follow.
+- =the tenant is ready to work in= must not appear, because the
+  tenant's setup is still running.
+
+** Confirm the child run finishes in its own tenant
+
+- Follow the instance id the command printed, signed in as
+  =super_admin= (or as the new tenant's administrator).
+- =workflow wait <id>= must reach =✓ All 4 step(s) completed.= The work
+  the parent handed on really does finish, so the report is truthful.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PASSED |
+| Completed at  | 2026-10-17 13:20 |
+| Branch        | feature/follow-the-child-run-a-workflow-hands-off |
+| Commit        | 6d0d53b1e1 |
+| Worktree      | brave_hopper |
+
+Observed, signed in as =tenant_admin@acme_corporation= (tenant
+=Acme Corporation=, =9a8db393-4f4c-48d2-8437-928535ee7516=):
+
+#+begin_example
+Provisioning tenant 'rev3442_final' from 'empty_operational'...
+  Run started: bac74724-221e-4594-ab54-bbe3b9acc5c9
+  [1/2] system_provision: completed
+  [2/2] start_tenant_setup: completed
+✓ All 2 step(s) completed.
+  The run handed its work to instance 90b5d99e-c43d-4707-b826-4a60f362faec, which belongs to tenant 269e96e9-e0b2-4849-9ba2-15d81d4ebdf3.
+  That run continues the work in that tenant, whose steps this session cannot read.
+✓ Tenant 'Review Final' created; its setup continues.
+Next: logout, then: login tenant_admin@rev3442_final <password>, and follow the setup run named above with: workflow wait <its instance id>
+#+end_example
+
+Command exit code 0. The same scenario run against the previous binary
+on the same environment ended after =✓ All 1 step(s) completed= while
+the child =tenant_setup_workflow= was still running, and a direct
+=workflow wait= on that child from the same administrator aborted after
+five =Workflow instance not found.= polls with exit code 1.
+
+The child run =90b5d99e-c43d-4707-b826-4a60f362faec= reached four
+completed steps in tenant
+=269e96e9-e0b2-4849-9ba2-15d81d4ebdf3=, so the setup the command
+reported as continuing did finish.
+
+* Notes
+
+The system-tenant path is covered by =bootstrap setup= on a recreated
+database: =super_admin= reads the child, so the command follows it and
+prints =✓ All 4 step(s) completed= before =the tenant is ready to work
+in=.

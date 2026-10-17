@@ -31,6 +31,16 @@ PRIMITIVES = {
     "xs:time": "text",
     "xs:dateTime": "text",
     "xs:boolean": "text",
+    "xs:nonNegativeInteger": "integer",
+    "xs:positiveInteger": "integer",
+    "xs:unsignedInt": "integer",
+    "xs:unsignedLong": "integer",
+    "xs:unsignedShort": "integer",
+    "xs:byte": "integer",
+    "xs:short": "integer",
+    "xs:anyURI": "text",
+    "xs:token": "text",
+    "xs:normalizedString": "text",
 }
 
 CPP_TYPE = {
@@ -138,6 +148,9 @@ class Schema:
         # becomes its own optional field, which is how the model states a
         # variation without a polymorphic payload.
         self.substitutes = {}
+        # An inline simpleType is an enumeration with no name of its own. Its
+        # spellings are emitted under the type that holds it.
+        self.inline_enum = {}
         for path in paths:
             root = ET.parse(path).getroot()
             register_inline(self, root)
@@ -248,11 +261,44 @@ def resolve_simple(schema, name, seen=None):
     return None
 
 
+def inline_simple(schema, element):
+    """The values of an element's inline simpleType, if it has one."""
+    for child in element:
+        if local(child.tag) != "simpleType":
+            continue
+        values = [
+            enumeration.get("value")
+            for restriction in child
+            if local(restriction.tag) == "restriction"
+            for enumeration in restriction
+            if local(enumeration.tag) == "enumeration"
+        ]
+        if values:
+            return values
+        for restriction in child:
+            if local(restriction.tag) == "restriction":
+                base = restriction.get("base")
+                if base is not None:
+                    return resolve_simple(schema, base)
+    return None
+
+
 def field_shape(schema, element):
     """The kind, scalar and nested type of one element."""
+    inline = inline_simple(schema, element)
+    if isinstance(inline, list):
+        schema.inline_enum[id(element)] = inline
+        return "enumeration", None
+    if isinstance(inline, str):
+        return inline, None
+
     declared = element.get("type")
     if declared in PRIMITIVES:
         return PRIMITIVES[declared], None
+    if declared is not None and declared.startswith("xs:"):
+        # An XML Schema built-in the table above does not name. It is a scalar
+        # whatever it is, never a record.
+        return "text", None
     if declared in schema.enumerations:
         return "enumeration", None
     if declared in schema.simple_types:
@@ -353,6 +399,16 @@ def expand(schema, element):
     raise SystemExit(f"element reference {ref} cannot be resolved")
 
 
+def spellings_of(schema, owner, element):
+    """The spelling table a field points at, or None."""
+    if id(element) in schema.inline_enum:
+        return f"{snake(owner)}_{snake(element.get('name'))}_spellings"
+    declared = element.get("type")
+    if declared in schema.enumerations:
+        return f"{snake(declared)}_spellings"
+    return None
+
+
 def member_declaration(schema, element, money):
     name = element.get("name")
     member = snake(name)
@@ -445,8 +501,11 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                     f"&{nested}_type, scalar_kind::text, {append}}},"
                 )
             else:
+                # Only an enumeration reads its spelling table. A repeated leaf
+                # of an enumerated type is a list of spellings, which is a
+                # list of strings.
                 tokens = (
-                    f"{snake(element.get('type'))}_spellings"
+                    spellings_of(schema, type_name, element) or "nullptr"
                     if kind == "enumeration"
                     else "nullptr"
                 )
@@ -475,13 +534,20 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
     emitted = set()
     for type_name in ordered:
         for element in children_of(schema.complex_types[type_name])[0]:
-            declared = element.get("type")
-            if declared in schema.enumerations and declared not in emitted:
-                emitted.add(declared)
-                values = ", ".join(f'"{v}"' for v in schema.enumerations[declared])
-                spellings.append(
-                    f"const char* {snake(declared)}_spellings[] = {{{values}, nullptr}};"
-                )
+            for field in expand(schema, element):
+                declared = field.get("type")
+                if id(field) in schema.inline_enum:
+                    name = spellings_of(schema, type_name, field)
+                    if name not in emitted:
+                        emitted.add(name)
+                        values = ", ".join(f'"{v}"' for v in schema.inline_enum[id(field)])
+                        spellings.append(f"const char* {name}[] = {{{values}, nullptr}};")
+                elif declared in schema.enumerations and declared not in emitted:
+                    emitted.add(declared)
+                    values = ", ".join(f'"{v}"' for v in schema.enumerations[declared])
+                    spellings.append(
+                        f"const char* {snake(declared)}_spellings[] = {{{values}, nullptr}};"
+                    )
 
     header = f'''{LICENCE}#ifndef {header_name.upper()}_HPP
 #define {header_name.upper()}_HPP

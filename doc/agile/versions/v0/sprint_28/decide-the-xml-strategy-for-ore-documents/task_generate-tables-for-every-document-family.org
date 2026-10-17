@@ -167,3 +167,20 @@ generated source was not in =component_files.cmake=, so it compiled nowhere.
 And the accessor needed the export macro, because the library is built with
 hidden visibility and a generated function has no more right to the symbol
 table than a hand-written one did.
+
+* The next family is blocked by a name, not a shape
+
+An attempt at =conventions= reached a genuine blocker that the earlier families
+did not: a generated struct name can collide with a name the engine already
+uses. ORE has a type whose snake case is =event_type=, which is the scanner's
+own event enumeration, and another whose name is the record variable of a third
+(=dates_type= belongs both to a struct named =DatesType= and to the table of a
+struct named =Dates=).
+
+Neither is a modelling problem. Both are a naming pass the generator needs: the
+struct names must be collected first, then any that collide with the engine's
+vocabulary or with another struct's table variable must be qualified. The
+family was withdrawn rather than committed half-working, and the generator
+improvements it produced, inline simpleType enumerations and the fallback for
+every =xs:= built-in, are kept and are exercised by the six families that do
+build.

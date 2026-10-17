@@ -88,10 +88,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families on the codec | 2 of 5 (calendar adjustments, currency config) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
-| Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | pending |
-| Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | pending |
-| XML suites | 527 cases, 84,175 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
+| Families on the codec | 2 of 5 (calendar adjustments, currency config) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 3260f93169 |
+| Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3260f93169 |
+| Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | 3260f93169 |
+| XML suites | 521 cases, 79,962 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 3260f93169 |
 
 * Notes
 

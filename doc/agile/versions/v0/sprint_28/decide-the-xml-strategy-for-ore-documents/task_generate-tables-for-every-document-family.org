@@ -133,6 +133,20 @@ and the rest are qualified by the type that holds them. And two families each
 defined a =correlation= struct, so the records of one family now live in a
 namespace of their own and the two can be included together.
 
+A sixth family, =nettingSetDefinitions=, is generated, and it needed the last
+structural feature: =xs:element ref="nettingSetGroup"= points at an *abstract*
+element with two substitution members, so one position in the schema is two
+possible element names in a document. Each member becomes its own optional
+field, which is how the model states a variation without a polymorphic payload.
+
+That family also found a real engine defect. ORE's =currencyCode= enumeration
+has more than a hundred spellings and the enumeration index was eight bits, so
+looking a spelling up walked off the end of the table and took the process with
+it. Sixteen bits is the floor.
+
+The engine also refuses text that no field expects now, rather than dropping it,
+which is the same no-silent-loss rule applied to mixed content.
+
 The drift check is =build/scripts/check_xml_bindings_drift.py=. It regenerates
 into a temporary root and compares, so a hand edit to a generated file and a
 schema change the tables did not follow fail the same way.

@@ -40,7 +40,7 @@ struct counterparty {
     std::uint16_t present = 0;
     std::string counterparty_id;
     std::string clearing_counterparty;
-    std::int8_t credit_quality;
+    std::int16_t credit_quality;
     ores::utility::decimal::decimal ba_cva_risk_weight;
     ores::utility::decimal::decimal sa_ccr_risk_weight;
     ores::utility::decimal::decimal sa_cva_risk_bucket;

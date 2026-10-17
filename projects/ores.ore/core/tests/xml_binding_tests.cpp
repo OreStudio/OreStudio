@@ -22,6 +22,7 @@
 #include "ores.ore.core/xml/generated/counterparty_information.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
+#include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -52,6 +53,7 @@ using cp::counterparty_information_document;
 namespace ibor = ores::ore::xml::generated::ibor_fallback_config;
 using ibor::ibor_fallback_config;
 using ibor::ibor_fallback_config_document;
+namespace nsd = ores::ore::xml::generated::netting_set_definitions;
 namespace tm = ores::ore::xml::generated::todays_market;
 using tm::todays_market_document;
 using tm::todaysmarket;
@@ -464,4 +466,60 @@ TEST_CASE("the_generated_todays_market_tables_bind_the_corpus", tags) {
     CHECK(files > 0);
     CHECK(report.empty());
     CHECK(configurations > 100);
+}
+
+TEST_CASE("an_abstract_element_with_substitution_members_binds", tags) {
+    auto lg(make_logger(test_suite));
+
+    // nettingSetGroup is abstract and two elements stand in for it. A document
+    // carries exactly one of them, and the model states that as two optional
+    // fields rather than as a polymorphic payload.
+    const std::string text = "<NettingSetDefinitions>"
+                             "<NettingSet>"
+                             "<NettingSetId>CPTY_A</NettingSetId>"
+                             "<ActiveCSAFlag>false</ActiveCSAFlag>"
+                             "</NettingSet>"
+                             "</NettingSetDefinitions>";
+
+    nsd::nettingsetdefinitions record;
+    bind_error error;
+    const bool bound = binder::bind(nsd::netting_set_definitions_document(), text, &record, error);
+
+    INFO(error.message);
+    REQUIRE(bound);
+    REQUIRE(record.netting_set.size() == 1);
+    CHECK(record.netting_set[0].netting_set_id == "CPTY_A");
+    // The substitution member that did not appear stays absent.
+    CHECK((record.netting_set[0].present & 0x2u) == 0u);
+}
+
+TEST_CASE("every_netting_set_document_in_the_corpus_binds", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
+    REQUIRE(fs::is_directory(root));
+
+    std::size_t files = 0;
+    std::size_t sets = 0;
+    std::string report;
+
+    for (const auto& entry : fs::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().filename() != "netting.xml")
+            continue;
+        ++files;
+        nsd::nettingsetdefinitions record;
+        bind_error error;
+        if (!binder::bind(
+                nsd::netting_set_definitions_document(), read_file(entry.path()), &record, error)) {
+            report += entry.path().string() + ": " + error.message + "\n";
+            continue;
+        }
+        sets += record.netting_set.size();
+    }
+
+    INFO("files: " << files << ", sets: " << sets);
+    INFO(report);
+    CHECK(files > 0);
+    CHECK(report.empty());
+    CHECK(sets > 50);
 }

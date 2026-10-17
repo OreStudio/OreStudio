@@ -70,6 +70,21 @@ LICENCE = """/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offs
 """
 
 
+def register_substitutes(schema, root):
+    """Map each substitution group head to the elements that stand in for it."""
+    globals_by_name = {}
+    for node in root:
+        if local(node.tag) == "element" and node.get("name"):
+            globals_by_name[node.get("name")] = node
+    for node in root.iter():
+        if local(node.tag) != "element":
+            continue
+        group = node.get("substitutionGroup")
+        if group is not None:
+            schema.substitutes.setdefault(group, []).append(node)
+    schema.globals = globals_by_name
+
+
 def register_inline(schema, root):
     """Give every inline complexType a unique name, after its element."""
     parents = {child: node for node in root.iter() for child in node}
@@ -118,9 +133,15 @@ class Schema:
         # Correlation. The first keeps the plain name and the rest are
         # qualified by the type that holds them.
         self.inline_name = {}
+        # An abstract element with substitution members is one position in the
+        # schema and several element names in a document: a choice. Each member
+        # becomes its own optional field, which is how the model states a
+        # variation without a polymorphic payload.
+        self.substitutes = {}
         for path in paths:
             root = ET.parse(path).getroot()
             register_inline(self, root)
+            register_substitutes(self, root)
             for node in root.iter():
                 name = node.get("name")
                 if local(node.tag) == "complexType" and name:
@@ -261,9 +282,10 @@ def collect(schema, type_name, seen):
         return seen
     elements, _ = children_of(complex_type)
     for element in elements:
-        kind, nested = field_shape(schema, element)
-        if kind == "nested" and nested is not None:
-            collect(schema, nested, seen)
+        for field in expand(schema, element):
+            kind, nested = field_shape(schema, field)
+            if kind == "nested" and nested is not None:
+                collect(schema, nested, seen)
     return seen
 
 
@@ -280,9 +302,10 @@ def order_types(schema, root_type):
         complex_type = schema.complex_types[name]
         elements, _ = children_of(complex_type)
         for element in elements:
-            kind, nested = field_shape(schema, element)
-            if kind == "nested" and nested is not None:
-                visit(nested, stack)
+            for field in expand(schema, element):
+                kind, nested = field_shape(schema, field)
+                if kind == "nested" and nested is not None:
+                    visit(nested, stack)
         stack.discard(name)
         done.add(name)
         ordered.append(name)
@@ -290,6 +313,44 @@ def order_types(schema, root_type):
     for name in seen:
         visit(name, set())
     return ordered
+
+
+def expand(schema, element):
+    """The fields one schema element produces.
+
+    Normally one. A reference to an abstract element with substitution members
+    produces one per member, each optional, because only one of them appears in
+    any given document and the model states that as a variation rather than as
+    a polymorphic payload.
+    """
+    ref = element.get("ref")
+    if ref is None:
+        yield element
+        return
+    members = schema.substitutes.get(ref)
+    head = schema.globals.get(ref)
+    if members:
+        for member in members:
+            # Exactly one member appears in any document, so each is optional
+            # regardless of the cardinality written on the reference.
+            stand_in = ET.Element("xs:element")
+            for key, value in member.attrib.items():
+                stand_in.set(key, value)
+            stand_in.set("minOccurs", "0")
+            stand_in.set("maxOccurs", element.get("maxOccurs", "1"))
+            yield stand_in
+        return
+    if head is not None and head.get("type") is not None:
+        # A plain global element: synthesise the element that names it.
+        stand_in = ET.Element("xs:element")
+        stand_in.set("name", ref)
+        stand_in.set("type", head.get("type"))
+        for attribute in ("minOccurs", "maxOccurs"):
+            if element.get(attribute) is not None:
+                stand_in.set(attribute, element.get(attribute))
+        yield stand_in
+        return
+    raise SystemExit(f"element reference {ref} cannot be resolved")
 
 
 def member_declaration(schema, element, money):
@@ -302,7 +363,7 @@ def member_declaration(schema, element, money):
     if shape == "nested":
         return member, "nested", None, repeated
     if shape == "enumeration":
-        kind, cpp = "enumeration", "std::int8_t"
+        kind, cpp = "enumeration", "std::int16_t"
     else:
         kind = shape
         cpp = CPP_TYPE[kind]
@@ -331,12 +392,13 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         for attribute in attributes:
             body.append(f"    std::string {snake(attribute.get('name'))};")
         for element in elements:
-            member, kind, cpp, repeated = member_declaration(schema, element, money)
-            if kind == "nested":
-                cpp = snake(element.get("type") or element.get("name"))
-                if repeated:
-                    cpp = f"std::vector<{cpp}>"
-            body.append(f"    {cpp} {member};")
+            for field in expand(schema, element):
+                member, kind, cpp, repeated = member_declaration(schema, field, money)
+                if kind == "nested":
+                    cpp = snake(field.get("type") or schema.inline_name.get(id(field), field.get("name")))
+                    if repeated:
+                        cpp = f"std::vector<{cpp}>"
+                body.append(f"    {cpp} {member};")
         if is_residual(complex_type):
             body.append("    std::vector<residual_element> extras;")
         body.append("};")
@@ -352,7 +414,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         if own_kind is not None:
             rows.append(
                 f'    {{"", 0u, field_kind::{own_kind}, '
-                f"std::uint16_t(offsetof({snake(type_name)}, value)), "
+                f"std::uint32_t(offsetof({snake(type_name)}, value)), "
                 f"{bit}, false, false, nullptr, nullptr, {SCALAR[own_kind]}, nullptr}},"
             )
             bit += 1
@@ -361,12 +423,13 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             required = attribute.get("use") == "required"
             rows.append(
                 f'    {{"{name}", {hash_name(name)}u, field_kind::text, '
-                f"std::uint16_t(offsetof({snake(type_name)}, {snake(name)})), {bit}, true, "
+                f"std::uint32_t(offsetof({snake(type_name)}, {snake(name)})), {bit}, true, "
                 f"{'true' if required else 'false'}, nullptr, nullptr, "
                 f"scalar_kind::text, nullptr}},"
             )
             bit += 1
         for element in elements:
+          for element in expand(schema, element):
             name = element.get("name")
             member, kind, cpp, repeated = member_declaration(schema, element, money)
             required = element.get("minOccurs", "1") != "0"
@@ -377,7 +440,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 append = f"&append_to<{nested}>" if repeated else "nullptr"
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{field_kind}, '
-                    f"std::uint16_t(offsetof({snake(type_name)}, {member})), {bit}, false, "
+                    f"std::uint32_t(offsetof({snake(type_name)}, {member})), {bit}, false, "
                     f"{'true' if required else 'false'}, nullptr, "
                     f"&{nested}_type, scalar_kind::text, {append}}},"
                 )
@@ -389,14 +452,14 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 )
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{kind}, '
-                    f"std::uint16_t(offsetof({snake(type_name)}, {member})), {bit}, false, "
+                    f"std::uint32_t(offsetof({snake(type_name)}, {member})), {bit}, false, "
                     f"{'true' if required else 'false'}, {tokens}, nullptr, {scalar}, nullptr}},"
                 )
             bit += 1
         if is_residual(complex_type):
             rows.append(
                 f'    {{"", 0u, field_kind::residual, '
-                f"std::uint16_t(offsetof({snake(type_name)}, extras)), "
+                f"std::uint32_t(offsetof({snake(type_name)}, extras)), "
                 f"{bit}, false, false, nullptr, nullptr, scalar_kind::text, nullptr}},"
             )
             bit += 1

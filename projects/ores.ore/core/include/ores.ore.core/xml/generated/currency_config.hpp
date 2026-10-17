@@ -42,7 +42,7 @@ struct currency_definition {
     std::string symbol;
     std::string fraction_symbol;
     std::int64_t fractions_per_unit;
-    std::int8_t rounding_type;
+    std::int16_t rounding_type;
     std::int64_t rounding_precision;
     std::string currency_type;
 };

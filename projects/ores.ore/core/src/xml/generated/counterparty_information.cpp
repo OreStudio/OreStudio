@@ -38,31 +38,31 @@ auto append_to(void* container, void** slot) -> void {
 const char* credit_quality_type_spellings[] = {"HY", "IG", "NR", nullptr};
 
 const field counterparty_fields[] = {
-    {"CounterpartyId", 1752888256u, field_kind::text, std::uint16_t(offsetof(counterparty, counterparty_id)), 0, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"ClearingCounterparty", 403714842u, field_kind::text, std::uint16_t(offsetof(counterparty, clearing_counterparty)), 1, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CreditQuality", 3767213893u, field_kind::enumeration, std::uint16_t(offsetof(counterparty, credit_quality)), 2, false, false, credit_quality_type_spellings, nullptr, scalar_kind::text, nullptr},
-    {"BaCvaRiskWeight", 2324213039u, field_kind::decimal, std::uint16_t(offsetof(counterparty, ba_cva_risk_weight)), 3, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
-    {"SaCcrRiskWeight", 59815872u, field_kind::decimal, std::uint16_t(offsetof(counterparty, sa_ccr_risk_weight)), 4, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
-    {"SaCvaRiskBucket", 2448304594u, field_kind::decimal, std::uint16_t(offsetof(counterparty, sa_cva_risk_bucket)), 5, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
+    {"CounterpartyId", 1752888256u, field_kind::text, std::uint32_t(offsetof(counterparty, counterparty_id)), 0, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"ClearingCounterparty", 403714842u, field_kind::text, std::uint32_t(offsetof(counterparty, clearing_counterparty)), 1, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CreditQuality", 3767213893u, field_kind::enumeration, std::uint32_t(offsetof(counterparty, credit_quality)), 2, false, false, credit_quality_type_spellings, nullptr, scalar_kind::text, nullptr},
+    {"BaCvaRiskWeight", 2324213039u, field_kind::decimal, std::uint32_t(offsetof(counterparty, ba_cva_risk_weight)), 3, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
+    {"SaCcrRiskWeight", 59815872u, field_kind::decimal, std::uint32_t(offsetof(counterparty, sa_ccr_risk_weight)), 4, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
+    {"SaCvaRiskBucket", 2448304594u, field_kind::decimal, std::uint32_t(offsetof(counterparty, sa_cva_risk_bucket)), 5, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
 };
 const record_type counterparty_type{"counterparty", counterparty_fields, 6, no_text};
 const field counterparties_fields[] = {
-    {"Counterparty", 3606568069u, field_kind::repeated_nested, std::uint16_t(offsetof(counterparties, counterparty)), 0, false, false, nullptr, &counterparty_type, scalar_kind::text, &append_to<counterparty>},
+    {"Counterparty", 3606568069u, field_kind::repeated_nested, std::uint32_t(offsetof(counterparties, counterparty)), 0, false, false, nullptr, &counterparty_type, scalar_kind::text, &append_to<counterparty>},
 };
 const record_type counterparties_type{"counterparties", counterparties_fields, 1, no_text};
 const field correlation_fields[] = {
-    {"", 0u, field_kind::real, std::uint16_t(offsetof(correlation, value)), 0, false, false, nullptr, nullptr, scalar_kind::real, nullptr},
-    {"cpty1", 3369584452u, field_kind::text, std::uint16_t(offsetof(correlation, cpty1)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"cpty2", 3419917309u, field_kind::text, std::uint16_t(offsetof(correlation, cpty2)), 2, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::real, std::uint32_t(offsetof(correlation, value)), 0, false, false, nullptr, nullptr, scalar_kind::real, nullptr},
+    {"cpty1", 3369584452u, field_kind::text, std::uint32_t(offsetof(correlation, cpty1)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"cpty2", 3419917309u, field_kind::text, std::uint32_t(offsetof(correlation, cpty2)), 2, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
 };
 const record_type correlation_type{"Correlation", correlation_fields, 3, 0};
 const field counter_party_correlations_fields[] = {
-    {"Correlation", 3571652271u, field_kind::repeated_nested, std::uint16_t(offsetof(counter_party_correlations, correlation)), 0, false, false, nullptr, &correlation_type, scalar_kind::text, &append_to<correlation>},
+    {"Correlation", 3571652271u, field_kind::repeated_nested, std::uint32_t(offsetof(counter_party_correlations, correlation)), 0, false, false, nullptr, &correlation_type, scalar_kind::text, &append_to<correlation>},
 };
 const record_type counter_party_correlations_type{"counterPartyCorrelations", counter_party_correlations_fields, 1, no_text};
 const field counterparty_information_fields[] = {
-    {"Counterparties", 1165510329u, field_kind::nested, std::uint16_t(offsetof(counterparty_information, counterparties)), 0, false, false, nullptr, &counterparties_type, scalar_kind::text, nullptr},
-    {"Correlations", 4252826708u, field_kind::nested, std::uint16_t(offsetof(counterparty_information, correlations)), 1, false, false, nullptr, &counter_party_correlations_type, scalar_kind::text, nullptr},
+    {"Counterparties", 1165510329u, field_kind::nested, std::uint32_t(offsetof(counterparty_information, counterparties)), 0, false, false, nullptr, &counterparties_type, scalar_kind::text, nullptr},
+    {"Correlations", 4252826708u, field_kind::nested, std::uint32_t(offsetof(counterparty_information, correlations)), 1, false, false, nullptr, &counter_party_correlations_type, scalar_kind::text, nullptr},
 };
 const record_type counterparty_information_type{"counterpartyInformation", counterparty_information_fields, 2, no_text};
 

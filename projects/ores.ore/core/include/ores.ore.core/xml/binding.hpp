@@ -87,7 +87,7 @@ struct field {
     std::string_view name;
     std::uint32_t name_hash;
     field_kind kind;
-    std::uint16_t offset;
+    std::uint32_t offset;
     std::uint8_t bit;
     bool is_attribute;
     /// 1 when the schema requires the element or attribute, 0 otherwise.

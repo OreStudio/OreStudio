@@ -75,6 +75,20 @@ generate \
     --header "$header/todays_market.hpp" \
     --source "$source/todays_market.cpp"
 
+# The netting set group is an abstract element in instruments.xsd with two
+# substitution members, so that schema is read only to resolve it.
+generate \
+    --schema "$xsd/nettingsetdefinitions.xsd" \
+    --schema "$xsd/instruments.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element NettingSetDefinitions \
+    --root-type nettingsetdefinitions \
+    --accessor netting_set_definitions_document \
+    --namespace ores::ore::xml::generated::netting_set_definitions \
+    --include "ores.ore.core/xml/generated/netting_set_definitions.hpp" \
+    --header "$header/netting_set_definitions.hpp" \
+    --source "$source/netting_set_definitions.cpp"
+
 generate \
     --schema "$xsd/currencyconfig.xsd" \
     --schema "$xsd/ore_types.xsd" \

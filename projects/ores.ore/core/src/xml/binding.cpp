@@ -114,15 +114,18 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
             break;
         }
         case field_kind::enumeration: {
-            std::int8_t index = -1;
-            for (std::int8_t i = 0; f.tokens[i] != nullptr; ++i)
+            // ORE's currencyCode enumeration has more than a hundred
+            // spellings, so an eight-bit index overflows and walks off the
+            // end of the table. Sixteen bits is the floor here, not a choice.
+            std::int16_t index = -1;
+            for (std::int16_t i = 0; f.tokens[i] != nullptr; ++i)
                 if (text == f.tokens[i])
                     index = i;
             if (index < 0) {
                 error = "an element declared as an enumeration holds no known spelling";
                 return false;
             }
-            *reinterpret_cast<std::int8_t*>(slot) = index;
+            *reinterpret_cast<std::int16_t*>(slot) = index;
             break;
         }
         case field_kind::repeated_leaf: {
@@ -336,8 +339,18 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
             case event_type::text: {
                 if (is_blank(ev.value))
                     continue;
-                if (pending == nullptr)
-                    continue;
+                if (pending == nullptr) {
+                    // Text the model has no field for is data, and dropping it
+                    // would be the loss this layer exists to prevent. Mixed
+                    // content and an unknown shape both land here.
+                    error.message = "text where no field expects it";
+                    if (depth > 0)
+                        error.message += " inside '" +
+                                         std::string(stack[depth - 1].type->name) + "'";
+                    error.line = input.line();
+                    error.column = input.column();
+                    return false;
+                }
                 std::string message;
                 if (!store(pending_record, *pending, ev.value, message))
                     return fail(std::move(message));

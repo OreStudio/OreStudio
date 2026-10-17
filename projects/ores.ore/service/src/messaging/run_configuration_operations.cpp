@@ -396,8 +396,8 @@ reference_curve_names_of(nats_client& owners, const std::string& report_definiti
                 currency_of_definition[boost::uuids::to_string(d.id)] = d.curve_id;
 
             for (const auto& y : document.yield_curves) {
-                const auto it = currency_of_definition.find(boost::uuids::to_string(
-                    y.curve_definition_id));
+                const auto it =
+                    currency_of_definition.find(boost::uuids::to_string(y.curve_definition_id));
                 if (it == currency_of_definition.end() || !y.day_counter || y.day_counter->empty())
                     continue;
                 /*
@@ -441,8 +441,8 @@ reference_curve_names_of(nats_client& owners, const std::string& report_definiti
     }
 
     BOOST_LOG_SEV(run_configuration_operations_lg(), ores::logging::debug)
-        << "reference_curve_names_of: " << index_of_curve_uri.size() << " curve name(s) for definition "
-        << report_definition_id;
+        << "reference_curve_names_of: " << index_of_curve_uri.size()
+        << " curve name(s) for definition " << report_definition_id;
 
     return [index_of_curve_uri](const std::string& uri) -> std::string {
         const auto it = index_of_curve_uri.find(uri);

@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "engine_log_fixture.hpp"
 #include "ores.platform/filesystem/scoped_temp_directory.hpp"
 #include "ores.platform/filesystem/scoped_temp_file.hpp"
 #include "ores.reporting.core/service/engine_error_log.hpp"
 #include "ores.storage.core/filesystem/archiver.hpp"
-#include "engine_log_fixture.hpp"
-#include <algorithm>
 #include <boost/json.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <filesystem>
@@ -84,9 +84,8 @@ TEST_CASE("a run that failed its analytics states each error with its own scope 
     REQUIRE(read.errors.size() == 19);
 
     const auto count_of = [&](std::string_view scope) {
-        return std::ranges::count_if(read.errors, [&](const auto& error) {
-            return error.scope == scope;
-        });
+        return std::ranges::count_if(read.errors,
+                                     [&](const auto& error) { return error.scope == scope; });
     };
     CHECK(count_of("Trade") == 16);
     CHECK(count_of("Analytics") == 3);
@@ -106,13 +105,12 @@ TEST_CASE("a run that failed its analytics states each error with its own scope 
     // The analytics that had nothing to price: the engine says so once per
     // analytic, and states it about the analytic and not about a trade.
     const auto find_message = [&](std::string_view text) {
-        return std::ranges::find_if(read.errors, [&](const auto& error) {
-            return error.message == text;
-        });
+        return std::ranges::find_if(read.errors,
+                                    [&](const auto& error) { return error.message == text; });
     };
 
-    const auto analytic = find_message(
-        "Portfolio does not contain any built trades, context is 'analytic/PRICING'");
+    const auto analytic =
+        find_message("Portfolio does not contain any built trades, context is 'analytic/PRICING'");
     REQUIRE(analytic != read.errors.end());
     CHECK(analytic->scope == "Analytics");
     CHECK(analytic->severity == "error");
@@ -171,8 +169,10 @@ TEST_CASE("a run whose analytics all ran records no error", tags) {
     // The log the engine writes when everything ran: the same shape as a
     // failing run's, with no message about a subject in it.
     const auto archive = make_archive(
-        R"ORELOG({"level": "NOTICE", "message": "ORE analytics starting"})ORELOG" "\n"
-        R"ORELOG({"level": "NOTICE", "message": "report pricingstats written to Output/pricingstats.csv"})ORELOG" "\n");
+        R"ORELOG({"level": "NOTICE", "message": "ORE analytics starting"})ORELOG"
+        "\n"
+        R"ORELOG({"level": "NOTICE", "message": "report pricingstats written to Output/pricingstats.csv"})ORELOG"
+        "\n");
     const auto read = read_engine_errors_from_archive(archive);
 
     CHECK(read.ok());

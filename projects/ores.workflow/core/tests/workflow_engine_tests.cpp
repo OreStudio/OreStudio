@@ -1092,8 +1092,8 @@ TEST_CASE("a rollback settles the forward steps it abandoned", tags) {
     fixture f;
     // Three steps the graph is free to start together, so one can fail while
     // the others are still running. A linear chain cannot say this.
-    f.register_chain(
-        "test_settled_after_rollback_workflow", {{"one", {}}, {"two", {}}, {"three", {}}});
+    f.register_chain("test_settled_after_rollback_workflow",
+                     {{"one", {}}, {"two", {}}, {"three", {}}});
     const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
 
     auto commands = f.nats.subscribe_buffered(step_subject, step_command_buffer);
@@ -1123,8 +1123,8 @@ TEST_CASE("a rollback settles the forward steps it abandoned", tags) {
     // decides to roll back.
     f.engine->on_step_completed(
         as_message(completion_for(instance_id, id_at(0), step_outcome::completed)));
-    f.engine->on_step_completed(as_message(
-        completion_for(instance_id, id_at(1), step_outcome::failed, "two broke")));
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, id_at(1), step_outcome::failed, "two broke")));
 
     // The rollback runs to its end, which is where a compensated run is read.
     REQUIRE(wait_for_instance(compensation, instance_id, 1, std::chrono::seconds(5)).size() == 1);
@@ -1935,10 +1935,8 @@ TEST_CASE("a finished run carries the times it ran and was last touched", tags) 
     }();
     REQUIRE(second != nullptr);
 
-    f.engine->on_step_completed(
-        as_message(completion_for(instance_id,
-                                  boost::uuids::to_string(second->id),
-                                  step_outcome::completed)));
+    f.engine->on_step_completed(as_message(
+        completion_for(instance_id, boost::uuids::to_string(second->id), step_outcome::completed)));
 
     const auto finished = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(finished.size() == 1);
@@ -1958,8 +1956,8 @@ TEST_CASE("a finished run carries the times it ran and was last touched", tags) 
     // query a shell polls with -- the list request's id filter -- and it found
     // nothing at all before the engine wrote the column.
     const ores::workflow::messaging::workflow_instances_filter mine{
-        .id_one_of = std::vector<boost::uuids::uuid>{
-            boost::uuids::string_generator{}(instance_id)}};
+        .id_one_of =
+            std::vector<boost::uuids::uuid>{boost::uuids::string_generator{}(instance_id)}};
     const auto page = instances.read_latest(
         f.h.context(), 0, 1000, ores::utility::domain::order{}, mine, std::nullopt);
     const auto* const polled = [&]() -> const ores::workflow::domain::workflow_instance* {
@@ -1986,8 +1984,8 @@ TEST_CASE("a finished run carries the times it ran and was last touched", tags) 
 
     // The completion is when the run finished, not when its row was last
     // written: a redelivery of the last answer must not move it on.
-    f.engine->on_step_completed(as_message(completion_for(
-        instance_id, boost::uuids::to_string(second->id), step_outcome::completed)));
+    f.engine->on_step_completed(as_message(
+        completion_for(instance_id, boost::uuids::to_string(second->id), step_outcome::completed)));
     const auto after_duplicate = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(after_duplicate.size() == 1);
     REQUIRE(after_duplicate.front().completed_at.has_value());
@@ -2068,8 +2066,8 @@ TEST_CASE("a retry takes the failure's completion time off the step it resumes",
 
     // The second step fails, and the declaration says stop rather than roll
     // back, so the run stops with the failure recorded.
-    f.engine->on_step_completed(as_message(
-        completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
 
     auto instance = instances.read_latest(f.h.context(), instance_id);
     REQUIRE(instance.size() == 1);

@@ -125,9 +125,8 @@ parse_utc_timestamp(const std::string& str, const bool designator_required, cons
         whole = clean.substr(0, dot);
         // Right-pad to the six digits a time_point is read back at; anything past
         // six is below the microsecond it keeps.
-        const auto six = digits.size() >= 6
-                             ? digits.substr(0, 6)
-                             : digits + std::string(6 - digits.size(), '0');
+        const auto six =
+            digits.size() >= 6 ? digits.substr(0, 6) : digits + std::string(6 - digits.size(), '0');
         fraction = std::chrono::microseconds{std::stoll(six)};
     }
 

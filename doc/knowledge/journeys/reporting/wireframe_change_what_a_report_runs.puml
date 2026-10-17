@@ -19,70 +19,149 @@
 
 salt
 {
-  <b>ORE STUDIO - REPORTING: ANALYTICS - Group Consolidated Exposure - ACMCOR - risk</b>
+  <b>ORE STUDIO - REPORTING: WHAT THIS REPORT RUNS</b>
+  Group Consolidated Exposure | Party ACMCOR | report type risk
   --
-  <b>THE CONFIGURATION THIS DEFINITION BINDS</b>
-  --
-  {#
-    Configuration type | Configuration | Shared
-    conventions | ORE conventions 2026 | no
-    pricing_engines | ACME pricing engines | no
-    todays_market | London close 2026-10-16 | no
-    curve_configuration | ACME curve set | no
-    risk_report_config | Group risk configuration | yes, by 4 definitions
-  }
-  --
-  <b>ANALYTICS OF Group risk configuration: on and off, in display order</b>
+  <b>THE WIZARD: THREE STEPS</b>
   --
   {#
-    On | Analytic | Order | Parameters
-    Y | npv | 1 | -
-    Y | sensitivity | 2 | shift_size = 0.0001, shift_type = Absolute
-    N | cashflow | 3 | -
-    Y | portfolioDetails | 4 | -
-    Y | pfe | 5 | horizon = 10, quantile = 0.95
-    N | simulation | 6 | -
+    Step | What the step carries
+    1 | the definition and the configurations it binds
+    2 | the analytics, as the switchboard
+    3 | review and save
   }
-  A row that is off stays on the configuration and reads as off. An analytic is turned off by setting active to
-  false and never by deleting the row, so the history shows the report used to produce it. No control on this
-  panel removes a row.
+  [ Back ] | [ Next: the analytics ]
   --
-  <b>THE ONE RULE BETWEEN ANALYTICS</b>
-  --
-  pfe reads a cube that simulation writes, so pfe on without simulation cannot work.
-  <b>REFUSED: pfe is on and simulation is off.</b> The rule lives in the ACME seeder, in
-  generate_risk_config_data.py, check_exposure_needs_simulation, and in no service. The server accepts this
-  set, so this panel states the rule itself.
-  --
-  <b>CHANGE A PARAMETER</b>
+  <b>STEP 1 - THE DEFINITION AND THE CONFIGURATIONS IT BINDS</b>
   --
   {#
-    Parameter | Value
-    sensitivity.shift_size | 0.00005
-    sensitivity.shift_type | Absolute
-    pfe.horizon | 10
+    Configuration type | What it supplies | Where that data lives
+    conventions | calendars, day counts, pairs | /refdata/conventions -> Conventions
+    pricing_engines | engine per product family | NO SCREEN, no route exists
+    todays_market | curves, surfaces, FX spots | NO SCREEN, no route exists
+    curve_configuration | builder and pillars per curve | NO SCREEN, no route exists
+    risk_report_config | the analytics and their settings | NO SCREEN, no route exists
   }
-  A parameter change writes one row: its parameter_name and its value.
+  Only conventions has a screen today: PATHS.conventions, /refdata/conventions.
+  The other four are stated as missing, never drawn as links that would not resolve.
+  Group risk configuration carries the analytics, and four definitions bind it:
+  this one, Board Risk Dashboard, Group DV01 by book, Treasury Sensitivity.
+  Everything steps 2 and 3 change reaches all four.
   --
-  <b>REVIEW: EXACTLY WHAT WILL BE WRITTEN</b>
+  <b>STEP 2 - THE SWITCHBOARD: EVERY ANALYTIC TYPE, ONE ROW EACH</b>
   --
   {#
-    Write | Analytic | Field | Was | Will be
-    configuration_analytic | cashflow | active | Y | N
-    configuration_analytic | saccr | active | - | Y
-    configuration_analytic_parameter | sensitivity | shift_size | 0.0001 | 0.00005
+    Analytic | On | Order | Parameters
+    npv | Y | 1 | discount_curve, include_cashflows
+    sensitivity | Y | 2 | shift_size = 0.0001, shift_type = Absolute
+    cashflow | N | 3 | bucket, include_fixings
+    curves | no row | - | curve_set, build_on_the_fly
+    portfolioDetails | Y | 4 | grouping, include_empty_books
+    simulation | N | 5 | number_of_paths, seed, time_grid
+    pfe | Y | 6 | horizon = 10, quantile = 0.95, exposure_cube
+    saccr | N | 7 | reporting_currency, include_collateral
+    parametricVar | no row | - | confidence, horizon_days
+    creditcurves | no row | - | hazard_rate_source, recovery_rate
+    calibration | N | 8 | model, max_iterations, tolerance
+    pnlExplain | no row | - | decomposition, threshold
+    historicalSimulationVar | no row | - | confidence, lookback_days
+    xva | no row | - | base_currency, methodology, include_cva
   }
-  Confirm: write 2 analytic rows and 1 parameter row to Group risk configuration?
+  The parameters are summarised here. The controls live in the add-analytic flow.
+  A type with no row has no switch: adding it is the flow, which writes the row.
+  A row that is off stays on the configuration and reads as off. An analytic is
+  turned off by setting active to false, never by deleting the row, so the
+  history shows the report used to produce it.
+  No control on this panel removes a row.
   {
-    [ Cancel ] | [ Write ]
+    [ Add analytic ] - opens the add-analytic flow
   }
-  No row is deleted. No run is started, and no schedule, binding or processing phase is touched.
   --
-  <b>WHAT THE CHANGE DOES NOT REACH</b>
+  <b>THE RULE BETWEEN ANALYTICS, SHOWN AS A STATE</b>
   --
-  Past runs keep the configuration they ran with, with their outputs and their errors. The configuration is
-  shared, so every definition bound to it runs the new set on its next run, including the three definitions the
-  person did not open.
+  <b>THIS SET CANNOT RUN: pfe is on and simulation is off.</b> Both rows above are marked.
+  {
+    [ simulation ] <color:red>OFF, staged - pfe is on, turning this off breaks it</color>
+    [ pfe ] <color:red>ON, staged - needs simulation, cannot run</color>
+  }
+  pfe reads a cube that simulation writes. The rule lives in the ACME seeder, in
+  generate_risk_config_data.py, check_exposure_needs_simulation, and in no service:
+  the write would be accepted and the run would fail later.
+  The screen refuses it itself and says that is what it is doing.
+  --
+  <b>THE ADD-ANALYTIC FLOW - SCREEN 1: THE LIST</b>
+  --
+  {#
+    Analytic | What it produces | State
+    npv | one present value per trade | on
+    sensitivity | the change per market factor | on
+    cashflow | cashflow rows, bucketed | off
+    curves | the built curves and pillars | no row
+    simulation | simulated paths and the cube | off, staged
+    saccr | standardised credit exposure | off
+    parametricVar | one value at risk figure | no row
+    portfolioDetails | trades and notional per book | on
+    creditcurves | survival probability per name | no row
+    pfe | exposure profile and one figure | on, staged
+    calibration | fitted parameters and fit error | off
+    pnlExplain | yesterday's P&L split by factor | no row
+    historicalSimulationVar | a value at risk from history | no row
+    xva | CVA, DVA and funding cost | no row
+  }
+  [ Choose ] and nothing is written.
+  --
+  <b>THE ADD-ANALYTIC FLOW - SCREEN 2: THE DETAIL, READ THREE WAYS</b>
+  --
+  <b>A document</b>   a short readable page, then every parameter in one column
+  <b>B two columns</b> explanation and calculation left, settings and effect right
+  <b>C guided</b>      one parameter at a time, the explanation beside it, a summary last
+  {#
+    The analytic | pfe is how large the book could become against a counterparty
+    How calculated | reads the cube simulation writes, takes a quantile by date
+  }
+  {#
+    Parameter | Control | Meaning and a normal value
+    horizon | number field | days forward; normal 10
+    quantile | number field | confidence read at; normal 0.95
+    exposure_cube | text field, DEFERRED | the cube it reads; the cube simulation wrote
+  }
+  The control follows the parameter's shape: number field for a count, select for
+  an enumeration, toggle for a boolean, text field for a name.
+  <b>DEFERRED:</b> simulation and pfe need purpose-built editors for the cube, the
+  shift and the time grid. They are drawn as plain fields here, and the page says
+  so on the parameter. A plain field is not the design.
+  --
+  <b>THE ADD-ANALYTIC FLOW - SCREEN 3: THE EFFECT</b>
+  --
+  The next run of every definition bound to Group risk configuration produces it.
+  It writes one analytic row and one parameter row per parameter.
+  A run after the change is not comparable with one before it.
+  <b><color:red>REFUSED: pfe needs simulation, and it is off in the set on the table.</color></b>
+  {
+    [ Turn simulation on as well ] | [ Back to the settings ] | [ Cancel ]
+  }
+  --
+  <b>STEP 3 - REVIEW AND SAVE: EXACTLY WHAT WILL BE WRITTEN</b>
+  --
+  {#
+    Field | Was | Will be
+    simulation.active | Y | N, row kept at display_order 5
+    pfe.active | N | Y, display_order 6
+    pfe.exposure_cube | simulation-cube-01 | unchanged
+  }
+  <b>NOT WRITABLE YET: this set cannot run.</b> Step 2 has to turn simulation on,
+  or turn pfe off, before the wizard offers the write.
+  No row is deleted and no run is started.
+  --
+  <b>WHAT THE CHANGE DOES AND DOES NOT REACH</b>
+  --
+  Past runs keep the configuration they ran with, with their outputs and errors.
+  The configuration is shared, so every definition bound to it runs the new set on
+  its next run, including the three the person did not open.
+  A run after the change is not comparable with a run before it: the two runs did
+  not produce the same measures. The results screen marks a comparison partial
+  where a side carried errors, and cannot mark this case, because nothing says
+  which configuration version a run used.
   --
   <b>RUNS THE CHANGE MAKES INCOMPARABLE</b>
   --
@@ -91,30 +170,15 @@ salt
     run 41c9f0a7 | 2026-10-16 06:04 | inference from start time
     run 5b02e6d3 | 2026-10-15 06:03 | inference from start time
   }
-  The results screen compares a run with a previous run of the same definition. A run after this change did not
-  produce the same measures, so a comparison between it and a run above is not a comparison. The screen marks a
-  comparison partial where a side carried errors, and it cannot mark this one: nothing says which configuration
-  version a run used.
   --
-  <b>AFTER THE WRITE: READ BACK AND THE DEFINITION'S VERSIONS</b>
+  <b>WHAT THIS SCREEN CANNOT SHOW</b>
   --
-  {#
-    Analytic | active | Order
-    cashflow | N | 3
-    saccr | Y | 7
-  }
-  {#
-    Definition version | Stated
-    v7 | 2026-10-17, the version this write records
-    v6 | 2026-09-30
-  }
-  The panel states the stored values, not the values the person typed.
-  --
-  <b>WHAT THIS PANEL CANNOT SHOW</b>
-  --
-  Which configuration version a run used: not readable. A configuration's own version history: not readable.
-  Whether pfe without simulation is refused: it is not, by any service. The screen states these absences rather
-  than drawing a validation it does not have.
+  A screen for four of the five configuration types: none exists, only conventions
+  has a route. The purpose-built editors for the cube, the shift and the time grid:
+  deferred. Which configuration version a run used: not readable. A configuration's
+  own version history: not readable. Whether pfe without simulation is refused: it
+  is not, by any service.
+  The screen states these absences rather than drawing a validation it does not have.
 }
 
 @enduml

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reporting: change what a report runs — prototype</title>
+<title>Reporting: what this report runs — prototype</title>
 <link rel="stylesheet" href="prototype.css">
 </head>
 <body>
@@ -11,29 +11,49 @@
 <!--
   PROTOTYPE. Throwaway. Mock data, no backend, no build step.
 
-  Change what a report runs, from
+  What this report runs, from
   doc/knowledge/journeys/reporting/journey_change_what_a_report_runs.org:
-  a market-risk owner or a tenant administrator adds one analytic to a
-  configuration, takes another away, changes a parameter, and reads what the
-  change does and does not reach.
+  a market-risk owner or a tenant administrator changes the set of analytics a
+  report configuration carries, and reads what the change does and does not
+  reach.
 
-  The question this page answers: how does a person change the set of analytics
-  a report runs without losing what the change costs?
+  The screen is a three step wizard:
 
-    A  a switchboard     every analytic as a row, toggled in place
-    B  a before and after  the current set beside the proposed one, with the
-                           difference stated as added, removed and changed
-    C  a question first  what measure is missing, then the types that would
-                         produce it, then the runs the change strands
+    1  the definition and the five configurations it binds, each with what it
+       supplies and a link to the screen that holds its data. Only conventions
+       has a screen today: PATHS.conventions, /refdata/conventions. The other
+       four are stated as missing, never drawn as working links.
+    2  the analytics, as a switchboard of all fourteen types, one row each, with
+       the on/off control, the display order and the parameters summarised.
+    3  review and save: what the change reaches, that past runs keep their
+       configuration, that a run either side of the change is not comparable,
+       and the exact write.
 
-  Switch with ?variant=A|B|C, or with the buttons in the foot bar.
+  Adding an analytic is a flow of its own, because setting one up inline in the
+  switchboard is too busy. It has three screens: the list of the fourteen types,
+  the detail with one control per parameter, and the effect. The detail screen is
+  the novel part, so the variants are three readings of that screen only:
+
+    A  document      the explanation as a short page, the parameters in one
+                     column below it
+    B  two columns   explanation and calculation left, parameters and the
+                     effect right
+    C  guided        one parameter at a time with the explanation beside it,
+                     advancing, with a summary at the end
+
+  Switch with ?variant=A|B|C, deep-link a wizard step with ?step=1|2|3, and open
+  one flow screen with ?screen=list|detail|effect&analytic=<code>. The buttons in
+  the foot bar do the same.
 
   Nothing here reads a server. An analytic is turned off by setting active to
   false, never by deleting the row, and the page says so. pfe reads a cube that
-  simulation writes, so pfe on without simulation is refused here; the rule
-  lives in the ACME seeder and in no service, so a build could not rely on a
-  server check. No operation says which runs were made with which configuration
-  version, so the run placement here is an inference from start times.
+  simulation writes, so pfe on without simulation is marked on the switchboard
+  and refused in the flow; the rule lives in the ACME seeder and in no service,
+  so a build could not rely on a server check. No operation says which runs were
+  made with which configuration version, so the run placement here is an
+  inference from start times. The complex editors for simulation and pfe -- the
+  cube, the shift and the time grid -- are drawn as plain fields and are
+  deferred.
 -->
 
 <div class="proto-note" id="proto-note"></div>

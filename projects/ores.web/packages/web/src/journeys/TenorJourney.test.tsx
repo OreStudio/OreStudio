@@ -46,6 +46,9 @@ function fakeServer(): TenorsServer {
             throw new Error('not reached');
         }),
         resolutions: vi.fn(async () => []),
+        previewResolution: vi.fn(async () => {
+            throw new Error('not reached');
+        }),
         amendReasons: vi.fn(async () => []),
         writeTenor: vi.fn(async () => {
             throw new Error('not reached');
@@ -65,7 +68,7 @@ function fakeServer(): TenorsServer {
 describe('the tenor page', () => {
     it('opens on the choose step, with the rail the journey runs', () => {
         const html = render(<TenorJourney server={fakeServer()} onFinished={() => undefined} />);
-        for (const step of ['Choose', 'Tenor', 'Convention', 'Review']) {
+        for (const step of ['Choose', 'Tenor', 'Convention', 'Test', 'Review']) {
             expect(html).toContain(step);
         }
         expect(html).toContain('New tenor');

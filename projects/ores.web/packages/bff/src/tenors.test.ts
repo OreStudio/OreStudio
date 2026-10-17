@@ -137,7 +137,7 @@ describe('tenor routes', () => {
         expect(response.json().schedules[0].code).toBe('IMM');
     });
 
-    it('reads the five pick lists', async () => {
+    it('reads the six pick lists', async () => {
         const rows = (field: string): unknown => ({ result: ok, [field]: [{ code: 'A' }] });
         const { server, sessionId } = buildTestServer({
             'refdata.v1.tenor_kinds.list': rows('kinds'),
@@ -145,11 +145,13 @@ describe('tenor routes', () => {
             'refdata.v1.tenor_anchors.list': rows('anchors'),
             'refdata.v1.tenor_resolution_algorithms.list': rows('algorithms'),
             'refdata.v1.business_day_convention_types.list': rows('types'),
+            'refdata.v1.calendar_names.list': rows('calendar_names'),
         });
         const response = await send(server, sessionId, 'GET', '/api/tenors/pick-lists');
         expect(Object.keys(response.json()).sort()).toEqual([
             'algorithms',
             'anchors',
+            'calendars',
             'kinds',
             'rollRules',
             'units',
@@ -243,5 +245,70 @@ describe('tenor routes', () => {
             write: { code: 'SWAP' },
         });
         expect(response.json().result.code).toBe('stale_version');
+    });
+
+    it('answers a drafted rule with the dates it resolves to', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.ops.preview_tenor_resolution': {
+                result: ok,
+                anchor_date: '2026-01-31',
+                date_before_roll: '2026-02-28',
+                adjusted_date: '2026-02-27',
+                roll_rule: 'ModifiedFollowing',
+                calendar: 'TARGET',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/tenors/preview-resolution', {
+            tenor: { code: '1M', kind: 'PERIOD', unit: 'MONTH', multiplier: 1 },
+            convention: {
+                code: 'RATES_SPOT_FORWARD',
+                measured_from: 'SPOT',
+                resolution_algorithm: 'ANCHOR_OFFSET',
+                business_day_convention_type: 'ModifiedFollowing',
+            },
+            resolution: { convention_code: 'RATES_SPOT_FORWARD', tenor_code: '1M' },
+            calendar_code: 'TARGET',
+            horizon: '2026-01-15',
+            spot: '2026-01-31',
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().adjusted_date).toBe('2026-02-27');
+        expect(response.json().date_before_roll).toBe('2026-02-28');
+        expect(calls[0]?.subject).toBe('refdata.v1.ops.preview_tenor_resolution');
+        expect(calls[0]?.body).toMatchObject({ calendar_code: 'TARGET', horizon: '2026-01-15' });
+    });
+
+    it('hands a refusal back as an answer rather than a failed request', async () => {
+        const { server, sessionId } = buildTestServer({
+            'refdata.v1.ops.preview_tenor_resolution': {
+                result: {
+                    outcome: 'invalid',
+                    code: 'missing_spot_date',
+                    message: 'The rule did not resolve.',
+                    fields: [
+                        { field: 'spot', code: 'missing_spot_date', message: 'No spot date.' },
+                    ],
+                },
+                anchor_date: '',
+                date_before_roll: '',
+                adjusted_date: '',
+                roll_rule: 'ModifiedFollowing',
+                calendar: 'TARGET',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/tenors/preview-resolution', {
+            tenor: { code: '1M', kind: 'PERIOD', unit: 'MONTH', multiplier: 1 },
+            convention: { code: 'RATES_SPOT_FORWARD' },
+            resolution: { convention_code: 'RATES_SPOT_FORWARD', tenor_code: '1M' },
+            calendar_code: 'TARGET',
+            horizon: '2026-01-15',
+        });
+
+        // The refusal is the answer to the question that was asked, so the
+        // request succeeded and the caller reads why from the payload.
+        expect(response.statusCode).toBe(200);
+        expect(response.json().result.code).toBe('missing_spot_date');
+        expect(response.json().result.fields[0].field).toBe('spot');
     });
 });

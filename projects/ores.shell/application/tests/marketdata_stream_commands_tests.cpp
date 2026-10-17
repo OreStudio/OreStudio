@@ -185,8 +185,10 @@ TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows", tags) {
 
     REQUIRE(output.rows.size() == 3);
     CHECK(output.rows[0] == "observation_time,oresmd_uri,value,source");
-    CHECK(output.rows[1] == "2026-10-06 09:00:00.000000Z," + eurusd_uri + ",1.0812,synthetic.eurusd");
-    CHECK(output.rows[2] == "2026-10-06 10:00:00.000000Z," + eurusd_uri + ",1.0815,synthetic.eurusd");
+    CHECK(output.rows[1] ==
+          "2026-10-06 09:00:00.000000Z," + eurusd_uri + ",1.0812,synthetic.eurusd");
+    CHECK(output.rows[2] ==
+          "2026-10-06 10:00:00.000000Z," + eurusd_uri + ",1.0815,synthetic.eurusd");
 }
 
 TEST_CASE("a_csv_field_holding_a_separator_is_quoted", tags) {

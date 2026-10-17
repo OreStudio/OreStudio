@@ -28,9 +28,9 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "report_instance_test_fixture.hpp"
-#include <algorithm>
 #include <boost/json.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
 #include <vector>
@@ -134,18 +134,16 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
 
     // Found by what each row says rather than by its position: a list read is
     // not a promise about the order the rows come back in.
-    const auto trade = std::ranges::find_if(rows, [](const auto& row) {
-        return row.scope_code == "Trade";
-    });
+    const auto trade =
+        std::ranges::find_if(rows, [](const auto& row) { return row.scope_code == "Trade"; });
     REQUIRE(trade != rows.end());
     CHECK(trade->severity == "error");
     CHECK(trade->subject == "trade");
     // Three trades were written and three rows came back, one per trade: a
     // count of trade-scoped errors is how a reader says three of eight trades
     // failed, so the count is what is checked and not which row came first.
-    const auto trade_rows = std::ranges::count_if(rows, [](const auto& row) {
-        return row.scope_code == "Trade";
-    });
+    const auto trade_rows =
+        std::ranges::count_if(rows, [](const auto& row) { return row.scope_code == "Trade"; });
     CHECK(trade_rows == 3);
     CHECK(std::ranges::any_of(rows, [](const auto& row) {
         return row.subject_id == std::optional<std::string>("033b4053-fe1d-5901-bc2f-7d95afe91f00");
@@ -154,9 +152,8 @@ TEST_CASE("a run that failed its analytics carries one error row per trade it co
     // the serialiser's spacing is not what a reader of it depends on.
     CHECK(boost::json::parse(trade->detail).as_object().at("exceptionType") ==
           "Error building trade");
-    const auto analytic = std::ranges::find_if(rows, [](const auto& row) {
-        return row.scope_code == "Analytics";
-    });
+    const auto analytic =
+        std::ranges::find_if(rows, [](const auto& row) { return row.scope_code == "Analytics"; });
     REQUIRE(analytic != rows.end());
     CHECK(analytic->subject == "analytic");
     CHECK(analytic->subject_id == "PRICING");
@@ -172,10 +169,9 @@ TEST_CASE("a run the platform could not complete carries a report-scoped error a
     const auto instance_id = write_instance(ctx, h.db_user(), gen);
 
     ores::reporting::service::report_error_recorder recorder(ctx);
-    CHECK(recorder
-              .record_run_failure(instance_id,
-                                  "Report execution failed during result collection")
-              .empty());
+    CHECK(
+        recorder.record_run_failure(instance_id, "Report execution failed during result collection")
+            .empty());
 
     const auto rows = errors_of(ctx, instance_id);
     REQUIRE(rows.size() == 1);
@@ -203,8 +199,7 @@ TEST_CASE("a run that succeeded records no error at all", tags) {
     CHECK(errors_of(ctx, instance_id).empty());
 }
 
-TEST_CASE("an error whose scope the vocabulary does not hold is refused rather than stored",
-          tags) {
+TEST_CASE("an error whose scope the vocabulary does not hold is refused rather than stored", tags) {
     scoped_database_helper h;
     auto gen = ores::testing::make_generation_context(h);
     const auto ctx = write_test_party_and_scope_context(h, gen);
@@ -244,9 +239,9 @@ TEST_CASE("an error carries the party of its run and not the party of the caller
     const auto mixed = caller_ctx.with_party(
         h.tenant_id(), caller_party_id, {run_party_id, caller_party_id}, h.db_user());
     ores::reporting::service::report_error_recorder recorder(mixed);
-    CHECK(recorder
-              .record_run_failure(instance_id, "Report execution failed during result collection")
-              .empty());
+    CHECK(
+        recorder.record_run_failure(instance_id, "Report execution failed during result collection")
+            .empty());
 
     const auto rows = errors_of(mixed, instance_id);
     REQUIRE(rows.size() == 1);

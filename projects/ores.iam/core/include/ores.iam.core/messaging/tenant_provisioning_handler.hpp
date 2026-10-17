@@ -1352,9 +1352,9 @@ private:
     /// left as it stands, so re-provisioning writes no version and a
     /// population that has already run keeps the anchor it ran on.
     boost::uuids::uuid record_trade_generation_config(internal_request_client& client,
-                                                       const boost::uuids::uuid& party_id,
-                                                       const trade_generation_assignment& entry,
-                                                       const std::string& reference_curve_id) {
+                                                      const boost::uuids::uuid& party_id,
+                                                      const trade_generation_assignment& entry,
+                                                      const std::string& reference_curve_id) {
         if (const auto existing = find_trade_generation_config(client, entry.name)) {
             BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
                 << "generate_trades: the config '" << entry.name << "' is already recorded.";

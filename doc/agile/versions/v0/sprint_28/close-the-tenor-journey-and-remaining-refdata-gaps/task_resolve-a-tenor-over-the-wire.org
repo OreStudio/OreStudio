@@ -8,12 +8,12 @@
 #+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps:sprint_28:v0:
 #+owner: marco
 #+branch: feature/resolve-a-tenor-over-the-wire
-#+pr:
+#+pr: 3413
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-09
 #+updated: 2026-10-13
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Journey 9's resolution column and resolved-dates step show a date the server res
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-09                               |
+| Now          | Nothing. |
+| Waiting on   | Review of the pull request.            |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                             |
 
 * Acceptance
 
@@ -41,9 +41,37 @@ Journey 9's resolution column and resolved-dates step show a date the server res
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The reconnaissance below said to call =resolve_end_date=, the hand-written
+resolver in refdata. It does not: the pure batch engine that landed after it
+is the one implementation of the arithmetic, and this operation is its first
+consumer. =resolve_end_date= applies no business-day convention at all, so
+wiring the wire to it would have shipped a date the convention column does
+not agree with.
+
+=xrefdata.v1.ops.resolve_tenor=, not =refdata.v1.tenors.resolve=. The
+subject-conformance gate settles it: the generated per-entity namespace has a
+closed verb set of eight and =resolve= is not one of them, while =ops.= is
+exempt and is where the other hand-written refdata operations sit.
+
+The pair is declared in the tenor model, so the C++ protocol header and its
+TypeScript twin render from one declaration, and the handler is pasted into
+the generated =tenor_handler= and subscribed by the generated
+=tenor_registrar=. Nothing is hand-added to a generated file.
+
+=tenor_resolution_service= owns the mapping and nothing else: it reads the
+tenor, the convention and the resolution row, materialises the named
+calendar's business days into the engine's holiday set, and reports what the
+engine says. It refuses rather than throws.
+
+Two refusals are guards the engine cannot make for itself:
+=schedule_under_anchor_offset= (a row naming a schedule under a convention
+whose algorithm never walks one) and =schedule_not_walkable= (a closed form
+this engine does not carry). Both are cases where resolving one reading and
+silently dropping the other would answer a question nobody asked.
+
+The engine reads a schedule only under =SCHEDULE_STEP=; a row's membership
+alone resolves on the calendar axis. That is the documented fallback, and it
+is what the first draft of the tests got wrong.
 
 * Measurements
 
@@ -57,9 +85,38 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Cases in =ores.refdata.core.tests= | 443 | =./compass.sh test run -- -R ores.refdata.core.tests= | 855dadabcf |
+| Cases this task adds there | 10 | =./publish/bin/ores.refdata.core.tests "[service][tenor_resolution]"= in the preset's build tree | 855dadabcf |
+| Assertions in those ten | 46 | as above | 855dadabcf |
+| Cases in =ores.analytics.quant.tests= | 435 | =./compass.sh test run -- -R ores.analytics.quant.tests= | 855dadabcf |
+| Files changed against =origin/main= | 18 | =git diff --shortstat origin/main...HEAD= | 855dadabcf |
+| Lines changed against =origin/main= | +1167 / -24 | as above | 855dadabcf |
+| Whole-tree build | 1766 targets, clean | =./compass.sh build= | 855dadabcf |
+| Local gate checks passing | 31 of 34 | =python3 build/scripts/local_checks.py --exclude-heavy= | 855dadabcf |
+| Live subscription round-trip | 748 µs, replied | =nats --server localhost:21605 --tlsca build/keys/nats/ca.crt --tlscert build/keys/nats/ores.shell.crt --tlskey build/keys/nats/ores.shell.key req ores.dev.clever_dijkstra.refdata.v1.ops.resolve_tenor '' --timeout 5s= | 855dadabcf |
+
+The three gate failures are all in =reporting= and none is this branch's:
+=er-diagram= is the stale =ores_schema.reporting.puml=, and
+=handler-permissions= and =codegen-tests= are the unseeded
+=reporting::report_errors:*= and =reporting::report_error_scopes:*. This
+branch touches no file under =projects/ores.reporting= and no SQL at all.
 
 * Notes
+
+What the wire evidence covers, and what it does not. The subject is live: a
+request against it on the running environment answers in 748 microseconds,
+which is the handler refusing a session-less caller rather than a
+"no responders" from the server. So the subscription, the registration and
+the handler's dispatch are proven on the running fleet. The resolution
+itself is proven against real database rows through
+=tenor_resolution_service=, which is the whole of the logic between the
+handler and the engine.
+
+An authenticated call end to end is not made here, because nothing calls the
+operation yet: the shell has no generic request verb and the BFF has no
+route. The client that will make it is the trader resolve screen,
+=335C4014=, which is the next task. The session, permission and codec path
+it will use is the same one 285 other subjects use and is not new here.
 
 Split out of [[id:D538F972-C4A4-4BF3-A189-D0BD1755FBA4][Resolve a tenor over
 the wire, and make the tenor machinery writable]]. That task built the two
@@ -142,7 +199,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3413][#3413]] | [refdata] Resolve a tenor over the wire, with the refusal it carries |
 
 * Review
 
@@ -151,3 +208,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=refdata.v1.ops.resolve_tenor= resolves a tenor under a convention and
+replies with the anchor date, the date before the roll, the adjusted date,
+the roll rule and the calendar it rolled on. A resolution the server
+declines is a non-ok =result= on the same reply, carrying the step that
+refused, the row at fault and the dates the resolution had reached, rather
+than an exception reaching the screen as a 500. Journey 9's coverage table
+has no =missing= row left: the three that were are this one operation, and
+the table now names its subject.
+
+It is built on the pure engine rather than on the hand-written resolver the
+reconnaissance pointed at, because that resolver applies no business-day
+convention at all. The operation is the engine's first consumer.
+
+Merged to =main=. The three acceptance bullets are met, with one gap stated
+rather than glossed: no authenticated call was made end to end, because
+nothing calls the operation yet. The evidence at the wire is the live
+subscription answering a session-less request in 748 microseconds, and the
+evidence for the resolution itself is ten cases against real database rows
+through the service, which is the whole of the logic between the handler and
+the engine. The client that closes the last gap is the trader resolve screen,
+=335C4014=.

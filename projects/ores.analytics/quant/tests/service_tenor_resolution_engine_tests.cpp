@@ -605,3 +605,63 @@ TEST_CASE("an empty batch is an empty answer rather than an error", tags) {
 
     CHECK(results.empty());
 }
+
+TEST_CASE("an answer reports the date the roll rule moved", tags) {
+    // One month from 31 January 2026 is 28 February, a Saturday, which
+    // ModifiedFollowing takes back to the 27th. Both dates are the answer's,
+    // because a screen that shows only the last one cannot show what moved.
+    const auto requests = std::vector<tenor_resolution_request>{
+        request_for(period_tenor(period_unit::month, 1),
+                    tenor_rule{.anchor = tenor_anchor::spot},
+                    year{2026} / January / 15,
+                    target_calendar,
+                    year{2026} / January / 31),
+    };
+
+    const auto results = tenor_resolution_engine::resolve_batch(requests, make_calendars());
+
+    REQUIRE(results.size() == 1);
+    CHECK(results[0].unadjusted_date == year{2026} / February / 28);
+    CHECK(results[0].resolved_date == year{2026} / February / 27);
+}
+
+TEST_CASE("a business day walk has no pre-roll date, so it reports the one date twice", tags) {
+    // A day-counted period is walked onto a business day, so the convention
+    // never sees it. Reporting a different unadjusted date here would be
+    // reporting a date the arithmetic never produced.
+    const auto requests = std::vector<tenor_resolution_request>{
+        request_for(
+            special_tenor(),
+            tenor_rule{.anchor = tenor_anchor::today, .offset = date_period{period_unit::day, 1}},
+            year{2026} / January / 15),
+    };
+
+    const auto results = tenor_resolution_engine::resolve_batch(requests, make_calendars());
+
+    REQUIRE(results.size() == 1);
+    CHECK(results[0].unadjusted_date == year{2026} / January / 16);
+    CHECK(results[0].resolved_date == year{2026} / January / 16);
+}
+
+TEST_CASE("a schedule step reports the date the schedule gave, before the roll", tags) {
+    // The CDS roll date is stated as the 20th, unadjusted, and the convention
+    // moves it: 20 March 2027 is a Saturday and ModifiedFollowing takes it to
+    // the Monday. Both dates travel, because the schedule's own answer and the
+    // convention's answer are different claims.
+    const auto requests = std::vector<tenor_resolution_request>{
+        request_for(period_tenor(period_unit::year, 1),
+                    tenor_rule{.anchor = tenor_anchor::spot,
+                               .algorithm = resolution_algorithm::schedule_step,
+                               .schedule = schedule_kind::cds_roll_quarter,
+                               .schedule_step_count = 1},
+                    year{2026} / January / 1,
+                    target_calendar,
+                    year{2026} / January / 2),
+    };
+
+    const auto results = tenor_resolution_engine::resolve_batch(requests, make_calendars());
+
+    REQUIRE(results.size() == 1);
+    CHECK(results[0].unadjusted_date == year{2027} / March / 20);
+    CHECK(results[0].resolved_date == year{2027} / March / 22);
+}

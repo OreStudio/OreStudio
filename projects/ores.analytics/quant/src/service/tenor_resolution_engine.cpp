@@ -158,6 +158,30 @@ year_month_day nth_cds_roll_on_or_after(year_month_day from, int n) {
     return candidate;
 }
 
+struct period_outcome final {
+    year_month_day unadjusted;
+    year_month_day adjusted;
+};
+
+/// The date a period lands on, and the date the convention leaves it on. A
+/// period QuantLib counts in business days is walked onto a business day, so
+/// there the two are the same date: the walk is the whole of the resolution
+/// and no convention is consulted.
+period_outcome resolve_period(year_month_day anchor,
+                              domain::date_period period,
+                              domain::business_day_convention roll,
+                              bool end_of_month,
+                              std::size_t calendar_index,
+                              const business_day_calendar_set& calendars) {
+    const auto adjusted =
+        calendar_arithmetic::advance(anchor, period, roll, end_of_month, calendar_index, calendars);
+
+    if (period.unit == domain::period_unit::day && period.multiplier != 0)
+        return {adjusted, adjusted};
+
+    return {calendar_arithmetic::add_period(anchor, period), adjusted};
+}
+
 tenor_resolution_result resolve_one(const tenor_resolution_request& request,
                                     const business_day_calendar_set& calendars,
                                     const schedule_dates_index& schedules) {
@@ -193,8 +217,10 @@ tenor_resolution_result resolve_one(const tenor_resolution_request& request,
     }
 
     if (rule.algorithm == resolution_algorithm::anchor_offset) {
-        result.resolved_date = calendar_arithmetic::advance(
+        const auto outcome = resolve_period(
             anchor.date, period, rule.roll, rule.end_of_month, request.calendar_index, calendars);
+        result.unadjusted_date = outcome.unadjusted;
+        result.resolved_date = outcome.adjusted;
         return result;
     }
 
@@ -212,8 +238,10 @@ tenor_resolution_result resolve_one(const tenor_resolution_request& request,
         // A membership-only row resolves on the calendar axis, exactly as
         // ANCHOR_OFFSET resolves it. That is how a split pillar with no
         // schedule of its own lands in a schedule-driven convention.
-        result.resolved_date = calendar_arithmetic::advance(
+        const auto outcome = resolve_period(
             anchor.date, period, rule.roll, rule.end_of_month, request.calendar_index, calendars);
+        result.unadjusted_date = outcome.unadjusted;
+        result.resolved_date = outcome.adjusted;
         return result;
     }
 
@@ -243,6 +271,7 @@ tenor_resolution_result resolve_one(const tenor_resolution_request& request,
         walked = *found;
     }
 
+    result.unadjusted_date = walked;
     result.resolved_date =
         calendar_arithmetic::adjust(walked, rule.roll, request.calendar_index, calendars);
     return result;

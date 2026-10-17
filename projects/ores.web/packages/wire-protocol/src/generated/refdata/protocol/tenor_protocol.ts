@@ -174,6 +174,23 @@ export interface GetTenorVersionResponse {
     version: Tenor | null;
 }
 
+export interface ResolveTenorRequest {
+    tenor_code: string;
+    convention_code: string;
+    calendar_code: string;
+    horizon: string;
+    spot: string | null;
+}
+
+export interface ResolveTenorResponse {
+    result: Result;
+    anchor_date: string;
+    date_before_roll: string;
+    adjusted_date: string;
+    roll_rule: string;
+    calendar: string;
+}
+
 export const subjects = {
     list_tenors_request: 'refdata.v1.tenors.list',
     get_tenor_request: 'refdata.v1.tenors.get',
@@ -184,6 +201,7 @@ export const subjects = {
     delete_many_tenors_request: 'refdata.v1.tenors.delete_many',
     list_tenor_versions_request: 'refdata.v1.tenors_versions.list',
     get_tenor_version_request: 'refdata.v1.tenors_versions.get',
+    resolve_tenor_request: 'refdata.v1.ops.resolve_tenor',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -200,6 +218,7 @@ export const requiresSession = {
     delete_many_tenors_request: true,
     list_tenor_versions_request: true,
     get_tenor_version_request: true,
+    resolve_tenor_request: true,
 } as const;
 
 /**

@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -260,6 +261,32 @@ struct get_tenor_version_request {
 struct get_tenor_version_response {
     ores::utility::domain::result result;
     std::optional<ores::refdata::domain::tenor> version;
+};
+
+struct resolve_tenor_request {
+    using response_type = struct resolve_tenor_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.ops.resolve_tenor";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::string tenor_code;
+    std::string convention_code;
+    std::string calendar_code;
+    std::chrono::year_month_day horizon;
+    std::optional<std::chrono::year_month_day> spot;
+};
+
+struct resolve_tenor_response {
+    ores::utility::domain::result result;
+    std::chrono::year_month_day anchor_date;
+    std::chrono::year_month_day date_before_roll;
+    std::chrono::year_month_day adjusted_date;
+    std::string roll_rule;
+    std::string calendar;
 };
 
 /**

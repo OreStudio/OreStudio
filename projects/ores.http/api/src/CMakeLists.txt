@@ -53,6 +53,7 @@ target_link_libraries(${lib_target_name}
 # needs beyond the baseline above, and the find_package calls they bring.
 
 find_package(Boost REQUIRED COMPONENTS json url)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.security.lib

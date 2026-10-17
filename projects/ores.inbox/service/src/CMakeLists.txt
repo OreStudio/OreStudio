@@ -65,6 +65,13 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.telemetry.core.lib)
 
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib
+        ores.iam.client.lib
+        ores.scheduler.api.lib
+        ores.variability.api.lib)
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 set(exe_binary_name ${name})

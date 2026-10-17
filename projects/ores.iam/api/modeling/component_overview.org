@@ -79,6 +79,8 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         faker-cxx::faker-cxx
         libfort::fort)
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

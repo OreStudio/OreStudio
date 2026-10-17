@@ -62,6 +62,8 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort)
 
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+
 target_compile_options(${lib_target_name} PUBLIC
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:depth100000>
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:steps10000000>

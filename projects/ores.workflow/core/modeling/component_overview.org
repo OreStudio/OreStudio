@@ -90,6 +90,8 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.core.lib
         sqlgen::sqlgen
         Boost::boost)
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

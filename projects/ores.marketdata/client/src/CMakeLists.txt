@@ -62,4 +62,6 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         libfort::fort)
 
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

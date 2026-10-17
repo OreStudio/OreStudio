@@ -58,7 +58,9 @@ target_link_libraries(${lib_target_name}
 # baseline honest for every other component.
 
 find_package(Boost REQUIRED COMPONENTS url)
+
 find_package(magic_enum CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.marketdata.api.lib

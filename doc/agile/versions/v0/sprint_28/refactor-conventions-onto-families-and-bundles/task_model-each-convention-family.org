@@ -59,6 +59,16 @@ task and name that file in the Command column.
 
 * Notes
 
+- =fx= needs no entity and no registry entry. The document carries an
+  =fx_convention= that is the pair, its =currency_pair_convention=, a spot lag
+  and its advance calendars. All three of those are entities
+  (=currency_pair=, =currency_pair_convention=, =currency_pair_convention_calendar=),
+  so the ORE FX convention is a projection of existing rows, not a store of its
+  own. Drop it from the document and derive it in the boundary mapper.
+- The tenor basis swap family registers as its central row plus its two parts,
+  because that is what the document carried. Collapsing it to one family entry
+  is a later decision, not part of this task.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

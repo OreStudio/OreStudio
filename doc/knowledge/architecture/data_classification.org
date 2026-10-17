@@ -71,8 +71,9 @@ gathered by provenance travels as a package, and its members are
 bundles that a package carries, not one atomic set.
 
 The word scope is deliberate. A composed set is not a new kind of data.
-It is ordinary entities whose consistency requirement spans several
-owners, and that requirement decides the message.
+It is ordinary entities whose consistency requirement decides the
+message, and the number of owners that requirement reaches decides
+whether the message is a bundle or a package.
 
 ** What happened, and what the gap was
 
@@ -103,7 +104,7 @@ gave a modeller a way to notice that. That is the gap this page closes.
 | Family | one entity with parts written together | =<family>_item= and =<family>_write= | one owner, one transaction |
 | Bundle | a set of related families, one owner | the bundle's part records in a manifest | one owner, one =unit_of_work=: the largest atomic thing |
 | Package | one or more bundles, any owners, plus a manifest | manifest plus part references | none as a whole: per bundle, per owner |
-| Artefact | an interchange file at the boundary | none: bytes in object storage | none, the conversion is |
+| Artefact | an interchange file at the boundary | none: bytes in object storage | none of its own: the conversion's writes carry it |
 
 The six are exhaustive for the data this system moves. A set that
 needs two of them is two messages, not one shape. The last three are
@@ -316,9 +317,10 @@ related by an invariant, one owner holds them, and one =unit_of_work=
 writes them. An environment export is a package: refdata conventions,
 trading trades and marketdata fixings are in it because they came from
 one system, not because they are related, so no transaction joins them.
-A conventions import is a package carrying one bundle: the file lists 27
-kinds, refdata applies them under one all-or-nothing import, and the
-file is only the bytes that carried the bundle.
+A conventions import is a package: the file lists 27 kinds and refdata
+owns them all, so when the import declares all-or-nothing those families
+are one bundle, and until then each family is its own bundle. The file is
+only the bytes that carried them.
 
 ** Artefact (document-shaped)
 

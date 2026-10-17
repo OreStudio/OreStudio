@@ -101,7 +101,7 @@ clothes. A part would buy a join, a message and a lookup for nothing.
 | Presentation | the entity has screens | =Table display=, =Detail fields= and the =view_group= cell |
 | Custom repository methods | a read the derived set does not cover | the literate fragment mechanism |
 | Insert-trigger validations | a rule the database must enforce on write | the =Insert trigger= section and its validation table |
-| Variation | a family of entities states its variation | the profiles and features of the
+| Variation | a group of related entity kinds states its variation | the profiles and features of the
   [[id:D773166D-0C91-8CB4-3323-42166BC07687][system model]] |
 | Batched reads | an entity is read by a set of keys | nothing to declare: the repository derives =read_latest= over the primary key, and =get_many= carries it on the wire |
 
@@ -148,6 +148,10 @@ protocol for its central row and a family protocol for the whole entity.
 
 A part that no family declares never appears in a family message. A kind
 is the set of parts its family protocol names.
+
+A family put is one family. It is not a bundle: a bundle is several
+related families applied in one =unit_of_work=, per
+[[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]].
 
 ** Anti-patterns
 

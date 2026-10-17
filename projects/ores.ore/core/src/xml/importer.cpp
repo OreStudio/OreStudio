@@ -19,13 +19,14 @@
  */
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include "ores.ore.core/domain/currency_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
+#include "ores.ore.core/xml/generated/currency_config.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "projection.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <algorithm>
 #include <format>
@@ -48,16 +49,6 @@ constexpr std::string_view audit_reason_code = "system.external_data_import";
 constexpr std::string_view audit_commentary = "Imported from ORE XML";
 
 /**
- * @brief The table the Calendar element is described by.
- */
-auto calendar_type() -> const record_type& {
-    const auto* found = find_child_type(*xg::calendar_adjustments_document().root, "Calendar");
-    if (found == nullptr)
-        throw std::runtime_error("the calendar adjustments table has no Calendar element");
-    return *found;
-}
-
-/**
  * @brief Projects one calendar record into the refdata message.
  *
  * The part no table carries: which ORE element becomes which field of our own
@@ -65,7 +56,7 @@ auto calendar_type() -> const record_type& {
  * states.
  */
 auto project(const xg::newcalendar& v) -> refdata::messaging::calendar_adjustment {
-    const auto& type = calendar_type();
+    const auto& type = projection::calendar_type();
     refdata::messaging::calendar_adjustment r;
     r.calendar_name = v.name;
 
@@ -80,6 +71,55 @@ auto project(const xg::newcalendar& v) -> refdata::messaging::calendar_adjustmen
         r.additional_business_days.assign(v.additional_business_days.date.begin(),
                                           v.additional_business_days.date.end());
 
+    return r;
+}
+
+namespace xc = generated::currency_config;
+
+/**
+ * @brief ORE's currency type token as our monetary nature.
+ *
+ * The token is carried verbatim on the entity, so this classification is
+ * derived rather than stored twice.
+ */
+auto monetary_nature_of(std::string_view ore_type) -> std::string {
+    if (ore_type.empty())
+        return "";
+    if (ore_type == "Metal")
+        return "commodity";
+    if (ore_type == "Crypto")
+        return "synthetic";
+    return "fiat";
+}
+
+/**
+ * @brief Projects one currency record into the refdata entity.
+ *
+ * An element that arrived empty states no token, which is what the previous
+ * mapping stored: absent and empty are one value here because ORE writes an
+ * unset currency type as an empty element.
+ */
+auto project_currency(const xc::currency_definition& v) -> refdata::domain::currency {
+    const auto& type = projection::currency_type();
+    refdata::domain::currency r;
+    r.iso_code = v.iso_code;
+    r.name = v.name;
+    r.numeric_code =
+        is_present(type, &v, "NumericCode") ? std::to_string(v.numeric_code) : std::string{};
+    r.symbol = v.symbol;
+    r.fraction_symbol = v.fraction_symbol;
+    r.fractions_per_unit = static_cast<int>(v.fractions_per_unit);
+    if (const auto spelling = enumeration_spelling(type, &v, "RoundingType"))
+        r.rounding_type = *spelling;
+    r.rounding_precision = static_cast<int>(v.rounding_precision);
+    r.format = "";
+    if (is_present(type, &v, "CurrencyType") && !v.currency_type.empty())
+        r.ore_currency_type = v.currency_type;
+    r.monetary_nature = monetary_nature_of(r.ore_currency_type.value_or(""));
+    r.market_tier = "";
+    r.modified_by = std::string(audit_modified_by);
+    r.change_reason_code = std::string(audit_reason_code);
+    r.change_commentary = std::string(audit_commentary);
     return r;
 }
 
@@ -115,15 +155,21 @@ std::vector<currency> importer::import_currency_config(const std::filesystem::pa
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
-    const std::string c(file::read_content(path));
-    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
+    return import_currency_config_text(file::read_content(path));
+}
 
-    domain::currencyConfig ccy_cfg;
-    domain::load_data(c, ccy_cfg);
-    const auto r = domain::currency_mapper::map(ccy_cfg);
+std::vector<currency> importer::import_currency_config_text(std::string_view text) {
+    xc::currency_config record;
+    const auto bound = binder::bind(xc::currency_config_document(), text, &record);
+    if (!bound)
+        throw std::runtime_error(
+            std::format("currency config: line {}: {}", bound.error().line, bound.error().message));
 
-    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " currencies. Result: " << r;
+    std::vector<currency> r;
+    r.reserve(record.currency.size());
+    std::ranges::transform(record.currency, std::back_inserter(r), project_currency);
 
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " currencies.";
     return r;
 }
 

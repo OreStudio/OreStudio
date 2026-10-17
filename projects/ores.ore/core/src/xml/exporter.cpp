@@ -23,7 +23,6 @@
 #include "ores.ore.core/domain/composite_instrument_mapper.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/credit_instrument_mapper.hpp"
-#include "ores.ore.core/domain/currency_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/equity_instrument_mapper.hpp"
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
@@ -33,9 +32,11 @@
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
+#include "ores.ore.core/xml/generated/currency_config.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "projection.hpp"
 #include <algorithm>
 #include <format>
 #include <iterator>
@@ -59,15 +60,6 @@ using trading::domain::scripted_instrument;
 namespace {
 
 namespace xg = generated::calendar_adjustments;
-
-/**
- * @brief States the row a projection fills, or refuses to write silently.
- */
-void state(const record_type& type, void* record, std::string_view name) {
-    if (!mark_present(type, record, name))
-        throw std::runtime_error(
-            std::format("the calendar adjustments table has no '{}' field", name));
-}
 
 /**
  * @brief The tables a calendar record is described by.
@@ -97,20 +89,20 @@ auto project(const refdata::messaging::calendar_adjustment& v) -> xg::newcalenda
     const auto& [calendar, dates] = calendar_tables_of();
     xg::newcalendar r;
     r.name = v.calendar_name;
-    state(*calendar, &r, "name");
+    projection::state(*calendar, &r, "name");
 
     if (v.base_calendar) {
         r.base_calendar = *v.base_calendar;
-        state(*calendar, &r, "BaseCalendar");
+        projection::state(*calendar, &r, "BaseCalendar");
     }
 
     const auto set_dates = [&, calendar = calendar](std::string_view name,
                                                     auto& nested,
                                                     const std::vector<std::string>& values) {
         nested.date = values;
-        state(*calendar, &r, name);
+        projection::state(*calendar, &r, name);
         if (dates != nullptr)
-            state(*dates, &nested, "Date");
+            projection::state(*dates, &nested, "Date");
     };
 
     if (!v.additional_holidays.empty())
@@ -119,6 +111,46 @@ auto project(const refdata::messaging::calendar_adjustment& v) -> xg::newcalenda
     if (!v.additional_business_days.empty())
         set_dates("AdditionalBusinessDays", r.additional_business_days, v.additional_business_days);
 
+    return r;
+}
+
+namespace xc = generated::currency_config;
+
+/**
+ * @brief Builds one currency record from the refdata entity.
+ */
+auto build_currency(const refdata::domain::currency& v) -> xc::currency_definition {
+    const auto& type = projection::currency_type();
+    xc::currency_definition r;
+    r.iso_code = v.iso_code;
+    projection::state(type, &r, "ISOCode");
+    r.name = v.name;
+    projection::state(type, &r, "Name");
+    r.symbol = v.symbol;
+    projection::state(type, &r, "Symbol");
+    r.fraction_symbol = v.fraction_symbol;
+    projection::state(type, &r, "FractionSymbol");
+    r.fractions_per_unit = v.fractions_per_unit;
+    projection::state(type, &r, "FractionsPerUnit");
+    r.rounding_precision = v.rounding_precision;
+    projection::state(type, &r, "RoundingPrecision");
+
+    if (!set_enumeration(type, &r, "RoundingType", v.rounding_type))
+        throw std::runtime_error(std::format("'{}' is not an ORE rounding type", v.rounding_type));
+
+    if (!v.numeric_code.empty()) {
+        try {
+            r.numeric_code = std::stoll(v.numeric_code);
+            projection::state(type, &r, "NumericCode");
+        } catch (const std::exception&) {
+            // A numeric code that is not a number is left out, as before.
+        }
+    }
+
+    if (v.ore_currency_type) {
+        r.currency_type = *v.ore_currency_type;
+        projection::state(type, &r, "CurrencyType");
+    }
     return r;
 }
 
@@ -166,8 +198,17 @@ bool append_unmapped_trade(domain::portfolio& p,
 
 std::string exporter::export_currency_config(const std::vector<currency>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting currency config. Total: " << v.size();
-    const auto mapped = domain::currency_mapper::map(v);
-    return domain::save_data(mapped);
+
+    xc::currency_config record;
+    record.currency.reserve(v.size());
+    std::ranges::transform(v, std::back_inserter(record.currency), build_currency);
+    projection::state(*xc::currency_config_document().root, &record, "Currency");
+
+    std::string out;
+    const auto emitted = emitter::emit(xc::currency_config_document(), &record, out);
+    if (!emitted)
+        throw std::runtime_error(emitted.error().message);
+    return out;
 }
 
 std::string exporter::export_calendar_adjustments(
@@ -182,7 +223,7 @@ std::string exporter::export_calendar_adjustments(
     std::ranges::transform(v, std::back_inserter(record.calendar), project);
     // The Calendar element is repeated, and a document with none states an
     // empty list rather than nothing.
-    state(*xg::calendar_adjustments_document().root, &record, "Calendar");
+    projection::state(*xg::calendar_adjustments_document().root, &record, "Calendar");
 
     std::string out;
     const auto emitted = emitter::emit(

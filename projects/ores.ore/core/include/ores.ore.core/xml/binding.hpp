@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -192,6 +193,30 @@ is_present(const record_type& type, const void* record, std::string_view name) -
  */
 ORES_ORE_CORE_EXPORT auto mark_present(const record_type& type, void* record, std::string_view name)
     -> bool;
+
+/**
+ * @brief The spelling a record states for an enumerated field.
+ *
+ * A projection of ours speaks the schema's spelling, not the index the table
+ * stores, and the index means nothing without the table that produced it.
+ *
+ * @return The spelling, or nothing when the field is absent or holds no
+ * spelling.
+ */
+ORES_ORE_CORE_EXPORT auto enumeration_spelling(const record_type& type,
+                                               const void* record,
+                                               std::string_view name) -> std::optional<std::string>;
+
+/**
+ * @brief States an enumerated field from the spelling a caller holds.
+ *
+ * @return False when the type declares no such field or the spelling is not
+ * one it allows.
+ */
+ORES_ORE_CORE_EXPORT auto set_enumeration(const record_type& type,
+                                          void* record,
+                                          std::string_view name,
+                                          std::string_view spelling) -> bool;
 
 /**
  * @brief Fills one record from one document, as the scanner walks past it.

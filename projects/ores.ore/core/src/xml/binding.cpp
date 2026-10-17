@@ -23,6 +23,7 @@
 #include <array>
 #include <charconv>
 #include <expected>
+#include <optional>
 #include <vector>
 
 namespace ores::ore::xml {
@@ -229,6 +230,39 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
 
 auto find_field(const record_type& type, std::string_view name, bool attribute) -> const field* {
     return find(type, name, attribute);
+}
+
+auto enumeration_spelling(const record_type& type, const void* record, std::string_view name)
+    -> std::optional<std::string> {
+    const auto* f = find_by_name(type, name);
+    if (f == nullptr || f->kind != field_kind::enumeration || !present(record, *f) ||
+        f->tokens == nullptr)
+        return std::nullopt;
+    const auto index =
+        *reinterpret_cast<const std::int16_t*>(static_cast<const std::byte*>(record) + f->offset);
+    if (index < 0)
+        return std::nullopt;
+    for (std::int16_t i = 0; i <= index; ++i)
+        if (f->tokens[i] == nullptr)
+            return std::nullopt;
+    return std::string(f->tokens[index]);
+}
+
+auto set_enumeration(const record_type& type,
+                     void* record,
+                     std::string_view name,
+                     std::string_view spelling) -> bool {
+    const auto* f = find_by_name(type, name);
+    if (f == nullptr || f->kind != field_kind::enumeration || f->tokens == nullptr)
+        return false;
+    for (std::int16_t i = 0; f->tokens[i] != nullptr; ++i) {
+        if (spelling == f->tokens[i]) {
+            *reinterpret_cast<std::int16_t*>(static_cast<std::byte*>(record) + f->offset) = i;
+            mark_present(record, *f);
+            return true;
+        }
+    }
+    return false;
 }
 
 auto find_child_type(const record_type& type, std::string_view name) -> const record_type* {

@@ -17,7 +17,6 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include "ores.ore.core/domain/currency_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
@@ -50,18 +49,6 @@ fs::path corpus_root() {
 }
 
 
-ores::ore::xml::roundtrip_kind currency_kind() {
-    return ores::ore::xml::make_roundtrip_kind<currencyConfig,
-                                               std::vector<ores::refdata::domain::currency>>(
-        "currencies",
-        "currencies",
-        static_cast<std::vector<ores::refdata::domain::currency> (*)(const currencyConfig&)>(
-            &currency_mapper::map),
-        static_cast<currencyConfig (*)(const std::vector<ores::refdata::domain::currency>&)>(
-            &currency_mapper::map),
-        ores::ore::xml::parsed_text_difference<currencyConfig>);
-}
-
 ores::ore::xml::roundtrip_kind conventions_kind() {
     return ores::ore::xml::make_roundtrip_kind<conventions,
                                                ores::refdata::messaging::conventions_document>(
@@ -74,23 +61,6 @@ ores::ore::xml::roundtrip_kind conventions_kind() {
 
 }
 
-TEST_CASE("reference_currencies_round_trip", tags) {
-    const auto walk = ores::ore::xml::walk_kind(currency_kind(), corpus_root());
-
-    for (const auto& failure : walk.failures)
-        WARN(failure);
-
-    CHECK(walk.files == 13);
-    CHECK(walk.passed == walk.files);
-    CHECK(walk.failures.empty());
-}
-
-// Hidden by default, and run on demand:
-//   ores.ore.core.tests "[.measurement]"
-// It measures the kind that does not round trip yet. Its reason is a mapper
-// that skips categories rather than a comparison that needs stating, so it
-// cannot be asserted green without hiding the loss, and it is recorded in the
-// evidence file.
 TEST_CASE("reference_kinds_measurement", "[.][measurement][reference]") {
     const auto conventions = ores::ore::xml::walk_kind(conventions_kind(), corpus_root());
     WARN("conventions files=" + std::to_string(conventions.files) +

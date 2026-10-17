@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The basket is rows of a child table keyed by the trade, and no list is stored as
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

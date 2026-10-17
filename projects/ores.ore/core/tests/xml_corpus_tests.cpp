@@ -48,17 +48,42 @@ auto examples_dir() -> fs::path {
  * so a name that happens to contain a digit is not counted as a refusal.
  */
 auto looks_numeric(std::string_view text) -> bool {
-    if (text.empty())
-        return false;
+    std::size_t i = 0;
+    if (i < text.size() && (text[i] == '+' || text[i] == '-'))
+        ++i;
+
     std::size_t digits = 0;
-    for (const char c : text) {
-        if (c >= '0' && c <= '9') {
+    while (i < text.size() && text[i] >= '0' && text[i] <= '9') {
+        ++i;
+        ++digits;
+    }
+    if (i < text.size() && text[i] == '.') {
+        ++i;
+        while (i < text.size() && text[i] >= '0' && text[i] <= '9') {
+            ++i;
             ++digits;
-        } else if (c != '+' && c != '-' && c != '.' && c != 'e' && c != 'E') {
-            return false;
         }
     }
-    return digits != 0;
+    if (digits == 0)
+        return false;
+
+    if (i < text.size() && (text[i] == 'e' || text[i] == 'E')) {
+        ++i;
+        if (i < text.size() && (text[i] == '+' || text[i] == '-'))
+            ++i;
+        std::size_t exponent_digits = 0;
+        while (i < text.size() && text[i] >= '0' && text[i] <= '9') {
+            ++i;
+            ++exponent_digits;
+        }
+        if (exponent_digits == 0)
+            return false;
+    }
+
+    // A date such as 2016-02-05 has digits and dashes, so a permissive filter
+    // asks the decimal type about it and the test fails on a value that was
+    // never a number. Everything must be consumed.
+    return i == text.size();
 }
 
 }

@@ -614,6 +614,62 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-
 }
 .booktree .bnode.sel .bnpv, .booktree .bnode.sel .btrades { color: var(--ink); }
 
+/* ------------------------------------------------------ partial results */
+/* A run can complete with an archive and with errors, and the results it
+   wrote are then incomplete: a trade the engine could not build wrote no row
+   into npv.csv, and a position the sensitivity analytic skipped carries an
+   NPV and no Delta. The banner says so above the numbers, the figures carry a
+   marker rather than losing the number, and a tree node that lost trades says
+   which figure excludes them. */
+
+.notice.partial {
+    border-color: #8a3b36;
+    border-left: 4px solid #f85149;
+    background: #2e1414;
+    color: #ffb4ad;
+    padding: 12px 16px;
+}
+.notice.partial strong { color: #ffd7d3; }
+.notice.partial b { color: #ffd7d3; font-weight: 600; }
+.notice.partial .table-wrap { margin-top: 10px; }
+.notice.partial th, .notice.partial td { border-color: rgba(255, 255, 255, 0.08); }
+.notice.partial .hint { color: rgba(255, 180, 173, 0.7); }
+.notice.partial .btn { border-color: rgba(255, 180, 173, 0.4); background: rgba(255, 180, 173, 0.08); color: #ffd7d3; }
+
+.fig.partial .v { box-shadow: inset 0 -2px 0 rgba(248, 81, 73, 0.6); }
+.fig.partial .l .tag { text-transform: none; letter-spacing: 0; }
+
+.partialline {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: #ffb4ad;
+    max-width: 92ch;
+}
+.partialline .tag { flex: none; }
+
+.booktree .bnode.partial { background: rgba(248, 81, 73, 0.06); }
+.booktree .bnode.partial .bname { color: #ffb4ad; }
+.booktree .bexcl {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 3px 12px 6px;
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: #ffb4ad;
+    background: rgba(248, 81, 73, 0.05);
+    border-bottom: 1px solid var(--line-soft);
+}
+.booktree .bexcl .tag { flex: none; }
+
+.chipbtn.scen { border-style: dashed; }
+.chipbtn.scen.on { border-style: solid; border-color: #f85149; background: rgba(248, 81, 73, 0.14); }
+.chipbtn.scen.on .p { color: #ffb4ad; }
+
 @media (max-width: 980px) {
     .split { grid-template-columns: 1fr; }
     .appnav { display: none; }

@@ -32,6 +32,17 @@
  * reporting/runs/<instance-id>/output.tar.gz, report error scope codes
  * Analytics / Configuration / Report, and severities error / warning. The
  * engine messages are drawn from real log_structured.json lines.
+ *
+ * One scenario sits beside the five runs: results-with-errors (?scenario=
+ * results-with-errors, or its chip). It takes the run that already carries
+ * eleven problems and draws the connection between the errors and the results:
+ * a banner above the figures saying the results are partial, a marker on the
+ * figures themselves, marked tree nodes for the books that lost trades, and one
+ * row per failed trade with no price and its error. A completed run can produce
+ * an archive and still not produce the whole answer, and the page must not let a
+ * total read as if it did. The errors are the run's own rows, read by
+ * reporting.v1.report_error_events.list_by_report_instance_id, which exists; no
+ * operation is invented for it.
  */
 
 (function () {
@@ -550,6 +561,56 @@
         ]
     };
 
+    /* One scenario, and it is the deliberate one. Read the page without it and a
+       reader can take the aggregate figures for the whole answer: the run says
+       it carries eleven problems, and nothing on the figures, the book tree or
+       the trade table repeats that. The scenario draws the connection.
+
+       A completed run's totals can be incomplete for a reason the model already
+       records. The engine could not build some trades, so npv.csv carries no row
+       for them and no total read from that file includes them; and the
+       sensitivity analytic skipped positions that priced, so those carry an NPV
+       and no Delta. Both facts are already in the run's own error rows, read by
+       reporting.v1.report_error_events.list_by_report_instance_id, which exists.
+       No operation is invented to draw this.
+
+       The two errors below are the run's own fixture rows, verbatim. They are
+       recorded against the sensitivity analytic, not against a TradeId: an
+       analytic-scoped error keys no trade, and the page says so where it shows
+       them. The trades are bonds booked to books the tree already draws, so the
+       tree marking is exercised on a book and on the portfolios above it. */
+    var SCENARIOS = {
+        'results-with-errors': {
+            id: 'results-with-errors',
+            runId: '3f7a91c4-6c2e-4b1d-9a84-0e5c2b7d18f3',
+            chip: 'results partial',
+            /* The trades the engine could not build. The run's own fixture
+               already carries one unbuildable row (2d0f8a31, booked to Liquidity
+               Buffer Bonds); these two join it, in two different books. */
+            unbuildable: [
+                { id: 'e07c4b21-6a95-4d38-bf72-1c8e3a5d9027', type: 'Bond', maturity: '2036-03-18',
+                    netting: 'NS-ACCOUK-004', ccy: 'GBP', npv: null, npvBase: null,
+                    notional: '35,000,000', notionalCcy: 'GBP', cp: 'NORTHGATE CLEARING',
+                    book: 'Liquidity Buffer Bonds' },
+                { id: '4d9f0a63-7c21-4b85-9e40-6a2d8f1b3c57', type: 'Bond', maturity: '2035-11-07',
+                    netting: 'NS-ACCOUK-001', ccy: 'GBP', npv: null, npvBase: null,
+                    notional: '22,000,000', notionalCcy: 'GBP', cp: 'KESTREL ASSURANCE',
+                    book: 'GBP Rates' }
+            ],
+            errors: [
+                { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'SENSITIVITY', message: 'Sensitivity run skipped 412 positions: the base scenario has no price to bump' },
+                { severity: 'error', scope: 'Analytics', subject: 'analytic', subjectId: 'SENSITIVITY', message: 'Failed to compute delta for risk factor IR/RATE/GBP/10Y: the shifted scenario did not price' }
+            ],
+            /* The positions that priced and carry no Delta, because the
+               sensitivity analytic skipped them. The figure is the run's own:
+               it is the count in the first error row above. */
+            noDelta: 412,
+            /* The figures a reader must not take as the whole answer. The
+               numbers stay; the marker and the footnote are what change. */
+            markedFigures: ['NPV', 'Delta', 'Gamma', 'positions priced']
+        }
+    };
+
     /* The six columns the drill-down draws. The header labels are npv.csv's own,
        because a renamed column would hide the shape of what a run writes. */
     var TRADE_COLUMNS = ['TradeId', 'TradeType', 'NPV', 'NPV(Base)', 'Notional', 'CounterParty'];
@@ -716,8 +777,8 @@
     };
 
     var S = {
-        variant: 'A', runId: DEFAULT_RUN, file: 'npv.csv', trade: null, showErrors: false, note: null,
-        book: null, collapsed: []
+        variant: 'A', runId: DEFAULT_RUN, scenario: null, file: 'npv.csv', trade: null, showErrors: false,
+        note: null, book: null, collapsed: []
     };
 
     // ------------------------------------------------------------- helpers
@@ -738,6 +799,19 @@
 
     function currentRun() {
         return runById(S.runId) || runById(DEFAULT_RUN);
+    }
+
+    /* The scenario in view, or null. A scenario is a deliberate arrangement of
+       the run's own fixtures, so a reader finds it by its chip rather than by
+       accident; it never changes a run, it changes what the page says about the
+       result the run already carries. */
+    function scenario() {
+        return S.scenario ? SCENARIOS[S.scenario] : null;
+    }
+
+    function scenarioFor(run) {
+        var sc = scenario();
+        return sc && sc.runId === run.id ? sc : null;
     }
 
     /* The artefacts link. The icon is Fluent's folder, inlined because the
@@ -888,7 +962,17 @@
     /* -------------------------------------------------------- per trade */
 
     function tradesFor(run) {
-        return TRADES[run.id] || [];
+        var rows = TRADES[run.id] || [];
+        var sc = scenarioFor(run);
+        if (sc) rows = rows.concat(sc.unbuildable);
+        return rows;
+    }
+
+    /* A trade row with no price is one the engine could not build. npv.csv
+       carries no row for it, so the file itself says so by omission, and the run
+       recorded the reason in its errors. */
+    function failedTrades(run) {
+        return tradesFor(run).filter(function (t) { return t.npv === null; });
     }
 
     function tradeById(run, id) {
@@ -897,11 +981,24 @@
 
     /* A trade error is a report error whose subject is the trade: the model
        already keys those by subject_id, so the row and the error join on the
-       TradeId and nothing is invented to connect them. */
+       TradeId and nothing is invented to connect them.
+
+       A scenario's unbuildable trades carry the analytic-scoped rows the run
+       recorded about the sensitivity analytic. Those rows key no TradeId, so they
+       are not a join: they are the run's account of why positions like this one
+       have no price and no Delta, and the trade panel says which of the two kinds
+       a row is. */
     function tradeErrors(run, id) {
-        return (run.errors || []).filter(function (e) {
+        var errs = (run.errors || []).filter(function (e) {
             return e.subject === 'trade' && e.subjectId === id;
         });
+        var sc = scenarioFor(run);
+        if (sc && isUnbuildable(run, id)) errs = errs.concat(sc.errors);
+        return errs;
+    }
+
+    function isUnbuildable(run, id) {
+        return failedTrades(run).some(function (t) { return t.id === id; });
     }
 
     function npvRows(run) {
@@ -916,8 +1013,46 @@
     function bookTree(run) {
         var spec = BOOK_TREES[run.id];
         if (!spec) return null;
-        if (!TREE_CACHE[run.id]) TREE_CACHE[run.id] = buildNode(spec, spec.name);
-        return TREE_CACHE[run.id];
+        var key = run.id + '|' + (S.scenario || '');
+        if (!TREE_CACHE[key]) TREE_CACHE[key] = buildNode(scenarioTreeSpec(spec, run), spec.name);
+        return TREE_CACHE[key];
+    }
+
+    function copyTree(spec) {
+        var node = {
+            name: spec.name,
+            kind: spec.kind,
+            trades: spec.trades || 0,
+            npv: spec.npv || 0,
+            rows: (spec.rows || []).slice(),
+            children: (spec.children || []).map(copyTree)
+        };
+        if (spec.delta !== undefined) node.delta = spec.delta;
+        if (spec.gamma !== undefined) node.gamma = spec.gamma;
+        return node;
+    }
+
+    /* The scenario books a failed trade to a book the tree already draws, and
+       marks every node over it as one whose figure lost trades. A book that lost
+       a trade is marked on its own row; a portfolio above it inherits the
+       exclusion, because its figure is the sum of its books and it must not
+       include a book that lost trades without saying so. */
+    function scenarioTreeSpec(spec, run) {
+        var copy = copyTree(spec);
+        var sc = scenarioFor(run);
+        if (!sc) return copy;
+        var failed = failedTrades(run).map(function (t) { return t.id; });
+        (function walk(node) {
+            if (node.children.length) {
+                node.children.forEach(walk);
+                return;
+            }
+            (sc.unbuildable || []).forEach(function (t) {
+                if (t.book === node.name && node.rows.indexOf(t.id) === -1) node.rows.push(t.id);
+            });
+            node.lost = node.rows.filter(function (id) { return failed.indexOf(id) !== -1; }).length;
+        })(copy);
+        return copy;
     }
 
     /* A portfolio's trade count and NPV are the sum of its children's, computed
@@ -931,7 +1066,9 @@
             children: [],
             rows: spec.rows || [],
             trades: spec.trades || 0,
-            npv: spec.npv || 0
+            npv: spec.npv || 0,
+            lost: spec.lost || 0,
+            lostNames: spec.lost ? [spec.name] : []
         };
         if (spec.delta !== undefined) node.delta = spec.delta;
         if (spec.gamma !== undefined) node.gamma = spec.gamma;
@@ -942,10 +1079,14 @@
             node.trades = 0;
             node.npv = 0;
             node.rows = [];
+            node.lost = 0;
+            node.lostNames = [];
             node.children.forEach(function (child) {
                 node.trades += child.trades;
                 node.npv += child.npv;
                 node.rows = node.rows.concat(child.rows);
+                node.lost += child.lost;
+                node.lostNames = node.lostNames.concat(child.lostNames);
             });
         }
         return node;
@@ -1004,22 +1145,47 @@
         return S.collapsed.indexOf(id) !== -1;
     }
 
+    /* The exclusion a node carries, in words on the row that draws it. A book
+       that lost trades says so about its own figure. A node above it says it
+       inherits the exclusion, so the roll-up never includes a book that lost
+       trades without the reader being told. */
+    function nodeExclusion(node, depth) {
+        if (!node.lost) return '';
+        var pad = 10 + depth * 18;
+        var names = node.lostNames || [];
+        var trades = node.lost + ' failed trade' + (node.lost === 1 ? '' : 's');
+        var text = node.children.length
+            ? 'Inherits the exclusion from ' + esc(names.join(', ')) + ': ' + trades + ' ' +
+              (node.lost === 1 ? 'sits' : 'sit') + ' below it and ' +
+              (node.lost === 1 ? 'is' : 'are') + ' not in this figure.'
+            : 'Excludes ' + trades + ' the engine could not build. npv.csv carries no row for ' +
+              (node.lost === 1 ? 'it' : 'them') + ', so neither this count nor this figure includes ' +
+              (node.lost === 1 ? 'it' : 'them') + '.';
+        return '<div class="bexcl" style="padding-left:' + pad + 'px">' +
+            '<span class="tag bad">partial</span><span>' + text + '</span></div>';
+    }
+
     function treeRows(node, depth) {
         var rows = [];
         var hasChildren = node.children.length > 0;
         var collapsed = isCollapsed(node.id);
         var kind = node.kind === 'unbooked' ? 'no booking' : node.kind;
-        rows.push('<div class="bnode ' + esc(node.kind) + (S.book === node.id ? ' sel' : '') +
+        var lost = node.lost > 0;
+        rows.push('<div class="bnode ' + esc(node.kind) + (lost ? ' partial' : '') +
+            (S.book === node.id ? ' sel' : '') +
             '" data-act="book" data-book="' + esc(node.id) + '" style="padding-left:' + (10 + depth * 18) + 'px">' +
             (hasChildren
                 ? '<span class="twisty" data-act="twisty" data-book="' + esc(node.id) + '" title="' +
                     (collapsed ? 'Expand' : 'Collapse') + '">' + (collapsed ? '\u25b8' : '\u25be') + '</span>'
                 : '<span class="twisty pad"></span>') +
-            '<span class="bname">' + esc(node.name) + '</span>' +
+            '<span class="bname">' + esc(node.name) +
+                (lost ? ' <span class="tag bad">partial</span>' : '') + '</span>' +
             '<span class="bkind">' + esc(kind) + '</span>' +
             '<span class="btrades">' + num(node.trades) + '</span>' +
             '<span class="bnpv">' + esc(money(node.npv)) + '</span>' +
             '</div>');
+        node.depth = depth;
+        rows.push(nodeExclusion(node, depth));
         if (hasChildren && !collapsed) {
             node.children.forEach(function (child) {
                 rows = rows.concat(treeRows(child, depth + 1));
@@ -1037,7 +1203,7 @@
             '<span class="bname">Portfolio, book or trade</span>' +
             '<span class="bkind">Level</span>' +
             '<span class="btrades">Trades</span>' +
-            '<span class="bnpv">Aggregate NPV</span>' +
+            '<span class="bnpv">Aggregate NPV' + (scenarioFor(run) ? ' \u00b7 partial' : '') + '</span>' +
             '</div>' + treeRows(root, 0).join('') + '</div>';
     }
 
@@ -1059,6 +1225,7 @@
         var node = selectedBookNode(run);
         if (!root || !node) return '';
         return '<span class="tag warn">fixture</span>' +
+            (node.lost ? '<span class="tag bad">partial</span>' : '') +
             '<span class="tag accent">selected: ' + esc(node.name) + '</span>' +
             '<span>' + num(node.trades) + ' trades \u00b7 ' + esc(money(node.npv)) +
             ' \u00b7 ' + share(node.npv, root.npv) + ' of the run\u2019s NPV \u00b7 ' +
@@ -1070,6 +1237,7 @@
         var leaves = bookLeaves(root);
         var unbooked = leaves.filter(function (b) { return b.kind === 'unbooked'; })[0];
         var all = tradesFor(run).length;
+        var sc = scenarioFor(run);
         var engineBooks = (run.figures || []).filter(function (f) {
             return f.label === 'books';
         })[0];
@@ -1086,6 +1254,14 @@
                   '<span class="mono">Unbooked</span> is a node like any other and it is drawn, not dropped: a ' +
                   'built screen gets the same node from the trades whose TradeId has no ' +
                   '<span class="mono">trade_bookings</span> row.'
+                : '') +
+            (sc && root.lost
+                ? ' A marked node is one whose figure lost trades. ' + root.lost + ' failed trade' +
+                  (root.lost === 1 ? '' : 's') + ' ' + (root.lost === 1 ? 'sits' : 'sit') + ' under ' +
+                  root.lostNames.join(' and ') + ' and ' + (root.lost === 1 ? 'is' : 'are') + ' not in any ' +
+                  'figure on this tree, because npv.csv carries no row for ' +
+                  (root.lost === 1 ? 'it' : 'them') + '. A portfolio above a marked book inherits the exclusion: ' +
+                  'its figure is the sum of its books, and a book that lost trades is one of them.'
                 : '') +
             ' There is also no <span class="mono">portfolios.list_by_parent_portfolio_id</span>, so a client ' +
             'assembles the portfolio tree from <span class="mono">portfolios.list</span>, which carries ' +
@@ -1205,10 +1381,17 @@
         var all = tradesFor(run).length;
         var view = tradesInView(run).length;
         var node = selectedBookNode(run);
+        var failed = failedTrades(run).length;
         var scope = (!node || treeIsRoot(run))
             ? ''
             : ' The tree has narrowed it to <span class="mono">' + esc(node.name) +
               '</span>, which holds ' + num(node.trades) + ' trades.';
+        var failedLine = (scenarioFor(run) && failed)
+            ? ' <b>' + failed + ' of these rows carry no price.</b> Those are the trades the engine could not ' +
+              'build: a trade it could not build writes no row into npv.csv, so its <span class="mono">NPV</span> ' +
+              'and <span class="mono">NPV(Base)</span> cells are empty by nature and not by omission. The error ' +
+              'the run recorded is their answer, and each row carries an <span class="mono">error</span> tag.'
+            : '';
         return '<div class="notice warn"><strong>No operation parses the archive.</strong> ' +
             'This per-trade table is a fixture, and the columns are npv.csv\u2019s own: ' +
             '<span class="mono">TradeId, TradeType, NPV, NPV(Base), Notional, CounterParty</span>. ' +
@@ -1216,7 +1399,8 @@
             'but <span class="mono">ores_compute_results_tbl</span> carries only the archive\u2019s location and an ' +
             'outcome, and no operation parses the archive. A built screen cannot serve these rows until a result ' +
             'store or an archive read exists. It shows ' + view + ' of the ' + all + ' rows this page draws, ' +
-            'and this page draws ' + all + ' of the ' + num(npvRows(run)) + ' rows npv.csv carries.' + scope + '</div>';
+            'and this page draws ' + all + ' of the ' + num(npvRows(run)) + ' rows npv.csv carries.' + scope +
+            failedLine + '</div>';
     }
 
     /* Selecting a book with no rendered row is an answer, not an empty table: the
@@ -1263,13 +1447,25 @@
               '. The trade behind the row is <span class="mono">trading</span>\u2019s trade with this id, and ' +
               '<span class="mono">trading.v1.trades.get</span> is what resolves it.</p>';
 
+        /* An analytic-scoped error keys no TradeId. Where the rows below are of
+           that kind the panel says so, rather than implying a join the model does
+           not store. */
+        var analyticRows = errs.filter(function (e) { return e.subject !== 'trade'; });
+        var scopeNote = analyticRows.length
+            ? '<p class="dim">' + analyticRows.length + ' of these ' + errs.length + ' row' +
+              (errs.length === 1 ? '' : 's') + ' ' + (analyticRows.length === 1 ? 'is' : 'are') +
+              ' recorded against the analytic, not against the TradeId: an analytic-scoped error names the ' +
+              'analytic that could not finish, so it keys no trade. This row is one of the positions that answer ' +
+              'describes, and the panel does not invent a per-trade key for it.</p>'
+            : '';
+
         return '<div class="tradedetail">' +
             '<div class="sectionhead" style="margin-top:16px"><h3 class="subhead">Trade ' +
             esc(t.id) + '</h3><span class="meta">' +
             (errs.length ? '<span class="tag bad">' + errs.length + ' error row' + (errs.length === 1 ? '' : 's') + '</span>'
                 : '<span class="tag ok">no error recorded</span>') +
             '<span>joined to the run on TradeId</span></span></div>' +
-            verdict +
+            verdict + scopeNote +
             '<div class="statgrid" style="margin-top:14px">' + grid + '</div>' +
             (errs.length ? '<div style="margin-top:14px">' + tradeErrorTable(errs) + '</div>' : '') +
             '<div class="keyline" style="margin-top:14px">' +
@@ -1287,11 +1483,12 @@
     }
 
     function tradeFootnote(run) {
-        var failed = tradesFor(run).filter(function (t) { return t.npv === null; }).length;
+        var failed = failedTrades(run).length;
         return '<p class="rowfoot">Six of the thirteen columns npv.csv carries. A trade the engine could not build ' +
             'writes no price into the file, so ' + (failed
-                ? 'the ' + failed + ' row with an empty NPV is drawn from the run\u2019s trade-scoped error rather ' +
-                  'than from npv.csv, and the error is the answer for it. '
+                ? 'the ' + failed + ' row' + (failed === 1 ? '' : 's') + ' with an empty NPV ' +
+                  (failed === 1 ? 'is' : 'are') + ' drawn from the run\u2019s own errors rather than from npv.csv, ' +
+                  'and the error is the answer for ' + (failed === 1 ? 'it' : 'them') + '. '
                 : 'a failed trade would appear here with an empty NPV and its error. ') +
             'The trade id is the trading trade\u2019s id, so a row leads to the trade: ' +
             '<span class="mono">trading.v1.trades.get</span> is the read that resolves it. A read of one trade ' +
@@ -1373,14 +1570,27 @@
 
     function fixtureBar() {
         var chips = RUNS.map(function (r) {
-            return '<button class="chipbtn' + (r.id === currentRun().id ? ' on' : '') +
+            return '<button class="chipbtn' + (r.id === currentRun().id && !S.scenario ? ' on' : '') +
                 '" data-act="run" data-run="' + r.id + '">' +
                 '<span class="p">' + esc(r.party) + '</span>' + esc(r.report) +
                 '<span class="an">' + esc(analyticsText(r)) + '</span>' +
                 '<span class="st">\u00b7 ' + esc(shortState(r)) + '</span></button>';
         }).join('');
+        /* The scenario has a chip of its own, beside the run chips and labelled,
+           so a reviewer finds it deliberately rather than by accident. */
+        var scenarioChips = Object.keys(SCENARIOS).map(function (id) {
+            var sc = SCENARIOS[id];
+            var run = runById(sc.runId);
+            return '<button class="chipbtn scen' + (S.scenario === id ? ' on' : '') +
+                '" data-act="scenario" data-scenario="' + esc(id) + '"' +
+                ' title="Turn the scenario on or off">' +
+                '<span class="p">scenario</span>' + esc(id) +
+                '<span class="an">' + esc(run ? run.report : '') + '</span>' +
+                '<span class="st">\u00b7 ' + esc(sc.chip) + '</span></button>';
+        }).join('');
         return '<div class="fixturebar">' +
             '<span class="lbl">Fixture \u00b7 run in view</span>' + chips +
+            '<span class="lbl">Scenario</span>' + scenarioChips +
             '</div>';
     }
 
@@ -1419,6 +1629,7 @@
             '<h1>' + esc(run.report) + ' \u2014 run ' + esc(run.short) + '</h1>' +
             '<p class="lede">' + esc(stateSentence(run)) + '</p>' +
             '</div><div class="actions">' + statePill(run) +
+            (scenarioFor(run) ? '<span class="statepill warn">results partial</span>' : '') +
             '<a class="btn linklike" href="../index.org">Back to ../index.org</a>' +
             '</div></div>' +
             '<div class="metaline">' + metaline + '</div>' +
@@ -1430,7 +1641,16 @@
     }
 
     function amberNote(run) {
+        var sc = scenarioFor(run);
         return '<div class="notice warn"><strong>What is fixture.</strong> ' +
+            (sc
+                ? '<strong>The scenario is a fixture too.</strong> <span class="mono">' + esc(sc.id) +
+                  '</span> is arranged on this page and read from no server: it books ' +
+                  failedTrades(run).length + ' unbuildable bonds to books the tree already draws, and shows the ' +
+                  'two <span class="mono">SENSITIVITY</span> error rows the run\u2019s own fixture records. ' +
+                  'The run, the archive and the errors are the fixture the page already had; the scenario only ' +
+                  'reads them together. '
+                : '') +
             'Every figure, file name, row count, size, trade row and error below is mock, and nothing on this page ' +
             'reads a server. ' +
             'The figures and the per-trade rows are fixtures standing in for the output of the analytics this run\u2019s ' +
@@ -1510,14 +1730,80 @@
             '</div>';
     }
 
+    /* The sentence that says what a partial result is missing, used by every
+       variant so the banner, the footnote and the tree cannot disagree about the
+       counts. */
+    function partialFacts(run) {
+        var sc = scenarioFor(run);
+        if (!sc) return '';
+        var failed = failedTrades(run).length;
+        return 'the engine could not build ' + failed + ' trade' + (failed === 1 ? '' : 's') +
+            ', so npv.csv carries no row for ' + (failed === 1 ? 'it' : 'them') +
+            ', and ' + sc.noDelta + ' positions carry an NPV and no Delta';
+    }
+
+    /* The banner. It is not a modal and it carries no dismiss: the fact that
+       these results are partial is not something a reader may put away. The
+       button only shows the error rows the fact comes from, which is the same
+       control the completed-with-errors notice offers. */
+    function partialBanner(run) {
+        var sc = scenarioFor(run);
+        if (!sc) return '';
+        var e = countBy(run.errors, 'error');
+        var w = countBy(run.errors, 'warning');
+        var counts = scopeCounts(run.errors, 'error') + (w ? ' and ' + scopeCounts(run.errors, 'warning') : '');
+        var failed = failedTrades(run).length;
+
+        return '<div class="notice partial" role="status">' +
+            '<strong>This run completed, and its results are partial.</strong> ' +
+            'The engine could not build <b>' + failed + ' trades</b>, and <b>' + sc.noDelta +
+            ' positions</b> carry an NPV and no Delta. <b>The totals below exclude them.</b> ' +
+            'Read every total on this page as a floor, not as the run\u2019s whole answer. ' +
+            'The run recorded <b>' + run.errors.length + '</b> problems, <span class="mono">' + esc(counts) + '</span>:' +
+            '<div class="inner-actions">' +
+            '<button class="btn small" data-act="toggle-errors">' +
+                (S.showErrors ? 'Hide the ' : 'Show the ') + run.errors.length + ' error row' +
+                (run.errors.length === 1 ? '' : 's') +
+            '</button>' +
+            '<span class="hint">The errors that make these results partial belong to ' +
+                '<em>Find out why a run went wrong</em>; they open here as a section of the same surface.</span>' +
+            '</div>' +
+            (S.showErrors ? errorTable(run) : '') +
+            '</div>';
+    }
+
+    /* The notice above the results. With the scenario in view it is the partial
+       banner, which says everything the completed-with-errors notice says and
+       what the notice leaves out: that the numbers under it are incomplete. */
+    function resultsNotice(run) {
+        return scenarioFor(run) ? partialBanner(run) : errorBlock(run);
+    }
+
+    /* A marker on the figures, with a footnote. The number stays where it is: a
+       reader who needs USD 88,402,114 gets it, and a reader who takes it for the
+       whole answer is told otherwise on the figure itself. */
+    function partialFiguresLine(run, what) {
+        if (!scenarioFor(run)) return '';
+        return '<p class="partialline"><span class="tag bad">partial</span>' +
+            '<span>' + what + ': ' + partialFacts(run) + '. No total here is the run\u2019s whole answer.</span></p>';
+    }
+
+    function marksPartial(run, label) {
+        var sc = scenarioFor(run);
+        if (!sc || !treeIsRoot(run)) return false;
+        return sc.markedFigures.indexOf(label) !== -1;
+    }
+
     /* A treats the figures, the book tree and the tables as one thing: the run's
        result is a set of numbers, the tree is how they roll up from a trade to a
        book to a portfolio, and the per-trade table under it is the same result one
        trade at a time. Selecting a node changes the figures and the rows together. */
     function resultCard(run) {
         var tiles = tilesFor(run).map(function (f) {
-            return '<div class="fig"><div class="v">' + esc(f.value) + '</div>' +
-                '<div class="l">' + esc(f.label) + '</div>' +
+            var partial = marksPartial(run, f.label);
+            return '<div class="fig' + (partial ? ' partial' : '') + '">' +
+                '<div class="v">' + esc(f.value) + '</div>' +
+                '<div class="l">' + esc(f.label) + (partial ? ' <span class="tag bad">partial</span>' : '') + '</div>' +
                 '<div class="n">' + esc(f.note) + '</div></div>';
         }).join('');
 
@@ -1543,6 +1829,7 @@
             '<span class="tag warn">fixture</span><span>no measure below comes from any other analytic</span></span></header>' +
             analyticsLine(run) +
             '<div class="figs" style="margin-top:16px">' + tiles + '</div>' +
+            partialFiguresLine(run, 'The four figures above are partial') +
             bookTreeBlock(run) + table +
             (tradesFor(run).length ? tradesHead(run) + tradesBlock(run) : '') +
             '<p class="rowfoot">No operation returns these figures or rows. They are what the archive says once something ' +
@@ -1635,7 +1922,7 @@
         if (run.state === 'failed') {
             return saidBlock(run) + errorBlock(run) + nothingToTake(run) + packageBlock(run);
         }
-        return saidBlock(run) + errorBlock(run) + resultCard(run) +
+        return saidBlock(run) + resultsNotice(run) + resultCard(run) +
             archiveFooter(run) + packageBlock(run);
     }
 
@@ -1678,6 +1965,7 @@
         return '<section class="card">' +
             archiveHeroNote(run) +
             analyticsLine(run) +
+            partialFiguresLine(run, 'The results in this archive are partial') +
             '<div class="sectionhead" style="margin-top:16px"><h3 class="subhead">Inside the archive</h3>' +
             '<span class="meta"><span class="tag warn">fixture manifest</span><span>select a file to preview it</span></span></div>' +
             manifestNote(run) +
@@ -1740,7 +2028,7 @@
         if (run.state === 'failed') {
             return saidBlock(run) + errorBlock(run) + nothingToTake(run) + packageBlock(run);
         }
-        return saidBlock(run) + errorBlock(run) +
+        return saidBlock(run) + resultsNotice(run) +
             bookTreeCard(run, 'The tree is the lens over npv.csv: choose a book and the rows read out of it below narrow ' +
                 'to that subtree, while the manifest above stays the whole archive.') +
             '<div class="split">' + manifestCard(run) + previewPanel(run) + '</div>' +
@@ -1764,7 +2052,8 @@
                 '<a href="#trades" data-act="goto-trades">The per-trade table</a> is the same result one row at a ' +
                 'time: each trade\u2019s NPV, its base-currency NPV, its notional and its counterparty, the trade id ' +
                 'that leads to the trade, and ' + (carrying
-                    ? 'the ' + carrying + ' of these rows that carries an error the run recorded against it'
+                    ? 'the ' + carrying + ' of these rows that ' + (carrying === 1 ? 'carries' : 'carry') +
+                      ' an error the run recorded against ' + (carrying === 1 ? 'it' : 'them')
                     : 'no error against any of these rows') +
                 '. It is a fixture, because nothing parses the archive.</p>';
         }
@@ -1827,12 +2116,13 @@
            before the run's own account of what went wrong. The tree stands
            beside the prose so the sentence and the roll-up it links to are
            read together. */
-        return errorBlock(run) +
+        return resultsNotice(run) +
             '<div class="split">' +
             '<section class="card">' +
             '<div class="said"><span class="lbl">What the system said</span>' +
             '<span class="q">' + (run.state === 'running' ? '\u2014 no output message yet' : esc(run.outputMessage)) + '</span></div>' +
             analyticsLine(run) +
+            partialFiguresLine(run, 'The figures in this summary are partial') +
             '<div class="prose" style="margin-top:18px">' + paragraphs + '</div>' +
             '</section>' +
             bookTreeCard(run, 'The prose names the largest book; this tree is where the run rolls up from a trade to ' +
@@ -1900,6 +2190,7 @@
             '<span class="dot">\u00b7</span>run <b>' + (RUNS.indexOf(run) + 1) + ' of ' + RUNS.length + '</b>' +
             '<span class="dot">\u00b7</span>' + esc(run.report) + ' (' + esc(run.party) + ')' +
             '<span class="dot">\u00b7</span>' + esc(stateLabel(run)) +
+            (S.scenario ? '<span class="dot">\u00b7</span>scenario <b>' + esc(S.scenario) + '</b>' : '') +
             '</div>';
     }
 
@@ -1917,14 +2208,33 @@
 
     function setRun(id) {
         var run = runById(id);
-        if (!run || run.id === S.runId) return;
+        if (!run) return;
+        if (run.id === S.runId && !S.scenario) return;
         S.runId = run.id;
+        S.scenario = null;
         S.showErrors = false;
         S.trade = null;
         S.file = 'npv.csv';
         S.note = null;
         S.book = null;
         S.collapsed = [];
+        render();
+        writeParams();
+    }
+
+    /* The scenario chip turns the scenario on, and the same chip turns it off
+       again, because a reviewer wants the plain run back without hunting for it.
+       A scenario names its run, so turning it on brings that run into view. */
+    function setScenario(id) {
+        if (id && !SCENARIOS[id]) return;
+        S.scenario = S.scenario === id ? null : id;
+        if (S.scenario) S.runId = SCENARIOS[S.scenario].runId;
+        S.showErrors = false;
+        S.trade = null;
+        S.note = null;
+        S.book = null;
+        S.collapsed = [];
+        S.file = 'npv.csv';
         render();
         writeParams();
     }
@@ -1980,6 +2290,8 @@
             setVariant(el.getAttribute('data-variant'));
         } else if (act === 'run') {
             setRun(el.getAttribute('data-run'));
+        } else if (act === 'scenario') {
+            setScenario(el.getAttribute('data-scenario'));
         } else if (act === 'toggle-errors') {
             S.showErrors = !S.showErrors;
             render();
@@ -2039,6 +2351,12 @@
         if (variantById(v)) S.variant = v;
         var r = p.get('run');
         if (r && runById(r)) S.runId = runById(r).id;
+        /* A scenario names the run it is arranged on, so it wins over ?run=. */
+        var sc = p.get('scenario');
+        if (sc && SCENARIOS[sc]) {
+            S.scenario = sc;
+            S.runId = SCENARIOS[sc].runId;
+        }
         var f = p.get('file');
         if (f && filesFor(currentRun()).some(function (x) { return x.name === f; })) S.file = f;
         var t = p.get('trade');
@@ -2052,6 +2370,7 @@
         var p = new URLSearchParams();
         p.set('variant', S.variant);
         p.set('run', currentRun().id);
+        if (S.scenario) p.set('scenario', S.scenario);
         if (S.file !== 'npv.csv') p.set('file', S.file);
         if (S.trade) p.set('trade', S.trade);
         if (S.book) p.set('book', S.book);

@@ -138,7 +138,7 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 Strike variance.
 
 #+begin_src cpp :name generator
-0.04
+ores::utility::decimal::decimal::from_string("0.04").value()
 #+end_src
 
 ** start_date

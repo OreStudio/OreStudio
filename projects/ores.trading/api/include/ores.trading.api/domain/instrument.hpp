@@ -28,8 +28,9 @@
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.trading.api/domain/credit_basket_constituent.hpp"
-#include "ores.trading.api/domain/credit_fact_variant.hpp"
+#include "ores.trading.api/domain/credit_default_swap_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/domain/credit_linked_swap_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
@@ -40,6 +41,8 @@
 #include "ores.trading.api/domain/fx_forward_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
+#include "ores.trading.api/domain/index_credit_default_swap_instrument.hpp"
+#include "ores.trading.api/domain/index_credit_default_swap_option_instrument.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
@@ -50,14 +53,19 @@
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/rates_fact_variant.hpp"
+#include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/swap_leg_amount.hpp"
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
+#include "ores.trading.api/domain/synthetic_cdo_instrument.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <concepts>
+#include <cstddef>
+#include <functional>
 #include <optional>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -137,13 +145,20 @@ struct commodity_instrument_data {
 // A credit trade states its legs as rows of the shared leg tables, and an index
 // swap or a synthetic CDO states a basket of names beside the instrument. The
 // header is the family's routed instrument and the product's own fields are its
-// fact row. An index option states a strike and its exercise dates in the
-// shared strike and schedule tables. The carrier holds the header with those
-// rows, so each travels with the trade it belongs to. A credit product that
-// states none of them leaves the collection empty.
+// typed fact arrays, one array per product, each row joined to the header by the
+// trade id it carries flat. An index option states a strike and its exercise
+// dates in the shared strike and schedule tables. The carrier holds the header
+// with those rows, so each travels with the trade it belongs to. A credit
+// product that states none of them leaves the collection empty.
 struct credit_instrument_data {
     credit_instrument instrument;
-    credit_fact_variant facts;
+    std::vector<credit_default_swap_instrument> credit_default_swap_instruments;
+    std::vector<index_credit_default_swap_instrument> index_credit_default_swap_instruments;
+    std::vector<index_credit_default_swap_option_instrument>
+        index_credit_default_swap_option_instruments;
+    std::vector<synthetic_cdo_instrument> synthetic_cdo_instruments;
+    std::vector<credit_linked_swap_instrument> credit_linked_swap_instruments;
+    std::vector<risk_participation_agreement_instrument> risk_participation_agreement_instruments;
     std::vector<swap_leg> legs;
     std::vector<swap_leg_amount> leg_amounts;
     std::vector<swap_leg_rate> leg_rates;
@@ -157,10 +172,114 @@ struct credit_instrument_data {
     std::vector<instrument_option_payment_date> option_payment_dates;
     std::vector<instrument_option_exercise_price> option_exercise_prices;
     // An index option wraps an index swap, which has fact fields of its own.
-    // The option's fact row is the carrier's fact; the wrapped swap's row is
-    // here. A product that wraps no swap leaves it empty.
+    // The option's fact row is one of the carrier's fact arrays; the wrapped
+    // swap's row is here. A product that wraps no swap leaves it empty.
     std::optional<index_credit_default_swap_instrument> wrapped_index_swap;
 };
+
+// The credit fact types, one per concrete product, and the array each lives
+// in. The two tuples together are the one home of the type-to-array map: a new
+// credit product is one entry in each, and every reader below follows them
+// instead of repeating the list. A static assertion proves they line up.
+using credit_fact_types = std::tuple<credit_default_swap_instrument,
+                                     index_credit_default_swap_instrument,
+                                     index_credit_default_swap_option_instrument,
+                                     synthetic_cdo_instrument,
+                                     credit_linked_swap_instrument,
+                                     risk_participation_agreement_instrument>;
+
+inline constexpr auto credit_fact_arrays =
+    std::tuple{&credit_instrument_data::credit_default_swap_instruments,
+               &credit_instrument_data::index_credit_default_swap_instruments,
+               &credit_instrument_data::index_credit_default_swap_option_instruments,
+               &credit_instrument_data::synthetic_cdo_instruments,
+               &credit_instrument_data::credit_linked_swap_instruments,
+               &credit_instrument_data::risk_participation_agreement_instruments};
+
+namespace detail {
+
+template <typename T, typename Tuple>
+struct tuple_contains : std::false_type {};
+
+template <typename T, typename... Ts>
+struct tuple_contains<T, std::tuple<Ts...>> : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {};
+
+// The array a member pointer points into, so the two tuples can be proved to
+// line up instead of being assumed to.
+template <typename T>
+struct member_value;
+
+template <typename Value, typename Owner>
+struct member_value<Value Owner::*> {
+    using type = Value;
+};
+
+template <std::size_t... I>
+constexpr bool arrays_match_types(std::index_sequence<I...>) {
+    return ((std::is_same_v<typename member_value<std::decay_t<decltype(std::get<I>(
+                                credit_fact_arrays))>>::type::value_type,
+                            std::tuple_element_t<I, credit_fact_types>>) &&
+            ...);
+}
+
+} // namespace detail
+
+// A credit fact is one of the modelled products. A type that is not one is
+// refused at the call site rather than quietly reaching another product's
+// array.
+template <typename T>
+inline constexpr bool is_credit_fact_type = detail::tuple_contains<T, credit_fact_types>::value;
+
+static_assert(
+    detail::arrays_match_types(std::make_index_sequence<std::tuple_size_v<credit_fact_types>>{}));
+
+// Applies a callable to every credit fact array, const or mutable. The callable
+// receives one array and deduces its row type, so it picks the array it wants
+// with if constexpr and needs no discriminator.
+template <typename F>
+void for_each_credit_fact_array(const credit_instrument_data& data, F&& f) {
+    std::apply([&f, &data](auto... member) { (std::invoke(f, data.*member), ...); },
+               credit_fact_arrays);
+}
+
+template <typename F>
+void for_each_credit_fact_array(credit_instrument_data& data, F&& f) {
+    std::apply([&f, &data](auto... member) { (std::invoke(f, data.*member), ...); },
+               credit_fact_arrays);
+}
+
+// The typed array a credit fact type lives in. A reader that names the fact
+// type once reaches its own array, so no reader needs a discriminator.
+template <typename T>
+[[nodiscard]] const std::vector<T>& fact_rows(const credit_instrument_data& data) {
+    static_assert(is_credit_fact_type<T>,
+                  "not a credit fact type: add it to credit_fact_types and credit_fact_arrays");
+    const std::vector<T>* found = nullptr;
+    for_each_credit_fact_array(data, [&found](const auto& rows) {
+        if constexpr (std::is_same_v<typename std::decay_t<decltype(rows)>::value_type, T>)
+            found = &rows;
+    });
+    return *found;
+}
+
+// Drives a per-product visitor over the credit fact arrays and reports which
+// array answered. A credit carrier states exactly one fact row per trade,
+// joined by trade id, so the visitor sees the one row that is. An empty result
+// means the carrier states no fact at all, which a caller has to tell apart
+// from a visitor that answered false.
+template <typename Visitor>
+auto visit_credit_facts(Visitor&& visitor, const credit_instrument_data& data) {
+    using Result = std::invoke_result_t<Visitor, const credit_default_swap_instrument&>;
+    static_assert(!std::is_void_v<Result>,
+                  "a credit fact visitor returns a value, so a carrier with no fact is reported "
+                  "as an empty result rather than as silence");
+    std::optional<Result> result;
+    for_each_credit_fact_array(data, [&](const auto& rows) {
+        if (!result && !rows.empty())
+            result = std::invoke(visitor, rows.front());
+    });
+    return result;
+}
 
 // An equity position states an entry collection beside the instrument that
 // owns it, so the carrier holds the two together and each entry travels
@@ -415,7 +534,10 @@ inline void stamp_ids(credit_instrument_data& data,
         constituent.trade_id = trade_id;
         constituent.trade_activity_id = activity_id;
     }
-    stamp_ids(data.facts, trade_id, activity_id);
+    for_each_credit_fact_array(data, [&](auto& rows) {
+        for (auto& fact : rows)
+            stamp_ids(fact, trade_id, activity_id);
+    });
     for (auto& strike : data.strikes) {
         stamp_ids(strike, trade_id, activity_id);
     }

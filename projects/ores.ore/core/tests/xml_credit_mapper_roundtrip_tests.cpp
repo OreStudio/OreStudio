@@ -85,9 +85,9 @@ namespace {
 
 template <typename Fact>
 const Fact& fact_of(const ores::trading::domain::credit_instrument_data& data) {
-    const auto* f = std::get_if<Fact>(&data.facts);
-    REQUIRE(f != nullptr);
-    return *f;
+    const auto& rows = ores::trading::domain::fact_rows<Fact>(data);
+    REQUIRE(!rows.empty());
+    return rows.front();
 }
 
 } // namespace

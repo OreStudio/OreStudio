@@ -8,7 +8,7 @@
 #+filetags: :replace-the-instrument-variants-with-typed-arrays:sprint_28:v0:
 #+owner: marco
 #+branch: feature/replace-the-instrument-variants-with-typed-arrays
-#+pr:
+#+pr: 3450
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3450][#3450]] | [trading,ore] Replace the credit fact variant with typed arrays |
 
 * Review
 

@@ -31,9 +31,9 @@ rows, and the Regime 3 check forbids an encoded string field.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Scoped and unblocked. The carrier landed as [[https://github.com/OreStudio/OreStudio/pull/3410][#3410]], so a child array has a place on it. |
-| Waiting on   | Nothing. |
-| Next         | Add the child model, its table and its array on the carrier, then delete =range_bounds_json=. |
+| Now          | Implementation complete and the suites pass. Waiting on review and merge. |
+| Waiting on   | The review of its PR. |
+| Next         | Address the review, then merge. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -81,6 +81,11 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Files that name the FX carrier | 10 production, 9 test | =grep -rl -e fx_instrument_variant -e map_fx_instrument projects/ --include=*.cpp --include=*.hpp= | the branch base |
+| Columns named =range_bounds_json= | 0 on the FX path | =grep -rn range_bounds_json projects/ores.trading/modeling/ores.trading.fx_accumulator_instrument.org projects/ores.ore/core/src/domain/fx_instrument_mapper.cpp= | the PR head |
+| Range bound rows the example document states | 2 | =fx_exotic_mapper_roundtrip_accumulator= | the PR head |
+| Goldens the digit change rewrote | 2 | =Exotic_FxTaRF.xml= and =Exotic_EquityTaRF.xml= in =assets/test_data/golden_dataset= | the PR head |
+| ORE core suite | 721 cases, all pass | =compass test run --preset linux-clang-release-ninja -- -R ores.ore.core.tests= | the PR head |
+| Trading core suite | pass | the same command with =ores.trading.core.tests= | the PR head |
 
 * Notes
 
@@ -111,3 +116,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The accumulator's =RangeBounds= list is a child table. =range_bound= is keyed by
+the trade and the entry's ordinal, holds the optional start date, the four money
+levels as exact decimal and the leverage as a continuous double, and carries the
+two foreign keys the other instrument children carry. =range_bounds_json= is gone
+from the model, the SQL, the domain type, the entity, the protocol, the shell
+command and both mappers, and the hand-written JSON serializer and parser are
+deleted.
+
+The four money levels cross the ORE boundary through =moneyFloat=, so the digits
+the document states reach the decimal column. Two goldens recorded the old
+float spelling and now record the document's own: =1.04999995= became =1.05=,
+=1.10000002= became =1.1=, and a stated =0.0= stays =0.0=.
+
+An accumulator that holds no range bound is refused on export with a stated
+error, because the ORE schema requires at least one and a document without it
+cannot be read back.
+
+The child is keyed by the trade alone, so the equity accumulator can move onto
+the same table in its own unit; it still writes JSON text today.
+
+* Decisions
+
+- *The child is trade-keyed, not FX-keyed.* A =RangeBounds= list belongs to the
+  trade its document states, and the equity accumulator states the same list, so
+  one table serves both. Keying it to the family would duplicate the shape.
+- *Leverage stays a double.* It is a multiplier, not a money amount, so the
+  continuous rule applies and the column is a binary double. The four price
+  levels are money and are exact decimals.
+- *The levels are money leaves in the binding.* =rangeBound='s five levels were
+  plain floats, so the document's digits were lost before the mapper ran. They
+  are =moneyFloat= now, added to the reapply script with the rest of the family.
+- *A stated level the binding never carried is null, not zero.* Every level is
+  optional in the schema, so an absent level is a null column and the reverse
+  mapper writes no element back.
+- *The trailing zero is the one spelling the round trip normalises.* A stated
+  =0.0= reaches a decimal column as zero, so the golden records =0.0= only where
+  the binding carried the text; a value that passes through the decimal writes
+  its canonical spelling.

@@ -31,6 +31,7 @@ generate \
     --root-element CalendarAdjustments \
     --root-type calendaradjustment \
     --accessor calendar_adjustments_document \
+    --namespace ores::ore::xml::generated::calendar_adjustments \
     --include "ores.ore.core/xml/generated/calendar_adjustments.hpp" \
     --header "$header/calendar_adjustments.hpp" \
     --source "$source/calendar_adjustments.cpp"
@@ -43,6 +44,7 @@ generate \
     --root-element IborFallbackConfig \
     --root-type IborFallbackConfig \
     --accessor ibor_fallback_config_document \
+    --namespace ores::ore::xml::generated::ibor_fallback_config \
     --include "ores.ore.core/xml/generated/ibor_fallback_config.hpp" \
     --header "$header/ibor_fallback_config.hpp" \
     --source "$source/ibor_fallback_config.cpp" \
@@ -57,9 +59,21 @@ generate \
     --root-element CounterpartyInformation \
     --root-type counterpartyInformation \
     --accessor counterparty_information_document \
+    --namespace ores::ore::xml::generated::counterparty_information \
     --include "ores.ore.core/xml/generated/counterparty_information.hpp" \
     --header "$header/counterparty_information.hpp" \
     --source "$source/counterparty_information.cpp"
+
+generate \
+    --schema "$xsd/todaysmarket.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element TodaysMarket \
+    --root-type todaysmarket \
+    --accessor todays_market_document \
+    --namespace ores::ore::xml::generated::todays_market \
+    --include "ores.ore.core/xml/generated/todays_market.hpp" \
+    --header "$header/todays_market.hpp" \
+    --source "$source/todays_market.cpp"
 
 generate \
     --schema "$xsd/currencyconfig.xsd" \
@@ -67,6 +81,7 @@ generate \
     --root-element CurrencyConfig \
     --root-type currencyConfig \
     --accessor currency_config_document \
+    --namespace ores::ore::xml::generated::currency_config \
     --include "ores.ore.core/xml/generated/currency_config.hpp" \
     --header "$header/currency_config.hpp" \
     --source "$source/currency_config.cpp"

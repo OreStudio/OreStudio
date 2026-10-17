@@ -22,7 +22,7 @@
 
 #include <cstddef>
 
-namespace ores::ore::xml::generated {
+namespace ores::ore::xml::generated::ibor_fallback_config {
 
 namespace {
 

@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::ore::xml::generated {
+namespace ores::ore::xml::generated::ibor_fallback_config {
 
 struct ibor_fallback_global_settings;
 struct ibor_fallback_fallback;

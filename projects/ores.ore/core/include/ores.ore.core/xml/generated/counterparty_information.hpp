@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::ore::xml::generated {
+namespace ores::ore::xml::generated::counterparty_information {
 
 struct counterparty;
 struct counterparties;

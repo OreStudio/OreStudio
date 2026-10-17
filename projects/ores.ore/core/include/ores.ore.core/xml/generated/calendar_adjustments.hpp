@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::ore::xml::generated {
+namespace ores::ore::xml::generated::calendar_adjustments {
 
 struct dates;
 struct newcalendar;

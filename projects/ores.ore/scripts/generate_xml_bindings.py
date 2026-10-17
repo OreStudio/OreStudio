@@ -70,6 +70,25 @@ LICENCE = """/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offs
 """
 
 
+def register_inline(schema, root):
+    """Give every inline complexType a unique name, after its element."""
+    parents = {child: node for node in root.iter() for child in node}
+    for node in root.iter():
+        if local(node.tag) != "element":
+            continue
+        inline = [child for child in node if local(child.tag) == "complexType"]
+        if not inline:
+            continue
+        chosen = node.get("name")
+        owner = parents.get(node)
+        while chosen in schema.complex_types and schema.complex_types[chosen] is not inline[0]:
+            enclosing = owner.get("name") if owner is not None else None
+            chosen = f"{enclosing}_{chosen}" if enclosing else chosen + "_type"
+            owner = parents.get(owner) if owner is not None else None
+        schema.complex_types.setdefault(chosen, inline[0])
+        schema.inline_name[id(node)] = chosen
+
+
 def local(tag):
     return tag.split("}")[-1] if "}" in tag else tag
 
@@ -94,8 +113,14 @@ class Schema:
         self.enumerations = {}
         self.simple_types = {}
         self.elements = {}
+        # An inline complexType is named after its element, and ORE reuses
+        # element names across families: two different types are both called
+        # Correlation. The first keeps the plain name and the rest are
+        # qualified by the type that holds them.
+        self.inline_name = {}
         for path in paths:
             root = ET.parse(path).getroot()
+            register_inline(self, root)
             for node in root.iter():
                 name = node.get("name")
                 if local(node.tag) == "complexType" and name:
@@ -113,13 +138,6 @@ class Schema:
                         self.enumerations[name] = values
                 elif local(node.tag) == "element" and name:
                     self.elements.setdefault(name, node)
-                    # An inline complexType is named after the element that
-                    # carries it, which is the only name the schema gives it.
-                    inline = [
-                        child for child in node if local(child.tag) == "complexType"
-                    ]
-                    if inline:
-                        self.complex_types.setdefault(name, inline[0])
 
 
 def simple_content_base(complex_type):
@@ -222,9 +240,9 @@ def field_shape(schema, element):
     if declared is not None:
         return "nested", declared
     # An inline complexType, which is what <xs:element name="X"><xs:complexType>
-    # produces. The generator registered it under the element's name.
+    # produces. The generator registered it, possibly under a qualified name.
     if any(local(child.tag) == "complexType" for child in element):
-        return "nested", element.get("name")
+        return "nested", schema.inline_name[id(element)]
     raise SystemExit(f"element {element.get('name')} has neither a type nor a complexType")
 
 

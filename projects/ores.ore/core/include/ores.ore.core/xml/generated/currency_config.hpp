@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-namespace ores::ore::xml::generated {
+namespace ores::ore::xml::generated::currency_config {
 
 struct currency_definition;
 struct currency_config;

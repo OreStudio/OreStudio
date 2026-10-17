@@ -22,6 +22,7 @@
 #include "ores.ore.core/xml/generated/counterparty_information.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
+#include "ores.ore.core/xml/generated/todays_market.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -36,15 +37,24 @@ const std::string tags("[ore][xml][binding]");
 namespace fs = std::filesystem;
 using namespace ores::logging;
 using namespace ores::ore::xml;
-using ores::ore::xml::generated::calendar_adjustments_document;
-using ores::ore::xml::generated::calendaradjustment;
-using ores::ore::xml::generated::currency_config;
-using ores::ore::xml::generated::currency_config_document;
-using ores::ore::xml::generated::ibor_fallback_config;
-using ores::ore::xml::generated::counterparty_information;
-using ores::ore::xml::generated::counterparty_information_document;
-using ores::ore::xml::generated::ibor_fallback_config;
-using ores::ore::xml::generated::ibor_fallback_config_document;
+namespace cal = ores::ore::xml::generated::calendar_adjustments;
+using ores::ore::xml::generated::calendar_adjustments::calendar_adjustments_document;
+using calendaradjustment = cal::calendaradjustment;
+namespace cur = ores::ore::xml::generated::currency_config;
+using cur::currency_config;
+using cur::currency_config_document;
+namespace ibor = ores::ore::xml::generated::ibor_fallback_config;
+using ibor::ibor_fallback_config;
+using ibor::ibor_fallback_config_document;
+namespace cp = ores::ore::xml::generated::counterparty_information;
+using cp::counterparty_information;
+using cp::counterparty_information_document;
+namespace ibor = ores::ore::xml::generated::ibor_fallback_config;
+using ibor::ibor_fallback_config;
+using ibor::ibor_fallback_config_document;
+namespace tm = ores::ore::xml::generated::todays_market;
+using tm::todays_market_document;
+using tm::todaysmarket;
 
 // The calendar family's records and tables are generated from the schema by
 // projects/ores.ore/scripts/regenerate_xml_bindings.sh, and the generated names
@@ -424,4 +434,34 @@ TEST_CASE("every_counterparty_document_in_the_corpus_binds", tags) {
     CHECK(files > 0);
     CHECK(report.empty());
     CHECK(parties > 3);
+}
+
+TEST_CASE("the_generated_todays_market_tables_bind_the_corpus", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
+    REQUIRE(fs::is_directory(root));
+
+    std::size_t files = 0;
+    std::size_t configurations = 0;
+    std::string report;
+
+    for (const auto& entry : fs::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().filename() != "todaysmarket.xml")
+            continue;
+        ++files;
+        todaysmarket record;
+        bind_error error;
+        if (!binder::bind(todays_market_document(), read_file(entry.path()), &record, error)) {
+            report += entry.path().string() + ": " + error.message + "\n";
+            continue;
+        }
+        configurations += record.configuration.size();
+    }
+
+    INFO("files: " << files << ", configurations: " << configurations);
+    INFO(report);
+    CHECK(files > 0);
+    CHECK(report.empty());
+    CHECK(configurations > 100);
 }

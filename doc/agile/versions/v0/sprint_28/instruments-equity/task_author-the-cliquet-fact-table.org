@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-18
 #+updated: 2026-10-18
-#+environment:
+#+environment: merry_newton
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A cliquet's own terms have a table, and no cliquet column has to fit the vanilla
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -83,3 +83,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The cliquet has its own fact table. It is authored from the ORE cliquet
+binding, so every column answers to something the document states: the
+underlying, the currency, the notional, long or short, call or put, the
+moneyness, the local and global caps and floors, the settlement days, the
+premium with its currency and payment date.
+
+Every amount is money and so an exact numeric: the notional, the four caps and
+floors and the premium. The moneyness is a ratio rather than an amount, so it
+is a continuous quantity and stays a binary float. Every column the binding
+makes optional is nullable, so an absent term stays null.
+
+Verification. Full build clean and the whole suite passes 96 of 96 with the
+database recreated for the new table.
+
+Not done, and named: no mapper writes this table, and the EquityCliquetOption
+code still routes to equity_option_instruments. Both move with the mapper
+migration the operator deferred until the XML changes settle.
+

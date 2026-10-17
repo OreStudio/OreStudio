@@ -56,6 +56,36 @@ download as operations either. Variant =B= draws a manifest and labels it a
 fixture on the panel itself, so the gap is visible rather than designed around.
 That is the honest shape of this journey today.
 
+** The drill-down: from the run's figures to one trade
+
+A run's result is not only an aggregate. The engine writes =npv.csv= into the
+archive, and that file carries one row per trade, with the columns =TradeId=,
+=TradeType=, =Maturity=, =MaturityTime=, =NPV=, =NpvCurrency=, =NPV(Base)=,
+=BaseCurrency=, =Notional=, =NotionalCurrency=, =Notional(Base)=,
+=NettingSet= and =CounterParty=. The page uses them, so a person can get from
+the run's total to the trade that made it.
+
+Each variant carries the drill-down in the shape it already argues. =A= puts the
+per-trade table under the aggregate figures and keeps both. =B= offers the rows
+when =npv.csv= is selected in the manifest, instead of a handful of preview
+lines. =C= links from the prose to the table rather than reproducing the
+figures in a sentence.
+
+A row shows six columns: =TradeId=, =TradeType=, =NPV=, =NPV(Base)=,
+=Notional= and =CounterParty=. Opening a row answers with that trade's result,
+and, where the run recorded an error against that =TradeId=, the error itself.
+The page reuses the run's own error fixtures for this, so a trade that failed
+is reachable and shows why: the table covers a good number and a bad one.
+
+A trade in the result is the trading trade with that id, so the row leads to the
+trade. =trading.v1.trades.get= is what resolves the id.
+
+The table is a fixture, and the panel that draws it says so. **No operation
+parses the archive.** =ores_compute_results_tbl= carries the archive's location
+and an outcome, not parsed rows. A built screen cannot serve these rows
+until a result store or an archive read exists, and the page draws the gap
+rather than hiding it.
+
 ** The figures come from the analytics the configuration names
 
 A report's numbers are not free choice. Its report configuration names a set of
@@ -78,10 +108,10 @@ second warns before the figures are trusted, and offers the way to see why.
 
 ** What is fake
 
-The figures, the file names, the row counts, the sizes and the archive key are
-mock. Nothing reads a server. The file names are real ORE output names —
-=npv.csv=, =saccr.csv=, =pricingstats.csv=, =log_structured.json= and the rest —
-because an invented set would hide the shape of the thing being judged.
+The figures, the file names, the row counts, the sizes, the archive key and every
+trade row are mock. Nothing reads a server. The file names are real ORE output
+names — =npv.csv=, =saccr.csv=, =pricingstats.csv=, =log_structured.json= and the
+rest — because an invented set would hide the shape of the thing being judged.
 
 ** Where the code lives
 
@@ -95,9 +125,9 @@ None yet. This page is on the branch that proposes it and waits for review.
 ** What it does not settle
 
 Whether the result is read in the application at all, or exported and read
-elsewhere. The archive listing and the two downloads are the operations this
-journey needs and does not have, and they are the first thing the real build
-would have to add.
+elsewhere. The archive listing, the per-trade rows and the two downloads are the
+operations this journey needs and does not have, and they are the first thing
+the real build would have to add.
 
 * See also
 

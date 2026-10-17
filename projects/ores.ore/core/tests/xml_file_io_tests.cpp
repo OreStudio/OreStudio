@@ -61,29 +61,6 @@ TEST_CASE("currency_config_load_file_save_file_roundtrip", tags) {
     BOOST_LOG_SEV(lg, info) << "File I/O roundtrip passed for currencyConfig";
 }
 
-TEST_CASE("simulation_load_file_save_file_roundtrip", tags) {
-    auto lg(make_logger(test_suite));
-
-    using ores::ore::domain::simulation;
-
-    const auto input = ore_path("examples/ORE-API/Input/simulation.xml");
-    BOOST_LOG_SEV(lg, debug) << "Loading from file: " << input;
-
-    simulation original;
-    ores::ore::domain::load_file(input.string(), original);
-
-    const std::string serialised = ores::ore::domain::save_data(original);
-
-    simulation reloaded;
-    ores::ore::domain::load_data(serialised, reloaded);
-
-    CHECK(static_cast<bool>(reloaded.Parameters) == static_cast<bool>(original.Parameters));
-    CHECK(static_cast<bool>(reloaded.CrossAssetModel) ==
-          static_cast<bool>(original.CrossAssetModel));
-
-    BOOST_LOG_SEV(lg, info) << "File I/O roundtrip passed for simulation";
-}
-
 TEST_CASE("todaysmarket_load_file_save_file_roundtrip", tags) {
     auto lg(make_logger(test_suite));
 

@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 9781E5B4-012B-4012-9670-BCB39058BA3D
+:END:
+#+title: Task: Delete the document families nothing reads
+#+description: Eight of the twenty corpus root elements have no product consumer. Do not map them; delete their tests and their dead mapper, and record the census that says which families those are.
+#+type: task
+#+level: s1
+#+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:xml:codegen:
+#+owner: marco
+#+branch: feature/delete-the-document-families-nothing-reads
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story planned a table for every one of the twenty corpus root elements.
+Counting the consumers first showed that eight of them have none: no product
+code reads those documents, so there is no mapper to migrate and no feature
+that a table would serve. Building eight tables, and their harness cases, would
+prove a capability nothing uses. They are deleted instead, and a table is added
+if a feature ever needs one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
+| Now          | Eight families are classified unused, and the tests and the mapper that served them are deleted. |
+| Waiting on   | Nothing.                               |
+| Next         | The remaining mapper families, then xsdcpp itself. |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- Every corpus root element is classified as supported, migrating or unused,
+  and a check fails when the tree stops agreeing with that.
+- A family classified unused has no test that names it, so the deletion stays
+  deleted rather than growing back as an unused test.
+- The deleted families' mapper and its tests go together, so no dead code is
+  left behind.
+- What remains compiles and the XML suites pass.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+* Plan
+
+*Count consumers before mapping anything.* The boundary between "migrate" and
+"delete" is whether product code reads the family, and that is a grep, not a
+judgement: =domain.hpp= -- the generated binding -- is included by six product
+files plus the mappers, so the families a mapper reaches are the ones that
+matter.
+
+*The census is a decision, and a check.* =build/scripts/check_xml_family_coverage.py=
+names each family's state with its evidence and fails when the tree disagrees:
+a supported family without a table, an unused family with a test, or a corpus
+root nobody classified. The check is what stops "eight families to delete" from
+becoming "eight families nobody got to".
+
+*Provisionally supported, permanently deleted.* Counterparty information and
+ibor fallback config already have tables, so they stay in the supported set even
+though nothing reads them yet: the table costs nothing to keep and the harness
+already proves it. The other eight are deleted -- their tests, and the one
+mapper nothing called (=stress_test_mapper=, whose only users were the tests
+being deleted; the analytics stress test domain is seeded from JSON, not from
+ORE XML).
+
+*What is not deleted here* is the xsdcpp-generated type surface for those
+families. It is generated from =input.xsd= as one unit, so it leaves when
+xsdcpp leaves, which is the last task.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Corpus root elements | 20 | =python3 build/scripts/check_xml_family_coverage.py= | pending |
+| Families supported by a table | 7 | same | pending |
+| Families migrating from a mapper | 5 | same | pending |
+| Families unused and deleted | 8 | same | pending |
+| Test cases removed with the eight families | 20 | =publish/bin/ores.ore.core.tests \"[ore][xml]\"= before and after | pending |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

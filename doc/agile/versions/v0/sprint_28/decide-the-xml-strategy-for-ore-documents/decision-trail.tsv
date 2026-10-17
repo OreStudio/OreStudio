@@ -15,3 +15,7 @@ U11	written corpus validates against input.xsd	"scripts/validate_ore_examples.sh
 U12	decimal format round trip over the corpus	"every numeric leaf reads, renders and reads back equal, none refused"	VERIFIED
 U13	ctest integration	"not run: the build tree predates the checkout's domain.hpp and a full rebuild was still at 436 of 2909 after an hour"	INCONCLUSIVE
 U14	heavy-tier inventory accepts the new check	"local_checks.py and test_local_checks.py updated; 32 tests pass"	VERIFIED
+X1	census before mapping	"grep domain.hpp: six product files plus mappers; ten corpus roots have no product consumer"	VERIFIED
+X2	delete rather than map a family nobody reads	"nothing calls stress_test_mapper outside the tests being deleted; stress scenarios are seeded from JSON"	VERIFIED
+X3	counterparty and ibor fallback stay supported	"they already have tables and the harness proves them, so keeping them costs nothing"	VERIFIED
+X4	census as a check	"build/scripts/check_xml_family_coverage.py: 7 supported, 5 migrating, 8 unused, 20 corpus roots"	VERIFIED

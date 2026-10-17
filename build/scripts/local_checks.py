@@ -407,6 +407,21 @@ CATALOGUE: tuple[Check, ...] = (
                "benchmarks/xml/inputs.tsv"),
         fix="Run ./benchmarks/xml/run.sh and commit benchmarks/xml/history.tsv.",
     ),
+    # A family is either supported by a table, migrating from a mapper, or
+    # unused and on its way out with xsdcpp. The census is a decision; this
+    # check is whether the tree still agrees with it.
+    Check(
+        id="xml-family-census",
+        title="Every ORE document family is classified and the tree agrees",
+        argv=("python3", "build/scripts/check_xml_family_coverage.py"),
+        classes=("cpp",),
+        paths=("external/ore/examples/*",
+               "projects/ores.ore/core/src/xml/generated/*",
+               "projects/ores.ore/core/tests/*",
+               "build/scripts/check_xml_family_coverage.py"),
+        fix="Classify the family in build/scripts/check_xml_family_coverage.py, "
+            "or delete the test that names an unused one.",
+    ),
     Check(
         id="prototypes",
         title="The prototype inventory matches the tree",

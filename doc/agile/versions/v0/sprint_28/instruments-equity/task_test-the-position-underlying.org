@@ -26,11 +26,11 @@ The position underlying entity carries the same generated test coverage as the f
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -83,3 +83,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The position underlying carries the generated eventing integration test now,
+and enabling it exposed three defects that nothing had exercised, because this
+is the family's first child entity with a test at all.
+
+The generated test wrote its trade under the harness context, so the trade's
+party was not a party row and the insert refused it. The model documents
+:party_scoped_writes: for exactly this shape, a row whose party comes from a
+parent it does not model, and it was not set.
+
+The generator left sequence_number at zero, which the table's own check
+refuses, and filled four enumerated columns with random nouns, which their
+checks refuse. The model declares the ordinal and pins one legal value per
+enumerated column.
+
+Verification. Full build clean, and ores.trading.core.tests passes 1196
+assertions in 178 cases, the new one included. The whole suite passes 95 of 96.
+The exception is ores.iam.core.tests, which fails only after the whole suite
+has run and passes 1197 assertions in 303 cases immediately after a database
+recreate, reproduced twice. That is a cross-suite database isolation defect in
+the IAM tests and not something this change touches.
+
+Not done, and named: the credit basket constituent generator has the same zero
+and random-noun defects, and no test reaches them. It is another family's, and
+the fix belongs beside its own test.
+

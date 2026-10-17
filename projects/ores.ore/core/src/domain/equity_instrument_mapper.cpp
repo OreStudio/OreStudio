@@ -328,21 +328,6 @@ currencyCode parse_currency_code(const std::string& s) {
     return it->second;
 }
 
-// A total return swap states its product as an underlying sub-trade rather
-// than as a top-level trade, so the equity position data sits one level down.
-const componentSubTrade* nested_sub_trade(const trade& t) {
-    if (!t.TotalReturnSwapData)
-        return nullptr;
-    const auto& ud = t.TotalReturnSwapData->UnderlyingData;
-    for (const auto& group : ud.subTradeGroup)
-        if (group.SubTrade)
-            return &*group.SubTrade;
-    for (const auto& derivative : ud.Derivative)
-        if (derivative.subTradeGroup.SubTrade)
-            return &*derivative.subTradeGroup.SubTrade;
-    return nullptr;
-}
-
 underlying make_underlying(const std::string& name) {
     underlying u;
     static_cast<std::string&>(u.Name) = name;
@@ -1446,10 +1431,6 @@ equity_instrument_mapper::forward_equity_position(const trade& t) {
     inst.audit.change_commentary = "Imported from ORE XML";
 
     const equityPositionData* d = t.EquityPositionData ? &*t.EquityPositionData : nullptr;
-    if (!d) {
-        if (const auto* sub = nested_sub_trade(t); sub && sub->EquityPositionData)
-            d = &*sub->EquityPositionData;
-    }
     if (!d)
         return result;
 
@@ -1472,10 +1453,6 @@ equity_instrument_mapper::forward_equity_option_position(const trade& t) {
 
     const equityOptionPositionData* d =
         t.EquityOptionPositionData ? &*t.EquityOptionPositionData : nullptr;
-    if (!d) {
-        if (const auto* sub = nested_sub_trade(t); sub && sub->EquityOptionPositionData)
-            d = &*sub->EquityOptionPositionData;
-    }
     if (!d)
         return result;
 
@@ -1509,35 +1486,9 @@ equity_instrument_mapper::forward_equity_option_position(const trade& t) {
 // Reverse: EquityPosition, EquityOptionPosition
 // ---------------------------------------------------------------------------
 
-namespace {
-
-// Puts the option position data either at the top level or inside the total
-// return swap the position came from.
-trade wrap_equity_position(equityOptionPositionData d, const std::string& outer_trade_type) {
-    trade t;
-    if (outer_trade_type == "TotalReturnSwap") {
-        t.TradeType = oreTradeType::TotalReturnSwap;
-        subTradeGroup_group_t group;
-        componentSubTrade sub_trade;
-        sub_trade.SubTradeType = oreTradeType::EquityOptionPosition;
-        sub_trade.EquityOptionPositionData = std::move(d);
-        group.SubTrade = std::move(sub_trade);
-        totalReturnSwapData trs;
-        trs.UnderlyingData.subTradeGroup.push_back(std::move(group));
-        t.TotalReturnSwapData = std::move(trs);
-        return t;
-    }
-    t.TradeType = oreTradeType::EquityOptionPosition;
-    t.EquityOptionPositionData = std::move(d);
-    return t;
-}
-
-} // namespace
-
 trade equity_instrument_mapper::reverse_equity_option_position(
     const ores::trading::domain::equity_position_instrument& instr,
-    const std::vector<ores::trading::domain::equity_position_option_underlying>& underlyings,
-    const std::string& outer_trade_type) {
+    const std::vector<ores::trading::domain::equity_position_option_underlying>& underlyings) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityOptionPosition";
     equityOptionPositionData d;
     d.Quantity = static_cast<float>(instr.quantity);
@@ -1564,30 +1515,15 @@ trade equity_instrument_mapper::reverse_equity_option_position(
         entry.Strike = static_cast<float>(row.strike.to_double());
         d.Underlying.push_back(std::move(entry));
     }
-    return wrap_equity_position(std::move(d), outer_trade_type);
+    trade t;
+    t.TradeType = oreTradeType::EquityOptionPosition;
+    t.EquityOptionPositionData = std::move(d);
+    return t;
 }
 
 trade equity_instrument_mapper::reverse_equity_position(
-    const ores::trading::domain::equity_position_instrument& instr,
-    const std::string& outer_trade_type) {
+    const ores::trading::domain::equity_position_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityPosition";
-    if (outer_trade_type == "TotalReturnSwap") {
-        equityPositionData d;
-        d.Quantity = static_cast<float>(instr.quantity);
-        if (!instr.underlying_name.empty())
-            d.Underlying.push_back(make_underlying(instr.underlying_name));
-        trade t;
-        t.TradeType = oreTradeType::TotalReturnSwap;
-        subTradeGroup_group_t group;
-        componentSubTrade sub_trade;
-        sub_trade.SubTradeType = oreTradeType::EquityPosition;
-        sub_trade.EquityPositionData = std::move(d);
-        group.SubTrade = std::move(sub_trade);
-        totalReturnSwapData trs;
-        trs.UnderlyingData.subTradeGroup.push_back(std::move(group));
-        t.TotalReturnSwapData = std::move(trs);
-        return t;
-    }
     trade t;
     t.TradeType = oreTradeType::EquityPosition;
     equityPositionData d;

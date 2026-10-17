@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: feature/repair-the-equity-routing
-#+pr: 3418
+#+pr: 3448
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -59,7 +59,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Equity codes the catalogue routes to a product table | 17 | the =instrument= column of =ores.trading.trade_type_catalogue.org= | 06cee39705 |
+| Equity codes with an empty =instrument= | 13 | as above | 06cee39705 |
+| Codes routed to =composite_instrument= | 2, =TotalReturnSwap= and =ContractForDifference= | as above | 06cee39705 |
+| ORE core suite after the change | 483711 assertions in 719 cases, all pass | =ores.ore.core.tests= | e82322bf99 |
 
 * Notes
 
@@ -78,6 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3448][#3448]] | [ore] Route a total return swap as the composite it is |
 | [[https://github.com/OreStudio/OreStudio/pull/3418][#3418]] | [agile] Correct the equity routing scope against the atomised rule |
 
 * Review
@@ -87,3 +91,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A total return swap is now the composite the catalogue says it is. The
+import mapper no longer diverts a swap whose underlying is an equity
+position into the equity family, so no =equity_position_instrument= row is
+written for a trade whose type is a swap, and the routing and the stored
+type agree (E6).
+
+The old path is removed rather than accommodated, per the operator: no
+compatibility branch, no migration, and the database was recreated.
+=underlying_sub_trade_type=, =nested_sub_trade= and the two fall-backs are
+deleted, and both reverse mappers lost =outer_trade_type= and the wrapper
+that rebuilt a swap around a position. Five files, 47 insertions and 112
+deletions.
+
+=ores.ore.core.tests= passes: 483711 assertions in 719 cases.
+
+The corpus has no top-level position document, so the mapper test takes the
+sub-trade out of the swap fixture and maps it as the top-level trade it now
+is. That is a compromise worth naming: the position path is covered through
+a constructed top-level trade, not a documented one. A real top-level
+position fixture would be better and does not exist today.

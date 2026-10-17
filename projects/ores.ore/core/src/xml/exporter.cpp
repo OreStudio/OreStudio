@@ -345,8 +345,6 @@ std::string exporter::export_portfolio(
                 } else if constexpr (std::is_same_v<T, equity_instrument_data>) {
                     // Equity reverse mappers are per-type; routing by trade_type_code
                     // mirrors trade_mapper::map_equity_instrument. Keep in sync.
-                    // The position leaf is keyed by the outer document's type, so a
-                    // total return swap is rebuilt as one.
                     bool matched = false;
                     std::visit(
                         [&](const auto& instr) {
@@ -359,10 +357,10 @@ std::string exporter::export_portfolio(
                                 if (option_position) {
                                     xsd_t =
                                         equity_instrument_mapper::reverse_equity_option_position(
-                                            instr, r.underlyings, tt);
+                                            instr, r.underlyings);
                                 } else {
-                                    xsd_t = equity_instrument_mapper::reverse_equity_position(instr,
-                                                                                              tt);
+                                    xsd_t =
+                                        equity_instrument_mapper::reverse_equity_position(instr);
                                 }
                                 matched = true;
                             } else if constexpr (std::is_same_v<I, equity_option_instrument>) {

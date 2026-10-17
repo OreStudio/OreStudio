@@ -9,7 +9,8 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -28,319 +29,712 @@ namespace {
 
 constexpr std::uint8_t no_text = 0xFF;
 
-template <typename T>
-auto append_to(void* container, void** slot) -> void {
-    auto* vector = static_cast<std::vector<T>*>(container);
-    vector->emplace_back();
-    *slot = &vector->back();
+template <typename T> auto append_to(void *container, void **slot) -> void {
+  auto *vector = static_cast<std::vector<T> *>(container);
+  vector->emplace_back();
+  *slot = &vector->back();
 }
 
-
-
 const field configuration_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(configuration_type, id)), 0, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"YieldCurvesId", 2745241451u, field_kind::text, std::uint32_t(offsetof(configuration_type, yield_curves_id)), 1, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"DiscountingCurvesId", 754750399u, field_kind::text, std::uint32_t(offsetof(configuration_type, discounting_curves_id)), 2, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"IndexForwardingCurvesId", 1276807917u, field_kind::text, std::uint32_t(offsetof(configuration_type, index_forwarding_curves_id)), 3, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"SwapIndexCurvesId", 2262150175u, field_kind::text, std::uint32_t(offsetof(configuration_type, swap_index_curves_id)), 4, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"ZeroInflationIndexCurvesId", 3694125900u, field_kind::text, std::uint32_t(offsetof(configuration_type, zero_inflation_index_curves_id)), 5, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"ZeroInflationCapFloorVolatilitiesId", 213345955u, field_kind::text, std::uint32_t(offsetof(configuration_type, zero_inflation_cap_floor_volatilities_id)), 6, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"YYInflationIndexCurvesId", 3305569320u, field_kind::text, std::uint32_t(offsetof(configuration_type, yy_inflation_index_curves_id)), 7, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"FxSpotsId", 2844640517u, field_kind::text, std::uint32_t(offsetof(configuration_type, fx_spots_id)), 8, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"BaseCorrelationsId", 1807624376u, field_kind::text, std::uint32_t(offsetof(configuration_type, base_correlations_id)), 9, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"FxVolatilitiesId", 1752184081u, field_kind::text, std::uint32_t(offsetof(configuration_type, fx_volatilities_id)), 10, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"SwaptionVolatilitiesId", 2498045562u, field_kind::text, std::uint32_t(offsetof(configuration_type, swaption_volatilities_id)), 11, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"YieldVolatilitiesId", 2414681972u, field_kind::text, std::uint32_t(offsetof(configuration_type, yield_volatilities_id)), 12, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CapFloorVolatilitiesId", 2075680741u, field_kind::text, std::uint32_t(offsetof(configuration_type, cap_floor_volatilities_id)), 13, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CDSVolatilitiesId", 3184261825u, field_kind::text, std::uint32_t(offsetof(configuration_type, cds_volatilities_id)), 14, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"DefaultCurvesId", 2915343835u, field_kind::text, std::uint32_t(offsetof(configuration_type, default_curves_id)), 15, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"YYInflationCapFloorVolatilitiesId", 3285443711u, field_kind::text, std::uint32_t(offsetof(configuration_type, yy_inflation_cap_floor_volatilities_id)), 16, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"EquityCurvesId", 2423104479u, field_kind::text, std::uint32_t(offsetof(configuration_type, equity_curves_id)), 17, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"EquityVolatilitiesId", 3066359240u, field_kind::text, std::uint32_t(offsetof(configuration_type, equity_volatilities_id)), 18, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"SecuritiesId", 3819376342u, field_kind::text, std::uint32_t(offsetof(configuration_type, securities_id)), 19, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CommodityCurvesId", 2346640479u, field_kind::text, std::uint32_t(offsetof(configuration_type, commodity_curves_id)), 20, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CommodityVolatilitiesId", 4154993224u, field_kind::text, std::uint32_t(offsetof(configuration_type, commodity_volatilities_id)), 21, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CorrelationsId", 3936577017u, field_kind::text, std::uint32_t(offsetof(configuration_type, correlations_id)), 22, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"BondFutureVolatilitiesId", 50808993u, field_kind::text, std::uint32_t(offsetof(configuration_type, bond_future_volatilities_id)), 23, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"IntradayPowerPriceCurvesId", 748594980u, field_kind::text, std::uint32_t(offsetof(configuration_type, intraday_power_price_curves_id)), 24, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, id)), 0, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"YieldCurvesId", 2745241451u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, yield_curves_id)), 1, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"DiscountingCurvesId", 754750399u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, discounting_curves_id)), 2,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"IndexForwardingCurvesId", 1276807917u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, index_forwarding_curves_id)), 3,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"SwapIndexCurvesId", 2262150175u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, swap_index_curves_id)), 4,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"ZeroInflationIndexCurvesId", 3694125900u, field_kind::text,
+     std::uint32_t(
+         offsetof(configuration_type, zero_inflation_index_curves_id)),
+     5, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"ZeroInflationCapFloorVolatilitiesId", 213345955u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type,
+                            zero_inflation_cap_floor_volatilities_id)),
+     6, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"YYInflationIndexCurvesId", 3305569320u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, yy_inflation_index_curves_id)),
+     7, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"FxSpotsId", 2844640517u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, fx_spots_id)), 8, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"BaseCorrelationsId", 1807624376u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, base_correlations_id)), 9,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"FxVolatilitiesId", 1752184081u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, fx_volatilities_id)), 10, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"SwaptionVolatilitiesId", 2498045562u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, swaption_volatilities_id)), 11,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"YieldVolatilitiesId", 2414681972u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, yield_volatilities_id)), 12,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CapFloorVolatilitiesId", 2075680741u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, cap_floor_volatilities_id)), 13,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CDSVolatilitiesId", 3184261825u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, cds_volatilities_id)), 14,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"DefaultCurvesId", 2915343835u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, default_curves_id)), 15, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"YYInflationCapFloorVolatilitiesId", 3285443711u, field_kind::text,
+     std::uint32_t(
+         offsetof(configuration_type, yy_inflation_cap_floor_volatilities_id)),
+     16, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"EquityCurvesId", 2423104479u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, equity_curves_id)), 17, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"EquityVolatilitiesId", 3066359240u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, equity_volatilities_id)), 18,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"SecuritiesId", 3819376342u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, securities_id)), 19, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CommodityCurvesId", 2346640479u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, commodity_curves_id)), 20,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CommodityVolatilitiesId", 4154993224u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, commodity_volatilities_id)), 21,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CorrelationsId", 3936577017u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, correlations_id)), 22, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"BondFutureVolatilitiesId", 50808993u, field_kind::text,
+     std::uint32_t(offsetof(configuration_type, bond_future_volatilities_id)),
+     23, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"IntradayPowerPriceCurvesId", 748594980u, field_kind::text,
+     std::uint32_t(
+         offsetof(configuration_type, intraday_power_price_curves_id)),
+     24, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type configuration_type_record{"configurationType", configuration_type_fields, 25, no_text};
+const record_type configuration_type_record{
+    "configurationType", configuration_type_fields, 25, no_text};
 const field yield_curve_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(yield_curve, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(yield_curve, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(yield_curve, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(yield_curve, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
 const record_type yield_curve_record{"YieldCurve", yield_curve_fields, 2, 0};
 const field yield_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(yield_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"YieldCurve", 2574793089u, field_kind::repeated_nested, std::uint32_t(offsetof(yield_curves_type, yield_curve)), 1, false, false, nullptr, &yield_curve_record, scalar_kind::text, &append_to<yield_curve>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(yield_curves_type, id)), 0, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"YieldCurve", 2574793089u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(yield_curves_type, yield_curve)), 1, false, false,
+     nullptr, &yield_curve_record, scalar_kind::text, &append_to<yield_curve>},
 };
-const record_type yield_curves_type_record{"yieldCurvesType", yield_curves_type_fields, 2, no_text};
+const record_type yield_curves_type_record{
+    "yieldCurvesType", yield_curves_type_fields, 2, no_text};
 const field discounting_curve_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(discounting_curve, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"currency", 3723658806u, field_kind::text, std::uint32_t(offsetof(discounting_curve, currency)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(discounting_curve, value)), 0, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"currency", 3723658806u, field_kind::text,
+     std::uint32_t(offsetof(discounting_curve, currency)), 1, true, true,
+     nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type discounting_curve_record{"DiscountingCurve", discounting_curve_fields, 2, 0};
+const record_type discounting_curve_record{"DiscountingCurve",
+                                           discounting_curve_fields, 2, 0};
 const field discount_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(discount_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"DiscountingCurve", 2800498709u, field_kind::repeated_nested, std::uint32_t(offsetof(discount_curves_type, discounting_curve)), 1, false, false, nullptr, &discounting_curve_record, scalar_kind::text, &append_to<discounting_curve>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(discount_curves_type, id)), 0, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"DiscountingCurve", 2800498709u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(discount_curves_type, discounting_curve)), 1, false,
+     false, nullptr, &discounting_curve_record, scalar_kind::text,
+     &append_to<discounting_curve>},
 };
-const record_type discount_curves_type_record{"discountCurvesType", discount_curves_type_fields, 2, no_text};
+const record_type discount_curves_type_record{
+    "discountCurvesType", discount_curves_type_fields, 2, no_text};
 const field index_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(index, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(index, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(index, value)), 0, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(index, name)), 1, true, true, nullptr, nullptr,
+     scalar_kind::text, nullptr},
 };
 const record_type index_record{"Index", index_fields, 2, 0};
 const field index_forwarding_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(index_forwarding_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"Index", 2932321867u, field_kind::repeated_nested, std::uint32_t(offsetof(index_forwarding_curves_type, index)), 1, false, false, nullptr, &index_record, scalar_kind::text, &append_to<index>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(index_forwarding_curves_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"Index", 2932321867u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(index_forwarding_curves_type, index)), 1, false,
+     false, nullptr, &index_record, scalar_kind::text, &append_to<index>},
 };
-const record_type index_forwarding_curves_type_record{"indexForwardingCurvesType", index_forwarding_curves_type_fields, 2, no_text};
+const record_type index_forwarding_curves_type_record{
+    "indexForwardingCurvesType", index_forwarding_curves_type_fields, 2,
+    no_text};
 const field swap_index_fields[] = {
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(swap_index, name)), 0, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"Discounting", 248337618u, field_kind::text, std::uint32_t(offsetof(swap_index, discounting)), 1, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(swap_index, name)), 0, true, true, nullptr, nullptr,
+     scalar_kind::text, nullptr},
+    {"Discounting", 248337618u, field_kind::text,
+     std::uint32_t(offsetof(swap_index, discounting)), 1, false, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
 const record_type swap_index_record{"SwapIndex", swap_index_fields, 2, no_text};
 const field swap_index_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(swap_index_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"SwapIndex", 216572082u, field_kind::repeated_nested, std::uint32_t(offsetof(swap_index_curves_type, swap_index)), 1, false, false, nullptr, &swap_index_record, scalar_kind::text, &append_to<swap_index>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(swap_index_curves_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"SwapIndex", 216572082u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(swap_index_curves_type, swap_index)), 1, false,
+     false, nullptr, &swap_index_record, scalar_kind::text,
+     &append_to<swap_index>},
 };
-const record_type swap_index_curves_type_record{"swapIndexCurvesType", swap_index_curves_type_fields, 2, no_text};
+const record_type swap_index_curves_type_record{
+    "swapIndexCurvesType", swap_index_curves_type_fields, 2, no_text};
 const field zero_inflation_index_curve_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(zero_inflation_index_curve, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(zero_inflation_index_curve, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(zero_inflation_index_curve, value)), 0, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(zero_inflation_index_curve, name)), 1, true, true,
+     nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type zero_inflation_index_curve_record{"ZeroInflationIndexCurve", zero_inflation_index_curve_fields, 2, 0};
+const record_type zero_inflation_index_curve_record{
+    "ZeroInflationIndexCurve", zero_inflation_index_curve_fields, 2, 0};
 const field zero_inflation_index_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(zero_inflation_index_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"ZeroInflationIndexCurve", 1998338272u, field_kind::repeated_nested, std::uint32_t(offsetof(zero_inflation_index_curves_type, zero_inflation_index_curve)), 1, false, false, nullptr, &zero_inflation_index_curve_record, scalar_kind::text, &append_to<zero_inflation_index_curve>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(zero_inflation_index_curves_type, id)), 0, true,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"ZeroInflationIndexCurve", 1998338272u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(zero_inflation_index_curves_type,
+                            zero_inflation_index_curve)),
+     1, false, false, nullptr, &zero_inflation_index_curve_record,
+     scalar_kind::text, &append_to<zero_inflation_index_curve>},
 };
-const record_type zero_inflation_index_curves_type_record{"zeroInflationIndexCurvesType", zero_inflation_index_curves_type_fields, 2, no_text};
+const record_type zero_inflation_index_curves_type_record{
+    "zeroInflationIndexCurvesType", zero_inflation_index_curves_type_fields, 2,
+    no_text};
 const field yy_inflation_index_curve_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(yy_inflation_index_curve, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(yy_inflation_index_curve, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(yy_inflation_index_curve, value)), 0, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(yy_inflation_index_curve, name)), 1, true, true,
+     nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type yy_inflation_index_curve_record{"YYInflationIndexCurve", yy_inflation_index_curve_fields, 2, 0};
+const record_type yy_inflation_index_curve_record{
+    "YYInflationIndexCurve", yy_inflation_index_curve_fields, 2, 0};
 const field yy_inflation_index_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(yy_inflation_index_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"YYInflationIndexCurve", 2075285084u, field_kind::repeated_nested, std::uint32_t(offsetof(yy_inflation_index_curves_type, yy_inflation_index_curve)), 1, false, false, nullptr, &yy_inflation_index_curve_record, scalar_kind::text, &append_to<yy_inflation_index_curve>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(yy_inflation_index_curves_type, id)), 0, true,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"YYInflationIndexCurve", 2075285084u, field_kind::repeated_nested,
+     std::uint32_t(
+         offsetof(yy_inflation_index_curves_type, yy_inflation_index_curve)),
+     1, false, false, nullptr, &yy_inflation_index_curve_record,
+     scalar_kind::text, &append_to<yy_inflation_index_curve>},
 };
-const record_type yy_inflation_index_curves_type_record{"yyInflationIndexCurvesType", yy_inflation_index_curves_type_fields, 2, no_text};
+const record_type yy_inflation_index_curves_type_record{
+    "yyInflationIndexCurvesType", yy_inflation_index_curves_type_fields, 2,
+    no_text};
 const field fx_spot_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(fx_spot, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"pair", 2084854449u, field_kind::text, std::uint32_t(offsetof(fx_spot, pair)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(fx_spot, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"pair", 2084854449u, field_kind::text,
+     std::uint32_t(offsetof(fx_spot, pair)), 1, true, true, nullptr, nullptr,
+     scalar_kind::text, nullptr},
 };
 const record_type fx_spot_record{"FxSpot", fx_spot_fields, 2, 0};
 const field fx_spots_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(fx_spots_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"FxSpot", 3539204635u, field_kind::repeated_nested, std::uint32_t(offsetof(fx_spots_type, fx_spot)), 1, false, false, nullptr, &fx_spot_record, scalar_kind::text, &append_to<fx_spot>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(fx_spots_type, id)), 0, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"FxSpot", 3539204635u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(fx_spots_type, fx_spot)), 1, false, false, nullptr,
+     &fx_spot_record, scalar_kind::text, &append_to<fx_spot>},
 };
-const record_type fx_spots_type_record{"fxSpotsType", fx_spots_type_fields, 2, no_text};
+const record_type fx_spots_type_record{"fxSpotsType", fx_spots_type_fields, 2,
+                                       no_text};
 const field fx_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(fx_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"pair", 2084854449u, field_kind::text, std::uint32_t(offsetof(fx_volatility, pair)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(fx_volatility, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"pair", 2084854449u, field_kind::text,
+     std::uint32_t(offsetof(fx_volatility, pair)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
-const record_type fx_volatility_record{"FxVolatility", fx_volatility_fields, 2, 0};
+const record_type fx_volatility_record{"FxVolatility", fx_volatility_fields, 2,
+                                       0};
 const field fx_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(fx_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"FxVolatility", 2190823464u, field_kind::repeated_nested, std::uint32_t(offsetof(fx_volatilities_type, fx_volatility)), 1, false, false, nullptr, &fx_volatility_record, scalar_kind::text, &append_to<fx_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(fx_volatilities_type, id)), 0, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"FxVolatility", 2190823464u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(fx_volatilities_type, fx_volatility)), 1, false,
+     false, nullptr, &fx_volatility_record, scalar_kind::text,
+     &append_to<fx_volatility>},
 };
-const record_type fx_volatilities_type_record{"fxVolatilitiesType", fx_volatilities_type_fields, 2, no_text};
+const record_type fx_volatilities_type_record{
+    "fxVolatilitiesType", fx_volatilities_type_fields, 2, no_text};
 const field swaption_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(swaption_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"key", 1746258028u, field_kind::text, std::uint32_t(offsetof(swaption_volatility, key)), 1, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"currency", 3723658806u, field_kind::text, std::uint32_t(offsetof(swaption_volatility, currency)), 2, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(swaption_volatility, value)), 0, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"key", 1746258028u, field_kind::text,
+     std::uint32_t(offsetof(swaption_volatility, key)), 1, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"currency", 3723658806u, field_kind::text,
+     std::uint32_t(offsetof(swaption_volatility, currency)), 2, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type swaption_volatility_record{"SwaptionVolatility", swaption_volatility_fields, 3, 0};
+const record_type swaption_volatility_record{"SwaptionVolatility",
+                                             swaption_volatility_fields, 3, 0};
 const field swaption_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(swaption_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"SwaptionVolatility", 864096863u, field_kind::repeated_nested, std::uint32_t(offsetof(swaption_volatilities_type, swaption_volatility)), 1, false, false, nullptr, &swaption_volatility_record, scalar_kind::text, &append_to<swaption_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(swaption_volatilities_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"SwaptionVolatility", 864096863u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(swaption_volatilities_type, swaption_volatility)),
+     1, false, false, nullptr, &swaption_volatility_record, scalar_kind::text,
+     &append_to<swaption_volatility>},
 };
-const record_type swaption_volatilities_type_record{"swaptionVolatilitiesType", swaption_volatilities_type_fields, 2, no_text};
+const record_type swaption_volatilities_type_record{
+    "swaptionVolatilitiesType", swaption_volatilities_type_fields, 2, no_text};
 const field yield_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(yield_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(yield_volatility, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(yield_volatility, value)),
+     0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(yield_volatility, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
-const record_type yield_volatility_record{"YieldVolatility", yield_volatility_fields, 2, 0};
+const record_type yield_volatility_record{"YieldVolatility",
+                                          yield_volatility_fields, 2, 0};
 const field yield_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(yield_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"YieldVolatility", 2809425741u, field_kind::repeated_nested, std::uint32_t(offsetof(yield_volatilities_type, yield_volatility)), 1, false, false, nullptr, &yield_volatility_record, scalar_kind::text, &append_to<yield_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(yield_volatilities_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"YieldVolatility", 2809425741u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(yield_volatilities_type, yield_volatility)), 1,
+     false, false, nullptr, &yield_volatility_record, scalar_kind::text,
+     &append_to<yield_volatility>},
 };
-const record_type yield_volatilities_type_record{"yieldVolatilitiesType", yield_volatilities_type_fields, 2, no_text};
+const record_type yield_volatilities_type_record{
+    "yieldVolatilitiesType", yield_volatilities_type_fields, 2, no_text};
 const field cap_floor_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(cap_floor_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"key", 1746258028u, field_kind::text, std::uint32_t(offsetof(cap_floor_volatility, key)), 1, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"currency", 3723658806u, field_kind::text, std::uint32_t(offsetof(cap_floor_volatility, currency)), 2, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(cap_floor_volatility, value)), 0, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"key", 1746258028u, field_kind::text,
+     std::uint32_t(offsetof(cap_floor_volatility, key)), 1, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"currency", 3723658806u, field_kind::text,
+     std::uint32_t(offsetof(cap_floor_volatility, currency)), 2, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type cap_floor_volatility_record{"CapFloorVolatility", cap_floor_volatility_fields, 3, 0};
+const record_type cap_floor_volatility_record{
+    "CapFloorVolatility", cap_floor_volatility_fields, 3, 0};
 const field cap_floor_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(cap_floor_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CapFloorVolatility", 1517070508u, field_kind::repeated_nested, std::uint32_t(offsetof(cap_floor_volatilities_type, cap_floor_volatility)), 1, false, false, nullptr, &cap_floor_volatility_record, scalar_kind::text, &append_to<cap_floor_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(cap_floor_volatilities_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CapFloorVolatility", 1517070508u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(cap_floor_volatilities_type, cap_floor_volatility)),
+     1, false, false, nullptr, &cap_floor_volatility_record, scalar_kind::text,
+     &append_to<cap_floor_volatility>},
 };
-const record_type cap_floor_volatilities_type_record{"capFloorVolatilitiesType", cap_floor_volatilities_type_fields, 2, no_text};
+const record_type cap_floor_volatilities_type_record{
+    "capFloorVolatilitiesType", cap_floor_volatilities_type_fields, 2, no_text};
 const field cds_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(cds_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(cds_volatility, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(cds_volatility, value)),
+     0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(cds_volatility, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
-const record_type cds_volatility_record{"CDSVolatility", cds_volatility_fields, 2, 0};
+const record_type cds_volatility_record{"CDSVolatility", cds_volatility_fields,
+                                        2, 0};
 const field cds_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(cds_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CDSVolatility", 2026193112u, field_kind::repeated_nested, std::uint32_t(offsetof(cds_volatilities_type, cds_volatility)), 1, false, false, nullptr, &cds_volatility_record, scalar_kind::text, &append_to<cds_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(cds_volatilities_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CDSVolatility", 2026193112u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(cds_volatilities_type, cds_volatility)), 1, false,
+     false, nullptr, &cds_volatility_record, scalar_kind::text,
+     &append_to<cds_volatility>},
 };
-const record_type cds_volatilities_type_record{"cdsVolatilitiesType", cds_volatilities_type_fields, 2, no_text};
+const record_type cds_volatilities_type_record{
+    "cdsVolatilitiesType", cds_volatilities_type_fields, 2, no_text};
 const field default_curve_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(default_curve, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(default_curve, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(default_curve, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(default_curve, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
-const record_type default_curve_record{"DefaultCurve", default_curve_fields, 2, 0};
+const record_type default_curve_record{"DefaultCurve", default_curve_fields, 2,
+                                       0};
 const field default_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(default_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"DefaultCurve", 2591710129u, field_kind::repeated_nested, std::uint32_t(offsetof(default_curves_type, default_curve)), 1, false, false, nullptr, &default_curve_record, scalar_kind::text, &append_to<default_curve>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(default_curves_type, id)), 0, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"DefaultCurve", 2591710129u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(default_curves_type, default_curve)), 1, false,
+     false, nullptr, &default_curve_record, scalar_kind::text,
+     &append_to<default_curve>},
 };
-const record_type default_curves_type_record{"defaultCurvesType", default_curves_type_fields, 2, no_text};
+const record_type default_curves_type_record{
+    "defaultCurvesType", default_curves_type_fields, 2, no_text};
 const field yy_inflation_cap_floor_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(yy_inflation_cap_floor_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(yy_inflation_cap_floor_volatility, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(yy_inflation_cap_floor_volatility, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(yy_inflation_cap_floor_volatility, name)), 1, true,
+     true, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type yy_inflation_cap_floor_volatility_record{"YYInflationCapFloorVolatility", yy_inflation_cap_floor_volatility_fields, 2, 0};
+const record_type yy_inflation_cap_floor_volatility_record{
+    "YYInflationCapFloorVolatility", yy_inflation_cap_floor_volatility_fields,
+    2, 0};
 const field yy_inflation_cap_floor_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(yy_inflation_cap_floor_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"YYInflationCapFloorVolatility", 1673883330u, field_kind::repeated_nested, std::uint32_t(offsetof(yy_inflation_cap_floor_volatilities_type, yy_inflation_cap_floor_volatility)), 1, false, false, nullptr, &yy_inflation_cap_floor_volatility_record, scalar_kind::text, &append_to<yy_inflation_cap_floor_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(yy_inflation_cap_floor_volatilities_type, id)), 0,
+     true, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"YYInflationCapFloorVolatility", 1673883330u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(yy_inflation_cap_floor_volatilities_type,
+                            yy_inflation_cap_floor_volatility)),
+     1, false, false, nullptr, &yy_inflation_cap_floor_volatility_record,
+     scalar_kind::text, &append_to<yy_inflation_cap_floor_volatility>},
 };
-const record_type yy_inflation_cap_floor_volatilities_type_record{"yyInflationCapFloorVolatilitiesType", yy_inflation_cap_floor_volatilities_type_fields, 2, no_text};
+const record_type yy_inflation_cap_floor_volatilities_type_record{
+    "yyInflationCapFloorVolatilitiesType",
+    yy_inflation_cap_floor_volatilities_type_fields, 2, no_text};
 const field zero_inflation_cap_floor_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(zero_inflation_cap_floor_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(zero_inflation_cap_floor_volatility, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(zero_inflation_cap_floor_volatility, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(zero_inflation_cap_floor_volatility, name)), 1,
+     true, true, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type zero_inflation_cap_floor_volatility_record{"ZeroInflationCapFloorVolatility", zero_inflation_cap_floor_volatility_fields, 2, 0};
+const record_type zero_inflation_cap_floor_volatility_record{
+    "ZeroInflationCapFloorVolatility",
+    zero_inflation_cap_floor_volatility_fields, 2, 0};
 const field zero_inflation_cap_floor_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(zero_inflation_cap_floor_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"ZeroInflationCapFloorVolatility", 3969389398u, field_kind::repeated_nested, std::uint32_t(offsetof(zero_inflation_cap_floor_volatilities_type, zero_inflation_cap_floor_volatility)), 1, false, false, nullptr, &zero_inflation_cap_floor_volatility_record, scalar_kind::text, &append_to<zero_inflation_cap_floor_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(zero_inflation_cap_floor_volatilities_type, id)), 0,
+     true, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"ZeroInflationCapFloorVolatility", 3969389398u,
+     field_kind::repeated_nested,
+     std::uint32_t(offsetof(zero_inflation_cap_floor_volatilities_type,
+                            zero_inflation_cap_floor_volatility)),
+     1, false, false, nullptr, &zero_inflation_cap_floor_volatility_record,
+     scalar_kind::text, &append_to<zero_inflation_cap_floor_volatility>},
 };
-const record_type zero_inflation_cap_floor_volatilities_type_record{"zeroInflationCapFloorVolatilitiesType", zero_inflation_cap_floor_volatilities_type_fields, 2, no_text};
+const record_type zero_inflation_cap_floor_volatilities_type_record{
+    "zeroInflationCapFloorVolatilitiesType",
+    zero_inflation_cap_floor_volatilities_type_fields, 2, no_text};
 const field equity_curve_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(equity_curve, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(equity_curve, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(equity_curve, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(equity_curve, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
 const record_type equity_curve_record{"EquityCurve", equity_curve_fields, 2, 0};
 const field equity_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(equity_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"EquityCurve", 2936862965u, field_kind::repeated_nested, std::uint32_t(offsetof(equity_curves_type, equity_curve)), 1, false, false, nullptr, &equity_curve_record, scalar_kind::text, &append_to<equity_curve>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(equity_curves_type, id)), 0, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"EquityCurve", 2936862965u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(equity_curves_type, equity_curve)), 1, false, false,
+     nullptr, &equity_curve_record, scalar_kind::text,
+     &append_to<equity_curve>},
 };
-const record_type equity_curves_type_record{"equityCurvesType", equity_curves_type_fields, 2, no_text};
+const record_type equity_curves_type_record{
+    "equityCurvesType", equity_curves_type_fields, 2, no_text};
 const field equity_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(equity_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(equity_volatility, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(equity_volatility, value)), 0, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(equity_volatility, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
-const record_type equity_volatility_record{"EquityVolatility", equity_volatility_fields, 2, 0};
+const record_type equity_volatility_record{"EquityVolatility",
+                                           equity_volatility_fields, 2, 0};
 const field equity_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(equity_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"EquityVolatility", 3087359073u, field_kind::repeated_nested, std::uint32_t(offsetof(equity_volatilities_type, equity_volatility)), 1, false, false, nullptr, &equity_volatility_record, scalar_kind::text, &append_to<equity_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(equity_volatilities_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"EquityVolatility", 3087359073u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(equity_volatilities_type, equity_volatility)), 1,
+     false, false, nullptr, &equity_volatility_record, scalar_kind::text,
+     &append_to<equity_volatility>},
 };
-const record_type equity_volatilities_type_record{"equityVolatilitiesType", equity_volatilities_type_fields, 2, no_text};
+const record_type equity_volatilities_type_record{
+    "equityVolatilitiesType", equity_volatilities_type_fields, 2, no_text};
 const field security_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(security, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(security, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(security, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(security, name)), 1, true, true, nullptr, nullptr,
+     scalar_kind::text, nullptr},
 };
 const record_type security_record{"Security", security_fields, 2, 0};
 const field securities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(securities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"Security", 3271434715u, field_kind::repeated_nested, std::uint32_t(offsetof(securities_type, security)), 1, false, false, nullptr, &security_record, scalar_kind::text, &append_to<security>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(securities_type, id)), 0, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"Security", 3271434715u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(securities_type, security)), 1, false, false,
+     nullptr, &security_record, scalar_kind::text, &append_to<security>},
 };
-const record_type securities_type_record{"securitiesType", securities_type_fields, 2, no_text};
+const record_type securities_type_record{"securitiesType",
+                                         securities_type_fields, 2, no_text};
 const field base_correlation_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(base_correlation, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(base_correlation, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(base_correlation, value)),
+     0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(base_correlation, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
-const record_type base_correlation_record{"BaseCorrelation", base_correlation_fields, 2, 0};
+const record_type base_correlation_record{"BaseCorrelation",
+                                          base_correlation_fields, 2, 0};
 const field base_correlations_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(base_correlations_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"BaseCorrelation", 1324234668u, field_kind::repeated_nested, std::uint32_t(offsetof(base_correlations_type, base_correlation)), 1, false, false, nullptr, &base_correlation_record, scalar_kind::text, &append_to<base_correlation>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(base_correlations_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"BaseCorrelation", 1324234668u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(base_correlations_type, base_correlation)), 1,
+     false, false, nullptr, &base_correlation_record, scalar_kind::text,
+     &append_to<base_correlation>},
 };
-const record_type base_correlations_type_record{"baseCorrelationsType", base_correlations_type_fields, 2, no_text};
+const record_type base_correlations_type_record{
+    "baseCorrelationsType", base_correlations_type_fields, 2, no_text};
 const field commodity_curve_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(commodity_curve, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(commodity_curve, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(commodity_curve, value)),
+     0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(commodity_curve, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
-const record_type commodity_curve_record{"CommodityCurve", commodity_curve_fields, 2, 0};
+const record_type commodity_curve_record{"CommodityCurve",
+                                         commodity_curve_fields, 2, 0};
 const field commodity_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(commodity_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CommodityCurve", 473426549u, field_kind::repeated_nested, std::uint32_t(offsetof(commodity_curves_type, commodity_curve)), 1, false, false, nullptr, &commodity_curve_record, scalar_kind::text, &append_to<commodity_curve>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(commodity_curves_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CommodityCurve", 473426549u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(commodity_curves_type, commodity_curve)), 1, false,
+     false, nullptr, &commodity_curve_record, scalar_kind::text,
+     &append_to<commodity_curve>},
 };
-const record_type commodity_curves_type_record{"commodityCurvesType", commodity_curves_type_fields, 2, no_text};
+const record_type commodity_curves_type_record{
+    "commodityCurvesType", commodity_curves_type_fields, 2, no_text};
 const field commodity_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(commodity_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(commodity_volatility, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(commodity_volatility, value)), 0, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(commodity_volatility, name)), 1, true, true,
+     nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type commodity_volatility_record{"CommodityVolatility", commodity_volatility_fields, 2, 0};
+const record_type commodity_volatility_record{
+    "CommodityVolatility", commodity_volatility_fields, 2, 0};
 const field commodity_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(commodity_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CommodityVolatility", 1396035809u, field_kind::repeated_nested, std::uint32_t(offsetof(commodity_volatilities_type, commodity_volatility)), 1, false, false, nullptr, &commodity_volatility_record, scalar_kind::text, &append_to<commodity_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(commodity_volatilities_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CommodityVolatility", 1396035809u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(commodity_volatilities_type, commodity_volatility)),
+     1, false, false, nullptr, &commodity_volatility_record, scalar_kind::text,
+     &append_to<commodity_volatility>},
 };
-const record_type commodity_volatilities_type_record{"commodityVolatilitiesType", commodity_volatilities_type_fields, 2, no_text};
+const record_type commodity_volatilities_type_record{
+    "commodityVolatilitiesType", commodity_volatilities_type_fields, 2,
+    no_text};
 const field correlation_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(correlation, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(correlation, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text, std::uint32_t(offsetof(correlation, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(correlation, name)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
 const record_type correlation_record{"Correlation", correlation_fields, 2, 0};
 const field correlations_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(correlations_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"Correlation", 3571652271u, field_kind::repeated_nested, std::uint32_t(offsetof(correlations_type, correlation)), 1, false, false, nullptr, &correlation_record, scalar_kind::text, &append_to<correlation>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(correlations_type, id)), 0, true, false, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"Correlation", 3571652271u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(correlations_type, correlation)), 1, false, false,
+     nullptr, &correlation_record, scalar_kind::text, &append_to<correlation>},
 };
-const record_type correlations_type_record{"correlationsType", correlations_type_fields, 2, no_text};
+const record_type correlations_type_record{
+    "correlationsType", correlations_type_fields, 2, no_text};
 const field bond_future_volatility_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(bond_future_volatility, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(bond_future_volatility, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(bond_future_volatility, value)), 0, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(bond_future_volatility, name)), 1, true, true,
+     nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type bond_future_volatility_record{"BondFutureVolatility", bond_future_volatility_fields, 2, 0};
+const record_type bond_future_volatility_record{
+    "BondFutureVolatility", bond_future_volatility_fields, 2, 0};
 const field bond_future_volatilities_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(bond_future_volatilities_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"BondFutureVolatility", 3103527544u, field_kind::repeated_nested, std::uint32_t(offsetof(bond_future_volatilities_type, bond_future_volatility)), 1, false, false, nullptr, &bond_future_volatility_record, scalar_kind::text, &append_to<bond_future_volatility>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(bond_future_volatilities_type, id)), 0, true, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"BondFutureVolatility", 3103527544u, field_kind::repeated_nested,
+     std::uint32_t(
+         offsetof(bond_future_volatilities_type, bond_future_volatility)),
+     1, false, false, nullptr, &bond_future_volatility_record,
+     scalar_kind::text, &append_to<bond_future_volatility>},
 };
-const record_type bond_future_volatilities_type_record{"bondFutureVolatilitiesType", bond_future_volatilities_type_fields, 2, no_text};
+const record_type bond_future_volatilities_type_record{
+    "bondFutureVolatilitiesType", bond_future_volatilities_type_fields, 2,
+    no_text};
 const field intraday_power_price_curve_fields[] = {
-    {"", 0u, field_kind::text, std::uint32_t(offsetof(intraday_power_price_curve, value)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(intraday_power_price_curve, name)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::text,
+     std::uint32_t(offsetof(intraday_power_price_curve, value)), 0, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(intraday_power_price_curve, name)), 1, true, true,
+     nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type intraday_power_price_curve_record{"IntradayPowerPriceCurve", intraday_power_price_curve_fields, 2, 0};
+const record_type intraday_power_price_curve_record{
+    "IntradayPowerPriceCurve", intraday_power_price_curve_fields, 2, 0};
 const field intraday_power_price_curves_type_fields[] = {
-    {"id", 926444256u, field_kind::text, std::uint32_t(offsetof(intraday_power_price_curves_type, id)), 0, true, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"IntradayPowerPriceCurve", 3580169880u, field_kind::repeated_nested, std::uint32_t(offsetof(intraday_power_price_curves_type, intraday_power_price_curve)), 1, false, false, nullptr, &intraday_power_price_curve_record, scalar_kind::text, &append_to<intraday_power_price_curve>},
+    {"id", 926444256u, field_kind::text,
+     std::uint32_t(offsetof(intraday_power_price_curves_type, id)), 0, true,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"IntradayPowerPriceCurve", 3580169880u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(intraday_power_price_curves_type,
+                            intraday_power_price_curve)),
+     1, false, false, nullptr, &intraday_power_price_curve_record,
+     scalar_kind::text, &append_to<intraday_power_price_curve>},
 };
-const record_type intraday_power_price_curves_type_record{"intradayPowerPriceCurvesType", intraday_power_price_curves_type_fields, 2, no_text};
+const record_type intraday_power_price_curves_type_record{
+    "intradayPowerPriceCurvesType", intraday_power_price_curves_type_fields, 2,
+    no_text};
 const field todaysmarket_fields[] = {
-    {"Configuration", 442426457u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, configuration)), 0, false, false, nullptr, &configuration_type_record, scalar_kind::text, &append_to<configuration_type>},
-    {"YieldCurves", 2319661046u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, yield_curves)), 1, false, false, nullptr, &yield_curves_type_record, scalar_kind::text, &append_to<yield_curves_type>},
-    {"DiscountingCurves", 735889554u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, discounting_curves)), 2, false, false, nullptr, &discount_curves_type_record, scalar_kind::text, &append_to<discount_curves_type>},
-    {"IndexForwardingCurves", 389056272u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, index_forwarding_curves)), 3, false, false, nullptr, &index_forwarding_curves_type_record, scalar_kind::text, &append_to<index_forwarding_curves_type>},
-    {"SwapIndexCurves", 1473063730u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, swap_index_curves)), 4, false, false, nullptr, &swap_index_curves_type_record, scalar_kind::text, &append_to<swap_index_curves_type>},
-    {"ZeroInflationIndexCurves", 342691689u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, zero_inflation_index_curves)), 5, false, false, nullptr, &zero_inflation_index_curves_type_record, scalar_kind::text, &append_to<zero_inflation_index_curves_type>},
-    {"YYInflationIndexCurves", 3904744445u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, yy_inflation_index_curves)), 6, false, false, nullptr, &yy_inflation_index_curves_type_record, scalar_kind::text, &append_to<yy_inflation_index_curves_type>},
-    {"FxSpots", 2115187128u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, fx_spots)), 7, false, false, nullptr, &fx_spots_type_record, scalar_kind::text, &append_to<fx_spots_type>},
-    {"FxVolatilities", 57966396u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, fx_volatilities)), 8, false, false, nullptr, &fx_volatilities_type_record, scalar_kind::text, &append_to<fx_volatilities_type>},
-    {"SwaptionVolatilities", 565983703u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, swaption_volatilities)), 9, false, false, nullptr, &swaption_volatilities_type_record, scalar_kind::text, &append_to<swaption_volatilities_type>},
-    {"YieldVolatilities", 3218877953u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, yield_volatilities)), 10, false, false, nullptr, &yield_volatilities_type_record, scalar_kind::text, &append_to<yield_volatilities_type>},
-    {"CapFloorVolatilities", 2170532696u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, cap_floor_volatilities)), 11, false, false, nullptr, &cap_floor_volatilities_type_record, scalar_kind::text, &append_to<cap_floor_volatilities_type>},
-    {"CDSVolatilities", 1441038828u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, cds_volatilities)), 12, false, false, nullptr, &cds_volatilities_type_record, scalar_kind::text, &append_to<cds_volatilities_type>},
-    {"DefaultCurves", 4036915814u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, default_curves)), 13, false, false, nullptr, &default_curves_type_record, scalar_kind::text, &append_to<default_curves_type>},
-    {"YYInflationCapFloorVolatilities", 2379591250u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, yy_inflation_cap_floor_volatilities)), 14, false, false, nullptr, &yy_inflation_cap_floor_volatilities_type_record, scalar_kind::text, &append_to<yy_inflation_cap_floor_volatilities_type>},
-    {"ZeroInflationCapFloorVolatilities", 1595860158u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, zero_inflation_cap_floor_volatilities)), 15, false, false, nullptr, &zero_inflation_cap_floor_volatilities_type_record, scalar_kind::text, &append_to<zero_inflation_cap_floor_volatilities_type>},
-    {"EquityCurves", 392903410u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, equity_curves)), 16, false, false, nullptr, &equity_curves_type_record, scalar_kind::text, &append_to<equity_curves_type>},
-    {"EquityVolatilities", 2112275293u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, equity_volatilities)), 17, false, false, nullptr, &equity_volatilities_type_record, scalar_kind::text, &append_to<equity_volatilities_type>},
-    {"Securities", 251637179u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, securities)), 18, false, false, nullptr, &securities_type_record, scalar_kind::text, &append_to<securities_type>},
-    {"BaseCorrelations", 536998925u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, base_correlations)), 19, false, false, nullptr, &base_correlations_type_record, scalar_kind::text, &append_to<base_correlations_type>},
-    {"CommodityCurves", 1912956786u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, commodity_curves)), 20, false, false, nullptr, &commodity_curves_type_record, scalar_kind::text, &append_to<commodity_curves_type>},
-    {"CommodityVolatilities", 625707997u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, commodity_volatilities)), 21, false, false, nullptr, &commodity_volatilities_type_record, scalar_kind::text, &append_to<commodity_volatilities_type>},
-    {"Correlations", 4252826708u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, correlations)), 22, false, false, nullptr, &correlations_type_record, scalar_kind::text, &append_to<correlations_type>},
-    {"BondFutureVolatilities", 1860681100u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, bond_future_volatilities)), 23, false, false, nullptr, &bond_future_volatilities_type_record, scalar_kind::text, &append_to<bond_future_volatilities_type>},
-    {"IntradayPowerPriceCurves", 3642129393u, field_kind::repeated_nested, std::uint32_t(offsetof(todaysmarket, intraday_power_price_curves)), 24, false, false, nullptr, &intraday_power_price_curves_type_record, scalar_kind::text, &append_to<intraday_power_price_curves_type>},
+    {"Configuration", 442426457u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, configuration)), 0, false, false,
+     nullptr, &configuration_type_record, scalar_kind::text,
+     &append_to<configuration_type>},
+    {"YieldCurves", 2319661046u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, yield_curves)), 1, false, false,
+     nullptr, &yield_curves_type_record, scalar_kind::text,
+     &append_to<yield_curves_type>},
+    {"DiscountingCurves", 735889554u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, discounting_curves)), 2, false, false,
+     nullptr, &discount_curves_type_record, scalar_kind::text,
+     &append_to<discount_curves_type>},
+    {"IndexForwardingCurves", 389056272u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, index_forwarding_curves)), 3, false,
+     false, nullptr, &index_forwarding_curves_type_record, scalar_kind::text,
+     &append_to<index_forwarding_curves_type>},
+    {"SwapIndexCurves", 1473063730u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, swap_index_curves)), 4, false, false,
+     nullptr, &swap_index_curves_type_record, scalar_kind::text,
+     &append_to<swap_index_curves_type>},
+    {"ZeroInflationIndexCurves", 342691689u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, zero_inflation_index_curves)), 5,
+     false, false, nullptr, &zero_inflation_index_curves_type_record,
+     scalar_kind::text, &append_to<zero_inflation_index_curves_type>},
+    {"YYInflationIndexCurves", 3904744445u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, yy_inflation_index_curves)), 6, false,
+     false, nullptr, &yy_inflation_index_curves_type_record, scalar_kind::text,
+     &append_to<yy_inflation_index_curves_type>},
+    {"FxSpots", 2115187128u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, fx_spots)), 7, false, false, nullptr,
+     &fx_spots_type_record, scalar_kind::text, &append_to<fx_spots_type>},
+    {"FxVolatilities", 57966396u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, fx_volatilities)), 8, false, false,
+     nullptr, &fx_volatilities_type_record, scalar_kind::text,
+     &append_to<fx_volatilities_type>},
+    {"SwaptionVolatilities", 565983703u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, swaption_volatilities)), 9, false,
+     false, nullptr, &swaption_volatilities_type_record, scalar_kind::text,
+     &append_to<swaption_volatilities_type>},
+    {"YieldVolatilities", 3218877953u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, yield_volatilities)), 10, false,
+     false, nullptr, &yield_volatilities_type_record, scalar_kind::text,
+     &append_to<yield_volatilities_type>},
+    {"CapFloorVolatilities", 2170532696u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, cap_floor_volatilities)), 11, false,
+     false, nullptr, &cap_floor_volatilities_type_record, scalar_kind::text,
+     &append_to<cap_floor_volatilities_type>},
+    {"CDSVolatilities", 1441038828u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, cds_volatilities)), 12, false, false,
+     nullptr, &cds_volatilities_type_record, scalar_kind::text,
+     &append_to<cds_volatilities_type>},
+    {"DefaultCurves", 4036915814u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, default_curves)), 13, false, false,
+     nullptr, &default_curves_type_record, scalar_kind::text,
+     &append_to<default_curves_type>},
+    {"YYInflationCapFloorVolatilities", 2379591250u,
+     field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, yy_inflation_cap_floor_volatilities)),
+     14, false, false, nullptr,
+     &yy_inflation_cap_floor_volatilities_type_record, scalar_kind::text,
+     &append_to<yy_inflation_cap_floor_volatilities_type>},
+    {"ZeroInflationCapFloorVolatilities", 1595860158u,
+     field_kind::repeated_nested,
+     std::uint32_t(
+         offsetof(todaysmarket, zero_inflation_cap_floor_volatilities)),
+     15, false, false, nullptr,
+     &zero_inflation_cap_floor_volatilities_type_record, scalar_kind::text,
+     &append_to<zero_inflation_cap_floor_volatilities_type>},
+    {"EquityCurves", 392903410u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, equity_curves)), 16, false, false,
+     nullptr, &equity_curves_type_record, scalar_kind::text,
+     &append_to<equity_curves_type>},
+    {"EquityVolatilities", 2112275293u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, equity_volatilities)), 17, false,
+     false, nullptr, &equity_volatilities_type_record, scalar_kind::text,
+     &append_to<equity_volatilities_type>},
+    {"Securities", 251637179u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, securities)), 18, false, false,
+     nullptr, &securities_type_record, scalar_kind::text,
+     &append_to<securities_type>},
+    {"BaseCorrelations", 536998925u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, base_correlations)), 19, false, false,
+     nullptr, &base_correlations_type_record, scalar_kind::text,
+     &append_to<base_correlations_type>},
+    {"CommodityCurves", 1912956786u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, commodity_curves)), 20, false, false,
+     nullptr, &commodity_curves_type_record, scalar_kind::text,
+     &append_to<commodity_curves_type>},
+    {"CommodityVolatilities", 625707997u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, commodity_volatilities)), 21, false,
+     false, nullptr, &commodity_volatilities_type_record, scalar_kind::text,
+     &append_to<commodity_volatilities_type>},
+    {"Correlations", 4252826708u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, correlations)), 22, false, false,
+     nullptr, &correlations_type_record, scalar_kind::text,
+     &append_to<correlations_type>},
+    {"BondFutureVolatilities", 1860681100u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, bond_future_volatilities)), 23, false,
+     false, nullptr, &bond_future_volatilities_type_record, scalar_kind::text,
+     &append_to<bond_future_volatilities_type>},
+    {"IntradayPowerPriceCurves", 3642129393u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(todaysmarket, intraday_power_price_curves)), 24,
+     false, false, nullptr, &intraday_power_price_curves_type_record,
+     scalar_kind::text, &append_to<intraday_power_price_curves_type>},
 };
-const record_type todaysmarket_record{"todaysmarket", todaysmarket_fields, 25, no_text};
+const record_type todaysmarket_record{"todaysmarket", todaysmarket_fields, 25,
+                                      no_text};
 
+} // namespace
+
+ORES_ORE_CORE_EXPORT auto todays_market_document() -> const document_type & {
+  static const document_type doc{"TodaysMarket", &todaysmarket_record};
+  return doc;
 }
 
-ORES_ORE_CORE_EXPORT auto todays_market_document() -> const document_type& {
-    static const document_type doc{"TodaysMarket", &todaysmarket_record};
-    return doc;
-}
-
-}
+} // namespace ores::ore::xml::generated::todays_market

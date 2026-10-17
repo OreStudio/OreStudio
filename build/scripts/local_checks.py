@@ -388,6 +388,7 @@ CATALOGUE: tuple[Check, ...] = (
         paths=("projects/ores.ore/scripts/*",
                "projects/ores.ore/core/include/ores.ore.core/xml/generated/*",
                "projects/ores.ore/core/src/xml/generated/*",
+               "build/scripts/check_xml_bindings_drift.py",
                "external/ore/xsd/*"),
         fix="Run ./projects/ores.ore/scripts/regenerate_xml_bindings.sh and commit.",
     ),

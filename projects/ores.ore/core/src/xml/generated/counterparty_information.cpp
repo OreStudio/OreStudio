@@ -9,7 +9,8 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -28,49 +29,82 @@ namespace {
 
 constexpr std::uint8_t no_text = 0xFF;
 
-template <typename T>
-auto append_to(void* container, void** slot) -> void {
-    auto* vector = static_cast<std::vector<T>*>(container);
-    vector->emplace_back();
-    *slot = &vector->back();
+template <typename T> auto append_to(void *container, void **slot) -> void {
+  auto *vector = static_cast<std::vector<T> *>(container);
+  vector->emplace_back();
+  *slot = &vector->back();
 }
 
-const char* credit_quality_type_spellings[] = {"HY", "IG", "NR", nullptr};
+const char *credit_quality_type_spellings[] = {"HY", "IG", "NR", nullptr};
 
 const field counterparty_fields[] = {
-    {"CounterpartyId", 1752888256u, field_kind::text, std::uint32_t(offsetof(counterparty, counterparty_id)), 0, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"ClearingCounterparty", 403714842u, field_kind::text, std::uint32_t(offsetof(counterparty, clearing_counterparty)), 1, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CreditQuality", 3767213893u, field_kind::enumeration, std::uint32_t(offsetof(counterparty, credit_quality)), 2, false, false, credit_quality_type_spellings, nullptr, scalar_kind::text, nullptr},
-    {"BaCvaRiskWeight", 2324213039u, field_kind::decimal, std::uint32_t(offsetof(counterparty, ba_cva_risk_weight)), 3, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
-    {"SaCcrRiskWeight", 59815872u, field_kind::decimal, std::uint32_t(offsetof(counterparty, sa_ccr_risk_weight)), 4, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
-    {"SaCvaRiskBucket", 2448304594u, field_kind::decimal, std::uint32_t(offsetof(counterparty, sa_cva_risk_bucket)), 5, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
+    {"CounterpartyId", 1752888256u, field_kind::text,
+     std::uint32_t(offsetof(counterparty, counterparty_id)), 0, false, true,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"ClearingCounterparty", 403714842u, field_kind::text,
+     std::uint32_t(offsetof(counterparty, clearing_counterparty)), 1, false,
+     false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"CreditQuality", 3767213893u, field_kind::enumeration,
+     std::uint32_t(offsetof(counterparty, credit_quality)), 2, false, false,
+     credit_quality_type_spellings, nullptr, scalar_kind::text, nullptr},
+    {"BaCvaRiskWeight", 2324213039u, field_kind::decimal,
+     std::uint32_t(offsetof(counterparty, ba_cva_risk_weight)), 3, false, false,
+     nullptr, nullptr, scalar_kind::decimal, nullptr},
+    {"SaCcrRiskWeight", 59815872u, field_kind::decimal,
+     std::uint32_t(offsetof(counterparty, sa_ccr_risk_weight)), 4, false, false,
+     nullptr, nullptr, scalar_kind::decimal, nullptr},
+    {"SaCvaRiskBucket", 2448304594u, field_kind::decimal,
+     std::uint32_t(offsetof(counterparty, sa_cva_risk_bucket)), 5, false, false,
+     nullptr, nullptr, scalar_kind::decimal, nullptr},
 };
-const record_type counterparty_record{"counterparty", counterparty_fields, 6, no_text};
+const record_type counterparty_record{"counterparty", counterparty_fields, 6,
+                                      no_text};
 const field counterparties_fields[] = {
-    {"Counterparty", 3606568069u, field_kind::repeated_nested, std::uint32_t(offsetof(counterparties, counterparty)), 0, false, false, nullptr, &counterparty_record, scalar_kind::text, &append_to<counterparty>},
+    {"Counterparty", 3606568069u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(counterparties, counterparty)), 0, false, false,
+     nullptr, &counterparty_record, scalar_kind::text,
+     &append_to<counterparty>},
 };
-const record_type counterparties_record{"counterparties", counterparties_fields, 1, no_text};
+const record_type counterparties_record{"counterparties", counterparties_fields,
+                                        1, no_text};
 const field correlation_fields[] = {
-    {"", 0u, field_kind::real, std::uint32_t(offsetof(correlation, value)), 0, false, false, nullptr, nullptr, scalar_kind::real, nullptr},
-    {"cpty1", 3369584452u, field_kind::text, std::uint32_t(offsetof(correlation, cpty1)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"cpty2", 3419917309u, field_kind::text, std::uint32_t(offsetof(correlation, cpty2)), 2, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"", 0u, field_kind::real, std::uint32_t(offsetof(correlation, value)), 0,
+     false, false, nullptr, nullptr, scalar_kind::real, nullptr},
+    {"cpty1", 3369584452u, field_kind::text,
+     std::uint32_t(offsetof(correlation, cpty1)), 1, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"cpty2", 3419917309u, field_kind::text,
+     std::uint32_t(offsetof(correlation, cpty2)), 2, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
 };
 const record_type correlation_record{"Correlation", correlation_fields, 3, 0};
 const field counter_party_correlations_fields[] = {
-    {"Correlation", 3571652271u, field_kind::repeated_nested, std::uint32_t(offsetof(counter_party_correlations, correlation)), 0, false, false, nullptr, &correlation_record, scalar_kind::text, &append_to<correlation>},
+    {"Correlation", 3571652271u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(counter_party_correlations, correlation)), 0, false,
+     false, nullptr, &correlation_record, scalar_kind::text,
+     &append_to<correlation>},
 };
-const record_type counter_party_correlations_record{"counterPartyCorrelations", counter_party_correlations_fields, 1, no_text};
+const record_type counter_party_correlations_record{
+    "counterPartyCorrelations", counter_party_correlations_fields, 1, no_text};
 const field counterparty_information_fields[] = {
-    {"Counterparties", 1165510329u, field_kind::nested, std::uint32_t(offsetof(counterparty_information, counterparties)), 0, false, false, nullptr, &counterparties_record, scalar_kind::text, nullptr},
-    {"Correlations", 4252826708u, field_kind::nested, std::uint32_t(offsetof(counterparty_information, correlations)), 1, false, false, nullptr, &counter_party_correlations_record, scalar_kind::text, nullptr},
+    {"Counterparties", 1165510329u, field_kind::nested,
+     std::uint32_t(offsetof(counterparty_information, counterparties)), 0,
+     false, false, nullptr, &counterparties_record, scalar_kind::text, nullptr},
+    {"Correlations", 4252826708u, field_kind::nested,
+     std::uint32_t(offsetof(counterparty_information, correlations)), 1, false,
+     false, nullptr, &counter_party_correlations_record, scalar_kind::text,
+     nullptr},
 };
-const record_type counterparty_information_record{"counterpartyInformation", counterparty_information_fields, 2, no_text};
+const record_type counterparty_information_record{
+    "counterpartyInformation", counterparty_information_fields, 2, no_text};
 
+} // namespace
+
+ORES_ORE_CORE_EXPORT auto counterparty_information_document()
+    -> const document_type & {
+  static const document_type doc{"CounterpartyInformation",
+                                 &counterparty_information_record};
+  return doc;
 }
 
-ORES_ORE_CORE_EXPORT auto counterparty_information_document() -> const document_type& {
-    static const document_type doc{"CounterpartyInformation", &counterparty_information_record};
-    return doc;
-}
-
-}
+} // namespace ores::ore::xml::generated::counterparty_information

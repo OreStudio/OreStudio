@@ -15,9 +15,14 @@ root="$(cd "$here/../../.." && pwd)"
 cd "$root"
 
 out="${XML_BINDINGS_OUT:-$root}"
+
+# Generate into a staging tree first. A family that fails part way through
+# then leaves the committed files untouched, rather than half regenerated.
+staging="$(mktemp -d)"
+trap 'rm -rf "$staging"' EXIT
 xsd=external/ore/xsd
-header="$out/projects/ores.ore/core/include/ores.ore.core/xml/generated"
-source="$out/projects/ores.ore/core/src/xml/generated"
+header="$staging/projects/ores.ore/core/include/ores.ore.core/xml/generated"
+source="$staging/projects/ores.ore/core/src/xml/generated"
 
 mkdir -p "$header" "$source"
 
@@ -111,3 +116,14 @@ generate \
     --include "ores.ore.core/xml/generated/currency_config.hpp" \
     --header "$header/currency_config.hpp" \
     --source "$source/currency_config.cpp"
+
+# The repository formats its C++ with clang-format and a check enforces it, so
+# the generator's output has to be formatted too, not only correct.
+if command -v clang-format >/dev/null 2>&1; then
+    find "$staging" -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
+fi
+
+mkdir -p "$out/projects/ores.ore/core/include/ores.ore.core/xml/generated"
+mkdir -p "$out/projects/ores.ore/core/src/xml/generated"
+cp "$header"/*.hpp "$out/projects/ores.ore/core/include/ores.ore.core/xml/generated/"
+cp "$source"/*.cpp "$out/projects/ores.ore/core/src/xml/generated/"

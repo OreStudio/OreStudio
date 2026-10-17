@@ -40,7 +40,8 @@ disagree.
 - Every complex type the corpus reaches has a table.
 - Regeneration is one command and its output carries the generated marker.
 - A drift check fails when a table and its schema disagree.
-- The generator reads the schema with =pugixml=, which stays a build-time tool.
+- The generator reads the schema with Python's =xml.etree.ElementTree=, a
+  build-time tool that needs no project dependency.
 
 * Plan
 
@@ -60,7 +61,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Families generated | 7 of the corpus's 20 root elements | =./projects/ores.ore/scripts/regenerate_xml_bindings.sh= | =49af9884de= |
+| Corpus documents bound | 296 of 1,623 | =ores.ore.core.tests "[ore][xml]"= | =49af9884de= |
+| Suite size | 530 cases, 63,607 assertions | =ores.ore.core.tests "[ore][xml]"= | review fix |
+| Generator determinism | two runs, different hash seeds, identical | =build/scripts/check_xml_bindings_drift.py= | review fix |
 
 * Notes
 
@@ -103,7 +107,8 @@ money list is an argument rather than a reading.
 
 Verified: the binding cases pass against the generated records, the whole
 =ore xml= suite is 524 cases and 63,587 assertions, and re-running the generator
-produces byte-identical output, which the drift check proves.
+produces byte-identical output, which the drift check proves by generating
+twice under different hash seeds and comparing the two runs.
 
 A second family, =currencyConfig=, is generated as well. It is shaped
 differently on purpose: an =xs:all= rather than a sequence, an enumeration, and
@@ -124,7 +129,7 @@ The engine gained a text field per record type and the generator emits it.
 
 A fifth family, =todaysMarket=, is generated, and it is the largest yet: a
 hundred records, one per curve and volatility section the document carries.
-It binds every one of the 106 todays-market documents in the corpus.
+It binds every todays-market document in the corpus, 99 of them.
 
 Two defects came with it, both about names rather than shapes. ORE reuses
 element names across families, so two different types were both called
@@ -187,3 +192,17 @@ however the schema writes its =minOccurs=. Treating them as required refused
 sixty-seven documents.
 
 Verified: 527 cases and 63,598 assertions.
+
+* What the review corrected
+
+The first version of this record claimed more than the code did. It said the
+generator reused the project's money vocabulary, when in fact money arrives as a
+hand-written =--money= argument with one entry in it. It said the drift check
+proved determinism, when the check ran the generator once. It said 106
+todays-market documents when 99 carry that root. And it described the schema
+reader as =pugixml= when it is Python's =ElementTree=.
+
+All four are corrected above. The money vocabulary is the one that still needs
+work: every family generated so far that carries money takes it from
+=xs:decimal=, which is the schema deciding the kind, and the investigation says
+the schema must not decide it.

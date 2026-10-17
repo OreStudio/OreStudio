@@ -9,7 +9,8 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -28,36 +29,49 @@ namespace {
 
 constexpr std::uint8_t no_text = 0xFF;
 
-template <typename T>
-auto append_to(void* container, void** slot) -> void {
-    auto* vector = static_cast<std::vector<T>*>(container);
-    vector->emplace_back();
-    *slot = &vector->back();
+template <typename T> auto append_to(void *container, void **slot) -> void {
+  auto *vector = static_cast<std::vector<T> *>(container);
+  vector->emplace_back();
+  *slot = &vector->back();
 }
 
-
-
 const field dates_fields[] = {
-    {"Date", 995259257u, field_kind::repeated_leaf, std::uint32_t(offsetof(dates, date)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"Date", 995259257u, field_kind::repeated_leaf,
+     std::uint32_t(offsetof(dates, date)), 0, false, false, nullptr, nullptr,
+     scalar_kind::text, nullptr},
 };
 const record_type dates_record{"Dates", dates_fields, 1, no_text};
 const field newcalendar_fields[] = {
-    {"name", 2369371622u, field_kind::text, std::uint32_t(offsetof(newcalendar, name)), 0, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"BaseCalendar", 2105168270u, field_kind::text, std::uint32_t(offsetof(newcalendar, base_calendar)), 1, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"AdditionalHolidays", 1462025913u, field_kind::nested, std::uint32_t(offsetof(newcalendar, additional_holidays)), 2, false, false, nullptr, &dates_record, scalar_kind::text, nullptr},
-    {"AdditionalBusinessDays", 541531981u, field_kind::nested, std::uint32_t(offsetof(newcalendar, additional_business_days)), 3, false, false, nullptr, &dates_record, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text,
+     std::uint32_t(offsetof(newcalendar, name)), 0, true, true, nullptr,
+     nullptr, scalar_kind::text, nullptr},
+    {"BaseCalendar", 2105168270u, field_kind::text,
+     std::uint32_t(offsetof(newcalendar, base_calendar)), 1, false, false,
+     nullptr, nullptr, scalar_kind::text, nullptr},
+    {"AdditionalHolidays", 1462025913u, field_kind::nested,
+     std::uint32_t(offsetof(newcalendar, additional_holidays)), 2, false, false,
+     nullptr, &dates_record, scalar_kind::text, nullptr},
+    {"AdditionalBusinessDays", 541531981u, field_kind::nested,
+     std::uint32_t(offsetof(newcalendar, additional_business_days)), 3, false,
+     false, nullptr, &dates_record, scalar_kind::text, nullptr},
 };
-const record_type newcalendar_record{"newcalendar", newcalendar_fields, 4, no_text};
+const record_type newcalendar_record{"newcalendar", newcalendar_fields, 4,
+                                     no_text};
 const field calendaradjustment_fields[] = {
-    {"Calendar", 2656199999u, field_kind::repeated_nested, std::uint32_t(offsetof(calendaradjustment, calendar)), 0, false, false, nullptr, &newcalendar_record, scalar_kind::text, &append_to<newcalendar>},
+    {"Calendar", 2656199999u, field_kind::repeated_nested,
+     std::uint32_t(offsetof(calendaradjustment, calendar)), 0, false, false,
+     nullptr, &newcalendar_record, scalar_kind::text, &append_to<newcalendar>},
 };
-const record_type calendaradjustment_record{"calendaradjustment", calendaradjustment_fields, 1, no_text};
+const record_type calendaradjustment_record{
+    "calendaradjustment", calendaradjustment_fields, 1, no_text};
 
+} // namespace
+
+ORES_ORE_CORE_EXPORT auto calendar_adjustments_document()
+    -> const document_type & {
+  static const document_type doc{"CalendarAdjustments",
+                                 &calendaradjustment_record};
+  return doc;
 }
 
-ORES_ORE_CORE_EXPORT auto calendar_adjustments_document() -> const document_type& {
-    static const document_type doc{"CalendarAdjustments", &calendaradjustment_record};
-    return doc;
-}
-
-}
+} // namespace ores::ore::xml::generated::calendar_adjustments

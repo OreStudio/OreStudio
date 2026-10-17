@@ -174,6 +174,11 @@ class Schema:
                     self.elements.setdefault(name, node)
 
 
+# The presence mask is one 64-bit word per record, so a type may declare at
+# most this many fields. A record with more silently shares bits, which shows
+# up as a required field reported present when it never arrived.
+MAX_FIELDS = 64
+
 # Elements that are alternatives inside an xs:choice. At most one of them
 # appears per iteration, so none is individually required however the schema
 # writes its minOccurs.
@@ -196,9 +201,22 @@ def simple_content_base(complex_type):
     return None
 
 
+UNSUPPORTED = ("complexContent", "group", "annotation")
+
+
 def children_of(complex_type):
     """Elements and attributes of a complexType, in schema order."""
     elements, attributes = [], []
+    for node in complex_type:
+        name = local(node.tag)
+        if name in UNSUPPORTED:
+            # complexContent, xs:group ref and nested model groups are shapes
+            # this generator does not read. Emitting nothing for them would
+            # produce a table that silently disagrees with the schema, so they
+            # stop the run instead.
+            raise SystemExit(
+                f"they type {complex_type.get('name')} uses xs:{name}, which is not supported"
+            )
     for node in complex_type:
         if local(node.tag) in ("sequence", "all", "choice"):
             for element in node:
@@ -420,7 +438,7 @@ def spellings_of(schema, owner, element):
 def member_declaration(schema, element, money):
     name = element.get("name")
     member = snake(name)
-    repeated = element.get("maxOccurs") == "unbounded"
+    repeated = element.get("maxOccurs", "1") not in ("1",)
     declared = element.get("type")
     shape, _nested = field_shape(schema, element)
 
@@ -489,7 +507,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         complex_type = schema.complex_types[type_name]
         elements, attributes = children_of(complex_type)
         declares.append(f"struct {names[type_name]};")
-        body = [f"struct {names[type_name]} {{", "    std::uint16_t present = 0;"]
+        body = [f"struct {names[type_name]} {{", "    std::uint64_t present = 0;"]
         own_kind = content_kind(schema, complex_type)
         if own_kind is not None:
             body.append(f"    {CPP_TYPE[own_kind]} value;")
@@ -573,6 +591,10 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 f"{bit}, false, false, nullptr, nullptr, scalar_kind::text, nullptr}},"
             )
             bit += 1
+        if bit > MAX_FIELDS:
+            raise SystemExit(
+                f"{type_name} has {bit} fields; the presence mask holds {MAX_FIELDS}"
+            )
         text_field = "0" if own_kind is not None else "no_text"
         tables.append(
             f"const field {names[type_name]}_fields[] = {{\n"
@@ -600,8 +622,8 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                         f"const char* {snake(declared)}_spellings[] = {{{values}, nullptr}};"
                     )
 
-    header = f'''{LICENCE}#ifndef {header_name.upper()}_HPP
-#define {header_name.upper()}_HPP
+    header = f'''{LICENCE}#ifndef ORES_ORE_CORE_XML_GENERATED_{header_name.upper()}_HPP
+#define ORES_ORE_CORE_XML_GENERATED_{header_name.upper()}_HPP
 
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.utility/decimal/decimal.hpp"
@@ -677,7 +699,9 @@ def main():
     schema = Schema(args.schema)
     if args.root_type not in schema.complex_types:
         raise SystemExit(f"no complexType {args.root_type}")
-    default_include = "ores.ore.core/xml/" + args.accessor.replace("_document", "") + ".hpp"
+    default_include = (
+        "ores.ore.core/xml/generated/" + args.accessor.replace("_document", "") + ".hpp"
+    )
     header, source = render(
         schema,
         args.root_element,

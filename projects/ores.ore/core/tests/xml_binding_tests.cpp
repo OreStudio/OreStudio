@@ -69,12 +69,12 @@ using tm::todaysmarket;
 // not name, and a repeated leaf of a numeric type.
 
 struct notes {
-    std::uint16_t present = 0;
+    std::uint64_t present = 0;
     std::vector<residual_element> extras;
 };
 
 struct level_list {
-    std::uint16_t present = 0;
+    std::uint64_t present = 0;
     std::vector<double> levels;
 };
 
@@ -245,7 +245,7 @@ TEST_CASE("every_calendar_adjustment_in_the_corpus_binds", tags) {
         bind_error error;
         if (!binder::bind(
                 calendar_adjustments_document(), read_file(entry.path()), &record, error)) {
-            report += entry.path().string() + ": " + error.message + "\\n";
+            report += entry.path().string() + ": " + error.message + "\n";
             continue;
         }
         calendars += record.calendar.size();
@@ -554,4 +554,55 @@ TEST_CASE("the_generated_conventions_tables_bind_the_corpus", tags) {
     INFO(report);
     CHECK(files > 0);
     CHECK(report.empty());
+}
+
+TEST_CASE("a_leaf_element_cannot_contain_another_element", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A leaf is a frame, so a child under it is refused rather than popping
+    // the parent and running the required check against the wrong record.
+    notes record;
+    bind_error error;
+    const document_type doc{"Notes", &notes_type};
+    const bool bound =
+        binder::bind(doc, "<Notes><Anything>x<Child/></Anything></Notes>", &record, error);
+
+    // The residual field captures text and refuses children, which is the
+    // same rule from the other side.
+    CHECK_FALSE(bound);
+    CHECK(error.message.find("children") != std::string::npos);
+}
+
+TEST_CASE("text_split_by_a_comment_is_one_value", tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::string text = "<IborFallbackConfig><Fallbacks><Fallback>"
+                             "<IborIndex>CHF-<!-- a comment -->LIBOR-SN</IborIndex>"
+                             "<RfrIndex>CHF-SARON</RfrIndex><Spread>0.1</Spread>"
+                             "<SwitchDate>2022-01-01</SwitchDate>"
+                             "</Fallback></Fallbacks></IborFallbackConfig>";
+
+    ibor_fallback_config record;
+    bind_error error;
+    const bool bound = binder::bind(ibor_fallback_config_document(), text, &record, error);
+
+    INFO(error.message);
+    REQUIRE(bound);
+    REQUIRE(record.fallbacks.fallback.size() == 1);
+    CHECK(record.fallbacks.fallback[0].ibor_index == "CHF-LIBOR-SN");
+}
+
+TEST_CASE("a_document_without_a_root_or_with_two_is_refused", tags) {
+    auto lg(make_logger(test_suite));
+
+    calendaradjustment record;
+    bind_error error;
+    CHECK_FALSE(binder::bind(calendar_adjustments_document(), "", &record, error));
+    CHECK(error.message.find("root") != std::string::npos);
+
+    CHECK_FALSE(binder::bind(calendar_adjustments_document(),
+                             "<CalendarAdjustments/><CalendarAdjustments/>",
+                             &record,
+                             error));
+    CHECK(error.message.find("more than one root") != std::string::npos);
 }

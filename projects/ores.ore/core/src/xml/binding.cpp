@@ -67,25 +67,42 @@ auto residual_field(const record_type& type) -> const field* {
 }
 
 auto present(const void* record, const field& f) -> bool {
-    return (*static_cast<const std::uint16_t*>(record) & (1u << f.bit)) != 0;
+    return (*static_cast<const std::uint64_t*>(record) & (1ull << f.bit)) != 0;
 }
 
 auto mark_present(void* record, const field& f) -> void {
-    *static_cast<std::uint16_t*>(record) |= static_cast<std::uint16_t>(1u << f.bit);
+    *static_cast<std::uint64_t*>(record) |= (1ull << f.bit);
 }
 
-auto store(void* record, const field& f, std::string_view text, std::string& error) -> bool {
+/**
+ * @brief Writes one value into the member the field names.
+ *
+ * `append` says whether a second value for the same field joins the first.
+ * Text accumulates, because a comment or a CDATA boundary splits a text node
+ * into runs and the value is still one string. Every other kind replaces, and
+ * a second value for a number is refused rather than silently overwriting the
+ * first.
+ */
+auto store(void* record,
+           const field& f,
+           std::string_view text,
+           bool append,
+           std::string& error) -> bool {
+    static_cast<void>(append);
     auto* slot = static_cast<std::byte*>(record) + f.offset;
     switch (f.kind) {
-        case field_kind::text:
-            *reinterpret_cast<std::string*>(slot) = text;
+        case field_kind::text: {
+            auto* target = reinterpret_cast<std::string*>(slot);
+            if (append)
+                target->append(text);
+            else
+                *target = text;
             break;
+        }
         case field_kind::integer: {
             std::int64_t value = 0;
-            const auto begin = text.data();
-            const auto end = begin + text.size();
-            const auto [stop, ec] = std::from_chars(begin, end, value);
-            if (ec != std::errc{} || stop != end) {
+            const auto [stop, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
+            if (ec != std::errc{} || stop != text.data() + text.size()) {
                 error = "an element declared as an integer does not hold one";
                 return false;
             }
@@ -103,10 +120,8 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
         }
         case field_kind::real: {
             double value = 0;
-            const auto begin = text.data();
-            const auto end = begin + text.size();
-            const auto [stop, ec] = std::from_chars(begin, end, value);
-            if (ec != std::errc{} || stop != end) {
+            const auto [stop, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
+            if (ec != std::errc{} || stop != text.data() + text.size()) {
                 error = "an element declared as a real does not hold one";
                 return false;
             }
@@ -115,12 +130,15 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
         }
         case field_kind::enumeration: {
             // ORE's currencyCode enumeration has more than a hundred
-            // spellings, so an eight-bit index overflows and walks off the
-            // end of the table. Sixteen bits is the floor here, not a choice.
+            // spellings, so an eight-bit index overflows and walks off the end
+            // of the table. Sixteen bits is the floor here.
             std::int16_t index = -1;
-            for (std::int16_t i = 0; f.tokens[i] != nullptr; ++i)
-                if (text == f.tokens[i])
+            for (std::int16_t i = 0; f.tokens[i] != nullptr; ++i) {
+                if (text == f.tokens[i]) {
                     index = i;
+                    break;
+                }
+            }
             if (index < 0) {
                 error = "an element declared as an enumeration holds no known spelling";
                 return false;
@@ -135,8 +153,8 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
                     break;
                 case scalar_kind::integer: {
                     std::int64_t value = 0;
-                    const auto [stop, ec] = std::from_chars(text.data(), text.data() + text.size(),
-                                                            value);
+                    const auto [stop, ec] =
+                        std::from_chars(text.data(), text.data() + text.size(), value);
                     if (ec != std::errc{} || stop != text.data() + text.size()) {
                         error = "a repeated integer element does not hold one";
                         return false;
@@ -156,8 +174,8 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
                 }
                 case scalar_kind::real: {
                     double value = 0;
-                    const auto [stop, ec] = std::from_chars(text.data(), text.data() + text.size(),
-                                                            value);
+                    const auto [stop, ec] =
+                        std::from_chars(text.data(), text.data() + text.size(), value);
                     if (ec != std::errc{} || stop != text.data() + text.size()) {
                         error = "a repeated real element does not hold one";
                         return false;
@@ -168,10 +186,12 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
             }
             break;
         }
-        case field_kind::residual:
-            return false;
         case field_kind::nested:
         case field_kind::repeated_nested:
+            error = "a row describing a nested element reached the value writer";
+            return false;
+        case field_kind::residual:
+            error = "a row describing unnamed content reached the value writer";
             return false;
     }
     mark_present(record, f);
@@ -182,30 +202,33 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
 
 auto binder::bind(const document_type& doc, std::string_view text, void* root, bind_error& error)
     -> bool {
+    // A frame is either a record being filled or a leaf awaiting its text. A
+    // leaf is a frame rather than a flag so a leaf with children is refused
+    // instead of quietly popping its parent, and so a leaf's own attributes
+    // resolve against the leaf rather than against whatever contains it.
     struct frame {
         const record_type* type;
         std::byte* record;
+        const field* leaf;
     };
 
     std::array<frame, max_depth> stack{};
     std::uint8_t depth = 0;
+    bool have_root = false;
 
-    const field* pending = nullptr;
-    std::byte* pending_record = nullptr;
-    // A leaf has no children, so the next end tag closes it rather than the
-    // frame below it. Without this the leaf's end would pop its parent.
-    bool in_leaf = false;
-    int skipping = 0;
-    // Set while the engine is inside an element the schema does not name. Its
-    // text is kept on the residual record and its children are refused.
+    // Content the schema does not name, while it is being captured. The text
+    // is kept on the residual record and a child is refused.
     std::string* residual_text = nullptr;
     bool residual_had_children = false;
     std::string residual_name;
+    int residual_depth = 0;
 
     reader input(text);
 
-    auto fail = [&error](std::string message) {
+    auto fail = [&input, &error](std::string message) {
         error.message = std::move(message);
+        error.line = input.line();
+        error.column = input.column();
         return false;
     };
 
@@ -218,25 +241,23 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
             return false;
         }
         if (ev.kind == event_type::end_of_document) {
+            if (!have_root)
+                return fail("the document has no root element");
             if (depth != 0)
                 return fail("the document ended inside an element");
             return true;
         }
 
-        if (skipping > 0) {
+        if (residual_depth > 0) {
             if (ev.kind == event_type::begin_element) {
-                ++skipping;
+                ++residual_depth;
                 residual_had_children = true;
             } else if (ev.kind == event_type::text && residual_text != nullptr) {
                 residual_text->append(ev.value);
             } else if (ev.kind == event_type::end_element) {
-                if (--skipping == 0 && residual_had_children) {
-                    error.message = "unknown element '" + residual_name +
-                                    "' has children, which a projection cannot represent";
-                    error.line = input.line();
-                    error.column = input.column();
-                    return false;
-                }
+                if (--residual_depth == 0 && residual_had_children)
+                    return fail("unknown element '" + residual_name +
+                                "' has children, which a projection cannot represent");
             }
             continue;
         }
@@ -244,30 +265,23 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
         switch (ev.kind) {
             case event_type::begin_element: {
                 if (depth == 0) {
-                    if (ev.name != doc.root_name) {
-                        error.message = "the root element is not the one this binding names";
-                        error.line = input.line();
-                        error.column = input.column();
-                        return false;
-                    }
-                    stack[depth++] = {doc.root, static_cast<std::byte*>(root)};
+                    if (have_root)
+                        return fail("the document has more than one root element");
+                    if (ev.name != doc.root_name)
+                        return fail("the root element is not the one this binding names");
+                    have_root = true;
+                    stack[depth++] = {doc.root, static_cast<std::byte*>(root), nullptr};
                     continue;
                 }
                 const auto& top = stack[depth - 1];
+                if (top.type == nullptr)
+                    return fail("a leaf element cannot contain '" + std::string(ev.name) + "'");
                 const auto* f = find(*top.type, ev.name, false);
                 if (f == nullptr) {
-                    // Content the schema does not name goes to the residual
-                    // field when the type declares one. A type without one
-                    // refuses the document, because a projection that ignores
-                    // data cannot be checked against the source.
                     const auto* any = residual_field(*top.type);
-                    if (any == nullptr) {
-                        error.message = "unknown element '" + std::string(ev.name) + "' in '" +
-                                        std::string(top.type->name) + "'";
-                        error.line = input.line();
-                        error.column = input.column();
-                        return false;
-                    }
+                    if (any == nullptr)
+                        return fail("unknown element '" + std::string(ev.name) + "' in '" +
+                                    std::string(top.type->name) + "'");
                     auto* bag = reinterpret_cast<std::vector<residual_element>*>(top.record +
                                                                                 any->offset);
                     bag->emplace_back();
@@ -276,7 +290,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                     residual_text = &bag->back().text;
                     residual_had_children = false;
                     residual_name = std::string(ev.name);
-                    skipping = 1;
+                    residual_depth = 1;
                     continue;
                 }
                 if (depth == max_depth)
@@ -286,13 +300,10 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                     // A nested member is a value inside its parent, so it is
                     // already constructed and is destroyed with the parent.
                     mark_present(top.record, *f);
-                    stack[depth++] = {f->type, slot};
+                    stack[depth++] = {f->type, slot, nullptr};
                     if (f->type->text_field != no_text) {
-                        // xs:simpleContent: the element carries text of its
-                        // own beside its attributes.
-                        pending = &f->type->fields[f->type->text_field];
-                        pending_record = slot;
-                        mark_present(pending_record, *pending);
+                        auto* target = &f->type->fields[f->type->text_field];
+                        mark_present(slot, *target);
                     }
                     continue;
                 }
@@ -301,11 +312,10 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                     f->append(slot, &child);
                     mark_present(top.record, *f);
                     auto* record = static_cast<std::byte*>(child);
-                    stack[depth++] = {f->type, record};
+                    stack[depth++] = {f->type, record, nullptr};
                     if (f->type->text_field != no_text) {
-                        pending = &f->type->fields[f->type->text_field];
-                        pending_record = record;
-                        mark_present(pending_record, *pending);
+                        auto* target = &f->type->fields[f->type->text_field];
+                        mark_present(record, *target);
                     }
                     continue;
                 }
@@ -314,79 +324,66 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                 // with no value, and a bit set only on text would report that
                 // as missing.
                 mark_present(top.record, *f);
-                in_leaf = true;
-                pending = f;
-                pending_record = top.record;
+                stack[depth++] = {nullptr, top.record, f};
                 continue;
             }
             case event_type::attribute: {
                 if (depth == 0)
                     return fail("an attribute arrived outside the root element");
                 const auto& top = stack[depth - 1];
+                if (top.type == nullptr)
+                    return fail("an element that holds a value cannot carry the attribute '" +
+                                std::string(ev.name) + "'");
                 const auto* f = find(*top.type, ev.name, true);
-                if (f == nullptr) {
-                    error.message = "unknown attribute '" + std::string(ev.name) + "' in '" +
-                                    std::string(top.type->name) + "'";
-                    error.line = input.line();
-                    error.column = input.column();
-                    return false;
-                }
+                if (f == nullptr)
+                    return fail("unknown attribute '" + std::string(ev.name) + "' in '" +
+                                std::string(top.type->name) + "'");
                 std::string message;
-                if (!store(top.record, *f, ev.value, message))
+                if (!store(top.record, *f, ev.value, false, message))
                     return fail(std::move(message));
                 continue;
             }
             case event_type::text: {
                 if (is_blank(ev.value))
                     continue;
-                if (pending == nullptr) {
-                    // Text the model has no field for is data, and dropping it
-                    // would be the loss this layer exists to prevent. Mixed
-                    // content and an unknown shape both land here.
-                    error.message = "text where no field expects it";
-                    if (depth > 0)
-                        error.message += " inside '" +
-                                         std::string(stack[depth - 1].type->name) + "'";
-                    error.line = input.line();
-                    error.column = input.column();
-                    return false;
-                }
+                if (depth == 0)
+                    return fail("text arrived outside the root element");
+                const auto& top = stack[depth - 1];
                 std::string message;
-                if (!store(pending_record, *pending, ev.value, message))
+                if (top.type == nullptr) {
+                    if (!store(top.record, *top.leaf, ev.value, true, message))
+                        return fail(std::move(message));
+                    continue;
+                }
+                if (top.type->text_field == no_text)
+                    return fail("text where no field expects it, inside '" +
+                                std::string(top.type->name) + "'");
+                const auto& target = top.type->fields[top.type->text_field];
+                if (!store(top.record, target, ev.value, true, message))
                     return fail(std::move(message));
-                pending = nullptr;
-                pending_record = nullptr;
                 continue;
             }
             case event_type::end_element: {
-                pending = nullptr;
-                pending_record = nullptr;
-                residual_text = nullptr;
-                if (in_leaf) {
-                    in_leaf = false;
-                    continue;
-                }
                 if (depth == 0)
                     return fail("an end tag arrived with nothing open");
-                --depth;
-                const auto& top = stack[depth];
+                const auto& top = stack[depth - 1];
+                if (top.type == nullptr) {
+                    --depth;
+                    continue;
+                }
+                // An attribute is checked at the end of the element that
+                // carries it, exactly like a child: both are content the
+                // schema requires, and a missing one is a broken document
+                // rather than an optional value.
                 for (std::uint8_t i = 0; i < top.type->field_count; ++i) {
                     const auto& f = top.type->fields[i];
-                    // An attribute is checked at the end of the element that
-                    // carries it, exactly like a child: both are content the
-                    // schema requires, and a missing one is a broken document
-                    // rather than an optional value. The repeated kinds set
-                    // their bit when they append, so minOccurs=1 works too.
                     if (!f.required || f.kind == field_kind::residual)
                         continue;
-                    if (!present(top.record, f)) {
-                        error.message = "required element '" + std::string(f.name) +
-                                        "' is missing from '" + std::string(top.type->name) + "'";
-                        error.line = input.line();
-                        error.column = input.column();
-                        return false;
-                    }
+                    if (!present(top.record, f))
+                        return fail("required element '" + std::string(f.name) +
+                                    "' is missing from '" + std::string(top.type->name) + "'");
                 }
+                --depth;
                 continue;
             }
             default:

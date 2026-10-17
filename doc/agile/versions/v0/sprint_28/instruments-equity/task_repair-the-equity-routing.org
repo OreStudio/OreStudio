@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: feature/repair-the-equity-routing
-#+pr: 3418
+#+pr: 3448
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -81,6 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3448][#3448]] | [ore] Route a total return swap as the composite it is |
 | [[https://github.com/OreStudio/OreStudio/pull/3418][#3418]] | [agile] Correct the equity routing scope against the atomised rule |
 
 * Review

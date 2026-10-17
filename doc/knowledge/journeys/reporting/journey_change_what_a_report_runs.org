@@ -79,7 +79,7 @@ journey is that screen's owner.
    =/refdata/conventions=. Its row also points at the shared prototype
    =doc/prototypes/reporting/manage-the-conventions/=, which owns the conventions
    interaction and states that the reporting model names no document per kind.
-   The row reads that set: the 25 kinds, how many are bound, and the ones that
+   The row reads that set: the 26 kinds, how many are bound, and the ones that
    are not. The other four, =pricing_engines=, =todays_market=,
    =curve_configuration= and =risk_report_config=, have no screen and no route,
    so the panel states the link as missing rather than drawing one that would not

@@ -23,14 +23,19 @@
 
   One row per convention kind, and the columns a person needs to decide which
   row to open: the kind, the name of the convention in use, what its terms say,
-  and one button. The step-per-kind wizard that used to be here is gone. A table
-  because the question "what does this report read?" is answered by scanning 25
-  rows, not by walking 25 steps.
+  where the kind came from, and one button. The step-per-kind wizard that used
+  to be here is gone. A table because the question "what does this report
+  read?" is answered by scanning 26 rows, not by walking 26 steps.
 
-  A row holds the party's document for that kind. Today the database holds none
-  for any party, so every row reads none and says what a run does instead: it
-  falls back to the curated document for the kind. That is the state the screen
-  handles first, and the page says so above the table.
+  A row holds the documents the party has for that kind. The database is
+  provisioned with ACME: the tenant holds 10,991 convention rows across all 26
+  kinds, and 25 of the 26 kinds arrived from a DQ publish. The exception is
+  tenor, which has no DQ artefact table and whose 4 rows were copied from the
+  system tenant. The table states that per row, in the provenance column.
+
+  A new party starts with no document of any kind, so every row then reads none
+  and says what a run does instead: it falls back to the curated document for
+  the kind. That state is reachable as ?state=none and is no longer the default.
 
   NO NAME IS STORED, SO THE NAME IS DERIVED
 
@@ -77,21 +82,24 @@
 
   REACHABLE STATES, all behind the bar at the foot of the page
 
-    ?state=acme       no document anywhere: every row reads none. The database
-                      state.
-    ?state=several    a fixture: swap holds two documents, CDS one, deposit one
-                      that matches the marked default, and every other kind
-                      still none
-    ?state=change     the fixture above plus a pick that has not been written
+    ?state=provisioned  every kind holds documents. The database state, and the
+                        default this page opens in.
+    ?state=none         no document anywhere: every row reads none. Where a new
+                        party starts.
+    ?state=change       the provisioned set plus one document picked as the one
+                        a report should read, and not written. A fixture.
 
   ?kind=<code> opens a kind, ?cand=<row key> picks the candidate variant B
   compares, ?from=create-a-report|change-what-a-report-runs decides where the
-  back link goes, and ?seed=<row key> starts the create form from a curated row.
+  back link goes, and ?seed=<row key> starts the create form from a document the
+  kind already holds.
 
   WHAT THE PAGE REFUSES TO INVENT
 
-  No default is modelled anywhere, so the default mark on a kind's page is a
-  fixture and says so, and the page states where a real one would have to live.
+  No default is modelled anywhere, so the mark on a kind's page is a fixture and
+  says so, and the page states where a real one would have to live. That matters
+  more now, not less: every kind holds many documents and no column says which
+  one a run reads.
   No operation is called. The create route states the write it would make and
   exactly what was checked about that write, and it claims nothing about whether
   the write works.

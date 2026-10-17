@@ -86,9 +86,9 @@
         {
             code: 'conventions',
             title: 'The conventions it binds',
-            sub: '25 kinds, each reading none today',
+            sub: '26 kinds, all bound, 25 of them from a DQ publish',
             lead: 'This step reads the conventions set the bound configuration carries and hands ' +
-                'the work to Manage the conventions, which owns the table of the 25 kinds, the ' +
+                'the work to Manage the conventions, which owns the table of the 26 kinds, the ' +
                 'page for each kind and the create route.',
             /* The four fields the other four types carry are not read here: the
                summary is drawn by conventionsSummary, because the conventions
@@ -395,7 +395,7 @@
        analytic set and the scope, which is why the analytics belong to the
        configuration in the slot and not to the definition. */
     var CONFIGS = [
-        { id: 'cfg-conv-group', type: 'conventions', name: 'Group conventions', detail: '25 convention kinds', scope: null, boundBy: 31, analytics: null },
+        { id: 'cfg-conv-group', type: 'conventions', name: 'Group conventions', detail: '26 convention kinds, all bound', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-pe-group', type: 'pricing_engines', name: 'Group pricing engines', detail: '42 products', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-tm-group', type: 'todays_market', name: 'Group today\u2019s market', detail: '3 collections, 118 entries', scope: null, boundBy: 31, analytics: null },
         { id: 'cfg-cc-group', type: 'curve_configuration', name: 'Group curve configuration', detail: '2 sections, 61 curves', scope: null, boundBy: 31, analytics: null },
@@ -959,36 +959,52 @@
     }
 
     /* The conventions set the bound configuration carries, for the read-only
-       summary this step draws. Twenty-five kinds, and the curated row count each
-       one falls back to. No tenant owns a document for any kind, so the summary
-       reads none on every row. */
+       summary this step draws. Twenty-six kinds. ACME is provisioned: the tenant
+       holds 10,991 convention rows and every kind is bound, 25 of them from a DQ
+       publish. docs is the party's own documents; the four kinds whose table has
+       no party column are held by the tenant and say so. */
     var CONVENTIONS_KINDS = [
-        { name: 'Deposit', rows: 163 },
-        { name: 'FRA', rows: 42 },
-        { name: 'Future', rows: 7 },
-        { name: 'OIS', rows: 52 },
-        { name: 'Average OIS', rows: 5 },
-        { name: 'Swap', rows: 320 },
-        { name: 'Tenor basis swap', rows: 37 },
-        { name: 'Tenor basis two swap', rows: 4 },
-        { name: 'Cross-currency basis', rows: 207 },
-        { name: 'Cross-currency fix-float', rows: 24 },
-        { name: 'Bond yield', rows: 5 },
-        { name: 'CDS', rows: 4 },
-        { name: 'CMS spread option', rows: 1 },
-        { name: 'Commodity forward', rows: 4 },
-        { name: 'Commodity future', rows: 790 },
-        { name: 'FX option', rows: 173 },
-        { name: 'BMA basis swap', rows: 3 },
-        { name: 'Zero', rows: 38 },
-        { name: 'Inflation swap', rows: 22 },
-        { name: 'Intraday power load', rows: 2 },
-        { name: 'IBOR index', rows: 10 },
-        { name: 'Overnight index', rows: 23 },
-        { name: 'Named swap index', rows: 243 },
-        { name: 'Currency pair', rows: 179 },
-        { name: 'Zero inflation index', rows: 9 }
+        { name: 'Deposit', docs: 163, prov: 'dq' },
+        { name: 'FRA', docs: 42, prov: 'dq' },
+        { name: 'Future', docs: 7, prov: 'dq' },
+        { name: 'OIS', docs: 52, prov: 'dq' },
+        { name: 'Average OIS', docs: 5, prov: 'dq' },
+        { name: 'Swap', docs: 320, prov: 'dq' },
+        { name: 'Tenor basis swap', docs: 37, prov: 'dq' },
+        { name: 'Tenor basis two swap', docs: 4, prov: 'dq' },
+        { name: 'Cross-currency basis', docs: 207, prov: 'dq' },
+        { name: 'Cross-currency fix-float', docs: 24, prov: 'dq' },
+        { name: 'Bond yield', docs: 5, prov: 'dq' },
+        { name: 'CDS', docs: 4, prov: 'dq' },
+        { name: 'CMS spread option', docs: 1, prov: 'dq' },
+        { name: 'Commodity forward', docs: 4, prov: 'dq' },
+        { name: 'Commodity future', docs: 790, prov: 'dq' },
+        { name: 'FX option', docs: 173, prov: 'dq' },
+        { name: 'BMA basis swap', docs: 3, prov: 'dq' },
+        { name: 'Zero', docs: 38, prov: 'dq' },
+        { name: 'Inflation swap', docs: 22, prov: 'dq' },
+        { name: 'Intraday power load', docs: 2, prov: 'dq' },
+        { name: 'IBOR index', docs: 10, prov: 'dq', tenantWide: true },
+        { name: 'Overnight index', docs: 23, prov: 'dq', tenantWide: true },
+        { name: 'Named swap index', docs: 243, prov: 'dq' },
+        { name: 'Currency pair', docs: 179, prov: 'pair', tenantWide: true },
+        { name: 'Zero inflation index', docs: 9, prov: 'dq' },
+        { name: 'Tenor', docs: 4, prov: 'system', tenantWide: true }
     ];
+
+    /* A count a reader reads: 2155 is 2,155. */
+    function num(value) {
+        return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    /* Where the set came from, in one place: the two publish subjects, and the
+       one kind no publish reaches. */
+    var CONVENTIONS_PUBLISH = {
+        dq: { subject: 'refdata.v1.ops.publish_conventions_from_dq',
+              dataset: 'ORE Instrument Conventions' },
+        pair: { subject: 'refdata.v1.ops.publish_currency_pair_conventions_from_dq',
+                dataset: 'Standard Currency Pair Conventions' }
+    };
 
     function reachList(items, bound) {
         return '<ul>' + items.map(function (item) {
@@ -999,17 +1015,30 @@
 
     /* The conventions step is an entry point, not a second implementation of
        the conventions. It reads the set the bound configuration carries, states
-       that ACME holds no document for any kind, and hands the work to the shared
-       prototype. It draws no picker. */
+       that every kind is bound and where the documents came from, and hands the
+       work to the shared prototype. It draws no picker. */
+    function conventionsRow(kind) {
+        var held = '<span class="tag ok">' + kind.docs +
+            (kind.docs === 1 ? ' document' : ' documents') + '</span>' +
+            (kind.tenantWide ? ' <span class="tag muted">tenant-wide</span>' : '');
+        var prov = kind.prov === 'system'
+            ? '<span class="tag warn">copied from the system tenant</span> No DQ route for ' +
+              'this kind.'
+            : '<span class="tag ok">DQ publish</span> ' +
+              esc(CONVENTIONS_PUBLISH[kind.prov].dataset);
+        return '<tr><td>' + esc(kind.name) + '</td>' +
+            '<td class="code">' + held + '</td>' +
+            '<td class="wrap">' + prov + '</td></tr>';
+    }
+
     function conventionsSummary(type) {
         var bound = configById(S.draft.binds[type.code]);
-        var rows = CONVENTIONS_KINDS.map(function (kind) {
-            return '<tr><td>' + esc(kind.name) + '</td>' +
-                '<td class="code">none</td>' +
-                '<td class="wrap">No terms are held. A run that reaches the ' +
-                esc(kind.name) + ' family reads the curated document (' + kind.rows +
-                (kind.rows === 1 ? ' row' : ' rows') + ').</td></tr>';
-        }).join('');
+        var partyDocs = CONVENTIONS_KINDS.reduce(function (sum, kind) {
+            return kind.tenantWide ? sum : sum + kind.docs;
+        }, 0);
+        var tenantDocs = CONVENTIONS_KINDS.reduce(function (sum, kind) {
+            return kind.tenantWide ? sum + kind.docs : sum;
+        }, 0);
         return '<div class="notice"><b>The conventions are managed on another screen.</b> ' +
             'This step reads the set the bound configuration carries and hands the work to ' +
             'Manage the conventions. It draws no picker and edits nothing, because one screen ' +
@@ -1017,27 +1046,32 @@
             '<div class="card" style="margin-top:14px;background:var(--bg)">' +
             '<div class="sectionhead"><h3>The set this report binds</h3>' +
             '<span class="meta">refdata.v1.conventions_documents.get \u00b7 fixture</span></div>' +
-            '<div class="notice warn"><b>No tenant owns a convention document yet.</b> No kind of ' +
-            'this set has a document of the party\u2019s own, so every row reads none and the ' +
-            'run falls back to the curated document for the kind. That is the state the ' +
-            'conventions screen handles first.</div>' +
+            '<div class="notice ok"><b>ACME is provisioned and every kind is bound.</b> The ' +
+            'tenant holds 10,991 convention rows across the 26 kinds, and a party holds ' +
+            num(partyDocs) + ' of them, with ' + num(tenantDocs) + ' more held by the tenant because those ' +
+            'tables carry no party column. <b>25 of the 26 kinds came from a DQ publish</b>; ' +
+            'tenor did not, and its 4 rows were copied from the system tenant. No kind reads ' +
+            'none.</div>' +
             '<div class="statgrid" style="margin-top:12px">' +
             '<div><span class="lbl">configuration</span><span class="val">' +
             esc(bound ? bound.name : 'nothing is bound in this slot') + '</span></div>' +
             '<div><span class="lbl">convention kinds</span><span class="val">' +
             CONVENTIONS_KINDS.length + '</span></div>' +
             '<div><span class="lbl">kinds with a document</span><span class="val">' +
-            '<span class="tag warn">0 held</span></span></div>' +
+            '<span class="tag ok">' + CONVENTIONS_KINDS.length + ' held</span></span></div>' +
             '<div><span class="lbl">definitions bound</span><span class="val">' +
             (bound ? bound.boundBy : 0) + '</span></div>' +
             '</div>' +
             '<table style="margin-top:12px"><thead><tr>' +
-            '<th>Kind</th><th>The convention in use</th><th>What its terms say</th>' +
-            '</tr></thead><tbody>' + rows + '</tbody></table>' +
-            '<p class="rowfoot">The name of a convention is derived from its terms, because no ' +
-            'table stores one: an index-based document is named by its index, and a terms-based ' +
-            'document by its calendar, convention, day count and settlement days. With no ' +
-            'document held there is no name to derive and no terms to describe.</p>' +
+            '<th>Kind</th><th>Documents ACME holds</th><th>Where they came from</th>' +
+            '</tr></thead><tbody>' + CONVENTIONS_KINDS.map(conventionsRow).join('') +
+            '</tbody></table>' +
+            '<p class="rowfoot">A published document is a copy of a row of the DQ dataset, so ' +
+            'a kind holds many documents rather than one: swap 320, commodity future 790. The ' +
+            'name of a convention is derived from its terms, because no table stores one; a ' +
+            'kind\u2019s page on Manage the conventions names its documents and says how many ' +
+            'it holds. <b>Nothing records which of them a run reads</b>: no table has a default ' +
+            'marker.</p>' +
             '</div>' +
             '<div class="notice" style="margin-top:12px"><b>How a configuration names one document ' +
             'per kind.</b> The reporting model does not say. ores_reporting_configurations_tbl ' +
@@ -1048,7 +1082,7 @@
             '<div class="draftrow" style="margin-top:14px">' +
             '<a class="btn primary" href="../manage-the-conventions/?from=create-a-report">' +
             'Manage the conventions \u2192</a>' +
-            '<span class="hint">The shared prototype owns the 25 rows, the page for each kind and ' +
+            '<span class="hint">The shared prototype owns the 26 rows, the page for each kind and ' +
             'the create route. It sits at ' +
             'doc/prototypes/reporting/manage-the-conventions/.</span></div>' +
             '<p class="rowfoot">The candidates in this slot come from ' +

@@ -307,9 +307,12 @@ td:last-child, th:last-child { padding-right: 0; }
 td.code { font-family: var(--mono); font-size: 12px; }
 .rowfoot { color: var(--ink-faint); font-size: 12px; margin-top: 12px; max-width: 108ch; }
 
-.kindtable { min-width: 900px; }
-.kindtable th.kind { width: 17rem; }
-.kindtable th.act { width: 7rem; text-align: right; }
+.kindtable { min-width: 0; table-layout: fixed; }
+.kindtable th.kind { width: 11.5rem; }
+.kindtable th.name { width: 17rem; }
+.kindtable th.prov { width: 15.5rem; }
+.kindtable th.act { width: 5.5rem; text-align: right; }
+.kindtable tr.odd { background: rgba(210, 153, 34, 0.05); }
 .kindtable td.act { text-align: right; white-space: nowrap; }
 .kindtable tr.none td.kindname { color: var(--ink-faint); }
 .kindtable tr.none td.desc { color: var(--ink-faint); }
@@ -326,7 +329,11 @@ td.code { font-family: var(--mono); font-size: 12px; }
 .namecell .ntags { display: flex; gap: 5px; flex-wrap: wrap; }
 .namecell .nparts { font-size: 11px; color: var(--ink-faint); }
 
-.desc { color: var(--ink-dim); max-width: 52ch; font-size: 12.5px; }
+.provcell { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.provcell .psub { font-size: 11px; color: var(--ink-faint); overflow-wrap: anywhere; }
+.provcell .pdata { font-size: 11px; color: var(--ink-dim); line-height: 1.45; }
+
+.desc { color: var(--ink-dim); font-size: 12.5px; }
 .desc .dnone { font-style: italic; color: var(--ink-faint); }
 
 /* ---------------------------------------------------------- rule blocks */
@@ -360,6 +367,22 @@ td.code { font-family: var(--mono); font-size: 12px; }
 .rule.neutral .rbody { color: var(--ink-dim); }
 .rule.neutral .rbody b { color: var(--ink); }
 .rule .rexample.neutral { color: var(--ink); }
+.rule .prooftable { border-collapse: collapse; margin: 8px 0 0; width: 100%; }
+.rule .prooftable td {
+    border: none;
+    border-bottom: 1px solid rgba(107, 78, 18, 0.4);
+    padding: 6px 12px 6px 0;
+    color: #d3b874;
+    font-size: 12px;
+    vertical-align: top;
+}
+.rule .prooftable td:first-child {
+    width: 11rem;
+    color: #f7dd8a;
+    font-family: var(--mono);
+    white-space: nowrap;
+}
+.rule .prooftable .mono { color: #f7dd8a; }
 
 /* ------------------------------------------------------- document card */
 

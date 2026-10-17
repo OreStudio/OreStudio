@@ -3,27 +3,45 @@
  *
  * THE DESIGN, IN ONE PARAGRAPH
  *
- * The screen is a table. One row per convention kind, and three columns that
- * matter: the kind, the name of the convention in use, and what its terms say.
- * A fourth column is one button, Change, which opens that kind alone. Nothing
- * in the database stores a name or a description for a convention document, so
- * both are derived from the terms: a name from the terms that tell one document
- * from another, a description by rendering the same terms in words. A kind with
- * no document of the party's own says so, and says what a run does instead.
+ * The screen is a table. One row per convention kind, and four columns that
+ * matter: the kind, the name of the convention in use, what its terms say, and
+ * where the kind came from. A fifth column is one button, Change, which opens
+ * that kind alone. Nothing in the database stores a name for a convention
+ * document, so the name is derived from the terms: a name from the terms that
+ * tell one document from another, a description by rendering the same terms in
+ * words. A kind with no document of the party's own says so, and says what a run
+ * does instead, because that is where a new party starts.
  *
- * THE FACTS THIS PAGE IS BUILT ON (checked against ores_dev_bright_faraday)
+ * THE FACTS THIS PAGE IS BUILT ON (checked against ores_dev_bright_faraday on
+ * the day this was written; the database is provisioned with ACME)
  *
- *   - ACME, tenant b7fe3d66-2aed-4d1c-a19b-0406b689640b, owns no row in any of
- *     the 25 ores_refdata_<kind>_conventions_tbl tables. Neither does any other
- *     party: 22 of the 25 hold no row at all, and the other three hold rows of
- *     the system tenant only. So the state the screen handles first is "no
- *     document", on every row.
- *   - The only convention data is the curated set in the 25
- *     ores_dq_<kind>_conventions_artefact_tbl tables, owned by tenant
- *     ffffffff-ffff-ffff-ffff-ffffffffffff and party 00000000-....
- *   - No convention table has a name column and none has a description column.
- *     The curated tables carry an id text, which is the row's key; the party
- *     tables carry a uuid id. Neither is a field of the document.
+ *   - ACME, tenant 5f3febb3-d42a-4b4e-a1c4-8515229ce9dd, code acme_corporation,
+ *     status active, owns 10,991 convention rows across the 26
+ *     ores_refdata_<kind>_conventions_tbl tables. Every kind is bound. A new
+ *     party still starts with none, and ?state=none draws that.
+ *   - 25 of the 26 kinds arrived from a DQ publish:
+ *       refdata.v1.ops.publish_conventions_from_dq, dataset
+ *       1847fe5b-e8a5-435d-9df3-2d6afc411b85 "ORE Instrument Conventions",
+ *       for 24 kinds;
+ *       refdata.v1.ops.publish_currency_pair_conventions_from_dq, dataset
+ *       4ac03ec8-9591-489a-bc8f-5bb8573eba6b "Standard Currency Pair
+ *       Conventions", for currency_pair.
+ *   - tenor is the one kind with no DQ route. There is no
+ *     ores_dq_tenor_conventions_artefact_tbl; the 4 rows were copied from the
+ *     system tenant during provisioning (reason system.new_record, commentary
+ *     "Copied from system tenant during provisioning").
+ *   - ores_refdata_publish_conventions_from_dq_fn loops 24 kinds and dispatches
+ *     ores_dq_<x>_conventions_artefact_tbl into ores_refdata_<x>_conventions_tbl.
+ *     The currency pair function covers the 25th. 25 covered, 1 uncovered.
+ *   - Currency pair, IBOR index, overnight index and tenor carry no party_id
+ *     column, so those rows belong to the whole tenant. The publish reports
+ *     records_skipped 33 on the second and later parties: IBOR index 10 plus
+ *     overnight index 23, the two kinds it would otherwise repeat per party.
+ *   - No convention table has a name column. One has a description:
+ *     ores_refdata_tenor_conventions_tbl. The page derives a name for every
+ *     kind, so one rule names all 26, and says where the one description lives.
+ *   - A published document is a copy of a curated row, so a kind holds many
+ *     documents and no column says which one a run takes.
  *   - No table has a default marker. pays_at_default_time on the CDS table is a
  *     CDS business term, not a default flag.
  *   - The terms differ by kind. Deposit carries index_based, index, calendar,
@@ -34,10 +52,10 @@
  *     carries 51 term columns. A single name formula cannot span them, so the
  *     name rule is stated per kind and the page shows which fields it read.
  *
- * Every value on the page is a fixture. The term values are real rows of the
- * curated tables, copied in; which document ACME owns, the default mark and the
- * change in progress are invented for the demonstration and are labelled as
- * fixtures where they appear.
+ * Every value on the page is a fixture. The term values are real rows of ACME's
+ * own convention tables, read for one party; which document of a kind is the
+ * one a report reads, the default mark and the change in progress are invented
+ * for the demonstration and are labelled as fixtures where they appear.
  *
  * THREE READINGS, ONE QUESTION. ?variant=A|B|C changes only the alternatives
  * block on a kind's page: A lists them described, B compares the document in
@@ -51,196 +69,374 @@
     /* ------------------------------------------------------------ fixture */
 
     var ACME = {
-        tenant: 'b7fe3d66-2aed-4d1c-a19b-0406b689640b',
-        party: '00000000-0000-0000-0000-00000000acme',
+        tenant: '5f3febb3-d42a-4b4e-a1c4-8515229ce9dd',
+        tenantCode: 'acme_corporation',
+        party: '3688bcd4-cc7b-427c-82d9-54bc7fe37a54',
+        parties: 5,
+        tenantRows: 10991,
         name: 'ACME',
         configuration: 'Group conventions',
         configurationId: 'cfg-conv-7d21',
-        definitions: 31
+        definitions: 31,
+        tenantDefinitions: 78
     };
 
-    /* The kinds, in the order ORE's conventions document carries them. Each one
-       states how its name is derived, which is a fact about its own table:
-       nameFields is read left to right, and a field the row leaves empty is
-       skipped in the name and then reported beside it. */
+    /* Where a kind's rows came from. The publish copies a curated artefact row
+       into the party's own table, so a published document is ACME's row and the
+       curated row it was copied from at the same time. */
+    var PROVENANCE = {
+        dq: {
+            subject: 'refdata.v1.ops.publish_conventions_from_dq',
+            datasetId: '1847fe5b-e8a5-435d-9df3-2d6afc411b85',
+            dataset: 'ORE Instrument Conventions',
+            reasonCode: 'system.external_data_import',
+            commentary: 'Imported from DQ dataset: ORE Instrument Conventions'
+        },
+        pair: {
+            subject: 'refdata.v1.ops.publish_currency_pair_conventions_from_dq',
+            datasetId: '4ac03ec8-9591-489a-bc8f-5bb8573eba6b',
+            dataset: 'Standard Currency Pair Conventions',
+            reasonCode: 'system.external_data_import',
+            commentary: 'Imported from DQ dataset: Standard Currency Pair Conventions'
+        },
+        system: {
+            subject: null,
+            datasetId: null,
+            dataset: null,
+            reasonCode: 'system.new_record',
+            commentary: 'Copied from system tenant during provisioning'
+        }
+    };
+
+    /* The kinds, in the order ORE's conventions document carries them, with
+       tenor last because it is the one kind no publish reaches. Each one states
+       how its name is derived, which is a fact about its own table: nameFields
+       is read left to right, and a field the row leaves empty is skipped in the
+       name and then reported beside it.
+
+       docs is how many documents the row's owner holds: the party's own rows
+       for a party-scoped kind, the tenant's rows for the four kinds whose table
+       carries no party_id. tenantRows is the tenant's total for the kind, which
+       is docs times the five parties where the kind is party-scoped.
+
+       doc is the first document of the kind by its key, read from ACME's own
+       table. Its terms are real; the prototype names it from them. */
     var KINDS = [
         {
             code: 'deposit', label: 'Deposit',
             mode: 'flag-index', indexFlag: 'index_based', indexField: 'index',
             nameFields: ['calendar', 'convention', 'day_count_fraction', 'settlement_days'],
-            altCount: 163, alts: 141, termCols: 8
+            termCols: 7, docs: 163, tenantRows: 815, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AED-DEPOSIT',
+                terms: { index_based: false, calendar: 'AED', convention: 'ModifiedFollowing', day_count_fraction: 'ACT/360', settlement_days: 2, end_of_month: false }
+            }
         },
         {
             code: 'fra', label: 'FRA',
             mode: 'index', indexField: 'index',
             nameFields: ['index'],
-            altCount: 42, termCols: 2
+            termCols: 1, docs: 42, tenantRows: 210, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: { key: 'AED-3M-FRA', terms: { index: 'AED-EIBOR-3M' } }
         },
         {
             code: 'future', label: 'Future',
             mode: 'terms',
             nameFields: ['index', 'calendar', 'date_generation_rule'],
             extraFields: ['netting_type'],
-            altCount: 7, termCols: 6
+            termCols: 5, docs: 7, tenantRows: 35, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: { key: 'AUD-BBSW-3M-FUTURES-CONVENTIONS', terms: { index: 'AUD-BBSW-3M' } }
         },
         {
             code: 'ois', label: 'OIS',
             mode: 'terms',
-            nameFields: ['fixed_calendar', 'fixed_convention', 'fixed_day_count_fraction', 'fixed_frequency'],
-            extraFields: ['index', 'spot_lag', 'payment_lag', 'rule'],
-            altCount: 52, termCols: 13
+            nameFields: ['index', 'fixed_frequency', 'fixed_convention', 'fixed_day_count_fraction'],
+            extraFields: ['rule', 'spot_lag', 'payment_lag', 'fixed_calendar'],
+            termCols: 12, docs: 52, tenantRows: 260, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AED-EIBORON-OIS',
+                terms: { index: 'AED-EIBORON', rule: 'Backward', spot_lag: 1, payment_lag: 2, fixed_frequency: 'Annual', fixed_convention: 'Following', fixed_day_count_fraction: 'ACT/365.FIXED' }
+            }
         },
         {
             code: 'average_ois', label: 'Average OIS',
             mode: 'terms',
-            nameFields: ['fixed_calendar', 'fixed_convention', 'fixed_day_count_fraction', 'fixed_tenor'],
-            extraFields: ['index', 'on_tenor', 'spot_lag'],
-            altCount: 5, termCols: 11
+            nameFields: ['index', 'fixed_tenor', 'fixed_calendar', 'fixed_convention', 'fixed_day_count_fraction'],
+            extraFields: ['on_tenor', 'spot_lag'],
+            termCols: 10, docs: 5, tenantRows: 25, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'GBP-BoEBASE-AVERAGE-OIS',
+                terms: { index: 'GBP-BoEBASE', on_tenor: '3M', spot_lag: 0, fixed_tenor: '6M', fixed_calendar: 'UK', fixed_convention: 'ModifiedFollowing', fixed_day_count_fraction: 'ACT/365.FIXED' }
+            }
         },
         {
             code: 'swap', label: 'Swap',
             mode: 'terms',
             nameFields: ['fixed_calendar', 'fixed_convention', 'fixed_day_count_fraction', 'fixed_frequency'],
             extraFields: ['index'],
-            altCount: 320, alts: 201, termCols: 8
+            termCols: 7, docs: 320, tenantRows: 1600, scope: 'party', alts: 201,
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AED-EIBOR-3M-SWAP',
+                terms: { index: 'AED-EIBOR-3M', fixed_calendar: 'TARGET', fixed_frequency: 'Annual', fixed_convention: 'ModifiedFollowing', fixed_day_count_fraction: '30/360' }
+            }
         },
         {
             code: 'tenor_basis_swap', label: 'Tenor basis swap',
             mode: 'terms',
             nameFields: ['short_index', 'long_index'],
             extraFields: ['pay_index', 'receive_index'],
-            altCount: 37, termCols: 15
+            termCols: 14, docs: 37, tenantRows: 185, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AUD-BBSW-1M-3M-BASIS',
+                terms: { short_index: 'AUD-BBSW-1M', long_index: 'AUD-BBSW-3M' }
+            }
         },
         {
             code: 'tenor_basis_two_swap', label: 'Tenor basis two swap',
             mode: 'terms',
             nameFields: ['calendar', 'short_index', 'long_index', 'long_fixed_day_count_fraction'],
             extraFields: ['long_fixed_convention', 'short_fixed_convention'],
-            altCount: 4, termCols: 11
+            termCols: 10, docs: 4, tenantRows: 20, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'EUR-EURIBOR-6M-12M-BASIS-CONVENTIONS',
+                terms: { calendar: 'TARGET', short_index: 'EUR-EURIBOR-6M', long_index: 'EUR-EURIBOR-12M', long_fixed_convention: 'ModifiedFollowing', short_fixed_convention: 'ModifiedFollowing', long_fixed_day_count_fraction: '30/360' }
+            }
         },
         {
             code: 'cross_currency_basis', label: 'Cross-currency basis',
             mode: 'terms',
             nameFields: ['settlement_calendar', 'roll_convention', 'settlement_days', 'flat_index', 'spread_index'],
             extraFields: ['eom', 'is_resettable'],
-            altCount: 207, termCols: 25
+            termCols: 24, docs: 207, tenantRows: 1035, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AUD-USD-IBOR-XCCY-BASIS',
+                terms: { flat_index: 'USD-LIBOR-3M', spread_index: 'AUD-BBSW-3M', is_resettable: true, roll_convention: 'ModifiedFollowing', settlement_days: 2, settlement_calendar: 'AU,US,UK' }
+            }
         },
         {
             code: 'cross_currency_fix_float', label: 'Cross-currency fix-float',
             mode: 'terms',
             nameFields: ['settlement_calendar', 'fixed_convention', 'fixed_day_count_fraction', 'settlement_days'],
             extraFields: ['index', 'fixed_currency', 'fixed_frequency'],
-            altCount: 24, termCols: 18
+            termCols: 17, docs: 24, tenantRows: 120, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'EUR-RON-XCCY-FIX-FLOAT-CONVENTIONS',
+                terms: { index: 'EUR-EURIBOR-3M', fixed_currency: 'RON', fixed_frequency: 'Annual', settlement_days: 2, fixed_convention: 'ModifiedFollowing', settlement_calendar: 'TARGET,RON', fixed_day_count_fraction: 'ACT/360' }
+            }
         },
         {
             code: 'bond_yield', label: 'Bond yield',
             mode: 'terms',
             nameFields: ['frequency', 'compounding', 'price_type'],
             extraFields: ['guess', 'accuracy', 'max_evaluations'],
-            altCount: 5, alts: 1, termCols: 7
+            termCols: 6, docs: 5, tenantRows: 25, scope: 'party', alts: 1,
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'CMB-USD-MMD',
+                terms: { guess: 0.05, accuracy: 0.00000001, frequency: 'Weekly', price_type: 'Clean', compounding: 'Continuous', max_evaluations: 100 }
+            }
         },
         {
             code: 'cds', label: 'CDS',
             mode: 'terms',
             nameFields: ['calendar', 'payment_convention', 'day_count_fraction', 'settlement_days', 'frequency'],
             extraFields: ['rule', 'settles_accrual', 'pays_at_default_time'],
-            altCount: 4, termCols: 11
+            termCols: 10, docs: 4, tenantRows: 20, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'ABX_CMBX-STANDARD-CONVENTIONS',
+                terms: { rule: 'CDS2015', calendar: 'WeekendsOnly', frequency: 'Monthly', settlement_days: 0, settles_accrual: true, day_count_fraction: 'ACT/360', payment_convention: 'Following', pays_at_default_time: true }
+            }
         },
         {
             code: 'cms_spread_option', label: 'CMS spread option',
             mode: 'terms',
             nameFields: ['calendar', 'roll_convention', 'day_count_fraction', 'swap_tenor'],
             extraFields: ['spot_days', 'forward_start', 'fixing_days'],
-            altCount: 1, termCols: 8
+            termCols: 7, docs: 1, tenantRows: 5, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'EUR-CMS-10Y-2Y-CONVENTION',
+                terms: { calendar: 'TARGET', spot_days: '2D', swap_tenor: '3M', fixing_days: 2, forward_start: '0M', roll_convention: 'ModifiedFollowing', day_count_fraction: 'ACT/360' }
+            }
         },
         {
             code: 'commodity_forward', label: 'Commodity forward',
             mode: 'terms',
             nameFields: ['advance_calendar', 'business_day_convention', 'spot_days'],
             extraFields: ['outright', 'spot_relative', 'points_factor'],
-            altCount: 4, alts: 1, termCols: 8
+            termCols: 7, docs: 4, tenantRows: 20, scope: 'party', alts: 1,
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'PM:XAGUSD',
+                terms: { advance_calendar: 'USD', business_day_convention: 'ModifiedFollowing', spot_days: 2, outright: false, spot_relative: true, points_factor: 100 }
+            }
         },
         {
             code: 'commodity_future', label: 'Commodity future',
             mode: 'terms',
             nameFields: ['calendar', 'contract_frequency', 'business_day_convention'],
             extraFields: ['anchor_day_of_month', 'offset_days'],
-            altCount: 790, termCols: 51
+            termCols: 50, docs: 790, tenantRows: 3950, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'BVMF:ATR',
+                terms: { calendar: 'BRL', contract_frequency: 'Monthly', anchor_day_of_month: 1, business_day_convention: 'Following' }
+            }
         },
         {
             code: 'fx_option', label: 'FX option',
             mode: 'terms',
             nameFields: ['fx_convention_id', 'atm_type', 'delta_type', 'switch_tenor'],
             extraFields: ['long_term_atm_type', 'long_term_delta_type', 'risk_reversal_in_favor_of', 'butterfly_style'],
-            altCount: 173, termCols: 9
+            termCols: 8, docs: 173, tenantRows: 865, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AUD-CAD-FXOPTION',
+                terms: { fx_convention_id: 'AUD-CAD-FX', atm_type: 'AtmDeltaNeutral', delta_type: 'PaSpot', switch_tenor: '2Y', long_term_atm_type: 'AtmDeltaNeutral', long_term_delta_type: 'PaFwd', risk_reversal_in_favor_of: 'Call', butterfly_style: 'Broker' }
+            }
         },
         {
             code: 'bma_basis_swap', label: 'BMA basis swap',
             mode: 'terms',
             nameFields: ['index', 'bma_index'],
             extraFields: ['index_payment_period', 'index_settlement_days', 'overnight_lockout_days'],
-            altCount: 3, termCols: 12
+            termCols: 11, docs: 3, tenantRows: 15, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'USD-LIBOR-SIFMA-3M-BASIS-CONVENTIONS',
+                terms: { index: 'USD-LIBOR-3M', bma_index: 'USD-SIFMA' }
+            }
         },
         {
             code: 'zero', label: 'Zero',
             mode: 'terms',
             nameFields: ['spot_calendar', 'roll_convention', 'day_count_fraction'],
             extraFields: ['compounding', 'compounding_frequency', 'spot_lag', 'tenor_based'],
-            altCount: 38, termCols: 10
+            termCols: 9, docs: 38, tenantRows: 190, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AED-ZERO-TENOR-BASED',
+                terms: { spot_lag: 2, compounding: 'Continuous', tenor_based: true, spot_calendar: 'AED', roll_convention: 'Following', day_count_fraction: 'ACT/365.FIXED', compounding_frequency: 'Daily' }
+            }
         },
         {
             code: 'inflation_swap', label: 'Inflation swap',
             mode: 'terms',
             nameFields: ['inflation_calendar', 'inflation_convention', 'day_count_fraction', 'observation_lag'],
             extraFields: ['index', 'interpolated', 'publication_roll'],
-            altCount: 22, termCols: 17
+            termCols: 16, docs: 22, tenantRows: 110, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AUCPI_INFLATIONSWAP',
+                terms: { index: 'AUCPI', interpolated: false, observation_lag: '3M', publication_roll: 'AfterPublicationDate', day_count_fraction: '30/360', inflation_calendar: 'AUD', inflation_convention: 'Following' }
+            }
         },
         {
             code: 'intraday_power_load', label: 'Intraday power load',
             mode: 'presence',
             nameFields: ['explicit_load_profile', 'business_day_load_rules'],
-            altCount: 2, termCols: 3
+            termCols: 2, docs: 2, tenantRows: 10, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'LOAD_PROFILE_1_EXPLICT',
+                terms: { explicit_load_profile: '2021-01-01|0;2021-01-04|50,50,50,50,50,50,50,50,50,50,50,50,50,50,50,50;2021-01-09|0' }
+            }
         },
         {
             code: 'ibor_index', label: 'IBOR index',
             mode: 'terms',
             nameFields: ['fixing_calendar', 'day_count_fraction', 'settlement_days', 'business_day_convention'],
             extraFields: ['end_of_month'],
-            altCount: 10, termCols: 6
+            termCols: 5, docs: 10, tenantRows: 10, scope: 'tenant',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AED-EIBOR-3M',
+                terms: { fixing_calendar: 'AED', settlement_days: 2, day_count_fraction: 'ACT/360', business_day_convention: 'ModifiedFollowing', end_of_month: false }
+            }
         },
         {
             code: 'overnight_index', label: 'Overnight index',
             mode: 'terms',
             nameFields: ['fixing_calendar', 'day_count_fraction', 'settlement_days'],
-            altCount: 23, termCols: 4
+            termCols: 3, docs: 23, tenantRows: 23, scope: 'tenant',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AED-EIBORON',
+                terms: { fixing_calendar: 'AED', settlement_days: 0, day_count_fraction: 'ACT/365.FIXED' }
+            }
         },
         {
             code: 'swap_index', label: 'Named swap index',
             mode: 'pointer',
             nameFields: ['conventions'],
             extraFields: ['fixing_calendar'],
-            altCount: 243, termCols: 3
+            termCols: 2, docs: 243, tenantRows: 1215, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'AED-CMS-1Y',
+                terms: { conventions: 'AED-SWAP' }
+            }
         },
         {
             code: 'currency_pair', label: 'Currency pair',
             mode: 'terms', keyField: 'pair_code',
             nameFields: ['pair_code', 'business_day_convention'],
-            extraFields: ['advance_calendar', 'spot_relative', 'tick_size', 'pip_factor'],
-            altCount: 179, termCols: 8
+            extraFields: ['spot_relative', 'tick_size', 'pip_factor', 'end_of_month'],
+            termCols: 6, docs: 179, tenantRows: 179, scope: 'tenant',
+            prov: 'dq', dataset: 'pair',
+            doc: {
+                key: 'AUD/CAD',
+                terms: { pair_code: 'AUD/CAD', tick_size: 1, pip_factor: 0.0001, spot_relative: true, business_day_convention: 'ModifiedFollowing' }
+            }
         },
         {
             code: 'zero_inflation_index', label: 'Zero inflation index',
             mode: 'terms',
             nameFields: ['region_name', 'currency', 'frequency'],
             extraFields: ['availability_lag', 'revised', 'region_code'],
-            altCount: 9, termCols: 7
+            termCols: 6, docs: 9, tenantRows: 45, scope: 'party',
+            prov: 'dq', dataset: 'dq',
+            doc: {
+                key: 'BECPIHL',
+                terms: { revised: false, currency: 'EUR', frequency: 'Monthly', region_code: 'BE', region_name: 'Belgium', availability_lag: '1M' }
+            }
+        },
+        {
+            code: 'tenor', label: 'Tenor',
+            mode: 'terms', keyField: 'code',
+            nameFields: ['measured_from', 'resolution_algorithm', 'business_day_convention_type'],
+            termCols: 3, docs: 4, tenantRows: 4, scope: 'tenant',
+            prov: 'system', dataset: null,
+            description:
+                'Tenor resolution schemes: which anchor a regular tenor resolves from, ' +
+                'and which algorithm resolves it.',
+            doc: {
+                key: 'CREDIT_CDS_IMM',
+                terms: {
+                    measured_from: 'NONE', resolution_algorithm: 'SCHEDULE_STEP',
+                    business_day_convention_type: 'Following',
+                    description: 'Credit/CDS curves: tenors resolve to the first business day following the appropriate IMM roll date, not a fixed offset from an anchor.'
+                }
+            }
         }
     ];
 
-    /* Real rows, copied from the curated tables of ores_dev_bright_faraday. Two
-       or three per kind is a fixture: the tables hold the counts named above.
-       Two swap rows and three bond-yield rows state the same terms on purpose;
-       they are real duplicates in the curated data. */
+    /* The alternatives for a kind: real further rows of the kind, read from
+       ACME's own table. Two or three per kind is a fixture, because the table
+       holds the count stated on the kind. Two swap rows and the bond-yield rows
+       state the same terms on purpose; they are real duplicates in the data.
+       The load profile is real and shown as its first entries. */
     var ROWS = {
         deposit: [
             { key: 'AED-DEPOSIT', index_based: false, calendar: 'AED', convention: 'ModifiedFollowing', day_count_fraction: 'ACT/360', settlement_days: 2, end_of_month: false },
@@ -342,18 +538,25 @@
             { key: 'AED-CMS-30Y', conventions: 'AED-SWAP' }
         ],
         currency_pair: [
-            { pair_code: 'EUR/USD', tick_size: 1, pip_factor: 0.0001, end_of_month: false, spot_relative: true, advance_calendar: 'TARGET,UnitedStates.Settlement', business_day_convention: 'ModifiedFollowing' },
-            { pair_code: 'GBP/USD', tick_size: 1, pip_factor: 0.0001, end_of_month: false, spot_relative: true, advance_calendar: 'UnitedKingdom.Settlement,UnitedStates.Settlement', business_day_convention: 'ModifiedFollowing' }
+            { pair_code: 'AUD/CAD', tick_size: 1, pip_factor: 0.0001, end_of_month: false, spot_relative: true, business_day_convention: 'ModifiedFollowing' },
+            { pair_code: 'EUR/USD', tick_size: 1, pip_factor: 0.0001, end_of_month: false, spot_relative: true, business_day_convention: 'ModifiedFollowing' },
+            { pair_code: 'GBP/USD', tick_size: 1, pip_factor: 0.0001, end_of_month: false, spot_relative: true, business_day_convention: 'ModifiedFollowing' }
         ],
         zero_inflation_index: [
             { key: 'BECPIHL', revised: false, currency: 'EUR', frequency: 'Monthly', region_code: 'BE', region_name: 'Belgium', availability_lag: '1M' },
             { key: 'CLCPI', revised: false, currency: 'CLP', frequency: 'Monthly', region_code: 'CL', region_name: 'Chile', availability_lag: '1M' }
+        ],
+        tenor: [
+            { code: 'CREDIT_CDS_IMM', measured_from: 'NONE', resolution_algorithm: 'SCHEDULE_STEP', business_day_convention_type: 'Following', description: 'Credit/CDS curves: tenors resolve to the first business day following the appropriate IMM roll date, not a fixed offset from an anchor.' },
+            { code: 'FX_SWAP_NEAR_LEG', measured_from: 'NONE', resolution_algorithm: 'ANCHOR_OFFSET', business_day_convention_type: 'ModifiedFollowing', description: 'Short-dated FX swap quotation, in terms of the near leg. Tenor set typically runs up to S/N.' },
+            { code: 'RATES_SPOT_FOMC', measured_from: 'SPOT', resolution_algorithm: 'SCHEDULE_STEP', business_day_convention_type: 'ModifiedFollowing', description: 'FOMC-dated OIS curves: 1F..nF tenors resolve to the n-th FOMC meeting on-or-after spot, walking the FOMC_MEETING schedule (story: FOMC-dated OIS short end).' },
+            { code: 'RATES_SPOT_FORWARD', measured_from: 'SPOT', resolution_algorithm: 'ANCHOR_OFFSET', business_day_convention_type: 'ModifiedFollowing', description: 'Standard convention used by most FX and interest rate curves: regular tenors measured from spot.' }
         ]
     };
 
-    /* The three kinds whose party-owned table carries no party_id column. A
-       create for one of these writes terms for the whole tenant. */
-    var TENANT_WIDE_KINDS = ['currency_pair', 'ibor_index', 'overnight_index'];
+    /* The four kinds whose table carries no party_id column. A create for one of
+       these writes terms for the whole tenant. */
+    var TENANT_WIDE_KINDS = ['currency_pair', 'ibor_index', 'overnight_index', 'tenor'];
 
     /* A fixture default per kind. No table carries this mark, so the page
        labels it a fixture wherever it appears and says where a real one would
@@ -364,39 +567,9 @@
         cds: 'CDS-STANDARD-CONVENTIONS-EUR'
     };
 
-    /* The documents ACME owns, as a fixture: kind -> the party rows a person
-       would see. This state does not exist in the database. */
-    var OWNED_FIXTURE = {
-        deposit: [
-            {
-                from: 'AED-DEPOSIT', version: 2, validFrom: '2026-10-17 09:14',
-                modifiedBy: 'acme.ops', reason: 'ADOPT-CURATED',
-                terms: { index_based: false, calendar: 'AED', convention: 'ModifiedFollowing', day_count_fraction: 'ACT/360', settlement_days: 2, end_of_month: false }
-            }
-        ],
-        swap: [
-            {
-                from: null, authored: true, version: 3, validFrom: '2026-10-17 09:20',
-                modifiedBy: 'acme.ops', reason: 'HOUSE-STANDARD',
-                terms: { index: 'AED-EIBOR-3M', fixed_calendar: 'TARGET', fixed_frequency: 'Annual', fixed_convention: 'ModifiedFollowing', fixed_day_count_fraction: 'ACT/365.FIXED' }
-            },
-            {
-                from: 'AMD-GENERIC-3M-SWAP', version: 1, validFrom: '2026-10-17 09:22',
-                modifiedBy: 'acme.ops', reason: 'ADOPT-CURATED',
-                terms: { index: 'AMD-GENERIC-3M', fixed_calendar: 'AMD', fixed_frequency: 'Semiannual', fixed_convention: 'ModifiedFollowing', fixed_day_count_fraction: 'ACT/365.FIXED' }
-            }
-        ],
-        cds: [
-            {
-                from: 'CDS-STANDARD-CONVENTIONS-EUR', version: 1, validFrom: '2026-10-17 09:25',
-                modifiedBy: 'acme.ops', reason: 'ADOPT-CURATED',
-                terms: { rule: 'CDS2015', calendar: 'TARGET', frequency: 'Quarterly', settlement_days: 0, settles_accrual: true, day_count_fraction: 'ACT/360', payment_convention: 'Following', pays_at_default_time: true }
-            }
-        ]
-    };
-
-    /* One change in progress, as a fixture: the alternative picked for a kind
-       and not written. */
+    /* One change in progress, as a fixture: a document the kind already holds,
+       picked as the one a report should read, and not written. No column holds
+       that pick, which is the point of the state. */
     var PENDING_FIXTURE = { kind: 'swap', from: 'AUD-3M-SWAP-CONVENTIONS' };
 
     /* --------------------------------------------------------- term words */
@@ -458,6 +631,9 @@
         netting_type: ['%s netting'],
         conventions: ['the %s swap terms'],
         pair_code: ['the %s pair'],
+        measured_from: ['measured from %s'],
+        resolution_algorithm: ['%s resolution'],
+        business_day_convention_type: ['%s as the business-day rule'],
         region_name: ['%s'],
         region_code: ['region %s'],
         currency: ['in %s'],
@@ -592,10 +768,22 @@
         }
         var parts = [];
         kind.nameFields.forEach(function (field) {
-            var value = said(field, row[field]);
+            var value = nameWord(field, row[field]);
             if (value) parts.push(value);
         });
         return parts.join(' · ');
+    }
+
+    /* A term as it appears inside a name. Only the settlement days differ from
+       the words a description uses, because a name has no room for a sentence:
+       settlement 2 business days after the trade reads 2d in a name. */
+    function nameWord(field, value) {
+        var words = said(field, value);
+        if (!words) return '';
+        if (field === 'settlement_days' || field === 'index_settlement_days') {
+            return words + 'd';
+        }
+        return words;
     }
 
     /* A list said the way a person says it: one item, two items, or a run with
@@ -662,9 +850,20 @@
 
     /* ------------------------------------------------------- ownership state */
 
-    function ownedFor(kind, state) {
-        if (state === 'acme') return [];
-        return OWNED_FIXTURE[kind.code] || [];
+    /* The documents of the kind this screen draws as "in use". The database
+       state is provisioned: every kind holds documents, published from the DQ
+       dataset, and the page shows the first of them by key. A new party starts
+       with none, and ?state=none draws that. */
+    function docsFor(kind, state) {
+        if (state === 'none') return [];
+        return [kind.doc];
+    }
+
+    /* The kind's rows are owned by the party, or, where the table carries no
+       party_id column, by the whole tenant. The count a row states is the count
+       of whichever of the two owns it. */
+    function ownerWords(kind) {
+        return kind.scope === 'tenant' ? 'the tenant' : 'the party';
     }
 
     function pendingFor(code, state) {
@@ -679,14 +878,28 @@
         return null;
     }
 
-    function ownedRows(state) {
+    /* How many documents the state holds: the party's own, plus the tenant-wide
+       rows of the four kinds that have no party column. */
+    function documentsHeld(state, scope) {
+        if (state === 'none') return 0;
         var total = 0;
-        KINDS.forEach(function (kind) { total += ownedFor(kind, state).length; });
+        KINDS.forEach(function (kind) {
+            if (scope && kind.scope !== scope) return;
+            total += kind.docs;
+        });
         return total;
     }
 
     function noneKinds(state) {
-        return KINDS.filter(function (kind) { return ownedFor(kind, state).length === 0; });
+        return KINDS.filter(function (kind) { return docsFor(kind, state).length === 0; });
+    }
+
+    function boundKinds(state) {
+        return KINDS.length - noneKinds(state).length;
+    }
+
+    function provOf(kind) {
+        return PROVENANCE[kind.dataset || kind.prov];
     }
 
     function defaultKeyOf(kind) {
@@ -775,8 +988,9 @@
     function protoNoteInner() {
         return '<div class="pn-inner">' +
             '<b>PROTOTYPE.</b> Mock data. Nothing here reads a server and nothing is written. ' +
-            '<span class="pn-note">The term values are real rows of the curated convention ' +
-            'tables; ownership, the default mark and the change in progress are fixtures.</span>' +
+            '<span class="pn-note">The term values and counts are real rows of ACME\u2019s own ' +
+            'convention tables; which document of a kind is in use, the default mark and the ' +
+            'change in progress are fixtures.</span>' +
             '</div>';
     }
 
@@ -788,21 +1002,23 @@
     /* -------------------------------------------------------- the kind table */
 
     function nameCell(kind, state) {
-        var owned = ownedFor(kind, state);
-        if (!owned.length) {
+        var docs = docsFor(kind, state);
+        if (!docs.length) {
             return '<div class="namecell">' +
                 '<span class="nval none">none</span>' +
-                '<span class="nparts">a run falls back to the curated document</span>' +
+                '<span class="nparts">a new party starts here: a run falls back to the ' +
+                'curated document for the kind</span>' +
                 '</div>';
         }
-        var first = owned[0];
-        var tags = ['<span class="tag fx">owned · fixture</span>'];
-        if (owned.length > 1) tags.push('<span class="tag">' + owned.length + ' documents</span>');
-        var match = matchesDefault(kind, first);
-        if (match === true) tags.push('<span class="tag ok">matches the default</span>');
-        if (match === false) tags.push('<span class="tag warn">not the default</span>');
+        var doc = docs[0];
+        var tags = ['<span class="tag">' + fmt(kind.docs) +
+            (kind.docs === 1 ? ' document' : ' documents') + '</span>'];
+        if (kind.scope === 'tenant') tags.push('<span class="tag muted">tenant-wide</span>');
+        var match = matchesDefault(kind, doc);
+        if (match === true) tags.push('<span class="tag ok">matches the default · fixture</span>');
+        if (match === false) tags.push('<span class="tag warn">not the default · fixture</span>');
         return '<div class="namecell">' +
-            '<span class="nval">' + esc(nameOf(kind, first.terms)) + '</span>' +
+            '<span class="nval">' + esc(nameOf(kind, doc.terms)) + '</span>' +
             '<span class="ntags">' + tags.join('') + '</span>' +
             '<span class="nparts">named by ' +
             esc(kind.nameFields.join(', ').replace(/_/g, ' ')) + '</span>' +
@@ -810,61 +1026,89 @@
     }
 
     function descCell(kind, state) {
-        var owned = ownedFor(kind, state);
-        if (!owned.length) {
+        var docs = docsFor(kind, state);
+        if (!docs.length) {
             return '<div class="desc"><span class="dnone">No terms are held.</span> ' +
                 'A run that reaches the ' + esc(kind.label) + ' family reads the curated ' +
                 'document, and no column says which one.</div>';
         }
-        var extra = owned.length > 1
-            ? ' <span class="dnone">This kind holds ' + owned.length + ' documents.</span>' : '';
-        return '<div class="desc">' + esc(describeOf(kind, owned[0].terms)) + extra + '</div>';
+        return '<div class="desc">' + esc(describeOf(kind, docs[0].terms)) +
+            ' <span class="dnone">The page names the first of the ' + fmt(kind.docs) +
+            ' documents by its key; no column says which one a run takes.</span></div>';
+    }
+
+    /* Where the kind's documents came from. The row states the publish that
+       wrote it, and the one kind no publish reaches states why. */
+    function provCell(kind) {
+        if (kind.prov === 'dq') {
+            var prov = provOf(kind);
+            return '<div class="provcell">' +
+                '<span class="tag ok">DQ publish</span>' +
+                '<span class="psub mono">' + esc(prov.subject) + '</span>' +
+                '<span class="pdata">dataset ' + esc(prov.dataset) + '</span>' +
+                '</div>';
+        }
+        return '<div class="provcell">' +
+            '<span class="tag warn">copied from the system tenant</span>' +
+            '<span class="pdata">No DQ route: there is no ' +
+            '<span class="mono">ores_dq_tenor_conventions_artefact_tbl</span>. The 4 rows were ' +
+            'copied during provisioning, with no publish behind them.</span>' +
+            '</div>';
     }
 
     function tableView(S) {
-        var state = S.state || 'acme';
-        var isAcme = state === 'acme';
-        var won = ownedRows(state);
+        var state = S.state || 'provisioned';
+        var held = documentsHeld(state);
+        var heldTenant = documentsHeld(state, 'tenant');
         var none = noneKinds(state).length;
-        var altTotal = KINDS.reduce(function (sum, kind) { return sum + kind.altCount; }, 0);
+        var published = KINDS.filter(function (kind) { return kind.prov === 'dq'; }).length;
         var back = backToReport(S.from);
 
         var rows = KINDS.map(function (kind) {
-            var owned = ownedFor(kind, state);
-            var cls = owned.length ? '' : ' class="none"';
-            if (state === 'change' && PENDING_FIXTURE.kind === kind.code) cls = ' class="changed"';
+            var docs = docsFor(kind, state);
+            var cls = docs.length ? '' : ' class="none"';
+            if (state === 'change' && PENDING_FIXTURE.kind === kind.code) {
+                cls = ' class="changed"';
+            }
+            if (kind.prov !== 'dq') cls = docs.length ? ' class="odd"' : cls;
             return '<tr' + cls + '>' +
                 '<td><div class="kindcell"><span class="kname">' + esc(kind.label) + '</span>' +
                 '<span class="kcode">' + esc(kind.code) + '</span>' +
-                '<span class="ksum">' + fmt(kind.altCount) + ' curated row' +
-                (kind.altCount === 1 ? '' : 's') + '</span></div></td>' +
+                '<span class="ksum">' + kind.termCols + ' term column' +
+                (kind.termCols === 1 ? '' : 's') + '</span></div></td>' +
                 '<td class="kindname">' + nameCell(kind, state) + '</td>' +
                 '<td>' + descCell(kind, state) + '</td>' +
+                '<td class="prov">' + provCell(kind) + '</td>' +
                 '<td class="act"><a class="btn small" href="' +
                 href({ kind: kind.code, variant: S.variant, state: state, from: S.from }) +
                 '">Change</a></td>' +
                 '</tr>';
         }).join('');
 
-        var banner = isAcme
-            ? '<div class="notice warn loud"><b>No tenant owns a convention document.</b> ' +
-              'Every row below reads <span class="mono">none</span>, and a run falls back to the ' +
-              'curated document for the kind. The twenty-five party tables hold no row for any ' +
-              'tenant, and the ACME seeder writes none, so provisioning ACME does not create them. ' +
-              'The 2,367 curated rows are the system tenant\u2019s. ' +
-              '<b>This is the state the screen handles first.</b></div>'
-            : '<div class="notice loud"><b>Fixture state: ACME owns ' + won +
-              (won === 1 ? ' document.' : ' documents.') +
-              '</b> The database holds none of them. This state exists here so the ' +
-              'table can be read with a document in use, with one kind holding two, and with ' +
-              'kinds holding none.</div>';
+        var banner;
+        if (state === 'none') {
+            banner = '<div class="notice warn loud"><b>A new party holds no convention document.' +
+                '</b> Every row below reads <span class="mono">none</span>, and a run falls back ' +
+                'to the curated document for the kind. This is where provisioning starts, and ' +
+                'this fixture draws it. <b>The database is provisioned, so this is not its state.' +
+                '</b></div>';
+        } else {
+            banner = '<div class="notice ok loud"><b>ACME is provisioned: every kind holds ' +
+                'documents.</b> The tenant holds <b>' + fmt(ACME.tenantRows) + ' convention ' +
+                'rows</b> across all ' + KINDS.length + ' kinds, and <b>' + published + ' of the ' +
+                KINDS.length + ' kinds arrived from a DQ publish</b>. The exception is ' +
+                '<span class="mono">tenor</span>, which no publish reaches: its 4 rows were ' +
+                'copied from the system tenant. A kind holds many documents and no column says ' +
+                'which one a run takes.</div>';
+        }
 
         var pending = state === 'change' ? pendingFor(PENDING_FIXTURE.kind, state) : null;
         var pendingBanner = pending
-            ? '<div class="notice loud"><b>1 change in progress.</b> ' +
-              esc(pending.kind.label) + ' would take <span class="mono">' +
-              esc(nameOf(pending.kind, pending.row)) + '</span> in place of what it holds. ' +
-              'It is not saved: nothing on this screen writes.</div>'
+            ? '<div class="notice loud"><b>Fixture: 1 change in progress.</b> ' +
+              esc(pending.kind.label) + ' would read <span class="mono">' +
+              esc(nameOf(pending.kind, pending.row)) + '</span>. The kind already holds that ' +
+              'document; nothing records which one a run takes, and nothing on this screen ' +
+              'writes.</div>'
             : '';
 
         return chrome('conventions') +
@@ -878,10 +1122,11 @@
             '<div class="pagehead"><div>' +
             '<h1>The conventions this report reads</h1>' +
             '<p class="lede">One row per convention kind. The name is derived from the terms, ' +
-            'because no table stores one; the description says the same terms in words. ' +
-            'The configuration is <span class="mono">' + esc(ACME.configuration) + '</span>, ' +
-            'which <b>' + ACME.definitions + ' definitions</b> bind, so a change here reaches ' +
-            'every one of their next runs.</p>' +
+            'because no table stores one; the description says the same terms in words, and ' +
+            'the last column says which publish wrote the kind. The configuration is ' +
+            '<span class="mono">' + esc(ACME.configuration) + '</span>, which ' +
+            '<b>' + ACME.definitions + ' definitions</b> bind, so a change here reaches every ' +
+            'one of their next runs.</p>' +
             '</div><div class="actions">' +
             '<a class="btn primary" href="' +
             href({ screen: 'create', kind: 'deposit', state: state, from: S.from }) +
@@ -894,26 +1139,33 @@
             '<div class="card"><div class="counts">' +
             '<div class="c"><span class="n">' + KINDS.length +
             '</span><span class="l">convention kinds</span></div>' +
-            '<div class="c ' + (won ? 'ok' : '') + '"><span class="n">' + won +
-            '</span><span class="l">documents ACME owns</span></div>' +
-            '<div class="c warn"><span class="n">' + none +
+            '<div class="c ' + (held ? 'ok' : '') + '"><span class="n">' +
+            fmt(documentsHeld(state, 'party')) +
+            '</span><span class="l">documents the party holds</span></div>' +
+            '<div class="c ' + (heldTenant ? 'ok' : '') + '"><span class="n">' +
+            fmt(heldTenant) +
+            '</span><span class="l">more the tenant holds, shared</span></div>' +
+            '<div class="c ' + (none ? 'warn' : '') + '"><span class="n">' + none +
             '</span><span class="l">kinds with none</span></div>' +
-            '<div class="c"><span class="n">' + fmt(altTotal) +
-            '</span><span class="l">curated rows drawn from</span></div>' +
+            '<div class="c"><span class="n">' + published + ' / ' + KINDS.length +
+            '</span><span class="l">kinds written by a DQ publish</span></div>' +
             '</div></div>' +
             '<div class="card">' +
             '<div class="sectionhead"><h2>The kinds</h2>' +
-            '<span class="meta">ores_refdata_&lt;kind&gt;_conventions_tbl · ' +
-            'ores_dq_&lt;kind&gt;_conventions_artefact_tbl · fixture</span></div>' +
+            '<span class="meta">ores_refdata_&lt;kind&gt;_conventions_tbl · ACME · ' +
+            'tenant ' + esc(ACME.tenantCode) + '</span></div>' +
             '<div class="table-wrap"><table class="kindtable"><thead><tr>' +
-            '<th class="kind">Kind</th><th>The convention in use</th>' +
-            '<th>What its terms say</th><th class="act"></th>' +
+            '<th class="kind">Kind</th><th class="name">The convention in use</th>' +
+            '<th class="desc">What its terms say</th><th class="prov">Where it came from</th>' +
+            '<th class="act"></th>' +
             '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
-            '<p class="rowfoot">A kind with no document of the party\u2019s own reads ' +
-            '<b>none</b>, and the description says what a run uses instead. ' +
+            '<p class="rowfoot">A kind holds every document the publish copied into it, so ' +
+            'the row names the first by key and states how many the kind holds. A kind with ' +
+            'no document reads <b>none</b>, which is the state a new party starts in. ' +
             '<b>Change</b> opens that kind alone and carries no other row with it.</p>' +
             '</div>' +
             ruleCard() +
+            provenanceCard() +
             collisionCard() +
             defaultCard(null) +
             tenantWideCard() +
@@ -926,28 +1178,67 @@
         return '<div class="rule neutral"><div class="rtitle">How a name is derived, and what it ' +
             'reads</div><div class="rbody">No convention table carries a name, so the name is read ' +
             'off the terms. <b>An index-based document is named by its index.</b> ' +
-            '<b>A terms-based document is named by its calendar, its convention, its day count and ' +
-            'its settlement days</b>, plus the payment frequency where the kind states one. ' +
-            'A term the row leaves empty is dropped from the name and reported beside it. ' +
+            '<b>A terms-based document is named by the terms that tell it apart</b>, read in the ' +
+            'order its own table states them, with the fixing index first where the table carries ' +
+            'one. A term the row leaves empty is dropped from the name and reported beside it. ' +
             'The fields a kind reads are the fields its own table has, so the field list differs ' +
             'by kind and the table names it under each convention.</div>' +
             '<div class="rexample neutral">index-based \u2192 ' + esc(example.index.name) +
             ' &nbsp;·&nbsp; terms-based \u2192 ' + esc(example.terms.name) + '</div>' +
-            '<div class="rbody">Both are real rows of <span class="mono">ores_dq_deposit_' +
-            'conventions_artefact_tbl</span>: <span class="mono">' + esc(example.index.key) +
-            '</span> and <span class="mono">' + esc(example.terms.key) + '</span>.</div></div>';
+            '<div class="rbody">Both are real rows of ACME\u2019s own ' +
+            '<span class="mono">ores_refdata_deposit_conventions_tbl</span>: ' +
+            '<span class="mono">' + esc(example.index.key) + '</span> and ' +
+            '<span class="mono">' + esc(example.terms.key) + '</span>. ' +
+            'One table does carry a description, ' +
+            '<span class="mono">ores_refdata_tenor_conventions_tbl</span>, and the page derives ' +
+            'the name there too, so one rule names all ' + KINDS.length + ' kinds.</div></div>';
+    }
+
+    /* The provenance, stated once for the whole table: which publish, which
+       dataset, and the one kind it does not reach. */
+    function provenanceCard() {
+        var dq = PROVENANCE.dq;
+        var pair = PROVENANCE.pair;
+        var copied = PROVENANCE.system;
+        return '<div class="rule ok"><div class="rtitle">25 kinds came from a DQ publish; ' +
+            'tenor did not</div><div class="rbody">' +
+            '<span class="mono">ores_refdata_publish_conventions_from_dq_fn</span> loops an array ' +
+            'of <b>24 kinds</b> and dispatches each ' +
+            '<span class="mono">ores_dq_&lt;kind&gt;_conventions_artefact_tbl</span> into ' +
+            '<span class="mono">ores_refdata_&lt;kind&gt;_conventions_tbl</span>:</div>' +
+            '<table class="prooftable"><tbody>' +
+            '<tr><td>24 kinds</td><td><span class="mono">' + esc(dq.subject) + '</span>, ' +
+            'dataset <span class="mono">' + esc(dq.datasetId) + '</span> \u201c' +
+            esc(dq.dataset) + '\u201d</td></tr>' +
+            '<tr><td>currency_pair</td><td><span class="mono">' + esc(pair.subject) +
+            '</span>, dataset <span class="mono">' + esc(pair.datasetId) + '</span> \u201c' +
+            esc(pair.dataset) + '\u201d</td></tr>' +
+            '<tr><td>tenor</td><td>no DQ route at all: no ' +
+            '<span class="mono">ores_dq_tenor_conventions_artefact_tbl</span> exists, so the ' +
+            'function cannot cover it. The 4 rows were copied from the system tenant during ' +
+            'provisioning, and every one of them says so: reason ' +
+            '<span class="mono">' + esc(copied.reasonCode) + '</span>, commentary \u201c' +
+            esc(copied.commentary) + '\u201d.</td></tr>' +
+            '</tbody></table>' +
+            '<div class="rbody" style="margin-top:8px">A published row records the import in ' +
+            'its own columns: reason <span class="mono">' + esc(dq.reasonCode) + '</span>, ' +
+            'commentary \u201c' + esc(dq.commentary) + '\u201d. <b>25 covered, 1 not.</b> ' +
+            'A new kind needs no page change, but it does need a DQ artefact table, or it ' +
+            'joins tenor as the second exception.</div></div>';
     }
 
     function collisionCard() {
         return '<div class="rule"><div class="rtitle">A derived name does not identify a document' +
             '</div><div class="rbody">The terms identify the document, and the terms repeat. ' +
-            'The curated swap table holds <b>320 rows stating 201 distinct sets of terms</b>, ' +
+            'ACME holds <b>320 swap documents stating 201 distinct sets of terms</b>, ' +
             'so two rows can carry one name: <span class="mono">AED-SWAP</span> and ' +
             '<span class="mono">AED-EIBOR-3M-SWAP</span> state the same TARGET, modified ' +
-            'following, 30/360, annual swap. The deposit table holds 163 rows stating 141 sets, ' +
-            'and its five bond-yield rows state one set between them. <b>The row key tells them ' +
-            'apart and the name does not</b>, which is why the key sits beside every name on a ' +
-            'kind\u2019s page.</div></div>';
+            'following, 30/360, annual swap \u2014 and the table names the second of them, ' +
+            'because it sorts first by key. The deposit kind holds 163 documents stating 141 ' +
+            'sets, and its 5 bond-yield documents state one set between them. <b>The row key ' +
+            'tells them apart and the name does not</b>, which is why the key sits beside every ' +
+            'name on a kind\u2019s page. It is also why a report cannot choose its document by ' +
+            'name.</div></div>';
     }
 
     /* The default. Shown short on the table and in full on a kind's page. */
@@ -962,8 +1253,9 @@
             (marked
                 ? 'The default marked on this page, <span class="mono">' + esc(marked) +
                   '</span>, is a fixture.'
-                : 'So the fallback a run takes when a party holds nothing is not a choice ' +
-                  'between documents that anyone has recorded.') +
+                : 'And with every kind now holding many documents, that absence is the gap the ' +
+                  'reader feels first: the table can name a document but nothing says which one ' +
+                  'a run reads.') +
             ' <b>A real one would have to live in one of two places:</b> a per-kind default ' +
             'column on <span class="mono">ores_refdata_&lt;kind&gt;_conventions_tbl</span>, or a ' +
             'per-kind default row keyed by tenant and kind in its own table. Neither exists, and ' +
@@ -971,14 +1263,19 @@
     }
 
     function tenantWideCard() {
-        return '<div class="rule"><div class="rtitle">Three kinds have no party column to write ' +
-            'to</div><div class="rbody">' +
+        return '<div class="rule"><div class="rtitle">Four kinds are tenant-scoped, not ' +
+            'party-scoped</div><div class="rbody">' +
             '<span class="mono">ores_refdata_currency_pair_conventions_tbl</span>, ' +
-            '<span class="mono">ores_refdata_ibor_index_conventions_tbl</span> and ' +
-            '<span class="mono">ores_refdata_overnight_index_conventions_tbl</span> carry ' +
-            '<b>no party_id column</b>, unlike the other 22. A document written there belongs to ' +
-            'the tenant, not to a party, so ACME cannot own one of those three kinds alone.</div>' +
-            '</div>';
+            '<span class="mono">ores_refdata_ibor_index_conventions_tbl</span>, ' +
+            '<span class="mono">ores_refdata_overnight_index_conventions_tbl</span> and ' +
+            '<span class="mono">ores_refdata_tenor_conventions_tbl</span> carry ' +
+            '<b>no party_id column</b>, unlike the other 22. A row there belongs to the whole ' +
+            'tenant. The table marks those rows <b>tenant-wide</b>, and their count is the ' +
+            'tenant’s, not the party’s. <b>The publish says the same thing in its own ' +
+            'report:</b> it reports <span class="mono">records_skipped 33</span> on the second ' +
+            'and later parties, which is exactly the IBOR index 10 plus the overnight index 23 ' +
+            'it will not copy per party. Nothing says which party a tenant-wide row is for, ' +
+            'because none is.</div></div>';
     }
 
     function draftCard(S, state) {
@@ -994,17 +1291,18 @@
         }
         return '<div class="card"><div class="sectionhead"><h3>1 change in progress</h3>' +
             '<span class="meta">fixture · not written</span></div>' +
-            '<div class="notice">' + esc(pending.kind.label) + ' would take ' +
-            '<span class="mono">' + esc(nameOf(pending.kind, pending.row)) + '</span> in place of ' +
-            'what it holds. It is not saved. <b>Nothing on this screen writes.</b> Saving it means ' +
-            'writing ACME\u2019s own row for the kind, which is the create route.</div>' +
+            '<div class="notice">' + esc(pending.kind.label) + ' would read ' +
+            '<span class="mono">' + esc(nameOf(pending.kind, pending.row)) + '</span>. The kind ' +
+            'already holds that document; what does not exist is a place to record the pick. ' +
+            '<b>Nothing on this screen writes.</b> A real pick needs one of the two homes the ' +
+            'default card names.</div>' +
             '<div class="draftrow" style="margin-top:12px">' +
             '<a class="btn" href="' +
             href({ kind: pending.kind.code, state: state, from: S.from }) + '">Open the kind</a>' +
             '<a class="btn primary" href="' +
             href({ screen: 'create', kind: pending.kind.code, seed: PENDING_FIXTURE.from, state: state }) +
             '">Write it as a new convention \u2192</a>' +
-            '<a class="btn ghost" href="' + href({ state: 'several', from: S.from }) +
+            '<a class="btn ghost" href="' + href({ state: 'provisioned', from: S.from }) +
             '">Discard</a>' +
             '</div></div>';
     }
@@ -1012,9 +1310,9 @@
     /* --------------------------------------------------------- the kind page */
 
     function kindView(S, kind) {
-        var state = S.state || 'acme';
+        var state = S.state || 'provisioned';
         var variant = S.variant || 'A';
-        var owned = ownedFor(kind, state);
+        var docs = docsFor(kind, state);
         var pending = pendingFor(kind.code, state);
 
         return chrome('conventions') +
@@ -1026,9 +1324,9 @@
                 { label: 'Conventions', href: href({ state: state, from: S.from }) },
                 { label: kind.label }
             ]) +
-            kindHead(kind, S, state, owned) +
-            currentCard(kind, S, state, owned, pending) +
-            alternativesCard(kind, S, state, variant, rowsOf(kind), owned) +
+            kindHead(kind, S, state, docs) +
+            currentCard(kind, S, state, docs, pending) +
+            alternativesCard(kind, S, state, variant, rowsOf(kind), docs) +
             defaultCard(kind) +
             createRouteCard(kind, S, state) +
             '<div class="card"><div class="sectionhead"><h3>Back</h3></div>' +
@@ -1040,19 +1338,22 @@
             '</div>';
     }
 
-    function kindHead(kind, S, state, owned) {
-        var sub = owned.length === 0
-            ? 'ACME owns no document of this kind'
-            : owned.length === 1
-                ? '1 document of ACME\u2019s own'
-                : owned.length + ' documents of ACME\u2019s own';
+    function kindHead(kind, S, state, docs) {
+        var sub = docs.length === 0
+            ? 'A new party holds no document of this kind'
+            : 'The ' + ownerWords(kind) + ' holds ' + fmt(kind.docs) + ' ' +
+              kind.label.toLowerCase() + ' document' + (kind.docs === 1 ? '' : 's');
+        var where = kind.prov === 'dq'
+            ? 'It came from the DQ publish <span class="mono">' + esc(provOf(kind).subject) +
+              '</span>, dataset \u201c' + esc(provOf(kind).dataset) + '\u201d.'
+            : 'It did not come from a DQ publish: no artefact table for this kind exists, and the ' +
+              'rows were copied from the system tenant during provisioning.';
         return '<div class="pagehead"><div>' +
             '<h1>' + esc(kind.label) + ' conventions</h1>' +
-            '<p class="lede">' + esc(sub) + '. The curated table for the kind holds ' +
-            fmt(kind.altCount) + ' row' + (kind.altCount === 1 ? '' : 's') +
+            '<p class="lede">' + esc(sub) +
             (kind.alts ? ', stating ' + fmt(kind.alts) + ' distinct sets of terms' : '') +
-            '. This page is one kind: its current document, the alternatives, and the way to ' +
-            'write one.</p>' +
+            '. ' + where + ' This page is one kind: its documents, the alternatives, and the way ' +
+            'to write one.</p>' +
             '</div><div class="actions">' +
             '<a class="btn primary" href="' +
             href({ screen: 'create', kind: kind.code, state: state, from: S.from }) +
@@ -1064,32 +1365,32 @@
             'three.</span></div>';
     }
 
-    function currentCard(kind, S, state, owned, pending) {
+    function currentCard(kind, S, state, docs, pending) {
         var head = '<div class="sectionhead"><h2>The document in use</h2>' +
             '<span class="meta">ores_refdata_' + esc(kind.code) +
-            '_conventions_tbl · fixture</span></div>';
+            '_conventions_tbl · first by key · fixture</span></div>';
 
-        if (!owned.length) {
+        if (!docs.length) {
             return '<div class="card">' + head +
                 '<div class="doc-card none">' +
                 '<div class="dhead"><span class="dname">none</span>' +
-                '<span class="tag warn">ACME owns no ' + esc(kind.label.toLowerCase()) +
+                '<span class="tag warn">A new party holds no ' + esc(kind.label.toLowerCase()) +
                 ' document</span></div>' +
                 '<div class="dfrom">A run that reaches a ' + esc(kind.label.toLowerCase()) +
                 ' family falls back to the curated document for the kind. Which curated row it ' +
-                'takes is not modelled: the table holds ' + fmt(kind.altCount) + ' row' +
-                (kind.altCount === 1 ? '' : 's') + ' and no column chooses one.</div>' +
+                'takes is not modelled: no column chooses one.</div>' +
                 '<div class="fieldtable"><table><tbody>' +
                 '<tr><td class="fname">term columns</td><td class="fval">' + kind.termCols +
-                ' in the curated table</td></tr>' +
+                '</td></tr>' +
                 '<tr><td class="fname">named by</td><td class="fval">' +
                 esc(kind.nameFields.join(', ')) + '</td></tr>' +
                 '</tbody></table></div></div>' +
-                '<p class="rowfoot">This is the state every row of the table is in today. ' +
-                'The alternatives below are the documents a run would read.</p></div>';
+                '<p class="rowfoot">This is where a new party starts, and the state ' +
+                '<span class="mono">?state=none</span> draws. The database is not in it.</p></div>';
         }
 
-        var doc = owned[0];
+        var doc = docs[0];
+        var prov = provOf(kind);
         var terms = kind.nameFields.concat(kind.extraFields || []).map(function (field) {
             var has = stated(field, doc.terms[field]);
             return '<tr><td class="fname">' + esc(field) + '</td>' +
@@ -1097,17 +1398,17 @@
                 (has ? esc(said(field, doc.terms[field])) : 'not stated') + '</td></tr>';
         }).join('');
         var match = matchesDefault(kind, doc);
-        var tags = ['<span class="tag fx">owned · fixture</span>'];
-        if (match === true) tags.push('<span class="tag ok">matches the default</span>');
-        if (match === false) tags.push('<span class="tag warn">deviates from the default</span>');
+        var tags = ['<span class="tag">first of ' + fmt(kind.docs) + ' by key</span>'];
+        if (kind.scope === 'tenant') tags.push('<span class="tag muted">tenant-wide</span>');
+        if (match === true) tags.push('<span class="tag ok">matches the default · fixture</span>');
+        if (match === false) tags.push('<span class="tag warn">not the default · fixture</span>');
 
-        var several = owned.length > 1
-            ? '<div class="notice warn" style="margin-bottom:10px"><b>ACME holds ' + owned.length +
-              ' ' + esc(kind.label.toLowerCase()) + ' documents.</b> This model does not say ' +
-              'which one a run takes: the key of the table is ' +
-              '<span class="mono">(tenant_id, id, party_id)</span>, so several rows per party and ' +
-              'kind are allowed, and no column orders them.</div>'
-            : '';
+        var many = '<div class="notice warn" style="margin-bottom:10px"><b>This kind holds ' +
+            fmt(kind.docs) + ' ' + esc(kind.label.toLowerCase()) + ' documents.</b> Nothing on the ' +
+            'page says which one a run takes: the key of the table is ' +
+            '<span class="mono">(tenant_id, id, party_id)</span>, so many rows per party and kind ' +
+            'are allowed, and no column orders them. The name beside this card is the first by ' +
+            'key, which is a fixture choice of this page and not a rule.</div>';
 
         var pendingNotice = pending
             ? '<div class="notice" style="margin-top:10px">A change is in progress: ' +
@@ -1115,25 +1416,40 @@
               '</span> is picked and not saved.</div>'
             : '';
 
-        return '<div class="card">' + head + several +
+        var provenance = '<div class="dfrom">' + (kind.prov === 'dq'
+            ? 'Written by the DQ publish <span class="mono">' + esc(prov.subject) +
+              '</span> from dataset <span class="mono">' + esc(prov.datasetId) + '</span> \u201c' +
+              esc(prov.dataset) + '\u201d. The row records the import itself: reason ' +
+              '<span class="mono">' + esc(prov.reasonCode) + '</span>, commentary \u201c' +
+              esc(prov.commentary) + '\u201d.'
+            : '<b>Copied from the system tenant.</b> There is no ' +
+              '<span class="mono">ores_dq_tenor_conventions_artefact_tbl</span> and no subject ' +
+              'that publishes this kind, so provisioning copied the 4 rows straight from the ' +
+              'system tenant. The row records it: reason <span class="mono">' +
+              esc(prov.reasonCode) + '</span>, commentary \u201c' + esc(prov.commentary) +
+              '\u201d.') + '</div>';
+
+        var description = '';
+        if (kind.code === 'tenor') {
+            description = '<div class="dfrom"><b>This is the one kind whose table carries a ' +
+                'description column.</b> No convention table carries a name; this one carries ' +
+                '<span class="mono">description</span>, and the row states: \u201c' +
+                esc(doc.terms.description) + '\u201d. The name beside the card is still derived ' +
+                'from the terms, so one rule names every kind.</div>';
+        }
+
+        return '<div class="card">' + head + many +
             '<div class="doc-card">' +
             '<div class="dhead"><span class="dname">' + esc(nameOf(kind, doc.terms)) + '</span>' +
             tags.join('') + '</div>' +
             '<div class="dmeta">' +
-            '<span class="mono">ores_refdata_' + esc(kind.code) + '_conventions_tbl</span>' +
-            '<span class="tag">version ' + doc.version + '</span>' +
-            '<span class="tag">valid from ' + esc(doc.validFrom) + '</span>' +
-            '<span>modified by <span class="mono">' + esc(doc.modifiedBy) + '</span></span>' +
-            '<span>reason <span class="mono">' + esc(doc.reason) + '</span></span>' +
+            '<span class="mono">row ' + esc(doc.key) + '</span>' +
+            '<span class="tag">owner: ' + esc(ownerWords(kind)) + '</span>' +
+            '<span>reason <span class="mono">' + esc(prov.reasonCode) + '</span></span>' +
             '</div>' +
             '<div class="dfrom">' + esc(describeOf(kind, doc.terms)) + '</div>' +
             '<div class="fieldtable"><table><tbody>' + terms + '</tbody></table></div>' +
-            '<div class="dfrom">' + (doc.from
-                ? 'It was adopted from the curated row <span class="mono">' + esc(doc.from) +
-                  '</span> and written into the party\u2019s own table for the kind.'
-                : 'It was authored on the create route and written into the party\u2019s own ' +
-                  'table for the kind. It matches no curated row: the day count is ACME\u2019s ' +
-                  'own choice.') + '</div>' +
+            provenance + description +
             '</div>' + pendingNotice +
             '<p class="rowfoot">The name is derived from the terms above, as on every row of the ' +
             'table. It is not stored.</p></div>';
@@ -1148,7 +1464,7 @@
         var intro = {
             A: 'every alternative for this kind, described, with the one in use marked.',
             B: 'the document in use beside a candidate, with the fields that differ marked.',
-            C: 'search and filter, for the kinds whose curated table is long.'
+            C: 'search and filter, for the kinds that hold many documents.'
         }[variant] || '';
 
         var body = variant === 'B'
@@ -1158,19 +1474,20 @@
         return '<div class="card">' +
             '<div class="sectionhead"><h2>The alternatives for this kind</h2>' +
             '<span class="meta">' + switcher + '</span></div>' +
-            '<p class="lead">Read from <span class="mono">ores_dq_' + esc(kind.code) +
-            '_conventions_artefact_tbl</span>, the curated table for ' + esc(kind.code) + ': ' +
-            fmt(kind.altCount) + ' row' + (kind.altCount === 1 ? '' : 's') + ', system owned, ' +
-            'tenant <span class="mono">ffffffff-\u2026</span> and party ' +
-            '<span class="mono">0000\u2026</span>. ' +
-            (rows.length < kind.altCount
+            '<p class="lead">Read from <span class="mono">ores_refdata_' + esc(kind.code) +
+            '_conventions_tbl</span>, ACME\u2019s own table for ' + esc(kind.code) + ': ' +
+            fmt(kind.docs) + ' document' + (kind.docs === 1 ? '' : 's') + ', owned by ' +
+            esc(ownerWords(kind)) + '. ' +
+            (kind.prov === 'dq'
+                ? 'Each one is a copy of a row of the DQ dataset \u201c' +
+                  esc(provOf(kind).dataset) + '\u201d, so a document here and the curated row ' +
+                  'it came from state the same terms. '
+                : 'There is no DQ artefact table for this kind, so these are the rows copied ' +
+                  'from the system tenant. ') +
+            (rows.length < kind.docs
                 ? 'This prototype carries ' + rows.length + ' of them as a fixture. '
-                : '') +
-            (owned.length && !owned[0].from
-                ? '<b>ACME\u2019s own document matches no row below.</b> It was authored, so ' +
-                  'it is not marked in the list; variant B compares it against a candidate and ' +
-                  'shows the fields that differ.'
-                : '') + '</p>' +
+                : 'This prototype carries all ' + rows.length + ' of them. ') +
+            '</p>' +
             '<div class="varianttag"><b>' + esc(variant) + '</b> ' + esc(intro) + '</div>' +
             body + '</div>';
     }
@@ -1183,23 +1500,23 @@
         if (opts.picked) { cls += ' picked'; tags.push('<span class="tag accent">picked</span>'); }
         if (opts.isDefault) tags.push('<span class="tag fx">default · fixture</span>');
         var action = opts.current
-            ? '<span class="hint">This is the document in use. No change to make.</span>'
+            ? '<span class="hint">The document in use on this page. No change to make.</span>'
             : '<a class="btn small" href="' +
               href({ screen: 'create', kind: kind.code, seed: key, state: state }) +
-              '">Use these terms \u2192</a>';
+              '">Start a new convention from these terms \u2192</a>';
         return '<div class="' + cls + '"' + (opts.attrs || '') + '>' +
             '<div class="ahead"><span class="aname">' + esc(nameOf(kind, row)) + '</span>' +
             tags.join('') + '</div>' +
             '<div class="adesc">' + esc(describeOf(kind, row)) + '</div>' +
             '<div class="afoot">' +
-            '<span>curated row <span class="mono">' + esc(key) + '</span></span>' +
+            '<span>row <span class="mono">' + esc(key) + '</span></span>' +
             action +
             '</div></div>';
     }
 
     function listVariant(kind, S, state, variant, rows, owned) {
         var defKey = defaultKeyOf(kind);
-        var currentKey = owned.length ? owned[0].from : null;
+        var currentKey = owned.length ? owned[0].key : null;
         var pending = pendingFor(kind.code, state);
         var pendingKey = pending ? keyOf(kind, pending.row) : null;
         var hasFlag = kind.mode === 'flag-index';
@@ -1223,9 +1540,9 @@
 
         if (variant === 'A') {
             return '<div class="alts">' + list + '</div>' +
-                '<p class="rowfoot">The one in use is marked where ACME holds a document. ' +
-                'Every other row is a document a run could use, and taking one means writing ' +
-                'ACME\u2019s own row, not editing the curated one.</p>';
+                '<p class="rowfoot">The one in use is marked. Every other row is a document ' +
+                'the kind already holds and a run could read, and no column says which one it ' +
+                'takes. Choosing one is the missing default, not a write.</p>';
         }
 
         var chips = ['<button class="filterchip on" data-filter="all">All</button>'];
@@ -1246,13 +1563,14 @@
             '<div class="alts" id="alt-list">' + list + '</div>' +
             '<p class="rowfoot">The search reads the derived name and the description, so it ' +
             'finds a document by a term a person would say aloud. It reads nothing else: no ' +
-            'index, no ranking, no server. A kind whose curated table holds hundreds of rows ' +
-            'needs this; a kind holding one row does not.</p>';
+            'index, no ranking, no server. A kind holding hundreds of documents needs this; ' +
+            'a kind holding one does not.</p>';
     }
 
     function compareVariant(kind, S, state, rows, owned) {
         var defKey = defaultKeyOf(kind);
         var current = owned.length ? owned[0] : null;
+        var currentKey = current ? current.key : null;
         var pending = pendingFor(kind.code, state);
         var pickedKey = S.cand || (pending ? keyOf(kind, pending.row) : null);
         if (!pickedKey) pickedKey = keyOf(kind, rows[rows.length - 1]);
@@ -1267,7 +1585,7 @@
                 return '<div class="alt' + (on ? ' picked' : '') + '">' +
                     '<div class="ahead"><span class="aname">' + esc(nameOf(kind, row)) + '</span>' +
                     (defKey === key ? '<span class="tag fx">default · fixture</span>' : '') +
-                    (current && current.from === key ? '<span class="tag ok">in use</span>' : '') +
+                    (currentKey === key ? '<span class="tag ok">in use</span>' : '') +
                     '</div>' +
                     '<div class="afoot"><span class="mono">' + esc(key) + '</span>' +
                     '<a class="btn small' + (on ? ' primary' : '') + '" href="' +
@@ -1297,27 +1615,27 @@
         var sides = current
             ? '<div class="cmp"><div class="side">' +
               '<div class="sh"><span class="did">' + esc(nameOf(kind, current.terms)) + '</span>' +
-              '<span class="tag fx">owned · fixture</span></div>' +
+              '<span class="tag">in use on this page · fixture</span></div>' +
               '<div class="sdesc">' + esc(describeOf(kind, current.terms)) + '</div>' +
-              '<div class="sdesc faint">' + (current.from
-                  ? 'Adopted from <span class="mono">' + esc(current.from) + '</span>'
-                  : 'Authored on the create route; it matches no curated row') + '</div></div>' +
+              '<div class="sdesc faint">ACME\u2019s row <span class="mono">' +
+              esc(current.key) + '</span></div></div>' +
               '<div class="side">' +
               '<div class="sh"><span class="did">' + esc(nameOf(kind, candidate)) + '</span>' +
-              '<span class="tag muted">curated</span></div>' +
+              '<span class="tag muted">candidate</span></div>' +
               '<div class="sdesc">' + esc(describeOf(kind, candidate)) + '</div>' +
-              '<div class="sdesc faint">Curated row <span class="mono">' +
+              '<div class="sdesc faint">ACME\u2019s row <span class="mono">' +
               esc(keyOf(kind, candidate)) + '</span></div></div></div>'
             : '<div class="cmp"><div class="side none">' +
               '<div class="sh"><span class="did">none</span>' +
-              '<span class="tag warn">no document of ACME\u2019s own</span></div>' +
+              '<span class="tag warn">this party holds no document of the kind</span></div>' +
               '<div class="sdesc">Nothing is held for this kind, so there is nothing to compare ' +
-              'against. The candidate would become ACME\u2019s first document of the kind.</div>' +
+              'against. The candidate would become the party\u2019s first document of the kind. ' +
+              'The database is not in this state: it is the state a new party starts in.</div>' +
               '</div><div class="side">' +
               '<div class="sh"><span class="did">' + esc(nameOf(kind, candidate)) + '</span>' +
-              '<span class="tag muted">curated</span></div>' +
+              '<span class="tag muted">candidate</span></div>' +
               '<div class="sdesc">' + esc(describeOf(kind, candidate)) + '</div>' +
-              '<div class="sdesc faint">Curated row <span class="mono">' +
+              '<div class="sdesc faint">ACME\u2019s row <span class="mono">' +
               esc(keyOf(kind, candidate)) + '</span></div></div></div>';
 
         var verdict = current
@@ -1331,8 +1649,9 @@
                   '. The two price the same trade differently, and each is correct under its own ' +
                   'terms.</div>'
                 : '<div class="notice ok"><b>The candidate states the same terms as the document ' +
-                  'in use.</b> Adopting it would add a second row that says nothing new. ' +
-                  'The names are equal for the same reason.</div>')
+                  'in use.</b> The two rows say one thing, so the names are equal for the same ' +
+                  'reason: the name tells the two documents apart from the others and not from ' +
+                  'each other.</div>')
             : '<div class="notice">There is no document in use to compare against, so every ' +
               'field of the candidate is new. The comparison marks them for that reason, not ' +
               'because the terms are unusual.</div>';
@@ -1343,19 +1662,19 @@
             '<div class="draftrow">' +
             '<a class="btn primary" href="' +
             href({ screen: 'create', kind: kind.code, seed: keyOf(kind, candidate), state: state }) +
-            '">Use these terms \u2192</a>' +
-            '<span class="hint">Writing them means ACME owns a row for this kind, which is the ' +
-            'create route.</span></div>' +
+            '">Start a new convention from these terms \u2192</a>' +
+            '<span class="hint">The kind already holds this document. Writing a new one is the ' +
+            'create route, and it leaves the report flow.</span></div>' +
             '</div></div>';
     }
 
     function createRouteCard(kind, S, state) {
         return '<div class="card"><div class="sectionhead"><h3>Authoring a convention is ' +
             'another job</h3><span class="meta">leaves the report flow</span></div>' +
-            '<p class="lead">The alternatives are the curated documents, and taking one is a ' +
-            'choice between documents that exist. Writing a convention of ACME\u2019s own is ' +
-            'not a choice: it is authoring. It has its own screen, and it does not return to ' +
-            'the report when it is done.</p>' +
+            '<p class="lead">The alternatives below are documents the kind already holds, and ' +
+            'reading one is a choice between documents that exist. Writing a convention of ' +
+            'ACME\u2019s own is not a choice: it is authoring. It has its own screen, and it ' +
+            'does not return to the report when it is done.</p>' +
             '<div class="draftrow">' +
             '<a class="btn" href="' +
             href({ screen: 'create', kind: kind.code, state: state, from: S.from }) +
@@ -1392,13 +1711,13 @@
         }).join('');
 
         var seedNote = seed
-            ? '<div class="notice"><b>Seeded from the curated row <span class="mono">' +
+            ? '<div class="notice"><b>Seeded from the document <span class="mono">' +
               esc(keyOf(kind, seed)) + '</span>.</b> The form below carries its terms. ' +
               'The names and descriptions on the conventions screen come from what you write ' +
               'here, so a term left empty leaves the name short.</div>'
             : '<div class="notice">The form is empty. Fill the terms for a ' +
-              esc(kind.label.toLowerCase()) + ' convention, or start from a curated alternative ' +
-              'on the kind\u2019s page.</div>';
+              esc(kind.label.toLowerCase()) + ' convention, or start from a document the kind ' +
+              'already holds, on the kind\u2019s page.</div>';
 
         return chrome('conventions') +
             '<div class="shell">' +
@@ -1532,7 +1851,7 @@
             screen: params.get('screen') || '',
             code: params.get('kind') || '',
             variant: (params.get('variant') || 'A').toUpperCase(),
-            state: params.get('state') || 'acme',
+            state: params.get('state') || 'provisioned',
             from: params.get('from') || '',
             cand: params.get('cand') || '',
             seed: params.get('seed') || ''
@@ -1634,11 +1953,11 @@
         var parts = [];
         parts.push('<span class="tag-prototype">fixture</span>');
         parts.push('<span class="label">state</span>');
-        parts.push(barLink('ACME: no document', S.state === 'acme',
-            { state: 'acme', kind: S.code, variant: S.variant, from: S.from }));
-        parts.push(barLink('Fixture: 3 documents', S.state === 'several',
-            { state: 'several', kind: S.code, variant: S.variant, from: S.from }));
-        parts.push(barLink('Change in progress', S.state === 'change',
+        parts.push(barLink('ACME: provisioned', S.state === 'provisioned',
+            { state: 'provisioned', kind: S.code, variant: S.variant, from: S.from }));
+        parts.push(barLink('A new party: no document', S.state === 'none',
+            { state: 'none', kind: S.code, variant: S.variant, from: S.from }));
+        parts.push(barLink('Fixture: change in progress', S.state === 'change',
             { state: 'change', kind: S.code, variant: S.variant, from: S.from }));
         if (S.code) {
             parts.push('<span class="sep">|</span><span class="label">reading</span>');

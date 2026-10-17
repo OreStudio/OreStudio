@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/generalise-the-codec-for-nested-and-repeated-types
-#+pr:
+#+pr: 3439
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -28,7 +28,7 @@ the table rather than in the engine.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3439][#3439]] | [ore] Bind a document into one record as the scanner walks past it |
 
 * Review
 
@@ -92,6 +92,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged. The engine reads nested and repeated types, attributes on leaf
+elements and substitution groups, and the generated families prove it over
+the corpus. Two limits are by design and recorded on the page: an anonymous
+element that arrives with children is refused rather than half stored, and
+no generated family declares an =xs:any=, so the residual capture is proved
+only by the hand-written shapes in the binding suite.
 
 The engine is in =ores.ore.core/xml/binding=. It holds a stack of at most 32
 frames, each a type and the record being filled, and it writes into the record

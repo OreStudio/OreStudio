@@ -70,12 +70,6 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.database.lib)
 
-target_link_libraries(${exe_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ores.openssl_cleanup
-        Threads::Threads)
-
 # Copy development scripts to the runtime output directory.
 set(ores_http_scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

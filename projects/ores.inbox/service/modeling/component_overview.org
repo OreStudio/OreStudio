@@ -80,12 +80,6 @@ target_link_libraries(${lib_target_name}
         ores.iam.client.lib
         ores.scheduler.api.lib
         ores.variability.api.lib)
-
-target_link_libraries(${exe_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ores.openssl_cleanup
-        Threads::Threads)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

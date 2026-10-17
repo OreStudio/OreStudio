@@ -82,10 +82,4 @@ target_link_libraries(${lib_target_name}
         ores.storage.core.lib
     PRIVATE
         Boost::process)
-
-target_link_libraries(${exe_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ores.openssl_cleanup
-        Threads::Threads)
 #+end_src

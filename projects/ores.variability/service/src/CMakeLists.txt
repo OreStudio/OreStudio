@@ -67,12 +67,6 @@ target_link_libraries(${lib_target_name}
         ores.eventing.core.lib
         ores.eventing.api.lib)
 
-target_link_libraries(${exe_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ores.openssl_cleanup
-        Threads::Threads)
-
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 set(exe_binary_name ${name})

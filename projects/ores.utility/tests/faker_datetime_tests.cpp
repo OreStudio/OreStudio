@@ -41,7 +41,7 @@ TEST_CASE("make_timepoint_places_the_parts_in_utc", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Time point: " << ores::platform::time::datetime::to_iso8601_utc(tp);
 
-    CHECK(ores::platform::time::datetime::to_iso8601_utc(tp) == "2024-03-15 13:45:30Z");
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(tp) == "2024-03-15 13:45:30.000000Z");
 }
 
 TEST_CASE("make_timepoint_defaults_the_time_of_day_to_midnight", tags) {
@@ -49,7 +49,7 @@ TEST_CASE("make_timepoint_defaults_the_time_of_day_to_midnight", tags) {
 
     const auto tp = datetime::make_timepoint(2024, 3, 15);
 
-    CHECK(ores::platform::time::datetime::to_iso8601_utc(tp) == "2024-03-15 00:00:00Z");
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(tp) == "2024-03-15 00:00:00.000000Z");
 }
 
 TEST_CASE("past_timepoint_stays_inside_the_declared_window", tags) {

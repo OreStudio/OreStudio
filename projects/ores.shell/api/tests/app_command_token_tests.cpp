@@ -106,9 +106,9 @@ TEST_CASE("from_token_converts_an_instant_token", tags) {
     // writer has always emitted the space; five other suites assert that form.
     // This case asserted the 'T' and was the only one that did.
     const auto parsed = from_token<std::chrono::system_clock::time_point>("2026-09-26T14:30:00Z");
-    CHECK(ores::platform::time::datetime::to_iso8601_utc(parsed) == "2026-09-26 14:30:00Z");
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(parsed) == "2026-09-26 14:30:00.000000Z");
 
     const auto other = from_token<std::chrono::system_clock::time_point>("2020-01-01T00:00:00Z");
-    CHECK(ores::platform::time::datetime::to_iso8601_utc(other) == "2020-01-01 00:00:00Z");
+    CHECK(ores::platform::time::datetime::to_iso8601_utc(other) == "2020-01-01 00:00:00.000000Z");
     CHECK(parsed != other);
 }

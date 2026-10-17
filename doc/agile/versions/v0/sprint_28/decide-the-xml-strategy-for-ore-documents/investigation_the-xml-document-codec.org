@@ -548,6 +548,12 @@ found on the first corpus run.
 
 * Conclusions
 
+0. *The entity path streams, and does not build the tape.* The benchmark
+   settled this after the fact: the tape multiplies first-level misses by 4.5
+   on the portfolio and 10.6 on the 6.3 MB file against scanning alone, and a
+   projection into an entity record needs none of that traffic. The tape stays
+   for the round trip, where the whole document is the point, and the
+   projection fills records as the scanner walks past them.
 1. *The generated DOM is the wrong artefact for this seam.* Not only because
    it is slow, though it is three to five times slower. Because it puts a
    parser's data structure between the document and the model, and the

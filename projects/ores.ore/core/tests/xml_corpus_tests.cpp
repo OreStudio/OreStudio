@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/document.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -26,15 +27,33 @@
 
 namespace {
 
+const std::string_view test_suite("ores.ore.tests");
 const std::string tags("[ore][xml][corpus]");
 
 namespace fs = std::filesystem;
+using namespace ores::logging;
 using ores::ore::xml::document;
 using ores::ore::xml::token_kind;
 
 auto read_file(const fs::path& path) -> std::string {
     std::ifstream file(path, std::ios::binary);
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+}
+
+/// Every tree in the repository that holds XML, not only the ORE samples.
+///
+/// A tree that is absent is skipped rather than failing, so a partial
+/// checkout still runs the ones it has.
+auto corpus_roots() -> std::vector<fs::path> {
+    const auto root = fs::path(ORES_SOURCE_DIR);
+    std::vector<fs::path> roots;
+    for (const auto* relative :
+         {"external/ore", "external/fpml", "external/fix", "assets/test_data", "doc/agile"}) {
+        const auto candidate = root / relative;
+        if (fs::is_directory(candidate))
+            roots.push_back(candidate);
+    }
+    return roots;
 }
 
 auto examples_dir() -> fs::path {
@@ -191,4 +210,45 @@ TEST_CASE("every_decimal_in_the_corpus_reads_and_writes_as_the_same_value", tags
     CHECK(numbers > 10000);
     CHECK(refused == 0);
     CHECK(changed == 0);
+}
+
+TEST_CASE("every_xml_document_in_the_repository_parses", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto roots = corpus_roots();
+    REQUIRE_FALSE(roots.empty());
+
+    std::size_t documents = 0;
+    std::size_t rejected = 0;
+    std::size_t bytes = 0;
+    std::string report;
+
+    for (const auto& root : roots) {
+        for (const auto& entry : fs::recursive_directory_iterator(root)) {
+            if (!entry.is_regular_file())
+                continue;
+            const auto extension = entry.path().extension();
+            if (extension != ".xml" && extension != ".XML")
+                continue;
+
+            const auto text = read_file(entry.path());
+            if (text.empty())
+                continue;
+            ++documents;
+            bytes += text.size();
+
+            const auto parsed = document::read(text);
+            if (parsed)
+                continue;
+            ++rejected;
+            if (rejected <= 20)
+                report += entry.path().string() + ": " + parsed.error().message + " at line " +
+                          std::to_string(parsed.error().line) + "\n";
+        }
+    }
+
+    INFO("documents: " << documents << ", bytes: " << bytes);
+    INFO(report);
+    CHECK(documents > 3900);
+    CHECK(rejected == 0);
 }

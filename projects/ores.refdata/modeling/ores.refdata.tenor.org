@@ -227,6 +227,48 @@ as at one horizon. The tenant is the session's.
 :cpp_type: std::string
 :END:
 
+** preview_tenor_resolution_request
+:PROPERTIES:
+:subject: refdata.v1.ops.preview_tenor_resolution
+:response: resolve_tenor_response
+:END:
+
+The same question as =resolve_tenor_request=, asked about a rule that is not
+in the database yet. The three rows arrive whole instead of by code, so the
+answer describes the draft a person is editing rather than the row the store
+still holds. It answers with the same response, because it is the same
+answer.
+
+*** tenor
+:PROPERTIES:
+:cpp_type: ores::refdata::domain::tenor
+:END:
+
+*** convention
+:PROPERTIES:
+:cpp_type: ores::refdata::domain::tenor_convention
+:END:
+
+*** resolution
+:PROPERTIES:
+:cpp_type: ores::refdata::domain::tenor_convention_resolution
+:END:
+
+*** calendar_code
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** horizon
+:PROPERTIES:
+:cpp_type: std::chrono::year_month_day
+:END:
+
+*** spot
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::year_month_day>
+:END:
+
 * C++
 
 ** Flags
@@ -374,6 +416,49 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
             reply(nats_, msg, failure);
         }
     }
+
+    /**
+     * @brief Serves refdata.v1.ops.preview_tenor_resolution.
+     *
+     * The same question as resolve_tenor, asked about rows that are not
+     * stored yet, so a person editing a rule reads its answer before writing
+     * it. Same response, same refusals, same adapter: it proves the request,
+     * checks the permission, decodes, calls the service and replies.
+     */
+    void preview_tenor_resolution(ores::nats::message msg) {
+        BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            tenor_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "refdata::tenors:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<preview_tenor_resolution_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(tenor_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::tenor_resolution_service svc(req_ctx);
+        try {
+            auto response = svc.preview(*req);
+            BOOST_LOG_SEV(tenor_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(tenor_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            resolve_tenor_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
 #+end_src
 
 ** Custom NATS subscriptions
@@ -382,6 +467,10 @@ filled. The arithmetic is the pure engine's, not a second copy of it here.
     subs.push_back(nats.queue_subscribe(
         resolve_tenor_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->resolve_tenor(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        preview_tenor_resolution_request::nats_subject, queue_group, [h](ores::nats::message msg) {
+            h->preview_tenor_resolution(std::move(msg));
         }));
 #+end_src
 

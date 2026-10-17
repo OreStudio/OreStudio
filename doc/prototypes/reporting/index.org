@@ -31,13 +31,13 @@ reporting group has been retired.
 
 * One decision, an axis for each journey
 
-The journeys are not a screen plan. Reading them one to one would give seven
+The journeys are not a screen plan. Reading them one to one would give nine
 screens for one job, and nobody would build it that way.
 
 The decision this set exists to inform is what the reporting surface is, and how
 many screens own it. Each prototype offers three structural variants of its own
 journey, and each turns on the question that journey actually poses rather than
-one frame forced onto all seven. Forcing a single axis was tried first and it
+one frame forced onto all nine. Forcing a single axis was tried first and it
 broke down: the question a catalogue asks is not the question a result asks.
 
 What is shared is the method. Three variants, one switcher, the same chrome, and
@@ -53,8 +53,8 @@ the same rule that the variants disagree about structure and not colour.
 | Find out why a run went wrong | Whether errors are a place you go, a panel beside the run, or a ledger across runs. |
 | Choose when a report runs | Where scheduling lives: on the report, in a schedule list, or on a calendar. |
 
-The prototypes are not meant to be read as one design with seven parts. They are
-seven answers to seven different questions, drawn in one voice so that the
+The prototypes are not meant to be read as one design with nine parts. They are
+nine answers to nine different questions, drawn in one voice so that the
 answers can be compared.
 
 * The prototypes

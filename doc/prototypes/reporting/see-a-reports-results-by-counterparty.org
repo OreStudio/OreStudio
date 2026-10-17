@@ -186,5 +186,5 @@ such read exists to judge.
 * See also
 
 - [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
-- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the seven journeys these answer to.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the nine journeys these answer to.
 - [[file:read-what-a-run-produced.org][Read what a run produced]] — the same run read by book, and the note this one follows.

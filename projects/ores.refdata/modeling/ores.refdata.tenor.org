@@ -359,6 +359,8 @@ checks the permission a read needs, decodes the canonical request, calls
 filled. The arithmetic is the pure engine's, not a second copy of it here.
 
 #+begin_src cpp :name protocol_includes :implements 8A2E4C7F-1D9B-4E6A-9F3C-5B8D2A6E4C1F
+#include "ores.refdata.api/domain/tenor_convention.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include <chrono>
 #include <optional>
 #+end_src

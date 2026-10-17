@@ -26,6 +26,8 @@
 #define ORES_REFDATA_API_MESSAGING_TENOR_PROTOCOL_HPP
 
 #include "ores.refdata.api/domain/tenor.hpp"
+#include "ores.refdata.api/domain/tenor_convention.hpp"
+#include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>

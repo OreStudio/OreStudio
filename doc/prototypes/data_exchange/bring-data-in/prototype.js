@@ -79,6 +79,7 @@
             sourceName: 'acme-trading/onboarding/20261017',
             env: 'Another installation',
             bytes: 41873920, parts: 2, trades: 64, portfolios: 3,
+            partKeys: ['trades', 'conventions'],
             holder: 'First National Bank',
             files: [
                 { name: 'ore.xml', kind: 'Run settings', rows: '2 setup files', use: 'accepted' },
@@ -105,6 +106,7 @@
             sourceName: 'ore-samples/Example_1 \u2026 Example_3',
             env: 'ORE 2016 sample fixtures',
             bytes: 96468992, parts: 3, trades: 288, portfolios: 3,
+            partKeys: ['trades', 'conventions', 'curves', 'market'],
             holder: 'Sample data',
             files: [
                 { name: 'Example_1/Input/portfolio.xml', kind: 'Portfolio and trades', rows: '3 portfolios \u00b7 96 trades', use: 'accepted' },
@@ -134,6 +136,7 @@
             sourceName: 'reporting-2026-10-16.orebundle',
             env: 'Reporting (production)',
             bytes: 432013312, parts: 6, trades: 1642, portfolios: 47,
+            partKeys: ['trades', 'conventions', 'curves', 'market', 'run'],
             holder: 'First National Bank',
             files: [
                 { name: 'manifest.json', kind: 'Bundle manifest', rows: '6 parts \u00b7 read 14:31Z', use: 'accepted' },
@@ -163,6 +166,7 @@
             sourceName: 'vendor/2026-10-16/market.txt + fixings.txt',
             env: 'Vendor drop folder',
             bytes: 1932735, parts: 2, trades: 0, portfolios: 0,
+            partKeys: ['market'],
             holder: 'Vendor',
             files: [
                 { name: 'market.txt', kind: 'Quotes', rows: '312 series \u00b7 18,442 observations', use: 'accepted' },
@@ -189,6 +193,7 @@
             sourceName: 'fixes/swap_conventions_20261016.xml',
             env: 'Vendor correction',
             bytes: 262144, parts: 1, trades: 0, portfolios: 0,
+            partKeys: ['conventions'],
             holder: 'Vendor',
             files: [
                 { name: 'swap_conventions_20261016.xml', kind: 'Conventions family', rows: '1 family \u00b7 214 rows', use: 'accepted' },
@@ -210,6 +215,7 @@
             sourceName: 'promote/dev-to-staging/20261016-1430',
             env: 'Development',
             bytes: 226492416, parts: 7, trades: 1642, portfolios: 47,
+            partKeys: ['trades', 'conventions', 'curves', 'market', 'run'],
             holder: 'First National Bank',
             files: [
                 { name: 'manifest.json', kind: 'Bundle manifest', rows: '7 parts \u00b7 dev @ 14:30Z', use: 'accepted' },
@@ -238,6 +244,7 @@
             sourceName: 'acme-trading/backfill/20261017',
             env: 'Another installation',
             bytes: 52428800, parts: 2, trades: 64, portfolios: 3,
+            partKeys: ['trades', 'conventions'],
             holder: 'First National Bank',
             files: [
                 { name: 'conventions.xml', kind: 'Conventions document', rows: '12 families \u00b7 344 rows', use: 'accepted' },
@@ -257,6 +264,21 @@
 
     var CASE_ORDER = ['onboard', 'seed', 'defect', 'feed', 'one-dataset', 'promote', 'party'];
     var ACTOR_ORDER = ['admin', 'ops', 'maintainer', 'support'];
+
+    /* The proposed definition this import would run under, and the budgets a
+     * definition states from the workflow API. The engine holds no such
+     * workflow today: ore_import_workflow and run_configuration_import_workflow
+     * declare one step each. */
+    var WF_TYPE = 'data_exchange_import_workflow';
+    var DATA_STEP = 900;
+    var WRITE_STEP = 120;
+
+    var PART_STEPS = {
+        trades: { name: 'stage_trades', label: 'Stage trades and portfolios', subject: 'trading.v1.steps.stage_trades' },
+        curves: { name: 'stage_curves', label: 'Stage curve configurations', subject: 'refdata.v1.steps.stage_curve_configurations' },
+        market: { name: 'stage_market', label: 'Stage quotes and fixings', subject: 'marketdata.v1.steps.stage_market_data' },
+        run: { name: 'stage_run', label: 'Stage run documents', subject: 'configure.v1.steps.stage_run_documents' }
+    };
 
     var S = readQuery();
 
@@ -409,7 +431,90 @@
         return '<div class="split">' +
             '<div>' + scopeCard() + sourceCard() + '</div>' +
             '<div>' + whoCard() + orderCard() + '</div>' +
-            '</div>' + foot();
+            '</div>' + workflowCard() + foot();
+    }
+
+    /* The definition the import will run under, and the steps it declares.
+     * The engine builds the list from the request at start and rebuilds the
+     * same list on every advance, so this is what the person can expect before
+     * anything runs. */
+    function wfSteps() {
+        var c = cas();
+        var out = [{
+            name: 'begin_import', label: 'Begin the import',
+            subject: 'refdata.v1.steps.begin_conventions_import', budget: WRITE_STEP
+        }];
+        if (c.sections) {
+            c.sections.forEach(function (s) {
+                out.push({
+                    name: 'stage_' + s.key,
+                    label: 'Stage ' + (s.key === 'quotes' ? 'quotes (market.txt)' : 'fixings (fixings.txt)'),
+                    subject: 'marketdata.v1.steps.stage_market_' + s.key, budget: DATA_STEP
+                });
+            });
+        } else {
+            FAMILIES.forEach(function (f) {
+                if (S['case'] === 'one-dataset' && f.key !== 'swap') return;
+                var listed = c.include.indexOf(f.key) >= 0;
+                if (!listed && f.policy !== 'skip') return;
+                out.push({
+                    name: 'stage_' + f.key, label: 'Stage ' + f.name,
+                    subject: 'refdata.v1.steps.stage_conventions_' + f.key,
+                    budget: DATA_STEP, skipped: !listed
+                });
+            });
+        }
+        (c.partKeys || []).forEach(function (key) {
+            if (key === 'conventions') return;
+            if (key === 'market' && c.sections) return;
+            var st = PART_STEPS[key];
+            out.push({ name: st.name, label: st.label, subject: st.subject, budget: DATA_STEP });
+        });
+        out.push({
+            name: 'commit_import', label: 'Commit every family in one transaction',
+            subject: 'refdata.v1.steps.commit_conventions_import', budget: DATA_STEP
+        });
+        out.push({
+            name: 'record_import_outcome', label: 'Record the outcome and tell the person',
+            subject: 'refdata.v1.steps.record_import_outcome', budget: WRITE_STEP
+        });
+        return out;
+    }
+
+    function workflowCard() {
+        var steps = wfSteps();
+        return '<div class="card mt"><h2>The workflow this import starts</h2>' +
+            '<p class="lead">The import runs as one instance of a registered definition. The engine builds the step list from ' +
+            'the request at start, and every advance rebuilds the same list, so these are the steps the person can expect.</p>' +
+            '<div class="strip">' +
+            '<div class="cell"><div class="k">Workflow type</div><div class="v mono" style="font-size:13px">' + WF_TYPE + '</div>' +
+            '<div class="s">proposed \u00b7 not registered</div></div>' +
+            '<div class="cell"><div class="k">Start message</div><div class="v mono" style="font-size:13px">workflow.v1.ops.start_workflow</div>' +
+            '<div class="s">committed to the stream before the caller is answered</div></div>' +
+            '<div class="cell"><div class="k">Failure policy</div><div class="v">stop</div>' +
+            '<div class="s">a failed step parks the run in failed, completed steps kept</div></div>' +
+            '<div class="cell"><div class="k">Steps declared</div><div class="v">' + steps.length + '</div>' +
+            '<div class="s">built from the request at start</div></div>' +
+            '</div>' +
+            '<table class="grid famtable"><thead><tr><th class="chk">#</th><th>Step</th><th>Subject</th><th>Budget</th><th>State</th></tr></thead><tbody>' +
+            steps.map(function (s, i) {
+                return '<tr><td class="n">' + (i + 1) + '</td>' +
+                    '<td class="nm">' + esc(s.label) + '<span class="ent">' + esc(s.name) + '</span></td>' +
+                    '<td class="mono">' + esc(s.subject) + '</td>' +
+                    '<td class="n">' + (s.budget === DATA_STEP ? '15 min' : '2 min') + '</td>' +
+                    '<td>' + (s.skipped ? '<span class="pill warn">skipped</span>' : '<span class="pill">pending</span>') + '</td></tr>';
+            }).join('') + '</tbody></table>' +
+            '<div class="notice info mt"><span class="title">Today no such definition exists.</span>' +
+            'The engine registers <span class="mono">run_configuration_import_workflow</span> and ' +
+            '<span class="mono">ore_import_workflow</span>, one step each, so an import is one step and a retry redoes all of it. ' +
+            'The family-per-step list above follows the draft design, and no run can show it yet.</div>' +
+            '<div class="stepfoot"><span class="hint">Progress lives on the run screen, because the run is the attempt and the ' +
+            'engine exposes one attempt per instance.</span>' +
+            '<span class="ml-auto"><a class="btn ghost" href="../one-import-run/index.html?case=' + esc(S['case']) +
+            '&amp;wf=staged">Follow the run</a></span></div>' +
+            '<div class="proto-hint">Mock: the type, the step subjects and the budgets are a proposal. The state names and the ' +
+            'progress read are the engine\u2019s own, and the run screen draws them.</div>' +
+            '</div>';
     }
 
     function scopeCard() {
@@ -564,7 +669,7 @@
                 'The other families are not in the file and stay untouched. Today there is no family scope at all.</div>' : '') +
             '</div>' +
             '<div>' + summaryCard(chosen) + '</div>' +
-            '</div>' +
+            '</div>' + workflowCard() +
             '<div class="stepfoot"><button class="btn ghost" data-act="back">Back to the source</button>' +
             '<span class="ml-auto"><button class="btn ghost" data-act="refused">Refuse a row</button> ' +
             '<button class="btn primary" data-act="stage">Stage for review</button></span></div>';
@@ -601,6 +706,7 @@
             '<div class="c"><div class="k">Live rows changed</div><div class="v">0</div></div></div>' +
             '<div class="field mt"><span class="lbl">Source tag</span><input value="vendor-acme-2026-10-16" readonly></div>' +
             '<div class="proto-hint">Gap: no native CSV or JSON import, no vendor connector, no per-section result and no dry run.</div></div></div>' +
+            workflowCard() +
             '<div class="stepfoot"><button class="btn ghost" data-act="back">Back to the source</button>' +
             '<span class="ml-auto"><button class="btn primary" data-act="stage">Stage for review</button></span></div>';
     }

@@ -20,8 +20,9 @@
 
 Every import journey begins the same way: name a source and a scope. What
 differs is the trigger, the payload and who may act. This screen is the one
-entry step, with those three as variants: seven triggers, four actors, and the
-family picker that shows what the file carries. Staging writes no live row.
+entry step, with those three as variants: seven triggers, four actors, the
+family picker that shows what the file carries, and the workflow the import
+will start. Staging writes no live row.
 
 It is throwaway. It reads no service. Open [[file:bring-data-in/][the source screen]].
 
@@ -45,6 +46,28 @@ It is throwaway. It reads no service. Open [[file:bring-data-in/][the source scr
 - Who may act is a panel, not a footnote. The operations user holds the
   conventions write and not the trade or market writes; the screen shows the
   permission that is missing instead of hiding the button.
+- The workflow is named before the work starts. A card gives the type, the
+  start message, the failure policy and every step the definition would
+  declare, so the person can see what the import will do and where progress
+  will appear.
+
+** The workflow this import starts
+
+The card reads nothing. The type and the step list are the definition's, and
+=workflow.v1.definitions.list= would answer the same list; the stage subjects
+and the commit are the draft design's. The budgets are the workflow API's:
+=data_step_timeout= for a step that stages, =write_step_timeout= for a step
+that writes a record.
+
+The list follows the draft: one stage step per family the file carries, then
+one commit step and one record step. A family the server skips is declared as
+a step too, so the skip is reported by a step rather than dropped. The engine
+builds this list from the request at start and rebuilds the same list on every
+advance, so the card is a promise the run can be held to.
+
+Nothing runs until =workflow.v1.ops.start_workflow= is published. The card's
+*Follow the run* opens the [[file:one-import-run.org][Run]] screen in its staged
+state, where the progress begins at that publish.
 
 ** Variants and states
 
@@ -60,12 +83,24 @@ The subjects and the permission model are the journeys': =ore upload=,
 =ore import=, =ore import-run=, =marketdata import=, =compute download-input=,
 and the four writes each import borrows. The convention family names and the
 27-family count come from the modelling tree; the merge policies (replace by
-key, add missing world, skip) come from the draft design. The row counts, file
-sizes, request ids and checksums are invented.
+key, add missing world, skip) come from the draft design. The step states,
+their names, the budgets and the failure policies are the workflow engine's.
+The workflow type, its stage subjects and the per-family stage replies are the
+draft's and are not registered. The row counts, file sizes, request ids and
+checksums are invented.
 
 The screen itself has no server. No upload route, no scan route and no staging
 verb exists. The journey lists them as gaps, and the screen says so in its
 banner.
+
+** Screens the workflow connection touches
+
+The Entry screen names the run; it does not follow one. The
+[[file:one-import-run.org][Run]] screen follows the instance and holds the retry,
+the [[file:stage-an-import.org][Review]] screen sits between the two instances a
+decider-gated import needs, and the [[file:import-register.org][Register]] lists
+one row per instance. This screen answers the question the engine cannot: which
+workflow will this file start, and what will it do.
 
 ** The verdict
 

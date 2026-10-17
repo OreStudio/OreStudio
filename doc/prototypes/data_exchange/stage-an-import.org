@@ -65,6 +65,14 @@ The counts, the import id, the expiry and the row values are invented.
 The screen has no server. No staging table, no begin, stage, commit or discard
 verb and no sweep exists. That absence is exactly what the screen shows.
 
+** Where it sits in the workflow
+
+The staging run ends =completed= before this screen is read, and the decider's
+publish starts a second instance. An instance cannot wait for a person: its
+only wait is a deadline, and a step that stayed open for a decider would fail
+by running out of it. So this screen reads a staged import, not a run, and the
+[[file:one-import-run.org][Run]] screen follows the instance that applies it.
+
 ** The verdict
 
 Not signed off. This screen asks the owner the hardest question: does a staged

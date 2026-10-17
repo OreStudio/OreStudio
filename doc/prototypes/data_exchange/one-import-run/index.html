@@ -20,10 +20,14 @@
     ?mode=proposed|today    one atomic commit, or today's write per family
     ?fail=<part key>        which family refuses
     ?attempt=1|2            the first attempt, or the retry of it
+    ?wf=staged|in_progress|waiting|failed|retrying|completed|warnings|compensated
+    ?play=1                 walk the workflow states on a timer
 
-  The bar at the foot switches the trigger, the outcome, the mechanism and the
-  attempt. The "today" mechanism is drawn beside the proposed one because that
-  difference is the question the prototype exists to ask.
+  The bar at the foot switches the trigger, the outcome, the mechanism, the
+  workflow state and the attempt. The "today" mechanism is drawn beside the
+  proposed one because that difference is the question the prototype exists to
+  ask. The workflow region is driven by one instance and shows the engine's
+  states; it is a script on a timer, never a server.
 -->
 
 <div class="proto-note" id="proto-note"></div>

@@ -620,3 +620,64 @@ table.grid .sub { color: var(--ink-faint); font-size: 12px; }
 .checklist .mk.ok { color: var(--ok); }
 .checklist .mk.bad { color: var(--bad); }
 .checklist .mk.warn { color: var(--warn); }
+
+/* The live region: the workflow instance and one row per declared step. It
+ * sits on the run screen because that is where the attempt is read, and it
+ * shows the engine's own states rather than a progress bar the read cannot
+ * support. */
+.wf { border: 1px solid var(--line-soft); border-radius: var(--radius); overflow: hidden; }
+.wfhead {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    padding: 10px 13px;
+    background: #16161a;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 12px;
+    color: var(--ink-faint);
+}
+.wfhead b { color: var(--ink); font-weight: 600; }
+.wfhead .mono { color: var(--ink-dim); }
+.wfsteps { display: flex; flex-direction: column; max-height: 420px; overflow-y: auto; }
+.wfstep {
+    display: grid;
+    grid-template-columns: 1.6rem minmax(0, 1fr) 9rem 9.5rem 15rem;
+    gap: 10px;
+    align-items: baseline;
+    padding: 7px 13px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 12px;
+}
+.wfstep:last-child { border-bottom: none; }
+.wfstep .ix { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.wfstep .lbl { color: var(--ink-dim); }
+.wfstep .lbl .nm {
+    display: block;
+    color: var(--ink-faint);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.wfstep .bud { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.wfstep .res { color: var(--ink-dim); }
+.wfstep.wfcols {
+    color: var(--ink-faint);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: #16161a;
+}
+.wfstep.run { background: var(--accent-dim); box-shadow: inset 2px 0 0 var(--accent); }
+.wfstep.run .lbl { color: var(--ink); }
+.wfstep.bad { background: #2b1614; }
+.wfstep.comp { background: #171412; }
+.wfstep.comp .lbl { color: var(--ink-faint); }
+@media (max-width: 900px) {
+    .wfstep { grid-template-columns: 1.6rem minmax(0, 1fr) 9rem; }
+    .wfstep .res { display: none; }
+}
+
+/* A button that is a link keeps the button's look and loses the underline. */
+a.btn { text-decoration: none; }

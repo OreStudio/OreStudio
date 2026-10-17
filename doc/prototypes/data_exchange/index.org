@@ -78,11 +78,19 @@ register's comparison — the same data read twice, not two screens.
 #+ATTR_HTML: :class hug-leading
 | Prototype | What it argues | Open it | Review |
 |-----------+----------------+---------+--------|
-| [[file:bring-data-in.org][Bring data in]] | The trigger is a variant, not a screen: name the source, the scope and the families once, and show the scan, the party rule and the missing permission on that one entry. | [[file:bring-data-in/][prototype]] | none |
+| [[file:bring-data-in.org][Bring data in]] | The trigger is a variant, not a screen: name the source, the scope and the families once, show the scan, the party rule and the missing permission on that one entry, and name the workflow the import starts. | [[file:bring-data-in/][prototype]] | none |
 | [[file:stage-an-import.org][Stage an import]] | The review is its own screen because a second person decides there: per-family new, replaced, unchanged and refused, the maker kept apart from the decider, and the staged rows as the commitment. | [[file:stage-an-import/][prototype]] | none |
-| [[file:one-import-run.org][One import run]] | After the commit the only question is per family, so one attempt record answers the failure, the retry, the feed's sections and the seed's batch — and draws the atomic and per-family mechanisms side by side. | [[file:one-import-run/][prototype]] | none |
+| [[file:one-import-run.org][One import run]] | After the commit the only question is per family, so one attempt record answers the failure, the retry, the feed's sections and the seed's batch — and draws the atomic and per-family mechanisms side by side, over the live workflow instance that performed the import. | [[file:one-import-run/][prototype]] | none |
 | [[file:import-register.org][The import register]] | Four journeys need the party's history rather than one attempt, so the register holds the retry beside its first attempt, the promotion hops, and the boundary that keeps another party absent. | [[file:import-register/][prototype]] | none |
 | [[file:take-data-out.org][Take data out]] | The support export, the archive and the promotion bundle are one act with three purposes, one manifest, one instant and the omissions named. | [[file:take-data-out/][prototype]] | none |
+
+Progress is not a sixth screen. The import is one workflow instance, and the
+[[file:one-import-run.org][Run]] screen follows it: a region reads the instance
+and its steps and draws =?wf=staged|in_progress|waiting|failed|retrying|completed|warnings|compensated=,
+with =?play=1= to walk them on a timer. The
+[[file:bring-data-in.org][Entry]] screen names the type and the steps before
+anything runs. A decider-gated import needs two instances, one that stages and
+one that applies, because an instance cannot wait for a person.
 
 * Adding a prototype
 

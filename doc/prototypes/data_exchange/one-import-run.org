@@ -22,7 +22,9 @@ After the commit there is one question, and it is per family: what was written,
 what was refused, what was skipped, and what a failure left behind. Four
 journeys ask it about the same attempt record, so this is one screen in
 different states. It also draws the difference the design decision turns on:
-one atomic commit, or today's write per family.
+one atomic commit, or today's write per family. Above the record sits the
+workflow instance that performed the import, so the person sees the run while
+it runs and not only after it ends.
 
 It is throwaway. Open [[file:one-import-run/][the run]].
 
@@ -46,20 +48,99 @@ It is throwaway. Open [[file:one-import-run/][the run]].
 - Who may read the run is scoped. The maker, the decider and the same party
   see it; another party's run is absent.
 
+** The workflow run
+
+Progress belongs here and not on a sixth screen, because the run is the
+attempt: the engine exposes one instance's step list, and a separate progress
+screen would split the retry from the record it resumes.
+
+- The region is one instance. It reads =workflow.v1.instances.list= with
+  =target_kind=data_exchange_import= and =target_id=<import id>=, then
+  =workflow.v1.ops.get_workflow_steps= for that instance. That read answers
+  the run's status and one summary per declared step: name, label,
+  description, status, =started_at=, =completed_at=, error and log.
+- The re-read follows the watch on the workflow component and the instance
+  entity. The state-change notification carries the changed entity, its
+  timestamps and its tenant and not the steps, so the screen reads after it.
+- The instance states drawn are =in_progress=, =completed=, =failed=,
+  =compensating= and =compensated=. Before the start message there is no
+  instance, and the screen says so instead of drawing a pending run. A step
+  draws =pending=, =in_progress=, =completed=, =completed_with_warnings=,
+  =failed= or =compensated=.
+- The deadline is the definition's: =data_step_timeout= (900 s) for a step
+  that stages, =write_step_timeout= (120 s) for a step that writes the record.
+  The engine measures silence from the dispatch, fails a silent step on a pass
+  every 30 s, and stops the run in =failed= whatever policy the definition
+  declares.
+- Retry is =workflow.v1.ops.retry_workflow_instance=. It is offered because
+  this definition declares =stop=: the run parks in =failed= and keeps every
+  completed step. A definition that declared =compensate= would reach
+  =compensated= and offer no retry.
+- Success with warnings is success. A step that reports
+  =completed_with_warnings= advances the run, is never compensated, and leaves
+  the instance =completed=; its warnings are log entries. The screen's
+  =?state=partial= maps to that and not to a partial instance state.
+- Per-family counts arrive with the step that produced them. A stage step's
+  result carries its family's staged count; the commit's result carries the
+  written counts of every family together, because one transaction produces
+  them together. A per-family bar inside the commit would state something the
+  engine cannot know.
+- The region cannot show what only the engine knows: how long a step has been
+  silent before a pass fires, whether the service that owns the subject is
+  alive, and whether a late completion is real. It draws =started_at= and the
+  budget, and says the pass decides.
+
 ** Variants and states
 
 =?case=onboard|seed|defect|feed|one-dataset|promote|party=,
 =?state=applied|failed|partial|expired=,
-=?mode=proposed|today=, =?fail=<part>=, =?attempt=1|2=. The bar switches the
-trigger, the outcome, the mechanism and the attempt.
+=?mode=proposed|today=, =?fail=<part>=, =?attempt=1|2=,
+=?wf=staged|in_progress|waiting|failed|retrying|completed|warnings|compensated=,
+=?play=1=. The bar switches the trigger, the outcome, the mechanism, the
+workflow state and the attempt; Play walks the workflow states one every
+1.6 s. =?wf=staged= is the state with no instance at all: it is what "staged
+and awaiting review" means to the engine.
 
 ** What is real and what is not
 
 The parts, the family names, the FX skip, the operation subjects and the
 atomic-versus-per-family difference are the journeys' and the draft design's.
-The ids, counts, timestamps, sample names and duplicate fixings are invented.
-The per-family reply and the import record do not exist; the screen shows the
-shape they would need.
+The state names, the subjects, the budgets, the failure policies and the
+progress read are the engine's. The workflow type
+=data_exchange_import_workflow=, its step subjects and the per-family stage
+replies are the draft's and are not registered: the engine holds
+=ore_import_workflow= and =run_configuration_import_workflow=, one step each.
+The ids, counts, timestamps, sample names and duplicate fixings are invented,
+and the whole workflow region is a script on a clock.
+
+** Screens the workflow connection touches
+
+- Entry: names the type, the policy and the declared steps before anything
+  runs, and says that no such definition exists today.
+- Run: follows the one instance, draws the step states, the budget, the retry
+  and the warnings.
+- Review: a decider's publish starts a second instance, because an instance
+  has no way to wait for a person; the staging instance ends =completed=.
+- Register: one row per instance, read by =target_kind= and =target_id=, so a
+  party's history is a list of runs rather than a list of files.
+
+** What the workflow docs contradict
+
+- The screen treats a retry as a new attempt. The retry verb resumes the same
+  instance at the failed step under the same step identity, and only a shell
+  re-run starts a new instance. The engine records no attempt number, so
+  "attempt 2" is this screen's label.
+- The screen's =partial= has no instance state behind it. The real pair is a
+  failed run with the completed steps kept, or =completed_with_warnings= in a
+  =completed= run.
+- The screen's =expired= is the staged-row sweep, not a step deadline. A
+  deadline makes a step =failed= and the run =failed=; it never rolls back.
+- The step states note declares =pending=, and the progress read's documented
+  status filter does not list it. The screen renders =pending= for every step
+  the engine has not created yet.
+- A per-family resume cannot exist while an import is one step. The
+  registered import definitions declare a single step, so a retry redoes the
+  whole import; the family-per-step list is the draft's, not the engine's.
 
 ** The verdict
 

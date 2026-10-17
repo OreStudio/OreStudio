@@ -14,9 +14,17 @@
  *   ?mode=proposed|today     atomic commit, or the per-family writes of today
  *   ?fail=<part key>         which family refuses
  *   ?attempt=1|2             first attempt, or the retry of it
+ *   ?wf=staged|in_progress|waiting|failed|retrying|completed|warnings|compensated
+ *   ?play=1                  simulate the run on a timer
  *
  * The screen is the import record the journeys say does not exist: today the
  * only record is a workflow instance and a service reply.
+ *
+ * The live region is driven by the workflow instance, and its states are the
+ * engine's: in_progress, completed, failed, compensating and compensated on the
+ * instance; pending, in_progress, completed, completed_with_warnings, failed and
+ * compensated on a step. It is simulated: the page holds a script and a clock,
+ * never a server.
  */
 
 (function () {
@@ -25,6 +33,22 @@
     var TENANT = 'Acme Corporation';
     var PARTY = 'Acme Trading';
     var RUN_ID = 'imp_01J9Z6K4T3QW';
+
+    /* The proposed definition this import would run under. The engine holds no
+     * such workflow today: the two import definitions it registers,
+     * ore_import_workflow and run_configuration_import_workflow, declare one
+     * step each. The step list below follows the design draft: one stage
+     * message per family, then one atomic commit. */
+    var WF_TYPE = 'data_exchange_import_workflow';
+    var INSTANCE_ID = '7f3c2a1e-9b4d-4c6e-8a12-5d0e9f4b7c31';
+    var RETRY_ID = '3b8e4d21-6a0f-4f7c-9c55-2e1d8a6b0f93';
+
+    /* The budgets a definition states, from the workflow API. */
+    var DATA_STEP = 900;
+    var WRITE_STEP = 120;
+
+    var WF_STATES = ['staged', 'in_progress', 'waiting', 'failed', 'retrying',
+        'completed', 'warnings', 'compensated'];
 
     var CASES = {
         onboard: { title: 'Onboard a party', source: 'acme-trading/onboarding/20261017', actor: 'J. Smith', parts: ['trades', 'conventions'], state: 'applied' },
@@ -69,7 +93,9 @@
             state: ['applied', 'failed', 'partial', 'expired'].indexOf(q.state) >= 0 ? q.state : CASES[name].state,
             mode: q.mode === 'today' ? 'today' : 'proposed',
             fail: q.fail || defaultFail(name),
-            attempt: q.attempt === '2' ? 2 : 1
+            attempt: q.attempt === '2' ? 2 : 1,
+            wf: WF_STATES.indexOf(q.wf) >= 0 ? q.wf : null,
+            play: q.play === '1'
         };
     }
 
@@ -86,6 +112,8 @@
         if (S.mode !== 'proposed') p.push('mode=' + S.mode);
         if (S.fail !== defaultFail(S['case'])) p.push('fail=' + S.fail);
         if (S.attempt !== 1) p.push('attempt=' + S.attempt);
+        if (S.wf) p.push('wf=' + S.wf);
+        if (S.play) p.push('play=1');
         window.history.replaceState(null, '', window.location.pathname + (p.length ? '?' + p.join('&') : ''));
         render();
     }
@@ -154,13 +182,337 @@
 
     function isRetry() { return S.attempt === 2; }
 
+    /* -------------------------------------------------- the workflow run */
+
+    /* The step list the definition declares. Built from the request alone, as
+     * the engine builds it: the same list on every advance. */
+    function wfSteps() {
+        var c = cas();
+        var out = [{
+            kind: 'begin', name: 'begin_import', label: 'Begin the import',
+            subject: 'refdata.v1.steps.begin_conventions_import', budget: WRITE_STEP
+        }];
+        if (S['case'] === 'feed') {
+            ['quotes', 'fixings'].forEach(function (key) {
+                out.push({
+                    kind: 'stage', key: key, name: 'stage_' + key,
+                    label: 'Stage ' + (key === 'quotes' ? 'quotes (market.txt)' : 'fixings (fixings.txt)'),
+                    subject: 'marketdata.v1.steps.stage_market_' + key, budget: DATA_STEP
+                });
+            });
+        } else {
+            FAMILIES.forEach(function (f) {
+                if (c.only && f.key !== c.only) return;
+                out.push({
+                    kind: 'stage', key: f.key, name: 'stage_' + f.key,
+                    label: 'Stage ' + f.name,
+                    subject: 'refdata.v1.steps.stage_conventions_' + f.key,
+                    budget: DATA_STEP, skipped: f.skipped
+                });
+            });
+        }
+        if (c.parts.indexOf('trades') >= 0) out.push({
+            kind: 'stage', key: 'trades', name: 'stage_trades',
+            label: 'Stage trades and portfolios',
+            subject: 'trading.v1.steps.stage_trades', budget: DATA_STEP
+        });
+        if (c.parts.indexOf('curves') >= 0) out.push({
+            kind: 'stage', key: 'curves', name: 'stage_curves',
+            label: 'Stage curve configurations',
+            subject: 'refdata.v1.steps.stage_curve_configurations', budget: DATA_STEP
+        });
+        if (c.parts.indexOf('market') >= 0 && S['case'] !== 'feed') out.push({
+            kind: 'stage', key: 'market', name: 'stage_market',
+            label: 'Stage quotes and fixings',
+            subject: 'marketdata.v1.steps.stage_market_data', budget: DATA_STEP
+        });
+        if (c.parts.indexOf('run') >= 0) out.push({
+            kind: 'stage', key: 'run', name: 'stage_run',
+            label: 'Stage run documents',
+            subject: 'configure.v1.steps.stage_run_documents', budget: DATA_STEP
+        });
+        out.push({
+            kind: 'commit', name: 'commit_import',
+            label: 'Commit every family in one transaction',
+            subject: 'refdata.v1.steps.commit_conventions_import', budget: DATA_STEP
+        });
+        out.push({
+            kind: 'record', name: 'record_import_outcome',
+            label: 'Record the outcome and tell the person',
+            subject: 'refdata.v1.steps.record_import_outcome', budget: WRITE_STEP
+        });
+        return out;
+    }
+
+    /* Which state the region shows. The query string wins; otherwise the
+     * outcome the rest of the screen shows decides, so an old link still
+     * reads. */
+    function wfKey() {
+        if (S.wf) return S.wf;
+        if (S.attempt === 2 || S.state === 'applied') return 'completed';
+        if (S.state === 'partial') return 'warnings';
+        return 'failed';
+    }
+
+    function stepRows(st) {
+        var p = parts().filter(function (x) { return x.key === st.key; })[0];
+        return p ? p.staged : 0;
+    }
+
+    /* What the commit's reply carries when it succeeds: every staged row but
+     * the refused ones, and a skipped family contributes nothing. */
+    function wfCommitted() {
+        var t = { written: 0, refused: 0, fxSkipped: false };
+        parts().forEach(function (p) {
+            if (p.skipped) { t.fxSkipped = true; return; }
+            t.written += p.staged - p.refused;
+            t.refused += p.refused;
+        });
+        return t;
+    }
+
+    function mmss(seconds) {
+        var m = Math.floor(seconds / 60), s = seconds % 60;
+        return m + ' min ' + (s < 10 ? '0' : '') + s + ' s';
+    }
+
+    /* One frame of the simulation: the instance status, the state of each
+     * declared step, and what the run has said so far. No state here is
+     * invented: each name is the engine's own. */
+    function wfFrame() {
+        var key = wfKey(), steps = wfSteps();
+        var states = steps.map(function () { return 'pending'; });
+        var commitIdx = steps.length - 2;
+        /* The step the screen's own failure names, so the rail and the
+         * per-family table tell the same story. */
+        var running = steps.map(function (s) { return s.key; }).indexOf(failKey());
+        if (running < 1) running = Math.max(1, commitIdx - 1);
+        var f = {
+            key: key, steps: states, status: 'in_progress', running: -1,
+            elapsed: 0, error: '', created: '15:41:12Z', lastEvent: '15:41:12Z'
+        };
+
+        function doneTo(n) { for (var i = 0; i < n; i++) states[i] = 'completed'; }
+
+        if (key === 'staged') {
+            f.status = 'none';
+            f.created = null;
+            f.lastEvent = null;
+            return f;
+        }
+        if (key === 'in_progress') {
+            doneTo(running);
+            states[running] = 'in_progress';
+            f.running = running;
+            f.elapsed = 268;
+            f.lastEvent = '15:45:40Z';
+        } else if (key === 'waiting') {
+            doneTo(running);
+            states[running] = 'in_progress';
+            f.running = running;
+            f.elapsed = 942;
+            f.lastEvent = '15:41:12Z';
+        } else if (key === 'failed' || key === 'retrying') {
+            doneTo(running);
+            states[running] = 'in_progress';
+            f.running = running;
+            if (key === 'failed') {
+                states[running] = 'failed';
+                f.status = 'failed';
+                f.elapsed = 942;
+                f.lastEvent = '15:56:54Z';
+                f.error = steps[running].name + ' did not report within ' + steps[running].budget +
+                    ' s (data_step_timeout). Last heartbeat from ores.refdata.service at 15:41:02Z, ' +
+                    'before the command was published.';
+            } else {
+                f.elapsed = 41;
+                f.lastEvent = '15:58:10Z';
+            }
+        } else if (key === 'completed' || key === 'warnings') {
+            doneTo(steps.length);
+            if (key === 'warnings') states[commitIdx] = 'completed_with_warnings';
+            f.status = 'completed';
+            f.elapsed = 812;
+            f.lastEvent = '15:54:44Z';
+            f.running = -1;
+        } else if (key === 'compensated') {
+            doneTo(commitIdx);
+            /* Only a step whose definition declares a compensation subject is
+             * unwound. The stage steps declare one; the begin step declares
+             * none, so it keeps its completed state. */
+            for (var i = 1; i < commitIdx; i++) states[i] = 'compensated';
+            states[commitIdx] = 'failed';
+            f.status = 'compensated';
+            f.elapsed = 604;
+            f.running = commitIdx;
+            f.lastEvent = '15:51:16Z';
+            f.error = '';
+        }
+        return f;
+    }
+
     /* ------------------------------------------------------------- render */
+
+    function wfPill(state) {
+        var cls = state === 'completed' ? 'ok' : state === 'failed' ? 'bad' :
+            state === 'completed_with_warnings' || state === 'compensated' ? 'warn' :
+                state === 'in_progress' ? 'info' : '';
+        return '<span class="pill ' + cls + '">' + esc(state) + '</span>';
+    }
+
+    function wfStatus(f) {
+        if (f.status === 'none') return '<span class="pill warn">no instance</span>';
+        var cls = f.status === 'completed' ? 'ok' : f.status === 'failed' ? 'bad' :
+            f.status === 'in_progress' ? 'info' : 'warn';
+        return '<span class="pill ' + cls + '">' + esc(f.status) + '</span>';
+    }
+
+    function wfHead(f) {
+        var created = f.status === 'none' ? 0 : f.steps.filter(function (s) {
+            return s !== 'pending';
+        }).length;
+        var none = f.status === 'none';
+        return '<div class="wfhead">' +
+            '<span>Instance ' + (none ? '<b>none</b>' : '<b class="mono">' + INSTANCE_ID + '</b>') + '</span>' +
+            '<span>Type <b class="mono">' + WF_TYPE + '</b></span>' +
+            '<span>Target <b class="mono">data_exchange_import \u00b7 ' + RUN_ID + '</b></span>' +
+            '<span>Steps <b>' + created + ' of ' + f.steps.length + '</b> created</span>' +
+            '<span>Created <span class="mono">' + (f.created || '\u2014') + '</span></span>' +
+            '<span>Last event <span class="mono">' + (f.lastEvent || '\u2014') + '</span></span>' +
+            '<span>Policy <b>stop</b></span>' +
+            '</div>';
+    }
+
+    function wfResult(st, state, f) {
+        if (state === 'pending' || state === 'compensated' && st.kind !== 'stage') return '';
+        if (st.kind === 'begin')
+            return state === 'in_progress' ? 'opening the import' : 'import ' + RUN_ID + ' opened';
+        if (st.kind === 'record')
+            return state === 'completed' ? 'record written \u00b7 ' + RUN_ID :
+                state === 'in_progress' ? 'writing the record' : '';
+        if (st.kind === 'commit') {
+            if (state === 'completed' || state === 'completed_with_warnings')
+                return 'one transaction \u00b7 ' + n(wfCommitted().written) + ' rows live' +
+                    (state === 'completed_with_warnings' ? ' \u00b7 warnings' : '');
+            if (state === 'in_progress') return 'no family counts until it commits';
+            if (state === 'failed') return 'refused at ' + esc(failKey()) + ' \u00b7 rolled back';
+            return '';
+        }
+        if (state === 'completed') return n(stepRows(st)) + ' rows staged';
+        if (state === 'completed_with_warnings') return n(stepRows(st)) + ' rows staged \u00b7 warnings';
+        if (state === 'in_progress') return 'staging\u2026';
+        if (state === 'failed') return 'no completion \u00b7 deadline expired';
+        if (state === 'compensated') return 'staged rows discarded';
+        return '';
+    }
+
+    function wfRail(f) {
+        return '<div class="wfsteps">' +
+            '<div class="wfstep wfcols"><span></span><span>Step</span><span>State</span>' +
+            '<span>Deadline from dispatch</span><span>Result</span></div>' +
+            wfSteps().map(function (st, i) {
+            var state = f.steps[i];
+            var cls = state === 'in_progress' ? ' run' : state === 'failed' ? ' bad' :
+                state === 'compensated' ? ' comp' : '';
+            var budget = st.budget === DATA_STEP ? '15 min' : '2 min';
+            if (i === f.running && f.status !== 'compensated')
+                budget = mmss(f.elapsed) + ' / ' + budget;
+            return '<div class="wfstep' + cls + '">' +
+                '<span class="ix">' + (i + 1) + '</span>' +
+                '<span class="lbl">' + esc(st.label) +
+                '<span class="nm">' + esc(st.name) + ' \u00b7 ' + esc(st.subject) + '</span></span>' +
+                wfPill(state) +
+                '<span class="bud">' + esc(budget) + '</span>' +
+                '<span class="res">' + wfResult(st, state, f) + '</span>' +
+                '</div>';
+        }).join('') + '</div>';
+    }
+
+    function wfNote(f) {
+        if (f.key === 'staged') {
+            return '<div class="notice info mt"><span class="title">Staged and awaiting review. Nothing is live, and nothing is running.</span>' +
+                'No workflow instance exists yet. The engine creates one only when ' +
+                '<span class="mono">workflow.v1.ops.start_workflow</span> is published, so there is no progress to follow: ' +
+                'the staged rows are the record, and the publish is what starts the run.</div>';
+        }
+        if (f.key === 'in_progress') {
+            return '<div class="notice info mt"><span class="title">One step is in progress, and only one.</span>' +
+                'The engine dispatches the next step when the last completion arrives, so the run is never working on two steps at once. ' +
+                'A step reports once, at the end: there is no row-level progress inside it, and the panel cannot invent one.</div>';
+        }
+        if (f.key === 'waiting') {
+            return '<div class="notice warn mt"><span class="title">No completion has arrived, and the budget is spent.</span>' +
+                'The engine measures silence from the dispatch, not from the start of the run. A pass every 30 s fails a step whose command was ' +
+                'published more than its budget ago; the pass is why the state can read ' +
+                '<span class="mono">in_progress</span> a moment after the budget is gone.</div>';
+        }
+        if (f.key === 'failed') {
+            return '<div class="notice error mt"><span class="title">The run stopped on its failed step.</span>' +
+                esc(f.error) + '<br>Policy <span class="mono">stop</span> keeps every completed step: the staged rows are durable and the run\'s error stands. ' +
+                '<span class="mono">workflow.v1.ops.retry_workflow_instance</span> may resume it, and that is legitimate only because the definition declared stop. ' +
+                'A definition that declared compensate would unwind the completed steps and offer no retry.</div>';
+        }
+        if (f.key === 'retrying') {
+            return '<div class="notice info mt"><span class="title">The retry resumes this instance, not a new one.</span>' +
+                'The verb re-dispatches the failed step under its own identity, clears the run\'s error and keeps every completed step. ' +
+                'The instance stays <span class="mono">' + INSTANCE_ID + '</span>; the shell re-run would instead start a new instance, for example ' +
+                '<span class="mono">' + RETRY_ID + '</span>. The engine counts no attempt number, so "attempt 2" is this screen\'s label.</div>';
+        }
+        if (f.key === 'completed') {
+            return '<div class="notice success mt"><span class="title">Completed, and completion is positional.</span>' +
+                'Every declared step reached a terminal state, so the engine marks the instance complete with the last step\'s result. ' +
+                'There is no completion hook: the last step is where an import says what it did.</div>';
+        }
+        if (f.key === 'warnings') {
+            var c = wfCommitted();
+            return '<div class="notice warn mt"><span class="title">Success with warnings is success, not failure.</span>' +
+                'The commit reported <span class="mono">completed_with_warnings</span> with one log entry per item it could not place: ' +
+                n(c.refused) + ' rows refused' + (c.fxSkipped ? ' and the FX family skipped (<span class="mono">fx_skipped</span>)' : '') +
+                '. The engine treats it as success, ' +
+                'dispatches the next step, and never compensates it. The run is ' +
+                '<span class="mono">completed</span>: there is no partial instance state.</div>';
+        }
+        if (f.key === 'compensated') {
+            return '<div class="notice warn mt"><span class="title">The definition declared compensate, so the run rolled back.</span>' +
+                'The commit failed and the engine walked the completed forward steps in reverse, compensating those that declare a compensation ' +
+                'subject: the staged rows are discarded. The begin step declares none, so it keeps its completed state. The run reaches ' +
+                '<span class="mono">compensated</span> and both its result and its error are cleared. No live row moved, and there is no retry: ' +
+                'only a run parked in <span class="mono">failed</span> by a stop policy can be resumed.</div>';
+        }
+        return '';
+    }
+
+    function wfFoot(f) {
+        var act = '';
+        if (f.key === 'failed') act = '<button class="btn primary" data-act="wf" data-wf="retrying">Retry from failed step</button>';
+        if (f.key === 'staged') act = '<button class="btn primary" data-act="wf" data-wf="in_progress">Start the import</button>';
+        var reads = f.key === 'staged'
+            ? 'Nothing exists to read: the step list is the definition\'s, from <span class="mono">workflow.v1.definitions.list</span>, ' +
+              'and the engine creates no instance until <span class="mono">workflow.v1.ops.start_workflow</span> is published.'
+            : 'The region reads <span class="mono">workflow.v1.ops.get_workflow_steps</span> for one instance, and a watch on the ' +
+              'workflow component and the instance entity says when to read it again. The notification carries no step detail, so the ' +
+              'screen follows it with a read.';
+        return '<div class="stepfoot"><span class="hint">' + reads + '</span>' +
+            '<span class="ml-auto">' + act + '</span></div>' +
+            '<div class="proto-hint">Mock: the states, clocks and counts are a script in this page. No engine runs, and the ' +
+            'workflow type, its step subjects and its per-family replies do not exist yet. The state names and the read are the ' +
+            'engine\'s own.</div>';
+    }
+
+    function wfPanel() {
+        var f = wfFrame();
+        return '<div class="card mt"><div class="row between"><h2>The workflow run</h2>' + wfStatus(f) + '</div>' +
+            '<p class="lead">The import runs as one instance of a workflow definition. A family is staged by its own step and the ' +
+            'commit is one step, so the rail is the progress the engine actually has.</p>' +
+            wfHead(f) + wfRail(f) + wfNote(f) + wfFoot(f) + '</div>';
+    }
 
     function render() {
         document.getElementById('proto-note').textContent =
             'Prototype \u00b7 Data exchange \u00b7 One import run \u00b7 mock data, no backend';
         document.getElementById('app').innerHTML = '<div class="page wide">' + head() + body() + '</div>';
         document.getElementById('proto-bar').innerHTML = bar();
+        if (S.play) startPlay(); else stopPlay();
     }
 
     function head() {
@@ -171,13 +523,13 @@
             '<h1>' + esc(cas().title) + ': one import run</h1>' +
             '<p class="lede">The record of one attempt, per family: what was written, what was refused, what was skipped, and what a failure left behind. ' +
             'The retry runs against these staged rows, not against the file again.</p>' +
-            gapbanner() + runStrip(t) + timeline();
+            gapbanner() + wfPanel() + runStrip(t) + timeline();
     }
 
     function gapbanner() {
-        return '<div class="gapbanner"><b>Gap</b>No import record exists today. The nearest thing is a workflow instance in the shell with a step log; ' +
-            'the run import reports files, not families, and the conventions save names no failing family. The per-family outcome below is the record ' +
-            'the journeys ask for, and it is where the mechanism\u2019s behaviour can be compared.</div>';
+        return '<div class="gapbanner"><b>Gap</b>No import record exists today. The nearest thing is a workflow instance with a step log, and the region below ' +
+            'draws the instance this import would run. The run import reports files, not families, and the conventions save names no failing family. ' +
+            'The per-family outcome is the record the journeys ask for, and it is where the mechanism\u2019s behaviour can be compared.</div>';
     }
 
     function runStrip(t) {
@@ -332,7 +684,8 @@
             '<span class="ml-auto"><button class="btn" data-act="attempt" data-attempt="1"' + (retried ? '' : ' disabled') + '>Read attempt 1</button> ' +
             '<button class="btn primary" data-act="attempt" data-attempt="2"' + (retried ? ' disabled' : '') + '>Retry the failed family</button></span></div>' +
             '<div class="proto-hint">Gap: no idempotency key on the trade import (request_id names the tarball, not the import), no trade identity check, ' +
-            'no resume, no import history, and no post-failure summary. The retry control exists only on the workflow progress screen today.</div>' +
+            'no resume, no import history, and no post-failure summary. The retry control exists only on the workflow progress screen today, ' +
+            'and this run screen is where it belongs: beside the record it resumes.</div>' +
             '</div>';
     }
 
@@ -368,11 +721,36 @@
         out += '<span class="sep">|</span><span class="label">Mechanism</span>';
         out += '<button data-act="mode" data-mode="proposed"' + (S.mode === 'proposed' ? ' class="on"' : '') + '>One commit</button>';
         out += '<button data-act="mode" data-mode="today"' + (S.mode === 'today' ? ' class="on"' : '') + '>Per-family writes</button>';
+        out += '<span class="sep">|</span><span class="label">Workflow</span>';
+        WF_STATES.forEach(function (k) {
+            out += '<button data-act="wf" data-wf="' + k + '"' + (k === wfKey() ? ' class="on"' : '') + '>' + esc(k) + '</button>';
+        });
+        out += '<button data-act="play">' + (S.play ? 'Pause' : '\u25b6 Simulate') + '</button>';
         if (S.attempt === 2) out += '<span class="sep">|</span><button data-act="attempt" data-attempt="1">Attempt 1</button>';
         return out;
     }
 
     /* -------------------------------------------------------------- events */
+
+    /* The simulation: the page walks the states the engine can reach, one
+     * every 1.6 s, so a reviewer can watch the rail fill. It is a script and
+     * a clock; nothing is read and nothing is written. */
+    var WF_ORDER = ['staged', 'in_progress', 'waiting', 'failed', 'retrying',
+        'completed', 'warnings', 'compensated'];
+    var playTimer = null;
+
+    function stopPlay() {
+        if (playTimer) { clearInterval(playTimer); playTimer = null; }
+    }
+
+    function startPlay() {
+        if (playTimer) return;
+        playTimer = setInterval(function () {
+            var i = WF_ORDER.indexOf(wfKey());
+            S.wf = WF_ORDER[(i + 1) % WF_ORDER.length];
+            render();
+        }, 1600);
+    }
 
     document.addEventListener('click', function (e) {
         var t = e.target.closest('[data-act]');
@@ -381,7 +759,15 @@
         if (act === 'case') go({ 'case': t.dataset.case, state: CASES[t.dataset.case].state, fail: defaultFail(t.dataset.case), attempt: 1 });
         else if (act === 'state') go({ state: t.dataset.state });
         else if (act === 'mode') go({ mode: t.dataset.mode });
-        else if (act === 'attempt') go({ attempt: Number(t.dataset.attempt) });
+        else if (act === 'attempt') {
+            var n = Number(t.dataset.attempt);
+            go({ attempt: n, wf: n === 2 ? 'completed' : 'failed' });
+        }
+        else if (act === 'wf') { S.play = false; stopPlay(); go({ wf: t.dataset.wf }); }
+        else if (act === 'play') {
+            if (S.play) { S.play = false; stopPlay(); go({}); }
+            else { S.play = true; go({ wf: 'staged' }); }
+        }
     });
 
     render();

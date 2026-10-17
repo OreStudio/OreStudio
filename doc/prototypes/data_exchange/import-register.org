@@ -57,6 +57,15 @@ counts and people are invented. There is no import history, no promotion
 record and no party-scoped import read today; that absence is the screen's
 subject.
 
+** The workflow behind a row
+
+A row is a workflow instance. The register reads
+=workflow.v1.instances.list= scoped to the party's imports — =target_kind= and
+=target_id= name what each run acts on — and
+=workflow.v1.ops.get_workflow_steps= answers one row's rail on the
+[[file:one-import-run.org][Run]] screen. The state a row shows is the
+instance's, and a retry of it keeps the same instance id.
+
 ** The verdict
 
 Not signed off. The screen survives though no journey names it, because four

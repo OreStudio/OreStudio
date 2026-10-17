@@ -76,10 +76,14 @@ journey is that screen's owner.
 3. *Follow each to the screen that holds it, where one exists.* Each of the five
    links to the screen that holds its data. **Only one such screen exists today**:
    conventions is a real route, =PATHS.conventions=, which is
-   =/refdata/conventions=. The other four, =pricing_engines=,
-   =todays_market=, =curve_configuration= and =risk_report_config=, have no
-   screen and no route, so the panel states the link as missing rather than
-   drawing one that would not resolve. The panel never invents a route.
+   =/refdata/conventions=. Its row also points at the shared prototype
+   =doc/prototypes/reporting/manage-the-conventions/=, which owns the conventions
+   interaction and states that the reporting model names no document per kind.
+   The row reads that set: the 25 kinds, how many are bound, and the ones that
+   are not. The other four, =pricing_engines=, =todays_market=,
+   =curve_configuration= and =risk_report_config=, have no screen and no route,
+   so the panel states the link as missing rather than drawing one that would not
+   resolve. The panel never invents a route.
 4. *Read who else is bound to the analytics.* The configurations in the first four
    slots are the party's own. The one in the fifth, =risk_report_config=, carries
    the analytics, and it is shared: three other definitions bind the same

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: manage the conventions — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Manage the conventions. This page owns the whole conventions interaction of a
+  conventions configuration, and the two prototypes that used to repeat it hand
+  the work here:
+
+    doc/prototypes/reporting/create-a-report/            step 2 links here
+    doc/prototypes/reporting/change-what-a-report-runs/  its conventions row
+                                                         links here
+
+  The conventions belong to the party's conventions document, not to a
+  definition. A conventions configuration is a reporting row of type
+  conventions, and the reporting model has no column that names a document per
+  kind: the document refdata owns is read per party, and it carries one vector
+  per convention kind. The page states that absence rather than inventing a
+  link the model does not have. The per-kind binding drawn here is a fixture.
+
+  The screen is the standard steps UI, the one the system bootstrap journey
+  uses: the rail, its done/current/ahead marks and the step foot are copied from
+  doc/prototypes/setup/first-run/, which copies JourneyPage.tsx.
+
+  The rail is computed from state, not written out:
+
+    1        The conventions set     every convention kind the configuration
+                                     covers, one row each, with the document
+                                     bound to it and its state. This is the
+                                     index.
+    2..n     One per kind that       titled with the kind's name. What the
+             needs a decision        convention family is, what it fixes, the
+                                     document bound today, the documents that
+                                     exist for the kind with the fields that
+                                     distinguish them, and what changes if the
+                                     person picks another.
+    last     What the conventions    reads back the set, the kinds that changed,
+             are now                 and offers to return to the report. It is
+                                     final, so Back is refused from it.
+
+  A kind gets a step when it has no document bound, or when the document picked
+  for it differs from the one bound. A kind that already has a document and
+  needs no change does not get a step, because 25 steps is not a wizard. The
+  page says that rule where the set is drawn.
+
+  Three readings of the per-kind step only, behind ?variant=A|B|C. The set and
+  the rail are identical across the three:
+
+    A  document first   the bound document and every field it holds, then the
+                        picker
+    B  compare          the picker and a side-by-side compare of the bound
+                        document against the candidate
+    C  field by field   one field at a time with its explanation beside it, for
+                        the fat families
+
+  ?step=N is numeric over the current rail. ?kind=<code> resolves to that
+  kind's step whatever its number, so a reload lands where the person was.
+  ?variant=A|B|C chooses the reading. ?guide=N is the field variant C shows.
+  ?change=<code> is a fixture deep link that picks the first alternative for a
+  kind, so a reload can show a changed set and the final read-back without
+  walking it.
+  ?from=create-a-report|change-what-a-report-runs decides where "Return to the
+  report" goes.
+
+  Nothing here reads a server and nothing is written. Every value on the page is
+  a fixture, and the page says so.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

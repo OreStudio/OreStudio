@@ -88,10 +88,13 @@ The five configuration types get one step each, in the order
 =report_type_configuration_types= states and the seeder writes: =conventions=,
 =pricing_engines=, =todays_market=, =curve_configuration= and
 =risk_report_config=. One step for all five said what each slot supplied and
-left the reader to work out what the choice decides. Each configuration step
-therefore carries the same four parts: what binding a configuration of that type
+left the reader to work out what the choice decides. Four of the five steps
+therefore carry the same four parts: what binding a configuration of that type
 means, where its data lives, the picker for the configuration this report binds,
-and what the binding reaches and what it does not.
+and what the binding reaches and what it does not. The conventions step is the
+exception: it reads the set the bound configuration carries, the kinds that are
+bound and the ones that are not, and it links to the shared screen that owns the
+per-kind choice.
 
 1. *What it is.* The person types a =name= and a =description=, and chooses a
    =report_type= from a combo box. The combo box reads
@@ -112,25 +115,38 @@ and what the binding reaches and what it does not.
 2. *The conventions it binds.* A convention is the set of market terms an
    instrument is built on: the day count, the calendars, the payment frequency,
    the index, and the other terms its instrument family fixes before a trade
-   exists. A =conventions= configuration holds that set as one document per
-   convention kind, so binding it decides what every trade in the run means. The
-   same trade read under two convention sets gives two different numbers, and
-   neither of them is a mistake.
+   exists. A =conventions= configuration is a reporting row of type
+   =conventions= whose detail lives with =ores.refdata=, so binding it decides
+   what every trade in the run means. The same trade read under two convention
+   sets gives two different numbers, and neither of them is a mistake.
+
+   The reporting model does not name one document per convention kind.
+   =ores_reporting_configurations_tbl= carries a name, a configuration type and
+   an owning component and no document column. The conventions document refdata
+   owns is one document for the party, read with
+   =refdata.v1.conventions_documents.get=, which takes a party and not a
+   configuration, and it holds one vector per convention kind. The per-kind
+   choice is owned by the shared screen, not by a column of the configuration.
 
    The convention entities live in =projects/ores.refdata/modeling/= as
-   =ores.refdata.<instrument>_convention.org=, one per instrument family, 25 in
-   all. =ores.refdata.bond_yield_convention.org=,
+   =ores.refdata.<instrument>_convention.org=. There are 25 curated kinds: 25
+   =ores_dq_*_conventions_artefact_tbl= tables and 25 vectors in the conventions
+   document agree. The folder holds 26 models because it also holds
+   =tenor_convention=, which has no curated artefact table.
+   =ores.refdata.bond_yield_convention.org=,
    =ores.refdata.cds_convention.org= and
-   =ores.refdata.average_ois_convention.org= are three of them, and a
-   configuration names one document for each convention kind.
+   =ores.refdata.average_ois_convention.org= are three of the 25.
    =doc/knowledge/journeys/conventions/= states what a convention is, and which
    reference data lists it picks from.
 
    The person picks one configuration the party holds, from the candidates
    =reporting.v1.configurations.list_by_configuration_type_code= returns, and the
-   binding is written with =reporting.v1.report_configurations.put=. This is the
-   only configuration type with a screen: its data is reached at
-   =PATHS.conventions=, which is =/refdata/conventions=.
+   binding is written with =reporting.v1.report_configurations.put=. This step
+   then reads the set: how many kinds are bound, and the ones that are not. It
+   draws no picker and edits nothing. The interaction is owned by
+   =doc/prototypes/reporting/manage-the-conventions/=, which this step links to,
+   and the prototype says that the per-kind binding is a fixture because the
+   model does not state it.
 
    The binding reaches every instrument family the set covers, on every run of
    every definition that binds the configuration, and the day count and calendars

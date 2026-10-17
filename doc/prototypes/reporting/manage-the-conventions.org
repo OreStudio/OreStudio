@@ -1,0 +1,263 @@
+:PROPERTIES:
+:ID: 529d0061-fa74-4ad6-a6c6-a9456650ba75
+:END:
+#+title: Manage the conventions prototype
+#+description: The one prototype that owns the conventions interaction of a conventions configuration: the set of every convention kind, a rail step for each kind that needs a decision, a final step that reads the set back, and three readings of the per-kind step behind ?variant=A|B|C.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                       |
+|---------------+---------------------------------------------|
+| Prototype     | [[file:manage-the-conventions/][the prototype]] |
+| Gemini review | none                                        |
+| Group         | [[file:index.org][Reporting prototypes]]          |
+
+* Summary
+
+This prototype owns the whole conventions interaction of a conventions
+configuration: the set of every convention kind, a step for each kind that needs
+a decision, and a final step that reads the set back. Two prototypes that used to
+draw the same interaction hand the work here:
+
+- [[file:create-a-report/][Create a report]] reads the set on its step 2 and links
+  here;
+- [[file:change-what-a-report-runs/][Change what a report runs]] reads the set on its
+  step 1 and links here.
+
+The conventions do not belong to a definition. A conventions configuration is a
+reporting row of type =conventions= whose detail lives with =ores.refdata=, and
+thirty-one definitions bind the configuration this page draws. A change here
+reaches every one of their next runs.
+
+The screen is the standard steps UI, the one the system bootstrap journey uses.
+The layout of the per-kind step is the open question, so the page carries three
+readings of that step and of nothing else, behind =?variant=A|B|C=.
+
+It is throwaway. It reads no service. It draws real convention documents from the
+curated artefact tables, and it states plainly the one thing the models do not
+say: how a reporting configuration names a document for each kind.
+
+* Detail
+
+** What a convention kind is, and how many there are
+
+A convention is the set of market terms an instrument is built on: the day count,
+the calendars, the business day rule, the payment frequency, the index, and the
+other terms its instrument family fixes before a trade exists
+([[file:../../knowledge/journeys/conventions/conventions.org][Conventions journeys]]).
+A *convention kind* is one instrument family's set, and it is exactly one ORE
+=conventions.xml= element: =<Deposit>=, =<Swap>=, =<CDS>=, =<FxOption>= and the
+rest. The refdata model gives each kind its own entity and table
+(=ores.refdata.deposit_convention=, =ores.refdata.cds_convention=, ...), and the
+data-quality layer gives each kind its own curated artefact table
+(=ores_dq_deposit_conventions_artefact_tbl=, =ores_dq_cds_conventions_artefact_tbl=,
+...).
+
+There are **25 curated kinds**. The count is not a number in a comment: the
+database holds exactly 25 =ores_dq_*_conventions_artefact_tbl= tables, and the
+conventions document message carries exactly 25 vectors, one per kind. The model
+folder holds **26** =ores.refdata.<x>_convention.org= files, because it also
+carries =tenor_convention=. That kind has no curated artefact table, so it has no
+candidate document and this page does not draw it. The journey page's table of
+families still lists tenor and omits =zero_inflation_index=, which the database
+and the message do carry; the database and the message agree with each other, and
+this page follows them.
+
+** How a conventions configuration names a document for each kind
+
+**The reporting model does not say, and this page states that rather than
+smoothing it over.**
+
+- =ores_reporting_configurations_tbl= carries =name=,
+  =configuration_type_code=, =owning_component= and the standard provenance
+  columns. It has no document column and no per-kind child table.
+- The conventions document refdata owns is the
+  =conventions_document= message in
+  =projects/ores.refdata/modeling/ores.refdata.configuration_document_messages.org=.
+  It is *one document*, not one per kind; each kind is a vector inside it.
+- =refdata.v1.conventions_documents.get= takes a =party_id= and no
+  =configuration_id=, unlike the curve configuration document, whose get and
+  delete do take the reporting configuration. So the document is read per party,
+  not per configuration.
+- =refdata.v1.conventions_documents.put= stores the document for the session's
+  party, and no operation binds one document to one kind of one configuration.
+
+The per-kind binding on this page is therefore a fixture: each kind is shown bound
+to one document id from its curated artefact table. The candidate ids, field names
+and values are real rows of =ores_dev_bright_faraday=; the binding is not a
+column anywhere. A build needs a model and an operation before the set can be
+stored as the page draws it. The page says this on the set, on the read-back, and
+here.
+
+** The standard steps UI, and where it is copied from
+
+The steps UI is not invented here. The rail, its marks and the step foot are
+copied from =doc/prototypes/setup/first-run/prototype.css= and
+=doc/prototypes/setup/first-run/prototype.js=, which copy =JourneyPage.tsx= and
+the journey runtime:
+
+- =.journey=, a grid of =14rem 1fr= with the rail left, and its 820px collapse;
+- =.railnav ol= and =.railentry= with its =.done=, =.current= and =.ahead=
+  states;
+- =.railmark= with the same three states, a tick once a step is behind the
+  person and its number otherwise;
+- =.stepfoot= with =.ml-auto= for the primary action.
+
+The rail is drawn from one computed list, so the rail, the step numbering and the
+step foot cannot disagree. Going back is refused at the first step and at a step
+that is final. The last step is final, so it draws no Back, and its rail entry
+carries a *final* tag.
+
+** The rail shape, and the rule for which kinds get a step
+
+| Position | Step | What it draws |
+|----------+------+---------------|
+| 1 | The conventions set | Every convention kind the configuration covers, one row each: the kind and its code, the document bound to it, the state, and the control that opens its step or starts a change. A row with no document says so. Counts, the rule, and the model absence. |
+| 2 to 1 + n | One per kind that needs a decision | Titled with the kind's name. What the convention family is, what it fixes about an instrument of that kind, the document bound today, the documents that exist for the kind with the fields that distinguish them, what changes if another is picked, and the step foot. |
+| last | What the conventions are now | The set as it now reads, the kinds that changed, what a save would write and cannot write, and the way back to the report. It is =final=. |
+
+A kind gets a step when **it has no document bound, or when the document picked
+for it differs from the one bound**. A kind that already has a document and needs
+no change does not get a step, because 25 steps is not a wizard. The page says
+that rule on the set. On the fixture, 20 kinds are bound and 5 are not, so the
+rail carries 7 steps: the set, the 5 kinds that need a decision, and the
+read-back. *Change* on a bound row starts a real change and adds its step;
+*Keep the bound document* puts it back and removes the step, the way turning an
+analytic off removes its step on
+[[file:manage-the-analytics.org][Manage the analytics]].
+
+** What a convention step carries
+
+Every kind step carries the same parts, and they are grounded in the model the
+page read:
+
+- *What the convention family is.* Two or three sentences from the entity
+  model's own description, in plain words.
+- *What it fixes about an instrument of that kind.* A short list: the schedule,
+  the calendar and business-day rule, the day count, the index or indices, the
+  fixing rules. For a family whose model carries one pointer field, such as FRA,
+  the list says so.
+- *The document bound today.* Its id, its artefact table, its version, its field
+  count and its ORE element. A kind with no document says that a run which
+  reaches its instrument family reads no terms for it.
+- *The picker.* Every document that exists for that kind, drawn from
+  =ores_dq_<kind>_conventions_artefact_tbl=: the id, the version, and the first
+  five fields the model declares, which are the fields that tell one document
+  from another. An explicit *no document bound* choice lets a person unbind a
+  kind. A kind whose table has no row says there is nothing to pick; currency
+  pair is that case on the fixture.
+- *What changes.* The fields that differ between the bound document and the
+  picked one. It states that the same trade read under two convention sets gives
+  two different numbers, and neither of them is wrong: each is the correct price
+  under its own terms. It also states that a run made after the change is not
+  comparable with one made before it.
+
+** Three readings of the per-kind step
+
+=?variant=A|B|C= changes the per-kind step and nothing else. The set and the rail
+are identical across the three, so the comparison is of one screen.
+
+- *A, document first.* The bound document card, then every field it holds, then
+  the picker of the documents that exist for the kind.
+- *B, compare.* The picker beside a side-by-side compare of the bound document
+  against the candidate, and a field-by-field list with the differing fields
+  marked. A kind with no document shows *no document bound* on its side, which is
+  the honest comparison for the five unbound kinds.
+- *C, field by field.* One field at a time, with its value in the bound document,
+  its value in the candidate, and the explanation of what the field means beside
+  it. This is for the fat families: cross-currency basis carries 24 fields and
+  cross-currency fix-float 17, and a whole-document table is too much to read.
+
+Variant C holds a cursor, and =?guide=N= is that cursor in the URL, so a reload
+lands on the same field.
+
+** Deep links over a rail that moves
+
+=?step=N= is numeric over the *current* rail, which makes it readable and also
+unstable: the number of a step moves whenever a kind before it changes. So the
+page also accepts =?kind=<code>=, which resolves to that kind's step whatever its
+number, and it writes both into the URL as the person navigates. A reload
+therefore lands on the same step. A kind that needs no change has no step, so that
+link lands on the set with the row marked and the reason stated.
+
+=?variant=A|B|C= chooses the reading, =?guide=N= the field variant C shows, and
+=?from=create-a-report|change-what-a-report-runs= decides where *Return to the
+report* goes. =?change=<code>= is a fixture deep link that picks the first
+alternative for a kind, so a reload can show a changed set and the read-back
+without walking it.
+
+** The final step reads the set back
+
+The last step states the counts, names the kinds that changed with what they were
+and what they now are, and lists all 25 kinds with their state and their before
+and after documents. It then states what a save would write
+(=refdata.v1.conventions_documents.put=, the whole document for the session's
+party) and what it cannot write (no operation binds a document to one kind of one
+reporting configuration). It offers to return to the report that opened it.
+Nothing is written.
+
+** What the page refuses to invent
+
+- No reporting operation reads a per-kind document, so the binding is a fixture
+  and the page says so. It invents no subject for it.
+- The subjects it names are real: =reporting.v1.configurations.list= and
+  =reporting.v1.configurations.list_by_configuration_type_code= for the
+  configurations, =reporting.v1.report_configurations.put= for the binding of a
+  definition, and =refdata.v1.conventions_documents.get= and
+  =refdata.v1.conventions_documents.put= for the conventions document. The
+  per-kind =refdata.v1.<kind>_conventions.list= subjects exist and are named on
+  the step, but the page reads no server.
+- No operation reads a curated artefact table either. The picker is drawn from
+  those tables as a fixture, and the page says that beside the picker.
+- The page draws no candidate a table does not have: currency pair says its
+  curated table holds no row, and the step stays open with nothing to pick.
+
+** What is fake
+
+Every value is a fixture: the party, the configuration, the thirty-one
+definitions, which document is bound to which kind, and the change state. The
+candidate documents and their fields are real rows from
+=ores_dev_bright_faraday=, but nothing reads a server and nothing is written. The
+page labels itself a fixture at the top, in the step captions and in the
+prototype's own bar.
+
+One statement is not fixture, and the page keeps it apart from the mock: the same
+trade read under two convention sets gives two different numbers, and neither is
+wrong.
+
+** Where the code lives
+
+=doc/prototypes/reporting/manage-the-conventions/=. Three files, plain HTML, CSS
+and JavaScript, no framework, no modules, no fetch, and no build step. The rail
+is computed in =rail()=, and every navigation reads that one function.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+- *Which of the three readings is right.* That is the question the variants exist
+  to answer, and this note does not answer it.
+- *How a reporting configuration should name a document per kind.* The current
+  model does not. The candidates are a per-kind document column or junction on
+  the configuration, or keying the conventions document by configuration rather
+  than by party. The page states the absence and does not pick the fix.
+- *Whether a person should bind a document to every one of the 25 kinds before a
+  report can run.* The page allows a kind to stay unbound and says what that
+  means; no service enforces completeness today.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis each prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the group these answer to.
+- [[file:../../knowledge/journeys/reporting/journey_create_a_report.org][Create a report]] — the journey whose conventions step this screen owns.
+- [[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change what a report runs]] — the other journey that hands its conventions step here.
+- [[file:../../knowledge/journeys/conventions/conventions.org][Conventions journeys]] — what a convention is, and the reference data lists it picks from.
+- [[file:../../knowledge/journeys/conventions/journey_define_the_conventions_for_an_instrument.org][Define the conventions for an instrument]] — the refdata journey that defines a convention.
+- [[file:manage-the-analytics.org][Manage the analytics]] — the sibling prototype this one copies its rail shape from.
+- [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.
+- [[file:../../knowledge/ui/ux_language.org][UX Language]] — the rail and the rules a step's body follows.

@@ -13,11 +13,13 @@
  *
  *   1  What it is                  the name, the description, the report type,
  *                                  is_official, and the concurrency policy
- *   2  The conventions it binds    one step per configuration type, because
- *   3  The pricing engines it binds  binding a configuration means something
- *   4  The market data it binds      different for each of the five
+ *   2  The conventions it binds    the set the bound configuration carries:
+ *   3  The pricing engines it binds  counts, the kinds with no document, and a
+ *   4  The market data it binds      link to Manage the conventions. No picker.
  *   5  The curve configuration it binds
- *   6  The run settings it binds
+ *   6  The run settings it binds     the other four are pickers, because binding
+ *                                  a configuration means something different for
+ *                                  each type
  *   7  What it runs                the fourteen analytic types, one row each:
  *                                  the switch, the order and a one-line summary.
  *                                  The index of the analytic steps that follow.
@@ -35,9 +37,11 @@
  * the step numbering and the foot bar are one list, so they agree at every
  * moment.
  *
- * The five configuration steps carry the same four parts: what binding a
- * configuration of that type means, where its data lives, the picker for the
+ * Four of the five configuration steps carry the same four parts: what binding
+ * a configuration of that type means, where its data lives, the picker for the
  * configuration this report binds, and what the binding reaches and does not.
+ * The conventions step is the exception: it is an entry point to Manage the
+ * conventions, so it reads the set and links there and draws no picker.
  *
  * Deep links: ?step=N is numeric over the current rail, and ?analytic=<code>
  * resolves to that analytic's step whatever its number. Navigation rewrites both,
@@ -82,46 +86,16 @@
         {
             code: 'conventions',
             title: 'The conventions it binds',
-            sub: 'one document per convention kind',
-            lead: 'A conventions configuration names the market terms every trade in the run ' +
-                'is read with. Choose the set this report reads.',
-            means: [
-                'A convention is the set of market terms an instrument is built on: the day ' +
-                'count, the calendars, the payment frequency, the index, and the other terms ' +
-                'its instrument family fixes before a trade exists.',
-                'A conventions configuration holds that set as one document per convention kind. ' +
-                'Binding it decides what every trade in the run means. The same trade read ' +
-                'under two convention sets gives two different numbers, and neither of them is ' +
-                'a mistake.'
-            ],
-            data: [
-                'projects/ores.refdata/modeling/ores.refdata.<instrument>_convention.org \u2014 ' +
-                'one document per instrument family, 25 of them, from ' +
-                'ores.refdata.deposit_convention.org to ' +
-                'ores.refdata.cross_currency_basis_convention.org.',
-                'ores.refdata.bond_yield_convention.org, ores.refdata.cds_convention.org and ' +
-                'ores.refdata.average_ois_convention.org are three of the 25. A conventions ' +
-                'configuration names one such document for each convention kind.',
-                'doc/knowledge/journeys/conventions/ states what a convention is, and which ' +
-                'reference data lists it picks from.'
-            ],
-            where: { symbol: 'PATHS.conventions', path: '/refdata/conventions', name: 'Conventions' },
-            reaches: [
-                'Every instrument family the set covers, on every run of every definition ' +
-                'binding this configuration.',
-                'The day count and the calendars every analytic below reads through it, so npv ' +
-                'and everything built on npv move with the choice.',
-                '#bound definitions already bind this configuration, so a change to it reaches ' +
-                'their next run too.'
-            ],
-            doesNot: [
-                'It creates no convention and edits none. The reference data lists a convention ' +
-                'picks from, such as calendars, tenors and classifications, are untouched.',
-                'It names no market data. The market data and the curves are the two steps after ' +
-                'this one.',
-                'It does not make a trade readable. A trade whose family the set does not cover ' +
-                'has no terms in this run.'
-            ]
+            sub: '25 kinds, the bound documents and the gaps',
+            lead: 'This step reads the conventions set the bound configuration carries and hands ' +
+                'the work to Manage the conventions, which owns the picker and the per-kind steps.',
+            /* The four fields the other four types carry are not read here: the
+               summary is drawn by conventionsSummary, because the conventions
+               step is an entry point rather than a picker. */
+            means: [],
+            data: [],
+            reaches: [],
+            doesNot: []
         },
         {
             code: 'pricing_engines',
@@ -983,6 +957,37 @@
             'page is the seeder\u2019s.</p></div>';
     }
 
+    /* The conventions set the bound configuration carries, for the read-only
+       summary this step draws. Twenty-five kinds, the five with no document
+       named, so the counts and the list are computed rather than written. */
+    var CONVENTIONS_KINDS = [
+        { name: 'Deposit', code: 'deposit', bound: true },
+        { name: 'FRA', code: 'fra', bound: true },
+        { name: 'Future', code: 'future', bound: true },
+        { name: 'OIS', code: 'ois', bound: true },
+        { name: 'Average OIS', code: 'average_ois', bound: false },
+        { name: 'Swap', code: 'swap', bound: true },
+        { name: 'Tenor basis swap', code: 'tenor_basis_swap', bound: true },
+        { name: 'Tenor basis two swap', code: 'tenor_basis_two_swap', bound: true },
+        { name: 'Cross-currency basis', code: 'cross_currency_basis', bound: false },
+        { name: 'Cross-currency fix-float', code: 'cross_currency_fix_float', bound: true },
+        { name: 'Bond yield', code: 'bond_yield', bound: false },
+        { name: 'CDS', code: 'cds', bound: true },
+        { name: 'CMS spread option', code: 'cms_spread_option', bound: true },
+        { name: 'Commodity forward', code: 'commodity_forward', bound: true },
+        { name: 'Commodity future', code: 'commodity_future', bound: true },
+        { name: 'FX option', code: 'fx_option', bound: false },
+        { name: 'BMA basis swap', code: 'bma_basis_swap', bound: true },
+        { name: 'Zero', code: 'zero', bound: true },
+        { name: 'Inflation swap', code: 'inflation_swap', bound: true },
+        { name: 'Intraday power load', code: 'intraday_power_load', bound: true },
+        { name: 'IBOR index', code: 'ibor_index', bound: true },
+        { name: 'Overnight index', code: 'overnight_index', bound: true },
+        { name: 'Named swap index', code: 'swap_index', bound: true },
+        { name: 'Currency pair', code: 'currency_pair', bound: false },
+        { name: 'Zero inflation index', code: 'zero_inflation_index', bound: true }
+    ];
+
     function reachList(items, bound) {
         return '<ul>' + items.map(function (item) {
             return '<li>' + esc(item).replace(/#bound/g, String(bound ? bound.boundBy : 0)) +
@@ -990,9 +995,66 @@
         }).join('') + '</ul>';
     }
 
-    /* One configuration step. Every one of the five carries the same four parts,
-       so a reader comparing two steps compares like with like. */
+    /* The conventions step is an entry point, not a second implementation of
+       the conventions. It reads the set the bound configuration carries, names
+       the kinds with no document, and hands the work to the shared prototype.
+       It draws no picker and no explanation wall: Manage the conventions owns
+       them. */
+    function conventionsSummary(type) {
+        var bound = configById(S.draft.binds[type.code]);
+        var held = CONVENTIONS_KINDS.filter(function (kind) { return kind.bound; });
+        var missing = CONVENTIONS_KINDS.filter(function (kind) { return !kind.bound; });
+        return '<div class="notice"><b>The conventions are managed on another screen.</b> ' +
+            'This step reads the set the bound configuration carries and hands the work to ' +
+            'Manage the conventions. It draws no picker and edits nothing, because one screen ' +
+            'owns the interaction and this wizard should not repeat it.</div>' +
+            '<div class="card" style="margin-top:14px;background:var(--bg)">' +
+            '<div class="sectionhead"><h3>The set this report binds</h3>' +
+            '<span class="meta">refdata.v1.conventions_documents.get \u00b7 fixture</span></div>' +
+            '<div class="statgrid">' +
+            '<div><span class="lbl">configuration</span><span class="val">' +
+            esc(bound ? bound.name : 'nothing is bound in this slot') + '</span></div>' +
+            '<div><span class="lbl">convention kinds</span><span class="val">' +
+            CONVENTIONS_KINDS.length + '</span></div>' +
+            '<div><span class="lbl">kinds with a document</span><span class="val">' +
+            '<span class="tag ok">' + held.length + ' bound</span></span></div>' +
+            '<div><span class="lbl">kinds with no document</span><span class="val">' +
+            '<span class="tag warn">' + missing.length + ' unbound</span></span></div>' +
+            '<div><span class="lbl">definitions bound</span><span class="val">' +
+            (bound ? bound.boundBy : 0) + '</span></div>' +
+            '</div>' +
+            (missing.length === 0
+                ? '<p class="rowfoot">Every convention kind the configuration covers has a ' +
+                  'document.</p>'
+                : '<p class="rowfoot"><b>The kinds with no document:</b> ' +
+                  missing.map(function (kind) { return esc(kind.name); }).join(', ') +
+                  '. A run that reaches one of those instrument families reads no terms for it. ' +
+                  'The list is the set\u2019s own, not a count on this page.</p>') +
+            '</div>' +
+            '<div class="notice" style="margin-top:12px"><b>How a configuration names one document ' +
+            'per kind.</b> The reporting model does not say. ores_reporting_configurations_tbl ' +
+            'carries a name, a configuration_type_code and an owning_component, and no document ' +
+            'column; the conventions document refdata owns is read per party with ' +
+            '<span class="mono">refdata.v1.conventions_documents.get</span> and carries one vector ' +
+            'per kind. The per-kind binding is a fixture on the shared prototype, which says so.</div>' +
+            '<div class="draftrow" style="margin-top:14px">' +
+            '<a class="btn primary" href="../manage-the-conventions/?from=create-a-report">' +
+            'Manage the conventions \u2192</a>' +
+            '<span class="hint">The shared prototype owns the set, one step per kind that needs a ' +
+            'decision, and the read-back. It sits at ' +
+            'doc/prototypes/reporting/manage-the-conventions/.</span></div>' +
+            '<p class="rowfoot">The candidates in this slot come from ' +
+            '<span class="mono">reporting.v1.configurations.list_by_configuration_type_code</span>, ' +
+            'and the binding is written with ' +
+            '<span class="mono">reporting.v1.report_configurations.put</span>. This page reads the ' +
+            'set with <span class="mono">refdata.v1.conventions_documents.get</span> and states ' +
+            'that the per-kind document is not a reporting column.</p>';
+    }
+
+    /* One configuration step. Every one of the other four carries the same four
+       parts, so a reader comparing two steps compares like with like. */
     function configStepBody(type) {
+        if (type.code === 'conventions') return conventionsSummary(type);
         var bound = configById(S.draft.binds[type.code]);
         return '<div class="doc"><div class="explain">' +
             '<h3>What binding a ' + esc(type.code) + ' configuration means</h3>' +

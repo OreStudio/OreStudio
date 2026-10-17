@@ -44,19 +44,52 @@
 
     var SHARED_WITH = ['Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity'];
 
+    /* The conventions set, for the read-only summary the step draws. Twenty-five
+       kinds; five have no document. */
+    var CONVENTIONS_KINDS = [
+        { name: 'Deposit', bound: true },
+        { name: 'FRA', bound: true },
+        { name: 'Future', bound: true },
+        { name: 'OIS', bound: true },
+        { name: 'Average OIS', bound: false },
+        { name: 'Swap', bound: true },
+        { name: 'Tenor basis swap', bound: true },
+        { name: 'Tenor basis two swap', bound: true },
+        { name: 'Cross-currency basis', bound: false },
+        { name: 'Cross-currency fix-float', bound: true },
+        { name: 'Bond yield', bound: false },
+        { name: 'CDS', bound: true },
+        { name: 'CMS spread option', bound: true },
+        { name: 'Commodity forward', bound: true },
+        { name: 'Commodity future', bound: true },
+        { name: 'FX option', bound: false },
+        { name: 'BMA basis swap', bound: true },
+        { name: 'Zero', bound: true },
+        { name: 'Inflation swap', bound: true },
+        { name: 'Intraday power load', bound: true },
+        { name: 'IBOR index', bound: true },
+        { name: 'Overnight index', bound: true },
+        { name: 'Named swap index', bound: true },
+        { name: 'Currency pair', bound: false },
+        { name: 'Zero inflation index', bound: true }
+    ];
+
     /* The five configuration types a definition binds. Only conventions has a
        screen in the application; PATHS.conventions is /refdata/conventions. The
-       other four are stated as missing. */
+       other four are stated as missing. The conventions row points at the shared
+       prototype, which owns the interaction; the application route is named
+       beside it, because it is still the only real route. */
     var CONFIG_TYPES = [
         {
             type: 'conventions',
-            name: 'ORE conventions 2026',
-            supplies: 'The calendars, day-count rules, business-day rules and currency pairs every ' +
-                'analytic reads.',
+            name: 'Group conventions',
+            supplies: 'The set of 25 convention kinds the run reads: 20 with a document, 5 with ' +
+                'none. The terms, not the market data, the curves or the engines.',
             route: {
-                path: '/refdata/conventions',
-                screen: 'Conventions',
-                symbol: 'PATHS.conventions'
+                path: '../manage-the-conventions/?from=change-what-a-report-runs',
+                screen: 'Manage the conventions',
+                hint: 'shared prototype \u00b7 the application route is PATHS.conventions, ' +
+                    '/refdata/conventions'
             }
         },
         {
@@ -380,10 +413,12 @@
         var where;
         if (binding.route) {
             where = '<a class="route" href="' + esc(binding.route.path) + '" title="' +
-                esc(binding.route.screen) + ' in the application">' +
-                '<span class="mono">' + esc(binding.route.path) + '</span>' +
+                esc(binding.route.path) + '">' +
+                '<span class="mono">' + esc(binding.route.hint ? 'shared screen' :
+                    binding.route.path) + '</span>' +
                 '<span class="arrow">\u2192</span>' + esc(binding.route.screen) + '</a>' +
-                '<div class="hint">real route \u00b7 ' + esc(binding.route.symbol) + '</div>';
+                '<div class="hint">' + esc(binding.route.hint ||
+                    ('real route \u00b7 ' + binding.route.symbol)) + '</div>';
         } else {
             where = '<span class="tag muted">no screen</span>' +
                 '<div class="hint">no route exists</div>';
@@ -395,6 +430,39 @@
             '<span class="cfwhat">' + esc(binding.supplies) + '</span>' +
             '<span class="cfwhere">' + where + '</span>' +
             '</div>';
+    }
+
+
+    /* The conventions row is an entry point. This card reads the set the bound
+       configuration carries, names the kinds with no document, and hands the
+       work to the shared prototype. It draws no picker and no explanation. */
+    function conventionsCard() {
+        var held = CONVENTIONS_KINDS.filter(function (kind) { return kind.bound; });
+        var missing = CONVENTIONS_KINDS.filter(function (kind) { return !kind.bound; });
+        return '<div class="card" style="margin-top:12px;background:var(--bg)">' +
+            '<div class="sectionhead"><h3>The conventions set this report binds</h3>' +
+            '<span class="meta">refdata.v1.conventions_documents.get \u00b7 fixture</span></div>' +
+            '<div class="statgrid">' +
+            '<div><span class="lbl">configuration</span><span class="val">Group conventions' +
+            '</span></div>' +
+            '<div><span class="lbl">convention kinds</span><span class="val">' +
+            CONVENTIONS_KINDS.length + '</span></div>' +
+            '<div><span class="lbl">with a document</span><span class="val">' +
+            '<span class="tag ok">' + held.length + ' bound</span></span></div>' +
+            '<div><span class="lbl">with no document</span><span class="val">' +
+            '<span class="tag warn">' + missing.length + ' unbound</span></span></div>' +
+            '</div>' +
+            '<p class="rowfoot"><b>The kinds with no document:</b> ' +
+            missing.map(function (kind) { return esc(kind.name); }).join(', ') +
+            '. A run that reaches one of those families reads no terms for it. ' +
+            'The per-kind binding is a fixture: the reporting model names no document per kind, ' +
+            'and the conventions document refdata owns is read per party, not per configuration.' +
+            '</p>' +
+            '<div class="draftrow" style="margin-top:10px">' +
+            '<a class="btn primary" href="../manage-the-conventions/?from=change-what-a-report-runs">' +
+            'Manage the conventions \u2192</a>' +
+            '<span class="hint">One screen owns the set, a step per kind that needs a decision, ' +
+            'and the read-back. This wizard reads the set and links there.</span></div></div>';
     }
 
     function stepOne() {
@@ -409,9 +477,11 @@
             '<div class="cfhead"><span>type</span><span>configuration</span>' +
             '<span>what it supplies</span><span>where that data lives</span></div>' +
             '<div class="configs">' + CONFIG_TYPES.map(configRow).join('') + '</div>' +
+            conventionsCard() +
             '<div class="notice" style="margin-top:12px">' + esc(NO_CONFIG_SCREEN) +
-            ' In this static page the one link points at the application route and does not resolve ' +
-            'from file://; it is drawn because the route is real.</div>' +
+            ' The conventions link opens the shared prototype, which stands in for ' +
+            '<span class="mono">PATHS.conventions</span>; the other four rows stay stated as ' +
+            'missing.</div>' +
             '<div class="notice" style="margin-top:8px"><b>' + esc(CONFIGURATION.name) + '</b> ' +
             '<span class="mono">' + esc(CONFIGURATION.id) + '</span> carries the analytics, and four ' +
             'definitions bind it: this one, ' + esc(SHARED_WITH.join(', ')) + '. ' + esc(SHARED) +

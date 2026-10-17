@@ -398,8 +398,7 @@ TEST_CASE("equity_option_position_roundtrip_rebuilds_the_entries", tags) {
     const auto r = load_position_as_top_level("Hybrid_GenericTRS_with_EquityOptionPosition.xml");
     const auto& inst = std::get<ores::trading::domain::equity_position_instrument>(r.instrument);
 
-    const auto rt = equity_instrument_mapper::reverse_equity_option_position(
-        inst, r.underlyings);
+    const auto rt = equity_instrument_mapper::reverse_equity_option_position(inst, r.underlyings);
 
     CHECK(rt.TradeType == ores::ore::domain::oreTradeType::EquityOptionPosition);
     REQUIRE(rt.EquityOptionPositionData);

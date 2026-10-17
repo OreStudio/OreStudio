@@ -91,6 +91,16 @@ struct equity_basket_constituent final {
     std::string underlying_name;
 
     /**
+     * @brief The member's weight in the basket, when the document states one.
+     *
+     * A weight is a continuous quantity and not money, so it is a binary float, as the position
+     * underlying's weight is. The column is nullable because a basket that names its members
+     * without weighting them is a valid basket, and an absent weight must stay null rather than
+     * become a zero the document never wrote.
+     */
+    std::optional<double> weight;
+
+    /**
      * @brief Username of the person who last modified this equity basket constituent.
      */
     std::string modified_by;

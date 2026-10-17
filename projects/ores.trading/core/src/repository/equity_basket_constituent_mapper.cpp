@@ -51,6 +51,7 @@ equity_basket_constituent_mapper::map(const equity_basket_constituent_entity& v)
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.underlying_name = v.underlying_name;
+    r.weight = v.weight;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -72,6 +73,7 @@ equity_basket_constituent_mapper::map(const domain::equity_basket_constituent& v
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);
     r.underlying_name = v.underlying_name;
+    r.weight = v.weight;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

@@ -28,11 +28,11 @@ The 17 routed codes are *not* re-pointed here. The catalogue's =instrument= colu
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
-| Now          | Scope corrected against the atomised-entity rule; implementation not started. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Fix the E6 routing disagreement.       |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

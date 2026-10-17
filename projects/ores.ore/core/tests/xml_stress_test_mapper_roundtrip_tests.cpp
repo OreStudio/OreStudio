@@ -71,8 +71,8 @@ ores::ore::domain::stresstesting load(const std::filesystem::path& path) {
 template <typename Container, typename Entry>
 ores::ore::domain::stresstesting
 one_entry_document(const Entry& entry,
-                   xsd::optional<Container> ores::ore::domain::stresstest::*container_member,
-                   xsd::vector<Entry> Container::*vector_member) {
+                   xsd::optional<Container> ores::ore::domain::stresstest::* container_member,
+                   xsd::vector<Entry> Container::* vector_member) {
     ores::ore::domain::stresstesting document;
     ores::ore::domain::stresstest scenario;
     scenario.id = "one";
@@ -89,14 +89,14 @@ one_entry_document(const Entry& entry,
  */
 template <typename Container, typename Entry>
 std::string entry_text(const Entry& entry,
-                       xsd::optional<Container> ores::ore::domain::stresstest::*container_member,
-                       xsd::vector<Entry> Container::*vector_member) {
+                       xsd::optional<Container> ores::ore::domain::stresstest::* container_member,
+                       xsd::vector<Entry> Container::* vector_member) {
     return ores::ore::domain::save_data(one_entry_document(entry, container_member, vector_member));
 }
 
 template <typename Container, typename Entry>
 const xsd::vector<Entry>& entries_of(const xsd::optional<Container>& container,
-                                     xsd::vector<Entry> Container::*vector_member) {
+                                     xsd::vector<Entry> Container::* vector_member) {
     static const Container empty{};
     if (!container)
         return empty.*vector_member;
@@ -110,8 +110,8 @@ const xsd::vector<Entry>& entries_of(const xsd::optional<Container>& container,
  */
 template <typename Container, typename Entry>
 Entry reverse_one_entry(const Entry& entry,
-                        xsd::optional<Container> ores::ore::domain::stresstest::*container_member,
-                        xsd::vector<Entry> Container::*vector_member) {
+                        xsd::optional<Container> ores::ore::domain::stresstest::* container_member,
+                        xsd::vector<Entry> Container::* vector_member) {
     const auto document = one_entry_document(entry, container_member, vector_member);
     const auto mapped = ores::ore::domain::stress_test_mapper::map(document);
     REQUIRE(mapped.scenarios.size() == 1);
@@ -141,8 +141,8 @@ void check_family(const std::string& path,
                   const std::vector<ores::analytics::domain::stress_test_shift>& rows,
                   const xsd::optional<Container>& original,
                   const xsd::optional<Container>& rebuilt,
-                  xsd::optional<Container> ores::ore::domain::stresstest::*container_member,
-                  xsd::vector<Entry> Container::*vector_member) {
+                  xsd::optional<Container> ores::ore::domain::stresstest::* container_member,
+                  xsd::vector<Entry> Container::* vector_member) {
     const auto& original_entries = entries_of(original, vector_member);
     const auto& rebuilt_entries = entries_of(rebuilt, vector_member);
 

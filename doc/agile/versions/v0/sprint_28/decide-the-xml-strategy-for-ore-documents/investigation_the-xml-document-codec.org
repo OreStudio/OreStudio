@@ -483,6 +483,69 @@ our model and bounded by ORE's on the far side. That is a property of ORE's
 schema, not a defect in the codec, and it is the second reason the table
 carries our classification instead of the schema's.
 
+* The document layer, built
+
+The first unit is in the product tree and measured. It is the layer that
+replaces the generated DOM, and it is deliberately schema-free.
+
+The pieces are =ores.ore.core/xml/scanner=, a zero-copy pull reader of about
+500 lines, and =ores.ore.core/xml/document=, which holds one document as an
+ordered tape of elements, attributes and text. A token is offsets into the
+document's own buffer, so it is twenty bytes and building one copies no text.
+
+Two properties of the tape matter.
+
+- *It keeps the document's order.* Order is what made the original valid, so
+  the writer needs no schema to produce valid output: it walks the tape.
+- *It keeps nothing that carries no data.* Comments, processing
+  instructions, CDATA boundaries and the whitespace between elements are
+  gone. Whitespace that is the whole content of an element is kept, because
+  that is the element's value.
+
+**What it proves over the corpus**
+
+| Property | Result |
+|----------+--------|
+| Documents read | 1,623 of 1,623 |
+| Written back and compared equal | 1,623 of 1,623 |
+| Written documents validating against =input.xsd= | 1,623 of 1,623 |
+| Unit tests on the scanner and the document | 22 cases, 120 assertions |
+| Decimals in the corpus that read and write as the same value | all of them |
+
+The equality is data equality. Two documents compare equal when every
+element, attribute and non-formatting text matches exactly, including the
+digits of every number, and whitespace between elements is ignored.
+
+The numeric test walks every text leaf that claims to be a decimal, reads it
+with =ores::utility::decimal::decimal::from_string=, renders it back with
+=to_string()= and reads that again. The two values must be equal, and no
+corpus value may be refused. That is the format half of numeric accuracy: the
+canonical renderer the export path will use is exact over every value ORE
+ships.
+
+**What it does not prove**
+
+The tape never converts a number, so this layer cannot lose one. The other
+half of numeric accuracy, text to a domain value and back, belongs to the
+projection, and that is where the decimal classification of each field
+matters. It is not proven yet.
+
+**Two defects the corpus found that reading the schema could not**
+
+Both were silent data loss, and both were in the scanner rather than in the
+writer.
+
+- A text node lost its leading whitespace, because the scanner skipped
+  whitespace before deciding whether it was looking at markup. ORE's script
+  libraries put indented code in CDATA, and every one of them came back
+  shorter than it went in.
+- A comment opened as =<!-->= is an abrupt close that XML forbids and ORE
+  ships. The terminator search started inside the opener and ended the
+  comment on its own first line, so the rest of the line was read as markup.
+
+Neither would have been found by a test written from the schema. Both were
+found on the first corpus run.
+
 * Conclusions
 
 1. *The generated DOM is the wrong artefact for this seam.* Not only because
@@ -524,11 +587,15 @@ The recommendation is to adopt route C, in the order below, and to remove
 elements are in scope. The eleven with a mapper migrate; the nine without
 are new models built on the same codec afterwards.
 
-Twelve tasks. Each is a pull request that leaves the tree working.
+Thirteen tasks. Each is a pull request that leaves the tree working. Task 0
+has landed, so the sequence below starts from a codec that already reads and
+writes the whole corpus; what it cannot yet do is hand a document to a domain
+type.
 
 | # | Task | Size | Depends on |
 |---+------+------+------------|
-| 1 | [[id:FAC7E870-E2C5-46E2-A1BF-1F76BA43836F][Gate the scanner on the XML corpus]] | S | - |
+| 0 | [[id:1ADD3134-823B-45F4-B76B-B38AB47507AC][Build the faithful document layer]] | M | - |
+| 1 | [[id:FAC7E870-E2C5-46E2-A1BF-1F76BA43836F][Gate the scanner on the XML corpus]] | S | 0 |
 | 2 | [[id:7681078A-B911-4853-BB25-5F2607E87943][Generalise the codec for nested and repeated types]] | L | - |
 | 3 | [[id:2E83CCFB-025F-44F0-B97B-F377CC712BBE][Generate tables for every document family]] | L | 2 |
 | 4 | [[id:48AAB8BF-79FF-4461-B264-1C848C9EAD5C][Write the exporter from the same tables]] | M | 3 |

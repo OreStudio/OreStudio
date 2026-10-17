@@ -17,7 +17,7 @@ it by row key rather than by party: such a model declares
 ``#+convention_write: by_id``. The mode is ``party`` by default, ``world`` when
 the table has no ``party_id`` column, and ``by_id`` when declared.
 
-Two artefacts are rendered from the registry: a C++ header that states every
+Three artefacts are rendered from the registry: a C++ header that states every
 family and its write mode, and an include fragment that carries one write call
 per family. The conventions service includes the fragment inside the anonymous
 namespace that defines its row helpers, so the hand-written call per family
@@ -263,6 +263,14 @@ def render_header(entries: list[FamilyEntry]) -> str:
     return _LICENSE + "\n" + _PREAMBLE + rows + _EPILOGUE
 
 
+_INCLUDES_PREAMBLE = """\
+// AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+// Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
+// One repository per family the apply fragment calls. Include this outside the
+// namespace that compiles the fragment.
+"""
+
+
 _FRAGMENT_PREAMBLE = """\
 // AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
 // Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
@@ -434,17 +442,11 @@ def render_includes(entries: list[FamilyEntry]) -> str:
     outside the namespace, which is why they travel as their own fragment
     rather than being prepended to the code one.
     """
-    headers = sorted({f'{entry.entity}_repository' for entry in entries})
-    lines = [
-        "// AUTO-GENERATED FILE - DO NOT EDIT MANUALLY",
-        "// Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py",
-        "// One repository per family the apply fragment calls.",
-        "",
-    ]
-    lines.extend(
+    headers = sorted({_repository(entry).removesuffix("()") for entry in entries})
+    includes = "\n".join(
         f'#include "ores.refdata.core/repository/{header}.hpp"' for header in headers
     )
-    return "\n".join(lines) + "\n"
+    return _LICENSE + "\n" + _INCLUDES_PREAMBLE + "\n\n" + includes + "\n"
 
 
 def parse_header(text: str) -> list[FamilyEntry]:

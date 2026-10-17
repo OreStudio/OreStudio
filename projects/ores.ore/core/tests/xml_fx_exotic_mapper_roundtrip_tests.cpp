@@ -25,6 +25,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 /**
  * @file xml_fx_exotic_mapper_roundtrip_tests.cpp
@@ -261,6 +262,17 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[0].Leverage == 2.0f);
     CHECK((*rt.FxAccumulatorData->RangeBounds.RangeBound[1].RangeFrom) == 122.0f);
     CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[1].Leverage == 1.0f);
+
+    // The document states no strike and no start date on either entry, and an
+    // absent level is a null column rather than a zero.
+    CHECK_FALSE(r.range_bounds[0].strike.has_value());
+    CHECK_FALSE(r.range_bounds[0].strike_adjustment.has_value());
+    CHECK_FALSE(r.range_bounds[0].start_date.has_value());
+
+    // The schema requires at least one entry, so an accumulator without one is
+    // refused rather than written as a document that cannot be read back.
+    CHECK_THROWS_WITH(fx_instrument_mapper::reverse_fx_accumulator(instr, {}),
+                      Catch::Matchers::ContainsSubstring("holds no range bound"));
 
     BOOST_LOG_SEV(lg, info) << "FxAccumulator roundtrip passed. Amount: " << instr.fixing_amount;
 }

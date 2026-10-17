@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: BB5C313D-437B-43B8-B80C-4C811783A172
+:END:
+#+title: Provisioning produces duplicate temporal account rows: the s…
+#+description: Provisioning produces duplicate temporal account rows: the same id and version twice, observed after a full ACME tenant provisioning run. Login still resolves the active row, so it is invisible today, but a duplicated bitemporal row is the class of defect the versioning work exists to prevent, and it stays invisible until it is not. The suspicion is a publish and version race: the DQ publish and the account write path both stating a version for the same row. Reproduce it on a recreated database by provisioning a tenant, then inspect the account tables for rows sharing id and version. Found while atomising the tenor basis swap convention, in the same run that proved stream provisioning already worked. Needs its own story: it is a correctness defect in the publish and version path, not part of any current workstream.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

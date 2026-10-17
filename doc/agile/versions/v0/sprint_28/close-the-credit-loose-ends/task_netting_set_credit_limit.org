@@ -40,7 +40,12 @@ set to its agreement.
 
 * Acceptance
 
--
+- A =credit_limit= entity exists in =ores.refdata=, carrying a code, a party, a counterparty, the limit amount and a description, and it is bound to the same variability profile as its sibling reference entities.
+- A netting set names a nullable =credit_limit_id=. When it states one, the set's party and counterparty are the limit's, and a pinned key enforces that on write.
+- The import refuses a netting set whose credit limit names a different party or counterparty, and accepts one that agrees.
+- A netting set that states no limit still imports and stores, because the column is nullable and ORE documents name none.
+- The generated SQL, TypeScript carriers and records, and the shell commands come from the model by regeneration, not by hand.
+- The local gate passes on =linux-clang-release-ninja=.
 
 * Plan
 
@@ -88,6 +93,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The credit limit is now part of a netting set's identity, so netting can be
+restricted to the trades that sit within one limit.
+
+- =credit_limit= is a new =ores.refdata= entity with a code, a party, a counterparty, a limit amount and a description. It is bound to the =uuid-identified-lookup= profile, as its siblings are.
+- =netting_set= carries a nullable =credit_limit_id=, a check that states the limit's parties are the set's, and a second pinned key that holds the set's party and counterparty to the limit's on write.
+- The generated SQL, TypeScript, repositories, services, event registrars and shell commands come from the model. Regenerating the component reports no drift, so the checked-in tree is exactly what the models produce.
+- The old branch's generated output was discarded rather than merged. The model changes alone were re-applied to current trunk, which is why this lands as one commit instead of a several-hundred-commit replay.
+
+Evidence is recorded in the PR.
+
 
 * Promoted from capture
 

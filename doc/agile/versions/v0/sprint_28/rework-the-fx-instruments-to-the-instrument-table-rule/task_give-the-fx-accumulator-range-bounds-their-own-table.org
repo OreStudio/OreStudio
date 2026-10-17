@@ -8,11 +8,11 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/give-the-fx-accumulator-range-bounds-their-own-table
-#+pr:
+#+pr: 3458
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
-#+updated: 2026-10-16
+#+updated: 2026-10-17
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,10 +31,10 @@ rows, and the Regime 3 check forbids an encoded string field.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Scoped. The carrier comes first, and it is its own unit. |
-| Waiting on   | [[id:5AF8B394-A97C-4056-89DB-83256E12619C][Give the FX family typed arrays, not a variant]]. |
-| Next         | After the carrier lands, add the child array. |
-| Last touched | 2026-10-16                               |
+| Now          | Scoped and unblocked. The carrier landed as [[https://github.com/OreStudio/OreStudio/pull/3410][#3410]], so a child array has a place on it. |
+| Waiting on   | Nothing. |
+| Next         | Add the child model, its table and its array on the carrier, then delete =range_bounds_json=. |
+| Last touched | 2026-10-17                               |
 
 * Acceptance
 
@@ -102,7 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3458][#3458]] | [agile] Record where the FX rework stands |
 
 * Review
 

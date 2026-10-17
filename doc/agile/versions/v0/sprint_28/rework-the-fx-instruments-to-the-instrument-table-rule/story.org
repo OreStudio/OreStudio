@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :instruments-fx:sprint_28:v0:
 #+created: 2026-10-02
-#+updated: 2026-10-16
+#+updated: 2026-10-17
 #+environment: solid_dirac
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,10 +23,10 @@ Rework forwards, swaps, vanilla, barrier, digital, Asian, accumulator and varian
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The family is reviewed. Seven units are staged; none is started. |
+| Now           | Three of the nine units are done: the money digits, the barrier levels and the typed-array carrier, which merged as [[https://github.com/OreStudio/OreStudio/pull/3410][#3410]]. The range bounds unit is in flight. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the first unit: carry the FX money digits. |
-| Last touched  | 2026-10-16                               |
+| Next          | Finish the range bounds unit, then agree the continuous columns with their domain types. |
+| Last touched  | 2026-10-17                               |
 
 * Acceptance
 

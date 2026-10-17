@@ -1,0 +1,190 @@
+:PROPERTIES:
+:ID: 76380ca6-9a39-4df3-b4d3-aabe132e1a2b
+:END:
+#+title: See a report's results by counterparty prototype
+#+description: Three structural readings of one run's results by counterparty: a ranked list, a group tree, and a proportional map, with the two cases a screen must not drop drawn as stated cases.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item      | Where |
+|-----------+-------|
+| Prototype | [[file:see-a-reports-results-by-counterparty/][the prototype]] |
+| Journey   | [[file:../../knowledge/journeys/reporting/journey_see_a_reports_results_by_counterparty.org][See a report's results by counterparty]] |
+| Group     | [[file:index.org][Reporting prototypes]] |
+
+* Summary
+
+This prototype argues how one run's results read by counterparty, rather than
+by book. It carries three structural variants switched with =?variant=, and it
+answers to
+[[file:../../knowledge/journeys/reporting/journey_see_a_reports_results_by_counterparty.org][See a report's results by counterparty]].
+
+Every figure on the page is a fixture, and the panel that draws it says so. The
+two facts that make it a fixture are on the page: no operation returns results
+grouped by counterparty and nothing parses the run's archive, and =npv.csv=
+names the counterparty as a name rather than identifying it by id.
+
+One control sits beside the variants: the report's analytics, either =npv,
+saccr= or =npv= alone. A run that does not run =saccr= has no exposure, so the
+exposure column and every exposure figure go away rather than reading as zero.
+The page opens on =npv, saccr=, because that is the report this journey is
+mostly read on.
+
+Two cases are drawn as stated cases whose whole point is that they are not
+dropped: a counterparty the party can see with no result in the run, and the
+trades that carry no =counterparty_id= because their =counterparty_scope= is
+=intra_entity=.
+
+* Detail
+
+** The question
+
+A run's results are one table of trades. Read by book, that table answers
+whether a book is in line. Read by counterparty it answers a different question:
+*who does this run face, how much of it is each name, and which name carries the
+concentration?* That question is asked by a credit or market-risk reader before
+sign-off and by a desk asking what one name contributed. The three variants
+disagree about which instrument answers it.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Ranked list | The answer is an ordered table: one row per counterparty, largest first, a group row above its members, and the totals at the foot. The reader scans the top and has the answer. |
+| =B= | Tree | The answer is a hierarchy: counterparties grouped by their parent, each node carrying its rolled-up aggregate, expanding to its members. A group total and its parts are visible at once, which is the fact a flat list hides. |
+| =C= | Map | The answer is concentration: a bar of the run whose segments are as wide as each counterparty's share of NPV, with the selected counterparty read beside it. The eye answers "how concentrated" before any number is read. |
+
+=A= is the densest of the three: seven columns, every figure legible, and a
+group row that cannot be mistaken for a member because the member rows are
+indented under it. =B= gives up the flat ranking to make the nesting the
+subject: the same aggregates, but arranged so that a group's figure can be
+checked against the members beneath it. =C= gives up the table: a segment under
+two percent wide cannot carry a name, so the bar carries width and the legend
+beneath it carries the code, the full name, the aggregate NPV, the notional, the
+trade count, the exposure and the share. The variant is an argument about what a
+reader looks at first, not about what the page knows.
+
+** A group and its members
+
+A counterparty nests through =parent_counterparty_id= on
+=ores_refdata_counterparties_tbl=, so a banking group and its legal entities are
+both real records. Credit reads the group; the desk reads the entity it faces.
+The page therefore keeps both, and the group's figure is arithmetic rather than
+a stored field: it is the sum of its members plus the trades booked to the group
+itself, recomputed every time the page draws. A parent that disagrees with its
+children cannot appear.
+
+The fixture has two groups and they are deliberately different.
+=ACME FINANCIAL GROUP= owns no trades and holds =ACME BANK PLC= and
+=ACME BANK INTERNATIONAL=, so its figure is exactly its two members.
+=MERIDIAN CAPITAL GROUP= holds =MERIDIAN CAPITAL= and
+=MERIDIAN CAPITAL UK= *and* carries trades of its own, so its figure is larger
+than its two members together. A reader who checks one against the other learns
+how the roll-up works.
+
+Each member is ranked where it sits, and the group is ranked by the aggregate
+that includes its members, which is why the group sits above =ACME BANK PLC=
+even though the member is the largest single name on the page.
+
+** The two stated cases
+
+=BLUE RIVER PENSION= is a counterparty the party can see through
+=refdata.v1.party_counterparties.list_by_party_id= and this run produced nothing
+for. It is drawn as a row or a node or a legend line with a trade count of zero
+and dashes where the figures would be, and the page says it is not a measure of
+zero. A zero trade count is a fact about the run; a zero NPV would be a figure
+the run never produced.
+
+The trades whose =counterparty_scope= is =intra_entity= are the second case.
+=ores_trading_trades_tbl= allows =counterparty_id= to be null only under that
+scope, so the run can hold trades that no name claims. They are drawn under a
+heading of their own, with their notional, their NPV, their trade count and
+their netting sets, and they are selectable like any counterparty. The page says
+what they do to the totals: the counterparty rows add up to less than the run,
+and the amber segment, row or node is that difference. Dropping them would make
+every total reconcile against nothing.
+
+** The trade, its netting sets and its errors
+
+Selecting a counterparty, a group or the unassigned trades opens the panel
+beside or below the list. It states the four aggregate figures, then the trades
+the aggregate is made of, one row each, with the netting set from the trade's
+booking and the error the run recorded against that trade where it recorded
+one. A group's panel adds its members' trades, labelled with the member code, and
+says in words how the group's figure was summed.
+
+The page draws five of 2,318 trades for =ACME BANK PLC= and says so, because the
+aggregate is a population figure and the row list is a sample of it. The errors
+are drawn for the trades shown, and the panel states how many errors the run
+records in all and how many of those are recorded against the analysis and name
+no trade. That last count is the honest limit of this whole screen: the error
+scopes are =Trade=, =Analytics=, =Curve=, =Configuration= and =Report=, and none
+of them is a counterparty, so an error recorded against the analytic alone
+cannot be attributed to a name and the page refuses to divide it across them.
+
+** What is fake
+
+Everything. The counterparties, their short codes and full names, the parents,
+the trades, the netting sets, the errors, the population counts and every
+aggregate are drawn from the file. Nothing reads a server, and there is no
+backend to read: no BFF route serves reporting.
+
+The figures are chosen so that the arithmetic holds. The four figures an
+aggregate has are each a sum of the same population, so the ranked list, the
+tree and the legend all agree with each other and with the totals row. The
+totals are =59,753,609= USD of NPV over =6,848= trades, of which =412= trades
+carrying =1,205,000= USD name no counterparty. The counterparty rows therefore
+sum to =58,548,609= USD, not to the run.
+
+The names follow the seed's own shape: party =ACMCOR=, and counterparties in the
+style the fixtures already use, such as =ACME BANK PLC=, =NORTHGATE CLEARING=,
+=MERIDIAN CAPITAL=, =HANSA PFANDBRIEF=, =PACIFIC TRUST= and
+=KESTREL ASSURANCE=. The trade types are ORE's own, and the netting set codes
+are the kind a party writes.
+
+The exposure figures are the output of the =saccr= analytic, and they exist only
+while the control says =npv, saccr=. That is not a display toggle: a run whose
+configuration does not name =saccr= produced no exposure, and the page draws the
+absence rather than a column of zeros.
+
+** Where the code lives
+
+=doc/prototypes/reporting/see-a-reports-results-by-counterparty/=. Three files,
+plain HTML, CSS and JavaScript, no framework and no build step. The page opens
+from =file://= with no server and no session. =?variant=A|B|C= chooses the
+structure, =?analytics=npv= drops the exposure, and =?counterparty=<code>=
+selects a name on load.
+
+** The verdict
+
+No verdict yet. This page is on the branch that proposes it and has not been
+taken up. It has no Gemini review.
+
+The reading of the three: =A= is the one a credit reader can work from today,
+because a ranked list is scanable and its totals are in one place. =B= is what
+makes the group structure arguable at all, and it is the variant that would be
+hardest to give up if the group roll-up turns out to be the reason for the
+screen. =C= is the one that answers the question a limit conversation actually
+starts with, and it is the only variant that shows the unassigned population as
+a share of the run rather than as a line at the bottom.
+
+** What it does not settle
+
+Whether the counterparty view is a reading of the result on the same screen as
+the book view, as the journey proposes, or a screen of its own. Whether a reader
+wants both readings at once, side by side, or one at a time with a switch. And
+the real question behind all three variants: whether the result store that would
+parse the archive groups by counterparty itself, or whether every client joins
+trades to counterparties for itself. The page cannot answer that, because no
+such read exists to judge.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the seven journeys these answer to.
+- [[file:read-what-a-run-produced.org][Read what a run produced]] — the same run read by book, and the note this one follows.

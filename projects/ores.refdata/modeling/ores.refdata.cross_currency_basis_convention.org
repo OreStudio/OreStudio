@@ -11,6 +11,7 @@
 #+entity_singular: cross_currency_basis_convention
 #+entity_plural: cross_currency_basis_conventions
 #+entity_title: Cross-Currency Basis Convention
+#+convention_family: cross_currency_basis
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

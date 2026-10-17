@@ -11,6 +11,7 @@
 #+entity_singular: ois_convention
 #+entity_plural: ois_conventions
 #+entity_title: OIS Convention
+#+convention_family: ois
 #+created: 2026-06-01
 #+updated: 2026-06-01
 

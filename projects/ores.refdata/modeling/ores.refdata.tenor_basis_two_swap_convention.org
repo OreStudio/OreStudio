@@ -11,6 +11,7 @@
 #+entity_singular: tenor_basis_two_swap_convention
 #+entity_plural: tenor_basis_two_swap_conventions
 #+entity_title: Two-Tenor Basis Swap Convention
+#+convention_family: tenor_basis_two_swap
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

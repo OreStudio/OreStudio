@@ -11,6 +11,7 @@
 #+entity_singular: cms_spread_option_convention
 #+entity_plural: cms_spread_option_conventions
 #+entity_title: CMS Spread Option Convention
+#+convention_family: cms_spread_option
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

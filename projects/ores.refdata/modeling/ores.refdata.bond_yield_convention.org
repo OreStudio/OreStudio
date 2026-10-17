@@ -11,6 +11,7 @@
 #+entity_singular: bond_yield_convention
 #+entity_plural: bond_yield_conventions
 #+entity_title: Bond Yield Convention
+#+convention_family: bond_yield
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

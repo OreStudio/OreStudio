@@ -11,6 +11,7 @@
 #+entity_singular: tenor_basis_swap_long_short
 #+entity_plural: tenor_basis_swap_long_shorts
 #+entity_title: Tenor Basis Swap Long Short
+#+convention_family: tenor_basis_swap_long_short
 #+brief: The long and short leg form of a tenor basis swap convention.
 #+created: 2026-10-14
 #+updated: 2026-10-14

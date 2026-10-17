@@ -11,6 +11,7 @@
 #+entity_singular: swap_index_convention
 #+entity_plural: swap_index_conventions
 #+entity_title: Swap Index Convention
+#+convention_family: swap_index
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

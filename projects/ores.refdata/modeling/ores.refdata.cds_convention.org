@@ -11,6 +11,7 @@
 #+entity_singular: cds_convention
 #+entity_plural: cds_conventions
 #+entity_title: CDS Convention
+#+convention_family: cds
 #+created: 2026-06-01
 #+updated: 2026-06-01
 

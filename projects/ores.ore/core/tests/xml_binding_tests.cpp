@@ -20,6 +20,7 @@
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
+#include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
@@ -38,6 +39,8 @@ using ores::ore::xml::generated::calendar_adjustments_document;
 using ores::ore::xml::generated::calendaradjustment;
 using ores::ore::xml::generated::currency_config;
 using ores::ore::xml::generated::currency_config_document;
+using ores::ore::xml::generated::ibor_fallback_config;
+using ores::ore::xml::generated::ibor_fallback_config_document;
 
 // The calendar family's records and tables are generated from the schema by
 // projects/ores.ore/scripts/regenerate_xml_bindings.sh, and the generated names
@@ -297,4 +300,60 @@ TEST_CASE("every_currency_config_in_the_corpus_binds", tags) {
     CHECK(files > 0);
     CHECK(report.empty());
     CHECK(currencies > 1000);
+}
+
+TEST_CASE("a_generated_money_field_keeps_the_documents_digits", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Spread is xs:float in the schema and money in our model. The document
+    // writes -0.00055099999999999995, which no double holds exactly, so a
+    // binding that read it as a float would lose the value. It is a decimal
+    // here and the digits survive.
+    const std::string text =
+        "<IborFallbackConfig><Fallbacks><Fallback>"
+        "<IborIndex>CHF-LIBOR-SN</IborIndex><RfrIndex>CHF-SARON</RfrIndex>"
+        "<Spread>-0.00055099999999999995</Spread><SwitchDate>2022-01-01</SwitchDate>"
+        "</Fallback></Fallbacks></IborFallbackConfig>";
+
+    ibor_fallback_config record;
+    bind_error error;
+    const bool bound = binder::bind(ibor_fallback_config_document(), text, &record, error);
+
+    INFO(error.message);
+    REQUIRE(bound);
+    REQUIRE(record.fallbacks.fallback.size() == 1);
+    CHECK(record.fallbacks.fallback[0].ibor_index == "CHF-LIBOR-SN");
+    CHECK(record.fallbacks.fallback[0].switch_date == "2022-01-01");
+    CHECK(record.fallbacks.fallback[0].spread.to_string() == "-0.00055099999999999995");
+}
+
+TEST_CASE("every_ibor_fallback_document_in_the_corpus_binds", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
+    REQUIRE(fs::is_directory(root));
+
+    std::size_t files = 0;
+    std::size_t fallbacks = 0;
+    std::string report;
+
+    for (const auto& entry : fs::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().filename() != "ibor_fallback.xml")
+            continue;
+        ++files;
+        ibor_fallback_config record;
+        bind_error error;
+        if (!binder::bind(
+                ibor_fallback_config_document(), read_file(entry.path()), &record, error)) {
+            report += entry.path().string() + ": " + error.message + "\n";
+            continue;
+        }
+        fallbacks += record.fallbacks.fallback.size();
+    }
+
+    INFO("files: " << files << ", fallbacks: " << fallbacks);
+    INFO(report);
+    CHECK(files > 0);
+    CHECK(report.empty());
+    CHECK(fallbacks > 10);
 }

@@ -35,6 +35,19 @@ generate \
     --header "$header/calendar_adjustments.hpp" \
     --source "$source/calendar_adjustments.cpp"
 
+# Spread is xs:float in the schema and money in our model, which is the same
+# shape as the bond review's defect and the reason the money list exists.
+generate \
+    --schema "$xsd/iborfallbackconfig.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element IborFallbackConfig \
+    --root-type IborFallbackConfig \
+    --accessor ibor_fallback_config_document \
+    --include "ores.ore.core/xml/generated/ibor_fallback_config.hpp" \
+    --header "$header/ibor_fallback_config.hpp" \
+    --source "$source/ibor_fallback_config.cpp" \
+    --money Spread
+
 generate \
     --schema "$xsd/currencyconfig.xsd" \
     --schema "$xsd/ore_types.xsd" \

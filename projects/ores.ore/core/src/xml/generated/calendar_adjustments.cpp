@@ -36,18 +36,18 @@ auto append_to(void* container, void** slot) -> void {
 
 
 const field dates_fields[] = {
-    {"Date", 995259257u, field_kind::repeated_leaf, offsetof(dates, date), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"Date", 995259257u, field_kind::repeated_leaf, std::uint16_t(offsetof(dates, date)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
 };
 const record_type dates_type{"Dates", dates_fields, 1};
 const field newcalendar_fields[] = {
-    {"name", 2369371622u, field_kind::text, offsetof(newcalendar, name), 0, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"BaseCalendar", 2105168270u, field_kind::text, offsetof(newcalendar, base_calendar), 1, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"AdditionalHolidays", 1462025913u, field_kind::nested, offsetof(newcalendar, additional_holidays), 2, false, false, nullptr, &dates_type, scalar_kind::text, nullptr},
-    {"AdditionalBusinessDays", 541531981u, field_kind::nested, offsetof(newcalendar, additional_business_days), 3, false, false, nullptr, &dates_type, scalar_kind::text, nullptr},
+    {"name", 2369371622u, field_kind::text, std::uint16_t(offsetof(newcalendar, name)), 0, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"BaseCalendar", 2105168270u, field_kind::text, std::uint16_t(offsetof(newcalendar, base_calendar)), 1, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"AdditionalHolidays", 1462025913u, field_kind::nested, std::uint16_t(offsetof(newcalendar, additional_holidays)), 2, false, false, nullptr, &dates_type, scalar_kind::text, nullptr},
+    {"AdditionalBusinessDays", 541531981u, field_kind::nested, std::uint16_t(offsetof(newcalendar, additional_business_days)), 3, false, false, nullptr, &dates_type, scalar_kind::text, nullptr},
 };
 const record_type newcalendar_type{"newcalendar", newcalendar_fields, 4};
 const field calendaradjustment_fields[] = {
-    {"Calendar", 2656199999u, field_kind::repeated_nested, offsetof(calendaradjustment, calendar), 0, false, false, nullptr, &newcalendar_type, scalar_kind::text, &append_to<newcalendar>},
+    {"Calendar", 2656199999u, field_kind::repeated_nested, std::uint16_t(offsetof(calendaradjustment, calendar)), 0, false, false, nullptr, &newcalendar_type, scalar_kind::text, &append_to<newcalendar>},
 };
 const record_type calendaradjustment_type{"calendaradjustment", calendaradjustment_fields, 1};
 

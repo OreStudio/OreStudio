@@ -113,6 +113,13 @@ class Schema:
                         self.enumerations[name] = values
                 elif local(node.tag) == "element" and name:
                     self.elements.setdefault(name, node)
+                    # An inline complexType is named after the element that
+                    # carries it, which is the only name the schema gives it.
+                    inline = [
+                        child for child in node if local(child.tag) == "complexType"
+                    ]
+                    if inline:
+                        self.complex_types.setdefault(name, inline[0])
 
 
 def children_of(complex_type):
@@ -181,15 +188,22 @@ def field_shape(schema, element):
     if declared is not None:
         return "nested", declared
     # An inline complexType, which is what <xs:element name="X"><xs:complexType>
-    # produces. The generator names it after the element.
-    return "nested", element.get("name")
+    # produces. The generator registered it under the element's name.
+    if any(local(child.tag) == "complexType" for child in element):
+        return "nested", element.get("name")
+    raise SystemExit(f"element {element.get('name')} has neither a type nor a complexType")
 
 
 def collect(schema, type_name, seen):
-    """Type names reachable from `type_name`, deepest last."""
+    """Type names reachable from `type_name`, in the order the schema reaches them.
+
+    An ordered mapping rather than a set: the emission must be byte-identical
+    on every run, and a set of strings iterates in an order that changes with
+    the interpreter's hash seed.
+    """
     if type_name in seen:
         return seen
-    seen.add(type_name)
+    seen[type_name] = None
     complex_type = schema.complex_types.get(type_name)
     if complex_type is None:
         return seen
@@ -202,7 +216,7 @@ def collect(schema, type_name, seen):
 
 
 def order_types(schema, root_type):
-    seen = collect(schema, root_type, set())
+    seen = collect(schema, root_type, dict())
     ordered, done = [], set()
 
     def visit(name, stack):
@@ -284,7 +298,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             required = attribute.get("use") == "required"
             rows.append(
                 f'    {{"{name}", {hash_name(name)}u, field_kind::text, '
-                f"offsetof({snake(type_name)}, {snake(name)}), {bit}, true, "
+                f"std::uint16_t(offsetof({snake(type_name)}, {snake(name)})), {bit}, true, "
                 f"{'true' if required else 'false'}, nullptr, nullptr, "
                 f"scalar_kind::text, nullptr}},"
             )
@@ -300,7 +314,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 append = f"&append_to<{nested}>" if repeated else "nullptr"
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{field_kind}, '
-                    f"offsetof({snake(type_name)}, {member}), {bit}, false, "
+                    f"std::uint16_t(offsetof({snake(type_name)}, {member})), {bit}, false, "
                     f"{'true' if required else 'false'}, nullptr, "
                     f"&{nested}_type, scalar_kind::text, {append}}},"
                 )
@@ -312,13 +326,14 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 )
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{kind}, '
-                    f"offsetof({snake(type_name)}, {member}), {bit}, false, "
+                    f"std::uint16_t(offsetof({snake(type_name)}, {member})), {bit}, false, "
                     f"{'true' if required else 'false'}, {tokens}, nullptr, {scalar}, nullptr}},"
                 )
             bit += 1
         if is_residual(complex_type):
             rows.append(
-                f'    {{"", 0u, field_kind::residual, offsetof({snake(type_name)}, extras), '
+                f'    {{"", 0u, field_kind::residual, '
+                f"std::uint16_t(offsetof({snake(type_name)}, extras)), "
                 f"{bit}, false, false, nullptr, nullptr, scalar_kind::text, nullptr}},"
             )
             bit += 1
@@ -330,10 +345,12 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         )
 
     spellings = []
+    emitted = set()
     for type_name in ordered:
         for element in children_of(schema.complex_types[type_name])[0]:
             declared = element.get("type")
-            if declared in schema.enumerations:
+            if declared in schema.enumerations and declared not in emitted:
+                emitted.add(declared)
                 values = ", ".join(f'"{v}"' for v in schema.enumerations[declared])
                 spellings.append(
                     f"const char* {snake(declared)}_spellings[] = {{{values}, nullptr}};"
@@ -343,6 +360,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
 #define {header_name.upper()}_HPP
 
 #include "ores.ore.core/xml/binding.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 
 #include <cstdint>
 #include <string>

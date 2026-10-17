@@ -110,9 +110,21 @@ differently on purpose: an =xs:all= rather than a sequence, an enumeration, and
 a repeated child two levels up. It binds the thirteen currency documents in the
 corpus, over a thousand currencies in all.
 
+A third family, =IborFallbackConfig=, is generated for the shapes the first two
+do not have: an inline complexType at the root, and a money field the schema
+types as =xs:float=. That element, =Spread=, is passed to the generator as
+money, and the corpus document writes =-0.00055099999999999995=, which no double
+holds. It arrives as a decimal with every digit intact.
+
 The drift check is =build/scripts/check_xml_bindings_drift.py=. It regenerates
 into a temporary root and compares, so a hand edit to a generated file and a
 schema change the tables did not follow fail the same way.
+
+The drift check found a real defect in the generator the first time it ran
+against three families: emission order came from iterating a set of type names,
+and a set of strings iterates in an order that follows the interpreter's hash
+seed. Two runs with different seeds produced different files. Collection is now
+an ordered mapping, and the output is byte-identical across seeds.
 
 The corpus found one real defect in the engine. ORE writes =<Symbol></Symbol>=
 for a required element with no value, and the presence bit was set only when

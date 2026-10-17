@@ -22,6 +22,7 @@
 #define CURRENCY_CONFIG_HPP
 
 #include "ores.ore.core/xml/binding.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 
 #include <cstdint>
 #include <string>

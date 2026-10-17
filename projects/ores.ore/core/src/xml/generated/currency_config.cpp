@@ -36,20 +36,20 @@ auto append_to(void* container, void** slot) -> void {
 const char* rounding_type_spellings[] = {"Up", "Down", "Closest", "Floor", "Ceiling", nullptr};
 
 const field currency_definition_fields[] = {
-    {"Name", 266367750u, field_kind::text, offsetof(currency_definition, name), 0, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"ISOCode", 3549127699u, field_kind::text, offsetof(currency_definition, iso_code), 1, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"MinorUnitCodes", 4258656906u, field_kind::text, offsetof(currency_definition, minor_unit_codes), 2, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"NumericCode", 3380774765u, field_kind::integer, offsetof(currency_definition, numeric_code), 3, false, false, nullptr, nullptr, scalar_kind::integer, nullptr},
-    {"Symbol", 974151409u, field_kind::text, offsetof(currency_definition, symbol), 4, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"FractionSymbol", 3918943891u, field_kind::text, offsetof(currency_definition, fraction_symbol), 5, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"FractionsPerUnit", 3472621493u, field_kind::integer, offsetof(currency_definition, fractions_per_unit), 6, false, true, nullptr, nullptr, scalar_kind::integer, nullptr},
-    {"RoundingType", 2895186805u, field_kind::enumeration, offsetof(currency_definition, rounding_type), 7, false, true, rounding_type_spellings, nullptr, scalar_kind::text, nullptr},
-    {"RoundingPrecision", 1567587679u, field_kind::integer, offsetof(currency_definition, rounding_precision), 8, false, true, nullptr, nullptr, scalar_kind::integer, nullptr},
-    {"CurrencyType", 2861236102u, field_kind::text, offsetof(currency_definition, currency_type), 9, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"Name", 266367750u, field_kind::text, std::uint16_t(offsetof(currency_definition, name)), 0, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"ISOCode", 3549127699u, field_kind::text, std::uint16_t(offsetof(currency_definition, iso_code)), 1, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"MinorUnitCodes", 4258656906u, field_kind::text, std::uint16_t(offsetof(currency_definition, minor_unit_codes)), 2, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"NumericCode", 3380774765u, field_kind::integer, std::uint16_t(offsetof(currency_definition, numeric_code)), 3, false, false, nullptr, nullptr, scalar_kind::integer, nullptr},
+    {"Symbol", 974151409u, field_kind::text, std::uint16_t(offsetof(currency_definition, symbol)), 4, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"FractionSymbol", 3918943891u, field_kind::text, std::uint16_t(offsetof(currency_definition, fraction_symbol)), 5, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
+    {"FractionsPerUnit", 3472621493u, field_kind::integer, std::uint16_t(offsetof(currency_definition, fractions_per_unit)), 6, false, true, nullptr, nullptr, scalar_kind::integer, nullptr},
+    {"RoundingType", 2895186805u, field_kind::enumeration, std::uint16_t(offsetof(currency_definition, rounding_type)), 7, false, true, rounding_type_spellings, nullptr, scalar_kind::text, nullptr},
+    {"RoundingPrecision", 1567587679u, field_kind::integer, std::uint16_t(offsetof(currency_definition, rounding_precision)), 8, false, true, nullptr, nullptr, scalar_kind::integer, nullptr},
+    {"CurrencyType", 2861236102u, field_kind::text, std::uint16_t(offsetof(currency_definition, currency_type)), 9, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
 };
 const record_type currency_definition_type{"currencyDefinition", currency_definition_fields, 10};
 const field currency_config_fields[] = {
-    {"Currency", 342827606u, field_kind::repeated_nested, offsetof(currency_config, currency), 0, false, false, nullptr, &currency_definition_type, scalar_kind::text, &append_to<currency_definition>},
+    {"Currency", 342827606u, field_kind::repeated_nested, std::uint16_t(offsetof(currency_config, currency)), 0, false, false, nullptr, &currency_definition_type, scalar_kind::text, &append_to<currency_definition>},
 };
 const record_type currency_config_type{"currencyConfig", currency_config_fields, 1};
 

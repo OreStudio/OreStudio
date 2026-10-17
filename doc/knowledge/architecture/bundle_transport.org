@@ -53,6 +53,12 @@ The design constraint is the heterogeneity, not the size. Size makes the
 transport worth designing; heterogeneity is why the transport cannot
 name the types.
 
+The bundle is the transport, not the delivery decision. Which rows it
+carries is set by the data tier: a tier 2 canonical dataset is installed
+as a bundle, while a tier 3 installation exemplar arrives as an
+=ores.seeder= dataset. The tiers are in
+[[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]].
+
 ** The artefact is content-addressed
 
 The bytes go to
@@ -181,6 +187,11 @@ The transaction is the owner's, so the part is the unit of atomicity. A
 failure halfway rolls back that part alone. No other owner sees a partial
 write, and no other owner is asked to compensate.
 
+The apply is still a repository write. Each kind's table is written only
+through that kind's generated repository, never by a hand-written
+statement in the owner's part handler; see
+[[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]].
+
 ** Atomicity is per owner, by construction**
 
 - *Global atomicity across owners is not available.* Two services own
@@ -305,6 +316,10 @@ to do with a stale part; the manifest only makes it visible.
   replaces.
 - [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the form whose answers select
   this transport.
+- [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] — which rows a bundle carries, and the dataset or
+  seeder that delivers them.
+- [[id:5724BDE2-7FA4-4667-9129-2D9DD7783AB2][Entity-table writes go through the repositories]] — the rule that
+  binds the owner's apply to the generated repository of each kind.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the store the artefact lives in, and its key rule.
 - [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that places the artefact against
   the database and the stream.

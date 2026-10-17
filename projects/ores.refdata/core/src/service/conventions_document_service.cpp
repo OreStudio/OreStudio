@@ -58,10 +58,13 @@
 #include <rfl/json.hpp>
 #include <set>
 #include <string>
+#include "convention_family_apply.hpp"
+#include "conventions_row_helpers.hpp"
 #include <utility>
 #include <vector>
 
 namespace ores::refdata::service {
+
 
 using namespace ores::refdata::repository;
 
@@ -70,41 +73,6 @@ namespace {
 // A party's convention is identified by the party, the kind and the name the
 // source document gives it, so a second import of that convention replaces the
 // row the party holds rather than colliding with it.
-template <typename Repository, typename Row>
-void replace_party_rows(const ores::database::context& ctx,
-                        Repository repo,
-                        std::vector<Row> rows) {
-    if (rows.empty())
-        return;
-    std::map<std::pair<std::string, boost::uuids::uuid>, int> held;
-    for (const auto& r : repo.read_latest(ctx))
-        held[{r.id, r.party_id}] = r.version;
-    for (auto& r : rows) {
-        const auto it = held.find({r.id, r.party_id});
-        r.version = it == held.end() ? 0 : it->second;
-    }
-    repo.write(ctx, rows);
-}
-
-// A row's version comes from the live row with the same key, so an import
-// replaces the row it names rather than colliding with it. The central row and
-// its parts are addressed by the key the identity resolved to, which the
-// resolver below sets, so the id alone is the key by the time a row is written.
-template <typename Repository, typename Row>
-void replace_rows_by_id(const ores::database::context& ctx,
-                        Repository repo,
-                        std::vector<Row> rows) {
-    if (rows.empty())
-        return;
-    std::map<std::string, int> held;
-    for (const auto& r : repo.read_latest(ctx))
-        held[boost::uuids::to_string(r.id)] = r.version;
-    for (auto& r : rows) {
-        const auto it = held.find(boost::uuids::to_string(r.id));
-        r.version = it == held.end() ? 0 : it->second;
-    }
-    repo.write(ctx, rows);
-}
 
 constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
 
@@ -191,31 +159,10 @@ void close_omitted_leg_forms(const ores::database::context& ctx,
 
 // A world convention is the tenant's, whoever imports a document naming it, so
 // one the tenant holds is never replaced by an import.
-template <typename Repository, typename Row>
-void add_missing_world_rows(const ores::database::context& ctx,
-                            Repository repo,
-                            const std::vector<Row>& rows,
-                            std::vector<std::string>& kept) {
-    std::set<std::string> held;
-    for (const auto& r : repo.read_latest(ctx))
-        held.insert(r.id);
-    std::vector<Row> missing;
-    for (const auto& r : rows) {
-        if (held.contains(r.id))
-            kept.push_back(r.id);
-        else
-            missing.push_back(r);
-    }
-    if (!missing.empty())
-        repo.write(ctx, missing);
-}
 
 }
 
-// One call per convention family, grouped by the write mode its model states.
-// The fragment sits at namespace scope because the staged dispatch is exported
-// for the import service; the row helpers above stay internal to this file.
-#include "convention_family_apply.inc"
+// The generated per-family apply lives in convention_family_apply.cpp.
 
 conventions_document_service::conventions_document_service(context ctx)
     : ctx_(std::move(ctx)) {}

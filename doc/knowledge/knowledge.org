@@ -42,6 +42,7 @@ one, start there rather than here.
 | [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] | How a subject is addressed, what a message must look like, and where a service binds to the bus |
 | [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] | How a service must use the bus: the call each situation requires, its rationale, and the failure without it |
 | [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] | Where the durable data lives, which interface reaches each store, and how to choose one |
+| [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] | How to tell what a data set is before choosing a shape, and how a set that crosses owners travels |
 | [[id:01083101-A83A-4294-81A4-DDF3192CEB14][Report Processing]] | How a report is scheduled, prepared, run on the compute grid, and recorded |
 | [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] | How a screen looks, what its marks mean, where it lives, and how it behaves for a record and for an entity |
 
@@ -93,9 +94,7 @@ How the codebase is put together.
 | [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | Layer ordering and conventions for a full-stack entity, and the per-transport pattern pages |
 | [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] | Every layer of a NATS service, with a stand-up checklist |
 | [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design]] | The three regimes, and how to review a component's data model against them |
-| [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]] | The closed set a modeller picks from before choosing a pattern: entity, list, family, bundle and boundary artefact, with the anti-type and the decision rule |
-| [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][Data classification checklist]] | The numbered form a modeller fills in before writing a model, a message or a table, with worked examples |
-| [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] | The content-addressed artefact and manifest, the coordinator, one part reference per owner, and per-owner atomicity |
+| [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] | The classification cluster: the closed set of classifications, the checklist that applies it, and the transport that carries a bundle, in the order a modeller needs them |
 | [[id:78E47817-A984-4325-AA73-B8B87C56BC3B][The data tiers]] | The five tiers of data by substitutability, and which machinery delivers each |
 | [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] | The four composition classes for a journey, where the transaction boundary sits, and why a journey is not a saga |
 | [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][Workflows]] | The engine, the step protocol, the run and step states, and how a component describes the steps of a run |

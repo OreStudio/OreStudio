@@ -348,36 +348,142 @@ The transaction is the owner's, so the part is the unit of atomicity. A
 failure halfway rolls back that part alone. No other owner sees a
 partial write, and no other owner is asked to compensate.
 
-** Atomicity and consistency
+** Transactionality
 
-- *Global atomicity across owners is not available.* Two services own
-  two databases, and no transaction spans both. A two-phase commit would
-  couple every owner's availability to the coordinator's, which the
-  component boundaries forbid. Do not promise global atomicity to a
-  caller, and do not describe a bundle as all-or-nothing across owners.
-- *Per-owner atomicity is the guarantee.* Each part is all or nothing,
-  and the manifest names exactly which parts exist. A bundle that is
-  complete when every part reports applied is a bundle whose parts all
-  resolve at the same instant.
-- *A bundle that needs global rollback is a modelling error.* If the
-  invariant truly needs every owner to commit together, the data belongs
-  under one owner or the operation is not a bundle. Split the invariant
-  until each part holds locally, or use the sandbox below.
-- *Consistency comes from sequencing.* The order in =parts= is the order
-  of application, and a part starts only after its predecessor's reply
-  where the invariant has a direction. An environment export imports
-  reference data before the configuration that names it, and trades
-  before the structures that group them. A failed part blocks only its
-  successors, which stay pending and are not dispatched; independent
-  parts continue. Where no part constrains another, they apply
-  independently, and =as_of= is what makes the set coherent rather than
-  the sequence.
-- *The sandbox is the compensating control.* An import applies into a
-  sandbox, so a wrong part is discarded with the whole sandbox rather
-  than repaired row by row in live data. Promotion from the sandbox to
-  live data is a separate, smaller operation with its own review; it is
-  not a retry of the import. See
-  [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]].
+A bundle serves two cases, and the two do not carry the same guarantee.
+One is a heterogeneous set that belongs to one service, and it is written
+in one transaction. The other is a set that spans several services, and
+no single transaction covers it. Which case a set is decides the
+mechanism, and the mechanism decides the guarantee.
+
+*** A set that belongs to one service
+
+A structure with its trades, its instruments and its legs is a
+heterogeneous set, and every member of it is held by one owner. That is
+[[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][the Family
+classification]], not a bundle. It is written in one =unit_of_work=: one
+transaction, all or nothing, over the central row and every part the
+write names. No partially saved structure can ever be observed, because
+the transaction either commits every row or none of them.
+
+The family pattern is the generated =ores.codegen.family= model, whose
+put writes the central row and that kind's parts in one transaction, per
+[[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a
+model shape]]. The unit of work is bounded by the database connection,
+and the rule that keeps a read from ending it is the unit-of-work rule
+in [[id:9562C34E-5790-422D-8E31-774691995860][A read inside a unit of
+work commits it]].
+
+*** A set that spans several services
+
+An ORE import touches reference data, trades and market data, and those
+rows belong to three services. That set cannot be one transaction.
+
+The platform does not support distributed transactions. There is no
+two-phase commit, no XA, and no transaction that spans services. The
+=unit_of_work= is function-local to one connection: it begins and ends on
+the connection the calling service holds, and no mechanism extends it
+across a call to another service.
+
+This is a deliberate position, not an omission:
+
+- *Contention and lock lifetime.* A transaction held across owners holds
+  its row locks for the whole of every remote call. One part that takes
+  minutes would block every writer of every table it had touched for
+  those minutes, and the wait would grow with the size of the bundle
+  rather than with the row being written.
+- *A pooled connection cannot be held across messages.* The service's
+  connection comes from a pool, and a message is handled between other
+  messages. Keeping the transaction open while another owner applies its
+  part would pin one pooled connection and one open transaction for an
+  unbounded time, and the pool would run out.
+- *Availability.* Two-phase commit couples every owner's availability to
+  the coordinator's and to the slowest participant's. An owner that
+  cannot answer leaves every other owner's prepared transaction open and
+  locked. The component boundaries forbid that coupling.
+- *Ownership.* A service reads and writes only its own tables. A
+  transaction over two services needs one transaction manager over both
+  databases, and it gives one service the power to commit rows it does
+  not own, which
+  [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]]
+  forbids.
+
+Do not promise global atomicity to a caller, and do not describe a
+bundle as all-or-nothing across owners.
+
+*** What replaces the distributed transaction
+
+Six things carry the consistency the transaction cannot, in the order a
+part passes through them.
+
+1. *Per-owner atomicity.* Each owner applies its part in one transaction.
+   A part is all or nothing, and the manifest names exactly which parts
+   exist. A bundle that is complete when every part reports applied is a
+   bundle whose parts all resolve at the same instant.
+2. *Sequencing by the workflow engine.* The coordinator is the front end
+   of a [[id:4F95A407-AD43-4CBD-952E-1CCACAA90080][workflow run]]: each
+   owner dispatch is a step, and the steps of the run are the unit of
+   progress, never the archive. The engine holds the state of the run and
+   decides each next step from the results so far, which is the
+   [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]]. The
+   order in =parts= is the application order, and a part starts only
+   after its predecessor's reply where the invariant has a direction. An
+   environment export imports reference data before the configuration
+   that names it, and trades before the structures that group them. A
+   failed part blocks only its successors, which stay pending and are not
+   dispatched; independent parts continue. Where no part constrains
+   another, they apply independently, and =as_of= is what makes the set
+   coherent rather than the sequence.
+3. *A declared failure policy.* Each step states what a failure does:
+   stop, or compensate, per
+   [[id:353DC9B3-65BC-4801-B6D8-08ADD2647F24][Failure, compensation
+   and retry]]. An import into a sandbox declares stop, because the
+   sandbox is the compensating control and a retry of the failed part is
+   safe. A definition whose completed steps are a liability may declare
+   compensate instead, and the engine walks the completed steps in
+   reverse. That is the [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]],
+   and a compensation is a new action, not an erasure: the other owners
+   saw the intermediate state, so a compensation writes something new
+   and is not a rollback of what was already committed. A part that fails
+   inside its own transaction is rolled back locally and asks nothing of
+   anyone; compensation is for the completed steps a run has to give
+   back.
+4. *An idempotency ledger per owner.* The owner records the key (bundle
+   id, owner, kind, checksum) in the same transaction as the rows it
+   applies. A second delivery of the same part finds the key and replies
+   applied without writing again, so a retry is safe.
+5. *A sandbox for examine-before-live.* An import applies into a sandbox,
+   so a wrong part is discarded with the whole sandbox rather than
+   repaired row by row in live data. Promotion from the sandbox to live
+   data is a separate, smaller operation with its own review; it is not a
+   retry of the import. See
+   [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]].
+6. *An honest report of a partial outcome.* The reply names each part and
+   its outcome, and the bundle's progress is the set of its parts. A
+   partial result is reported as a partial result.
+
+A bundle that spans owners is therefore eventually consistent: its parts
+resolve at one declared instant, =as_of=, and not at one commit. A
+partial result is a supported outcome, reported as such, and not a
+failure of the mechanism.
+
+A bundle that needs global rollback is a modelling error. If the
+invariant truly needs every owner to commit together, the data belongs
+under one owner or the operation is not a bundle. Split the invariant
+until each part holds locally, or use the sandbox above.
+
+*** What each case guarantees
+
+#+ATTR_HTML: :class hug-leading
+| Case | Scope of atomicity | Mechanism | What the user sees on failure | Guaranteed | Not guaranteed |
+|------+--------------------+-----------+-------------------------------+------------+----------------|
+| A heterogeneous set in one service | one service, every type it holds | one =unit_of_work= over the central row and its parts | nothing was written: the transaction rolled back | all or nothing; no partially saved structure is ever observed | atomicity across a second service |
+| A set across several services | per owner | one transaction per owner, sequenced by a workflow run | the parts that applied stay applied, and the failed part is named | per-owner atomicity, and eventual consistency at =as_of= | global atomicity, all-or-nothing, global rollback |
+| One part of a bundle | one owner's rows of one kind | the checksum, one transaction and the idempotency key | the part applied nothing; the other parts are unchanged | the part is all or nothing, and applied at most once | that the other parts agree with it |
+| A part that is retried | the same one part | the ledger key (bundle id, owner, kind, checksum) | applied, with the counts the first delivery recorded | a repeat writes nothing | a new instant; the retry keeps the bundle's =as_of= |
+| A bundle in a sandbox | the sandbox | discard the whole sandbox | the sandbox is discarded as a whole, and no official row was touched | a wrong import costs no live row | promotion to live data, which is a separate reviewed operation |
+
+*** How a part fails
 
 #+ATTR_HTML: :class hug-leading
 | Failure | What the coordinator does | What the user sees |
@@ -564,8 +670,25 @@ sandbox is what makes that limit safe.
   [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][the data classification
   checklist]].
 
+* Patterns used
+
+- [[id:E8DAA8F6-9A41-44A7-A79C-58F7FDB5ADB2][Saga]] — the declared
+  failure policy: the completed parts are local steps whose compensations
+  run in reverse, and a compensation is a new action rather than a
+  rollback.
+- [[id:98177604-4092-4A95-B2C3-EE6F82A3185E][Process Manager]] — the
+  coordinator holds the run's state and decides each next step from the
+  parts' replies.
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] — one
+  owner per part, and a coordinator that reads only the manifest and never
+  another owner's rows.
+
 * See also
 
+- [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] — the
+  classification cluster's structure note: this page is the last step in
+  its reading order, and it delivers the one classification that crosses
+  owners.
 - [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle and artefact]]
   — the classification this transport delivers, and the anti-type it
   replaces.

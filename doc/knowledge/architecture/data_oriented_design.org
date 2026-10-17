@@ -240,8 +240,8 @@ ceiling.
 
 The accumulation path gives a second rule for document models. A model
 that aggregates several entity families hands its unit a literal width
-equal to the sum of them, so name one family per document model and
-split a document that covers two. A component's per-entity protocols do
+equal to the sum of them, so name one bundle per document model and split
+a document that covers two. A component's per-entity protocols do
 not help here, because a document protocol includes the domain headers
 directly and re-aggregates what the per-entity split separated.
 
@@ -307,7 +307,7 @@ Decision checks — walk per entity model:
 | Table-shaped children | Child records are rows in their own table (junction/FK), not nested object trees. |
 | Core/cold split | =field_group= and table design separate core fields from cold annexes (change-reason cache, history, versioning, audit). The split is for memory and storage; the wire stays flat. |
 | Batched collection access | Repositories and services return collections, not row-at-a-time callbacks. |
-| Explicit variation | A family of related entities (for example, instruments) states its variation explicitly — per-type tables or a closed variant — not open inheritance webs. |
+| Explicit variation | A group of related entity kinds (for example, instruments) states its variation explicitly — per-type tables or a closed variant — not open inheritance webs. |
 | Exact money at rest | A money quantity — rate, spread, notional, amount, price, strike, fee, premium, margin, face value — is exact decimal in both the domain type and the column, and the two agree. A continuous quantity — volatility, correlation, weight, probability, recovery rate, tranche fraction, day-count fraction, unit quantity — stays binary float. |
 | One-way numeric conversion | A =double= never enters the persisted domain. Conversion runs from decimal to double, at the numerical-kernel seam, and only there. A value that arrives as text is read with a decimal parse, not through a binary float. |
 

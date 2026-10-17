@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: 0781E7E1-EF38-4030-8627-13210FA75792
+:END:
+#+title: Story: Refactor conventions onto families and bundles
+#+description: Conventions fail to build on MSVC because one aggregate carries every family. Refactor them onto the classification settled in the data model: one family per convention, a bundle per import applied in one unit of work, and the ORE file demoted to a package at the boundary.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+(Describe the user-visible outcome this story delivers.)
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+-
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A51392C5-F7CE-419C-9671-7F648E83C36C][Model each convention family on its own]] | BACKLOG | | | Replace the hand-listed document model with one operation model per convention family, so a family is declared once and carries its own fields. No aggregate of unrelated families survives. |
+| [[id:941E929E-5A51-412F-8092-479F907727C5][Generate a protocol and handler per family]] | BACKLOG | | | Codegen emits the protocol, handler and registrar per family. One translation unit per family, so no unit reflects every family at once and the MSVC instantiation limit is never approached. |
+| [[id:DF403F87-5783-4145-A143-BCF03D54CFBE][Declare the conventions bundle]] | BACKLOG | | | A bundle is a set of related families of one owner applied as one unit. The import applies every family refdata owns in one unit of work, atomically, and reports per family. |
+| [[id:61D203C8-663C-408D-9940-F6100996861A][Rewire the ORE path to families and packages]] | BACKLOG | | | The importer maps a conventions file into per-family messages or one bundle request. The ORE file is a package at the boundary, never a wire type. The exporter reassembles from per-family reads taken at one instant. |
+| [[id:B1C4EB87-A3D4-42A6-94A6-73FDC56C868E][Replace the web family list with the registry]] | BACKLOG | | | The web BFF stops carrying a hand-maintained family table and reads the generated registry, so adding a family needs no edit there. |
+| [[id:264CDF6F-0674-4951-BCEA-334EBE68114F][Prove the Windows build]] | BACKLOG | | | An MSVC job compiles the new translation units. Success is the C1202 failure gone with the old aggregate, and the build green on Windows, Linux and macOS. |
+| [[id:2DAA2FFE-2346-42DB-B865-32ACAEB2FB64][Use as_of consistently for reads]] | BACKLOG | | | Every exported set is read at one bitemporal instant. Route paged reads through the generated as_of path and record the instant in the manifest. |
+
+* Decisions
+
+* Out of scope
+
+-

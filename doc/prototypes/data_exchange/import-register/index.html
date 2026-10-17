@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Import register — Data exchange prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  The import register: every attempt in one party, the retry told from the
+  first attempt, the promotion record, and the party boundary. States come
+  from the query string:
+
+    ?variant=list|promotion|compare|failed|refused
+    ?actor=admin|ops
+    ?party=acme-trading|acme-capital-markets
+
+  The bar at the foot switches the view and the actor. The party selector is
+  shown only to the tenant administrator; the operations user has none,
+  because the session decides the scope.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

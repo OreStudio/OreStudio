@@ -24,6 +24,9 @@ import { PATHS } from '../../shell/paths.js';
 /** The record kind of a feed binding in the synthetic store. */
 export const BINDINGS = 'feed-bindings';
 
+/** The entity type a binding's history is read by. */
+export const BINDING_ENTITY = 'ores.marketdata.feed_binding';
+
 /** The kind of a binding that names a real feed. */
 export const VENDOR = 'VENDOR';
 

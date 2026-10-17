@@ -20,7 +20,13 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { QUIET_AFTER_SECONDS, activityByName, secondsSince, statusOf } from './bindingView.js';
+import {
+    QUIET_AFTER_SECONDS,
+    activityByName,
+    revertOffer,
+    secondsSince,
+    statusOf,
+} from './bindingView.js';
 
 const NOW = Date.parse('2026-10-13T10:00:00Z');
 const recent = '2026-10-13 09:59:50Z';
@@ -83,5 +89,29 @@ describe('activityByName', () => {
         expect(map.get('a')?.series_id).toBe('s1');
         expect(map.get('b')?.series_id).toBe('');
         expect(map.get('c')).toBeUndefined();
+    });
+});
+
+describe('revertOffer', () => {
+    const older = { kind: 'SYNTHETIC', mayWrite: true, version: 1, newest: 2, heldBy: undefined };
+
+    it('offers Revert on an older version to a person who may write', () => {
+        expect(revertOffer(older)).toBe(true);
+    });
+
+    it("offers nothing on a vendor's binding", () => {
+        expect(revertOffer({ ...older, kind: 'VENDOR' })).toBe(false);
+    });
+
+    it('offers nothing on the newest version', () => {
+        expect(revertOffer({ ...older, version: 2 })).toBe(false);
+    });
+
+    it('offers nothing to a reader who may not write', () => {
+        expect(revertOffer({ ...older, mayWrite: false })).toBe(false);
+    });
+
+    it('offers nothing when a running feed holds the series', () => {
+        expect(revertOffer({ ...older, heldBy: 'REUTERS/EURUSD' })).toBe(false);
     });
 });

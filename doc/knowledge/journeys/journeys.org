@@ -51,6 +51,7 @@ not to the folder the code happens to live in.
 | [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors]] | Tenor codes and the resolution the system computes from them, down to the date a tenor produces on a named calendar |
 | [[id:EF205EF7-4413-4315-818C-6118F9A40DBD][Market data]] | Curves and surfaces: their blueprints, the market they are built from, their adjustments, their approval and publication, and how they are read over time |
 | [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trades]] | What a person does with a trade: book it, amend it, read it, bring it in from ORE and send it out, record what happens to it, and group trades into one deal |
+| [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange]] | Bringing data in and taking it out: a whole environment, a party, one dataset, a retry, and the export for support or archive |
 
 * How to read a journey
 

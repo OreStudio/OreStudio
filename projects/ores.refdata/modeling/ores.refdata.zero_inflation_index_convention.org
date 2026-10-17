@@ -11,6 +11,7 @@
 #+entity_singular: zero_inflation_index_convention
 #+entity_plural: zero_inflation_index_conventions
 #+entity_title: Zero Inflation Index Convention
+#+convention_family: zero_inflation_index
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

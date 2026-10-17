@@ -11,6 +11,7 @@
 #+entity_singular: commodity_future_convention
 #+entity_plural: commodity_future_conventions
 #+entity_title: Commodity Future Convention
+#+convention_family: commodity_future
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

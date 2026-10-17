@@ -11,6 +11,7 @@
 #+entity_singular: cross_currency_fix_float_convention
 #+entity_plural: cross_currency_fix_float_conventions
 #+entity_title: Cross-Currency Fix-Float Convention
+#+convention_family: cross_currency_fix_float
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

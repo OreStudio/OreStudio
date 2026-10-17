@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:data_oriented_design:entity_model:composite_entity:codegen:
 #+created: 2026-10-14
-#+updated: 2026-10-14
+#+updated: 2026-10-17
 
 * Summary
 
@@ -59,7 +59,7 @@ together when the same write touches both and the same read needs both.
 
 ** The central row
 
-- The key is a UUID. One key shape serves every entity of every family, so
+- The key is a UUID. One key shape serves every family, so
   a part and its central row join on one column.
 - =tenant_id= and =party_id=. Isolation is by tenant and ownership is by
   party, and both are stamped from the session rather than from the caller.

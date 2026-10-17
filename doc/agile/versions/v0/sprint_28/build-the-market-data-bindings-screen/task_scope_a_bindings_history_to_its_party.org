@@ -146,14 +146,22 @@ The other party's row is strictly newer, so the old read, which ordered by
 =valid_from= descending and took one row before any party filter ran, returned
 that row for *both* parties. The test asserts each party's own id, and fails.
 
-** Found while testing, unrelated to this task
+** The synthetic service test link failure, and why it is gone
 
-=compass build= fails to link =ores.synthetic.service.tests= on =main=:
-=feed_kind_registry= is declared in =projects/ores.synthetic/service/src/= and
-=projects/ores.synthetic/service/CMakeLists.txt= line 51 builds that library
-with =-fvisibility=hidden=, so the symbols the test needs are defined but not
-exported. The binary has never been produced in this tree. Captured separately;
-it does not touch this change, because no synthetic file is in the diff.
+Before the rebase, =compass build= failed at =ores.synthetic.service.tests= with
+undefined references to every =feed_kind_registry= member. The test includes
+=projects/ores.synthetic/service/src/feed_kind_registry.hpp=, a private header
+with no export attribute, and the service library was compiled with
+=-fvisibility=hidden=, so the 117 symbols were defined in the shared object but
+absent from its dynamic symbol table.
+
+The rebase onto =50b2ac29df= removed it. Commit =a2c824b07b [codegen] Make hidden
+visibility a part's decision= moved the flag from every part to a per-part
+declaration, and the synthetic service part does not ask for it, because its
+classes carry no export attribute and its suites link them — the rule the
+=hidden_visibility= docstring in =org_loader.py= now states. The target links and
+builds on the rebased tree; the capture raised for it was withdrawn rather than
+kept as a false record.
 
 * Test Scenarios
 

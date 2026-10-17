@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: look back over a report's history — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Look back over a report's history, from
+  doc/knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org:
+  one report definition's runs newest first, each with its started and completed
+  time, the latest marked, the last five fire times derived from runs, and a
+  notice when a newer run arrives while an older one is open.
+
+  Three variants, switched with ?variant=A|B|C: A the run list, B the timeline,
+  C the comparison. They disagree about structure, not colour. The variant bar
+  at the foot of the page switches them and simulates the arrival of a run.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 43729172-bbe6-491e-aba5-fbfba78a6861
+:END:
+#+title: Look back over a report's history prototype
+#+description: Three structural variants of one report's run history, with the last five fire times, the latest marked, and the arrival of a newer run using the Recency pattern.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                |
+|---------------+------------------------------------------------------|
+| Prototype     | [[file:look-back-over-a-reports-history/][the prototype]] |
+| Gemini review | none                                                 |
+| Group         | [[file:index.org][Reporting prototypes]]               |
+
+* Summary
+
+This prototype argues what a report's history is, and what happens to the person
+reading it when a newer run arrives. It carries three structural variants
+switched with =?variant=, and it answers to
+[[file:../../knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org][Look back over a report's history]].
+
+It is throwaway. It reads no service, every value is mock, and the arrival of a
+new run is simulated by a button because a static page cannot receive an event.
+
+* Detail
+
+** The question
+
+A run list is easy. The hard part is that the list is alive: a scheduled report
+produces a new run while somebody is reading an old one, and the screen has to
+say so without taking the page away from them. The second question is what "the
+history" is measured in, because the firings and the runs are not the same set.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | A run list | A table of runs newest first, the latest pinned and marked, each row with its started and completed time, and a selected run read below. |
+| =B= | A timeline | Runs down a vertical timeline with their timestamps, the current one expanded inline, so the rhythm of the schedule is visible at a glance. |
+| =C= | A comparison | The latest run beside one selected earlier run, with the differences stated, for the person asking what changed between them. |
+
+** Five fire times, and what they are really counting
+
+The panel shows the last five fire times, because a person needs to tell an
+hourly report from a daily one and to notice a window where nothing ran. Each
+time is derived from a run, and that is stated, because it is not the same thing
+as a firing. A firing that produced no run, because the concurrency policy
+skipped it or the trigger was refused, leaves no trace the screen can read.
+
+The page goes further and points at a gap. The five runs it draws are 59 minutes
+50 seconds apart except across one window where no run started, and the panel
+says so rather than smoothing the timestamps into a tidy cadence. That is what
+the honest version of this panel looks like.
+
+** The newest run is marked, and stays marked
+
+Every run carries its started and completed time to the second, and the newest is
+marked =LATEST= in a column of its own, so it is found without reading timestamps
+in order. A run that completed while carrying errors reads differently from a
+clean one at a glance.
+
+** When the run being read stops being the latest
+
+This is the part the prototype exists for. The pattern is the one the record
+screen standard calls Recency, and the page follows it exactly:
+
+- The change signal is `reporting.v1.report_instances_events.created`, which the
+  screen listens to. It does not poll.
+- When a run arrives, Refresh draws the eye.
+- Rows newer than the previous load are marked for three seconds after a reload.
+  The first load marks nothing, and a person can turn the marking off.
+- A notice, not a modal, states that the run being read is no longer the latest,
+  names the new run's time, and offers a way to it. It does not navigate on its
+  own and does not steal focus.
+
+The arrival is simulated with a button in the bar, and the page says so, because
+nothing on a page opened from a file can receive an event.
+
+** What is fake
+
+Everything. The report, its party, its schedule, the twelve runs, their times,
+their durations and their errors are mock. No service is read, there is no
+reporting BFF route, and the application has no reporting UI.
+
+** Where the code lives
+
+=doc/prototypes/reporting/look-back-over-a-reports-history/=. Three files, plain
+HTML, CSS and JavaScript, no framework and no build step.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review. The
+part that must survive whichever variant wins is the notice: a person reading a
+superseded run is told, quietly, and is not thrown at the new one.
+
+** What it does not settle
+
+Whether a history belongs to a report definition or to a report type. This page
+argues a definition, because that is what the runs belong to and what the
+schedule is attached to. If a reader thinks in report types across parties, the
+page is answering a narrower question than they are asking.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis each prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the six journeys these answer to.

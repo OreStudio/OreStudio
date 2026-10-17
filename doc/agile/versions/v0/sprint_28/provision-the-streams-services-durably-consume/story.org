@@ -36,7 +36,9 @@ Streams are not provisioned for the subjects services durably consume, and two d
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:C1540B61-5AF2-4819-9733-2687BE8762F6][Ensure the streams a service reads]] | BACKLOG | | | Apply the documented stream provisioning pattern to the services that durably consume a subject. Each such service ensures its stream in its startup path, before it registers handlers, over a filter covering the subjects it reads, and fails to start when it cannot. This is what makes a step command survive being published before its consumer is running, and it removes the five second publish timeout that makes provisioning look flaky. |
+| [[id:E526DD3B-9393-48E8-96AA-D78795E77F88][Settle which service owns which stream]] | BACKLOG | | | Two streams claim overlapping subjects, which NATS refuses with JSStreamSubjectOverlapErr and which stops the IAM service starting. Decide which service owns each subject, make the streams disjoint, and make the ownership legible, so the next service that adds a subject does not collide by accident. |
+| [[id:232573EC-DFCB-422F-B5BD-12FD411E7A6F][Check that every durable subject has its stream]] | BACKLOG | | | Add the check that keeps the next service from repeating the two defects: every durably consumed subject is covered by a stream its owner ensures, and no two streams overlap. Without it the only symptom is a publish timeout, which is why nobody noticed. |
 
 * Decisions
 

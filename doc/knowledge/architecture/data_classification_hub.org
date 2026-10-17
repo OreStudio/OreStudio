@@ -48,6 +48,17 @@ for existing and the checklist is a form with no definitions behind it.
    archive and its parts, one message per owner, and the transactionality
    the classification cannot supply across owners.
 
+** Where the classifications are applied
+
+The definitions settle what a set is. The catalogue settles which sets
+this system actually has:
+[[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle catalogue]]
+enumerates every candidate bundle in the code and the models, with its
+invariant or the finding that none exists, its owner count, the atomicity
+it has today with a file reference, the atomicity it requires, and its
+status. Read it after the three pages above: it is the evidence that the
+classification is decidable once, per set, instead of per feature.
+
 ** Why the order earns a structure note
 
 Step two cannot be filled in without step one's vocabulary, and step three
@@ -80,5 +91,10 @@ and that order is authored here rather than computed from a title match.
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this
   structure note hangs from.
+- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle catalogue]] — the
+  enumeration of every bundle candidate in the code, its invariant, its
+  owners, its atomicity today and required, and its status. It applies this
+  cluster to the sets the system holds, and it is where a modeller checks
+  whether the set in front of them has already been classified.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a
   structure note is, and why its order is authored rather than computed.

@@ -12,7 +12,7 @@
 | Item          | Where                                             |
 |---------------+---------------------------------------------------|
 | Prototype     | [[file:read-what-a-run-produced/][the prototype]] |
-| Gemini review | none                                              |
+| Gemini review | [[file:read-what-a-run-produced/review/][the review]] |
 | Group         | [[file:index.org][Reporting prototypes]]            |
 
 * Summary
@@ -106,10 +106,12 @@ its children cannot appear. The root is the group portfolio: for Headline
 Position, 18,204 trades and USD 88,402,114, which is also the run's NPV figure.
 That 18,204 is the run's population, and the per-trade table draws 8 of those
 rows. The page says so on the tree's footer rather than implying the tree sums
-those eight rows. The footer also states where the
-fixture is coarser than the run: the run's own figure counts 24 books, and the
-fixture groups the same trades into ten book nodes, unbooked among them, so the
-root still adds up to the run.
+those eight rows. The footer also states how the leaves are counted: the run's
+own figure counts ten books, the fixture groups the same trades into ten book
+nodes, unbooked among them, and a trade the engine could not build writes no
+NPV row, so every priced trade sits in exactly one node and the root still adds
+up to the run. An earlier fixture counted 24 books, and that figure was
+corrected for that reason.
 
 A trade booked to no book is a real state, so the tree draws an =Unbooked= node
 at the portfolio level and gives it a trade count and an NPV like any other node.
@@ -217,7 +219,32 @@ CSS and JavaScript, no framework and no build step.
 
 ** The verdict
 
-None yet. This page is on the branch that proposes it and waits for review.
+No verdict yet. This page is on the branch that proposes it and has not been
+taken up.
+
+Gemini drew the result again, and that drawing is kept as
+[[file:read-what-a-run-produced/review/][the Gemini review]] beside the
+prototype. It proposes one screen rather than three readings of the same run:
+five figures across the top -- NPV, Delta, Gamma, positions and books -- over a
+single table of NPV, Delta and Gamma by book, with no archive and no trade rows
+beneath it.
+
+The review is kept as it was drawn, and it disagrees with three facts this
+prototype states:
+
+1. *It counts 24 books.* The prototype counts 10. A trade the engine could not
+   build writes no =npv.csv= row, and the tree groups every trade into exactly
+   one node. The 24 was an earlier fixture figure, corrected for that reason.
+2. *It says the parser pipeline is active.* Nothing parses the run archive.
+   =ores_compute_results_tbl= holds the archive location, an outcome and an
+   error message, and no parsed rows. The result store that would parse the
+   archive is designed and not built.
+3. *It labels the run =npv_sensitivity=.* A run is identified by its instance
+   id and its definition, and the two analytics are named separately, as this
+   prototype does with =npv= and =sensitivity=.
+
+The review screen states the same three points beneath the drawing, so a reader
+meets them there and not only here.
 
 ** What it does not settle
 

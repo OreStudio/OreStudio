@@ -2,7 +2,7 @@
 :ID: cd82104f-64da-44b4-922a-1e50d89ceb2c
 :END:
 #+title: Change what a report runs prototype
-#+description: A three step wizard for what a report runs, a switchboard of every analytic type, and an add-analytic flow whose detail screen is read three ways: a document, two columns, and guided.
+#+description: A three panel wizard over the definition and the configurations it binds: the analytics of the bound configuration read as a summary, then what a change to that set reaches, with the analytic interaction handed to its own prototype.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
@@ -17,120 +17,117 @@
 
 * Summary
 
-This prototype argues how a person changes the analytics a report runs, and it
-answers to
+This prototype argues how a person reads what a report runs, and it answers to
 [[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change
-what a report runs]]. The shape is decided. The screen is a wizard of three steps
-titled =What this report runs=, and adding an analytic is a flow of its own with
-three screens. The three variants behind =?variant=A|B|C= are three readings of
-the add-analytic detail screen, which is the novel part; the wizard and the
-switchboard are identical across them.
+what a report runs]]. The screen is a wizard of three panels titled =What this
+report runs=: the definition and the configurations it binds, the analytics the
+bound run settings configuration carries, and what a change to that set reaches.
 
-It is throwaway. It reads no service, and the page states which parts of the
-change it cannot show, which rules the server does not enforce, and which
-editors are deferred.
+It draws no analytic control. [[file:manage-the-analytics.org][Manage the
+analytics]] owns the analytic interaction — the switchboard, a step per analytic,
+every parameter, the refused pair, the read-back — and step 2 summarises the set
+and links there. The switchboard, the nested list-detail-effect flow and the
+three variants that read its detail screen are gone from this page; that layout
+question moved with the screen it belonged to.
+
+It is throwaway. It reads no service, and the page states which parts of the set
+it cannot show, which rules the server does not enforce, and which editors are
+deferred.
 
 * Detail
 
-** The wizard's three steps
+** The wizard's three panels
 
 1. *The definition and the configurations it binds.* The definition's name, type
    and party, then the five configuration types with what each supplies and a
    link to the screen that holds its data. Only conventions has a screen today:
    =PATHS.conventions=, =/refdata/conventions=. The other four are stated as
-   missing, never drawn as working. The step also names the other definitions
+   missing, never drawn as working. The panel also names the other definitions
    bound to the shared configuration, because the analytics belong to it and not
    to the definition that was opened.
-2. *The analytics.* The switchboard: every analytic type, one row each, with the
-   on/off control, the display order and the parameters summarised. This is the
-   agreed switchboard and its shape is unchanged.
-3. *Review and save.* What the change reaches and does not reach, that past runs
-   keep their configuration, that a run either side of the change is not
-   comparable, and the exact write before it is sent.
+2. *The analytics.* A read-only summary of the set the bound configuration
+   carries: the count that is on, every row with its =display_order= and a
+   one-line statement of what it produces, the rows kept off with the note that
+   they keep their order and their parameters, and the rule strip when =pfe= is
+   on without =simulation=. Then the link to Manage the analytics.
+3. *What a change reaches.* What the change reaches and does not reach, the runs
+   that stop being comparable, that past runs keep their configuration, and where
+   the write happens.
 
-The wizard is deep-linked with =?step=1|2|3=. Step is part of every URL the page
-writes, so a person who cancels a flow and reloads lands back on the switchboard.
+The panels are deep-linked with =?step=1|2|3=, and step is part of every URL the
+page writes.
 
-** The add-analytic flow
+** The analytics are read here, and set elsewhere
 
-Configuring an analytic inline in the switchboard is too busy, so the switchboard
-carries an =Add analytic= action, and every row carries a =Settings= action that
-opens the same flow for an analytic that already exists. The flow has three
-screens:
+The analytics belong to the run settings configuration, not to the definition, so
+the same set is what four definitions run. Two prototypes were drawing that set:
+this one with a switchboard and a nested flow, and
+[[file:create-a-report.org][Create a report]] with a switchboard and a rail
+step per analytic. The same fourteen types had two vocabularies for the same three
+states — on, off, and no row — and the parameters of an analytic were drawn
+twice.
 
-- *The list.* The fourteen analytic types, each with a one-line statement of what
-  it produces, and each marked as on, off, or with no row. Choose one, and nothing
-  is written.
-- *The detail.* What the analytic is, how it is calculated in plain words, and
-  every parameter it takes with a helpful control, a note on what it means, and
-  what a normal value is. The control follows the parameter's shape: a number
-  field for a count or a size, a select for an enumeration, a toggle for a
-  boolean, and a text field for a name.
-- *The effect.* What turning it on does, what it reaches, what will be written,
-  and any incompatibility it creates. The step is refused when the set cannot run.
+The product owner asked for one screen to own analytic management. This page
+keeps the wizard over the definition and the configurations, and it keeps one
+panel that answers the question the journey asks: *what does this report run, and
+what changes if I change it?* Every control leaves the page. Step 2 states the set
+and the incompatibility, and links to the screen that changes it.
 
-The fixture carries settings for all fourteen types. =sensitivity=, =simulation=
-and =pfe= carry the ones the journey names, and eleven more types carry at least
-two settings each, so almost every choice on the list opens a screen with
-something to set.
+What the consolidation costs:
 
-Switch the reading of the detail screen with the bar, or with =?variant=, and
-open one flow screen directly with =?screen=list|detail|effect&analytic=<code>=.
+- *A step out of the wizard.* Reading the set and changing it are now two places.
+  The person returns to step 2 when the shared screen is done, and this page
+  cannot say whether it was opened or what changed while it was.
+- *No parameter control on the summary.* The values are not on this page at all,
+  so a person who wants to check one setting leaves the wizard. That is
+  deliberate: a read-only summary that also drew the settings would be the second
+  implementation again.
+- *The three variants move.* They read the per-analytic step, so the open layout
+  question travels to the shared prototype with the screen it belongs to. This
+  page has no =?variant=.
 
-** The three variants read the detail screen
-
-| Variant | Name | The structural argument |
-|---------+------+-------------------------|
-| =A= | Document | The explanation as a short readable page, the parameters below it in a single column, each with its control and its note. |
-| =B= | Two columns | Explanation and calculation on the left, parameters and the effect on the right, so a person reads and sets at once. |
-| =C= | Guided | One parameter at a time with the explanation beside it, advancing through the settings, with a summary at the end. |
-
-The page opens the flow on =xva=, which has five settings of four different
-shapes, so the comparison is between layouts of the same content rather than
-between different analytics.
+The state it keeps is the one this journey is about: which rows are on, in which
+order, which rows were kept off rather than deleted, and whether the pair
+=pfe= and =simulation= can run.
 
 ** The toggle writes =active=, and never deletes
 
-The page exists because turning an analytic off is a write of =active = false=.
-The row keeps its =display_order= and its =configuration_analytic_parameter=
-rows, and reads as off, so the history shows the report used to produce it. A
-type the configuration never carried reads as "no row" and has no switch: adding
-it is the add-analytic flow, which sets its parameters and then writes the row.
-**No control on the page removes a row.**
+This page states the rule even though it does not draw the control: turning an
+analytic off is a write of =active = false=. The row keeps its =display_order= and
+its =configuration_analytic_parameter= rows, and reads as off, so the history
+shows the report used to produce it. A type the configuration never carried reads
+as "no row" on the summary, and the shared screen offers it as a type to add.
+**No control anywhere removes a row.**
 
 ** The incompatibility is a state, not a sentence**
 
 =pfe= reads a cube that =simulation= writes, so =pfe= on without =simulation=
-cannot work. The page shows that three ways rather than stating it once in prose.
-The pair is marked on the switchboard, in red, with a tag on each side naming what
-is broken. The add-analytic effect screen refuses the step and offers to turn
-=simulation= on as well. And the rule is named beside both, with the honest note
-that it lives in the ACME seeder, in =generate_risk_config_data.py=, function
-=check_exposure_needs_simulation=, and in no service: the write would be
-accepted and the run would fail later. As a fixture the page opens with =pfe=
-staged on and =simulation= staged off, so the refusal is on screen rather than two
-clicks away.
+cannot work. Step 2 marks the pair in red on the summary, with a tag on each side
+naming what is broken, and it names the rule: it lives in the ACME seeder, in
+=generate_risk_config_data.py=, function =check_exposure_needs_simulation=, and in
+no service, so the write would be accepted and the run would fail later. The
+refusal of the write itself belongs to Manage the analytics, which will not write
+either row of the pair while it is broken.
 
 ** What is deferred**
 
 =simulation= and =pfe= need purpose-built editors for the cube, the shift and the
-time grid. The page draws those settings as plain fields for now, =time_grid= as
-a select and =exposure_cube= as a text field, and it says on the parameter that
-the purpose-built editor is a later task. A plain field is not the design, and the
-page does not pretend it is.
+time grid. Manage the analytics draws those settings as plain fields and labels
+each one a deferred editor on the parameter itself. This page says so once and
+names the screen, rather than drawing the fields a second time.
 
 ** What the change reaches, and what it does not**
 
 A run keeps the configuration it ran with, with its outputs and its errors. The
-configuration is shared, so the change reaches every definition bound to it,
-including the three the person did not open. Nothing on the page writes the
-definition's schedule, its processing phases, its concurrency policy or its other
-four configurations.
+configuration is shared, so a change reaches every definition bound to it,
+including the three the person did not open. Nothing reaches the definition's
+schedule, its processing phases, its concurrency policy or its other four
+configurations.
 
 ** The runs that stop being comparable**
 
 The results screen compares a run with a previous run of the same definition. A
-run made after the change did not produce the same measures, so the comparison
+run made after a change did not produce the same measures, so the comparison
 between it and an older run is not a comparison, and step 3 says that plainly. It
 places each run by its own start time against the definition's version history and
 marks the placement an inference, because **no operation says which configuration
@@ -140,18 +137,20 @@ case at all.
 
 ** What is fake**
 
-The definition, the five bindings, the eight analytic rows, the parameters, the
-runs, the versions and the clock are fixtures. Nothing reads a server, the page
-sends nothing, and the write is applied to the page's own array. The rules are
-not fixtures: =active = false= is how the model turns an analytic off, and =pfe=
-without =simulation= is a rule the seeder enforces and no service does. The link
-on step 1 points at the application route =/refdata/conventions= and does not
-resolve from =file://=; it is drawn because the route is real.
+The definition, the five bindings, the eight analytic rows, the runs, the
+versions and the clock are fixtures. Nothing reads a server and the page sends
+nothing. The rules are not fixtures: =active = false= is how the model turns an
+analytic off, and =pfe= without =simulation= is a rule the seeder enforces and no
+service does. The link on step 1 points at the application route
+=/refdata/conventions= and does not resolve from =file://=; it is drawn because
+the route is real.
 
 ** Where the code lives**
 
 =doc/prototypes/reporting/change-what-a-report-runs/=. Three files, plain HTML,
-CSS and JavaScript, no framework and no build step.
+CSS and JavaScript, no framework and no build step. The stepper is this page's
+own; the standard steps UI belongs to Manage the analytics, because this journey
+is three panels about one definition rather than a walk through a set.
 
 ** The verdict**
 
@@ -162,12 +161,16 @@ None yet. This page is on the branch that proposes it and waits for review.
 Which runs a change reached. Until an operation names the configuration version
 behind a run, every placement on this page is an inference, and a build can only
 repeat that inference. The parameter's allowed values are unsettled too: no
-operation in the journey's set reads the value domain, so the page draws a select
-only where its fixture knows the enumeration and a text field where it does not.
-And the four configuration types without a screen are unsettled in the plain
-sense: nothing shows them, so step 1 can only say where the data lives.
+operation in the journey's set reads the value domain, so the shared screen draws
+a select only where its fixture knows the enumeration and a text field where it
+does not. The four configuration types without a screen are unsettled in the plain
+sense: nothing shows them, so step 1 can only say where the data lives. And it does
+not settle what a wizard should do when one of its steps is finished on another
+screen.
 
 * See also
 
-- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:index.org][Reporting prototypes]] — the group, and the axis each prototype turns on.
 - [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the journeys these answer to.
+- [[file:../../knowledge/journeys/reporting/journey_change_what_a_report_runs.org][Change what a report runs]] — the journey this prototype answers.
+- [[file:manage-the-analytics.org][Manage the analytics]] — the prototype that owns the analytic interaction this page reads and links to.

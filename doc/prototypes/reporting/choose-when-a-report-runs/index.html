@@ -27,10 +27,14 @@
   state (?role=admin|analyst) is the second axis: only a tenant administrator
   may schedule, and every other role reads the cadence.
 
-  Nothing here reads a server. The two operations exist --
+  Nothing here reads a server. Three operations exist -- run now
+  (reporting.v1.ops.trigger_report_instance),
   reporting.v1.ops.schedule_report_definitions and
   reporting.v1.ops.unschedule_report_definitions -- and there is no read of a
-  scheduler job, and no time zone on the schedule. The notes say so.
+  scheduler job, no pause or play operation, and no time zone on the schedule.
+  Pause and play would set the scheduler job's is_active, in
+  ores_scheduler_job_definitions_tbl; nothing exposes that flag to a reporting
+  screen, so the paused row is a fixture. The notes say so.
 -->
 
 <div class="proto-note" id="proto-note"></div>

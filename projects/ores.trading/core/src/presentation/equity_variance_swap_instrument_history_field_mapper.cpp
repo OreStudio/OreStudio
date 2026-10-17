@@ -28,7 +28,6 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.trading.api/domain/equity_variance_swap_instrument.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <string>
 #include <vector>
 
 namespace ores::trading::presentation {
@@ -46,7 +45,7 @@ render_equity_variance_swap_instrument_fields(const domain::equity_variance_swap
     fields.push_back({.name = "Underlying Name", .value = v.underlying_name});
     fields.push_back({.name = "Currency", .value = v.currency});
     fields.push_back({.name = "Notional", .value = v.notional.to_string()});
-    fields.push_back({.name = "Variance Strike", .value = std::to_string(v.variance_strike)});
+    fields.push_back({.name = "Variance Strike", .value = v.variance_strike.to_string()});
     fields.push_back({.name = "Start Date",
                       .value = ores::platform::time::datetime::to_iso8601_date(v.start_date)});
     fields.push_back({.name = "Maturity Date",

@@ -129,10 +129,9 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 
 ** variance_strike
 :PROPERTIES:
-:type:          double precision
-:cpp_type:      double
+:type:          numeric(38, 12)
+:cpp_type:      ores::utility::decimal::decimal
 :nullable:      false
-:default_value: 0.0
 :economic:      true
 :END:
 

@@ -37,7 +37,7 @@ create table if not exists "ores_trading_equity_variance_swap_instruments_tbl" (
     "underlying_name" text not null,
     "currency" text not null,
     "notional" numeric(38, 12) not null,
-    "variance_strike" double precision not null,
+    "variance_strike" numeric(38, 12) not null,
     "start_date" date not null,
     "maturity_date" date not null,
     "long_short" text not null,

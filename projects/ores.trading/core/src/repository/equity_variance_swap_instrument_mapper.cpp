@@ -57,7 +57,7 @@ equity_variance_swap_instrument_mapper::map(const equity_variance_swap_instrumen
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.notional = ores::utility::decimal::decimal::from_string(v.notional).value();
-    r.variance_strike = v.variance_strike;
+    r.variance_strike = ores::utility::decimal::decimal::from_string(v.variance_strike).value();
     r.start_date = ores::platform::time::datetime::from_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::from_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;
@@ -86,7 +86,7 @@ equity_variance_swap_instrument_mapper::map(const domain::equity_variance_swap_i
     r.underlying_name = v.underlying_name;
     r.currency = v.currency;
     r.notional = v.notional.to_string();
-    r.variance_strike = v.variance_strike;
+    r.variance_strike = v.variance_strike.to_string();
     r.start_date = ores::platform::time::datetime::to_iso8601_date(v.start_date);
     r.maturity_date = ores::platform::time::datetime::to_iso8601_date(v.maturity_date);
     r.long_short = v.long_short;

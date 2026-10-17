@@ -1,19 +1,19 @@
 :PROPERTIES:
 :ID: B33A0EE2-6DFB-4EC6-860E-1B285930C979
 :END:
-#+title: ores.refdata.conventions_import
-#+description: Codegen entity model for the refdata =conventions_import= table. The durable session a staged conventions bundle belongs to.
+#+title: ores.refdata.bundle_import
+#+description: Codegen entity model for the refdata =bundle_import= table. The durable session a staged bundle belongs to.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
-#+entity_singular: conventions_import
-#+entity_plural: conventions_imports
-#+entity_title: Conventions Import
-#+brief: The durable session a staged conventions bundle belongs to.
+#+entity_singular: bundle_import
+#+entity_plural: bundle_imports
+#+entity_title: Bundle Import
+#+brief: The durable session a staged bundle belongs to.
 #+created: 2026-10-18
 #+updated: 2026-10-18
 
-A conventions bundle is applied in one =unit_of_work=, and the messages that
+A bundle is applied in one =unit_of_work=, and the messages that
 carry it cannot hold the whole bundle: a message carrying every family is the
 aggregate that fails on MSVC. The import is the row the staging messages hang
 off instead. It records that a bundle is being staged, who owns it, how many
@@ -23,7 +23,7 @@ The caller mints =id=, so a repeated begin with a known id returns the import
 that already exists rather than opening a second one. The service stamps
 =party_id=, =state= and =expires_at= from the session it runs in.
 
-Nothing in this table is visible to a reader of the live conventions tables
+Nothing in this table is visible to a reader of the live tables
 until a commit applies the staged rows.
 
 * Flags
@@ -130,7 +130,7 @@ ctx.past_timepoint()
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_refdata_conventions_imports_tbl
+:tablename: ores_refdata_bundle_imports_tbl
 :rls_tenant_isolation: true
 :rls_party_isolation: true
 :END:
@@ -150,10 +150,10 @@ ctx.past_timepoint()
 
 ** Repository
 :PROPERTIES:
-:entity_singular_short: conventions_import
-:entity_plural_short:   conventions_imports
-:entity_singular_words: conventions import
-:entity_plural_words:   conventions imports
+:entity_singular_short: bundle_import
+:entity_plural_short:   bundle_imports
+:entity_singular_words: bundle import
+:entity_plural_words:   bundle imports
 :END:
 
 ** Domain includes
@@ -194,4 +194,4 @@ ctx.past_timepoint()
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
-- [[id:D9269C52-0741-47D0-BE72-8BEAC15D4EA0][ores.refdata.conventions_import_item]] — the staged family payloads this import collects.
+- [[id:D9269C52-0741-47D0-BE72-8BEAC15D4EA0][ores.refdata.bundle_import_item]] — the staged family payloads this import collects.

@@ -1,15 +1,15 @@
 :PROPERTIES:
 :ID: D9269C52-0741-47D0-BE72-8BEAC15D4EA0
 :END:
-#+title: ores.refdata.conventions_import_item
-#+description: Codegen entity model for the refdata =conventions_import_item= table. One staged family payload belonging to a conventions import.
+#+title: ores.refdata.bundle_import_item
+#+description: Codegen entity model for the refdata =bundle_import_item= table. One staged family payload belonging to a bundle import.
 #+type: ores.codegen.entity
 #+component: refdata
 #+filetags: :model:entity:refdata:
-#+entity_singular: conventions_import_item
-#+entity_plural: conventions_import_items
-#+entity_title: Conventions Import Item
-#+brief: One staged family payload belonging to a conventions import.
+#+entity_singular: bundle_import_item
+#+entity_plural: bundle_import_items
+#+entity_title: Bundle Import Item
+#+brief: One staged family payload belonging to a bundle import.
 #+created: 2026-10-18
 #+updated: 2026-10-18
 
@@ -20,7 +20,7 @@ builds a message that carries every family.
 The identity is the import, the family and the sequence together. A repeated
 stage of the same three is refused rather than duplicated, so a retried stage
 is safe. Each stage is its own local transaction, and nothing reaches the
-live conventions tables until a commit applies the rows.
+live tables until a commit applies the rows.
 
 * Flags
 :PROPERTIES:
@@ -140,7 +140,7 @@ std::nullopt
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_refdata_conventions_import_items_tbl
+:tablename: ores_refdata_bundle_import_items_tbl
 :rls_tenant_isolation: true
 :rls_party_isolation: true
 :END:
@@ -149,13 +149,13 @@ std::nullopt
 
 ** import_id
 :PROPERTIES:
-:table:               ores_refdata_conventions_imports_tbl
-:parent_entity:       conventions_import
+:table:               ores_refdata_bundle_imports_tbl
+:parent_entity:       bundle_import
 :target_column:       id
 :nullable:            false
 :list_by:             true
 :list_by_uuid:        true
-:error_message:       Invalid import_id: %. No active conventions import found with this id.
+:error_message:       Invalid import_id: %. No active bundle import found with this id.
 :END:
 
 A staged item belongs to exactly one import, which the commit locks while it
@@ -170,10 +170,10 @@ applies the rows.
 
 ** Repository
 :PROPERTIES:
-:entity_singular_short: conventions_import_item
-:entity_plural_short:   conventions_import_items
-:entity_singular_words: conventions import item
-:entity_plural_words:   conventions import items
+:entity_singular_short: bundle_import_item
+:entity_plural_short:   bundle_import_items
+:entity_singular_words: bundle import item
+:entity_plural_words:   bundle import items
 :END:
 
 ** Domain includes
@@ -211,4 +211,4 @@ applies the rows.
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
-- [[id:B33A0EE2-6DFB-4EC6-860E-1B285930C979][ores.refdata.conventions_import]] — the import these staged items belong to.
+- [[id:B33A0EE2-6DFB-4EC6-860E-1B285930C979][ores.refdata.bundle_import]] — the import these staged items belong to.

@@ -19,7 +19,6 @@
  */
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
-#include "ores.ore.core/domain/calendar_adjustment_mapper.hpp"
 #include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
 #include "ores.ore.core/domain/composite_instrument_mapper.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
@@ -31,11 +30,15 @@
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
+#include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <algorithm>
+#include <format>
+#include <iterator>
 #include <optional>
 #include <stdexcept>
 
@@ -54,6 +57,70 @@ using trading::domain::composite_instrument_data;
 using trading::domain::scripted_instrument;
 
 namespace {
+
+namespace xg = generated::calendar_adjustments;
+
+/**
+ * @brief States the row a projection fills, or refuses to write silently.
+ */
+void state(const record_type& type, void* record, std::string_view name) {
+    if (!mark_present(type, record, name))
+        throw std::runtime_error(
+            std::format("the calendar adjustments table has no '{}' field", name));
+}
+
+/**
+ * @brief The tables a calendar record is described by.
+ *
+ * A date list is two rows: the element that holds the dates, and the Date row
+ * inside the record it points at. The writer writes only what its row says
+ * appeared, so a projection needs both tables.
+ */
+using calendar_tables = std::pair<const record_type*, const record_type*>;
+
+auto calendar_tables_of() -> const calendar_tables& {
+    static const calendar_tables tables = [] {
+        const auto* calendar =
+            find_child_type(*xg::calendar_adjustments_document().root, "Calendar");
+        if (calendar == nullptr)
+            throw std::runtime_error("the calendar adjustments table has no Calendar element");
+        const auto* dates = find_child_type(*calendar, "AdditionalHolidays");
+        return calendar_tables{calendar, dates};
+    }();
+    return tables;
+}
+
+/**
+ * @brief Builds one calendar record from the refdata message.
+ */
+auto project(const refdata::messaging::calendar_adjustment& v) -> xg::newcalendar {
+    const auto& [calendar, dates] = calendar_tables_of();
+    xg::newcalendar r;
+    r.name = v.calendar_name;
+    state(*calendar, &r, "name");
+
+    if (v.base_calendar) {
+        r.base_calendar = *v.base_calendar;
+        state(*calendar, &r, "BaseCalendar");
+    }
+
+    const auto set_dates = [&, calendar = calendar](std::string_view name,
+                                                    auto& nested,
+                                                    const std::vector<std::string>& values) {
+        nested.date = values;
+        state(*calendar, &r, name);
+        if (dates != nullptr)
+            state(*dates, &nested, "Date");
+    };
+
+    if (!v.additional_holidays.empty())
+        set_dates("AdditionalHolidays", r.additional_holidays, v.additional_holidays);
+
+    if (!v.additional_business_days.empty())
+        set_dates("AdditionalBusinessDays", r.additional_business_days, v.additional_business_days);
+
+    return r;
+}
 
 void fill_envelope(domain::trade& t, const trading::messaging::trade_export_item& item) {
     static_cast<std::string&>(t.id) = item.ore_id;
@@ -106,7 +173,17 @@ std::string exporter::export_currency_config(const std::vector<currency>& v) {
 std::string exporter::export_calendar_adjustments(
     const std::vector<refdata::messaging::calendar_adjustment>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting " << v.size() << " calendar adjustments.";
-    const auto record = domain::calendar_adjustment_mapper::reverse(v);
+    const auto* calendar = find_child_type(*xg::calendar_adjustments_document().root, "Calendar");
+    if (calendar == nullptr)
+        throw std::runtime_error("the calendar adjustments table has no Calendar element");
+
+    xg::calendaradjustment record;
+    record.calendar.reserve(v.size());
+    std::ranges::transform(v, std::back_inserter(record.calendar), project);
+    // The Calendar element is repeated, and a document with none states an
+    // empty list rather than nothing.
+    state(*xg::calendar_adjustments_document().root, &record, "Calendar");
+
     std::string out;
     const auto emitted = emitter::emit(
         generated::calendar_adjustments::calendar_adjustments_document(), &record, out);

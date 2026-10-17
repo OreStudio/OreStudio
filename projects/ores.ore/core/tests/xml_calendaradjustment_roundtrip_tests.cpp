@@ -17,6 +17,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
@@ -48,10 +49,12 @@ void round_trip_messages(const std::filesystem::path& path) {
     REQUIRE_FALSE(original.empty());
 
     const auto written = ores::ore::xml::exporter::export_calendar_adjustments(original);
-    CHECK(written.find("<CalendarAdjustments>") != std::string::npos);
+    CHECK(written.contains("<CalendarAdjustments>"));
 
     const auto reread = ores::ore::xml::importer::import_calendar_adjustments_text(written);
     REQUIRE(reread.size() == original.size());
+
+    BOOST_LOG_SEV(lg, info) << "calendar adjustments: " << original.size();
 
     for (std::size_t i = 0; i < original.size(); ++i) {
         INFO("calendar " << i);
@@ -65,6 +68,8 @@ void round_trip_messages(const std::filesystem::path& path) {
 }
 
 TEST_CASE("calendar_adjustments_round_trip_through_the_codec", tags) {
+    auto lg(make_logger(test_suite));
+
     round_trip_messages(
         ores::testing::project_root::resolve("external/ore/examples/Input/calendaradjustment.xml"));
 }
@@ -75,13 +80,20 @@ TEST_CASE("every_calendar_adjustment_in_the_corpus_round_trips", tags) {
     const auto root = ores::testing::project_root::resolve("external/ore/examples");
     REQUIRE(std::filesystem::is_directory(root));
 
+    // The corpus names these documents three ways -- calendaradjustment.xml,
+    // calendar_adjustment.xml, calendar_adjustments.xml and caladj.xml -- so
+    // the root element decides, through the same function the import scanner
+    // uses. A file-name match would silently miss half the family.
     std::size_t files = 0;
     for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
-        if (!entry.is_regular_file() || entry.path().filename() != "calendaradjustment.xml")
+        if (!entry.is_regular_file() || entry.path().extension() != ".xml")
+            continue;
+        if (ores::ore::xml::detect_document_kind(entry.path()) !=
+            ores::ore::xml::document_kind::calendar_adjustments)
             continue;
         ++files;
         INFO(entry.path().string());
         round_trip_messages(entry.path());
     }
-    CHECK(files > 0);
+    CHECK(files == 8);
 }

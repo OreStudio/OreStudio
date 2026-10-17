@@ -43,24 +43,21 @@ completely in one change: reader, writer, and the deletion of its mapper.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
-
-* Plan
-
 *One family at a time, each complete.* A family moves reader, writer and
 mapper in one change, so no family ever has two live implementations. Calendar
 adjustments went first because it is the smallest and proves the shape every
-later migration reuses.
+later migration reuses: its mapper is deleted, not retyped, and the projection
+that survives sits at the boundary beside the reading and the writing it
+serves.
 
-*The codec grew the vocabulary a projection needs.* A mapper is not an XML
-reader any more: it receives the record the generated table describes and
-states which of its members it fills, because the writer writes only the fields
-whose presence bit is set. Three small functions join the codec for that --
-=find_field=, =is_present= and =mark_present= -- and a projection names members
-the way the document does, so it does not repeat the schema or hardcode bit
-numbers.
+*The codec grew the vocabulary a projection needs.* A projection receives the
+record the generated table describes and states which of its members it fills,
+because the writer writes only the fields whose presence bit is set. Four small
+functions join the codec: =find_field=, =find_child_type=, =is_present= and
+=mark_present=. A projection names a member the way the document does, so it
+does not repeat the schema or hardcode bit numbers. Because the lookup accepts
+an element or an attribute, the generator now refuses a type that spells both
+the same, so the ambiguity cannot arise silently.
 
 *A date list is two rows.* The element that holds the dates and the =Date= row
 inside the record it points at are both rows, so a projection states both. The
@@ -83,10 +80,23 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Families on the codec | 1 of 5 (calendar adjustments) | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | pending |
-| Calendar documents that round trip through the importer and exporter | 5 of 5 | same | pending |
-| XML suites | 529 cases, 63,683 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
+| Calendar documents that round trip through the importer and exporter | 8 of 8 | same | pending |
+| XML suites | 529 cases, 73,264 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
 
 * Notes
+
+- *A rename now fails instead of writing nothing.* =mark_present= reports a
+  name the table does not have, and the projection throws rather than emitting
+  a document missing the field.
+- *The reading is stricter than xsdcpp.* The binder refuses an element or an
+  attribute the schema does not name, and the importer throws. That is the
+  codec's policy on a family with no =xs:any=, and it is the behaviour the
+  tables were chosen for; a document ORE tolerates but the schema does not
+  describe is a document to look at, not to import quietly.
+- *The boundary still throws.* =import_calendar_adjustments_text= and the
+  exporter report a malformed document with =std::runtime_error=, like every
+  sibling in the importer and exporter. Converting the whole boundary to
+  =std::expected= is one change for all families, not one per family.
 
 * Test Scenarios
 

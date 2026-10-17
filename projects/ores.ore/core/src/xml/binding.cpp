@@ -67,6 +67,20 @@ auto residual_field(const record_type& type) -> const field* {
     return nullptr;
 }
 
+/**
+ * @brief The field a name denotes, whether the schema writes it as an element
+ * or as an attribute.
+ *
+ * A projection names a member the way the document does, and the document
+ * does not say which of the two it is. The generator refuses a type that
+ * spells an element and an attribute the same, so the search cannot be
+ * ambiguous.
+ */
+auto find_by_name(const record_type& type, std::string_view name) -> const field* {
+    const auto* f = find(type, name, false);
+    return f != nullptr ? f : find(type, name, true);
+}
+
 auto present(const void* record, const field& f) -> bool {
     return (*static_cast<const std::uint64_t*>(record) & (1ull << f.bit)) != 0;
 }
@@ -217,17 +231,9 @@ auto find_field(const record_type& type, std::string_view name, bool attribute) 
     return find(type, name, attribute);
 }
 
-/**
- * @brief The field a name denotes, whether the schema writes it as an element
- * or as an attribute.
- *
- * A projection names a member the way the document does, and the document
- * does not say which of the two it is: an attribute is a member of the same
- * record, so both are searched rather than making every caller remember.
- */
-auto find_by_name(const record_type& type, std::string_view name) -> const field* {
+auto find_child_type(const record_type& type, std::string_view name) -> const record_type* {
     const auto* f = find(type, name, false);
-    return f != nullptr ? f : find(type, name, true);
+    return f != nullptr ? f->type : nullptr;
 }
 
 auto is_present(const record_type& type, const void* record, std::string_view name) -> bool {

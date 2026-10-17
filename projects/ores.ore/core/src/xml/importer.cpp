@@ -18,7 +18,6 @@
  *
  */
 #include "ores.ore.core/xml/importer.hpp"
-#include "ores.ore.core/domain/calendar_adjustment_mapper.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/currency_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
@@ -28,13 +27,63 @@
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/nil_generator.hpp>
-#include <stdexcept>
+#include <algorithm>
+#include <format>
+#include <iterator>
 #include <sstream>
+#include <stdexcept>
 
 namespace ores::ore::xml {
 
 using refdata::domain::currency;
 using namespace ores::logging;
+
+namespace {
+
+namespace xg = generated::calendar_adjustments;
+
+/// What an external ORE import states about itself, in the audit columns.
+constexpr std::string_view audit_modified_by = "ores";
+constexpr std::string_view audit_reason_code = "system.external_data_import";
+constexpr std::string_view audit_commentary = "Imported from ORE XML";
+
+/**
+ * @brief The table the Calendar element is described by.
+ */
+auto calendar_type() -> const record_type& {
+    const auto* found = find_child_type(*xg::calendar_adjustments_document().root, "Calendar");
+    if (found == nullptr)
+        throw std::runtime_error("the calendar adjustments table has no Calendar element");
+    return *found;
+}
+
+/**
+ * @brief Projects one calendar record into the refdata message.
+ *
+ * The part no table carries: which ORE element becomes which field of our own
+ * message, what a date means, and the audit columns an external import
+ * states.
+ */
+auto project(const xg::newcalendar& v) -> refdata::messaging::calendar_adjustment {
+    const auto& type = calendar_type();
+    refdata::messaging::calendar_adjustment r;
+    r.calendar_name = v.name;
+
+    if (is_present(type, &v, "BaseCalendar"))
+        r.base_calendar = v.base_calendar;
+
+    if (is_present(type, &v, "AdditionalHolidays"))
+        r.additional_holidays.assign(v.additional_holidays.date.begin(),
+                                     v.additional_holidays.date.end());
+
+    if (is_present(type, &v, "AdditionalBusinessDays"))
+        r.additional_business_days.assign(v.additional_business_days.date.begin(),
+                                          v.additional_business_days.date.end());
+
+    return r;
+}
+
+}
 
 std::string importer::validate_currency(const currency& c) {
     std::ostringstream errors;
@@ -98,17 +147,21 @@ importer::import_calendar_adjustments(const std::filesystem::path& path) {
 
 std::vector<refdata::messaging::calendar_adjustment>
 importer::import_calendar_adjustments_text(std::string_view text) {
-    const std::string c(text);
-    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
-
-    domain::calendar_adjustment_mapper::document ca;
-    const auto bound = binder::bind(generated::calendar_adjustments::calendar_adjustments_document(),
-                                    c, &ca);
+    xg::calendaradjustment record;
+    const auto bound = binder::bind(xg::calendar_adjustments_document(), text, &record);
     if (!bound)
-        throw std::runtime_error("calendar adjustments: line " +
-                                 std::to_string(bound.error().line) + ": " +
-                                 bound.error().message);
-    const auto r = domain::calendar_adjustment_mapper::map(ca);
+        throw std::runtime_error(std::format(
+            "calendar adjustments: line {}: {}", bound.error().line, bound.error().message));
+
+    std::vector<refdata::messaging::calendar_adjustment> r;
+    r.reserve(record.calendar.size());
+    std::ranges::transform(record.calendar, std::back_inserter(r), project);
+
+    for (auto& ca : r) {
+        ca.modified_by = std::string(audit_modified_by);
+        ca.change_reason_code = std::string(audit_reason_code);
+        ca.change_commentary = std::string(audit_commentary);
+    }
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " calendar adjustments.";
     return r;

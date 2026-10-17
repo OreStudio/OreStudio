@@ -21,7 +21,6 @@
 # To modify, update the template and regenerate.
 set(files
     "domain/bond_instrument_mapper.cpp"
-    "domain/calendar_adjustment_mapper.cpp"
     "domain/commodity_instrument_mapper.cpp"
     "domain/composite_instrument_mapper.cpp"
     "domain/conventions_diff.cpp"
@@ -74,7 +73,6 @@ set(files
 # The headers are listed for the install and IDE targets.
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/bond_instrument_mapper.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/calendar_adjustment_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/commodity_instrument_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/composite_instrument_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/domain/conventions_mapper.hpp"

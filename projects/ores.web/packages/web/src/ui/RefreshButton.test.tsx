@@ -41,7 +41,7 @@ describe('the Refresh button', () => {
     });
 
     it('states the time of the change in the tooltip when it is known', () => {
-        const html = draw({ stale: true, changedAt: '2026-10-10T12:00:03Z' });
+        const html = draw({ stale: true, changedAt: '2026-10-10 12:00:03Z' });
         expect(html).toContain('The data changed on the server at ');
     });
 

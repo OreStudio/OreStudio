@@ -19,7 +19,7 @@
  *
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { formatDateTime, isZeroTimestamp, parseTimestamp } from './Time.js';
 
 /**
@@ -52,17 +52,33 @@ describe('formatDateTime', () => {
         expect(inFrench).not.toBe(inEnglish);
     });
 
-    it('returns a value it cannot read as it arrived', () => {
-        // Showing the raw value is better than showing a wrong one.
-        expect(formatDateTime('', 'en')).toBe('');
-        expect(formatDateTime('not a moment', 'en')).toBe('not a moment');
+    it('logs and throws a value it cannot read rather than drawing it', () => {
+        const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        try {
+            expect(() => formatDateTime('2026-10-08T13:45:00Z', 'en')).toThrow(
+                'Not a wire timestamp: "2026-10-08T13:45:00Z"',
+            );
+            expect(logged).toHaveBeenCalledWith(
+                'ores.web: not a wire timestamp',
+                '"2026-10-08T13:45:00Z"',
+                expect.anything(),
+            );
+            expect(() => formatDateTime('', 'en')).toThrow('Not a wire timestamp: ""');
+        } finally {
+            logged.mockRestore();
+        }
     });
 });
 
 describe('isZeroTimestamp', () => {
-    it('states the epoch and an empty value as no moment at all', () => {
+    it('states the epoch as no moment at all', () => {
         expect(isZeroTimestamp('1970-01-01 00:00:00Z')).toBe(true);
-        expect(isZeroTimestamp('')).toBe(true);
+        const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        try {
+            expect(() => isZeroTimestamp('')).toThrow('Not a wire timestamp: ""');
+        } finally {
+            logged.mockRestore();
+        }
     });
 
     it('states a real moment as a moment', () => {
@@ -71,20 +87,23 @@ describe('isZeroTimestamp', () => {
 });
 
 describe('parseTimestamp', () => {
-    it('reads an offset the database states as whole hours', () => {
-        expect(parseTimestamp('2026-10-11 00:30:20+00').getTime()).toBe(
-            Date.UTC(2026, 9, 11, 0, 30, 20),
-        );
-        expect(parseTimestamp('2026-10-11 02:30:20+02').getTime()).toBe(
-            Date.UTC(2026, 9, 11, 0, 30, 20),
-        );
-    });
-
-    it('reads the forms it read before, and a bare date is not an offset', () => {
+    it('reads the one wire shape, and no other', () => {
         expect(parseTimestamp('2026-10-11 00:30:20Z').getTime()).toBe(
             Date.UTC(2026, 9, 11, 0, 30, 20),
         );
-        expect(Number.isNaN(parseTimestamp('2026-10-11').getTime())).toBe(false);
-        expect(Number.isNaN(parseTimestamp('not a time').getTime())).toBe(true);
+        const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        try {
+            expect(() => parseTimestamp('2026-10-11 00:30:20+00')).toThrow(
+                'Not a wire timestamp: "2026-10-11 00:30:20+00"',
+            );
+            expect(() => parseTimestamp('2026-10-11T00:30:20Z')).toThrow(
+                'Not a wire timestamp: "2026-10-11T00:30:20Z"',
+            );
+            expect(() => parseTimestamp('2026-10-11')).toThrow(
+                'Not a wire timestamp: "2026-10-11"',
+            );
+        } finally {
+            logged.mockRestore();
+        }
     });
 });

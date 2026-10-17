@@ -390,7 +390,11 @@ describe('the audit helpers', () => {
     });
 
     it('orders the most failed first, then the accounts that have signed in', () => {
-        const accountA = loginInfo({ accountId: ACCOUNT_ID, failedLogins: 2, lastLogin: '' });
+        const accountA = loginInfo({
+            accountId: ACCOUNT_ID,
+            failedLogins: 2,
+            lastLogin: '1970-01-01 00:00:00Z',
+        });
         const accountB = loginInfo({
             accountId: uuid('22222222-2222-2222-2222-222222222222'),
             failedLogins: 5,

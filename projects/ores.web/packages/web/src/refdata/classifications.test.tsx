@@ -87,7 +87,7 @@ function row(
         displayOrder: order,
         version: 2,
         modifiedBy: 'priya',
-        recordedAt: '2026-10-04 09:05',
+        recordedAt: '2026-10-04 09:05:00Z',
         reasonCode: 'common.rectification',
         commentary: 'Fixed',
         labelCode,
@@ -139,7 +139,7 @@ function version(n: number, name: string, order: string, reason: string): Histor
     return {
         version: n,
         modifiedBy: 'priya',
-        recordedAt: `2026-10-0${String(n)} 09:00`,
+        recordedAt: `2026-10-0${String(n)} 09:00:00Z`,
         fields: [
             field('Code', 'Up'),
             field('Name', name),

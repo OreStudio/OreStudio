@@ -50,43 +50,35 @@ if a feature ever needs one.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
-
-* Measurements
-
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
-* Plan
-
 *Count consumers before mapping anything.* The boundary between "migrate" and
-"delete" is whether product code reads the family, and that is a grep, not a
+"delete" is whether the product reads the family, and that is a grep, not a
 judgement: =domain.hpp= -- the generated binding -- is included by six product
-files plus the mappers, so the families a mapper reaches are the ones that
-matter.
+files plus the mappers, so the families a mapper, a store or a service reaches
+are the ones that matter.
 
 *The census is a decision, and a check.* =build/scripts/check_xml_family_coverage.py=
 names each family's state with its evidence and fails when the tree disagrees:
-a supported family without a table, an unused family with a test, or a corpus
-root nobody classified. The check is what stops "eight families to delete" from
-becoming "eight families nobody got to".
+a supported family without a table, an unused family that an XML family suite
+still names, or a corpus root element nobody classified. The check is what
+stops "seven families to delete" from becoming "seven families nobody got to".
 
-*Provisionally supported, permanently deleted.* Counterparty information and
-ibor fallback config already have tables, so they stay in the supported set even
-though nothing reads them yet: the table costs nothing to keep and the harness
-already proves it. The other eight are deleted -- their tests, and the one
-mapper nothing called (=stress_test_mapper=, whose only users were the tests
-being deleted; the analytics stress test domain is seeded from JSON, not from
-ORE XML).
+*Seven are deleted, six are not.* Simulation, sensitivity analysis, reference
+data, script library, collateral balances, SIMM calibration and the cross asset
+model have no reader at all: nothing in a component's =src=, =service= or =api=
+touches them, so their tests and the family's xsdcpp-generated types go. The
+counterparty information and ibor fallback families already have tables and
+stay supported: a table that is written and proved costs nothing to carry.
 
-*What is not deleted here* is the xsdcpp-generated type surface for those
+*Stress testing was reclassified by the review.* The first reading of the tree
+said nothing in product code called =stress_test_mapper=, and the family was
+deleted with the rest. That was wrong: the analytics stress test store is
+modelled on =stresstest.xml=, its libraries, scenarios and shifts are live
+repository and service surface, and the mapper is the only importer that
+document has. The mapper, its two stress suites and the lexical-form suite,
+which proves the live writer's number rendering on a portfolio case, are
+restored, and the family is classified as migrating.
+
+*What is not deleted here* is the xsdcpp-generated type surface for the seven
 families. It is generated from =input.xsd= as one unit, so it leaves when
 xsdcpp leaves, which is the last task.
 
@@ -94,13 +86,12 @@ xsdcpp leaves, which is the last task.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Corpus root elements | 20 | =python3 build/scripts/check_xml_family_coverage.py= | pending |
-| Families supported by a table | 7 | same | pending |
-| Families migrating from a mapper | 5 | same | pending |
-| Families unused and deleted | 8 | same | pending |
-| Test cases removed with the eight families | 20 | =publish/bin/ores.ore.core.tests \"[ore][xml]\"= before and after | pending |
-
-* Notes
+| Corpus root elements, classified | 20 | =python3 build/scripts/check_xml_family_coverage.py= | d64f55d23f |
+| Families supported by a table | 7 | same | d64f55d23f |
+| Families migrating from a mapper | 6 | same | d64f55d23f |
+| Families unused and deleted | 7 | same | d64f55d23f |
+| Test cases removed with the seven families | 11 | =publish/bin/ores.ore.core.tests "[ore][xml]"= before (541) and after (530) | pending |
+| XML suites after the deletion and the review | 530 cases, 63,560 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
 
 * Test Scenarios
 

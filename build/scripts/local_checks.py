@@ -414,10 +414,10 @@ CATALOGUE: tuple[Check, ...] = (
         id="xml-family-census",
         title="Every ORE document family is classified and the tree agrees",
         argv=("python3", "build/scripts/check_xml_family_coverage.py"),
-        classes=("cpp",),
+        classes=("cpp", "tooling"),
         paths=("external/ore/examples/*",
                "projects/ores.ore/core/src/xml/generated/*",
-               "projects/ores.ore/core/tests/*",
+               "projects/*/*/tests/xml_*_tests.cpp",
                "build/scripts/check_xml_family_coverage.py"),
         fix="Classify the family in build/scripts/check_xml_family_coverage.py, "
             "or delete the test that names an unused one.",

@@ -53,9 +53,9 @@ the work that follows is broken into tasks.
   writer emits a form that reads back to the same value.
 - Round trip is defined as the values surviving and the output validating
   against =input.xsd=, not as the document being reproduced.
-- The families product code reads are on tables and proved by the harness, and
-  a census names every corpus root element as supported, migrating or unused, so
-  no family is silently left behind.
+- Every corpus root element is either on a table and proved by the harness, or
+  named by the census as still migrating because product code reads it, or
+  deleted because nothing does. No family is silently left behind.
 - Every XML document in the repository parses with the new scanner, and the
   check that proves it fails the build when one does not.
 - The write direction is specified, including the one place where shortest
@@ -83,7 +83,7 @@ the work that follows is broken into tasks.
 
 * Decisions
 
-- *A family nobody reads is deleted, not mapped.* Eight of the twenty corpus
+- *A family nobody reads is deleted, not mapped.* Seven of the twenty corpus
   root elements have no product consumer, so a table for them would prove a
   capability no feature has. They are deleted with xsdcpp, and a table is added
   if a feature needs one. The census in

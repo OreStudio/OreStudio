@@ -26,11 +26,11 @@ Delete the guard in generate.py that keeps the codegen graph out of a sub-compon
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
@@ -139,7 +139,43 @@ via its "Verifies task" field.
 
 * Result
 
+The parts declare their CMake in the model and the templates render it, so no
+part carries hand-maintained CMake any more. The CMake facet guard is gone:
+every part renders its own =CMakeLists.txt=.
+
+The model gained:
+
+- =extra_dependencies= and =extra_test_dependencies= on 50 components, carrying
+  the hand file link block verbatim: the link sections, the visibility of each
+  library, and the =find_package= calls that define the imported targets.
+- =cmake_prologue= and =cmake_finalize= paste points on every src archetype and
+  on both branches of the header-only ones, so a hand-written prologue and a
+  hand-written install rule survive regeneration.
+- =#+component_kind:= on 47 parts, =#+test_fixture: none= on
+  =ores.analytics/quant=, =#+win32_static_library: true= on =ores.trading/core=,
+  and =:ores.cpp.service-app.enabled: nil= on the 17 service parts that keep a
+  hand-owned =src/app=, =src/config= and =main.cpp=.
+- =component_files.cmake= for the five test directories the parts materialised.
+
+Merged as =8a876fbda8=: 356 files, 7083 insertions, 818 deletions, 11 commits.
+
+The verification state is not a whole-tree build. CMake configure completed for
+all 5901 targets with no error, and =git merge-tree= reported no conflict with
+the main the PR merged into. Compilation reached object 980 of 5901 --
+=ores.dq/api=, =ores.iam/api=, =ores.telemetry/core= and =ores.refdata/api= --
+with no compile error, then stopped on request. The remaining 4921 objects never
+compiled, =./compass.sh check= never ran, and the branch was 107 commits behind
+main when it merged.
+
 * Remaining
+
+The merge landed without a whole-tree build. Nothing else in this task remains,
+but the merge is unproven until that build runs. The four layers the hand part
+CMake carried are link lists, link visibility, =find_package= calls, and
+compiler options, includes and install rules. The first three are now modelled.
+The fourth still comes from the per-component paste points, so a part that
+hand-sets a compiler flag or an include directory keeps it by declaration, not by
+model.
 
 The CMake content is now covered. Two paste points, =cmake_prologue= before
 the library target and =cmake_finalize= before its install rule, are in every
@@ -148,13 +184,11 @@ that lost content declare it, and =ores.trading/core= declares
 =#+win32_static_library: true= because its WIN32 =STATIC= choice replaces the
 template's =add_library= rather than adding to it.
 
-What still blocks the task:
+What still stood in the way when the merge landed:
 
-1. =test_handler_permissions= fails two tests. Both are about permission codes
-   that are not seeded. Adding =#+component_kind:= to 47 parts changes which
-   archetypes render for them, and that reaches past CMake into the generated
-   source, protocols and shells. Measure that blast radius before going
-   further: it is bigger than this task assumed, and it may want its own task.
+1. =test_handler_permissions= fails two tests on main: six permission codes are
+   not seeded and the handlers added in =c759acec1f= reference them. Captured,
+   and not caused by this branch.
 2. The whole-tree build has not been run. It is the only thing that can prove
    the link lists, the compile options and the includes all still hold.
 3. =ores.telemetry/database= lost two =target_include_directories= entries that

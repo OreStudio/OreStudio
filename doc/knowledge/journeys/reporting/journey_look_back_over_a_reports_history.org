@@ -1,0 +1,281 @@
+:PROPERTIES:
+:ID: 465ca244-c488-4c69-aca3-c694d104a42a
+:END:
+#+title: User Journey: Look back over a report's history
+#+description: A person opens one report definition's run history, reads the runs newest first with each run's started and completed time, sees the last five fire times, opens any earlier run, and learns without losing their place that a newer run has arrived.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person opens one report definition's run history, reads the runs newest first with each run's started and completed time, sees the last five fire times, opens any earlier run, and learns without losing their place that a newer run has arrived.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"What did this report produce over the last few weeks, and is what I am looking
+at the newest one?" The person has a report open. They want an earlier run, or
+they left a run open and need to know whether it is still current. They open the
+history of that one report definition and read its runs newest first. Every run
+carries the time it started and the time it completed, and the newest run is
+marked *latest*, so the second half of the question has one answer on the
+screen and not an inference.
+
+The journey is done when the person has either found the earlier run they came
+for, or has confirmed that the run in front of them is the newest one. A person
+who leaves the screen with a run still open is told when a newer run arrives,
+and the screen does not move under their hands to show it.
+
+* Actor and trigger
+
+Three actors read the same screen. A trading desk or a market risk reader has
+been reading a report and wants an earlier run: the one from the morning the
+trading desk first noticed the numbers move, or the run a colleague quoted. A
+reader who left a run open over lunch needs to know whether that run is still
+the newest one before they sign off. An engineer compares a good run against a
+bad one, to place the change between them.
+
+The trigger is a specific question about a specific report. The person arrives
+from the report, not from a global list of runs: the history is the history of
+one report definition, and its runs belong to that definition alone. The
+journey begins when the person opens the history of that definition and ends
+when they have read the run they came for, or have been told that a newer one
+has arrived.
+
+This is a read-only journey. It creates nothing, changes nothing and destroys
+nothing. It reads the one definition, the runs of that definition, the errors of
+the run the person opens, and it subscribes to the run change events so a run
+that arrives while the screen is open is signalled in place.
+
+* Steps
+
+1. *Open the history of the report.* The person is reading a report and asks for
+   its history. The screen is the history of one report definition: a header
+   that names the definition, the party that owns it, its report type, its
+   schedule expression and its owner, and below it the runs of that definition.
+   The header is what makes the scope unmistakable: a person reading a run row
+   can see that the row belongs to *this* report and no other. There is no route
+   to a list of runs across the tenant in this journey, and the screen does not
+   offer one.
+2. *Read the runs newest first.* The runs are ordered by =started_at=,
+   descending, so the first row is the newest run the definition produced. Every
+   row states two timestamps and labels them: *Started* and *Completed*.
+   =started_at= is shown because it is the only time a run in flight has, and
+   because it is the field the order and the latest marker use; a failed run
+   has a start and a finish, and a run that is still going has a start alone.
+   =completed_at= is shown because it answers when the output was ready, and it
+   is the difference a person reads when they ask why the report was late. A run
+   that has not completed states a dash in *Completed* and does not state a
+   guessed time.
+3. *See which run is latest.* The newest run carries the word *latest* in the
+   first cell of its row, in the accent tone, and the marker follows
+   =started_at= exactly as the order does. Two timestamps on a row could leave a
+   reader asking which one makes the run newest, so the screen states the rule
+   once, beside the timestamps: the newest run is the run that started last. The
+   marker must never be inferred from colour alone, from position alone, or from
+   the completion time.
+4. *See the previous fire times.* Above the runs, the screen states the last
+   five fire times of the definition, each with its date and its time. The date
+   is what lets a person tell a report that fires every hour from one that fires
+   once a day, and a gap in the five shows a window the definition did not run
+   in. The five are *derived from the runs that exist*, and the screen says so,
+   because no read of =report_trigger_event= exists: a firing that produced no
+   run is not in the list, and the screen cannot say whether that window was
+   missing, skipped by the concurrency policy, or refused. That sentence is part
+   of the panel and not fine print.
+5. *Open any historical run.* Every row opens its run, whichever way the run
+   ended. A run that failed opens with its state, its times and its errors. A
+   run that completed while carrying errors opens the same way, and the errors
+   are part of the answer rather than a warning on the way in. A run that is
+   still going opens with its start time and no completion. Opening a run keeps
+   the history visible, so the person can compare it against the rows around it
+   without going back.
+6. *Leave a run open while a new run arrives.* A report that fires on a schedule
+   produces runs while the screen is open. When the change notification for a
+   new run of this definition arrives, =Refresh= draws the eye and a notice —
+   not a modal — says that the run the person has open is no longer the latest,
+   names the new run's start time, and offers a way to it. The screen does not
+   navigate on its own and does not take focus. A person who is reading a
+   number keeps their place, and a person who wants the new run takes it with
+   one press.
+7. *Reload, and see what changed.* When the person reloads, the runs newer than
+   the previous load are marked for three seconds, so the rows that appeared
+   while they were away are the rows their eye lands on. The first load marks
+   nothing, because nothing arrived. A person can turn the marking off, and the
+   choice is theirs rather than the screen's.
+8. *Leave, or go on.* The person opens what the run produced, or reads why it
+   went wrong, or goes back to the report. Those are the group's other
+   journeys: [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run
+   produced]] and [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run
+   went wrong]]. The history itself creates nothing, and a reader without a
+   write permission sees the same rows.
+
+* Screens and wireframes
+
+One screen. The definition header, the previous fire times, the run list and the
+open run are panels of that screen, because the person reads them as one answer
+about one report. The screen is read-only. Every run row carries its two
+timestamps, its health word and its error count, so no row needs opening to be
+told apart from its neighbours; opening a run adds the detail the row cannot
+carry.
+
+#+caption: Look back over a report's history: the last five fire times derived from runs, the runs newest first with started and completed times, the latest run marked, an earlier run open, and the notice that a newer run has arrived.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_look_back_over_a_reports_history.png]]
+
+* Prototype
+
+The [[file:../../prototypes/reporting/look-back-over-a-reports-history/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/look-back-over-a-reports-history.org][its design note]] says what each argues and what is fake. This journey is the design intent for a report's history, and its prototype belongs at
+=doc/prototypes/reporting/look-back-over-a-reports-history/=, with hyphens
+because the inventory gate reads the directory name as a link.
+
+The prototype must draw three structural readings of the same history: a list of
+runs with the selected run read below it, a timeline that shows the rhythm of the
+schedule, and a comparison of the latest run against one earlier run. In all
+three, every run states its started and completed time, the newest run is marked
+*latest*, the last five fire times are visible with the sentence that they are
+derived from runs, and any run can be opened. The prototype must also simulate
+the arrival of a new run, because a static page cannot receive an event, and
+must then follow the Recency pattern of the
+[[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] standard: the refresh control
+draws the eye, a notice says the open run is no longer the latest, the page
+neither navigates nor takes focus, and a reload marks the new rows for three
+seconds unless the person has turned the marking off.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =report_definition= | The header: name, party, report type, schedule expression, scheduler job and owner. The history is of one definition, so the definition is the scope of every row | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_instance= | One row of the history: state, =started_at=, =completed_at=, =output_message= and =output_storage_key=. The order, the latest marker and both timestamps come from here | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =report_error_event= | The errors of the run the person opens: severity, scope, message and subject | [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] |
+| =report_instance_kind= | The kind of run an earlier one was, so a person comparing two runs knows that one of them stopped early | [[id:79A42255-AACC-43BA-B876-60D421F6DBD0][ores.reporting.report_instance_kind]] |
+| =party= | The owner of the definition and of every run: the party code and name in the header | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+The definition is the scope and the run is the row. The runs of the definition
+are the =report_instance= rows whose =definition_id= is its id, ordered by
+=started_at= descending; the newest is the first of them. Two runs that started
+in the same second have no stored tie-break, so the order needs the run's id as
+a second key, and *What is missing* states it. The fire times are the
+=started_at= values of the last five of those runs, and they are labelled as
+derived from runs rather than read from the firings. Neither the latest run, the
+fire times nor the error count is a stored field: the screen derives all three,
+and *What is missing* states the reads that would spare it.
+
+=party_id= is on every one of these entities and every read is party-scoped by
+row-level security. The definition and the run are bitemporal, so the header
+shows the definition as it is now, while each run carries the state and the
+output it recorded then.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the history | Read the one definition the history is of | =reporting.v1.report_instances.get= | exists |
+| Read the runs | List the runs of the definition | =reporting.v1.report_instances.list= | exists |
+| Open any run | Read one run, including a failed one or one carrying errors | =reporting.v1.report_instances.get= | exists |
+| Read the run's errors | List the errors of the run the person opened | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
+| Leave a run open | Learn that a new run of this definition was created | =reporting.v1.report_instances_events.created= | exists |
+| Reload the history | Learn that a run changed, which is how a running run becomes a completed one | =reporting.v1.report_instances_events.updated= | exists |
+| See the previous fire times | Read when the schedule fired, whether or not a run survived | (no read of =report_trigger_event= over NATS) | missing |
+| Say when the next run is due | Read the scheduler job behind the definition's =scheduler_job_id= | (no scheduler read) | missing |
+| The screen itself | Read one definition with its runs in one answer | (no BFF route) | missing |
+
+The two run reads are gated by =reporting::report_instances:read=, and the error
+read by =reporting::report_error_events:read=. The error read is held by no role
+below =TenantAdmin= and =SuperAdmin=, so a trading desk can open a run that
+carries errors and cannot read the errors behind it until a role below those two
+is granted the read. That is the permission gap [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] states in full.
+
+=reporting.v1.report_instances_events.created= is the real signal behind step 6,
+and =reporting.v1.report_instances_events.updated= is the real signal behind a
+row that changes state in place. The screen uses them and does not poll. No event
+exists for =report_trigger_event=, so a firing that produced no run sends nothing
+at all, and the one signal this journey most needs is the one it cannot subscribe
+to.
+
+No BFF route serves this screen. The prototype adds one, for example
+=GET /api/reporting/reports/<definition-id>/runs=, which reads the definition,
+its runs in one page and the error counts for the runs shown, and returns the
+health words and the five fire times already derived. The handler authenticates
+the caller's token and checks the run read code, and the row-level policy narrows
+the reads to the session's party.
+
+* What is missing
+
+1. *No read of =report_trigger_event=, so a firing that produced no run is
+   invisible.* The five previous fire times are the runs that exist, ordered by
+   =started_at=, and they are not the firings. A firing whose run was skipped by
+   the definition's concurrency policy, =skip=, =queue= or =fail=, recorded
+   nothing the screen can read. A firing the scheduler refused recorded nothing
+   either. Both leave a gap in the five, and the screen cannot tell a quiet
+   window from a firing that happened and produced no run. *This is the central
+   gap of this journey*: the question "did this report run every hour
+   yesterday?" has no answer on a screen that can only read runs. A read of the
+   trigger events over NATS would close it, and [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] states the same gap from the scheduling end.
+2. *No read of the scheduler job, so the screen cannot say when the next fire is
+   due.* The definition stores =scheduler_job_id= and the job holds the
+   recurrence, its =is_active= flag and its next due time. The screen can repeat
+   the cron expression and cannot say when it will next fire, so "the next one
+   should be at 08:00" stays the reader's own arithmetic.
+3. *No BFF route serves reporting.* No route serves this screen either, and
+   nothing in the web application shows a report today. The history panel, its
+   fire-time strip and its recency behaviour are all new.
+4. *No read returns a definition with its runs.* The definition and its runs are
+   two reads, and the history is a join the screen performs. A definition with
+   two years of runs is a list of runs the browser filters by
+   =definition_id=, and the list is paged without the filter the screen needs.
+   A read of the runs of one definition, newest first, is the missing read.
+5. *No read counts errors for a set of runs.* The screen reads the errors of the
+   run the person opens, and the row's error count needs a count per run. A page
+   of fifteen runs is fifteen error reads after the run list.
+6. *The order has no stored tie-break.* "Newest first" is =started_at=
+   descending, and two runs that started in the same second have no order
+   between them. The latest marker and the first row must agree, so the read
+   needs a stable second key or the server needs to state the latest run itself.
+7. *The previous load is not on the server.* The recency rule marks the rows that
+   are new since the last load, and the server does not hold what this person
+   last saw. The screen keeps that in the browser, so the marking is a property
+   of one tab and is lost on a new one. Nothing in this set states the last load
+   for a person.
+8. *A run carries no trigger.* A run records that it started and no field says
+   what started it: a firing, a person pressing run now, or an upstream
+   workflow. The history can show that an unscheduled run appeared and cannot say
+   why, because the answer is the trigger event the screen cannot read.
+
+* Related journeys
+
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door whose rows lead here, and the journey that owns the five health words these rows use
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — what one row of the history left behind, opened from the run
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — a run that failed or completed while carrying errors, read down to the trade, the analytic or the curve
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the newest run while it is still going, and the run the arrival notice names
+- [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] — the schedule that produces the rhythm the fire times show
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] — the definition, the instance and the states between them
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — the phases a run walks, and why =completed_at= is later than =started_at=
+- [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] — the cycle and frequency that decide the rhythm of the fire times
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — the component these journeys read
+- [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] — the row the history is made of
+- [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] — the errors an opened run carries
+- [[id:F489BD14-CB2D-445F-9EDC-0CF4AC7F2A42][Change notification]] — the events the recency rule listens to
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how a screen of this group composes its reads
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows, including the recency rule the arrival notice obeys
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Task: Extract the ores.reporting user journeys]] — the work that owns it
+- [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] — the report the prototype's history is of
+- [[id:DF1F4A61-319E-475D-B526-5DC6B62DCF3F][Sample bundle smoke test]] — the report an engineer compares a good run against a bad one on

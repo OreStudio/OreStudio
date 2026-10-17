@@ -213,6 +213,16 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    /**
+     * @brief Reads the run that started last, for each definition named.
+     *
+     * A definition that has never run has no entry, and the rows of other
+     * parties are not the caller's to read: the store's policy decides that,
+     * not this method.
+     */
+    std::vector<domain::report_instance>
+    read_latest_by_definition_ids(context ctx,
+                                  const std::vector<boost::uuids::uuid>& definition_ids);
 
 private:
     /**

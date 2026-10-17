@@ -86,9 +86,15 @@ ctx.generate_uuid()
 :type:     uuid
 :cpp_type: boost::uuids::uuid
 :nullable: false
+:filterable: true
 :END:
 
 The report definition that produced this instance.
+
+The column is filterable so that a caller asking for the runs of the
+definitions a party owns sends their ids, rather than paging the party's whole
+run history and discarding the rest. The filter record then carries
+=definition_id= and =definition_id_one_of=.
 
 #+begin_src cpp :name generator
 ctx.generate_uuid()
@@ -268,6 +274,58 @@ the instance rather than minted beside it.
     v.trigger_id = ores::reporting::tests::write_trigger_for(party_ctx, ctx, v).id;
 #+end_src
 
+* Messages
+
+The =get_latest_by_definition= pair, declared here so both the C++ header and its
+TypeScript twin render it. It answers the question the reports-a-party-runs
+screen asks of a list of runs: which of each definition's runs started last. The
+answer is one row per definition asked for, so the cost grows with the
+definitions a party owns rather than with the runs it has made.
+
+** get_latest_report_instances_by_definition_request
+:PROPERTIES:
+:subject: reporting.v1.report_instances.get_latest_by_definition
+:response: get_latest_report_instances_by_definition_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the run of each named definition that started last.
+ *
+ * The caller asks once with the ids a read of the definitions returned, so it
+ * pays for one row per definition. The request names no party: the session
+ * scopes the answer through the row-level security on the table.
+ */
+#+end_src
+
+*** definition_ids
+:PROPERTIES:
+:cpp_type: std::vector<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief The definitions to answer for, in any order. */
+#+end_src
+
+** get_latest_report_instances_by_definition_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** instances
+:PROPERTIES:
+:cpp_type: std::vector<ores::reporting::domain::report_instance>
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief At most one run per definition asked for, and no entry for a
+     * definition that has never run.
+     */
+#+end_src
+
 * C++
 
 ** Flags
@@ -366,6 +424,163 @@ the instance rather than minted beside it.
 | ModifiedBy    | modified_by    | Modified By | string    | 120   |
 
 ** Custom repository methods
+
+*** read_latest_by_definition_ids
+
+Reads the run that started last, for each of the definitions named. This cannot
+be templated: the generated list offers offset and limit over the rows the
+policy admits, so a caller that wanted one row per definition would page the
+party's whole run history and reduce it in C++. The store answers the question
+in one statement instead, and the reduction never leaves the database.
+
+The rows themselves are read back through the generated =read_latest(context,
+ids)=, so the entity, the mapper and the tenant and validity conditions are the
+same code the generated reads use.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads the run that started last, for each definition named.
+     *
+     * A definition that has never run has no entry, and the rows of other
+     * parties are not the caller's to read: the store's policy decides that,
+     * not this method.
+     */
+    std::vector<domain::report_instance>
+    read_latest_by_definition_ids(context ctx,
+                                  const std::vector<boost::uuids::uuid>& definition_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::report_instance>
+report_instance_repository::read_latest_by_definition_ids(
+    context ctx, const std::vector<boost::uuids::uuid>& definition_ids) {
+    if (definition_ids.empty())
+        return {};
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading the latest instance of "
+                               << definition_ids.size() << " definition(s).";
+
+    // One bound array rather than one parameter per id, so a party with a
+    // hundred definitions is still one statement.
+    std::string id_array("{");
+    for (std::size_t i = 0; i < definition_ids.size(); ++i) {
+        if (i > 0)
+            id_array += ',';
+        id_array += boost::uuids::to_string(definition_ids[i]);
+    }
+    id_array += '}';
+
+    // The run that started last is the greatest started_at. A run cancelled or
+    // skipped before it started has no started_at, so valid_from decides
+    // between those, and NULLS LAST keeps a started run ahead of one that
+    // never started. The tenant and the policy on the table narrow the scan
+    // exactly as they do for the generated reads; no party is stated here.
+    const auto rows = ores::database::repository::execute_parameterized_string_query(
+        ctx,
+        "SELECT DISTINCT ON (definition_id) id::text"
+        " FROM ores_reporting_report_instances_tbl"
+        " WHERE tenant_id = $1::uuid"
+        "   AND valid_to = ores_utility_infinity_timestamp_fn()"
+        "   AND definition_id = ANY($2::uuid[])"
+        " ORDER BY definition_id, started_at DESC NULLS LAST, valid_from DESC",
+        {ctx.tenant_id().to_string(), id_array},
+        lg(),
+        "Reading the latest instance of each definition");
+
+    if (rows.empty())
+        return {};
+    return read_latest(ctx, rows);
+}
+#+end_src
+
+** Custom service methods
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief The run of each named definition that started last.
+     *
+     * A definition that has never run has no entry, which is what the caller
+     * draws as "never run" rather than as a clean run.
+     */
+    messaging::get_latest_report_instances_by_definition_response
+    get_latest_report_instances_by_definition(
+        const messaging::get_latest_report_instances_by_definition_request& request);
+#+end_src
+
+#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+messaging::get_latest_report_instances_by_definition_response
+report_instance_service::get_latest_report_instances_by_definition(
+    const messaging::get_latest_report_instances_by_definition_request& request) {
+    messaging::get_latest_report_instances_by_definition_response response;
+    // The cap is the same one the generated filters state, so one caller
+    // cannot ask the store for more rows than the list reads allow.
+    if (request.definition_ids.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "definition_ids", .limit = "1000"});
+        return response;
+    }
+    response.instances = repo_.read_latest_by_definition_ids(ctx_, request.definition_ids);
+    return response;
+}
+#+end_src
+
+** Custom NATS handler methods
+
+#+begin_src cpp :name declaration :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    /**
+     * @brief Serves reporting.v1.report_instances.get_latest_by_definition.
+     *
+     * A read of the party's runs, so it is gated by the same code the generated
+     * run reads are gated by.
+     */
+    void get_latest_report_instances_by_definition(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            report_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "reporting::report_instances:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<get_latest_report_instances_by_definition_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(report_instance_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::report_instance_service svc(req_ctx);
+        try {
+            auto response = svc.get_latest_report_instances_by_definition(*req);
+            BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_instance_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_latest_report_instances_by_definition_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+#+end_src
+
+** Custom NATS subscriptions
+
+#+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
+    subs.push_back(nats.queue_subscribe(
+        get_latest_report_instances_by_definition_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) {
+            h->get_latest_report_instances_by_definition(std::move(msg));
+        }));
+#+end_src
 
 * See also
 

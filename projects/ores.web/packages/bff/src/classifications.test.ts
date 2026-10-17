@@ -165,8 +165,8 @@ describe('the labels', () => {
             'refdata.v1.rounding_types.list': {
                 result: ok,
                 types: [
-                    { version: 1, code: 'Up', name: 'Up', display_order: 1 },
-                    { version: 1, code: 'Odd', name: 'Odd', display_order: 2 },
+                    { version: 1, code: 'Up', name: 'Up', display_order: 1, recorded_at: '2026-10-01 10:00:00.000000Z' },
+                    { version: 1, code: 'Odd', name: 'Odd', display_order: 2, recorded_at: '2026-10-01 10:00:00.000000Z' },
                 ],
             },
             'dq.v1.badge_mappings.list_by_code_domain_code': {
@@ -193,7 +193,15 @@ describe('the labels', () => {
         const { server, sessionId } = buildTestServer({
             'refdata.v1.rounding_types.list': {
                 result: ok,
-                types: [{ version: 1, code: 'Up', name: 'Up', display_order: 1 }],
+                types: [
+                    {
+                        version: 1,
+                        code: 'Up',
+                        name: 'Up',
+                        display_order: 1,
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
+                ],
             },
         });
         const response = await send(server, sessionId, 'GET', '/api/classifications/rounding-type');
@@ -230,7 +238,9 @@ describe('the labels', () => {
         const { server, sessionId, calls } = buildTestServer({
             'refdata.v1.day_counters.list': {
                 result: ok,
-                day_counters: [{ version: 1, code: 'A360' }],
+                day_counters: [
+                    { version: 1, code: 'A360', recorded_at: '2026-10-01 10:00:00.000000Z' },
+                ],
             },
             'dq.v1.badge_mappings.put': { result: ok },
         });
@@ -260,7 +270,14 @@ describe('the labels', () => {
         const { server, sessionId, calls } = buildTestServer({
             'refdata.v1.rounding_types.list': {
                 result: ok,
-                types: [{ version: 1, code: 'Up', name: 'Up' }],
+                types: [
+                    {
+                        version: 1,
+                        code: 'Up',
+                        name: 'Up',
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
+                ],
             },
         });
         const response = await send(
@@ -281,7 +298,14 @@ describe('the labels', () => {
         const { server, sessionId, calls } = buildTestServer({
             'refdata.v1.rounding_types.list': {
                 result: ok,
-                types: [{ version: 1, code: 'Up', name: 'Up' }],
+                types: [
+                    {
+                        version: 1,
+                        code: 'Up',
+                        name: 'Up',
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
+                ],
             },
             'dq.v1.badge_mappings.delete': { result: ok },
         });
@@ -306,7 +330,14 @@ describe('GET /api/classifications/:list', () => {
             'refdata.v1.rounding_types.list': {
                 result: ok,
                 types: [
-                    { version: 1, code: 'Up', name: 'Up', description: 'Away', display_order: 10 },
+                    {
+                        version: 1,
+                        code: 'Up',
+                        name: 'Up',
+                        description: 'Away',
+                        display_order: 10,
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
                 ],
             },
         });
@@ -507,7 +538,7 @@ describe('GET /api/history', () => {
         const { server, sessionId, calls } = buildTestServer({
             'refdata.v1.history.get': {
                 success: true,
-                versions: [{ version: 1, modified_by: 'system', recorded_at: 't1' }],
+                versions: [{ version: 1, modified_by: 'system', recorded_at: '2026-10-01 10:00:00.000000Z' }],
             },
         });
         const response = await send(
@@ -525,7 +556,7 @@ describe('GET /api/history', () => {
         const { server, sessionId, calls } = buildTestServer({
             'iam.v1.history.get': {
                 success: true,
-                versions: [{ version: 2, modified_by: 'admin', recorded_at: 't2' }],
+                versions: [{ version: 2, modified_by: 'admin', recorded_at: '2026-10-02 10:00:00.000000Z' }],
             },
         });
         const response = await send(

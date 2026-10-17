@@ -79,7 +79,7 @@ const RUNS = {
             type: 'tenant_setup_workflow',
             status: 'in_progress',
             step_count: 4,
-            created_at: '2026-10-01T09:00:00Z',
+            created_at: '2026-10-01 09:00:00.000000Z',
             error: '',
             target_kind: 'tenant',
             target_id: ACME_TENANT,

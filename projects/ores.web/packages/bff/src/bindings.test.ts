@@ -157,7 +157,7 @@ const binding = (over: Record<string, unknown> = {}): Record<string, unknown> =>
     performed_by: 'op',
     change_reason_code: 'common.rectification',
     change_commentary: '',
-    recorded_at: '2026-10-13T08:15:00Z',
+    recorded_at: '2026-10-13 08:15:00.000000Z',
     ...over,
 });
 
@@ -402,7 +402,7 @@ describe('the history of a binding', () => {
             [LIST]: { result: ok, feed_bindings: [binding()], total: 1 },
             [HISTORY]: {
                 success: true,
-                versions: [{ version: 1, modified_by: 'op', recorded_at: 't1' }],
+                versions: [{ version: 1, modified_by: 'op', recorded_at: '2026-10-13 08:15:00.000000Z' }],
             },
         });
         const response = await send(server, sessionId, 'GET', url);

@@ -221,8 +221,8 @@ describe('GET /api/auth-events', () => {
 
         expect(response.statusCode).toBe(200);
         const body = calls[0]?.body as { from_time: string; to_time: string };
-        expect(body.from_time).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z$/);
-        expect(body.to_time).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z$/);
+        expect(body.from_time).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}Z$/);
+        expect(body.to_time).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}Z$/);
         expect(Date.parse(body.to_time)).toBeGreaterThan(Date.parse(body.from_time));
 
         await server.close();

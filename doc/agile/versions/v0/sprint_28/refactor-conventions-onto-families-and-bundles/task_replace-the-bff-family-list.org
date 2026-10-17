@@ -58,6 +58,23 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+* Notes
+
+- The work is done on PR #3479 and verified there: the BFF builds its family
+  tables from a generated TypeScript twin of the registry, and the staging
+  entities gained their missing TypeScript because that branch regenerated the
+  TypeScript facets as well as the C++ and SQL ones. Typecheck passes and the
+  BFF's 779 tests pass on that branch.
+- The PR does not merge: it conflicts with #3474 in
+  =convention_family_registry.py= and =regenerate_convention_family_registry.py=,
+  because both changed the generator. Resolving it means taking main's generator
+  as the base and re-applying the TypeScript rendering, then regenerating and
+  re-running the checks. Do not resolve it by dropping the twin, which would
+  leave the BFF reading a generated file that regeneration deletes.
+- The staging TypeScript gap was not a deliberate exclusion. The staging branch
+  generated the C++ and SQL addresses only and never ran the TypeScript facets,
+  so the fix is to regenerate every facet for a new entity, not to add files by
+  hand.
 
 * Test Scenarios
 

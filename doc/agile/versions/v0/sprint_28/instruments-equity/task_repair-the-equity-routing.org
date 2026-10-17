@@ -62,7 +62,7 @@ task and name that file in the Command column.
 | Equity codes the catalogue routes to a product table | 17 | the =instrument= column of =ores.trading.trade_type_catalogue.org= | 06cee39705 |
 | Equity codes with an empty =instrument= | 13 | as above | 06cee39705 |
 | Codes routed to =composite_instrument= | 2, =TotalReturnSwap= and =ContractForDifference= | as above | 06cee39705 |
-| ORE core suite after the change | 483705 assertions in 718 cases, all pass | =ores.ore.core.tests= | 50f2ef18fa |
+| ORE core suite after the change | 483711 assertions in 719 cases, all pass | =ores.ore.core.tests= | e82322bf99 |
 
 * Notes
 
@@ -105,7 +105,7 @@ deleted, and both reverse mappers lost =outer_trade_type= and the wrapper
 that rebuilt a swap around a position. Five files, 47 insertions and 112
 deletions.
 
-=ores.ore.core.tests= passes: 483705 assertions in 718 cases.
+=ores.ore.core.tests= passes: 483711 assertions in 719 cases.
 
 The corpus has no top-level position document, so the mapper test takes the
 sub-trade out of the swap fixture and maps it as the top-level trade it now

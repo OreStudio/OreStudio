@@ -66,6 +66,7 @@ set(files
     "counterparty_identifier_change_commands_tests.cpp"
     "counterparty_identifier_commands_tests.cpp"
     "country_commands_tests.cpp"
+    "credit_limit_commands_tests.cpp"
     "crm_driver_pair_commands_tests.cpp"
     "crm_enabled_derived_pair_commands_tests.cpp"
     "crm_topology_config_commands_tests.cpp"

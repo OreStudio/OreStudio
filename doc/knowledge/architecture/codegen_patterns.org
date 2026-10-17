@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :architecture:codegen:modeling:patterns:
 #+created: 2026-10-14
-#+updated: 2026-10-14
+#+updated: 2026-10-17
 
 * Summary
 
@@ -28,13 +28,19 @@ schema owns the flags.
 
 ** How to choose
 
-1. Name the data shape first. What is keyed, what varies on its own, what
+1. Classify the data first. Is it an entity, a list, a family, a bundle
+   or a boundary artefact? The classification is a closed set and it
+   decides which patterns below are allowed:
+   [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications:
+   entity, list, family, bundle and artefact]]. A pattern never chooses
+   the classification.
+2. Name the data shape next. What is keyed, what varies on its own, what
    is shared, what is optional, what is many. The shape decides the
    pattern, and a shape that is not yet decided has no pattern.
-2. Find the row below that answers the shape.
-3. If two patterns both seem to fit, the shape is not settled. Settle the
+3. Find the row below that answers the shape.
+4. If two patterns both seem to fit, the shape is not settled. Settle the
    shape, or split the work, rather than composing both.
-4. If no pattern fits, stop. Do not invent a flag combination. Report the
+5. If no pattern fits, stop. Do not invent a flag combination. Report the
    gap, because a shape the generator cannot express is a finding, and a
    hand-composed model that no facet consumes generates nothing.
 
@@ -45,6 +51,7 @@ schema owns the flags.
 | =ores.codegen.entity= | a table with a key, a lifecycle and a protocol | table, entity, domain type, mapper, repository, service, protocol, events and UI hooks |
 | =ores.codegen.lookup_entity= | a coded, seeded reference table with no lifecycle | the table and its seed path, loaded in bulk |
 | =ores.codegen.junction= | a many-to-many link between two entities | the join table, its struct, and the reads from both sides |
+| =ores.codegen.family= | an entity whose parts must be written together, one owner | the family protocol: =<family>_key=, =<family>_item=, =<family>_write= and the four verb pairs |
 | =ores.codegen.field_group= | a value shape reused by several entities, with no table of its own | a C++ header, composed into the entities that name it |
 | =ores.codegen.operation= | messages that are not an entity's derived CRUD, such as a document or a domain operation | the protocol messages and the handler |
 | =ores.codegen.module= | an index that groups a namespace's entity documents | no output of its own |
@@ -157,6 +164,10 @@ is the set of parts its family protocol names.
 
 * See also
 
+- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle and artefact]] — the
+  closed set of classifications that comes before this page's choice.
+- [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the form that records the
+  classification and the pattern it selected.
 - [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — the syntax for every pattern
   here, per model kind.
 - [[id:471815CD-A377-4101-A4F8-E6962CD8469D][Entity naming]] — the name each

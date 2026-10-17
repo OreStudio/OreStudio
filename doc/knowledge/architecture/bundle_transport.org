@@ -1,0 +1,324 @@
+:PROPERTIES:
+:ID: 0BA30CC1-18C8-48CC-8243-8912880F8DEC
+:END:
+#+title: Transporting a bundle
+#+description: How a bundle travels: a content-addressed artefact in object storage with a modelled manifest, a coordinator that reads only the manifest and sends one part reference per owner, a per-owner transaction, sequencing and a sandbox in place of global atomicity, per-part progress and retry, and an as_of instant that makes a stale import detectable.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:modelling:classification:nats:storage:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+* Summary
+
+A bundle is many entities of different kinds that must arrive together
+because a cross-type invariant holds at one instant: an environment
+export, an archive, a portfolio-wide conversion. A portfolio may span
+every instrument type the system holds, so a bundle can be very large and
+fully heterogeneous. No message type can enumerate its kinds.
+
+The bundle therefore travels as an artefact in object storage with a
+manifest. The manifest is a modelled operation type: small, declared,
+versioned and validated. A coordinator reads only the manifest and sends
+one message per owner. Each message carries a part reference and never
+the data. Each owner loads its part, validates it against its own model,
+and applies it atomically in its own transaction.
+
+Atomicity is per owner by construction, and global atomicity across
+owners is not available. Consistency comes from sequencing, from a stated
+=as_of= instant, and from a sandbox that lets a person examine the result
+before it is live. Progress and retry are per part.
+
+* Detail
+
+** What a bundle is, and what it is not
+
+A bundle is a classification, not a file format and not a large message.
+It is sanctioned by
+[[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][the bundle classification]]
+when a cross-type invariant must hold at one instant and several owners
+hold the types.
+
+A bundle is *not* one of these:
+
+- not an aggregate struct with one typed array per kind. That is the
+  anti-type, and it fails as soon as the kinds are open.
+- not a document parser. Parsing another owner's format is that owner's
+  job, at its own boundary.
+- not a distributed transaction. No transaction spans two databases
+  here, and none should be introduced to make a bundle feel atomic.
+- not a message that carries the bytes. A message carries a reference.
+
+The design constraint is the heterogeneity, not the size. Size makes the
+transport worth designing; heterogeneity is why the transport cannot
+name the types.
+
+** The artefact is content-addressed
+
+The bytes go to
+[[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] before any
+owner is told about them. One bundle has one artefact, or one artefact
+per part, under a bucket and an opaque key.
+
+- *Content-addressed.* The key derives from the content, or the manifest
+  records a checksum that is verified before the bytes are used. Two
+  uploads of the same part converge on one object, so a retried upload
+  costs nothing and creates no second truth.
+- *Immutable.* A put replaces a whole object and there is no append. A
+  part that must change gets a new artefact and a new manifest.
+- *Opaque to the store.* Storage never parses a bundle, and never learns
+  what a part means. That is what lets a bundle hold kinds one component
+  has never heard of.
+- *Retained as evidence.* An imported bundle is the evidence of what was
+  imported and when. It is kept by key, not copied into a table.
+
+The artefact is *not* an opaque archive in the sense this page forbids
+below. The difference is the manifest: the bundle is a manifest plus
+named parts, not one self-describing blob.
+
+** The manifest is a modelled operation type
+
+The manifest is the routing table, and it is a first-class type:
+
+- It is declared in a codegen operation model, so it is generated, with a
+  codec and a schema. It is never free-form JSON, never a =std::string=
+  field holding JSON, and never inferred from the payload.
+- It is versioned. =bundle_format_version= states the manifest layout, so
+  a reader can refuse a version it does not know instead of guessing.
+- It is small. A manifest that carries data has become the message the
+  bundle exists to avoid.
+- It is the only part of the bundle a coordinator reads.
+
+** What the manifest carries**
+
+#+ATTR_HTML: :class hug-leading
+| Field | Meaning |
+|-------+---------|
+| =bundle_format_version= | The layout version of the manifest and its part records. A reader refuses an unknown version. |
+| =producer= | The service and version that built the bundle. It names the origin, not the owner of the data. |
+| =as_of= | The bitemporal instant the bundle is a view of. See [[*as_of makes a stale import detectable][as_of]] below. |
+| =target= | Where the bundle applies: the sandbox, its anchor, and the party it applies as. |
+| =parts[]= | One record per part. Each record names its owner, the kind, the format, the row count, the checksum and the URI. |
+
+The target is not decoration. A bundle with no target either applies to
+world data or is refused, and both answers must be explicit. A bundle
+aimed at a sandbox applies inside that sandbox's isolation; the anchor
+decides who may open the sandbox and who may then see the result, per
+[[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]].
+
+** The part record**
+
+#+ATTR_HTML: :class hug-leading
+| Field | Meaning |
+|-------+---------|
+| =owner= | The service that owns the kind and will apply the part. This is the routing field: one part, one owner. |
+| =kind= | The entity kinds the part holds, for diagnostics and for the owner's own validation. |
+| =format= | The encoding of the bytes, including its version, so the owner parses with the codec it expects. |
+| =row_count= | The expected number of records. It drives progress and catches a truncated upload. |
+| =checksum= | The content hash. The owner verifies it before applying a row. |
+| =uri= | The bucket and key of the part's bytes. |
+
+A part may carry more, such as a byte length or a compression name, and
+none of it changes the rule: the record names data, it never contains it.
+
+`owner` is what makes the set a bundle rather than a union. A part whose
+owner is unknown is a manifest error; a part with two owners is two
+parts.
+
+** The coordinator reads only the manifest
+
+The coordinator is the operation's front end. It:
+
+1. stores the artefact and computes the checksums;
+2. validates the manifest: version, target, the required fields, and that
+   every part names an owner;
+3. sends one message per owner, in the manifest's order;
+4. collects one reply per part and records per-part progress;
+5. retries or reports per part, and never re-runs the whole bundle to fix
+   one part.
+
+The coordinator does not parse another owner's data. It may check that a
+part exists and that its bytes match the recorded checksum, because that
+reads bytes without interpreting them. Interpretation belongs to the
+owner, and
+[[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] is
+why: the coordinator has no schema for another service's rows, so any
+parse it performs is a second model that can only drift. The same rule is
+recorded in
+[[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes
+another component's tables]].
+
+** One message per owner, carrying a reference**
+
+A part message is small, typed and bounded. It carries:
+
+- the bundle id and the correlation id;
+- the part: owner, kind, format, row count, checksum and URI;
+- the manifest's =as_of= and =target=;
+- nothing else. Not the rows, not the document, not an archive.
+
+The message is a request with a deadline, per
+[[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]]. Its reply
+names the part and reports applied, rejected or failed, with the reason.
+
+One message per owner is the routing rule. A bundle with three owners
+sends three messages. A bundle with one owner is not a bundle: it is a
+family or a series of entity writes, and it should be modelled that way.
+
+** The owner applies its part atomically**
+
+The owner's step is the only step that writes rows, and it writes only
+its own:
+
+1. Read the part from the URI and verify the checksum.
+2. Parse it with the codec the =format= names, and validate it against
+   the owner's own model: required fields, keys, references it owns.
+3. Apply the whole part in one transaction, or reject it whole.
+4. Stamp the session's tenant and party, never a value from the payload.
+5. Reply with the counts and, on failure, the reason.
+
+The transaction is the owner's, so the part is the unit of atomicity. A
+failure halfway rolls back that part alone. No other owner sees a partial
+write, and no other owner is asked to compensate.
+
+** Atomicity is per owner, by construction**
+
+- *Global atomicity across owners is not available.* Two services own
+  two databases, and no transaction spans both. A two-phase commit would
+  couple every owner's availability to the coordinator's, which the
+  component boundaries forbid.
+- *Per-owner atomicity is the guarantee.* Each part is all or nothing,
+  and a bundle's manifest names exactly which parts exist.
+- *A bundle that needs global rollback is a modelling error.* If the
+  invariant truly needs every owner to commit together, the data belongs
+  under one owner or the operation is not a bundle. Split the invariant
+  until each part holds locally, or accept the sandbox below.
+
+State this limit in the operation's own page. A caller who believes a
+bundle is globally atomic will not build the retry it needs.
+
+** Consistency by sequencing**
+
+The order in the manifest is the order of application, and a part starts
+only after its predecessor's reply where the invariant has a direction.
+An environment export imports reference data before the configuration
+that names it, and trades before the structures that group them.
+
+Two rules follow:
+
+- *Order what must be ordered.* If a part's rows reference another
+  owner's rows, the referenced part is applied first, and the manifest
+  says so by position.
+- *Do not invent an order that does not exist.* Where no part constrains
+  another, they apply independently, and the =as_of= instant is what
+  makes the set coherent rather than the sequence.
+
+A bundle that is complete when every part reports applied is a bundle
+whose parts all resolve at the same instant. That, not a transaction, is
+the consistency it delivers.
+
+** The sandbox for examine-before-live**
+
+The sandbox is the compensating control for the missing global
+transaction, and it is where an import is examined.
+
+- The bundle applies into a sandbox, so a wrong part is discarded with
+  the whole sandbox rather than repaired row by row in live data.
+- The sandbox keeps the official rows untouched and isolates trades by
+  where they are booked and by what they are, per
+  [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]].
+- Promotion from the sandbox to live data is a separate, smaller
+  operation with its own review. It is not a retry of the import.
+
+** Progress and retry are per part**
+
+- *Progress.* The coordinator records each part as pending, applied or
+  rejected, with its row count and reason. The bundle's progress is the
+  set of its parts, not a percentage of a blob.
+- *Retry.* A retry re-sends the part reference. The artefact is
+  immutable, so the retry reads the same bytes, and an idempotent apply
+  converges. A part applied twice is applied twice with the same result.
+- *Rejection.* A rejected part is a finding about the data, not a
+  transport failure. It is reported with the row or key that failed, and
+  the other parts are not rolled back.
+- *No whole-bundle restart.* Restarting the coordinator re-offers the
+  outstanding parts only. A retried bundle does not re-upload the
+  artefact.
+
+** Never carry an opaque archive in a message**
+
+An opaque self-describing archive is bytes that carry their own
+structure: a tar, a zip, a document. It must never be a field inside a
+message, and the bundle transport is the reason the rule is worth
+stating.
+
+| What it defeats | Why |
+|-----------------+-----|
+| Validation | The receiver cannot check a row before it acts. It must unpack first, so the failure surfaces after the message was accepted. |
+| Routing | One blob has no owner per kind, so the coordinator cannot dispatch per owner, and no service knows which part is its business. |
+| Per-part retry | A failed row means re-sending the whole archive, so a retry costs the bundle. |
+| Progress | "Half the archive" is not a reportable state. |
+| The encoded-value rule | A message field that holds an encoded value has no static type at either end; see [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]]. |
+| Size | A message has a practical bound, and a bundle does not. Object storage is the store for bytes with no schema. |
+
+The manifest is the opposite of an archive: declared, small, versioned
+and validated before a single row moves.
+
+** as_of makes a stale import detectable**
+
+The =as_of= field is the bitemporal instant the bundle is a view of, per
+[[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps]].
+
+Without it, an import is last-writer-wins. A bundle built yesterday is
+applied today, overwrites rows that changed in between, and reports
+success. Nothing in the exchange says the data is old.
+
+With it, the owner compares the instant to its rows before it applies:
+
+- a part whose =as_of= is older than the owner's own latest change is
+  detectable, and can be rejected or flagged instead of applied;
+- every part resolves at the same instant, so the set is one view of the
+  world rather than a mixture of two;
+- the exchange records which instant was imported, so a later
+  investigation can tell a stale bundle from a wrong one.
+
+The =as_of= is a statement by the producer. The owner still decides what
+to do with a stale part; the manifest only makes it visible.
+
+** What a bundle must not become**
+
+- A struct with one typed array per kind. That is the anti-type in
+  [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]].
+- A coordinator that parses another owner's format.
+- A distributed transaction, or a caller that believes in one.
+- A free-form JSON manifest, or a manifest inferred from the payload.
+- A message that carries the bytes.
+- A one-owner bundle, which is a family or a series of entity writes.
+- A bundle for an invariant that a family already holds. If one owner
+  and one central row carry it, use
+  =ores.codegen.family=, not this transport.
+
+* See also
+
+- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle and artefact]]
+  — the classification this transport delivers, and the anti-type it
+  replaces.
+- [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the form whose answers select
+  this transport.
+- [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the store the artefact lives in, and its key rule.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — the structure note that places the artefact against
+  the database and the stream.
+- [[id:D5F77B10-D498-4B56-ADF7-7E5CEFA44FA0][Database per Service]] — why the coordinator does not parse another
+  owner's data.
+- [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]] — the same
+  rule as a memory.
+- [[id:49F0A1B2-C3D4-4E5F-8A71-8293A4B5C6D7][Bounded Request]] — the deadline every part message carries.
+- [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic payloads over NATS]] — the encoded-value rule the
+  archive field breaks.
+- [[id:4AAD3581-CFA7-4B44-A2DD-0236784E939F][Time and Timestamps: Architecture and Conventions]] — the bitemporal
+  instant =as_of= names.
+- [[id:4AB0BC63-D73A-4FC3-B9AF-16C1BB90653F][Sandbox]] — the isolation the bundle applies into, and the
+  examine-before-live step.
+- [[id:4682A7D5-04FC-494B-BD7C-6816500EB3C9][Message Queue]] — the bus, the subject namespace and the message
+  contract.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this page belongs to.

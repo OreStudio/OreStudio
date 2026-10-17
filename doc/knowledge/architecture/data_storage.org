@@ -87,6 +87,9 @@ parses what it holds and never learns what a bucket means.
   the callers link.
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — the largest consumer, and the bucket and key
   scheme that compute owns.
+- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] — how a
+  bundle of several owners' data travels as a content-addressed artefact
+  with a manifest, so no message carries the bytes.
 
 ** Caches and derived copies
 

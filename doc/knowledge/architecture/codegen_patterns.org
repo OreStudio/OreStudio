@@ -28,12 +28,13 @@ schema owns the flags.
 
 ** How to choose
 
-1. Classify the data first. Is it an entity, a list, a family, a bundle
-   or a boundary artefact? The classification is a closed set and it
+1. Classify the data first. Is it an entity, a list, a family, a bundle,
+   a package or a boundary artefact? The classification is a closed set
+   and it
    decides which patterns below are allowed:
    [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications:
-   entity, list, family, bundle and artefact]]. A pattern never chooses
-   the classification.
+   entity, list, family, bundle, package and artefact]]. A pattern never
+   chooses the classification.
 2. Name the data shape next. What is keyed, what varies on its own, what
    is shared, what is optional, what is many. The shape decides the
    pattern, and a shape that is not yet decided has no pattern.
@@ -164,7 +165,7 @@ is the set of parts its family protocol names.
 
 * See also
 
-- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle and artefact]] — the
+- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle, package and artefact]] — the
   closed set of classifications that comes before this page's choice.
 - [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the form that records the
   classification and the pattern it selected.

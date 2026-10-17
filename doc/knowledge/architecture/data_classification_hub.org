@@ -2,7 +2,7 @@
 :ID: 8C011F45-3A10-4EF4-BB73-4BDEF38B743E
 :END:
 #+title: Data classification
-#+description: Structure note for the classification cluster: the closed set of classifications, the checklist that applies it, and the transport that carries a bundle, in the order a modeller needs them.
+#+description: Structure note for the classification cluster: the closed set of classifications, the checklist that applies it, and the transport that carries a package of bundles, in the order a modeller needs them.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:modelling:classification:structure_note:
@@ -17,10 +17,12 @@ records a classification and the pattern it selected, and the one transport a
 classification needs when its owners are several.
 
 The order is the argument. The classifications define the words and the
-invariant that sanctions each one. The checklist turns the definition into a
+relatedness test that sanctions each one, and keep a bundle distinct from a
+package. The checklist turns the definition into a
 decision recorded before a model is written. The transport assumes the
-decision, and says how a bundle crosses owners that cannot share a
-transaction. Read out of order, the transport is a mechanism with no reason
+decision, and says how a package crosses owners that cannot share a
+transaction, with the bundle as its atomic unit. Read out of order, the
+transport is a mechanism with no reason
 for existing and the checklist is a form with no definitions behind it.
 
 * Detail
@@ -28,33 +30,37 @@ for existing and the checklist is a form with no definitions behind it.
 ** Reading order
 
 1. [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications:
-   entity, list, family, bundle and artefact]] — start here. The set is
-   closed, which is what makes a set that fits none of it a finding rather
-   than a shape to invent. This page states the anti-type, the sentence
-   that refuses it, the decision rule, and the rule that a compile error
+   entity, list, family, bundle, package and artefact]] — start here. The
+   set is closed, which is what makes a set that fits none of it a finding
+   rather than a shape to invent. This page states the anti-type, the
+   sentence that refuses it, the decision rule, the relatedness test that
+   separates a bundle from a package, and the rule that a compile error
    does not reclassify data.
 
 2. [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification
    checklist]] — next, the form. Page one says which classification a set
-   is; this page asks for the invariant, the owners, the consistency point
+   is; this page asks for the invariant, the owners, the bundle-or-package
+   answer, the consistency point
    and the forbidden shape, in a fixed order, so the answer can be
    reviewed. Its worked examples apply the definitions to a list, a
-   family, a bundle and an ORE conventions file.
+   family, a bundle, a package and an ORE conventions file.
 
-3. [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] —
-   last, and only when page two answers Bundle. The classification states
-   that per-owner atomicity is the guarantee and global atomicity is not;
-   page three is the mechanism that keeps that promise — the manifest, the
-   archive and its parts, one message per owner, and the transactionality
-   the classification cannot supply across owners.
+3. [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] —
+   last, and only when page two answers Bundle or Package. The
+   classification states that the bundle is atomic in one owner's
+   =unit_of_work= and that a package is never atomic across bundles or
+   owners; page three is the mechanism that keeps that promise — the
+   manifest, the archive and its parts, one message per bundle, and the
+   transactionality no transaction can supply across owners.
 
 ** Where the classifications are applied
 
 The definitions settle what a set is. The catalogue settles which sets
 this system actually has:
-[[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle catalogue]]
-enumerates every candidate bundle in the code and the models, with its
-invariant or the finding that none exists, its owner count, the atomicity
+[[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle and package catalogue]]
+enumerates every candidate set in the code and the models, with its
+invariant or the finding that none exists, its owner count, whether it is
+a bundle or a package, the atomicity
 it has today with a file reference, the atomicity it requires, and its
 status. Read it after the three pages above: it is the evidence that the
 classification is decidable once, per set, instead of per feature.
@@ -73,7 +79,7 @@ and that order is authored here rather than computed from a title match.
 
 - The pattern library a classification selects from:
   [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing
-  a model shape]]. Step 6 of the checklist reads it, and it owns the
+  a model shape]]. Step 7 of the checklist reads it, and it owns the
   choice of pattern once the classification is fixed.
 - The regimes that judge a component's data model:
   [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE
@@ -91,9 +97,10 @@ and that order is authored here rather than computed from a title match.
 
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this
   structure note hangs from.
-- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle catalogue]] — the
-  enumeration of every bundle candidate in the code, its invariant, its
-  owners, its atomicity today and required, and its status. It applies this
+- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][The bundle and package catalogue]] — the
+  enumeration of every candidate set in the code, its invariant, its
+  owners, whether it is a bundle or a package, its atomicity today and
+  required, and its status. It applies this
   cluster to the sets the system holds, and it is where a modeller checks
   whether the set in front of them has already been classified.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a

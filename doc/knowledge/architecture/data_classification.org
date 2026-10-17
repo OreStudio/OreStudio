@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: B2D74E96-0353-4A3D-8CE5-3FC3C30D864C
 :END:
-#+title: Data classifications: entity, list, family, bundle and artefact
-#+description: The closed set of data classifications a modeller picks from before choosing a pattern: what each one is, when it is sanctioned, the pattern and wire shape that carry it, its atomicity scope, and the anti-pattern it replaces, with the decision rule and the anti-type.
+#+title: Data classifications: entity, list, family, bundle, package and artefact
+#+description: The closed set of data classifications a modeller picks from before choosing a pattern: what each one is, when it is sanctioned, the pattern and wire shape that carry it, its atomicity scope, and the anti-pattern it replaces, with the decision rule, the relatedness test that separates a bundle from a package, and the anti-type.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:modelling:classification:data_oriented_design:
@@ -19,6 +19,15 @@ instruments and legs, a portfolio destined for ORE XML, an environment
 export. The rows and the types are the same in both modes. What
 changes is what must hold at one instant, and therefore what a message
 may carry.
+
+A set of several kinds composes for one of two reasons, and the two
+give different artefacts. The kinds are *related* when an invariant
+must hold over all of them at one instant, or when one operation must
+apply all of them or none. Related kinds that one owner holds form a
+*bundle*, and one =unit_of_work= applies it. Kinds that are merely
+gathered — because they came from one system, one file or one export —
+form a *package*: bytes carrying bundles and a manifest, with no
+relatedness constraint and no atomicity of its own.
 
 This page defines a small, closed set of data classifications. Each one
 states what it is, the sanction to use it, the sanctioned pattern, the
@@ -48,10 +57,18 @@ only together when one of these is true:
 - A cross-type invariant must hold at one instant. A structure, its
   trades, its instruments and its legs must describe the same deal at
   the same instant, or the set is not a structure.
+- One operation must apply the set or none of it. A conventions import,
+  or a portfolio-wide correction, either lands whole or leaves nothing.
 - A boundary format needs the set at once. A portfolio destined for ORE
   XML carries every instrument kind the book holds.
 - An environment export reconstructs a working system from one
   snapshot: reference data, configuration and market data together.
+
+The first two are *relatedness*, and relatedness is what makes a
+bundle. The last two are *provenance*: the set is gathered because one
+file or one export holds it, and nothing joins its members. A set
+gathered by provenance travels as a package, and its members are
+bundles that a package carries, not one atomic set.
 
 The word scope is deliberate. A composed set is not a new kind of data.
 It is ordinary entities whose consistency requirement spans several
@@ -66,7 +83,7 @@ names whose cost grows with the square of the name count, and the
 instantiation exceeded the compiler's limit. It compiles on clang and on
 gcc.
 
-The compiler was not the design fault. The aggregate bundled 27
+The compiler was not the design fault. The aggregate held 27
 unrelated entity types because one ORE file contains them: every
 convention kind the document lists. File shape was mistaken for a
 consistency requirement.
@@ -84,11 +101,17 @@ gave a modeller a way to notice that. That is the gap this page closes.
 | Entity | one row and its parts | derived verbs, one typed array per part | the row |
 | List | one entity kind, many rows | one typed array, a page and a total | per element |
 | Family | one entity with parts written together | =<family>_item= and =<family>_write= | one owner, one transaction |
-| Bundle | many kinds, one instant, several owners | manifest plus part references | per owner |
+| Bundle | a set of related families, one owner | the bundle's part records in a manifest | one owner, one =unit_of_work=: the largest atomic thing |
+| Package | one or more bundles, any owners, plus a manifest | manifest plus part references | none as a whole: per bundle, per owner |
 | Artefact | an interchange file at the boundary | none: bytes in object storage | none, the conversion is |
 
-The five are exhaustive for the data this system moves. A set that
-needs two of them is two messages, not one shape.
+The six are exhaustive for the data this system moves. A set that
+needs two of them is two messages, not one shape. The last three are
+often confused, so the difference is stated once here: a *bundle* is a
+set of families that are related, and relatedness is the definition; a
+*package* is a set of bundles that need not be related, and it is never
+atomic as a whole; an *artefact* is another system's format, and it
+carries neither.
 
 ** Entity
 
@@ -135,7 +158,7 @@ whole; it is a page of rows.
 ordering, paging and the total.
 
 *The wire shape.* One typed array, a page offset, and a total. A list of
-several kinds is not a list: it is a bundle or several lists.
+several kinds is not a list: it is a bundle, a package, or several lists.
 
 *The atomicity scope.* Per element. A write to one element succeeds or
 fails on its own; there is no cross-element invariant, and a batch that
@@ -144,7 +167,6 @@ claims one is a bundle or a family in disguise.
 *The anti-pattern it replaces.* Reading a homogeneous set as one
 aggregate so that the aggregate can be saved whole; and a
 row-at-a-time callback where a page would do.
-
 ** Family
 
 *What it is.* One entity with parts that must be written together: one
@@ -200,36 +222,103 @@ type to fake a family. See
 
 ** Bundle
 
-*What it is.* Many entities of different kinds that must arrive
-together because a genuine cross-type invariant holds at one instant: an
-environment export, an archive, a portfolio-wide conversion. The kinds
-are open: a portfolio may span every instrument type the system holds,
-so no closed set of member types can name the bundle.
+*What it is.* A set of related families that one owner applies as one
+unit. The families are a family's central entity and its parts, each
+with a type, a key and a repository of its own; the bundle names the set
+of them that one operation writes. The set of families is open in
+number: a structure with its trades, its instruments and its legs is one
+bundle over trading's tables.
 
-*The sanction.* Use it when a cross-type invariant holds at one instant
-and several owners hold the types. Each owner has its own database and
-its own write path, and no owner may write another's rows.
+*The relatedness test, which is the definition.* The families in a
+bundle must share either (a) a data invariant that must hold at one
+instant, or (b) a single operation whose intent is all-or-nothing.
+Nothing else makes a bundle. Write the test as one sentence:
 
-*The sanctioned pattern.* An artefact in object storage, content
-addressed, with a manifest. A coordinator reads only the manifest and
-dispatches one message per owner. Each message carries a part reference,
-never the data. Each owner loads its part, validates it, and applies it
-atomically in its own transaction. The full transport is in
-[[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]].
+#+begin_quote
+These families may not be written apart because __________ must hold at
+one instant, or because one operation must apply all of them or none.
+#+end_quote
 
-*The wire shape.* The manifest, which is a modelled operation type, and
-one part-reference message per owner. The bundle's data never sits in a
-message field.
+- If the blank needs a file, a screen, a workflow step or a boundary
+  format to be true, the families are not related. The set is a package's
+  contents, and each family is its own bundle.
+- If the sentence names an invariant that covers only some of the
+  families, the set is two or more bundles. Split it at the invariant.
+- If the sentence covers every family and one owner holds them all, the
+  set is a bundle, and one =unit_of_work= applies it.
 
-*The atomicity scope.* Per owner, by construction. Global atomicity
-across owners is not available, because no transaction spans two
-databases. Consistency comes from sequencing, a stated =as_of= instant,
-and a sandbox for examine-before-live. Progress and retry are per part.
+*The sanction.* Use it when the relatedness test passes and one owner
+holds every family. A bundle never spans two owners, because no
+transaction does: a set that several owners must write is a package
+carrying one bundle per owner, which is the next classification.
+
+*The sanctioned pattern.* Each family is the generated
+=ores.codegen.family= model, and the bundle is the operation that writes
+them. A bundle served to another system is carried inside a package, as
+one bundle record in the package manifest. The transport is in
+[[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]].
+
+*The wire shape.* Inside a package, the bundle's part records in the
+manifest: one record per family, each a reference. On the wire, the
+bundle's own verbs are its families' operations. The bundle's rows never
+sit in a message field.
+
+*The atomicity scope.* One owner, one =unit_of_work=, over every family
+the operation names. A bundle is the largest thing that can be atomic on
+this platform: it is bounded by one owner's database and one
+transaction, and no mechanism extends it across owners. A failure
+halfway rolls the whole bundle back.
 
 *The anti-pattern it replaces.* One struct with a typed array per kind,
 built because one file, screen or workflow step lists the kinds
-together; and an opaque self-describing archive carried as a message
-field.
+together. That struct is not a bundle: it has no relatedness and no
+owner's transaction.
+
+** Package
+
+*What it is.* An artefact carrying one or more bundles plus a manifest,
+moved between systems as bytes. A package has no relatedness
+constraint: the bundles it carries need not be related to one another,
+may belong to different owners, and the package as a whole is never
+atomic. Relatedness is what makes a bundle a bundle; the absence of
+relatedness is what makes a package merely a package.
+
+*The sanction.* Use it when bytes must move between systems and the set
+of bundles is decided by provenance — one export, one import, one
+backup, one report run — and not by an invariant. A package is sanctioned
+even when its bundles have nothing in common, because its purpose is
+carriage, not consistency.
+
+*The sanctioned pattern.* A content-addressed artefact in object
+storage, with a generated manifest that describes the bundles and their
+parts. A coordinator reads only the manifest and dispatches one message
+per bundle, to that bundle's owner. Each owner loads its bundle,
+validates it, and applies it atomically in its own =unit_of_work=. The
+full transport is in
+[[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]].
+
+*The wire shape.* The manifest, which is a modelled operation type, and
+one part-reference message per bundle. The package's data never sits in
+a message field.
+
+*The atomicity scope.* None at the package level. Each bundle is atomic
+in its owner's transaction; the package as a whole is never atomic
+across bundles or owners, because no transaction spans two databases.
+Consistency comes from sequencing, a stated =as_of= instant, and a
+sandbox for examine-before-live. Progress and retry are per bundle.
+
+*The anti-pattern it replaces.* An opaque self-describing archive
+carried as a message field; and a package treated as a data model, so
+that provenance becomes an invariant.
+
+*The worked contrast.* A structure is a bundle: its trades and legs are
+related by an invariant, one owner holds them, and one =unit_of_work=
+writes them. An environment export is a package: refdata conventions,
+trading trades and marketdata fixings are in it because they came from
+one system, not because they are related, so no transaction joins them.
+A conventions import is a package carrying one bundle: the file lists 27
+kinds, refdata applies them under one all-or-nothing import, and the
+file is only the bytes that carried the bundle.
 
 ** Artefact (document-shaped)
 
@@ -269,8 +358,11 @@ a struct named after a file, a screen or a workflow step. The 27-array
 conventions document is one.
 
 It is not a family, because no key joins its members and no single
-transaction gives them one meaning. It is not a bundle, because it has no
-manifest, no owner boundary and no instant. It is a second type system
+transaction gives them one meaning. It is not a bundle, because its
+members are not related by an invariant or by one all-or-nothing
+operation, and no owner's transaction covers them. It is not a package,
+because it has no manifest, no owner boundary and no instant: a package
+carries bundles, and this carries none. It is a second type system
 written by hand, and the generator cannot check it.
 
 *The test.* Fill in this sentence without naming a file, a screen, a
@@ -286,9 +378,12 @@ must hold at one instant.
   data type. Split it.
 - If the sentence names an invariant that covers only some members, the
   set is two or more classifications. Split it at the invariant.
-- If the sentence names an invariant that covers every member and one
-  owner holds them, it is a family.
-- If it covers every member and several owners hold them, it is a bundle.
+- If the sentence names an invariant, or one operation that must apply
+  all or none, and one owner holds every member, the set is one Family or
+  one Bundle.
+- If the members are related but several owners hold them, no bundle
+  spans them: they are a Package carrying one bundle per owner, and no
+  transaction joins the bundles.
 
 A union that answers none of these is refused. Do not carry it, and do
 not rename it.
@@ -308,15 +403,22 @@ anti-type.
 This is the spine of the
 [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][data classification checklist]].
 
-1. *Does the set have a cross-type invariant that must hold at one
-   instant?*
+1. *Does the set pass the relatedness test?* Do its families share an
+   invariant that must hold at one instant, or one operation whose intent
+   is all-or-nothing?
    - *No.* Split it into per-family or per-entity messages. A member of
      the set is an Entity, a List, or part of a Family. The members
      travel together only if a caller needs them at one instant, and
-     that need is a read, not an invariant.
-   - *Yes, and one owner.* A Family.
-   - *Yes, and several owners.* A Bundle.
-2. *A file's contents are not an invariant. A file is an artefact.* The
+     that need is a read, not an invariant. If the bytes must still move
+     as one artefact, that artefact is a Package, and each family in it is
+     its own bundle.
+   - *Yes, and one owner holds every family.* A Bundle, applied in one
+     =unit_of_work=.
+   - *Yes, and several owners must write.* No bundle spans them. A
+     Package carries one bundle per owner, and the package as a whole is
+     never atomic.
+2. *A file's contents are not an invariant. A file is an artefact, and
+   the artefact that moves bundles is a package.* The
    document lists conventions because the format lists them. That is a
    fact about ORE XML, not about conventions.
 3. *An aggregate list of entities in one struct is a second type system
@@ -353,8 +455,9 @@ control is the classification and the invariant, not a number.
   reading order, and this page is where it starts.
 - [[id:56AD6F46-99E0-482E-B7B5-C9FDEC8A7641][The data classification checklist]] — the numbered form a modeller
   fills in, with the worked examples.
-- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] — the manifest, the coordinator and the
-  per-owner transaction that deliver the bundle classification.
+- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] — the manifest, the coordinator and the
+  per-bundle transaction that deliver the Package classification, with the
+  Bundle as the atomic unit inside it.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the three regimes, the
   criterion that classification precedes pattern choice, and the C1202
   ceiling.
@@ -373,5 +476,5 @@ control is the classification and the invariant, not a number.
   arrays is a second type system.
 - [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] — the syntax of
   =ores.codegen.family= and of every pattern named here.
-- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — where the bundle artefact lives.
+- [[id:F1BC2C10-B23B-4979-9692-8FA7C29319CB][Data storage]] — where the package artefact lives.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this page belongs to.

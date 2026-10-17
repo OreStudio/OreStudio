@@ -82,7 +82,7 @@ tenant and party. A direct read would bypass both.
 
 - [[id:8866D24E-D95B-43C6-A65B-546807E049DD][No service reads or writes another component's tables]] — the rule as a memory.
 - [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-service auth]] — the reasons a service must not reach into another's repository.
-- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] — one part per owner, and a coordinator that reads only the manifest and never another owner's rows.
+- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] — one bundle per owner, and a coordinator that reads only the manifest and never another owner's rows.
 
 * Related patterns
 

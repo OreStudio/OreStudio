@@ -2,7 +2,7 @@
 :ID: 56AD6F46-99E0-482E-B7B5-C9FDEC8A7641
 :END:
 #+title: The data classification checklist
-#+description: The numbered checklist a modeller fills in before writing a model, a message or a table: classify the data, name the invariant or record that there is none, count the owners, choose the classification, and state the sanctioned pattern, the atomicity scope, the consistency point and what is forbidden.
+#+description: The numbered checklist a modeller fills in before writing a model, a message or a table: classify the data, name the invariant or record that there is none, count the owners, answer bundle or package with the relatedness test as the discriminator, choose the classification, and state the sanctioned pattern, the atomicity scope, the consistency point and what is forbidden.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:modelling:classification:data_oriented_design:
@@ -28,9 +28,9 @@ shape to invent.
 ** How to use it
 
 Fill in the checklist before writing the model. Step 2 sets the
-classification; step 6 then reads the sanctioned pattern from
+classification; step 7 then reads the sanctioned pattern from
 [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]]. The
-classification selects the pattern, so a step 6 answer that contradicts a
+classification selects the pattern, so a step 7 answer that contradicts a
 step 2 answer means step 2 was wrong.
 
 Fill it in before a shape is committed to a file. The checklist is also
@@ -43,7 +43,7 @@ invariant, and does not audit the field count.
    receives it, and what operation is it? One sentence. If the set has no
    named caller, it has no classification yet.
 
-2. *Classify the data.* Pick one: Entity, List, Family, Bundle,
+2. *Classify the data.* Pick one: Entity, List, Family, Bundle, Package,
    Artefact. One classification per message. If two answers both look
    right, write two messages rather than one shape that does both. The
    definitions are in
@@ -58,38 +58,62 @@ invariant, and does not audit the field count.
    owner of each kind. The answer is "one" or "several", and it is never
    "the coordinator".
 
-5. *Choose the classification from the rule.* No cross-type invariant:
-   Entity, List, or split the set. Invariant and one owner: Family.
-   Invariant and several owners: Bundle. A file at the boundary: Artefact,
+5. *Answer bundle or package?* This is the relatedness question, and it
+   is the discriminator between the two. Do the families share either
+   (a) a data invariant that must hold at one instant, or (b) a single
+   operation whose intent is all-or-nothing?
+   - *Related, and one owner holds every family.* A Bundle, applied in
+     one =unit_of_work=. It is the largest thing that can be atomic.
+   - *Related, but several owners must write.* No bundle spans them. A
+     Package carrying one bundle per owner, and the package is never
+     atomic.
+   - *Not related.* The set is gathered by provenance — one file, one
+     export, one report run — and provenance is not relatedness. If the
+     bytes must move as one artefact, it is a Package; each family in it
+     is its own bundle. If the bytes need not move, the set is Entity,
+     List or Family per member, and the gathering is a read.
+   - A Package has no relatedness constraint. State that its bundles
+     need not be related, may belong to different owners, and are never
+     atomic as a group.
+
+6. *Choose the classification from the rule.* No relatedness:
+   Entity, List, or split the set. Related and one owner: Bundle.
+   Related and several owners, or gathered by provenance and moved as
+   bytes: Package. A file at the boundary: Artefact,
    and classify separately what it converts into. A file's contents are
    never an invariant.
 
-6. *Name the sanctioned pattern and the generated artefact that carries
+7. *Name the sanctioned pattern and the generated artefact that carries
    it.* Entity: the entity or composite pattern, and its generated type
    and verbs. List: the list verbs and the paged reply. Family:
    =ores.codegen.family=, =<family>_item= and =<family>_write=. Bundle:
-   the manifest and the per-owner part message. Artefact: the mapping
+   the single =unit_of_work= over its families, carried in a package's
+   manifest when it crosses a boundary. Package: the manifest and the
+   per-bundle message. Artefact: the mapping
    layer and the object-storage key. If no pattern carries it, stop and
    report the gap. Do not compose a flag combination that no facet
    consumes.
 
-7. *State the atomicity scope.* The row; per element; one owner and one
-   transaction; per owner; or none. Name what commits in which
+8. *State the atomicity scope.* The row; per element; one owner and one
+   transaction; one owner and one =unit_of_work= for the bundle; or none
+   for the package as a whole. Name what commits in which
    transaction, and what a failure halfway leaves behind.
 
-8. *State the consistency point if the set claims to be a view of the
+9. *State the consistency point if the set claims to be a view of the
    world.* Give the =as_of= instant or snapshot the set was taken at, and
    the rule that rejects a stale one. A set that claims to be one view of
    the world without one instant is a set of rows that may disagree.
 
-9. *State what is forbidden here.* Name the anti-pattern the
-   classification replaces, plus any local rule a reviewer must enforce.
-   An Entity forbids the nested aggregate. A List forbids a cross-element
-   invariant. A Family forbids the hand-written restatement and the field
-   group that fakes it. A Bundle forbids the archive field and the union
-   of typed arrays. An Artefact forbids the document tree as the model.
+10. *State what is forbidden here.* Name the anti-pattern the
+    classification replaces, plus any local rule a reviewer must enforce.
+    An Entity forbids the nested aggregate. A List forbids a cross-element
+    invariant. A Family forbids the hand-written restatement and the field
+    group that fakes it. A Bundle forbids the archive field and the union
+    of typed arrays. A Package forbids all-or-nothing across its bundles
+    or owners, and forbids being treated as a data model. An Artefact
+    forbids the document tree as the model.
 
-10. *Record the finding if no classification fits.* Name the set, the
+11. *Record the finding if no classification fits.* Name the set, the
     invariant you could not find, the owners you could not line up, and
     the classification you believe is missing. Stop there. Do not invent a
     shape; an invented classification is a second type system, and the
@@ -104,9 +128,10 @@ that was skipped.
 | Field | Answer |
 |-------+--------|
 | Data and operation | |
-| Classification | Entity / List / Family / Bundle / Artefact |
+| Classification | Entity / List / Family / Bundle / Package / Artefact |
 | Invariant, or none | |
 | Owners | |
+| Bundle or package, and why | |
 | Sanctioned pattern | |
 | Generated artefact | |
 | Atomicity scope | |
@@ -140,20 +165,39 @@ that was skipped.
 - Forbidden: a hand-written family struct; a field group that nests the
   parts.
 
-*** An environment export
+*** A structure with its trades and legs
 
 - Classification: *Bundle*.
-- Invariant: every kind must describe the environment at one instant, or
-  the restored environment mixes two systems.
-- Owners: several. Each component writes its own kinds.
-- Pattern: a content-addressed artefact with a manifest, and one
-  part-reference message per owner.
-- Atomicity: per owner. Global atomicity is not available.
+- Invariant: the trades and legs must describe the same deal at one
+  instant, and one operation writes the set or none of it.
+- Bundle or package: a bundle. The families are related, and one owner,
+  trading, holds every one of them.
+- Owners: one, trading.
+- Pattern: =ores.codegen.family= for each family, and one =unit_of_work=
+  over the families the operation names.
+- Atomicity: one owner, one transaction. A failure halfway writes
+  nothing.
+- Forbidden: a struct with one typed array per kind, built because a
+  screen lists the kinds together.
+
+*** An environment export
+
+- Classification: *Package*, carrying one bundle per owner.
+- Bundle or package: a package. Its bundles are not related to one
+  another; they are together because one export produced them. No
+  transaction joins them, and the package is never atomic as a whole.
+- Invariant: none across the bundles. Within each bundle, the bundle's own
+  invariant holds at one instant.
+- Owners: several. Each component writes its own bundle.
+- Pattern: a content-addressed artefact with a manifest that names the
+  bundles and their parts, and one bundle-reference message per owner.
+- Atomicity: per bundle, which is per owner. Global atomicity is not
+  available.
 - Consistency point: the =as_of= instant in the manifest.
 - Forbidden: a struct with one typed array per kind; a tar or zip field
-  in a message.
+  in a message; a promise of all-or-nothing across the bundles.
 - Transport: [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a
-  bundle]].
+  package]].
 
 *** An ORE conventions file
 
@@ -166,7 +210,8 @@ that was skipped.
 - Pattern: a mapping layer from the XML to per-family family messages.
   The file, if kept, is an object-storage artefact with a key.
 - Atomicity: per family write. A conversion that must be all-or-nothing
-  is a bundle, because it spans the families.
+  is one bundle, because the families are related by that one operation
+  and refdata owns them all; the file that carried it is a package.
 - Forbidden: one struct with 27 typed arrays. The format's element list
   is not a type. The test that refuses it is in
   [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]],
@@ -190,13 +235,13 @@ that was skipped.
 - [[id:8C011F45-3A10-4EF4-BB73-4BDEF38B743E][Data classification]] — the
   structure note that orders this cluster: this page is the second step in
   its reading order, and it applies the definitions the first step states.
-- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle and artefact]]
-  — the definitions, the sanctions, the anti-type and the decision rule
-  this checklist applies.
-- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] — the transport a Bundle classification
-  selects.
+- [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications: entity, list, family, bundle, package and artefact]]
+  — the definitions, the sanctions, the relatedness test, the anti-type
+  and the decision rule this checklist applies.
+- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] — the transport a Package or Bundle
+  classification selects.
 - [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]] — the pattern library step
-  6 selects from.
+  7 selects from.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the regimes and criteria behind
   the rule that classification precedes pattern choice.
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the verbs and envelopes a

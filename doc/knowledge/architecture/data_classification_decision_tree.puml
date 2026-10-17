@@ -17,7 +17,7 @@
 '
 @startuml
 
-title Classifying a set of data: the cross-type invariant decides the message
+title Classifying a set of data: relatedness decides the bundle, provenance the package
 
 skinparam activity {
     BackgroundColor #F7F7F7
@@ -35,27 +35,31 @@ start
 
 :Step 1: name the data, its caller and its operation;
 
-:Step 3: does the set have a cross-type invariant\nthat must hold at one instant?;
+:Step 3: do the families share an invariant at one instant,\nor one operation whose intent is all-or-nothing?;
 
 if () then (no)
-  :There is no invariant to carry.\nSplit the set;
+  :There is no relatedness to carry.\nSplit the set;
   :Is the set one entity kind?;
   if () then (yes)
     :**List**\none typed array, paged, a total;
   else (no)
     :**Entity** per kind, or **List** per collection;
+    note right
+      If the bytes must still move as one
+      artefact, that artefact is a **Package**.
+    end note
   endif
 else (yes)
   :Is the only thing joining the set\na file, a screen or a workflow step?;
   if () then (yes)
-    :There is no invariant, only a format.\nThe file is an **Artefact**;
+    :There is no relatedness, only a format.\nThe file is an **Artefact**;
     :Split it, and classify what it converts into;
   else (no)
-    :Step 4: how many owners hold the types?;
+    :Step 4: does one owner hold every family?;
     if () then (one owner)
-      :**Family**\n<family>_item and <family>_write\none transaction;
+      :**Bundle**\nrelated families, one unit_of_work\nthe largest atomic thing;
     else (several owners)
-      :**Bundle**\nartefact plus manifest\none part reference per owner;
+      :**Package**\none bundle per owner, dispatched\nnever atomic across bundles or owners;
     endif
   endif
 endif

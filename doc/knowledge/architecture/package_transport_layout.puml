@@ -17,12 +17,12 @@
 '
 @startuml
 
-title Bundle layout: the artefacts and the objects each participant reads
+title Package layout: the artefacts and the objects each participant reads
 
 package "object storage" as storage {
-  folder "bundles/{bundle_id}/" {
-    artifact "manifest.msgpack\n(generated operation type)" as manifest
-    artifact "bundle.zip.zst\n(zstd entries, central directory)" as archive
+  folder "packages/{package_id}/" {
+    artifact "manifest.msgpack\n(bundles and parts)" as manifest
+    artifact "package.zip.zst\n(zstd entries, central directory)" as archive
     folder "archive entries" {
       artifact "refdata/currency\n(part: msgpack rows)" as rpart
       artifact "refdata/calendar\n(part: msgpack rows)" as cpart

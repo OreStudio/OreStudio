@@ -1,0 +1,252 @@
+:PROPERTIES:
+:ID: 933649DD-1F86-4B40-99FD-1D4316D39A46
+:END:
+#+title: User Journey: Choose when a report runs
+#+description: A tenant administrator gives a report definition a schedule so it runs every morning, changes that schedule, or takes it away, and reads what the schedule does and does not cover.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator gives a report definition a schedule so it runs every morning, changes that schedule, or takes it away, and reads what the schedule does and does not cover.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Make this report run every morning." The person owns a report definition for a
+party and wants it produced without anybody pressing a button: at the close, at
+the start of the trading day, or at whatever time the desk reads it. They also
+want to stop a report that no longer needs to run, without losing what it has
+already produced. The journey is done when the definition carries the schedule
+the person meant, or no schedule at all, and the person has read what the
+change does and does not reach.
+
+* Actor and trigger
+
+The tenant administrator runs this journey. Choosing when a report runs is a
+tenant-level decision: it changes what the tenant's parties produce every day,
+and it is not a desk's choice for the afternoon. The administrator acts inside
+their tenant, and the definitions they can schedule are the tenant's own, party
+by party. A trading desk asks for the schedule; the administrator sets it.
+
+The trigger is a decision about routine. A report that has been run by hand
+every morning is wanted on a schedule. A schedule that fires too early or too
+late is wanted at another time. A report that is no longer read is wanted
+stopped. The person opens the definition from
+[[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]], and
+the journey ends when the definition's row reads the way they meant it to.
+
+This journey writes. Scheduling and unscheduling change the definition and the
+scheduler job that carries the recurrence. Neither operation touches a run that
+has already happened.
+
+* Steps
+
+1. *Open the definition and read its schedule.* The person opens one definition
+   and reads its schedule panel. The panel states the definition's
+   =schedule_expression=, the cron expression that drives the report's
+   recurrence, and whether the definition is scheduled at all. A definition with
+   a =scheduler_job_id= is scheduled and names the job that holds its recurrence;
+   one without it is on-demand. The panel states which of the two the person is
+   looking at before offering to change it, because "every morning" is already
+   true for some definitions and a person should not schedule one twice.
+2. *Write the expression.* The person states the recurrence as a cron
+   expression. The screen accepts the expression and shows it back, and it does
+   not pretend to evaluate it: the next firing is the scheduler's to compute,
+   and the personal reading of a cron expression is not a fact the definition
+   stores. A person who wants "every morning" states the expression the
+   installation's scheduler understands; the screen offers no natural-language
+   promise it cannot keep.
+3. *Press Schedule.* The system asks the person to confirm, restating the
+   definition, its party and the expression. On confirmation the screen sends
+   =reporting.v1.ops.schedule_report_definitions= for the definition. The
+   reporting service validates the expression and asks the scheduler to hold the
+   definition's job; the definition records the job in =scheduler_job_id=. The
+   service answers, and the screen reads the definition again so the panel shows
+   the stored expression and the job, not the value the person typed.
+4. *Read what the schedule now covers.* The panel states that the definition is
+   scheduled, with its expression and its scheduler job. The front door's row
+   for this definition now reads *scheduled*, and the next firing creates a run
+   there. The screen says plainly what it cannot say: it cannot show the job's
+   next due time, the last time the schedule fired, or the scheduler's own state,
+   because no read in this journey's set returns them. A person who wants "every
+   morning, starting tomorrow" has to trust the expression and the scheduler,
+   and *What is missing* records that.
+5. *Change the time.* The person edits the expression and presses Schedule
+   again. The same operation is sent with the new expression and the service
+   reconciles the definition's schedule. The screen does not simulate the
+   change: it sends it, reads the definition back, and states the result. A
+   person who cannot get the service to accept a change unschedules first and
+   schedules again, and the screen offers both actions.
+6. *Unschedule.* A report that is no longer wanted on a schedule is unscheduled
+   with =reporting.v1.ops.unschedule_report_definitions=. The system confirms,
+   because stopping a report changes what the tenant produces every day. On
+   confirmation the service removes the definition's schedule, and the
+   definition no longer names a scheduler job. The definition stays, and it
+   becomes on-demand: a person who wants the report can still run it now.
+7. *Read what unscheduling does not do.* The runs already produced stay, with
+   their outputs and their errors. Unscheduling does not delete history, and it
+   does not stop a run that is in flight: there is no operation in this journey
+   that cancels a run. The screen says both, so a person who expected
+   "unschedule" to mean "stop everything" is not left believing it did.
+8. *Leave, or go on.* The person returns to the front door and checks the row,
+   or opens the definition's latest run to see what the schedule last produced.
+   The run the schedule produces is
+   [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]]'s
+   row and [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it
+   finish]]'s page; this journey changes when that happens and nothing else.
+
+* Screens and wireframes
+
+One screen. The definition header, the schedule panel, the expression editor and
+the two actions are panels of the same screen, because the person reads them as
+one answer. The confirmation is a dialog that restates the definition, the party
+and the expression, because the change outlives the person's session.
+
+The screen writes twice at most: once to schedule and once to unschedule. Every
+other message on it is a read. The panel distinguishes "scheduled" from
+"on-demand" by the presence of the definition's scheduler job, and it says what
+it cannot show rather than drawing a next-run time it did not read.
+
+#+caption: Choose when a report runs: the definition, its current expression, the schedule editor, and what the schedule does and does not cover.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_choose_when_a_report_runs.png]]
+
+* Prototype
+
+None yet. This journey is the design intent for the schedule panel, and its
+prototype belongs at
+=doc/prototypes/reporting/choose_when_a_report_runs/=. The prototype must draw a
+definition that is on-demand with no scheduler job; the confirmation that sets a
+schedule; the same definition scheduled, with its expression and its job; the
+change of an expression; the confirmation that unschedules; and the definition
+back on-demand with its past runs still listed. It must also draw the panel's
+honest statement that the next firing and the last firing are not readable, so
+the prototype does not imply a next-run time.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =report_definition= | The definition whose recurrence changes: =schedule_expression=, =scheduler_job_id=, =concurrency_policy= and the party that owns it | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_instance= | The runs the schedule has already produced, which unscheduling leaves in place | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =party= | The owner of the definition whose routine changes | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+The definition is the row this journey edits, and =scheduler_job_id= is how the
+screen knows the definition has a schedule. The runs are the definition's
+history, and they are not part of the schedule: unscheduling does not remove
+them. The firing a schedule produces is a =report_trigger_event=, immutable and
+written once; it is named here because it is what the screen would read to
+answer "did the schedule fire", and no read serves it.
+
+Every entity above carries =party_id= and is party-scoped by row-level security.
+The definition and the run are bitemporal, so a schedule change is a new version
+of the definition and the earlier version stays readable. The trigger event is
+an immutable event.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the definition | Read the definition and its expression | =reporting.v1.report_definitions.get= | exists |
+| Open the definition | List the party's definitions | =reporting.v1.report_definitions.list= | exists |
+| Schedule | Give the definition a schedule | =reporting.v1.ops.schedule_report_definitions= | exists |
+| Schedule | Read the definition back after the write | =reporting.v1.report_definitions.get= | exists |
+| Change the time | Give the definition a new schedule | =reporting.v1.ops.schedule_report_definitions= | exists |
+| Unschedule | Take the schedule away | =reporting.v1.ops.unschedule_report_definitions= | exists |
+| Unschedule | Read the definition back after the write | =reporting.v1.report_definitions.get= | exists |
+| Read the past runs | List the runs the schedule already produced | =reporting.v1.report_instances.list= | exists |
+| Read the firing | Read when the schedule last fired, and what it triggered | (no read of =report_trigger_event= over NATS) | missing |
+| Read the scheduler job | Read the job's state or its next due time | (no scheduler read is named in this set) | missing |
+| The screen itself | Read and change a schedule from the browser | (no BFF route) | missing |
+
+The two operations are the journey's only writes. They are served by the
+reporting service, which asks the scheduler to hold one job per definition. The
+definition read returns =schedule_expression= and =scheduler_job_id=, so the
+screen can state whether a definition is scheduled and what expression it
+carries. It cannot state the job's own state or its next due time, because those
+belong to the scheduler and no operation here reads them.
+
+The permission that gates the two schedule operations is not named in this
+journey's set. The definition read is gated by
+=reporting::report_definitions:read=, and the write codes the set names are
+=reporting::report_instances:write= and =reporting::report_instances:delete=,
+which are about runs and not about definitions. The tenant administrator holds
+=*= and can therefore call the operations; a role below the administrator has no
+stated code to be granted, which *What is missing* records.
+
+No BFF route serves this screen. The prototype adds one, for example
+=GET /api/reporting/reports/<definition-id>/schedule= for the read and
+=PUT /api/reporting/reports/<definition-id>/schedule= for the write, which calls
+the schedule or unschedule operation according to the request. The handler
+authenticates the caller's token and checks the definition read and write codes.
+
+* What is missing
+
+1. *A route and a screen.* No BFF route serves reporting, and nothing in the web
+   application shows a report today. The schedule panel, its editor and its two
+   confirmations are new.
+2. *The firing is stored and unreadable.* =report_trigger_event= records every
+   firing with its definition, its trigger type, its scheduler job and its time.
+   There is no read of it over NATS. The screen can say a definition is
+   scheduled, and it cannot say when the schedule last fired, whether it fired
+   at all, or which run a firing produced. That is the central gap for a person
+   who has set a schedule and is waiting for the first result.
+3. *No read of the scheduler job.* The definition stores =scheduler_job_id=, and
+   no operation in this set reads the job behind it. The screen cannot show the
+   job's state, its next due time or the scheduler's own view of the expression,
+   so "every morning" is a promise the screen can only repeat, not verify.
+4. *No time zone.* =report_definition= states a cron expression and no time
+   zone. A tenant whose morning is not the installation's morning cannot state
+   which morning it means, and the screen cannot say whose clock the expression
+   is read on. A time zone on the definition, or a stated installation default,
+   is the missing field.
+5. *The write permission is not named.* The two schedule operations have no
+   permission code in this journey's set. =TenantAdmin= and =SuperAdmin= hold
+   =*= and can call them; no role below the administrator can be granted the
+   capability because there is no code to grant. A write code for the definition
+   is the missing piece.
+6. *Unscheduling is not stopping.* There is no operation that cancels a run in
+   flight, and unscheduling does not remove past runs or their archives. The
+   screen states both. A person who needs a running report stopped has no action
+   in this journey.
+7. *No preview and no validation on the screen.* The expression is validated by
+   the service when the write arrives, and the screen does not evaluate it. A
+   bad expression is refused by the service, and the screen shows the refusal.
+   A next-firing preview would need the scheduler's own evaluation, which no read
+   here provides.
+
+* Related journeys
+
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the row that reads scheduled or on-demand, and the front door this journey starts from
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run a firing produces, and the manual alternative to a schedule
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — the output the first scheduled run will leave
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — where a person goes when the schedule keeps producing a run carrying errors
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] — the definition, the job held outside it, and the firing that becomes a run
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — what a firing then runs
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — the workflow a firing starts
+- [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] — the row this journey changes
+- [[id:47E6903C-DFA7-4D2F-B044-C1C74428F719][ores.reporting.report_trigger_event]] — the firing the screen cannot read
+- [[id:5E202386-A853-4F09-8D3A-026ECE6DAD4D][ores.reporting.report_trigger_type]] — scheduled and on-demand
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — the component
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how the screen composes its reads
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Task: Extract the ores.reporting user journeys]] — the work that owns it
+- [[id:210AB813-8ED6-439E-BDEA-1B1286E02B34][The scheduler and reporting have no journeys]] — the capture this group answers
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows

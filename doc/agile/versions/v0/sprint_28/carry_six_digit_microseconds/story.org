@@ -21,11 +21,11 @@ Every timestamp the platform writes carries six digits of microseconds, and the 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-16                               |
 
 * Acceptance
@@ -38,11 +38,25 @@ Every timestamp the platform writes carries six digits of microseconds, and the 
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4B610900-1CBA-4C96-A3CE-5B5CEE56E8E5][Scaffold story: Carry six-digit microseconds in every timestamp the platform writes]] | STARTED | 2026-10-16 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:12498CD8-0BA1-481C-AE57-1C368074995C][Add six-digit microseconds to the formatter and its parser]] | STARTED | 2026-10-16 | | Initial task for: Carry six-digit microseconds in every timestamp the platform writes |
+| [[id:4B610900-1CBA-4C96-A3CE-5B5CEE56E8E5][Scaffold story: Carry six-digit microseconds in every timestamp the platform writes]] | DONE | 2026-10-16 | 2026-10-17 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:12498CD8-0BA1-481C-AE57-1C368074995C][Add six-digit microseconds to the formatter and its parser]] | DONE | 2026-10-16 | 2026-10-17 | Initial task for: Carry six-digit microseconds in every timestamp the platform writes |
 
 * Decisions
 
+- *The writer and the reader change together.* Reason: a writer that states a
+  fraction the reader ignores looks fixed until the value is read back.
+- *Six digits, always.* Reason: PostgreSQL states none at zero microseconds,
+  so the reader accepts an absent fraction, but a writer that varies its width
+  makes the wire form unstable.
+- *The market ingest assertion is tightened back to the millisecond.* Reason:
+  main had answered the same defect by weakening it to a whole second and
+  recording the truncation as intended; the fix makes the millisecond true.
+- *The platform and wire layers change; the entity layer does not.* Reason:
+  =db_timestamp= is =rfl::Timestamp=, which wraps a =std::tm= with no
+  sub-second field, so no format string can give it a fraction.
+
 * Out of scope
 
--
+- Replacing =db_timestamp= so the entity layer's audit columns and its mappers
+  also carry microseconds. That is a change to every entity and mapper, not a
+  format string, and it needs its own story.

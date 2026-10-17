@@ -26,11 +26,11 @@ Every timestamp the platform writes carries six digits of microseconds, and the 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:DB269522-BDE6-4BDC-BC9C-60288CCA844D][Carry six-digit microseconds in every timestamp the platform writes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance

@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/migrate-calendar-adjustments-onto-the-codec
-#+pr:
+#+pr: 3456
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -79,9 +79,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families on the codec | 1 of 5 (calendar adjustments) | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | pending |
-| Calendar documents that round trip through the importer and exporter | 8 of 8 | same | pending |
-| XML suites | 529 cases, 73,264 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
+| Families on the codec | 1 of 5 (calendar adjustments) | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3c8bca789f |
+| Calendar documents that round trip through the importer and exporter | 8 of 8 | same | 3c8bca789f |
+| XML suites | 531 cases, 73,313 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 3c8bca789f |
 
 * Notes
 
@@ -113,7 +113,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3456][#3456]] | [ore] Read and write calendar adjustments through the codec |
 
 * Review
 

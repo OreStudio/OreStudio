@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: feature/write-the-equity-basket-as-rows
-#+pr:
+#+pr: 3471
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3471][#3471]] | [trading] Write the equity basket as rows of a child table |
 
 * Review
 

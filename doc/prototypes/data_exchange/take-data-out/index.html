@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Take data out — Data exchange prototype — ORE Studio</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no file written.
+
+  Take data out: one export workspace for the support bundle, the archive, the
+  promotion bundle and a sandbox bundle. The states are chosen from the query
+  string:
+
+    ?purpose=share|archive|promote
+    ?state=ready|written|refused
+    ?instant=one|apart        one snapshot, or today's parts read minutes apart
+    ?actor=reader|ops
+    ?sandbox=official|<sandbox id>   the official tree, or a sandbox to export
+
+  The bar at the foot switches the purpose, the actor, the instant and the
+  state. The promise is the one the import screen already made: a manifest,
+  one instant, and the omissions named.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

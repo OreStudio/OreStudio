@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: B74EB57C-30FB-4659-8BA4-63E7A3ED76B3
+:END:
+#+title: User Journey: Retry a failed or interrupted import
+#+description: A person retries the same upload after an import failed or was interrupted, and expects the retry to finish the job rather than double it.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person retries the same upload after an import failed or was interrupted, and expects the retry to finish the job rather than double it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"The import stopped. I want to run the same file again and end up with the data
+imported once." The journey is done when the data is complete, nothing was
+written twice, and the person can say what the first attempt left behind.
+
+* Actor and trigger
+
+The actor is the person who ran the import, signed in to the same party. The
+trigger is a failed step, a timeout, a lost connection, a crash, or a refusal
+partway through. The journey starts when the person reads the first attempt and
+ends when the retry succeeds, is abandoned, or is refused as a duplicate.
+
+* Steps
+
+1. *Read the first attempt.* The person opens the run in the workflow progress
+   screen, or reads the workflow instance in the shell. The rail shows each step
+   with its state, and the failure is shown with the instance's error. For a
+   trade import the step log lists each item error with its source file and ORE
+   id. For a run import the shell prints the failure and the workflow instance.
+   For market data the shell prints the section counts and the duplicate errors.
+2. *Decide what the first attempt left behind.* The trade import keeps every
+   trade that saved and fails only when all trades failed. The run import undoes
+   curves, market data, pricing engines and the run document, but not the
+   conventions it stored. The market data import keeps every section that had no
+   duplicate error.
+3. *Retry the same file.* On the progress screen the person presses *Retry*. The
+   system resumes the same workflow instance from the failed step, and the
+   earlier steps are not run again. In the shell the person re-runs the same verb
+   with the same =request_id=; that starts a new instance, and the uploaded
+   tarball is still in the bucket, so no upload is needed.
+4. *Check the counts against the first attempt.* The person compares the saved
+   counts with the first attempt. For trades, the second run creates new trade
+   ids, so the total rises by the number of trades that saved in both.
+5. *Repair or abandon.* If the retry duplicated trades, the person deletes them
+   by hand, or imports into a fresh book and discards the first one. If the run
+   import stored conventions, the person decides whether to keep them or replace
+   them.
+
+* On success
+
+The retry prints a new workflow instance id, a completed step and the saved
+counts. The person can read the final state in the trade list, the conventions
+screens or the market data screens. The data is complete.
+
+* On failure
+
+A refused retry names the file and the reason. A retry whose budget expires
+leaves the workflow running and the shell says so; the person can read the
+instance later. A retry of the trade import prints "saved N trade(s)" again and
+does not warn that N of them already existed. A retry of the run import stores
+another configuration binding under the same report definition. Market data
+duplicates are refused only when the person passes =--duplicates-are-errors=;
+otherwise the import reports the counts it stored.
+
+* What must never happen
+
+- A retry must never apply the same trade twice without the person knowing. Today
+  it can, because no trade is matched by its ORE id.
+- A retry must never apply the same conventions twice as two versions when the
+  file is unchanged. The save replaces by key today, which is the one import path
+  that is safe to repeat.
+- A retry must never overwrite a newer row with an older file without saying so.
+- A retry must never resume from a step that already ran and then run it again.
+- A failed attempt must never be deleted or hidden. The person needs its counts
+  to know what remains.
+
+* Screens and entry points
+
+The workflow progress screen shows the rail, the steps and the retry control. It
+is the one screen that carries a retry today. The shell has no retry verb: the
+person re-runs the import verb, which starts a new workflow instance. No web
+screen lists past imports for a party.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =workflow_instance=, =workflow_step= | The first attempt, its outcome and its saved ids | |
+| =trade= | The rows a trade retry can duplicate | |
+| =conventions_document= | The rows a run retry replaces | |
+| =market_observation=, =market_fixing= | The rows a market retry reports | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the first attempt | Read the workflow instance and its steps | =workflow.v1.ops.get_workflow_steps= | exists |
+| Decide what is left | Read the saved ids and item errors from the step result | the step's =response_json= | exists |
+| Retry the trades | Resume the same instance from the failed step | =workflow.v1.ops.retry_workflow_instance= | exists |
+| Retry the trades | Start a new import from the shell | =workflow.v1.ops.ore_import= | exists |
+| Retry the run import | Start the run import again | =ore.v1.ops.import_run_configuration= | exists |
+| Retry the market data | Import the same files | =marketdata.v1.ops.import_market_data= | exists |
+| Compare the counts | No operation: the person reads the two logs | none | missing |
+
+* What is missing
+
+1. *No idempotency key on the trade import.* =request_id= names the tarball, not
+   the import. A second call starts a new import.
+2. *No trade identity check.* Nothing refuses a trade the party already holds
+   under the same ORE id.
+3. *No resume.* The trade import is one workflow step, so a retry redoes all of
+   it. The run import is also all or nothing at the file level.
+4. *No import history.* There is no list of past attempts per party, so the
+   person cannot tell a first attempt from a retry.
+5. *No post-failure summary.* The person has to reassemble the first attempt's
+   state from a workflow log and a service reply.
+
+* Related journeys
+
+- [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] - the read that precedes the decision to retry.
+- [[id:4FD3AE3D-27DE-4984-890A-CD78852D32FC][Review an import before it is applied]] - the preview that would avoid the retry.
+- [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] - the trade import in detail.
+- [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment between systems]] - where a retry is a promotion step.
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

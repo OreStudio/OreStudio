@@ -1,0 +1,293 @@
+:PROPERTIES:
+:ID: 712C441E-CDF0-4F4C-A406-4D4E9A6CB63B
+:END:
+#+title: Design: import and export conventions by family
+#+description: Replace the single all-conventions document on the wire with one typed message per convention family, staged into a table and applied in one transaction, so a new convention is a family registration rather than an edit to a god type.
+#+type: design
+#+level: s2
+#+filetags: :design:refdata:conventions:messaging:
+#+todo: DRAFT
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page describes a transition, not the current state. It must not be
+linked from durable documentation; when the work lands, the durable record is
+the knowledge page it produces.
+
+* Summary
+
+A conventions import and a conventions export each travel today as one
+=conventions_document= message carrying 27 typed arrays. The shape is a file,
+not a request. It breaks the data-oriented rule that no aggregate type travels
+and one component's fields never nest inside another's, it grows by one field
+for every convention anybody ever adds, and it is the translation unit that
+exceeds the MSVC instantiation limit.
+
+This design keeps the document as a *transient mapping type* inside the ORE
+file boundary, and moves the wire to one message per family:
+
+1. =begin= opens an import row and returns its id.
+2. One =stage= message per family, each a local transaction appending typed
+   rows. Small, testable, and independent.
+3. =commit= applies every staged family in **one** =unit_of_work= under a row
+   lock, which is the atomic boundary.
+
+Export becomes paged per-family reads taken at **one bitemporal instant**,
+which gives a consistent file without a transaction spanning messages.
+
+* Why the document shape fails
+
+The document is generated from a hand-authored model,
+=projects/ores.refdata/modeling/ores.refdata.configuration_document_messages.org=,
+whose 27 vectors are a hand-written list (fields at lines 134-264). The
+generated header is
+=projects/ores.refdata/api/include/ores.refdata.api/messaging/configuration_document_protocol.hpp=
+(members at 113-142). Everything downstream re-lists the same 27: the service
+(=conventions_document_service.cpp=), the ORE mapper
+(=ores.ore/core/src/domain/conventions_mapper.cpp=, about 2,975 lines), and the
+web BFF (=projects/ores.web/packages/bff/src/conventions.ts=, =FAMILY_TABLE=).
+
+Three consequences, in order of severity:
+
+1. *It is not a request, it is a file.* =data_oriented_design.org= states
+   "No aggregate type represents an entity" and "A message carries one typed
+   array per component, joined by key. One component's fields never appear as
+   nested objects inside another." The document is a legal *boundary* type
+   under the same page ("document-shaped payloads ... enter at the boundary of
+   the stack, where a mapping layer converts them ... The document tree is
+   transient"), but it is not a legal wire type.
+2. *It grows without a guard.* Adding a convention needs at least nine
+   hand-maintained edits (model list, service save and get, mapper both
+   directions, BFF family table, four SQL manifests, the DQ publish kind array,
+   the kind populate, the seed file, two registrar wirings). Nothing checks
+   that the document covers every convention entity, so a family that is
+   modelled but not listed silently never travels.
+3. *It is one enormous instantiation.* The MSVC failure lands in
+   =rfl::internal::no_duplicate_field_names= (a quadratic constexpr check)
+   reached from =reply<get_conventions_document_response> -> encode ->
+   rfl::json::write=. One response reflects the whole conventions domain.
+   =data_oriented_design.org= already names the remedy: "name one family per
+   document model and split a document that covers two."
+
+* What the codebase already gives us
+
+| Primitive | Where | What it buys |
+|-----------+-------+--------------|
+| =unit_of_work= | =ores.database/repository/unit_of_work.hpp= | One pooled connection, one transaction, rollback on destruction, idempotent =commit()= |
+| Staged rows plus =apply(request_id)= | =counterparty_proposal_service= (about =counterparty_proposal.cpp:604-655=) | A proven way to apply many tables atomically from rows staged earlier |
+| =precondition= and DB triggers | =ores.utility/domain/protocol.hpp:66-77=; generated insert functions | Optimistic concurrency with =already_exists= / =version_conflict= |
+| Bitemporal rows | every =ores_refdata_*_conventions_tbl= | Reading a consistent snapshot at an instant, with no lock held |
+| Transactional =pg_notify= | per-table notify triggers | Events fire on commit only, so a rolled-back apply announces nothing |
+| =stamp_document()= | =ores.service/messaging/handler_helpers.hpp:203-226= | Audit stamps from the JWT, never from the payload |
+| Step claim and idempotency | =step_command_stream.hpp=, =pattern_claim_before_you_work= | Resumability if an import is driven as a workflow |
+
+The one thing that does *not* exist is a transaction that survives a message.
+=unit_of_work= is function-local and non-movable, no handler holds one, and the
+reply is published once per request. So "send a series of messages, then
+commit the transaction" cannot be done with an open database transaction. The
+series has to be durable in a table, and the commit has to be one message.
+That is exactly the shape the approval proposals already use.
+
+* Options considered
+
+| Option | Atomicity | Cost per new family | Verdict |
+|--------+-----------+---------------------+---------|
+| A. Keep one document message | All-or-nothing | Edit the god type in four places | Rejected: the current defect |
+| B. One message per family, no commit | Per family only | Register the family | Rejected for file import: a half-applied ORE file is a corrupt dataset |
+| C. Open transaction across messages | Impossible today | n/a | Rejected: pins one of two pooled connections, holds row locks with no statement or transaction timeout anywhere, dies with the process, and outlives the 30 s request default |
+| D. Saga with compensations | Convergent | Register the family, a compensating step, a definition | Rejected: conventions live in one service, so a saga buys nothing a local transaction does not, and "a compensation is a new action, not an erasure" |
+| E. Stage per family, apply once | All-or-nothing on commit | Register the family | Chosen for large or streamed files |
+| F. In-process session: begin, N stage messages, end, then write once | All-or-nothing | Register the family | Viable only while the service is single-replica |
+| G. Hand the file over as bytes, send =request_id= | All-or-nothing | Register the family | **Preferred for the common case** |
+
+Option E is option D's durability without its cost: the staging rows are the
+saga log, and the single-service apply is the commit. It is also the pattern
+the approval proposals already use, so there is no new mechanism to trust.
+
+Option F is the scheme a reader reaches for first, and it does work today,
+because refdata is deployed as one unit. It is still not worth choosing, for
+three reasons that are facts about this platform rather than style. The service
+registry gives every service a =:replicas:= aspect and =ores.compute.wrapper=
+already runs five, so an in-process session misroutes the moment refdata is
+scaled: the N+1st message can land on an instance that never saw the first.
+Between messages the import exists only in RAM, so a restart discards it and
+the caller must resend. And a session needs a memory cap and an idle expiry,
+because nothing else bounds how many half-sent imports a caller holds open. A
+staging table buys all three for one INSERT per family message, and the commit
+is identical either way.
+
+Option G is cheaper than both, and the platform already does it. An ORE import
+moves as bytes: the caller uploads to =ore/imports/{request_id}.tar.gz= and the
+message carries only =request_id=
+(=projects/ores.ore/modeling/ores.ore.ore_import_messages.org:89=). Doing the
+same for a conventions file means the wire carries no aggregate at all,
+atomicity is one request and one transaction, nothing is staged and no session
+can be lost. The only limit is size: a file above the transport ceiling cannot
+travel that way, which is the case E exists for.
+
+* The design
+
+** Import: stage per family, apply once
+
+#+caption: Conventions import: begin, one message per family staged durably, then one commit that applies every family in a single transaction under a row lock.
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_28/conventions-import-and-export-redesign/conventions_import_sequence.png]]
+
+Source: [[file:conventions_import_sequence.puml][=conventions_import_sequence.puml=]]. Regenerate with
+=plantuml -tpng conventions_import_sequence.puml=.
+
+Three operations, on generated subjects:
+
+- =begin_conventions_import_request=
+  ={ import_id, party_id, source, families[] }= where =import_id= is minted by
+  the caller. A repeated begin with a known id returns the existing import
+  (the idempotent identity the platform already uses for workflow starts).
+  Writes one row to =ores_refdata_conventions_imports_tbl= with
+  =state = 'staging'= and =expires_at=.
+- =stage_conventions_<family>_request= ={ import_id, sequence, items[] }=
+  where =items= is the family's own generated value type. One row per call in
+  =ores_refdata_conventions_import_items_tbl= (keyed by import id, family and
+  sequence), so a retry is a no-op and a duplicate sequence is refused.
+- =commit_conventions_import_request= ={ import_id }=. One
+  =unit_of_work=: lock the import row =for update=, refuse unless
+  =state = 'staging'= and every required family is present, apply families in
+  registry order (parent before part), stamp audit with =stamp_document()=,
+  set =state = 'applied'=, =commit()=. The reply carries the
+  =conventions_save_result= the current service already produces
+  (=world_kept=, =fx_skipped=) plus per-family write counts.
+
+Each stage message is a local transaction of its own, so staging is durable,
+resumable and cheap. Nothing is visible to a reader until commit, because the
+live tables are untouched until then.
+
+** Import states
+
+#+caption: Import session states: a staged import is applied once or abandoned, and an expired one is swept.
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_28/conventions-import-and-export-redesign/conventions_import_states.png]]
+
+Source: [[file:conventions_import_states.puml][=conventions_import_states.puml=]]. Regenerate with
+=plantuml -tpng conventions_import_states.puml=.
+
+=applying= exists only inside one commit transaction. A crash mid-apply rolls
+the whole thing back, leaving =staging=, so the commit can be retried; that is
+why =applying= needs no recovery path of its own.
+
+** Export: paged reads at one instant
+
+A single response cannot be trusted anyway: =pattern_bounded_request= bounds a
+request at 30 s, the transport default payload ceiling is 1 MiB with no
+=max_payload= configured and no documented size rule, and gzip only helps above
+4 KiB. A conventions document for a real portfolio exceeds both.
+
+So the export is one generated read per family with a page window, and the
+consistency problem is solved by the storage rather than by a transaction:
+every conventions table is bitemporal, so each request carries
+=as_of= (and the same =snapshot_id= the caller received on the first page), and
+every page reads that same instant. A concurrent import cannot tear the file,
+and no lock is held across pages.
+
+#+caption: Conventions export: the caller takes one snapshot instant, then reads each family in pages at that instant.
+#+attr_html: :width 100%
+[[proj:doc/agile/versions/v0/sprint_28/conventions-import-and-export-redesign/conventions_export_sequence.png]]
+
+Source: [[file:conventions_export_sequence.puml][=conventions_export_sequence.puml=]]. Regenerate with
+=plantuml -tpng conventions_export_sequence.puml=.
+
+The ORE exporter reassembles the file in =ores.ore=; the transient document
+type stays there, where =data_oriented_design= allows it.
+
+** The family registry
+
+The 27-vector list dies. In its place, codegen emits one registry entry per
+convention family from the modelling tree, because discovery is already by
+frontmatter (=manifest.py:92=, =component_catalogue.org:21=) and needs no
+hand-written list. An entry carries:
+
+- the family key and subject stem;
+- the value type and its table;
+- the merge policy: =replace_party=, =add_missing_world= or =skip= (today's
+  =fx=);
+- the staging table and the stage subject;
+- the order in which the family must be applied.
+
+One declaration replaces five hand-maintained lists: the service's save and
+get, the model's 27 vectors, the BFF =FAMILY_TABLE=, and the DQ publish
+=v_kinds= array (=refdata_publish_from_dq_create.sql:5189-5196=).
+
+* Failure and recovery
+
+- A stage message fails: reply with the error, leave the import in =staging=.
+  The caller retries that family; every other family is already durable.
+- The commit fails: the unit of work rolls back, nothing is written, no
+  =pg_notify= event fires, the import stays in =staging= and can be retried or
+  abandoned. The reply names the failing family.
+- The process dies during commit: same as above, by rollback.
+- The caller never commits: =expires_at= plus a sweep moves the import to
+  =expired= and deletes its staged items. A staging import holds no lock, so
+  the sweep is free to do it at any time.
+- Two commits race: the =for update= row lock serialises them; the second sees
+  =state = 'applied'= and returns the recorded result rather than applying
+  twice.
+
+* What changes
+
+| Area | Change |
+|------+--------|
+| Modelling | Delete the 27 vectors from =ores.refdata.configuration_document_messages.org=; keep one operation model per family (begin, stage, commit, read) plus the registry inputs |
+| Codegen | Emit the family registry, the stage and read protocols per family, and the import table's SQL |
+| =ores.refdata/core= | New =conventions_import_service= (begin, stage, commit, sweep). The current =conventions_document_service= keeps only the apply logic, driven by the registry rather than 27 hardcoded calls |
+| SQL | Two new tables (imports, import items), both tenant-scoped with RLS, both swept by age. No change to any convention table |
+| =ores.ore/core= | The mapper becomes family-at-a-time; the transient document type stays private to the ORE boundary |
+| =ores.web= BFF | =FAMILY_TABLE= comes from the generated registry instead of a hand list |
+| Wire | New subjects; the document subjects are removed in the same change, per the no-shims rule |
+
+* Invariants and acceptance tests
+
+1. *The registry is complete.* A codegen check fails if a convention entity in
+   the modelling tree is absent from the registry, and if a registry entry
+   names an entity that no longer exists. This is the guard the current design
+   lacks.
+2. *A commit is atomic.* A family whose apply fails leaves no row of any family
+   written, and no event published. Test: inject a failure in the last family
+   and assert the live tables are byte-identical to before.
+3. *A stage is idempotent.* Replaying a stage message with the same import id,
+   family and sequence leaves the staged row count unchanged.
+4. *An export is consistent.* An import committed between two pages of an
+   export does not appear in the second page when both carry the same =as_of=.
+5. *No aggregate on the wire.* The generated protocol for every family carries
+   one typed array and no nested document; the C1202 translation unit no longer
+   exists.
+6. *A new family needs one new model.* Adding a convention type touches no
+   hand-maintained list; the test is a codegen drift check, not a review.
+
+* Open questions
+
+1. *Is all-or-nothing required for a file import?* This design assumes yes for
+   the ORE file path and no for the UI, which keeps per-entity CRUD as it is.
+   If a partial import is acceptable, option B is far cheaper and this design
+   is unnecessary.
+2. *Which is authoritative for world data?* The model prose calls
+   =swap_index= and =zero_inflation_index= world data, but their schema carries
+   =party_id= and the code replaces them per party. The registry needs one
+   answer per family.
+3. *Does every convention table expose an =as_of= read today?* The bitemporal
+   columns exist; the read helpers may not take an instant yet. If they do not,
+   the export consistency argument fails and the export needs a different
+   snapshot mechanism.
+4. *Does =fx= get a store?* Today it is skipped. Either model it or drop it
+   from the family list; a =skip= policy is a place where imports silently lose
+   data.
+5. *Payload ceiling.* Do we keep the 1 MiB transport default and rely on paging,
+   or configure =max_payload= and document a size rule in the pattern language,
+   which currently has none?
+
+* See also
+
+- [[file:../../../knowledge/architecture/data_oriented_design.org][Data-oriented design]] — the aggregate rule, the regime boundary that allows a
+  transient document type, and the C1202 decomposition guidance.
+- [[file:../../../knowledge/architecture/entity_decomposition.org][Entity decomposition]] — the composition rule and the bitemporal version bump.
+- [[file:../../../knowledge/architecture/entity-table-writes.org][Entity-table writes]] — only a generated repository writes a convention
+  table, which the apply honours.
+- [[file:../../../knowledge/nats_patterns/pattern_bounded_request.org][Bounded request]] — the 30 s default and the missing size dimension.
+- [[file:../../../knowledge/service_architecture_patterns/pattern_database_per_service.org][Database per service]] — why =ores.ore= may only call refdata's operations.

@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 1034E1CB-D639-4489-A16A-931549228D8A
+:END:
+#+title: Data exchange prototypes
+#+description: The prototypes that answer to the Data exchange journeys: what each argues, and the Gemini review where one exists.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:data_exchange:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+* Summary
+
+Importing and exporting a party, one dataset, or a whole environment. Twelve
+journeys ask for a prototype; five screens answer them, because the trigger,
+the payload and the permission change a variant and the act changes a screen.
+Every import publishes into a sandbox chosen from the book tree, and every
+screen that records an attempt names that sandbox.
+The table of the screens opens each one; the table of the journeys walks from a
+journey to the state of the screen that serves it.
+
+Each prototype is a static page under =doc/prototypes/=, opens with no build
+and no session, and reads mock data only. Where a prototype carries a Gemini
+review the last column opens it; none does. [[file:../index.org][Prototypes]] is
+the top page and the only inventory.
+
+* Why five screens and not twelve
+
+A screen is a place a person acts. The journeys differ in three things that do
+not make a screen: the trigger (a defect, a seed, a promotion, a feed, a
+correction), the payload (a bundle, a sample tree, two market files, one
+conventions file), and who may act (tenant administrator, operations user,
+maintainer, support). Those are variants of the entry, and of the review, and
+of the register.
+
+The differences that do make a screen are the acts themselves, and there are
+five:
+
+1. *Name a source and a scope.* Every import journey starts here. Seven
+   journeys share it because the first step is identical.
+2. *Decide a staged import.* A different act and a different actor: the maker
+   cannot decide. One journey names it, four pass through it.
+3. *Read one attempt's outcome.* A per-family question, asked after the
+   commit. Four journeys ask it of the same record.
+4. *Read the party's history.* A question about all attempts, not one. No
+   journey names it as its destination, and four need it. It is the one screen
+   that survives without a journey of its own.
+5. *Take data out.* The writing side, shared by the two export journeys and
+   the two import journeys that begin with an export.
+
+Two consolidations deserve their own line. *Reproduce a defect* and *Promote an
+environment* get no screen: each is an export bundle, an entry, a review, a run
+and a register row, and a sixth screen would duplicate all five. *Import as a
+party-scoped user* gets no screen either: it is the permission and scope
+variant of the entry, the review and the register, and giving it a screen would
+hide the boundary it is about. *See what a failed family left behind* is the
+run record in its failed state, and *Retry* is that record's retry plus the
+register's comparison — the same data read twice, not two screens.
+
+* The journeys and the screens that serve them
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Screens | State to open |
+|---------+-------+---------+---------------|
+| [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect]] | support engineer | [[file:bring-data-in.org][Entry]], [[file:stage-an-import.org][Review]], [[file:one-import-run.org][Run]], [[file:import-register.org][Register]], [[file:take-data-out.org][Export]] | =?case=defect= on Entry and Run |
+| [[id:388355DD-6437-44CB-B48B-63B25B48CF1F][Seed a fresh environment]] | operations user | [[file:bring-data-in.org][Entry]], [[file:stage-an-import.org][Review]], [[file:one-import-run.org][Run]], [[file:import-register.org][Register]] | =?case=seed=; =?attempt=2= on Run |
+| [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party]] | tenant administrator | [[file:bring-data-in.org][Entry]], [[file:stage-an-import.org][Review]], [[file:one-import-run.org][Run]] | =?case=onboard=; =?state=families= on Entry |
+| [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment]] | operations user | [[file:take-data-out.org][Export]], [[file:bring-data-in.org][Entry]], [[file:stage-an-import.org][Review]], [[file:one-import-run.org][Run]], [[file:import-register.org][Register]] | =?purpose=promote= on Export; =?variant=promotion= on Register |
+| [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset]] | reference-data maintainer | [[file:bring-data-in.org][Entry]], [[file:stage-an-import.org][Review]], [[file:one-import-run.org][Run]] | =?case=one-dataset= |
+| [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed import]] | the importer | [[file:one-import-run.org][Run]], [[file:import-register.org][Register]] | =?attempt=2= on Run; =?variant=compare= on Register |
+| [[id:EEACF799-D2A9-45E0-AF82-BF9168C057A4][Import as a party-scoped user]] | operations user | [[file:bring-data-in.org][Entry]], [[file:stage-an-import.org][Review]], [[file:one-import-run.org][Run]], [[file:import-register.org][Register]] | =?case=party&actor=ops=; =?actor=ops= on Register |
+| [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] | the importer | [[file:one-import-run.org][Run]], [[file:import-register.org][Register]] | =?state=failed&mode=today= on Run; =?variant=failed= on Register |
+| [[id:64DCC69B-113C-4766-BC4E-DD6CC3CC912D][Import market data from a feed]] | market-data maintainer | [[file:bring-data-in.org][Entry]], [[file:stage-an-import.org][Review]], [[file:one-import-run.org][Run]] | =?case=feed=; =?state=partial= on Run |
+| [[id:EBB81C0A-54C2-410A-865D-2DCDD1E8EDCE][Export to share with support]] | any reader | [[file:take-data-out.org][Export]], [[file:bring-data-in.org][Entry]] | =?purpose=share=; =?state=refused= |
+| [[id:33AF3CCA-50BE-4CAD-A4DA-4C3917E4EA9F][Export for archival]] | operations user | [[file:take-data-out.org][Export]] | =?purpose=archive=; =?instant=apart= |
+| [[id:4FD3AE3D-27DE-4984-890A-CD78852D32FC][Review an import before it is applied]] | the importer or a decider | [[file:stage-an-import.org][Review]], [[file:bring-data-in.org][Entry]], [[file:one-import-run.org][Run]] | =?state=decide=; =?check=lookup= |
+
+* The screens
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it | Review |
+|-----------+----------------+---------+--------|
+| [[file:bring-data-in.org][Bring data in]] | The trigger is a variant, not a screen: name the source, the scope, the families and the sandbox target once, show the scan, the party rule, the missing permission and the book tree that refuses an official node, and name the workflow the import starts. | [[file:bring-data-in/][prototype]] | none |
+| [[file:stage-an-import.org][Stage an import]] | The review is its own screen because a second person decides there: the chosen sandbox, per-family new, replaced, unchanged and refused, where each family lands, the maker kept apart from the decider, and the staged rows as the commitment. | [[file:stage-an-import/][prototype]] | none |
+| [[file:one-import-run.org][One import run]] | After the commit the only question is per family, so one attempt record answers the failure, the retry, the feed's sections and the seed's batch — and draws the atomic and per-family mechanisms side by side, over the live workflow instance that performed the import and the sandbox tree it fills. | [[file:one-import-run/][prototype]] | none |
+| [[file:import-register.org][The import register]] | Four journeys need the party's history rather than one attempt, so the register holds the retry beside its first attempt, the promotion hops, the sandbox each attempt targeted, and the boundary that keeps another party absent. | [[file:import-register/][prototype]] | none |
+| [[file:take-data-out.org][Take data out]] | The support export, the archive, the promotion bundle and the sandbox bundle are one act with one manifest, one instant, the omissions named and the sandbox scope that reproduces a defect elsewhere. | [[file:take-data-out/][prototype]] | none |
+
+Progress is not a sixth screen. The import is one workflow instance, and the
+[[file:one-import-run.org][Run]] screen follows it: a region reads the instance
+and its steps and draws =?wf=staged|in_progress|waiting|failed|retrying|completed|warnings|compensated=,
+with =?play=1= to walk them on a timer, and the sandbox tree beside it fills at
+the commit. The [[file:bring-data-in.org][Entry]] screen names the type, the
+steps and the sandbox target before anything runs; the target travels as
+=?target=sb-import-repro= from the entry to the review, the run and the register.
+A decider-gated import needs two instances, one that stages and one that
+applies, because an instance cannot wait for a person.
+
+* Adding a prototype
+
+Create =doc/prototypes/data_exchange/<name>/= with an =index.html=, and a
+=prototype.css= and =prototype.js= when it needs them. Open the page with the
+links table every prototype carries, and leave its review row at =none=. Write
+the design note at =doc/prototypes/data_exchange/<name>.org=, add a row to the
+table above, and link the note from the row's first cell. Add the journeys it
+serves to the journey table. Stop there: the site build finds every prototype
+under this tree, so no build file names it.
+
+A review goes at =doc/prototypes/data_exchange/<name>/review/=, with an
+=index.html= that lists its screens. The row names it. [[file:../index.org][Prototypes]]
+states the whole method and the rules that hold for every group.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — the top page: the groups, and the one way to add a prototype.
+- [[file:../../knowledge/journeys/data_exchange/data_exchange.org][Data exchange journeys]] — the journeys these prototypes answer.
+- [[file:../conventions/index.org][Conventions prototypes]] — the authoring screen the review follows.

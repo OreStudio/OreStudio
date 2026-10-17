@@ -87,9 +87,10 @@ is current, Google Benchmark is the right home for the time axis: it is the
 one that records a baseline file a script can diff, which is the property this
 directory is built around.
 
-* The baseline, at fcea424d5a
+* The first measurement, and what it changed
 
-Twenty repeats of one 478 KB portfolio, and two of the 6.3 MB calendar file.
+The suite was first run at =fcea424d5a=, twenty repeats of one 478 KB
+portfolio and two of the 6.3 MB calendar file.
 
 | Input | Mode | ns/parse | Instructions | D1 misses | LL misses |
 |-------+------+----------+--------------+-----------+-----------|
@@ -102,16 +103,48 @@ Twenty repeats of one 478 KB portfolio, and two of the 6.3 MB calendar file.
 
 Two readings, both uncomfortable.
 
-*The tape is the cache cost.* Building it multiplies first-level data misses by
-5.4 on the portfolio and by 4.7 on the 6.3 MB file, and last-level misses by
-2.5 and 9.9. A token is twenty bytes, so the 478 KB document becomes a 721 KB
-tape and the 6.3 MB document becomes a 15.9 MB tape. The scan-only column is the
-floor, and it is far below both trees.
+*The tape is the cache cost.* Building it multiplies first-level data misses
+by 5.4 on the portfolio and last-level misses by 9.9 on the 6.3 MB file. A
+token is twenty bytes, so the 478 KB document becomes a 721 KB tape and the
+6.3 MB document becomes a 15.9 MB tape. The scan-only column is the floor, and
+it is far below both trees. This qualifies the claim that the generated DOM is
+the expensive artefact: it is expensive relative to scanning, and so is the
+tape.
 
-*The scanner executes three times the instructions pugixml does* on the same
-document, 666 M against 220 M. It wins on allocated bytes and loses on work
-per byte. That is a gap worth closing before the entity projections, because
-they will sit on top of this scanner.
+*The scanner executed three times pugixml's instructions* on the same
+document, 666 M against 220 M. A callgrind profile put forty percent of the
+parse in one place: the =normalise= pre-scan, a byte-at-a-time loop over every
+text and attribute value that almost always found nothing to do. A second
+tenth went to =memcmp= on the tag path, which compared up to five prefixes for
+every element.
+
+* What the first measurement changed
+
+The scanner took two changes, both measured before and after.
+
+- The pre-scan is now a few memchr-backed =find()= calls.
+- The second character after =<= decides which prefix is worth comparing,
+  which keeps the common tag path free of =memcmp=.
+
+The same suite at =e82a0a827f=:
+
+| Input | Mode | ns/parse | Instructions | Change in instructions |
+|-------+------+----------+--------------+------------------------|
+| portfolio | scan | 620,464 | 343,284,249 | -48% |
+| portfolio | tape | 740,802 | 410,789,892 | -46% |
+| portfolio | pugi | 903,024 | 219,824,068 | unchanged |
+| large | scan | 11,790,666 | 649,136,390 | -25% |
+| large | tape | 18,089,642 | 718,883,057 | -25% |
+| large | pugi | 14,405,819 | 468,502,757 | unchanged |
+
+Wall time on the portfolio fell from 1.40 ms to 0.62 ms per parse, and the
+scanner is now 1.6 times pugixml's instructions rather than three. The tape
+still costs four times the first-level misses of scanning alone, which is what
+building a model costs and is why the entity path will stream rather than
+build one.
+
+The corpus did not move: 1,623 documents read, 1,623 round tripped, 1,623
+validating, 26 unit cases green.
 
 * What to run when
 

@@ -23,7 +23,6 @@
 #include "ores.ore.core/domain/composite_instrument_mapper.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/credit_instrument_mapper.hpp"
-#include "ores.ore.core/domain/currency_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/equity_instrument_mapper.hpp"
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
@@ -33,6 +32,7 @@
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
+#include "ores.ore.core/xml/generated/currency_config.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
@@ -122,6 +122,56 @@ auto project(const refdata::messaging::calendar_adjustment& v) -> xg::newcalenda
     return r;
 }
 
+namespace xc = generated::currency_config;
+
+/**
+ * @brief The table the Currency element is described by.
+ */
+auto currency_type() -> const record_type& {
+    const auto* found = find_child_type(*xc::currency_config_document().root, "Currency");
+    if (found == nullptr)
+        throw std::runtime_error("the currency config table has no Currency element");
+    return *found;
+}
+
+/**
+ * @brief Builds one currency record from the refdata entity.
+ */
+auto build_currency(const refdata::domain::currency& v) -> xc::currency_definition {
+    const auto& type = currency_type();
+    xc::currency_definition r;
+    r.iso_code = v.iso_code;
+    state(type, &r, "ISOCode");
+    r.name = v.name;
+    state(type, &r, "Name");
+    r.symbol = v.symbol;
+    state(type, &r, "Symbol");
+    r.fraction_symbol = v.fraction_symbol;
+    state(type, &r, "FractionSymbol");
+    r.fractions_per_unit = v.fractions_per_unit;
+    state(type, &r, "FractionsPerUnit");
+    r.rounding_precision = v.rounding_precision;
+    state(type, &r, "RoundingPrecision");
+
+    if (!set_enumeration(type, &r, "RoundingType", v.rounding_type))
+        throw std::runtime_error(std::format("'{}' is not an ORE rounding type", v.rounding_type));
+
+    if (!v.numeric_code.empty()) {
+        try {
+            r.numeric_code = std::stoll(v.numeric_code);
+            state(type, &r, "NumericCode");
+        } catch (const std::exception&) {
+            // A numeric code that is not a number is left out, as before.
+        }
+    }
+
+    if (v.ore_currency_type) {
+        r.currency_type = *v.ore_currency_type;
+        state(type, &r, "CurrencyType");
+    }
+    return r;
+}
+
 void fill_envelope(domain::trade& t, const trading::messaging::trade_export_item& item) {
     static_cast<std::string&>(t.id) = item.ore_id;
     if (item.envelope)
@@ -166,8 +216,17 @@ bool append_unmapped_trade(domain::portfolio& p,
 
 std::string exporter::export_currency_config(const std::vector<currency>& v) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting currency config. Total: " << v.size();
-    const auto mapped = domain::currency_mapper::map(v);
-    return domain::save_data(mapped);
+
+    xc::currency_config record;
+    record.currency.reserve(v.size());
+    std::ranges::transform(v, std::back_inserter(record.currency), build_currency);
+    state(*xc::currency_config_document().root, &record, "Currency");
+
+    std::string out;
+    const auto emitted = emitter::emit(xc::currency_config_document(), &record, out);
+    if (!emitted)
+        throw std::runtime_error(emitted.error().message);
+    return out;
 }
 
 std::string exporter::export_calendar_adjustments(

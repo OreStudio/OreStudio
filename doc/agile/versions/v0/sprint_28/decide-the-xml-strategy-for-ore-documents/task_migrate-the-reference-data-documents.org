@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch: feature/migrate-calendar-adjustments-onto-the-codec
+#+branch: feature/migrate-currency-config-onto-the-codec
 #+pr: 3456
 #+blocked_on:
 #+blocked_since:
@@ -29,9 +29,9 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Calendar adjustments read and write through the codec; four families remain. |
+| Now          | Calendar adjustments and currency config read and write through the codec; three families remain. |
 | Waiting on   | Nothing.                               |
-| Next         | Currency config, conventions, netting sets and credit simulation, in that order. |
+| Next         | Netting sets, credit simulation and conventions, in that order. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -48,7 +48,9 @@ mapper in one change, so no family ever has two live implementations. Calendar
 adjustments went first because it is the smallest and proves the shape every
 later migration reuses: its mapper is deleted, not retyped, and the projection
 that survives sits at the boundary beside the reading and the writing it
-serves.
+serves. Currency config followed and needed two more codec helpers, because a
+currency's rounding type is an enumeration: the record holds an index and a
+projection speaks the schema's spelling.
 
 *The codec grew the vocabulary a projection needs.* A projection receives the
 record the generated table describes and states which of its members it fills,
@@ -79,9 +81,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families on the codec | 1 of 5 (calendar adjustments) | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3c8bca789f |
-| Calendar documents that round trip through the importer and exporter | 8 of 8 | same | 3c8bca789f |
-| XML suites | 531 cases, 73,313 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 3c8bca789f |
+| Families on the codec | 2 of 5 (calendar adjustments, currency config) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
+| Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | pending |
+| Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | pending |
+| XML suites | 527 cases, 84,175 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
 
 * Notes
 

@@ -89,6 +89,16 @@ public:
     import_currency_config(const std::filesystem::path& path);
 
     /**
+     * @brief Imports a currency config from a document already in memory.
+     *
+     * @param text The document.
+     * @return The currencies it states.
+     * @throws std::runtime_error when the document does not bind.
+     */
+    static std::vector<refdata::domain::currency>
+    import_currency_config_text(std::string_view text);
+
+    /**
      * @brief Validates a calendar adjustment entry.
      *
      * @param ca Calendar adjustment to validate

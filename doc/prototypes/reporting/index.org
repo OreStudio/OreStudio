@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: e6c652da-a2c5-437a-948a-02e017c7afd5
+:END:
+#+title: Reporting prototypes
+#+description: The prototypes that answer to the reporting journeys: what each argues, and the three interpretations every one of them offers.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+* Summary
+
+The reports a party runs, what each produced, what went wrong, and when the next
+one starts. Seven journeys describe that work, and there is no reporting surface
+in the application at all today, so nothing here has prior art to copy.
+
+10 prototypes answer to this group: one per journey, and one that two of them
+hand the analytics to. Each is a static page under =doc/prototypes/=, opens with
+no build and no session, and reads mock data only. The table below opens each one
+and says what it argues. Where a prototype carries a Gemini review, the last
+column opens it.
+
+[[file:../index.org][Prototypes]] is the top page and the only inventory.
+
+* One decision, an axis for each journey
+
+The journeys are not a screen plan. Reading them one to one would give seven
+screens for one job, and nobody would build it that way.
+
+The decision this set exists to inform is what the reporting surface is, and how
+many screens own it. Each prototype offers three structural variants of its own
+journey, and each turns on the question that journey actually poses rather than
+one frame forced onto all seven. Forcing a single axis was tried first and it
+broke down: the question a catalogue asks is not the question a result asks.
+
+What is shared is the method. Three variants, one switcher, the same chrome, and
+the same rule that the variants disagree about structure and not colour.
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | The axis its three variants turn on |
+|-----------+-------------------------------------|
+| See the reports a party runs | What the front door is: the catalogue of reports, a ledger of runs, or only what needs a human. |
+| Run a report and watch it finish | Where waiting happens: a strip that reports itself while you work, a dedicated view you stay in, or a queue you watch together. |
+| Read what a run produced | What the result is: the numbers and the trade rows under them, the archive of files, or a sentence about the numbers. |
+| See a report's results by counterparty | How a result is read by counterparty: a ranked list of names, a tree through the group each one nests under, or a map of how concentrated the run is. |
+| Find out why a run went wrong | Whether errors are a place you go, a panel beside the run, or a ledger across runs. |
+| Choose when a report runs | Where scheduling lives: on the report, in a schedule list, or on a calendar. |
+
+The prototypes are not meant to be read as one design with seven parts. They are
+seven answers to seven different questions, drawn in one voice so that the
+answers can be compared.
+
+* The prototypes
+
+#+ATTR_HTML: :class hug-leading
+| Prototype | What it argues | Open it | Review |
+|-----------+----------------+---------+--------|
+| [[file:see-the-reports-a-party-runs.org][See the reports a party runs]] | The front door of reporting: which reports this party runs and how each one last went, with a run that completed while carrying errors told apart from a clean one without opening it. | [[file:see-the-reports-a-party-runs/][prototype]] | none |
+| [[file:run-a-report-and-watch-it-finish.org][Run a report and watch it finish]] | A run is six phases and seven workflow steps, and the person waiting needs to know when to stop waiting. The three variants disagree about whether watching is a place you go or a strip that reports itself while you work. | [[file:run-a-report-and-watch-it-finish/][prototype]] | none |
+| [[file:read-what-a-run-produced.org][Read what a run produced]] | What "the result" is: the numbers with the per-trade rows beneath them, the archive, or a sentence about the numbers. The drill-down runs from a run's figures to one trade's NPV and its error. The result also rolls up as a book tree: a portfolio, a nested sub-portfolio, a book, and a trade, with a trade booked to no book shown as an unbooked node. The gap is stated rather than drawn round, because no operation lists the files inside a run's archive, none parses them, and none returns a result grouped by book. It also plots the result in the form each set of numbers asks for, from a stated vocabulary and a stated rule that picks between them: sorted bars of NPV, Delta and Gamma by book, a donut of each book's share of the run and a donut of the run's problems by scope, grouped bars of Delta against Gamma, a scatter of Gamma against Delta, stacked bars of the problems of the two runs the comparison pairs, a signed bar chart of the change against the baseline, and a line of NPV across the runs of the definition with the current run and the baseline marked. A plot whose figure the errors left partial carries the same partial marking the figure carries, a donut draws the excluded part as a hatched slice named excluded, and a count with no magnitude to compare stays a table. | [[file:read-what-a-run-produced/][prototype]] | [[file:read-what-a-run-produced/review/][review]] |
+| [[file:see-a-reports-results-by-counterparty.org][See a report's results by counterparty]] | One run read by counterparty rather than by book, which is the question a credit reader or a limit conversation starts with. It ranks names by their aggregate NPV, notional, trade count and exposure, keeps a group above its members because counterparties nest through the parent, opens one name to its trades, netting sets and errors, and draws a counterparty with no result and a trade naming no counterparty as stated cases. The gap is stated on the page, because nothing parses the run's archive and npv.csv names the counterparty instead of identifying it by id. | [[file:see-a-reports-results-by-counterparty/][prototype]] | none |
+| [[file:find-out-why-a-run-went-wrong.org][Find out why a run went wrong]] | The sharpest question of them: are errors a place you go, a panel beside the run, or a ledger across runs. It renders twenty real error rows, including one trade failing in two analytics with the same message. | [[file:find-out-why-a-run-went-wrong/][prototype]] | none |
+| [[file:choose-when-a-report-runs.org][Choose when a report runs]] | Where scheduling lives: on the report, in a schedule list, or on a calendar. It keeps run now, pause, play and unschedule apart, and states that the schedule has no time zone, that no scheduler read exists for this screen, and that pause and play have no operation. | [[file:choose-when-a-report-runs/][prototype]] | none |
+| [[file:look-back-over-a-reports-history.org][Look back over a report's history]] | The runs of one report newest first, each with its timestamp, the newest marked latest, the last five fire times, and a notice when the run being read stops being the newest. A trend line of the report's exposure sits above the list, with the latest run's point marked and named, every point a run's errors left partial drawn hollow and dashed, and a run that produced no figure breaking the line. Beside it sits the page's plot vocabulary and the rule that picks a form: a donut of the latest run's problems by scope, stacked bars of the problems by scope across the runs, grouped bars of the errors against the warnings, and a scatter of how long a run took against how many positions it placed. | [[file:look-back-over-a-reports-history/][prototype]] | none |
+| [[file:create-a-report.org][Create a report]] | Creating a report on the standard steps UI: seven fixed steps (what it is, one step for each of the five configurations it binds, and the analytics that configuration carries), then a final review that states every value and reads the row back. Step 7 is the entry point to the analytics and not a second implementation of them: it reads the set the bound configuration holds, with the count that is on, the display order, the rows kept off and the incompatibility state, and it hands the work to Manage the analytics. | [[file:create-a-report/][prototype]] | none |
+| [[file:change-what-a-report-runs.org][Change what a report runs]] | A wizard over three panels: the definition and the configurations it binds, each linking to the screen that holds its data, then the analytics of the bound configuration as a read-only summary, then what a change to that set reaches. It draws no analytic control: the switchboard and the add-analytic flow are gone, and step 2 hands the analytics to Manage the analytics and states what the change reaches. Incompatibility is a visible state, so pfe without simulation is marked and the rule is named. | [[file:change-what-a-report-runs/][prototype]] | none |
+| [[file:manage-the-analytics.org][Manage the analytics]] | The one prototype that owns the analytic interaction of a run settings configuration: a switchboard of the fourteen types with the on/off control, the =display_order= and a one-line summary, a rail step for each analytic that is on in =display_order=, and a final step that reads the set back. Turning one off asks first and sets =active= false rather than deleting the row. pfe without simulation is a state with both rows marked, the refused toggle and a final step that refuses to read the set back. Three readings of the per-analytic step behind =?variant=A|B|C=: a document, two columns, and a guided walk one parameter at a time. | [[file:manage-the-analytics/][prototype]] | none |
+
+* What none of them settle
+
+Whether the seven journeys become one area, one screen, or two. That is the
+decision this set exists to inform, and it is taken after the review rather than
+here. Each prototype argues one journey; the area they share is drawn only far
+enough to judge the journey inside it.
+
+One thing is settled: analytic management has one screen. Create a report and
+Change what a report runs used to draw the same switchboard, the same parameters
+and the same incompatibility state, in two vocabularies for the same three
+states — on, off, and a type with no row. Both now read the set and link to
+Manage the analytics, which owns it.
+
+* Adding a prototype
+
+Follow [[file:../index.org][Prototypes]], which has the one way. A prototype here
+is a static page, never a route in =ores.web=, and it carries a design note at
+=doc/prototypes/reporting/<name>.org= that this page links.
+
+* See also
+
+- [[file:../index.org][Prototypes]] — every prototype, grouped by journey.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the seven journeys these answer to.

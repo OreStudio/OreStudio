@@ -1,0 +1,275 @@
+:PROPERTIES:
+:ID: 4e0f3f61-7c25-44b5-9c3f-2f4b7b2e9a10
+:END:
+#+title: Create a report prototype
+#+description: Creating a report on the standard steps UI: seven fixed steps, the analytics the bound configuration carries read only on step 7, and a final review, on a throwaway page that hands analytic management to its own prototype and states the missing scope write, the absent service check behind the pfe rule, and the four configuration types with no screen.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:create-a-report/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype draws the act of creating a report on the standard steps UI, the
+one the system bootstrap journey uses. Eight steps: what the report is, one step
+for each of the five configuration types it binds, the analytics the bound run
+settings configuration carries, and the final review. It answers to
+[[file:../../knowledge/journeys/reporting/journey_create_a_report.org][Create a report]].
+
+Step 7 is the *entry point* to the analytics, not a second implementation of
+them. It reads the set the bound configuration holds — the count that is on, the
+list with their =display_order=, the rows kept off, and the incompatibility state
+when =pfe= is on without =simulation= — and it links to
+[[file:manage-the-analytics.org][Manage the analytics]], which owns the
+interaction. Its rail carries no analytic step, and it has no switchboard.
+
+The shape is decided, so the page carries one reading and no structural
+switcher. It used to argue three variants of the same content, and it used to
+draw a switchboard and a step per analytic; *Why the rail is fixed at eight*
+records what replaced them and what the consolidation costs.
+
+It is throwaway. It reads no service, and the page says plainly which parts of
+the definition it cannot write.
+
+* Detail
+
+** The question the screen answers
+
+Creating a report is not one write. It is a definition, five configuration
+bindings, and a scope, and none of them sits in the same table. The person has to
+hold all of it while answering one question: *can this report actually run?* The
+journey is the way of asking it one step at a time. One step for all five
+configurations answered "what does this slot supply" and left "what does binding
+it decide" to the reader, so the page gives each configuration its own step and
+its own argument.
+
+The analytics are the other half of that question. They are not the definition's
+rows, they are the bound configuration's, and another screen manages them; so
+step 7 reads them and says whose they are, and the person who wants to change
+them has one place to go.
+
+** The standard steps UI, and where it is copied from
+
+The steps UI is not invented here. The rail, its marks and the step foot are
+copied from =doc/prototypes/setup/first-run/prototype.css= and
+=doc/prototypes/setup/first-run/prototype.js=, which copy =JourneyPage.tsx= and
+the journey runtime:
+
+- =.journey=, a grid of =14rem 1fr= with the rail left, and its 820px collapse;
+- =.railnav ol= and =.railentry= with its =.done=, =.current= and =.ahead=
+  states;
+- =.railmark= with the same three states, a tick once a step is behind the
+  person and its number otherwise;
+- =.stepfoot= with =.ml-auto= for the primary action.
+
+The rail is drawn from one list, so the rail, the step numbering and the step
+foot cannot disagree, as the runtime requires. A step is data: an id, a title, a
+lead sentence, a body and a final flag
+([[file:../../knowledge/ui/ux_language.org][UX Language]], sections *The rail*
+and *A step's body*). Going back is refused at the first step and at a step that
+is final. The review is final, so it draws no Back, and its rail entry carries a
+*final* tag so the rail says so too.
+
+The standard rail knows position only: done, current or ahead. It cannot say how
+many items a save would refuse, because the runtime never asks it to.
+
+** The rail, and why it is fixed at eight
+
+| Position | Step | What it draws |
+|----------+------+---------------|
+| 1 | What it is | The name, the description, the report type as a combo box over the type table, =is_official=, and the concurrency policy. |
+| 2 | The conventions it binds | What binding a conventions configuration means, where the convention entities live, the picker, the route to =PATHS.conventions=, and what the binding reaches. |
+| 3 | The pricing engines it binds | The same four parts for =pricing_engines=, with no screen stated plainly. |
+| 4 | The market data it binds | The same four parts for =todays_market=, with no screen stated plainly. |
+| 5 | The curve configuration it binds | The same four parts for =curve_configuration=, with no screen stated plainly. |
+| 6 | The run settings it binds | The same four parts for =risk_report_config=, plus the portfolio and book scope the configuration carries. |
+| 7 | What it runs | The analytics the bound configuration carries, read only: the count on, every row with its =display_order= and a one-line summary, the rows kept off, the rule strip, and the link to Manage the analytics. |
+| 8 | Review and save | Every field value, the five bindings, the analytics and their settings as the configuration holds them, the scope, then =report_definitions.put= and the row read back. |
+
+The five configuration steps follow the order =report_type_configuration_types=
+states and the seeder writes: =conventions=, =pricing_engines=,
+=todays_market=, =curve_configuration= and =risk_report_config=. Each carries the
+same four parts, so two of them can be read side by side.
+
+The rail was computed from what the report runs: seven fixed steps, one step per
+analytic that was on in =display_order=, then the review. That made a report with
+every analytic on draw twenty-two entries, and it made this page the second place
+that configured an analytic. Both are gone. The rail is now eight steps and it
+does not move, and the analytic steps live where the analytic controls live.
+
+** Why the rail is fixed at eight
+
+The product owner asked for one prototype to own analytic management. Two
+prototypes were answering the same question in two designs: this one with a
+switchboard and a rail step per analytic, and
+[[file:change-what-a-report-runs.org][Change what a report runs]] with a
+switchboard and a nested list-detail-effect flow. The same fourteen types had two
+vocabularies for the same three states — on, off, and no row — and the parameters
+of an analytic were drawn twice.
+
+The consolidation is a deletion on this page:
+
+- the analytic steps leave the rail, so the rail no longer renumbers and the deep
+  links no longer have to survive a moving number;
+- the switchboard, the on/off control, the confirmation and the parameter
+  controls leave the page, so nothing here writes a =configuration_analytic= or a
+  =configuration_analytic_parameter= row;
+- step 7 becomes a reading and a link.
+
+What it costs is a step out of the journey. A person who wants to change the set
+while creating a report leaves the wizard, changes the set on the shared screen,
+and comes back to step 7 with the set it now holds. The page cannot say whether
+that screen was opened, and the review cannot warn about a change made in another
+tab. The alternative was two screens owning the same rows, which is worse.
+
+** Deep links
+
+=?step=N= is numeric over the eight steps, and it is stable, because the rail
+does not move. =?pfe=without-simulation= opens the draft with the rule broken, so
+the rule strip on step 7 can be read without changing two rows by hand. Neither
+this page nor anything outside it carries an analytic's step number: an analytic
+has no step here any more.
+
+** The analytics belong to the configuration, not the definition
+
+The picker offers the fourteen analytic types: =npv=, =sensitivity=,
+=cashflow=, =curves=, =simulation=, =saccr=, =parametricVar=,
+=portfolioDetails=, =creditcurves=, =pfe=, =calibration=, =pnlExplain=,
+=historicalSimulationVar= and =xva=. Each carries an =active= flag and a
+=display_order=, and turning one off sets =active= false rather than deleting the
+row.
+
+The rows hang off the configuration, and the configuration is shared, so the set
+a person reads on step 7 is the set other definitions also run. The page says so
+on step 7 and again in the review. *What it runs* is step 7, after the run
+settings step that carries the analytic rows, so the person changes a set they
+have just chosen — on the screen that owns it.
+
+** One step for each of the five configurations
+
+A definition binds configurations of exactly five types: =conventions=,
+=pricing_engines=, =todays_market=, =curve_configuration= and
+=risk_report_config=. Each of them owns a step, and every one of those steps
+carries the same four parts, so a reader comparing two of them compares like with
+like:
+
+1. *What binding it means.* The argument, in plain words and grounded in the
+   type's own model, because the five do not decide the same thing. Binding
+   =conventions= decides what a trade means: the day count, the calendars, the
+   payment frequency and the index every trade is read with. Binding
+   =pricing_engines= decides how a trade is priced: the model and the engine of
+   each product. Binding =todays_market= decides what it is priced from, and
+   which configuration block each market role reads. Binding
+   =curve_configuration= decides which recipes the run has, because without the
+   recipe the curve is not built whatever the market quotes. Binding
+   =risk_report_config= decides how the run behaves, and it carries the analytics
+   and the scope.
+2. *Where the data lives.* The model files, named, so the argument can be
+   checked: =projects/ores.refdata/modeling/= for the convention entities and the
+   curve configuration, =projects/ores.analytics/modeling/= for the pricing
+   models and today's market, =projects/ores.reporting/modeling/= for the run
+   settings. Each step names its own tables and says which one holds which part.
+3. *The picker.* One combo box over the configurations of that type the party
+   holds, from =configurations.list_by_configuration_type_code=, with the count of
+   definitions already bound to the one chosen.
+4. *What it reaches, and what it does not.* Two lists. The reach is what changes
+   in the next run of every definition binding the configuration; the limit is
+   what the binding leaves alone, such as the market data a pricing engine
+   configuration does not name, or the quotes a curve configuration does not
+   hold.
+
+Each step also states the screen that holds the type's data. *Only conventions
+has one*, at =PATHS.conventions=, =/refdata/conventions=. =pricing_engines=,
+=todays_market=, =curve_configuration= and =risk_report_config= have no screen in
+the application, and their steps say so rather than drawing a link that would not
+resolve.
+
+** The scope is read off the configuration
+
+The scope is not a field of the definition. It is a column of the
+=risk_report_config= in the slot, held in that row's portfolio and book junction
+tables, and no operation in the journey's set writes it. *The run settings it
+binds* — step 6 — therefore reads the scope off the bound configuration and states
+which configuration carries it, rather than offering a portfolio to choose. The
+step says why the definition chooses no portfolio: the scope lives on the
+configuration, and two definitions that bind one configuration read one scope.
+The configurations and their scopes on this page are the seeder's.
+
+** The review names the field values
+
+The final step states values rather than counting them: the definition's fifteen
+fields including the ones that stay empty (=fsm_state_id=, =schedule_expression=,
+=scheduler_job_id=, =run_grant_id=, =prepared_input_key=), one binding row per
+configuration type, the analytic rows with their =active= and =display_order=,
+and the parameter rows with their values. The analytics and their settings are
+drawn as the bound configuration holds them and marked as read here and written
+on the shared screen: this page writes neither. The save is refused while an item
+is open, because the definition would read back unlike the review. After the
+save, the read-back panel states the stored row, that the definition is on
+demand, and that it has never run.
+
+** What is deferred
+
+The complex editors for =simulation= and =pfe= — the cube, the shift and the time
+grid — are drawn as plain fields on Manage the analytics, and that page labels
+each one a deferred editor. This page says only that they are deferred and names
+the screen that draws them. Likewise the scope: a person who needs a portfolio no
+configuration carries cannot state it here, because no operation writes the
+scope, and that is a gap the journey records rather than this page invents round.
+
+** What the page refuses to invent
+
+No BFF route serves reporting, and nothing in the application creates a report
+today. No operation writes or reads the portfolio scope or the run settings
+inside a =risk_report_config=. Nothing answers what a report needs in order to
+run beyond the configuration types its report type requires. Four of the five
+configuration types have no screen, and the prototype states that instead of
+drawing a route. Nothing stages an analytic set for one definition, so step 7 is
+a view over rows already written to a shared configuration, and the page says so
+instead of pretending the draft is private. The operations named are the
+journey's own; no subject is invented for the gaps.
+
+** What is fake
+
+Every value is a fixture: the party, the configurations and their binding counts,
+the scopes, the analytic settings, and the identifier the save would return.
+Nothing reads a server and nothing is written. =?pfe=without-simulation= opens
+the draft with the rule broken, so the state can be read without changing two
+rows by hand. =?step=N= lands on a step.
+
+** Where the code lives
+
+=doc/prototypes/reporting/create-a-report/=. Three files, plain HTML, CSS and
+JavaScript, no framework, no modules, no fetch, and no build step. The rail is
+=rail()=, and every navigation reads that one function.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+Whether a person should be able to create an analytic set, a configuration or a
+scope from this screen at all, or only choose among the ones the party already
+holds. The journey answers "choose", because nothing here can write those rows; a
+build that wants to answer "create" needs operations this journey does not have.
+It also does not settle what the rail should show about a set that cannot run: the
+standard rail marks position, not readiness, so the state is carried by the rule
+strip on step 7 and by the review's refusal, and nowhere on the rail itself. And
+it does not settle how a wizard should feel when one of its steps is completed on
+another screen.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis each prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the group these answer to.
+- [[file:../../knowledge/journeys/reporting/journey_create_a_report.org][Create a report]] — the journey this prototype answers.
+- [[file:manage-the-analytics.org][Manage the analytics]] — the prototype that owns the analytic interaction this page reads and links to.
+- [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.

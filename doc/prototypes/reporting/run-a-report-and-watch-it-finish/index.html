@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: run a report and watch it finish — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step. Opens from file://.
+
+  Run a report and watch it finish, from
+  doc/knowledge/journeys/reporting/journey_run_a_report_and_watch_it_finish.org:
+  a person presses Run now, follows the run through the pipeline's six phases to
+  a terminal state, and reads when it completed and what it said.
+
+  The decision this prototype serves: how the five reporting journeys become one
+  reporting surface without a screen per journey. For this journey the question
+  is how a person starts a run and then knows when to stop waiting.
+
+  Three variants, switchable with ?variant=A|B|C and the buttons in the foot bar:
+
+    A, modal-and-notify. A confirmation dialog over the catalogue; once started
+       the page returns to where the person was and the run reports itself in a
+       strip at the top, so they can keep working.
+    B, run-theatre. A dedicated view of that one run: the six phases advancing
+       left to right, the current one live, and no way back to the catalogue
+       until the run reaches a terminal state.
+    C, queue-first. Starting a run drops a row into a queue of the person's
+       runs; the queue is the screen, each row advances in place, and several
+       runs can be watched together.
+
+  The phases are driven by a scripted timer in prototype.js (700 ms a phase at
+  1x) so the waiting is observable. Nothing here reads a server, because there
+  is no reporting UI and no reporting read for per-step progress: the phases are
+  a fixture, and the page says so.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: WHAT THIS REPORT RUNS</b>
+  Group Consolidated Exposure | Party ACMCOR | report type risk
+  --
+  <b>THE WIZARD: THREE STEPS</b>
+  --
+  {#
+    Step | What the step carries
+    1 | the definition and the configurations it binds
+    2 | the analytics, as the switchboard
+    3 | review and save
+  }
+  [ Back ] | [ Next: the analytics ]
+  --
+  <b>STEP 1 - THE DEFINITION AND THE CONFIGURATIONS IT BINDS</b>
+  --
+  {#
+    Configuration type | What it supplies | Where that data lives
+    conventions | calendars, day counts, pairs | /refdata/conventions -> Conventions
+    pricing_engines | engine per product family | NO SCREEN, no route exists
+    todays_market | curves, surfaces, FX spots | NO SCREEN, no route exists
+    curve_configuration | builder and pillars per curve | NO SCREEN, no route exists
+    risk_report_config | the analytics and their settings | NO SCREEN, no route exists
+  }
+  Only conventions has a screen today: PATHS.conventions, /refdata/conventions.
+  The other four are stated as missing, never drawn as links that would not resolve.
+  Group risk configuration carries the analytics, and four definitions bind it:
+  this one, Board Risk Dashboard, Group DV01 by book, Treasury Sensitivity.
+  Everything steps 2 and 3 change reaches all four.
+  --
+  <b>STEP 2 - THE ANALYTICS OF THE BOUND CONFIGURATION</b>
+  --
+  {#
+    on | display_order | analytic
+    3  | 1 | npv
+    3  | 5 | simulation
+    1  | 6 | pfe
+  }
+  The step reads the set and states the ownership: the rows hang off the run
+  settings configuration the previous step bound, so every definition bound to
+  it runs the same set. Two ways out are offered, and neither writes here:
+  --
+  <b>SET THE ANALYTICS - A SHARED SCREEN</b>
+  --
+  The switchboard, one step per analytic that is on, the parameters and the
+  rule between analytics belong to their own prototype,
+  doc/prototypes/reporting/manage-the-analytics/, which this journey links to.
+  Both this journey and Create a report use it, so the interaction is drawn
+  once rather than twice.
+  --
+  <b>THE RULE BETWEEN ANALYTICS, SHOWN AS A STATE</b>
+  --
+  <b>THIS SET CANNOT RUN: pfe is on and simulation is off.</b> The shared screen
+  marks both rows and refuses the pair. The rule lives in the ACME seeder at
+  check_exposure_needs_simulation, and no service validates it, so the screen
+  holds the refusal that the platform does not.
+  --
+  <b>DEFERRED:</b> simulation and pfe need purpose-built editors for the cube, the
+  shift and the time grid. They are drawn as plain fields here, and the page says
+  so on the parameter. A plain field is not the design.
+  --
+  <b>THE ADD-ANALYTIC FLOW - SCREEN 3: THE EFFECT</b>
+  --
+  The next run of every definition bound to Group risk configuration produces it.
+  It writes one analytic row and one parameter row per parameter.
+  A run after the change is not comparable with one before it.
+  <b><color:red>REFUSED: pfe needs simulation, and it is off in the set on the table.</color></b>
+  {
+    [ Turn simulation on as well ] | [ Back to the settings ] | [ Cancel ]
+  }
+  --
+  <b>STEP 3 - REVIEW AND SAVE: EXACTLY WHAT WILL BE WRITTEN</b>
+  --
+  {#
+    Field | Was | Will be
+    simulation.active | Y | N, row kept at display_order 5
+    pfe.active | N | Y, display_order 6
+    pfe.exposure_cube | simulation-cube-01 | unchanged
+  }
+  <b>NOT WRITABLE YET: this set cannot run.</b> Step 2 has to turn simulation on,
+  or turn pfe off, before the wizard offers the write.
+  No row is deleted and no run is started.
+  --
+  <b>WHAT THE CHANGE DOES AND DOES NOT REACH</b>
+  --
+  Past runs keep the configuration they ran with, with their outputs and errors.
+  The configuration is shared, so every definition bound to it runs the new set on
+  its next run, including the three the person did not open.
+  A run after the change is not comparable with a run before it: the two runs did
+  not produce the same measures. The results screen marks a comparison partial
+  where a side carried errors, and cannot mark this case, because nothing says
+  which configuration version a run used.
+  --
+  <b>RUNS THE CHANGE MAKES INCOMPARABLE</b>
+  --
+  {#
+    Run | Started | Configuration it ran with
+    run 41c9f0a7 | 2026-10-16 06:04 | inference from start time
+    run 5b02e6d3 | 2026-10-15 06:03 | inference from start time
+  }
+  --
+  <b>WHAT THIS SCREEN CANNOT SHOW</b>
+  --
+  A screen for four of the five configuration types: none exists, only conventions
+  has a route. The purpose-built editors for the cube, the shift and the time grid:
+  deferred. Which configuration version a run used: not readable. A configuration's
+  own version history: not readable. Whether pfe without simulation is refused: it
+  is not, by any service.
+  The screen states these absences rather than drawing a validation it does not have.
+}
+
+@enduml

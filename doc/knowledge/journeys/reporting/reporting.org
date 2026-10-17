@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: 38D55527-A968-41BD-8C51-FFBC184DEC5B
+:END:
+#+title: Reporting journeys
+#+description: A party's reports: which definitions it runs and how the last run of each went, running one on demand, reading what it produced, finding out what went wrong, and choosing when it runs.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+A report definition belongs to one party, and the party runs it on demand or on
+a schedule. Each firing creates a report instance, one record of one run, and
+the run walks the
+[[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][report execution pipeline]]: it
+prepares the engine's input, submits it to the compute grid, waits while the
+engine runs on a worker node, retrieves the output archive, and closes. The run
+records where its archive landed and every error the engine reported. These
+journeys are a person's view of that record: the reports their party owns, the
+runs of each, what a run produced, what went wrong, and when the next one
+starts.
+
+Nine journeys cover the lifecycle. The first is the front door, the one a
+reader opens with a question and no identifier: *which reports does my party
+run, and how did each one last go?* From it a person runs a report, opens what a
+run produced, reads that result by counterparty as well as by book, follows an
+error down to the trade, analytic or curve that caused it, looks back over the
+runs of one report, and changes when the report runs next. The front door is
+what makes the others reachable, so it carries the health words the whole group
+uses.
+
+Four of the nine write. Running a report creates a run, and choosing when
+it runs changes the definition's schedule. The other five read rows that a run
+already wrote. That split is why the group is cheap to build: the reporting
+service already stores the definitions, the runs, the output location and the
+errors, and every journey below reads them, with the gaps recorded in each
+journey's *What is missing*.
+
+* Journeys
+
+#+ATTR_HTML: :class hug-leading
+| Journey | Actor | Gist |
+|---------+-------+------|
+| [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] | trading-desk, market-risk, tenant administrator | Every definition the party owns, with the latest run's health: never run, running, completed clean, completed carrying errors, or failed |
+| [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] | trading-desk, market-risk | Trigger one report on demand, then follow the run through its phases to a terminal state |
+| [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] | trading-desk, market-risk | The run's output message and archive, the engine's output down to one trade's result and rolled up as a book tree from a portfolio to a book to a trade, and the ORE package the run exported |
+| [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] | engineer, market-risk, tenant administrator | The run's errors, placed by scope and subject, down to which trade, which analytic and which curve |
+| [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] | tenant administrator | Set the schedule that makes a definition run, run it now, pause and resume the schedule, and take it away again |
+| [[id:D6F9CB58-2A30-4124-AC05-75218272F219][See a report's results by counterparty]] | market-risk, credit, trading-desk | One run read by counterparty: each name's aggregate NPV, notional, trade count and, where the report runs =saccr=, exposure, largest first, grouped through the parent counterparty, down to one name's trades, netting sets and errors |
+| [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] | trading-desk, market-risk, engineer | Every run of one report newest first, with the last five fire times, the newest marked latest, and a notice when the run being read stops being the newest |
+| [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] | tenant administrator, market-risk | Define a report: name it, bind the five configurations it reads, choose the analytics and their settings, scope it to a portfolio, and save it |
+| [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] | market-risk, tenant administrator | Turn an analytic on or off, change a parameter, and see what the change reaches: the next run of every definition sharing the configuration, and the runs it makes incomparable |
+
+* What a report is here
+
+A report is one of the report types the installation registers: =risk= and
+=grid=. Every definition the seed creates is of type =risk=, and the names a
+reader meets are the thirty-one the seed writes. They include Group Consolidated
+Exposure, Cross-Entity Counterparty Concentration, Intercompany Exposure Matrix,
+Large Exposures, Leverage Ratio, Liquidity Coverage, Board Risk Dashboard, Data
+Quality Completeness, System Health, Audit Trail Summary, Headline Position,
+SA-CCR Exposure, Intraday Risk Monitor, FRTB SA Capital, Stressed VaR,
+CVA/DVA/FVA, Bucketed DV01, Delta and Gamma, NPV, Exposure, Cashflows, Yield
+Curves, Volatility Surfaces and Credit Curves. A report page states the cycle a
+report serves, =intraday= or =eod=, and its frequency, =on-demand= or
+=scheduled=. Its audience is one of =trading-desk=, =market-risk=, =engineer= or
+=release check=. The definition row carries the report type and the schedule
+expression, which is what a screen can list; the cycle and the audience live on
+the report page.
+
+The analytics a report runs are not free choice either. A report configuration
+names a set of them, and the set is what the report's numbers come from: Headline
+Position runs =npv= and =sensitivity=, Board Risk Dashboard runs =npv=,
+=parametricVar= and =saccr=, Large Exposures runs =npv= and =saccr=, and
+Cashflows runs =cashflow=. A screen that shows a report's figures is showing
+those analytics' output and should name them.
+
+The names are not shared between parties. A definition is owned by one party,
+and the parties of a group run different reports; a reader at ACMCOR and a
+reader at ACCOUK see different definition rows even when both reports are risk
+reports. The party codes a reader meets are ACMCOR, ACCOUK, ACCOUS and ACCOHK,
+and every row below is party-scoped by row-level security rather than by a
+filter the screen applies.
+
+A *definition* is configuration and a *run* is state. The definition carries
+the name, the party, the report type, the schedule expression and the run
+configuration that decides how much of the pipeline a run executes. The run
+carries what happened: when it started, when it completed, its state, its output
+message, where its output archive landed, and its errors. A change to the
+definition affects the next run and no earlier one.
+
+* The pipeline, in the words the screens need
+
+Six phases run in order: Pre-processing, Submission, Execution, Retrieval,
+Post-processing and Finalisation. Pre-processing is four workflow steps rather
+than one, and retrieval and post-processing are one step rather than two, so the
+workflow has seven steps while the pipeline has six phases. Execution runs on a
+worker node and is not a step any ORE Studio service performs: the services
+submit the work and wait. Only finalisation touches the state machine. No phase
+calls another; the workflow engine invokes each step, and each step is handed
+the identifier or location of what the previous step produced.
+
+The seven steps are =reporting.v1.ops.gather_trades=,
+=reporting.v1.ops.gather_market_data=, =reporting.v1.ops.assemble_bundle=,
+=ore.v1.ops.prepare_ore_package=, =compute.v1.ops.submit_compute=,
+=reporting.v1.ops.collect_compute_results= and
+=reporting.v1.ops.finalise_report=. A definition whose run configuration
+substitutes pre-processing starts at =resolve_prepared_input= instead of the
+three gathering steps; one that ignores post-processing uses
+=ignore_compute_results=; and a run that cannot finish uses =fail_report=.
+
+* Who reaches the screens
+
+#+ATTR_HTML: :class hug-leading
+| Actor | What they read | What they change |
+|-------+----------------+------------------|
+| trading-desk | The definitions their party owns, the latest run of each, the outputs and the errors | Run a report on demand |
+| market-risk | The same rows, read for sign-off rather than for the desk's position | Run a report on demand |
+| engineer | The rows plus the errors, to place a failure in the engine | Nothing |
+| tenant administrator | Every row of their tenant, and the schedule of every definition | Run a report on demand; schedule a definition; pause and resume its schedule; unschedule it. Pause and resume are not available yet, because no operation sets the scheduler job's =is_active= |
+
+The reads are gated by permissions the reporting service already holds:
+=reporting::report_definitions:read=, =reporting::report_instances:read=,
+=reporting::report_error_events:read= and =reporting::report_error_scopes:read=.
+Two writes are named: =reporting::report_instances:write= and
+=reporting::report_instances:delete=. The error reads are held by no role below
+=TenantAdmin= and =SuperAdmin=, and those two hold =*=; a trading desk that can
+run a report therefore cannot read why it failed, which the group's *What is
+missing* sections state rather than paper over.
+
+* Where the screens are
+
+No BFF route serves a reporting screen, and nothing in the web application
+shows a report today. Each journey names the route it needs in *What is
+missing*, and each carries a wireframe that is the design intent for the
+prototype that will draw it. The prototypes belong under
+=doc/prototypes/reporting/=, one directory per journey, except where two journeys
+share a screen: analytic management is one prototype that both *Create a report*
+and *Change what a report runs* link to, so the interaction is written once.
+
+* Related
+
+- [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] — the inventory of individual reports
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] — the definition, its schedule and the run's states
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — the six phases and the seven steps
+- [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]] — the workflow that invokes the steps
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — the workflow definition itself
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — the component these journeys read
+- [[id:210AB813-8ED6-439E-BDEA-1B1286E02B34][The scheduler and reporting have no journeys]] — the capture this group answers
+
+* See also
+
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index this group belongs to
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist these journeys are written against
+- [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Task: Extract the ores.reporting user journeys]] — the work that owns this extraction
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screens follow
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — where the prototypes are inventoried

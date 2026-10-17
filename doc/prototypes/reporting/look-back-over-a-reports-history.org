@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: 43729172-bbe6-491e-aba5-fbfba78a6861
+:END:
+#+title: Look back over a report's history prototype
+#+description: Three structural variants of one report's run history, the trend plot across its runs, the last five fire times, the latest marked, and the arrival of a newer run using the Recency pattern.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                |
+|---------------+------------------------------------------------------|
+| Prototype     | [[file:look-back-over-a-reports-history/][the prototype]] |
+| Gemini review | none                                                 |
+| Group         | [[file:index.org][Reporting prototypes]]               |
+
+* Summary
+
+This prototype argues what a report's history is, and what happens to the person
+reading it when a newer run arrives. It carries three structural variants
+switched with =?variant=, and it answers to
+[[file:../../knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org][Look back over a report's history]].
+
+It is throwaway. It reads no service, every value is mock, and the arrival of a
+new run is simulated by a button because a static page cannot receive an event.
+
+The history is also plotted, and the page states the plot vocabulary it draws
+from and the rule that picks a form: a donut for one whole in few parts, stacked
+bars for several wholes each split the same way, grouped bars for two series over
+the same categories, a scatter for two measures against each other, and a line
+for a change over time. The trend line stays, and beside it sit a donut of the
+latest run's problems by scope, stacked bars of the problems by scope across the
+runs, grouped bars of the errors against the warnings each run recorded, and a
+scatter of how long a run took against how many positions it placed.
+
+* Detail
+
+** The question
+
+A run list is easy. The hard part is that the list is alive: a scheduled report
+produces a new run while somebody is reading an old one, and the screen has to
+say so without taking the page away from them. The second question is what "the
+history" is measured in, because the firings and the runs are not the same set.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | A run list | A table of runs newest first, the latest pinned and marked, each row with its started and completed time, and a selected run read below. |
+| =B= | A timeline | Runs down a vertical timeline with their timestamps, the current one expanded inline, so the rhythm of the schedule is visible at a glance. |
+| =C= | A comparison | The latest run beside one selected earlier run, with the differences stated, for the person asking what changed between them. |
+
+** Five fire times, and what they are really counting
+
+The panel shows the last five fire times, because a person needs to tell an
+hourly report from a daily one and to notice a window where nothing ran. Each
+time is derived from a run, and that is stated, because it is not the same thing
+as a firing. A firing that produced no run, because the concurrency policy
+skipped it or the trigger was refused, leaves no trace the screen can read.
+
+The page goes further and points at a gap. The five runs it draws are 59 minutes
+50 seconds apart except across one window where no run started, and the panel
+says so rather than smoothing the timestamps into a tidy cadence. That is what
+the honest version of this panel looks like.
+
+** The newest run is marked, and stays marked
+
+Every run carries its started and completed time to the second, and the newest is
+marked =LATEST= in a column of its own, so it is found without reading timestamps
+in order. A run that completed while carrying errors reads differently from a
+clean one at a glance.
+
+** The trend: exposure across the runs, and why it is a line
+
+A history is a series, so the page plots it. One card sits under the fire times
+and above the run list, and it carries a line of the report's SA-CCR exposure
+across every run the page holds, oldest to newest.
+
+The form is chosen by the shape of the numbers, not by decoration: a run-by-run
+series is a change over time, and a change over time is a line. The latest run's
+point is marked and named, so the line's direction has a subject; when the newest
+run is still in flight and has no figure yet, the mark falls on the newest run
+that has one, the label says so, and the caption says why the newest run is a
+break in the line rather than a point. The day boundaries are drawn as labelled
+markers, so an hourly axis keeps readable clock ticks; and the value axis states
+the range it spans instead of starting at zero, because a line of levels drawn
+from zero would flatten a series this narrow.
+
+The form of every plot on this page follows one rule, and the rule is written on
+the page beside the plots so the next person does not guess:
+
+| The numbers are | Form | The rule that chooses it |
+|-----------------+------+--------------------------|
+| One whole, few parts | Donut | One whole in not more than about six parts becomes a donut. A seventh part and the ones after it join one =other= slice, and the hole carries the total. Each part states its percentage and its value in the legend beside the slice, never on it. |
+| One whole, many parts, or parts that must be compared precisely | Horizontal bars | A pie of fifteen parts is unreadable and its angles cannot be compared. |
+| Many wholes, each split the same way | Stacked bars | One bar per whole, one segment per part, the same colour for the same part in every bar. |
+| Two series over the same categories | Grouped bars | Side by side, because a stack would make the second series a length from the end of the first. |
+| Two measures against each other | Scatter | So an outlier is visible as a point away from the rest. |
+| A change over time | Line | A change over time is a line, and a single point is not a trend. |
+| A contribution that sums to a total | Waterfall | No figure on this page is a contribution to a known total, so none is drawn as one. |
+| Exact and few | Table only | A handful of exact numbers stays a table, and nothing on this page replaces it. |
+
+What that rule draws on this page:
+
+| Numbers | Form | Why |
+|---------+------+-----|
+| SA-CCR exposure across the runs of one definition | A line, latest point marked and named | The runs of one report in order are a change over time |
+| The latest run's problems, by the scope of each | A donut, with the count in the hole and each scope's count and share in the legend | One whole in a few parts. When the latest run carries nothing, the whole is the runs of the window divided by how each ended, which is still one whole in at most four parts. |
+| The problems of each run, by scope | Stacked bars, one bar per run, one segment per scope | Several wholes, each split the same way, so the comparison is not lost inside one pie |
+| Errors against warnings, run by run | Grouped bars | Two series over the same runs and the same unit, compared side by side |
+| How long a run took against how many positions it placed | A scatter, both axes from zero | Two measures against each other, so a slow run that placed few is a distance on the plot |
+| The state of each run: completed, carrying errors, failed, in flight | A donut of the window's runs, and the run table | A state is a word, so it is a part of the window rather than a measure |
+| A report with one run | No trend | One point states no direction |
+
+A run that completed carrying errors wrote an exposure over the trades it
+placed, so its point is drawn hollow with its segment dashed, the card carries
+the same =partial= tag the run rows carry, and the caption names the runs and
+says what the errors leave out. A run that failed wrote no archive and has no
+exposure at all: the line breaks at it rather than drawing a zero, because a
+failure is not a value of zero. The exact numbers are in the table under the
+plot, one row per run, with each row's state and its =partial= mark, so the plot
+never replaces what a reader checks. The plot is inline SVG written in the
+prototype's own script: a prototype opens from =file://= with no build, no CDN
+and no network, so no chart library is loaded or copied in.
+
+A donut never hides a part the errors left out. The latest run's donut hatches
+the positions the run did not place as a slice of its own, labelled =excluded= and
+stated in the legend with its count, so the pie is the whole population the window
+priced and not a quietly smaller set. Its hole carries the two counts together,
+and the caption says which is which. A run that completed clean leaves no such
+slice, because it left nothing out.
+
+The scenario =results-with-errors=, reachable with =?scenario= set to that value,
+draws the latest run as a run that completed carrying what its errors left out: it
+adds three error rows and four unplaced positions to the fixture, the exposure
+point goes hollow and dashed, the donut's hatched slice appears, and the run's
+health changes to *completed with errors*. It arranges the run's own fixtures and
+changes no run; the page says so in a banner that carries no dismiss, because a
+partial figure a reader may put away is a figure a reader will take as whole.
+
+The exposure figure itself is a fixture, like the runs: it is what a run's
+archive says once something parses it, and nothing parses it today. The amber
+note on the page says so.
+
+** When the run being read stops being the latest
+
+This is the part the prototype exists for. The pattern is the one the record
+screen standard calls Recency, and the page follows it exactly:
+
+- The change signal is `reporting.v1.report_instances_events.created`, which the
+  screen listens to. It does not poll.
+- When a run arrives, Refresh draws the eye.
+- Rows newer than the previous load are marked for three seconds after a reload.
+  The first load marks nothing, and a person can turn the marking off.
+- A notice, not a modal, states that the run being read is no longer the latest,
+  names the new run's time, and offers a way to it. It does not navigate on its
+  own and does not steal focus.
+
+The arrival is simulated with a button in the bar, and the page says so, because
+nothing on a page opened from a file can receive an event.
+
+** What is fake
+
+Everything. The report, its party, its schedule, the twelve runs, their times,
+their durations, their errors, and the exposure each run carries are mock, so
+every point on the trend is a fixture. No service is read, there is no reporting
+BFF route, and the application has no reporting UI.
+
+** Where the code lives
+
+=doc/prototypes/reporting/look-back-over-a-reports-history/=. Three files, plain
+HTML, CSS and JavaScript, no framework and no build step.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review. The
+part that must survive whichever variant wins is the notice: a person reading a
+superseded run is told, quietly, and is not thrown at the new one.
+
+** What it does not settle
+
+Whether a history belongs to a report definition or to a report type. This page
+argues a definition, because that is what the runs belong to and what the
+schedule is attached to. If a reader thinks in report types across parties, the
+page is answering a narrower question than they are asking.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis each prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the six journeys these answer to.

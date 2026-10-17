@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: see the reports a party runs — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  See the reports a party runs, from
+  doc/knowledge/journeys/reporting/journey_see_the_reports_a_party_runs.org:
+  every report definition the party owns, the health of its latest run, and a
+  run carrying errors marked apart from a clean one without opening it.
+
+  Three variants, switched with ?variant=A|B|C: A index-first, B ledger-first,
+  C attention-first. They disagree about what the front door of reporting is.
+  The variant bar at the foot of the page prints the variant and the state.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+:PROPERTIES:
+:ID: 76431668-8656-4276-9F9B-F292FE45B2CA
+:END:
+#+title: User Journey: Run a report and watch it finish
+#+description: A person runs one report definition on demand, then follows the run through the pipeline's phases to a terminal state and reads when it completed and what it said.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person runs one report definition on demand, then follows the run through the pipeline's phases to a terminal state and reads when it completed and what it said.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Run this report now, and tell me when it is done." The person has a report in
+mind and a reason to want it before the schedule would produce it: a position
+changed, a number is needed for a meeting, or yesterday's run failed and the
+answer is wanted today. They press one button, watch the run reach a terminal
+state, and read when it completed and what the system said about it. The journey
+is done when the person can say the run finished and whether it finished clean.
+
+The person is not asking to configure the report. The scope, the analytics and
+the schedule are the definition's; running it takes the definition as it stands
+and makes one run of it.
+
+* Actor and trigger
+
+The trading desk and the market risk function run this journey. The trading
+desk runs Headline Position for a book during the day; the market risk function
+runs it for sign-off, and runs the deeper risk reports when a number moves. Both
+act inside their party, and the definition they run is one of the rows on
+[[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]]. A
+tenant administrator can run any definition of their tenant, because the
+administrator holds the tenant's permissions in full, but the journey is the
+same screen whatever the role.
+
+The trigger is impatience with the schedule or the failure of the last run. The
+person opens a definition that is on-demand, or one that is scheduled but whose
+next run is too late, and presses *Run now*. The journey starts at that press
+and ends when the run is terminal and the person has read its completion time
+and its output message.
+
+This journey writes. A press creates a report instance, records a trigger and
+starts the workflow that runs the pipeline. The run's state, its start time, its
+completion time and its output are written by the reporting service and the
+workflow steps, never by the person. The person states one thing: which
+definition to run.
+
+* Steps
+
+1. *Choose the definition.* The person reaches the definition from the reporting
+   front door, or by name. The system shows one definition's summary: its name,
+   its report type, the schedule it carries, the health of its latest run, and
+   the scope the run will read. The scope is the book or the portfolio the
+   definition's configuration selects, and it is the part a person checks before
+   pressing, because a report run against the wrong book is a correct answer to
+   the wrong question. The summary also states how the run will be configured:
+   whether pre-processing executes or resolves a prepared input, and whether
+   post-processing executes or is ignored. A run of the Sample bundle smoke test
+   resolves a prepared input and ignores the results; a run of Headline Position
+   does both.
+2. *Press Run now.* The system asks the person to confirm the run, restating the
+   definition, its scope and the run configuration, because a run costs compute
+   and writes rows. On confirmation the screen sends one request to the
+   reporting service: =reporting.v1.ops.trigger_report_instance=, naming the
+   definition. The service records the trigger, creates the run and starts the
+   workflow; it answers with the run it created.
+3. *Read the run that was created.* The system switches to the run's own page.
+   The header states the run's name, the definition it came from, its kind, its
+   state and when it started. The state is *running* from the moment the
+   workflow begins. The trigger the press wrote is a =report_trigger_event=, and
+   the run records it in =trigger_id=; the type is =on-demand=, which separates
+   this run from the ones the scheduler fires.
+4. *Read the pipeline the run will walk.* The system draws the six phases in
+   their fixed order — Pre-processing, Submission, Execution, Retrieval,
+   Post-processing, Finalisation — and under them the seven workflow steps that
+   the definition's run configuration selects. For a definition that executes
+   both substitutable phases the steps are =gather_trades=,
+   =gather_market_data=, =assemble_bundle=, =prepare_ore_package=,
+   =submit_compute=, =collect_compute_results= and =finalise_report=. A
+   definition that substitutes pre-processing starts at
+   =resolve_prepared_input=; one that ignores post-processing uses
+   =ignore_compute_results=; a run that cannot finish uses =fail_report=.
+   Execution is drawn differently from the rest, because it happens on a worker
+   node and no ORE Studio service performs it: the services submit the work and
+   wait.
+5. *Understand what the screen can and cannot say about progress.* The run's own
+   state and times are reporting's. The step-by-step position is in
+   =ores.workflow=, and no reporting read serves it. The screen therefore draws
+   the steps the run will take and marks the run as *running*; it does not point
+   at the step in flight, and it must not fake a moving bar. The phases are
+   marked as reported only when the run reaches its terminal state. The screen
+   says why it cannot say more, and *What is missing* names the read that would
+   close the gap.
+6. *Wait, and be told.* A run can outlast the person's patience and the
+   screen's session. The screen subscribes to =report_instances_events.updated=
+   and to =report_instances_events.created=, so the run's row changes state and
+   time in place while the page is open. A person who leaves and comes back
+   reads the same run by id and gets the state it has reached. The question
+   "when is it done" is answered by the run's =completed_at=, not by the
+   screen's timer.
+7. *Read the terminal state.* The run is terminal when it has completed or
+   failed. A completed run carries =completed_at= and an =output_message=, for
+   example exactly =Report execution completed.=; it may also carry
+   =output_storage_key=, the storage key of its output archive, of the form
+   =reporting/runs/<instance-id>/output.tar.gz=. The screen states how long the
+   run took, from =started_at= to =completed_at=, and reads the output message
+   as the system's own sentence about the run.
+8. *A run that completed while carrying errors.* Completion is not the same as
+   clean. A run that records errors still completed, and that is normal and
+   expected: the engine finished, wrote its report, and said in its own log that
+   a trade would not build. The terminal panel states *completed while carrying
+   errors*, gives the count and the worst severity, and links to
+   [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]].
+   The person does not read the run as failed, and the screen does not hide the
+   errors behind the green word.
+9. *A run that failed.* A failed run has no output archive to read. The screen
+   states *failed* and links to the run's errors, which include the errors the
+   engine wrote and the ones the model states itself under the =Report= scope
+   when a run fails for a reason no engine saw. A run that failed before the
+   engine ran is still a run with errors in one table, which is the point of
+   reading a run's errors as a group.
+10. *Leave, or go on.* The person opens what the run produced
+    ([[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]]), or
+    reads why it went wrong. The definition is still there, and its row on the
+    front door now shows this run as its latest.
+
+* Screens and wireframes
+
+One screen. The definition summary, the run action, the run header, the phase
+ladder and the terminal panel are panels of that screen. The confirmation is a
+dialog on the same screen, because it restates the run the person is about to
+create and nothing more.
+
+The screen writes exactly once. The press sends one trigger request; every other
+message on it is a read or a subscription. The phase ladder is a plan derived
+from the definition, not a progress read, and the wireframe draws it as such.
+
+#+caption: Run a report and watch it finish: the definition summary, the run action, the seven steps the run will walk, and the terminal panel with the output message.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_run_a_report_and_watch_it_finish.png]]
+
+* Prototype
+
+The [[file:../../prototypes/reporting/run-a-report-and-watch-it-finish/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/run-a-report-and-watch-it-finish.org][its design note]] says what each argues and what is fake. This journey is the design intent for the run screen, and its
+prototype belongs at
+=doc/prototypes/reporting/run-a-report-and-watch-it-finish/=. The prototype must
+draw the confirmation dialog before the write; the run in flight with the phase
+ladder and no step marked current; the terminal state *completed clean* with
+=Report execution completed.= and the time it took; the terminal state
+*completed while carrying errors* with the count beside it; and the terminal
+state *failed* with no archive. It must also draw a run whose definition
+substitutes pre-processing, so the four-step chain is visible next to the
+seven-step one.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =report_definition= | The definition the person runs: name, report type, schedule expression, concurrency policy and the run configuration | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_configuration= | The scope and analytics the definition binds, and the market data date the run reads | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+| =portfolio= | The portfolio the scope names, when the definition's scope is a portfolio | [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][ores.refdata.portfolio]] |
+| =book= | The book the scope names, when the definition's scope is a book | [[id:5A63B4D1-0F55-468B-B734-A5DC37B26DC4][ores.refdata.book]] |
+| =party= | The owner of the definition and the run | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+| =report_instance= | The run: state, =started_at=, =completed_at=, =output_message= and =output_storage_key= | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =report_instance_kind= | The kind of run the press created | [[id:79A42255-AACC-43BA-B876-60D421F6DBD0][ores.reporting.report_instance_kind]] |
+| =report_trigger_event= | The firing the press records: the definition, the trigger type, who triggered it and when | [[id:47E6903C-DFA7-4D2F-B044-C1C74428F719][ores.reporting.report_trigger_event]] |
+| =report_trigger_type= | The vocabulary the trigger's type comes from, where =on-demand= sits apart from =scheduled= | [[id:5E202386-A853-4F09-8D3A-026ECE6DAD4D][ores.reporting.report_trigger_type]] |
+
+The definition is read before the press and never edited by it. The run is the
+record of what the press caused: the service writes its state, its times and its
+output, and the person's screen reads them. The trigger event is immutable: it
+is written once when the press is accepted and never changed, so the record of
+who asked for a run survives any later edit to the run.
+
+Every entity above carries =party_id= and is party-scoped by row-level security.
+The definition and the run are bitemporal, so the run keeps the shape it started
+with even if the definition is edited while it runs. The trigger event is an
+immutable event, and it is the fact the screen could use to say which run the
+press produced, if a read served it.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the definition | Read the definition being run | =reporting.v1.report_definitions.get= | exists |
+| Choose the definition | Read the definition's configuration and scope | (no read of =report_configuration= is named in this set) | missing |
+| Press Run now | Trigger a run of one definition | =reporting.v1.ops.trigger_report_instance= | exists |
+| Read the run | Read the run that was created | =reporting.v1.report_instances.get= | exists |
+| Read the run | List the runs of the definition | =reporting.v1.report_instances.list= | exists |
+| Wait, and be told | Learn that the run changed | =reporting.v1.report_instances_events.updated= | exists |
+| Wait, and be told | Learn that the run was created | =reporting.v1.report_instances_events.created= | exists |
+| Read the pipeline | Follow the pre-processing steps | =reporting.v1.ops.gather_trades=, =gather_market_data=, =assemble_bundle= | exists |
+| Read the pipeline | Prepare the ORE package the engine reads | =ore.v1.ops.prepare_ore_package= | exists |
+| Read the pipeline | Submit the work to the compute grid | =compute.v1.ops.submit_compute= | exists |
+| Read the pipeline | Collect the engine's result | =reporting.v1.ops.collect_compute_results= | exists |
+| Read the pipeline | Close the run | =reporting.v1.ops.finalise_report= | exists |
+| Read the pipeline | Resolve a prepared input instead of gathering | =reporting.v1.ops.resolve_prepared_input= | exists |
+| Read the pipeline | Record that results exist without ingesting them | =reporting.v1.ops.ignore_compute_results= | exists |
+| Read the pipeline | Close a run that could not finish | =reporting.v1.ops.fail_report= | exists |
+| Terminal state | Read the run's errors | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
+| Progress | Read which step the run is on | (no reporting read; the steps live in =ores.workflow=) | missing |
+| The trigger | Read the trigger event the press wrote | (no read of =report_trigger_event= over NATS) | missing |
+| The screen itself | Trigger a run and follow it from the browser | (no BFF route) | missing |
+
+The workflow steps are invoked by the workflow engine, not by the screen. They
+are listed because the journey follows them and the phase ladder draws them; the
+screen's one write is the trigger. The trigger request is gated by
+=reporting::report_instances:write=, and the run reads by
+=reporting::report_instances:read=. The step commands are the workflow engine's
+and carry the workflow instance and the step's own inputs.
+
+The run events are the canonical change events for =report_instance=. They carry
+the subject and the key, so a subscriber can tell a run it is showing from one
+it is not. No event exists for a step completion, and that is the gap in step 5.
+
+No BFF route serves this screen. The prototype adds one, for example
+=POST /api/reporting/reports/<definition-id>/runs= for the press and
+=GET /api/reporting/runs/<run-id>= for the follow, and it keeps the event
+subscription on the server rather than exposing the bus to the browser.
+
+* What is missing
+
+1. *A route and a screen.* No BFF route serves reporting, and nothing in the web
+   application shows a report today. The definition summary, the confirmation,
+   the run page and its terminal panel are all new.
+2. *No per-step progress.* The reporting service states the run's state and its
+   times. The step the workflow is on lives in =ores.workflow=, and no reporting
+   read serves it. The phase ladder therefore marks the plan and the run's
+   state, and it cannot point at the step in flight. A read that carries the
+   workflow instance's current step, exposed beside the run, is the missing
+   piece.
+3. *The run does not name its workflow instance.* =report_instance= carries
+   =trigger_id=, =fsm_state_id=, the times and the output, and no field for the
+   workflow instance that runs it. Even with the step progress available in
+   =ores.workflow=, the screen has no key to reach it from the run. The
+   workflow instance id is carried in the run's start message, so the run needs
+   to keep it.
+4. *The trigger is written and unreadable.* The press records a
+   =report_trigger_event= with the definition, the trigger type, the person and
+   the time, and there is no read of it over NATS. The run's =trigger_id= names
+   it, and nothing resolves that id to a row. The screen can say a run was
+   triggered on demand because the trigger's type is known when it is written;
+   it cannot show the trigger's own record.
+5. *No cancellation.* A press creates a run, and no operation stops one. A run
+   that was started by mistake, or one that is waiting on a worker node, has to
+   be waited out. The journey offers no stop action rather than an action that
+   would be refused.
+6. *The error permissions sit too high.* =reporting::report_error_events:read=
+   and =reporting::report_error_scopes:read= are held by no role below
+   =TenantAdmin= and =SuperAdmin=, which hold =*=. A trading desk that runs a
+   report cannot read the errors that say it completed carrying problems. The
+   terminal panel's count and its link need that read.
+7. *The concurrency policy is the definition's and the answer is the service's.*
+   The definition carries =concurrency_policy= and the screen does not evaluate
+   it. What the person sees when a run is refused is whatever the trigger reply
+   says, and the reply's shape for a refusal is not part of this journey. The
+   screen must show the service's answer, not invent a queue position.
+8. *The scope is held in a configuration with no named read.* The definition
+   binds a =report_configuration= that holds the book and portfolio scope and
+   the market data date. No operation in the reporting set reads that entity, so
+   the confirmation cannot show the scope from a read the journey can cite. The
+   scope panel waits on that read, and the run itself still gathers its trades
+   and market data because the inputs a run needs are gathered by the run.
+
+* Related journeys
+
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door this journey starts from, and the row the new run becomes
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — the output archive and the ORE package the completed run left
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — the errors of a run that completed carrying them, or failed
+- [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] — the alternative to pressing Run now: let the schedule do it
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — the six phases and the seven steps
+- [[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] — the four steps that produce the engine's input
+- [[id:3594348F-6679-4D8B-858F-38B073FDFAFE][Report compute handoff]] — the submission step and the grid
+- [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] — the retrieval step and what it records
+- [[id:61EA2FC7-C112-44FB-8042-9BD7994B71E9][Report execution orchestration]] — the workflow that invokes the steps
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] — the definition, the instance and the trigger
+- [[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]] — why a run can start at a later step
+- [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — the workflow definition
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — the composition the run page follows
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Task: Extract the ores.reporting user journeys]] — the work that owns it
+- [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] — the report a desk runs on demand
+- [[id:DF1F4A61-319E-475D-B526-5DC6B62DCF3F][Sample bundle smoke test]] — the report whose run substitutes both ends of the pipeline
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows

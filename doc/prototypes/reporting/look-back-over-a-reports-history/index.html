@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: look back over a report's history — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Look back over a report's history, from
+  doc/knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org:
+  one report definition's runs newest first, each with its started and completed
+  time, the latest marked, the last five fire times derived from runs, and a
+  notice when a newer run arrives while an older one is open.
+
+  Three variants, switched with ?variant=A|B|C: A the run list, B the timeline,
+  C the comparison. They disagree about structure, not colour. The variant bar
+  at the foot of the page switches them and simulates the arrival of a run.
+
+  All three carry the trend above the list: a line of the report's SA-CCR
+  exposure across the runs, oldest to newest, with the latest run's point marked
+  and named, the range of the value axis stated, and the exact numbers in a table
+  under the plot. A run that completed carrying errors wrote an exposure over the
+  trades it placed, so its point is drawn hollow and dashed and the caption names
+  the runs and what their errors exclude; a run that failed produced no figure, so
+  the line breaks at it rather than drawing a zero.
+
+  Under the trend sits the rest of the plot vocabulary, and the page states the
+  rule that picks a form: one whole in few parts is a donut, one whole in many
+  parts or parts to compare precisely is horizontal bars, many wholes each split
+  the same way are stacked bars, two series over the same categories are grouped
+  bars, two measures against each other are a scatter, a change over time is a
+  line, a contribution that sums to a total is a waterfall, and a handful of exact
+  numbers stays a table. Here that gives a donut of the latest run's problems by
+  scope (or, on a run that recorded none, of the window's runs by how each ended),
+  stacked bars of the problems by scope across the runs, grouped bars of the
+  errors against the warnings each run recorded, and a scatter of how long a run
+  took against how many positions it placed. Every plot carries a title, its
+  unit, an aria-label, a caption saying why that form, and its exact numbers
+  beside it. A partial figure keeps the dashed or hollow mark, and a donut draws
+  the part the errors left out as a hatched slice named excluded, so the whole of
+  the pie is never silently smaller than the run; ?scenario=results-with-errors
+  puts the page in that state.
+
+  Every plot is inline SVG written in prototype.js, because a page opened from
+  file:// has no build, no CDN and no network: no chart library is loaded or
+  copied in.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

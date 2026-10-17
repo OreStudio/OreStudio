@@ -30,6 +30,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include <string_view>
 
 namespace ores::iam::messaging {
 
@@ -105,7 +106,7 @@ public:
                 events.push_back(auth_event{
                     .id = row.id.value(),
                     .event_time = ores::database::repository::timestamp_to_timepoint(
-                        row.event_time.value()),
+                        std::string_view{row.event_time.value()}),
                     .account_id = row.account_id,
                     .event_type = row.event_type,
                     .username = row.username,

@@ -792,3 +792,212 @@ table tr.totalrow td {
 }
 table td.up { color: var(--ok); }
 table td.down { color: #ffb4ad; }
+
+/* --------------------------------------------------------------- plots */
+/* Each plot is inline SVG written by the script: a prototype opens from
+   file:// with no build, no CDN and no network, so no chart library is loaded
+   or copied in. Data takes its colour from the sign of the value -- the ok
+   token for a positive bar or point, the bad token for a negative one -- and
+   the accent is spent on controls, never on data. A bar starts at the zero
+   rule; a line states the range of its axis. A figure the errors left partial
+   is dashed, carries the partial tag the figure carries, and is named in the
+   caption. */
+
+.plots { display: grid; gap: 18px; }
+
+.plot {
+    margin: 0;
+    display: grid;
+    gap: 8px;
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    background: var(--bg);
+    padding: 12px 14px 10px;
+}
+
+.plot-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.plot-head .plot-title, .plot-head .plot-unit { flex: none; }
+.plot-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+.plot-unit { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+
+.plot-svg { width: 100%; height: auto; display: block; }
+.plot-svg text { font-family: var(--sans); }
+.plot-svg .pl-lbl { fill: var(--ink-dim); font-size: 11.5px; }
+.plot-scatter .pl-lbl { fill: var(--ink); font-size: 11px; }
+.plot-svg .pl-val { fill: var(--ink); font-family: var(--mono); font-size: 11px; }
+.plot-svg .pl-tick { fill: var(--ink-faint); font-family: var(--mono); font-size: 10.5px; }
+.plot-svg .pl-mark { fill: var(--ink); font-family: var(--mono); font-size: 10.5px; }
+
+.plot-svg .bar { fill: var(--ok); }
+.plot-svg .bar.neg { fill: var(--bad); }
+.plot-svg .bar.partial {
+    fill-opacity: 0.42;
+    stroke: var(--bad);
+    stroke-width: 1.2;
+    stroke-dasharray: 3 2;
+}
+
+.plot-svg .axis { stroke: var(--line); stroke-width: 1; }
+.plot-svg .zero { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 2 2; }
+.plot-svg .grid { stroke: var(--line-soft); stroke-width: 1; }
+.plot-svg .gap { stroke: var(--bad); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.65; }
+
+.plot-svg .seg { stroke: var(--ink-dim); stroke-width: 1.6; fill: none; }
+.plot-svg .seg.partial { stroke: var(--bad); stroke-dasharray: 4 3; }
+
+.plot-svg .pt { fill: var(--ok); stroke: var(--bg); stroke-width: 1.5; }
+.plot-svg .pt.neg { fill: var(--bad); }
+.plot-svg .pt.partial { fill: none; stroke: var(--bad); stroke-width: 2; stroke-dasharray: 3 2; }
+.plot-svg .pt.current { stroke-width: 2; }
+.plot-svg .pt.baseline { fill: none; stroke: var(--ink); stroke-width: 1.8; }
+
+.plot-cap {
+    display: grid;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ink-faint);
+    max-width: 100ch;
+}
+.plot-excl {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    color: #ffb4ad;
+}
+.plot-excl .tag { flex: none; }
+.plot-excl span:last-child { flex: 1 1 30ch; }
+
+.plot-absent {
+    border: 1px dashed var(--line-strong);
+    border-radius: 6px;
+    background: var(--bg);
+    padding: 10px 14px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+    max-width: 100ch;
+}
+.plot-absent b { color: var(--ink); }
+
+/* The form table: the rule that picks a plot, on the page. One row per shape of
+   numbers, and the plot vocabulary a reader can apply to the next screen. */
+.formrule {
+    border: 1px solid var(--line-soft);
+    border-radius: 6px;
+    background: var(--panel);
+    padding: 10px 14px 12px;
+    display: grid;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+}
+.formrule summary {
+    cursor: pointer;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 13px;
+}
+.formtable { font-size: 12px; }
+.formtable th, .formtable td { padding-top: 5px; padding-bottom: 5px; vertical-align: top; }
+.formtable .fshape { color: var(--ink); white-space: nowrap; }
+.formtable .fname { color: var(--ink); white-space: nowrap; }
+.formtable .frule { color: var(--ink-dim); }
+.formtable .fchip {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    margin-right: 7px;
+    vertical-align: baseline;
+}
+.formtable .f-donut { background: var(--accent-bright); }
+.formtable .f-bars { background: var(--ok); }
+.formtable .f-stacked { background: var(--warn); }
+.formtable .f-grouped { background: var(--accent); }
+.formtable .f-scatter { background: var(--ink-dim); }
+.formtable .f-line { border: 1px dashed var(--ink-dim); background: none; }
+.formtable .f-waterfall { background: var(--bad); }
+.formtable .f-table { border: 1px solid var(--line-strong); background: none; }
+.formfoot { color: var(--ink-faint); font-size: 12px; }
+
+/* A donut and the legend beside it. The legend is the exact numbers, so a
+   slice never has to be measured: a name, a value with its unit, and the
+   share, never printed on the arc. */
+.donut-wrap {
+    display: grid;
+    grid-template-columns: minmax(200px, 340px) minmax(300px, 1fr);
+    gap: 20px;
+    align-items: center;
+}
+.plot-donut { max-width: 340px; }
+.plot-svg .hole-val {
+    fill: var(--ink);
+    font-family: var(--mono);
+    font-size: 17px;
+    font-weight: 600;
+}
+.plot-svg .hole-lbl { fill: var(--ink-faint); font-size: 10.5px; }
+.plot-svg .pl-axis { fill: var(--ink-faint); font-size: 11px; }
+.plot-svg .leader { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 2 2; }
+.plot-svg .slice.excluded { stroke-opacity: 1; }
+.plot-svg .sbar, .plot-svg .gbar { stroke-opacity: 1; }
+.plot-svg .gbar.partial { fill-opacity: 0.35; stroke: var(--bad); stroke-dasharray: 3 2; }
+
+.legend { display: grid; gap: 2px; font-size: 12px; }
+.legend.titled { display: grid; gap: 4px; }
+.legend .lhead {
+    color: var(--ink-faint);
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+.legendrow { display: flex; gap: 18px; flex-wrap: wrap; }
+.legendrow .lrow { grid-template-columns: 12px minmax(80px, auto); }
+.legendhead, .lrow {
+    display: grid;
+    grid-template-columns: 12px minmax(120px, 1fr) auto 64px;
+    gap: 10px;
+    align-items: baseline;
+}
+.legend.row .lrow { grid-template-columns: 12px auto; }
+.legendhead {
+    color: var(--ink-faint);
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line-soft);
+    padding-bottom: 3px;
+    grid-template-columns: 12px minmax(120px, 1fr) auto 64px;
+}
+.legendhead span:nth-child(2), .legendhead span:nth-child(3) { text-align: right; }
+.lrow .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    align-self: center;
+    display: inline-block;
+}
+.lrow .swatch.hatched {
+    background-image: repeating-linear-gradient(45deg,
+        var(--bad) 0 1.5px, transparent 1.5px 4.5px);
+    background-color: rgba(248, 81, 73, 0.14);
+    border: 1px solid var(--bad);
+}
+.lrow .lname { color: var(--ink-dim); }
+.lrow { min-width: 0; }
+.lrow .lname, .lrow .lval { overflow: hidden; text-overflow: ellipsis; }
+.lrow .lval { color: var(--ink); font-family: var(--mono); font-size: 11.5px; text-align: right; white-space: nowrap; }
+.lrow .lpct { color: var(--ink-faint); font-family: var(--mono); font-size: 11px; text-align: right; }
+.lrow.excl .lname, .lrow.excl .lpct { color: #ffb4ad; }
+.plot-note { font-size: 11.5px; color: var(--ink-faint); max-width: 100ch; }
+
+@media (max-width: 720px) {
+    .donut-wrap { grid-template-columns: 1fr; }
+}
+
+.trendtable { font-size: 12px; }
+.trendtable th, .trendtable td { padding-top: 5px; padding-bottom: 5px; }
+.trendtable td.nowrap { white-space: nowrap; font-family: var(--mono); font-size: 11.5px; color: var(--ink-dim); }
+.trendtable .nm { font-family: var(--mono); font-size: 11.5px; color: var(--ink); }
+.trendtable .tag { font-size: 9.5px; }
+

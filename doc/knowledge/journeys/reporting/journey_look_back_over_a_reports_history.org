@@ -63,9 +63,26 @@ that arrives while the screen is open is signalled in place.
    can see that the row belongs to *this* report and no other. There is no route
    to a list of runs across the tenant in this journey, and the screen does not
    offer one.
-2. *Read the runs newest first.* The runs are ordered by =started_at=,
-   descending, so the first row is the newest run the definition produced. Every
-   row states two timestamps and labels them: *Started* and *Completed*.
+2. *Read the runs newest first, and the trend above them.* The runs are ordered
+   by =started_at=, descending, so the first row is the newest run the definition
+   produced. Every row states two timestamps and labels them: *Started* and
+   *Completed*. Above the list the screen plots the series: a line of the
+   report's exposure across the runs, oldest to newest, with the latest run's
+   point marked and named, because a history is a change over time and a line is
+   the form for one. The value axis states the range it spans, and the exact
+   numbers are in a table under the plot. The screen has a plot vocabulary and a
+   stated rule that chooses between its forms: a donut for one whole in few
+   parts, stacked bars for several wholes each split the same way, grouped bars
+   for two series over the same categories, and a scatter for two measures
+   against each other. That rule draws the latest run's problems by scope as a
+   donut, the same problems across the runs as stacked bars, the errors against
+   the warnings as grouped bars, and the time a run took against the positions it
+   placed as a scatter. A run whose figure the errors left partial is drawn
+   hollow and dashed, carries the same =partial= marking its row carries, and the
+   caption names what its errors exclude; a run that failed produced no figure at
+   all, so the line breaks at it instead of drawing a zero. A report whose
+   history holds one run has no trend on the screen, and the panel says why
+   rather than plotting a point.
    =started_at= is shown because it is the only time a run in flight has, and
    because it is the field the order and the latest marker use; a failed run
    has a start and a finish, and a run that is still going has a start alone.
@@ -137,7 +154,10 @@ because the inventory gate reads the directory name as a link.
 
 The prototype must draw three structural readings of the same history: a list of
 runs with the selected run read below it, a timeline that shows the rhythm of the
-schedule, and a comparison of the latest run against one earlier run. In all
+schedule, and a comparison of the latest run against one earlier run. In all three
+it plots the series above the runs: a line of exposure with the latest run marked
+and named, the range of its value axis stated, its exact numbers in a table beneath
+it, and the =partial= marking on every point a run's errors left incomplete. In all
 three, every run states its started and completed time, the newest run is marked
 *latest*, the last five fire times are visible with the sentence that they are
 derived from runs, and any run can be opened. The prototype must also simulate

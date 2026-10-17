@@ -105,6 +105,25 @@ not run, rerun or edit anything.
    is booked to a book. The tree on the prototype is a fixture, for two reasons
    the journey states in *What is missing*: the archive carries no book column,
    and no operation returns the run's results grouped by book.
+   The screen also plots these numbers, and the plot is chosen to fit the analytic
+   that produced them: NPV by book is horizontal bars, sorted and drawn from a
+   zero rule; Delta and Gamma by book are that same bar form in two charts,
+   because a Greek is a different unit from an NPV; the change against a previous
+   run is a signed bar chart of its own; and the run's NPV across the runs of the
+   same definition is a line, with the current run and the baseline marked, which
+   is what makes the comparison legible. The screen has a plot vocabulary wider
+   than bars and lines — a donut for one whole in few parts, stacked bars for
+   several wholes each split the same way, grouped bars for two series over the
+   same categories, and a scatter for two measures against each other — and it
+   states the rule that chooses between them, so a later screen applies the same
+   rule rather than guessing: each book's share of the run and the run's problems
+   by scope are donuts, Delta against Gamma is grouped bars, and a book's Gamma
+   against its Delta is a scatter. Selecting a node of the book tree
+   narrows the bars to that subtree exactly as it narrows the table. Every plot
+   states its title, its unit, a text alternative and a one-line reason for its
+   form, and keeps its exact numbers in the table beside it. A figure that is not
+   a magnitude to compare — positions priced, books, counterparties — is a table
+   answer, and the screen draws no plot of it.
 6. *Read the errors that came with the output.* Output and errors are not
    alternatives. A run that completed while carrying errors produced its
    archive and recorded its errors, and a reader who takes the archive must know
@@ -131,6 +150,10 @@ not run, rerun or edit anything.
      The figure is not hidden and not replaced: a person who needs the total gets
      it, and a person who would take it for the whole answer is told otherwise on
      the figure itself.
+   - A plot of a partial result is marked too. A bar or a point drawn from a
+     figure the errors left incomplete carries the same =partial= marker the
+     figure carries, is drawn dashed or hollow, and its caption names what the
+     figure excludes. A plot never presents a floor as the whole answer.
    - A book whose trades include a failed one is marked, and it states that its
      figure excludes the failed trades. A portfolio above it states that it
      inherits the exclusion, because its figure is the sum of its books and it
@@ -210,7 +233,14 @@ subtree.
 
 The result panel also carries the comparison: the control that chooses a previous
 run of the definition, the change badge under each figure, the change columns on
-the book tree and the by-book table, and the total row. When either side of the
+the book tree and the by-book table, and the total row. The plots sit under the
+book tree and above the by-book table they take their numbers from: bars for NPV,
+for Delta and for Gamma across the books in view, a signed bar chart of the change
+when the comparison is on, and a line of NPV across the runs of the definition
+with the current run and the baseline marked. A plot whose figure the errors left
+partial carries the same =partial= marking the figure carries, with its caption
+naming what the figure excludes, because a bar of a floor must not read as a bar
+of the whole answer. When either side of the
 comparison carried errors the badge and the panel mark every change as partial,
 because a change between one incomplete figure and one complete figure is not the
 change the two runs would show.

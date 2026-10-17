@@ -1673,3 +1673,7 @@ tangled into the runnable script library
 * Report Error Events
 
 - [[id:DBF8B476-9D33-51E7-9CE4-C6DD2DD70D18][How do I run the report_error_events commands from the shell?]]
+
+* Equity Instruments
+
+- [[id:0B3558F6-7E79-5660-AAFE-0F10D254C48E][How do I run the equity_instruments commands from the shell?]]

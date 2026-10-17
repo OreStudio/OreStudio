@@ -203,8 +203,7 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // ----------------------------------------------------------------
     subs.push_back(register_credit_limit_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_conventions_import_event_mapping(event_source, event_bus, nats));
-    subs.push_back(
-        register_conventions_import_item_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_conventions_import_item_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_counterparty_business_centre_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_trading_account_type_event_mapping(event_source, event_bus, nats));

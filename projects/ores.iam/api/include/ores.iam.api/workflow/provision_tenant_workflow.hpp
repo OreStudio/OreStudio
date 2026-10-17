@@ -97,6 +97,7 @@ inline constexpr std::string_view publish_bundle_step_kind = "publish_bundle";
 inline constexpr std::string_view import_lei_hierarchy_step_kind = "import_lei_hierarchy";
 inline constexpr std::string_view provision_party_step_kind = "provision_party";
 inline constexpr std::string_view load_staff_step_kind = "load_staff";
+inline constexpr std::string_view set_staff_passwords_step_kind = "set_staff_passwords";
 inline constexpr std::string_view attach_photos_step_kind = "attach_photos";
 inline constexpr std::string_view start_market_feeds_step_kind = "start_market_feeds";
 inline constexpr std::string_view generate_trades_step_kind = "generate_trades";
@@ -112,6 +113,7 @@ inline constexpr std::string_view provision_step_kinds[] = {system_provision_ste
                                                             import_lei_hierarchy_step_kind,
                                                             provision_party_step_kind,
                                                             load_staff_step_kind,
+                                                            set_staff_passwords_step_kind,
                                                             attach_photos_step_kind,
                                                             start_market_feeds_step_kind,
                                                             generate_trades_step_kind};
@@ -177,6 +179,11 @@ struct step_kind_words {
                 "Creates an account for each person the starting point lists, each in its own "
                 "party.",
                 orchestrating_step_timeout};
+    if (kind == set_staff_passwords_step_kind)
+        return {"Set the staff passwords",
+                "Sets each staff account's password through the server's own password API, so "
+                "the demonstration tenant's people can sign in.",
+                orchestrating_step_timeout};
     if (kind == attach_photos_step_kind)
         return {"Attach the photographs",
                 "Gives the accounts their photographs, and the tenant's party its logo.",
@@ -220,6 +227,7 @@ inline constexpr std::string_view provision_executed_step_kinds[] = {system_prov
                                                                      import_lei_hierarchy_step_kind,
                                                                      provision_party_step_kind,
                                                                      load_staff_step_kind,
+                                                                     set_staff_passwords_step_kind,
                                                                      attach_photos_step_kind,
                                                                      start_market_feeds_step_kind,
                                                                      generate_trades_step_kind};
@@ -400,6 +408,8 @@ make_step(const provision_tenant_workflow_request& run,
         return {import_lei_hierarchy_step_kind};
     if (kind == load_staff_step_kind)
         return {provision_party_step_kind};
+    if (kind == set_staff_passwords_step_kind)
+        return {load_staff_step_kind};
     if (kind == attach_photos_step_kind)
         return {load_staff_step_kind, provision_party_step_kind};
     // The feeds bind every party the tenant holds, so the parties the import
@@ -598,9 +608,9 @@ inline void register_tenant_setup_workflow(ores::workflow::service::workflow_reg
     def.description =
         "Finishes a tenant from the seed profile the system-side run received: publishes the "
         "bundles the profile orders, imports its LEI hierarchy, provisions its parties, loads "
-        "its staff, attaches its images, starts its market feeds, generates its trades and "
-        "completes the tenant. One engine step per declared kind that acts inside the tenant, "
-        "in the profile's order, plus the step that completes it.";
+        "its staff, sets their passwords, attaches its images, starts its market feeds, generates "
+        "its trades and completes the tenant. One engine step per declared kind that acts inside "
+        "the tenant, in the profile's order, plus the step that completes it.";
 
     def.build_steps = [](const std::string& request_json,
                          const std::string& /*tenant_id*/,

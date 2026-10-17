@@ -130,7 +130,6 @@ TEST_CASE("write_app_version_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto app_id_parent = ores::compute::generators::generate_synthetic_app(ctx);
-    app_id_parent.change_reason_code = "system.test";
     ores::compute::repository::app_repository app_id_repo;
     app_id_repo.write(party_ctx, app_id_parent);
     v.app_id = app_id_parent.id;

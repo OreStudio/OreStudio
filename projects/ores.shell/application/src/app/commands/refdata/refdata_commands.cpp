@@ -36,6 +36,8 @@
 #include "ores.shell/app/commands/refdata/commodity_price_segment_commands.hpp"
 #include "ores.shell/app/commands/refdata/commodity_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/contact_type_commands.hpp"
+#include "ores.shell/app/commands/refdata/convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/convention_kind_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_business_centre_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_change_commands.hpp"
 #include "ores.shell/app/commands/refdata/counterparty_commands.hpp"
@@ -142,7 +144,8 @@
 #include "ores.shell/app/commands/refdata/swap_index_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/swaption_volatility_config_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_anchor_commands.hpp"
-#include "ores.shell/app/commands/refdata/tenor_basis_swap_convention_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_basis_swap_long_short_commands.hpp"
+#include "ores.shell/app/commands/refdata/tenor_basis_swap_pay_receive_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_basis_two_swap_convention_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_commands.hpp"
 #include "ores.shell/app/commands/refdata/tenor_convention_commands.hpp"
@@ -199,6 +202,8 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     commodity_price_segment_commands::register_commands(root_menu, session);
     commodity_volatility_config_commands::register_commands(root_menu, session);
     contact_type_commands::register_commands(root_menu, session);
+    convention_commands::register_commands(root_menu, session);
+    convention_kind_commands::register_commands(root_menu, session);
     counterparty_business_centre_commands::register_commands(root_menu, session);
     counterparty_commands::register_commands(root_menu, session);
     counterparty_change_commands::register_commands(root_menu, session);
@@ -305,7 +310,8 @@ void refdata_commands::register_commands(cli::Menu& root_menu,
     swap_index_convention_commands::register_commands(root_menu, session);
     swaption_volatility_config_commands::register_commands(root_menu, session);
     tenor_anchor_commands::register_commands(root_menu, session);
-    tenor_basis_swap_convention_commands::register_commands(root_menu, session);
+    tenor_basis_swap_long_short_commands::register_commands(root_menu, session);
+    tenor_basis_swap_pay_receive_commands::register_commands(root_menu, session);
     tenor_basis_two_swap_convention_commands::register_commands(root_menu, session);
     tenor_commands::register_commands(root_menu, session);
     tenor_convention_commands::register_commands(root_menu, session);

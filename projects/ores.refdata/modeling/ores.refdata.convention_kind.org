@@ -1,0 +1,204 @@
+:PROPERTIES:
+:ID: 31412676-338C-482C-9476-B902E6F81B02
+:END:
+#+title: ores.refdata.convention_kind
+#+description: Codegen entity model for the refdata =convention_kind= table. The coded catalogue of the convention kinds the central =convention= row may name.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: convention_kind
+#+entity_plural: convention_kinds
+#+entity_title: Convention Kind
+#+has_tenant_id: true
+#+coding_scheme: none
+#+image_id: false
+#+brief: The coded catalogue of the convention kinds a central convention row may name.
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+The coded catalogue of convention kinds, one row per convention an ORE
+conventions document can carry. A central =convention= row names its kind with
+this code, and the kind selects the family whose parts the row carries.
+
+The rows are ORE's own convention category names, upper-cased: the kind of
+=tenor_basis_swap_convention= is =TENOR_BASIS_SWAP=. A kind that is modelled
+beside this table in =ores.refdata= owns a family of parts; this table is the
+closed set that says which kinds the central row may be.
+
+Batch-loaded reference data, refreshed from ORE's =ore_types.xsd= alongside the
+other coded refdata lookups.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   simple-lookup
+:END:
+
+* Columns
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:is_text:     true
+:primary_key: true
+:END:
+
+The kind code, upper snake case. It is the value a =convention= row holds in
+=kind_code=.
+
+#+begin_src cpp :name generator
+std::string("TENOR_BASIS_SWAP")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+Human-readable name of the convention kind (e.g. "Tenor Basis Swap").
+
+#+begin_src cpp :name generator
+std::string("Tenor Basis Swap")
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+One-line description of the convention kind.
+
+#+begin_src cpp :name generator
+std::string(faker::lorem::sentence())
+#+end_src
+
+** display_order
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default:  0
+:END:
+
+Ordinal position for dropdown/list display.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 100)
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_convention_kinds_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_refdata_validate_convention_kind_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:       api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: kind
+:entity_plural_short:   kinds
+:entity_singular_words: convention kind
+:entity_plural_words:   convention kinds
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ck
+:END:
+
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| code          | Code          |
+| name          | Name          |
+| description   | Description   |
+| display_order | Display Order |
+| modified_by   | Modified By   |
+| version       | Version       |
+
+** Presentation
+:PROPERTIES:
+:domain_include:              ores.refdata.api/domain/convention_kind.hpp
+:domain_class:                refdata::domain::convention_kind
+:protocol_include:            ores.refdata.api/messaging/convention_kind_protocol.hpp
+:collection_name:             kinds
+:key_field:                   code
+:delete_request_id_field:     codes
+:history_request_id_field:    code
+:END:
+
+*** Detail fields
+
+| field         | label         | widget            | type      | is_key | is_required | placeholder                 |
+|---------------+---------------+-------------------+-----------+--------+-------------+------------------------------|
+| code          | Code          | codeEdit          | line_edit | true   | true        | e.g. TENOR_BASIS_SWAP       |
+| name          | Name          | nameEdit          | line_edit |        | true        | e.g. Tenor Basis Swap       |
+| description   | Description   | descriptionEdit   | line_edit |        |             | Short description           |
+| display_order | Display Order | displayOrderEdit  | spin_box  |        |             |                             |
+
+*** Columns
+
+| enum_name    | field         | header        | type      | width | is_badge        | badge_key       |
+|--------------+---------------+---------------+-----------+-------+-----------------+-----------------|
+| Code         | code          | Code          | string    | auto  | true            | convention_kind |
+| Name         | name          | Name          | string    | auto  |                 |                 |
+| Description  | description   | Description   | string    | auto  |                 |                 |
+| DisplayOrder | display_order | Display Order | int       | 70    |                 |                 |
+| Version      | version       | Version       | int       | 70    |                 |                 |
+| ModifiedBy   | modified_by   | Modified By   | string    | auto  |                 |                 |
+| RecordedAt   | recorded_at   | Recorded At   | timestamp | auto  |                 |                 |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this catalogue codes.

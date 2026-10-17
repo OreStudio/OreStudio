@@ -57,10 +57,13 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.eventing.core.lib
-        ores.iam.client.lib
-        ores.scheduler.api.lib
-        ores.variability.api.lib)
+        ores.service.lib
+        ores.security.lib
+        ores.inbox.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

@@ -57,16 +57,22 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.service.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib
         ores.eventing.core.lib
     PRIVATE
-        Boost::boost
-        ores.iam.client.lib
+        ores.ore.core.lib
         ores.ore.api.lib
-        ores.refdata.api.lib
-        ores.reporting.api.lib
         ores.storage.core.lib
+        ores.workflow.api.lib
+        ores.iam.client.lib
+        ores.refdata.api.lib
         ores.trading.api.lib
-        ores.workflow.api.lib)
+        ores.reporting.api.lib
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

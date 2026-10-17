@@ -68,6 +68,8 @@
 #include "ores.refdata.service/messaging/commodity_price_segment_event_registrar.hpp"
 #include "ores.refdata.service/messaging/commodity_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/contact_type_event_registrar.hpp"
+#include "ores.refdata.service/messaging/convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/convention_kind_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_business_centre_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_change_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_contact_information_event_registrar.hpp"
@@ -167,7 +169,8 @@
 #include "ores.refdata.service/messaging/swap_index_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/swaption_volatility_config_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_anchor_event_registrar.hpp"
-#include "ores.refdata.service/messaging/tenor_basis_swap_convention_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_basis_swap_long_short_event_registrar.hpp"
+#include "ores.refdata.service/messaging/tenor_basis_swap_pay_receive_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_basis_two_swap_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/tenor_convention_resolution_event_registrar.hpp"
@@ -221,6 +224,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_business_unit_type_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_calendar_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_contact_type_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_convention_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_convention_kind_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_counterparty_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_counterparty_change_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_country_event_mapping(event_source, event_bus, nats));
@@ -373,7 +378,9 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(
         register_swaption_volatility_config_event_mapping(event_source, event_bus, nats));
     subs.push_back(
-        register_tenor_basis_swap_convention_event_mapping(event_source, event_bus, nats));
+        register_tenor_basis_swap_long_short_event_mapping(event_source, event_bus, nats));
+    subs.push_back(
+        register_tenor_basis_swap_pay_receive_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_tenor_basis_two_swap_convention_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_yield_curve_config_event_mapping(event_source, event_bus, nats));

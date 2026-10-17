@@ -179,7 +179,6 @@ TEST_CASE("write_report_configuration_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto report_definition_id_parent =
         ores::reporting::generators::generate_synthetic_report_definition(ctx);
-    report_definition_id_parent.change_reason_code = "system.test";
     // report_type is system-tenant reference data: reference a
     // seeded catalogue row instead of creating one, as the direct-parent
     // system-tenant branch does.
@@ -215,7 +214,6 @@ TEST_CASE("write_report_configuration_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto configuration_id_parent =
         ores::reporting::generators::generate_synthetic_configuration(ctx);
-    configuration_id_parent.change_reason_code = "system.test";
     // The configuration is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.

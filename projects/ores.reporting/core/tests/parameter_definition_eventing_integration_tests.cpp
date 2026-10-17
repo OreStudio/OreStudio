@@ -131,7 +131,6 @@ TEST_CASE("write_parameter_definition_publishes_an_event", tags) {
     // active row, so the parent must be written first.
     auto parameter_value_domain_code_parent =
         ores::reporting::generators::generate_synthetic_parameter_value_domain(ctx);
-    parameter_value_domain_code_parent.change_reason_code = "system.test";
     ores::reporting::repository::parameter_value_domain_repository parameter_value_domain_code_repo;
     parameter_value_domain_code_repo.write(party_ctx, parameter_value_domain_code_parent);
     v.parameter_value_domain_code = parameter_value_domain_code_parent.code;

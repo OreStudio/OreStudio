@@ -57,10 +57,17 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.compute.core.lib
         ores.eventing.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib
     PRIVATE
-        ores.iam.client.lib
-        ores.workflow.api.lib)
+        ores.workflow.api.lib
+        ores.iam.client.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

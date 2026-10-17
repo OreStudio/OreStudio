@@ -27,11 +27,15 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_convention.hpp"
+#include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.api/messaging/tenor_basis_swap_convention_protocol.hpp"
 #include "ores.refdata.core/export.hpp"
-#include "ores.refdata.core/repository/tenor_basis_swap_convention_repository.hpp"
-#include <chrono>
+#include "ores.refdata.core/repository/convention_repository.hpp"
+#include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
+#include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
+#include "ores.utility/domain/protocol.hpp"
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -40,10 +44,13 @@
 namespace ores::refdata::service {
 
 /**
- * @brief Service for managing tenor basis swap conventions.
+ * @brief Service for the composite tenor basis swap convention family.
  *
- * Provides a higher-level interface for tenor basis swap convention operations,
- * wrapping the underlying repository.
+ * The family is one central row plus its parts. A read answers the central
+ * row and every part live at the same instant; a write lands the central row
+ * and reconciles each part in one transaction, so no reader sees the parts
+ * disagree with the central version. See the "The atomised entity" and
+ * "Temporal composite entity versioning" architecture documents.
  */
 class ORES_REFDATA_CORE_EXPORT tenor_basis_swap_convention_service {
 private:
@@ -67,17 +74,13 @@ public:
     explicit tenor_basis_swap_convention_service(context ctx);
 
     /**
-     * @brief The protocol operations, one method per subject.
+     * @brief The family's protocol operations, one method per subject.
      *
      * A method takes the canonical request and answers its response, so the
      * handler that serves the subject decodes, calls and replies without
-     * deciding anything. The result a caller reads -- missing, conflicting,
-     * denied -- is filled here, where the storage call that decided it is
-     * made, rather than being inferred from an exception.
+     * deciding anything.
      */
     /**@{*/
-    messaging::list_tenor_basis_swap_conventions_response list_tenor_basis_swap_conventions(
-        const messaging::list_tenor_basis_swap_conventions_request& request);
     messaging::get_tenor_basis_swap_convention_response get_tenor_basis_swap_convention(
         const messaging::get_tenor_basis_swap_convention_request& request);
     messaging::get_many_tenor_basis_swap_conventions_response get_many_tenor_basis_swap_conventions(
@@ -86,120 +89,80 @@ public:
         const messaging::put_tenor_basis_swap_convention_request& request);
     messaging::put_many_tenor_basis_swap_conventions_response put_many_tenor_basis_swap_conventions(
         const messaging::put_many_tenor_basis_swap_conventions_request& request);
-    messaging::delete_tenor_basis_swap_convention_response delete_tenor_basis_swap_convention(
-        const messaging::delete_tenor_basis_swap_convention_request& request);
-    messaging::delete_many_tenor_basis_swap_conventions_response
-    delete_many_tenor_basis_swap_conventions(
-        const messaging::delete_many_tenor_basis_swap_conventions_request& request);
-    messaging::list_tenor_basis_swap_convention_versions_response
-    list_tenor_basis_swap_convention_versions(
-        const messaging::list_tenor_basis_swap_convention_versions_request& request);
-    messaging::get_tenor_basis_swap_convention_version_response
-    get_tenor_basis_swap_convention_version(
-        const messaging::get_tenor_basis_swap_convention_version_request& request);
     /**@}*/
-
-    /**
-     * @brief Lists tenor basis swap conventions with pagination support.
-     *
-     * @param offset Number of records to skip.
-     * @param limit Maximum number of records to return.
-     * @return Vector of tenor basis swap conventions for the requested page.
-     */
-    std::vector<domain::tenor_basis_swap_convention>
-    list_tenor_basis_swap_conventions(std::uint32_t offset, std::uint32_t limit);
-
-    /**
-     * @brief Gets the total count of active tenor basis swap conventions.
-     *
-     * @return Total number of active tenor basis swap conventions.
-     */
-    std::uint32_t count_tenor_basis_swap_conventions();
-
-
-    /**
-     * @brief Retrieves a single tenor basis swap convention as it stood at a specific
-     * version. See the "Temporal composite entity versioning" architecture doc.
-     *
-     * @param version The version to fetch.
-     * @return The tenor basis swap convention at that version if found, std::nullopt otherwise.
-     */
-    std::optional<domain::tenor_basis_swap_convention>
-    get_tenor_basis_swap_convention_at_version(const std::string& id, std::uint32_t version);
-
-    /**
-     * @brief Retrieves a single tenor basis swap convention by its primary key.
-     *
-     * @return The tenor basis swap convention if found, std::nullopt otherwise.
-     */
-    std::optional<domain::tenor_basis_swap_convention>
-    get_tenor_basis_swap_convention(const std::string& id);
-
-    /**
-     * @brief Retrieves a batch of tenor basis swap conventions by primary key.
-     */
-    std::vector<domain::tenor_basis_swap_convention>
-    get_tenor_basis_swap_conventions(const std::vector<std::string>& ids);
-
-    /**
-     * @brief Saves a tenor basis swap convention (creates or updates).
-     *
-     * @param tenor_basis_swap_convention The tenor basis swap convention to save.
-     * @throws std::exception on failure.
-     */
-    void save_tenor_basis_swap_convention(
-        const domain::tenor_basis_swap_convention& tenor_basis_swap_convention);
-
-    /**
-     * @brief Saves a batch of tenor basis swap conventions.
-     *
-     * @param tenor_basis_swap_conventions The tenor basis swap conventions to save.
-     * @throws std::exception on failure.
-     */
-    void save_tenor_basis_swap_conventions(
-        const std::vector<domain::tenor_basis_swap_convention>& tenor_basis_swap_conventions);
-
-    /**
-     * @brief Deletes a tenor basis swap convention by its primary key.
-     *
-     * @throws std::exception on failure.
-     */
-    void delete_tenor_basis_swap_convention(const std::string& id);
-
-    /**
-     * @brief Deletes tenor basis swap conventions by their primary keys.
-     */
-    void delete_tenor_basis_swap_conventions(const std::vector<std::string>& ids);
-
-    /**
-     * @brief Retrieves all historical versions of a tenor basis swap convention.
-     *
-     * Addressed by the entity's key, which is its storage key.
-     */
-    std::vector<domain::tenor_basis_swap_convention>
-    get_tenor_basis_swap_convention_history(const std::string& id);
 
 private:
     context ctx_;
-    repository::tenor_basis_swap_convention_repository repo_;
+    repository::convention_repository central_repo_;
+    repository::tenor_basis_swap_pay_receive_repository pay_receive_repo_;
+    repository::tenor_basis_swap_long_short_repository long_short_repo_;
 
     /**
-     * @brief Checks one change against the row it names, and stamps it.
+     * @brief Assembles the family item: the central row and every part live
+     * at the same instant.
+     */
+    messaging::tenor_basis_swap_convention_item
+    assemble(const context& ctx,
+             const messaging::tenor_basis_swap_convention_key& key,
+             const std::optional<domain::convention>& central);
+
+    /**
+     * @brief Checks one central change against the row it names, and stamps it.
      *
-     * A single write and a batch state the same claim, so the check, the
-     * server-derived provenance and the version the store must match are one
-     * decision made in one place. A batch that made the decision per element
-     * would eventually make it differently from the single write.
-     *
-     * @param change The change as the caller stated it.
-     * @param intent The reason and commentary the caller gave.
-     * @param out The stamped domain object, written only when the result is ok.
-     * @return ok, or why the change was refused.
+     * A single write and a batch state the same claim, so the check and the
+     * stamp are one decision made in one place.
      */
     ores::utility::domain::result
-    prepare_change(const messaging::tenor_basis_swap_convention_change& change,
-                   const ores::utility::domain::change_intent& intent,
-                   domain::tenor_basis_swap_convention& out);
+    prepare_convention(const messaging::convention_change& change,
+                       const ores::utility::domain::change_intent& intent,
+                       const context& ctx,
+                       domain::convention& out);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result
+    prepare_pay_receive(const messaging::tenor_basis_swap_pay_receive_change& change,
+                        const ores::utility::domain::change_intent& intent,
+                        const context& ctx,
+                        domain::tenor_basis_swap_pay_receive& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_pay_receive(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<messaging::tenor_basis_swap_pay_receive_change>& requested,
+        const ores::utility::domain::change_intent& intent);
+
+    /**
+     * @brief Checks one part change against the row it names, and stamps it.
+     */
+    ores::utility::domain::result
+    prepare_long_short(const messaging::tenor_basis_swap_long_short_change& change,
+                       const ores::utility::domain::change_intent& intent,
+                       const context& ctx,
+                       domain::tenor_basis_swap_long_short& out);
+
+    /**
+     * @brief Makes this part's rows for one central row exactly the rows the
+     * request carries.
+     *
+     * The rows present are written and the rows currently live but absent are
+     * closed. The part table's insert trigger bumps the central row's version,
+     * so this method never does.
+     */
+    ores::utility::domain::result reconcile_long_short(
+        const context& ctx,
+        const domain::convention& central,
+        const std::vector<messaging::tenor_basis_swap_long_short_change>& requested,
+        const ores::utility::domain::change_intent& intent);
 };
 
 }

@@ -1,0 +1,280 @@
+:PROPERTIES:
+:ID: 9477A085-0822-485F-BDF7-3C8F4A306E93
+:ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.convention
+#+description: Codegen entity model for the refdata =convention= table. The central row every convention kind shares: its key, the party that owns it, the kind it is, and the name it carries in the source document.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: convention
+#+entity_plural: conventions
+#+entity_title: Convention
+#+brief: The central row every convention kind shares.
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+The central row of the atomised convention. Every convention kind -- a swap, a
+deposit, a tenor basis swap -- is one row here plus the parts its family names.
+The row carries the key, the party that owns the row, the kind the row is, and
+the name it carries in the source document.
+
+The name is the identifier the source document gives the convention, the =<Id>=
+element of that document. It is kept so a round trip through the ORE XML is
+lossless, and it is part of the convention's identity: the party, the kind and
+the name together are what make a convention the one a caller means. Two kinds
+may hold the same name, because the kind is part of that identity.
+
+A convention's kind-specific fields live in that kind's parts, reached from
+this row by its key. The central row carries no kind-specific column.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:generate_touch_function: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this convention. It is the key a part reaches this row by,
+and it is the key the family addresses the convention by.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:natural_key: true
+:server_owned: true
+:END:
+
+The party that owns this convention. Set from the session that writes the
+document, and enforced by row level security, so a party sees only its own
+configuration.
+
+It is part of the convention's identity, so two parties may each hold a
+convention of one kind under one name.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** kind_code
+:PROPERTIES:
+:type:                text
+:cpp_type:            std::string
+:nullable:            false
+:natural_key:         true
+:filterable:          true
+:no_generator_suffix: true
+:END:
+
+The kind of convention this row is, a code from the =convention_kind= lookup.
+It selects the family whose parts the row carries.
+
+It is part of the convention's identity.
+
+It is filterable, because a screen that reads one family's conventions lists
+the central rows by this column; the parts are aligned with the page the list
+returns, so the screen zips the family read onto it rather than joining two
+result sets in the client.
+
+#+begin_src cpp :name generator
+std::string("TENOR_BASIS_SWAP")
+#+end_src
+
+** name
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:nullable:    false
+:natural_key: true
+:END:
+
+The name the convention carries in the source document, its =<Id>= element.
+Kept so a round trip through the ORE XML is lossless.
+
+It is part of the convention's identity: with the party and the kind it makes
+the convention the one a caller means.
+
+#+begin_src cpp :name generator
+std::string("EUR-3M-6M-BASIS")
+#+end_src
+
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The oresmd URI of the market data this convention needs, when the kind names
+one index. The column holds the address as a value, so refdata depends on the
+oresmd format as a contract only and never on the marketdata library or its
+tables.
+
+Nullable, because no convention is required to state its address yet.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: name
+:END:
+
+A convention stages without its uuid and without its party. The uuid is made by
+the database when the publish inserts the row, and the party is the one the
+publish names, so neither is known when the dataset is seeded. The staged row
+carries the identity the source document gives instead: the kind and the name.
+A part reaches the central staging row by exactly that pair.
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** name
+:PROPERTIES:
+:type: text
+:END:
+
+** oresmd_uri
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_conventions_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:parent_entity: party
+:reuse_existing: true
+:nullable:      false
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+** kind_code
+:PROPERTIES:
+:table:         ores_refdata_convention_kinds_tbl
+:target_column: code
+:nullable:      false
+:error_message: Invalid kind_code: %. No active convention kind found with this code.
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:                       api
+:service_find_by_code_column:        kind_code name
+:service_find_by_code_parent_column: party_id
+:END:
+
+=service_find_by_code_column= names every column of the identity besides the
+parent; the finder reads the parent and each of them.
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: convention
+:entity_plural_short:   conventions
+:entity_singular_words: convention
+:entity_plural_words:   conventions
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: c
+:END:
+
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| kind_code   | Kind        |
+| name        | Name        |
+| modified_by | Modified By |
+| version     | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:           ores.refdata.api/domain/convention.hpp
+:domain_class:             refdata::domain::convention
+:protocol_include:         ores.refdata.api/messaging/convention_protocol.hpp
+:collection_name:          conventions
+:key_field:                id
+:delete_request_id_field:  ids
+:save_request_item_field:  convention
+:END:
+
+*** Detail fields
+
+| field     | label          | widget          | type      | is_key | is_required | placeholder                |
+|-----------+----------------+-----------------+-----------+--------+-------------+----------------------------|
+| id        | Id             | idEdit          | line_edit | true   | true        | Enter convention id        |
+| kind_code | Kind           | kindCodeEdit    | line_edit | false  | true        | e.g. TENOR_BASIS_SWAP      |
+| name      | Name           | nameEdit        | line_edit | false  | true        | e.g. EUR-3M-6M-BASIS       |
+| oresmd_uri | Market Data URI | oresmdUriEdit | line_edit | false  | false       | e.g. oresmd://ir/EUR       |
+
+*** Columns
+
+| enum_name   | field       | header      | type      | width |
+|-------------+-------------+-------------+-----------+-------|
+| Kind        | kind_code   | Kind        | string    | 160   |
+| Name        | name        | Name        | string    | 200   |
+| OresmdUri   | oresmd_uri  | Market Data | string    | 260   |
+| Version     | version     | Version     | int       | 80    |
+| ModifiedBy  | modified_by | Modified By | string    | 120   |
+| RecordedAt  | recorded_at | Recorded At | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

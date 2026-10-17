@@ -169,7 +169,6 @@ TEST_CASE("write_configuration_parameter_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto configuration_id_parent =
         ores::reporting::generators::generate_synthetic_configuration(ctx);
-    configuration_id_parent.change_reason_code = "system.test";
     // The configuration is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.

@@ -48,8 +48,8 @@ struct conventions_save_result {
  * @brief Stores and reads ORE conventions documents.
  *
  * The instrument conventions belong to a party and replace any the party holds
- * under the same id. The index conventions are world data: one the tenant
- * lacks is added, and one it holds is left as it is.
+ * under the same party, kind and name. The index conventions are world data:
+ * one the tenant lacks is added, and one it holds is left as it is.
  */
 class ORES_REFDATA_CORE_EXPORT conventions_document_service {
 public:

@@ -159,3 +159,48 @@ export const requiresSession = {
 {{/messages}}
 } as const;
 {{/operation}}
+{{#family}}
+{{#domain_imports}}
+import type { {{entity_pascal}} } from '../domain/{{entity}}.js';
+{{/domain_imports}}
+{{#protocol_imports}}
+import type { {{entity_pascal}}Change } from './{{entity}}_protocol.js';
+{{/protocol_imports}}
+{{#utility_imports}}
+import type { {{name_pascal}} } from '../../../{{module}}.js';
+{{/utility_imports}}
+
+{{#messages}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+export interface {{name_pascal}} {
+{{#fields}}
+{{#comment}}
+{{{.}}}
+{{/comment}}
+    {{name}}: {{ts_type}};
+{{/fields}}
+}
+
+{{/messages}}
+export const subjects = {
+{{#messages}}
+{{#subject}}
+    {{name}}: "{{subject}}",
+{{/subject}}
+{{/messages}}
+} as const;
+/**
+ * Whether a message needs an established session first. An operation that
+ * produces the session cannot present one, so a client reads this rather than
+ * assuming every call carries a token.
+ */
+export const requiresSession = {
+{{#messages}}
+{{#subject}}
+    {{name}}: {{requires_session}},
+{{/subject}}
+{{/messages}}
+} as const;
+{{/family}}

@@ -43,6 +43,7 @@ enum class provision_step_action {
     import_lei_hierarchy,
     provision_party,
     load_staff,
+    set_staff_passwords,
     attach_photos,
     start_market_feeds,
     generate_trades,
@@ -79,6 +80,8 @@ enum class provision_step_action {
         return provision_step_action::provision_party;
     if (kind == "load_staff")
         return provision_step_action::load_staff;
+    if (kind == set_staff_passwords_step_kind)
+        return provision_step_action::set_staff_passwords;
     if (kind == "attach_photos")
         return provision_step_action::attach_photos;
     if (kind == "start_market_feeds")
@@ -401,6 +404,29 @@ parse_staff_assignments(const std::string& arguments_json) {
         assignment.is_default = detail::read_bool(entry, "default");
         result.push_back(std::move(assignment));
     }
+    return result;
+}
+
+/// The password a set_staff_passwords step gives every staff account.
+struct set_staff_passwords_step_arguments {
+    std::string password;
+};
+
+/**
+ * @brief Reads a set_staff_passwords step's arguments.
+ *
+ * The password is the step's own data, read from the profile row rather than
+ * baked into the build, so the one place the demonstration password is stated
+ * is the starting point that needs it. The step's hands still hash it: the
+ * server's password API is what turns it into a credential.
+ */
+[[nodiscard]] inline set_staff_passwords_step_arguments
+parse_set_staff_passwords_arguments(const std::string& arguments_json) {
+    const auto arguments = detail::read_step_arguments(arguments_json);
+    set_staff_passwords_step_arguments result;
+    result.password = detail::read_string(arguments, "password");
+    if (result.password.empty())
+        throw std::runtime_error("The step names no 'password' argument.");
     return result;
 }
 

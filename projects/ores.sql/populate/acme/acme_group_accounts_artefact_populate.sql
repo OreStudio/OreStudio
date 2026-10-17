@@ -32,6 +32,12 @@
  * business_unit_code is a natural-key code, resolved to a business unit
  * id by the publish function (see the server-side-orchestration
  * follow-up task). This script is idempotent.
+ *
+ * DEVELOPMENT DATA, NOT A PRODUCTION CREDENTIAL. No password is staged here:
+ * every account is published without a credential, and the provisioning step
+ * that follows load_staff sets each one through the server's own password API.
+ * See the set_staff_passwords row of the acme_demo seed profile for the one
+ * place the demonstration password is stated.
  */
 
 DO $$
@@ -56,5 +62,5 @@ begin
         job_title, reports_to_username, photo_key
     )
     values
-        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd5124a10-9284-5243-a017-07abf0dc5a60', 0, 'adrian.vance', 'Adrian Vance', 'adrian.vance@acmecorp.com', '$scrypt$ln=14,r=8,p=1$0h1vacFtQdXZd9nqj+0G/Q==$4zoqrV+ojPxe/IwWAMLDXGHZQYJQGYgU6270fCl4kcXYep+uLyganiEM9ARBGQa83MbfvyurLPH304ZTdy8msw==', 'user', null, 'Operations', 'Group Chief Executive Officer', null, 'acme_staff_photo:male_age20_european_01');
+        (v_dataset_id, ores_utility_system_tenant_id_fn(), 'd5124a10-9284-5243-a017-07abf0dc5a60', 0, 'adrian.vance', 'Adrian Vance', 'adrian.vance@acmecorp.com', '', 'user', null, 'Operations', 'Group Chief Executive Officer', null, 'acme_staff_photo:male_age20_european_01');
 end $$;

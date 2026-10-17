@@ -56,11 +56,15 @@ target_link_libraries(${lib_target_name}
 # needs beyond the baseline above, and the find_package calls they bring.
 
 find_package(LibArchive REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.compute.api.lib
+        ores.nats.lib
         ores.ore.core.lib
+        ores.utility.lib
+        ores.telemetry.core.lib
+        ores.service.lib
+        ores.database.lib
         ores.storage.core.lib
     PRIVATE
         Boost::process)

@@ -1,0 +1,44 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Conventions import by family
+
+actor "ores.shell" as shell
+participant "ores.refdata" as refdata
+database "PostgreSQL" as db
+
+shell -> refdata : begin_conventions_import\n{import_id, party_id, families[]}
+refdata -> db : insert import row\n(state = staging, expires_at)
+refdata --> shell : import_id
+
+loop every family the file carries
+    shell -> refdata : stage_conventions_<family>\n{import_id, sequence, items[]}
+    refdata -> db : insert staged items\n(one local transaction)
+    refdata --> shell : staged count
+end
+
+shell -> refdata : commit_conventions_import {import_id}
+refdata -> db : select import for update
+refdata -> db : verify required families present
+refdata -> db : apply families in registry order\n(one transaction)
+refdata -> db : pg_notify fires on commit only
+refdata -> db : import.state = applied
+refdata --> shell : save result + per-family counts
+
+@enduml

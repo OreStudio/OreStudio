@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: D9269C52-0741-47D0-BE72-8BEAC15D4EA0
+:END:
+#+title: ores.refdata.bundle_import_item
+#+description: Codegen entity model for the refdata =bundle_import_item= table. One staged family payload belonging to a bundle import.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: bundle_import_item
+#+entity_plural: bundle_import_items
+#+entity_title: Bundle Import Item
+#+brief: One staged family payload belonging to a bundle import.
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+One row per family a staging message delivers. The payload is that family's
+own generated value type, already serialised, so a stage of one family never
+builds a message that carries every family.
+
+The identity is the import, the family and the sequence together. A repeated
+stage of the same three is refused rather than duplicated, so a retried stage
+is safe. Each stage is its own local transaction, and nothing reaches the
+live tables until a commit applies the rows.
+
+* Flags
+:PROPERTIES:
+:schema:        public
+:product:       ores
+:component:     refdata
+:has_tenant_id: true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The staged item's surrogate key. It is made when the row is written.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:         uuid
+:cpp_type:     boost::uuids::uuid
+:nullable:     false
+:server_owned: true
+:END:
+
+The party the staged item belongs to. The service stamps it from the session,
+so a caller never states it. Row level security confines the item to that
+party, and a commit reads only its own party's rows.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** import_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:nullable:    false
+:END:
+
+The import this staged item belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** family
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:nullable:    false
+:END:
+
+The convention family the payload carries, as the family registry names it.
+It decides which generated type the payload decodes into at commit.
+
+#+begin_src cpp :name generator
+std::string("deposit")
+#+end_src
+
+** sequence
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:natural_key: true
+:nullable:    false
+:END:
+
+The ordinal of this stage within its family. A family staged in more than one
+message numbers its parts so a retry repeats one number rather than appending.
+
+#+begin_src cpp :name generator
+0
+#+end_src
+
+** payload
+:PROPERTIES:
+:type:     jsonb
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The family's own generated value type, serialised as JSON. The column is
+=jsonb= and C++ holds the serialised form as a string, so no generated type
+has to carry every family's shape.
+
+#+begin_src cpp :name generator
+std::string("{}")
+#+end_src
+
+** checksum
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The digest the caller computed over the payload, when it computed one. A
+commit may compare it against the staged payload to tell a damaged transport
+from a good one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_bundle_import_items_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** import_id
+:PROPERTIES:
+:table:               ores_refdata_bundle_imports_tbl
+:parent_entity:       bundle_import
+:target_column:       id
+:nullable:            false
+:list_by:             true
+:list_by_uuid:        true
+:error_message:       Invalid import_id: %. No active bundle import found with this id.
+:END:
+
+A staged item belongs to exactly one import, which the commit locks while it
+applies the rows.
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bundle_import_item
+:entity_plural_short:   bundle_import_items
+:entity_singular_words: bundle import item
+:entity_plural_words:   bundle import items
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cii
+:END:
+
+** Table display
+
+| column    | header      |
+|-----------+-------------|
+| family    | Family      |
+| sequence  | Sequence    |
+| checksum  | Checksum    |
+| modified_by | Modified By |
+| version   | Version     |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:B33A0EE2-6DFB-4EC6-860E-1B285930C979][ores.refdata.bundle_import]] — the import these staged items belong to.

@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_core_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.marketdata.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -37,9 +40,25 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.marketdata.api.lib
+        ores.nats.lib
+    PRIVATE
+        ores.service.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+# Appending to the target rather than replacing the profile keeps the
+# baseline honest for every other component.
+
 find_package(Boost REQUIRED COMPONENTS url)
 find_package(magic_enum CONFIG REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.marketdata.api.lib
@@ -60,6 +79,5 @@ target_link_libraries(${lib_target_name}
         magic_enum::magic_enum
         Boost::boost
         Boost::url)
-# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

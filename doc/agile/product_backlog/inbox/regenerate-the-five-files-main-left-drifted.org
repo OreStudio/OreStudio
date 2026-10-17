@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A8F8E184-5EA0-4110-A883-89EB076E9E34
+:END:
+#+title: Regenerating every address for every component leaves five f…
+#+description: Regenerating every address for every component leaves five files that main has not regenerated. doc/recipes/shell/trade_generation_configs/trade_generation_config.org and the two generated TypeScript twins under projects/ores.web/packages/wire-protocol/src/generated/synthetic are missing the trade_generation_config reference_curve_id field, and projects/ores.reporting/core/tests/report_error_eventing_integration_tests.cpp is missing the change_reason_code assignment its template now emits, as is projects/ores.workflow/api/include/ores.workflow.api/domain/workflow_instance.hpp. The models moved on main and compass codegen regenerate was not run afterwards, so check_component_drift reports them on any branch whose codegen tree changes. None is attributable to the branch that found them.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

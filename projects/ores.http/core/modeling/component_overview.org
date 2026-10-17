@@ -7,6 +7,7 @@
 #+description: HTTP route implementations for the ORE Studio REST API — IAM, storage, and variability routes.
 #+brief: REST API HTTP route implementations
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :http:core:component:
 #+created: 2026-05-19
@@ -52,7 +53,30 @@ response as an HTTP response.
   — NATS protocol types for each domain service called.
 - =nats.c= — NATS client for forwarding requests.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:B0C9FDC8-F0B2-48FE-AE37-8FD79E6FD164][ores.http.api]] — server infrastructure this library builds on.
 - [[id:A8B318BC-8653-4D33-A58C-60793E3596D5][ores.http.server]] — server entrypoint that wires these routes.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.storage.core.lib
+        ores.http.api.lib
+        ores.iam.core.lib
+        ores.variability.core.lib
+        ores.compute.core.lib
+        ores.geo.lib
+    PRIVATE
+        ores.utility.lib
+        ores.security.lib
+        ores.database.lib
+        ores.dq.api.lib)
+#+end_src

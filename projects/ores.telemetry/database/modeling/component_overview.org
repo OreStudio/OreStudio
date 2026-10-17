@@ -46,7 +46,52 @@ persisting received records.
 - =ores.dq= — ORM base classes.
 - =soci= — SQL ORM for PostgreSQL persistence.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry.core]] — observability library that produces log records.
 - [[id:DF0CAAB9-9DDB-4FEA-82D3-71FAC2177EEF][ores.telemetry.service]] — service that calls this persistence layer.
+
+* CMake
+
+This part reads headers from ores.telemetry.core and ores.logging directly.
+
+#+begin_src cmake :name cmake_finalize :implements FDEE629F-F8BA-4940-AA1B-6671AF332D82
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/core/include
+    ${CMAKE_SOURCE_DIR}/projects/ores.logging/include)
+#+end_src
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.telemetry.core.lib      # Core telemetry functionality
+        ores.database.lib       # Database access
+    PRIVATE
+        ores.platform.lib
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.testing.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_core_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.trading.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -23,10 +26,6 @@ set(lib_target_name ${name}.lib)
 include(${CMAKE_CURRENT_SOURCE_DIR}/component_files.cmake)
 
 set(lib_files ${files})
-# On Windows the DLL export table is capped at 65535 symbols. This library
-# instantiates enough rfl/Boost templates to exceed that limit, and it is
-# only consumed by executables, so no DLL boundary needs to be crossed.
-# Build it as a static library on Windows to avoid the limit.
 if(WIN32)
     add_library(${lib_target_name} STATIC ${lib_files})
 else()
@@ -51,6 +50,23 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.trading.api.lib
         ores.nats.lib
+    PRIVATE
+        ores.service.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+# Appending to the target rather than replacing the profile keeps the
+# baseline honest for every other component.
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.trading.api.lib
+        ores.nats.lib
         ores.diff.lib
     PRIVATE
         ores.service.lib
@@ -65,14 +81,5 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort
         Boost::boost)
-# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
-# On Windows ores.trading.core is a static archive (see above) whose Debug
-# build exceeds 2 GB — the WiX v3 single-file cabinet offset limit. The
-# archive is only consumed by our own executables at link time, so nothing
-# downstream needs to find it in the installer. Skip install on Windows.
-if(NOT WIN32)
-    install(TARGETS ${lib_target_name}
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
-endif()
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

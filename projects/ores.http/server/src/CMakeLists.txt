@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -9,12 +9,16 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_service_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.http.server")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -26,30 +30,46 @@ list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_HTTP_SERVER_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.http/server/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.http.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.core.lib
         ores.http.api.lib
         ores.http.assets.lib
-        ores.http.core.lib
         ores.http.iam.lib
         ores.http.refdata.lib
-        ores.eventing.core.lib
-        ores.iam.client.lib
-        ores.nats.lib
-        ores.service.lib
-        ores.telemetry.core.lib
-        ores.utility.lib
-        ores.database.lib)
-# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+        ores.iam.client.lib)
 
+# Copy development scripts to the runtime output directory.
+set(ores_http_scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+file(COPY_FILE
+    "${ores_http_scripts_dir}/generate_keys.sh"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/generate_keys.sh")
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
 set(exe_binary_name ${name})
@@ -62,9 +82,6 @@ add_executable(${exe_target_name} ${exe_files})
 set_target_properties(${exe_target_name} PROPERTIES
     OUTPUT_NAME ${exe_binary_name})
 
-target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.http/server/include)
-
 target_link_libraries(${exe_target_name}
     PRIVATE
         ${lib_target_name}
@@ -72,10 +89,3 @@ target_link_libraries(${exe_target_name}
         Threads::Threads)
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
-
-# Copy development scripts to the runtime output directory.
-set(ores_http_scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")
-file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-file(COPY_FILE
-    "${ores_http_scripts_dir}/generate_keys.sh"
-    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/generate_keys.sh")

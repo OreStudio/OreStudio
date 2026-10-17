@@ -16,6 +16,9 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_service_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.ore.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -27,6 +30,10 @@ list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
 add_library(${lib_target_name} ${lib_files})
 target_compile_definitions(${lib_target_name} PRIVATE ORES_ORE_SERVICE_LIBRARY)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(${lib_target_name} PRIVATE
+        -fvisibility=hidden -fvisibility-inlines-hidden)
+endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}
@@ -38,22 +45,28 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.service.lib
+        ores.security.lib
+        ores.ore.core.lib
         ores.nats.lib
         ores.database.lib
         ores.utility.lib
-        ores.telemetry.core.lib
+        ores.telemetry.core.lib)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
         ores.eventing.core.lib
     PRIVATE
-        ores.ore.core.lib
-        ores.ore.api.lib
-        ores.storage.core.lib
-        ores.workflow.api.lib
+        Boost::boost
         ores.iam.client.lib
+        ores.ore.api.lib
         ores.refdata.api.lib
-        ores.trading.api.lib
         ores.reporting.api.lib
-        Boost::boost)
-# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
+        ores.storage.core.lib
+        ores.trading.api.lib
+        ores.workflow.api.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

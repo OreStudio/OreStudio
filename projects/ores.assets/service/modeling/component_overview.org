@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 6D1AA78F-F37B-4030-B32C-B8B5EB4B0EEE
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.assets.service
 #+description: NATS service entrypoint for the assets domain — wires handlers, repositories, and configuration.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :assets:service:component:
 #+created: 2026-05-19
@@ -52,6 +54,43 @@ only for bootstrap, dependency injection, and graceful shutdown.
 - =ores.logging= — structured logging infrastructure.
 - =nats.c= — NATS client for connection management.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets.core]] — all business logic for the assets domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.assets.core.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

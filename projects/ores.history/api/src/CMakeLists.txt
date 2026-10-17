@@ -16,15 +16,21 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_api_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.history.api")
+set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
-
-# Header-only: history_protocol.hpp is plain structs, version_builder.hpp is
-# a fully-inline template. No .cpp to compile.
+# Headers only: the source glob below has nothing to compile, so the part is an
+# INTERFACE library that carries its include path and no compiled body.
 add_library(${lib_target_name} INTERFACE)
 
 target_include_directories(${lib_target_name} INTERFACE
-    ${CMAKE_SOURCE_DIR}/projects/ores.history/api/include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+# A header-only part still declares what the profile cannot know: the
+# libraries its interface headers need in their consumers.
 
 target_link_libraries(${lib_target_name}
     INTERFACE

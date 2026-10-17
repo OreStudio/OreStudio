@@ -7,6 +7,7 @@
 #+description: Workflow orchestration — workflow definitions, execution, and state tracking for multi-step operations.
 #+brief: Workflow definition and execution core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :workflow:core:component:
 #+created: 2026-05-19
@@ -51,9 +52,60 @@ such as report generation pipelines that span multiple services.
 - =soci= — SQL ORM.
 - =nats.c= — NATS messaging client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] — component group overview.
 
 - [[id:85319483-4AE9-4162-91F7-D72A8201134B][ores.workflow.api]] — protocol types and domain entities.
 - [[id:1AF4AEC8-70EC-496C-821E-4E2E1BB303E5][ores.workflow.service]] — NATS service entrypoint.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.workflow.api.lib
+    PRIVATE
+        ores.database.lib
+        ores.utility.lib
+        ores.service.lib
+        ores.nats.lib
+        ores.history.core.lib
+        ores.dq.api.lib
+        ores.dq.core.lib
+        ores.iam.api.lib
+        ores.ore.api.lib
+        ores.refdata.api.lib
+        ores.reporting.api.lib
+        ores.telemetry.core.lib
+        sqlgen::sqlgen
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.database.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.security.lib
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

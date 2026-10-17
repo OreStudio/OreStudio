@@ -7,6 +7,7 @@
 #+description: Job scheduling infrastructure — cron-based job definitions, execution, and scheduling for periodic operations.
 #+brief: Cron job scheduling core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :scheduler:core:component:
 #+created: 2026-05-19
@@ -81,6 +82,13 @@ job-instance repository.
 - =croncpp= — cron expression parsing and next-occurrence computation.
 - =libfort= — the table rendering of the domain types.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:B788F24E-2E3F-432A-BD4F-CA8D6EBB2C9D][ores.scheduler]] — component group overview.
@@ -88,3 +96,44 @@ job-instance repository.
 - [[id:B49ED6E9-20DC-421F-A0F9-D7EAB6B54F9B][ores.scheduler.api]] — protocol types and domain entities.
 - [[id:86B4ECD8-FF01-438A-99BB-55B4CA523AED][ores.scheduler.service]] — NATS service entrypoint.
 - [[id:220199A4-5460-491F-AF48-6264D721C25D][ores.scheduler Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.scheduler.api.lib
+        ores.database.lib
+        ores.nats.lib
+    PRIVATE
+        ores.eventing.api.lib
+        ores.history.core.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.security.lib
+        ores.logging.lib
+        ores.platform.lib
+        croncpp::croncpp
+        libfort::fort)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.refdata.core.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

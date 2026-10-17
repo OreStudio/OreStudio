@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: E75568D2-588A-4FE2-9ED1-6826B60C0E10
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.refdata.service
 #+description: NATS service entrypoint for the reference-data domain — wires handlers, repositories, and configuration.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :refdata:service:component:
 #+created: 2026-05-19
@@ -52,8 +54,47 @@ for bootstrap, dependency injection, and graceful shutdown.
 - =ores.logging= — structured logging infrastructure.
 - =nats.c= — NATS client for connection management.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
 
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]] — all business logic for the reference-data domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.refdata.core.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

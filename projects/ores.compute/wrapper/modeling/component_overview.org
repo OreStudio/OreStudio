@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.compute.wrapper
 #+name: compute.wrapper
@@ -7,6 +8,7 @@
 #+description: Compute worker wrapper — executes ORE risk runs and reports results to ores.compute.core.
 #+brief: Compute worker node for ORE risk runs
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :compute:wrapper:component:
 #+created: 2026-05-19
@@ -52,8 +54,31 @@ scale risk computation horizontally.
 - =ores.logging= — structured logging.
 - =nats.c= — NATS client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
 
 - [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — orchestrator that dispatches jobs to this worker.
+
+#+begin_src cmake :name extra_dependencies
+find_package(LibArchive REQUIRED)
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.compute.api.lib
+        ores.nats.lib
+        ores.ore.core.lib
+        ores.utility.lib
+        ores.telemetry.core.lib
+        ores.service.lib
+        ores.database.lib
+        ores.storage.core.lib
+    PRIVATE
+        Boost::process)
+#+end_src

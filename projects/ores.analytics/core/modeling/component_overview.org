@@ -4,6 +4,7 @@
 #+title: ores.analytics.core
 #+description: Pricing model and analytics configuration — model types, product parameters, and batch pricing.
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :analytics:core:component:
 #+created: 2026-05-19
@@ -53,9 +54,49 @@ exposes all CRUD operations to clients.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.
 
 - [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]] — protocol types and domain entities.
 - [[id:E5952F27-53BD-4C4D-85CD-556B6421B768][ores.analytics.service]] — NATS service entrypoint.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.analytics.api.lib
+    PRIVATE
+        ores.service.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        sqlgen::sqlgen
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.eventing.core.lib
+        ores.refdata.core.lib
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

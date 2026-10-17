@@ -101,6 +101,13 @@ unit-testable without pulling in a service binary.
   logging dependency either -- callers that need diagnostics log around
   the call).
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.
@@ -115,3 +122,29 @@ unit-testable without pulling in a service binary.
 - [[id:E7E31384-3616-4DFB-AB20-6CB099114FB3][Task: Model the driver/derived spanning-tree topology]]
 - [[id:96522E06-2067-4058-86FC-27B6086DCC26][Task: Implement triangulation/derivation]]
 - [[id:6EA4B5FC-4581-484C-B5EB-ECF868B3A61D][Task: Implement risk recentering]]
+
+#+begin_src cmake :name extra_dependencies
+find_package(Immer CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        Boost::boost
+        Boost::graph
+    PRIVATE
+        immer
+        magic_enum::magic_enum
+    PUBLIC
+        # Eigen types appear in public headers (the process params
+        # structs); on a shared build a PRIVATE link would hide its
+        # include directories from consumers.
+        Eigen3::Eigen)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        Catch2::Catch2
+        Threads::Threads)
+#+end_src

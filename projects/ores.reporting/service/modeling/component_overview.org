@@ -1,9 +1,11 @@
 :PROPERTIES:
 :ID: 544947D0-7E23-4145-8F62-EC8341ED42FF
+:ores.cpp.service-app.enabled: nil
 :END:
 #+title: ores.reporting.service
 #+description: NATS service entrypoint for the reporting domain.
 #+type: ores.codegen.component
+#+component_kind: service
 #+level: cross
 #+filetags: :reporting:service:component:
 #+created: 2026-05-19
@@ -50,8 +52,46 @@ All business logic lives in =ores.reporting.core=.
 - =ores.logging= — structured logging infrastructure.
 - =nats.c= — NATS client for connection management.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — component group overview.
 
 - [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting.core]] — all business logic for the reporting domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.reporting.core.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.iam.client.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

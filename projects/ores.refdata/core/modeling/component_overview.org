@@ -7,6 +7,7 @@
 #+description: Reference data domain — currencies, countries, counterparties, books, and business structure with temporal persistence.
 #+brief: Reference data domain logic and repositories
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :refdata:core:component:
 #+created: 2026-05-19
@@ -68,6 +69,13 @@ drives UI drop-downs and validation.
 - =soci= — SQL ORM for PostgreSQL persistence.
 - =nats.c= — NATS messaging client.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
@@ -78,3 +86,56 @@ drives UI drop-downs and validation.
 - [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]] — how parties, books, and business units relate.
 - [[id:7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74][Trading Structure]] — party, book, portfolio, business-unit, business-centre
   hierarchy design.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.refdata.api.lib
+        ores.database.lib
+        ores.nats.lib
+        ores.diff.lib
+    PRIVATE
+        ores.dq.api.lib
+        ores.history.core.lib
+        ores.service.lib
+        pugixml::pugixml
+        ores.variability.api.lib
+        ores.variability.core.lib
+        ores.analytics.quant.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.refdata.service.lib
+        ores.history.core.lib
+        ores.iam.api.lib
+        ores.iam.core.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.platform.lib
+        ores.variability.api.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.testing.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

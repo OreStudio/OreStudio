@@ -6,6 +6,7 @@
 #+full_name: ores.ore.core
 #+description: The ORE document engine — XSD-generated XML bindings, instrument mappers, the importer, exporter and round trip, the market data readers, and the import planner and scanner.
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :ore:core:component:
 #+created: 2026-05-19
@@ -72,6 +73,13 @@ produced by a generator outside the build. See
 XML parsing is the generated binding code, not a library: the component
 links neither =pugixml= nor =nats.c=.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:0F93B352-F234-4D9D-82E6-05218BE645E8][ores.ore.api]] — the shared contract and the entity protocol.
@@ -82,3 +90,90 @@ links neither =pugixml= nor =nats.c=.
 - [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE model configuration]] — the configuration files this part parses.
 - [[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE document through the database?]] — the live path for the same documents.
 - [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — the upstream engine.
+
+* CMake
+
+domain.cpp is 104k lines emitted by xsdcpp from ORE's schemas. It declares
+info tables nothing references and serialization helpers marked
+XSDCPP_MAYBE_UNUSED, a macro that resolves to the unused attribute only under
+__GNUC__. The Windows compilers therefore see them as ordinary unused
+functions and -Werror rejects them; GCC adds a fallthrough and a set-but-unused
+diagnostic of its own. The fix belongs upstream in xsdcpp, so the warnings are
+silenced for that one file rather than the tree.
+
+#+begin_src cmake :name cmake_prologue :implements E0158572-D743-43E2-B5CD-D93BF6223ABA
+set(domain_cpp_warnings "")
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    list(APPEND domain_cpp_warnings "-Wno-unused-const-variable")
+    if(WIN32)
+        list(APPEND domain_cpp_warnings "-Wno-unused-function")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        list(APPEND domain_cpp_warnings
+            "-Wno-implicit-fallthrough"
+            "-Wno-unused-but-set-variable")
+    endif()
+elseif(MSVC)
+    list(APPEND domain_cpp_warnings "/wd4505")
+endif()
+set_source_files_properties(
+    ${CMAKE_CURRENT_SOURCE_DIR}/domain/domain.cpp
+    PROPERTIES COMPILE_OPTIONS "${domain_cpp_warnings}")
+#+end_src
+
+domain.cpp also needs /bigobj on MSVC.
+
+#+begin_src cmake :name cmake_finalize :implements FDEE629F-F8BA-4940-AA1B-6671AF332D82
+if(MSVC)
+    target_compile_options(${lib_target_name} PUBLIC /bigobj)
+endif()
+#+end_src
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.analytics.api.lib
+        ores.ore.api.lib
+        ores.database.lib
+        ores.refdata.api.lib
+        ores.reporting.api.lib
+        ores.trading.api.lib
+    PRIVATE
+        ores.analytics.core.lib
+        ores.refdata.core.lib
+        ores.reporting.core.lib
+        ores.dq.api.lib
+        ores.history.core.lib
+        ores.logging.lib
+        ores.platform.lib
+        ores.utility.lib
+        Boost::boost)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.platform.lib
+        ores.testing.lib
+        ores.analytics.api.lib
+        ores.analytics.core.lib
+        ores.reporting.api.lib
+        ores.reporting.core.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
+        ores.logging.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.openssl_cleanup
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

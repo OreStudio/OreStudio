@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -9,12 +9,16 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
+# AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+# Template: cmake_component_core_src.mustache
+# To modify, update the template and regenerate.
 set(name "ores.synthetic.core")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
@@ -33,11 +37,25 @@ set_target_properties(${lib_target_name} PROPERTIES
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
-target_include_directories(${lib_target_name}
+target_include_directories(${lib_target_name} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/../include)
+
+target_link_libraries(${lib_target_name}
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/projects/ores.synthetic/core/include
+        ores.synthetic.api.lib
+        ores.nats.lib
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR})
+        ores.service.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+
+# A component declares here what the profile cannot know: the libraries it
+# needs beyond the baseline above, and the find_package calls they bring.
+# Appending to the target rather than replacing the profile keeps the
+# baseline honest for every other component.
 
 target_link_libraries(${lib_target_name}
     PUBLIC
@@ -56,4 +74,6 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         Boost::boost)
 
+target_include_directories(${lib_target_name} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR})
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -7,6 +7,7 @@
 #+description: Market data management — market series, observations, fixings, and import from external sources.
 #+brief: Market data ingestion and query core
 #+type: ores.codegen.component
+#+component_kind: core
 #+level: cross
 #+filetags: :marketdata:core:component:
 #+created: 2026-05-19
@@ -49,7 +50,56 @@ ORE market data files for risk runs.
 - =ores.marketdata.api= — shared domain types and NATS protocol schemas.
 - =ores.dq=, =ores.iam.core=, =rfl=, =soci=, =nats.c=.
 
+* Build dependencies
+
+What the shared profile cannot know, declared here rather than
+hand-edited into the generated build file. Each block is spliced
+into its generated file after the profile's baseline.
+
+
 * See also
 
 - [[id:6A62D943-FAC9-4B77-9E22-F265557DCF1A][ores.marketdata.api]] — protocol types and domain entities.
 - [[id:57182ECE-6364-421A-A46F-73841F9961B4][ores.marketdata.service]] — NATS service entrypoint.
+
+#+begin_src cmake :name extra_dependencies
+find_package(Boost REQUIRED COMPONENTS url)
+find_package(magic_enum CONFIG REQUIRED)
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.marketdata.api.lib
+        ores.ore.core.lib
+    PRIVATE
+        ores.dq.api.lib
+        ores.history.core.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
+        ores.service.lib
+        ores.storage.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.security.lib
+        sqlgen::sqlgen
+        faker-cxx::faker-cxx
+        magic_enum::magic_enum
+        Boost::boost
+        Boost::url)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

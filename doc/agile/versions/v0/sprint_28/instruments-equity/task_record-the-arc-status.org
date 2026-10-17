@@ -26,11 +26,11 @@ The design states which units are merged, and why the remaining ones wait on the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -83,3 +83,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The design carries a Status section. It names the five merged units and E15,
+with their PRs, and states what the data model now holds: a header keyed by
+the trade with the family's common dates, a basket stored as rows, exact money
+on every money column, and an identity keyed by the trade on all twelve
+tables.
+
+It also records why units 6 to 11 wait. The reason is the routing. The
+generated trade_type_routing enum is consumed at runtime by the trade
+component queries and the trade export service, so pointing the equity codes at
+the header before the importer writes it would make both look for equity
+instruments in an empty table. The re-pointing, the fact tables' duplicated
+identity columns and the columns E7 and E8 name all move with the same mapper
+migration, which the operator deferred to the xsdcpp removal.
+
+Verification is the documentation check: all 39 components pass.
+

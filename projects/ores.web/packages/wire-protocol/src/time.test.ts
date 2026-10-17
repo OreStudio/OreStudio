@@ -27,7 +27,6 @@ import {
     nullableWireTimestampSchema,
     toWireTimestamp,
     wireTimestamp,
-    wireTimestampOrAbsentSchema,
     wireTimestampSchema,
 } from './time.js';
 
@@ -84,6 +83,14 @@ describe('the wire timestamp the server writes', () => {
         expect(() => wireTimestamp('2026-04-08 10:30:45.652076Z')).not.toThrow();
         expect(() => wireTimestamp('2026-04-08T10:30:45.652076Z')).toThrow(TypeError);
     });
+
+    it('names the bad bytes when the schema refuses them', () => {
+        const parsed = wireTimestampSchema.safeParse('2026-04-08T10:30:45.652076Z');
+        expect(parsed.success).toBe(false);
+        expect(parsed.error?.issues[0]?.message).toBe(
+            'Not a wire timestamp: "2026-04-08T10:30:45.652076Z"',
+        );
+    });
 });
 
 describe('the wire timestamp schema', () => {
@@ -97,13 +104,11 @@ describe('the wire timestamp schema', () => {
         expect(wireTimestampSchema.safeParse('2026-04-08T10:30:45.652076Z').success).toBe(false);
     });
 
-    it('treats an absent instant as null, never as an empty string', () => {
-        expect(wireTimestampOrAbsentSchema.parse('')).toBeNull();
-        expect(wireTimestampOrAbsentSchema.parse(null)).toBeNull();
-        expect(wireTimestampOrAbsentSchema.parse('2026-04-08 10:30:45.652076Z')).toBe(
+    it('treats an absent instant as null, and refuses the empty string', () => {
+        expect(nullableWireTimestampSchema.parse(null)).toBeNull();
+        expect(nullableWireTimestampSchema.parse('2026-04-08 10:30:45.652076Z')).toBe(
             '2026-04-08 10:30:45.652076Z',
         );
-        expect(nullableWireTimestampSchema.parse(null)).toBeNull();
         expect(nullableWireTimestampSchema.safeParse('').success).toBe(false);
     });
 });

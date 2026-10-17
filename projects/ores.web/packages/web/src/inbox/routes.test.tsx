@@ -49,7 +49,7 @@ const request = {
     requestedBy: 'daniel',
     requestedAt: '2026-10-04 09:00:00Z',
     reason: 'I price the FX book and cannot read currencies.',
-    expiresAt: '',
+    expiresAt: null,
     roles: [{ roleId: ROLE, name: 'Trading', description: 'Trading desk access' }],
     decision: null,
 } as unknown as InboxRequestView;

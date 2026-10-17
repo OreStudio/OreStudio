@@ -97,6 +97,8 @@ const RUNS = {
             status: 'failed',
             step_count: 7,
             created_at: '2026-10-01 09:00:00.000000Z',
+            completed_at: null,
+            last_event_at: '2026-10-01 09:05:00.000000Z',
             error: 'Seeding failed.',
             target_kind: 'tenant',
             target_id: ACME_TENANT,

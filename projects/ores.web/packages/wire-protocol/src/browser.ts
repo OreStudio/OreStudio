@@ -39,7 +39,6 @@ export {
     nullableWireTimestampSchema,
     toWireTimestamp,
     wireTimestamp,
-    wireTimestampOrAbsentSchema,
     wireTimestampSchema,
 } from './time.js';
 export type { WireTimestamp } from './time.js';
@@ -262,7 +261,7 @@ export { loginInfoPageSchema, loginInfoSchema } from './domain.js';
 export type { LoginInfo, LoginInfoPage } from './domain.js';
 
 // The sessions the audit screen reads: one page of every session, and the open
-// ones on their own. An empty endTime is what makes a row active.
+// ones on their own. A null endTime is what makes a row open.
 export { sessionPageSchema, sessionSchema } from './domain.js';
 export type { Session, SessionPage } from './domain.js';
 

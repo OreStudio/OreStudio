@@ -160,10 +160,10 @@ function SignInsView({
                                         className="border-b border-line-subtle last:border-b-0"
                                     >
                                         <td className="whitespace-nowrap px-4 py-2">
-                                            {isZeroTimestamp(row.startTime) ? '—' : row.startTime}
+                                            {row.startTime}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-2 text-ink-muted">
-                                            {isZeroTimestamp(row.endTime)
+                                            {row.endTime === null
                                                 ? t('signIns.noEnd')
                                                 : row.endTime}
                                         </td>

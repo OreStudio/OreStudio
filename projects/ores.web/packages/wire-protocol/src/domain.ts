@@ -21,7 +21,7 @@
 
 import { z } from 'zod';
 import { SYSTEM_TENANT_ID, uuid, type Uuid } from './primitives.js';
-import { toWireTimestamp, wireTimestampSchema } from './time.js';
+import { nullableWireTimestampSchema, toWireTimestamp, wireTimestampSchema } from './time.js';
 
 /**
  * The account classifications the server understands.
@@ -210,7 +210,7 @@ export const setupActivitySchema = z.object({
     stepsDone: z.int().nonnegative(),
     stepCount: z.int().nonnegative(),
     error: z.string(),
-    at: z.string(),
+    at: wireTimestampSchema,
 });
 
 export type SetupActivity = z.infer<typeof setupActivitySchema>;
@@ -379,7 +379,7 @@ export const loginInfoSchema = z.object({
     lastAttemptIp: z.string(),
     failedLogins: z.int().nonnegative(),
     locked: z.boolean(),
-    lastLogin: z.string(),
+    lastLogin: wireTimestampSchema,
     online: z.boolean(),
     passwordResetRequired: z.boolean(),
 });
@@ -397,18 +397,16 @@ export type LoginInfoPage = z.infer<typeof loginInfoPageSchema>;
 /**
  * A session as a screen reads it.
  *
- * `endTime` is empty while the session is open, which is what makes a row an
+ * `endTime` is null while the session is open, which is what makes a row an
  * active one; the read that answers only open sessions carries the same shape.
- * It stays a plain string for now: the server writes it from the database's
- * text form rather than the wire form, so this field is named in the sweep as
- * one the producer has not been brought onto the wire shape yet.
+ * A closed session states its closing instant in the wire shape.
  */
 export const sessionSchema = z.object({
     tenantId: uuidSchema,
     id: uuidSchema,
     accountId: uuidSchema,
     startTime: wireTimestampSchema,
-    endTime: z.string(),
+    endTime: nullableWireTimestampSchema,
     clientIp: z.string(),
     clientIdentifier: z.string(),
     clientVersionMajor: z.int().nonnegative(),

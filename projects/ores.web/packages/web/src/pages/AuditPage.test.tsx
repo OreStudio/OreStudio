@@ -95,7 +95,7 @@ function session(overrides: Partial<Session> = {}): Session {
         id: SESSION_ID,
         accountId: ACCOUNT_ID,
         startTime: new Date().toISOString().replace('T', ' ').slice(0, 19) + 'Z',
-        endTime: '',
+        endTime: null,
         clientIp: '203.0.113.44',
         clientIdentifier: 'ores.web',
         clientVersionMajor: 0,

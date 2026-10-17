@@ -38,7 +38,6 @@ export {
     nullableWireTimestampSchema,
     toWireTimestamp,
     wireTimestamp,
-    wireTimestampOrAbsentSchema,
     wireTimestampSchema,
 } from './time.js';
 export type { WireTimestamp } from './time.js';

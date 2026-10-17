@@ -130,7 +130,7 @@ export function NotificationBell(): ReactNode {
     const items = list.data?.items ?? [];
 
     const openOne = (notification: InboxNotificationView) => {
-        if (notification.readAt === '') {
+        if (notification.readAt === null) {
             read.mutate([notification.id]);
         }
         setOpen(false);
@@ -186,7 +186,7 @@ export function NotificationBell(): ReactNode {
                                     <span className="flex items-start gap-2">
                                         <span
                                             aria-hidden
-                                            className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.readAt === '' ? 'bg-accent' : 'bg-transparent'}`}
+                                            className={`mt-1.5 size-2 shrink-0 rounded-full ${notification.readAt === null ? 'bg-accent' : 'bg-transparent'}`}
                                         />
                                         <span className="min-w-0 flex-1">
                                             <span className="block text-ink">

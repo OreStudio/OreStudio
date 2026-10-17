@@ -41,6 +41,8 @@ function run(id: string, target: string, status: string): unknown {
         status,
         step_count: 4,
         created_at: '2026-10-01 10:00:00.000000Z',
+        completed_at: null,
+        last_event_at: null,
         error: '',
         target_kind: 'tenant',
         target_id: target,

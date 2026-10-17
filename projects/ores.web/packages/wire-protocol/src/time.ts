@@ -147,22 +147,20 @@ export const wireTimestampSchema = z.string().transform((value, ctx) => {
     try {
         return wireTimestamp(value);
     } catch (cause) {
-        ctx.addIssue({ code: 'custom', message: 'Not a wire timestamp', cause });
+        ctx.addIssue({
+            code: 'custom',
+            message: `Not a wire timestamp: ${JSON.stringify(value)}`,
+            cause,
+        });
         return z.NEVER;
     }
 });
 
 /**
- * An instant the server may state as absent.
+ * An instant the server states as `null` when it has none.
  *
- * The server writes `null` for a nullable column and an empty string for a
- * field its protocol models as `std::string` with no value, such as a session
- * that has not ended. Both mean "no instant", and both become `null` here so a
- * consumer must handle the absence instead of comparing against `''`.
+ * The server writes `null` for a nullable timestamp column, such as a session
+ * that has not ended. There is no empty-string spelling: a field that cannot
+ * state an instant states `null`, and anything else is a malformed reply.
  */
-export const wireTimestampOrAbsentSchema = z
-    .union([wireTimestampSchema, z.literal(''), z.null()])
-    .transform((value): WireTimestamp | null => (value === '' || value === null ? null : value));
-
-/** An instant the server states as `null`, with no empty-string spelling. */
 export const nullableWireTimestampSchema = wireTimestampSchema.nullable();

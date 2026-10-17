@@ -116,6 +116,7 @@ function wireRun(id: string, target: string, status: string, error = '') {
         created_by: 'admin',
         created_at: '2026-10-04 09:00:00.000000Z',
         completed_at: status === 'in_progress' ? null : '2026-10-04 09:05:00.000000Z',
+        last_event_at: '2026-10-04 09:05:00.000000Z',
         error,
         target_kind: 'tenant',
         target_id: target,

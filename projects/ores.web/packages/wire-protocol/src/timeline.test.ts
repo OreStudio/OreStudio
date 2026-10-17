@@ -230,7 +230,7 @@ describe('the story of a party', () => {
                     {
                         'ores.refdata.party_country': [
                             linkVersion(1, link),
-                            linkVersion(2, link, '2026-10-05T10:00:00Z', 'priya'),
+                            linkVersion(2, link, '2026-10-05 10:00:00Z', 'priya'),
                         ],
                     },
                 ),
@@ -246,7 +246,7 @@ describe('the story of a party', () => {
         ]);
         // The store records when a link ended and who ended it.
         expect(own[0]?.actor).toBe('priya');
-        expect(own[0]?.at).toBe('2026-10-05T10:00:00Z');
+        expect(own[0]?.at).toBe('2026-10-05 10:00:00Z');
         expect(own[0]?.fields.map((f) => f.name)).toEqual(['ID', 'Party', 'Country']);
     });
 

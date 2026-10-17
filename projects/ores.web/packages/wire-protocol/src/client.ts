@@ -143,7 +143,7 @@ import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
 import { nodeIdGenerator, portableIdGenerator, tracingHeaders, type IdGenerator } from './ids.js';
 import { uuid, type Uuid } from './primitives.js';
-import { wireTimestampOrAbsentSchema, type WireTimestamp } from './time.js';
+import { nullableWireTimestampSchema, type WireTimestamp } from './time.js';
 
 /** How long the client waits for each kind of call. */
 export interface Timeouts {
@@ -1490,7 +1490,7 @@ export class OresClient {
  * it does nothing, which is the safe direction.
  */
 const changeEventSchema = z.object({
-    occurred_at: wireTimestampOrAbsentSchema.default(null),
+    occurred_at: nullableWireTimestampSchema,
     key: z.record(z.string(), z.unknown()).default({}),
 });
 

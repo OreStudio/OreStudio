@@ -533,7 +533,7 @@ const wireLoginInfoSchema = z.object({
     last_attempt_ip: text,
     failed_logins: z.int().nonnegative().default(0),
     locked: z.boolean().default(false),
-    last_login: text,
+    last_login: wireTimestampSchema,
     online: z.boolean().default(false),
     password_reset_required: z.boolean().default(false),
 });
@@ -584,11 +584,10 @@ const wireSessionSchema = z.object({
     account_id: uuidSchema,
     start_time: wireTimestampSchema,
     /*
-     * The server writes end_time from the database's text form, so it is not
-     * the wire shape. It stays a plain string until the producer is fixed; the
-     * sweep in the timestamp story names it.
+     * An open session has no closing instant: the server writes a nullable
+     * timestamp, so the field is the wire shape or null, never ''.
      */
-    end_time: text,
+    end_time: nullableWireTimestampSchema,
     client_ip: text,
     client_identifier: text,
     client_version_major: z.int().nonnegative().default(0),
@@ -1477,8 +1476,8 @@ export const workflowStepSummarySchema = z.object({
     status: z.string().default(''),
     step_index: z.number().int().default(0),
     created_at: wireTimestampSchema,
-    started_at: nullableWireTimestampSchema.default(null),
-    completed_at: nullableWireTimestampSchema.default(null),
+    started_at: nullableWireTimestampSchema,
+    completed_at: nullableWireTimestampSchema,
     error: z.string().default(''),
     log: z
         .array(
@@ -1754,7 +1753,7 @@ export const serviceRosterSlotSchema = z.object({
     instance_id: z.string().nullable().default(null),
     host_id: z.string().nullable().default(null),
     version: z.string().nullable().default(null),
-    sampled_at: z.string().nullable().default(null),
+    sampled_at: nullableWireTimestampSchema,
 }) satisfies z.ZodType<ServiceRosterSlot>;
 
 /** `get_service_roster_response`, before the rows are dated. */
@@ -1829,7 +1828,7 @@ export const gridStatsReplySchema = z.object({
     outcomes_success: z.int().nonnegative().default(0),
     outcomes_client_error: z.int().nonnegative().default(0),
     outcomes_no_reply: z.int().nonnegative().default(0),
-    sampled_at: text,
+    sampled_at: wireTimestampSchema,
     node_summaries: z.array(nodeSummarySchema).default([]),
 }) satisfies z.ZodType<GetGridStatsResponse>;
 
@@ -1854,8 +1853,8 @@ export type SeriesRange = (typeof SERIES_RANGES)[number];
  * where its first bucket starts.
  */
 export const gridSeriesRequestSchema = z.object({
-    start_time: z.string(),
-    end_time: z.string(),
+    start_time: wireTimestampSchema,
+    end_time: wireTimestampSchema,
     bucket_seconds: z.int().positive(),
 }) satisfies z.ZodType<GetGridSeriesRequest>;
 
@@ -1886,7 +1885,7 @@ const gridSeriesColumns = {
 export const gridSeriesReplySchema = z.object({
     success: z.boolean().default(false),
     message: text,
-    start_time: text,
+    start_time: wireTimestampSchema,
     bucket_seconds: z.int().nonnegative().default(0),
     bucket_count: z.int().nonnegative().default(0),
     ...gridSeriesColumns,
@@ -1958,7 +1957,7 @@ export type GridUsageGroup = z.infer<typeof gridUsageGroupSchema>;
  * names joined on and each group's share of the results.
  */
 export const gridUsageViewSchema = z.object({
-    read_at: text.nullable().default(null),
+    read_at: nullableWireTimestampSchema,
     group_kind: z.enum(['tenant', 'party']),
     groups: z.array(gridUsageGroupSchema).default([]),
 });
@@ -1967,8 +1966,8 @@ export type GridUsageView = z.infer<typeof gridUsageViewSchema>;
 
 /** `get_node_series_request`: the node samples between two instants, in buckets. */
 export const nodeSeriesRequestSchema = z.object({
-    start_time: z.string(),
-    end_time: z.string(),
+    start_time: wireTimestampSchema,
+    end_time: wireTimestampSchema,
     bucket_seconds: z.int().positive(),
 }) satisfies z.ZodType<GetNodeSeriesRequest>;
 
@@ -2000,7 +1999,7 @@ const nodeSeriesColumns = {
 export const nodeSeriesReplySchema = z.object({
     success: z.boolean().default(false),
     message: text,
-    start_time: text,
+    start_time: wireTimestampSchema,
     bucket_seconds: z.int().nonnegative().default(0),
     bucket_count: z.int().nonnegative().default(0),
     nodes: z.array(nodeSeriesNodeSchema).default([]),
@@ -2023,9 +2022,9 @@ export const gridSeriesNodeSchema = nodeSeriesNodeSchema.extend({
  * by a clock the deployment never used.
  */
 export const gridSeriesViewSchema = z.object({
-    read_at: text.nullable().default(null),
+    read_at: nullableWireTimestampSchema,
     range: z.enum(SERIES_RANGES),
-    start_time: text,
+    start_time: wireTimestampSchema,
     bucket_seconds: z.int().nonnegative().default(0),
     bucket_count: z.int().nonnegative().default(0),
     grid: z.object(gridSeriesColumns),
@@ -2097,7 +2096,7 @@ export type GridNodeRow = z.infer<typeof gridNodeRowSchema>;
 
 /** The body of the browser's grid read. */
 export const gridViewSchema = z.object({
-    sampled_at: text.nullable().default(null),
+    sampled_at: nullableWireTimestampSchema,
     total_hosts: z.int().nonnegative().default(0),
     online_hosts: z.int().nonnegative().default(0),
     idle_hosts: z.int().nonnegative().default(0),
@@ -2122,8 +2121,8 @@ export type GridView = z.infer<typeof gridViewSchema>;
  * streams that have samples.
  */
 export const natsServerSamplesQuerySchema = z.object({
-    start_time: z.string(),
-    end_time: z.string(),
+    start_time: wireTimestampSchema,
+    end_time: wireTimestampSchema,
     limit: z.int().positive().max(1000).default(1000),
 }) satisfies z.ZodType<GetNatsServerSamplesRequest['query']>;
 
@@ -2134,7 +2133,7 @@ export const natsServerSamplesRequestSchema = z.object({
 
 /** One server sample. The counters run since the NATS server started. */
 export const natsServerSampleSchema = z.object({
-    sampled_at: z.string(),
+    sampled_at: wireTimestampSchema,
     in_msgs: z.int().nonnegative().default(0),
     out_msgs: z.int().nonnegative().default(0),
     in_bytes: z.int().nonnegative().default(0),
@@ -2153,8 +2152,8 @@ export const natsServerSamplesReplySchema = z.object({
 
 export const natsStreamSamplesQuerySchema = z.object({
     stream_name: z.string().min(1),
-    start_time: z.string(),
-    end_time: z.string(),
+    start_time: wireTimestampSchema,
+    end_time: wireTimestampSchema,
     limit: z.int().positive().max(1000).default(1000),
 }) satisfies z.ZodType<GetNatsStreamSamplesRequest['query']>;
 
@@ -2165,7 +2164,7 @@ export const natsStreamSamplesRequestSchema = z.object({
 
 /** One stream sample: what a stream stored, and its active consumers. */
 export const natsStreamSampleSchema = z.object({
-    sampled_at: z.string(),
+    sampled_at: wireTimestampSchema,
     stream_name: z.string(),
     messages: z.int().nonnegative().default(0),
     bytes: z.int().nonnegative().default(0),
@@ -2188,7 +2187,7 @@ export const natsStreamSamplesReplySchema = z.object({
  * row per stream, because the read that lists the streams does not exist yet.
  */
 export const busViewSchema = z.object({
-    sampled_at: text.nullable().default(null),
+    sampled_at: nullableWireTimestampSchema,
     samples: z.array(natsServerSampleSchema).default([]),
     streams: z.array(natsStreamSampleSchema).default([]),
 });
@@ -2207,8 +2206,8 @@ export type BusView = z.infer<typeof busViewSchema>;
  * say how much it left behind.
  */
 export const telemetryLogQuerySchema = z.object({
-    start_time: text,
-    end_time: text,
+    start_time: wireTimestampSchema,
+    end_time: wireTimestampSchema,
     source: z.string().nullable().default(null),
     source_name: z.string().nullable().default(null),
     session_id: z.string().nullable().default(null),
@@ -2230,7 +2229,7 @@ export const logsListRequestSchema = z.object({
 /** One stored entry, exactly as the read answers it. */
 export const telemetryLogEntrySchema = z.object({
     id: z.string(),
-    timestamp: text,
+    timestamp: wireTimestampSchema,
     source: z.string(),
     source_name: text,
     session_id: z.string().nullable().default(null),
@@ -2239,7 +2238,7 @@ export const telemetryLogEntrySchema = z.object({
     component: text,
     message: text,
     tag: text,
-    recorded_at: text,
+    recorded_at: wireTimestampSchema,
 }) satisfies z.ZodType<TelemetryLogEntry>;
 
 /**
@@ -2267,7 +2266,7 @@ export type LogsListReply = z.infer<typeof logsListReplySchema>;
  * stamped its own would date the reading by a clock the deployment never used.
  */
 export const logsViewSchema = z.object({
-    read_at: text.nullable().default(null),
+    read_at: nullableWireTimestampSchema,
     entries: z.array(telemetryLogEntrySchema).default([]),
     total: z.int().nonnegative().default(0),
     limit: z.int().positive().default(100),

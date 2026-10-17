@@ -488,7 +488,15 @@ describe('OresClient authenticated calls', () => {
     it('refuses a grid read the server did not produce, rather than reading it as idle', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.ops.login': [{ body: loginReply() }],
-            'compute.v1.ops.get_grid_stats': [{ body: { success: false, message: 'denied' } }],
+            'compute.v1.ops.get_grid_stats': [
+                {
+                    body: {
+                        success: false,
+                        message: 'denied',
+                        sampled_at: '1970-01-01 00:00:00.000000Z',
+                    },
+                },
+            ],
         });
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });
@@ -574,10 +582,22 @@ describe('OresClient authenticated calls', () => {
         const transport = new ScriptedTransport({
             'iam.v1.ops.login': [{ body: loginReply() }],
             'compute.v1.ops.get_grid_series': [
-                { body: { success: false, message: 'The range needs 9000 buckets.' } },
+                {
+                    body: {
+                        success: false,
+                        message: 'The range needs 9000 buckets.',
+                        start_time: '1970-01-01 00:00:00.000000Z',
+                    },
+                },
             ],
             'compute.v1.ops.get_node_series': [
-                { body: { success: false, message: 'The range needs 9000 buckets.' } },
+                {
+                    body: {
+                        success: false,
+                        message: 'The range needs 9000 buckets.',
+                        start_time: '1970-01-01 00:00:00.000000Z',
+                    },
+                },
             ],
         });
         const client = new OresClient({ transport });

@@ -398,10 +398,11 @@ tr.unreachable td { color: var(--ink-faint); }
 .cal-foot { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; color: var(--ink-faint); font-size: 12px; }
 
 .key { display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 10px 28px; margin-top: 4px; }
-.keyrow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: baseline; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+.keyrow { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; align-items: baseline; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
 .keyrow .kcode { font-family: var(--mono); font-size: 11px; color: var(--accent-bright); }
 .keyrow .kname { color: var(--ink); }
 .keyrow .kdetail { color: var(--ink-faint); font-size: 11px; display: block; }
+.keyrow .keyacts { grid-column: 2; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-start; }
 
 /* ------------------------------------------------------------- reach */
 

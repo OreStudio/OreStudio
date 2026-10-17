@@ -55,7 +55,7 @@ salt
     scheduled | 0 6 ~* ~* 1-5 | a job id from scheduler_job_id
   }
   {
-    [ Change the expression ] | [ Unschedule ]
+    [ Change the expression ] | [ Run now ] | [ Pause ] | [ Unschedule ]
   }
   The panel states that the definition is scheduled because scheduler_job_id is
   set. The next firing creates a run, and the run appears on the front door.
@@ -69,6 +69,25 @@ salt
   definition's schedule; the screen reads the definition back and states the
   result.
   --
+  <b>RUN NOW, PAUSE, PLAY</b>
+  --
+  {
+    Run now | Pause | Play
+  }
+  Run now starts one run at once and leaves the schedule alone. Pause keeps the
+  expression and the job and stops them firing; Play starts them again. Neither
+  pause nor play has an operation today: the scheduler job's is_active is where
+  that state would live, so the panel draws a paused row as a fixture.
+  --
+  <b>AFTER THE WRITE: PAUSED</b>
+  --
+  {#
+    State | Schedule expression | Scheduler job | Next fire
+    paused | 0 6 ~* ~* 1-5 | kept | will not fire while paused
+  }
+  The expression and the job survive, so Play resumes the same recurrence. The
+  next fire time is unknown while paused, and the panel states no date.
+  --
   <b>UNSCHEDULE</b>
   --
   {
@@ -77,6 +96,8 @@ salt
   {
     [ Cancel ] | [ Unschedule ]
   }
+  Unscheduling is not pausing. It removes the expression and the job with it, so
+  there is no recurrence left to resume.
   --
   <b>AFTER THE WRITE: ON DEMAND AGAIN</b>
   --

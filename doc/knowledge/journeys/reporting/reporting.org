@@ -43,7 +43,7 @@ journey's *What is missing*.
 | [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] | trading-desk, market-risk | Trigger one report on demand, then follow the run through its phases to a terminal state |
 | [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] | trading-desk, market-risk | The run's output message and archive, the engine's output, and the ORE package the run exported |
 | [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] | engineer, market-risk, tenant administrator | The run's errors, placed by scope and subject, down to which trade, which analytic and which curve |
-| [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] | tenant administrator | Set the schedule that makes a definition run, and take it away again |
+| [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] | tenant administrator | Set the schedule that makes a definition run, run it now, pause and resume the schedule, and take it away again |
 
 * What a report is here
 
@@ -111,7 +111,7 @@ three gathering steps; one that ignores post-processing uses
 | trading-desk | The definitions their party owns, the latest run of each, the outputs and the errors | Run a report on demand |
 | market-risk | The same rows, read for sign-off rather than for the desk's position | Run a report on demand |
 | engineer | The rows plus the errors, to place a failure in the engine | Nothing |
-| tenant administrator | Every row of their tenant, and the schedule of every definition | Run a report; schedule and unschedule a definition |
+| tenant administrator | Every row of their tenant, and the schedule of every definition | Run a report on demand; schedule a definition; pause and resume its schedule; unschedule it. Pause and resume are not available yet, because no operation sets the scheduler job's =is_active= |
 
 The reads are gated by permissions the reporting service already holds:
 =reporting::report_definitions:read=, =reporting::report_instances:read=,

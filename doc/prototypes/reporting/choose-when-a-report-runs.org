@@ -2,7 +2,7 @@
 :ID: 0f0263f1-3400-4619-b2ff-fefd2f023f76
 :END:
 #+title: Choose when a report runs prototype
-#+description: Three structural variants of scheduling a report, on a throwaway page that states the missing scheduler read and the absent time zone.
+#+description: Three structural variants of scheduling a report, on a throwaway page that states the missing scheduler read, the absent pause operation and the absent time zone.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
@@ -43,12 +43,33 @@ Switch with the bottom bar, or with =?variant=.
 | =B= | A schedule list | One row per schedule, scanned and edited together, so the whole week is answerable in one view. |
 | =C= | A calendar | A weekly grid of when reports fire, each report in its slots, so clashes and quiet nights are visible before they happen. |
 
+All three carry the same four actions beside a schedule, and none of them folds
+one action into another.
+
+** The four actions are four
+
+Run now starts one run at once and changes no schedule: it sends
+=reporting.v1.ops.trigger_report_instance=. Pause keeps the schedule and stops it
+firing. Play starts it firing again on the same expression. Unschedule removes the
+schedule, so the definition becomes on demand: it sends
+=reporting.v1.ops.unschedule_report_definitions=.
+
+Pause and Unschedule are the pair people confuse, so the page says what separates
+them. A paused schedule keeps its expression and its scheduler job, and firing
+starts again after Play. An unscheduled definition keeps neither, so there is
+nothing to resume. **Pause and Play have no operation.** The scheduler job carries
+=is_active= in =ores_scheduler_job_definitions_tbl=, so the data can express a
+paused schedule and nothing exposes it to a reporting screen. The paused row the
+page draws, and the Pause and Play buttons, are a fixture, and the amber note says
+so.
+
 ** What the page refuses to invent
 
-Two operations exist, =reporting.v1.ops.schedule_report_definitions= and
+Three operations exist: =reporting.v1.ops.trigger_report_instance=,
+=reporting.v1.ops.schedule_report_definitions= and
 =reporting.v1.ops.unschedule_report_definitions=, and a definition carries a
-schedule expression. **There is no operation to read or write a scheduler job
-from this screen, and there is no time zone on the schedule.** The calendar
+schedule expression. **There is no pause or play operation, no read or write of a
+scheduler job from this screen, and no time zone on the schedule.** The calendar
 variant shows an installation clock and says the times are derived from the
 expression, and the note says a built screen could not show a job's state, its
 last firing or its next due time. A scheduler dashboard drawn as though the
@@ -56,18 +77,22 @@ server served it would be a lie a reviewer could not see.
 
 ** What a schedule does and does not reach
 
-It sets when the run starts. It does not change the report's inputs, its
-portfolio or its outputs. Only a tenant administrator may schedule, and only for
+A schedule sets when the run starts. It does not change the report's inputs, its
+portfolio or its outputs. Run now starts one run and leaves the schedule alone.
+Pause stops the firing and keeps the schedule, and Unschedule removes it. None of
+the four touches a run already produced or cancels a run in flight. Only a tenant
+administrator may schedule, and only for
 reports their own party owns; every other role reads the cadence and nothing more.
 The page states the party constraint rather than hiding it behind a disabled
 button.
 
 ** What is fake
 
-The cadences, the next fire times and the reports are mock. Nothing reads a
-server, and the application has no reporting UI today. The next fire times are
-computed from the expression in the page, which is what a person is actually
-judging when they set a cadence.
+The cadences, the next fire times, the reports and the paused schedule are mock.
+Nothing reads a server, and the application has no reporting UI today. Pause and
+Play have no operation, so the paused row and those two buttons are a fixture. The
+next fire times are computed from the expression in the page, which is what a
+person is actually judging when they set a cadence.
 
 ** Where the code lives
 

@@ -815,6 +815,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/contact_type_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/contact_type_table_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/convention.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/convention_family_registry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/convention_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/convention_kind.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/domain/convention_kind_json_io.hpp"

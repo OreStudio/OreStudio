@@ -31,6 +31,13 @@
   serves parsed results or the exported ORE package. The manifest and every
   figure are drawn from this file.
 
+  The per-trade table is drawn from this file too. Per-trade results are real: a
+  run writes npv.csv into its archive with one row per trade, its NPV, its
+  base-currency NPV, its notional and its counterparty. No operation parses the
+  archive, so the table is a fixture and says so on the panel; opening a row
+  answers with that trade's result, and with the error the run recorded against
+  its TradeId where it recorded one.
+
   The figures are not free invention: each run names the analytics its report
   configuration runs (Headline Position runs npv and sensitivity, Large
   Exposures runs npv and saccr), and every measure and every manifest row is an

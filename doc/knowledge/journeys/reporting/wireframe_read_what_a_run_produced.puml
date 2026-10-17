@@ -53,6 +53,20 @@ salt
   11 rows in all. The archive is complete and the run still carries these. Open
   the errors for the subject of each one.
   --
+  <b>ONE ROW PER TRADE</b>
+  --
+  {#
+    TradeId | TradeType | NPV | NPV(Base) | Notional | CounterParty
+    2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05 | Bond | - | - | 40,000,000 | ACME BANK PLC  [error]
+    2df8fa31-5dc6-4b79-a1d7-7c4e9f3b6a05 | Bond | 1,284,402.00 | 1,516,004.75 | 40,000,000 | NORTHGATE CLEARING
+  }
+  The per-trade table is =npv.csv='s own columns, one row per trade. The failed
+  trade carries no price because a trade the engine could not build writes no NPV
+  row; its row links to the error recorded against that =TradeId=. Where the
+  archive named a trade by its id, the trade is the trading trade with that id,
+  and =trading.v1.trades.get= resolves it. No operation parses the archive, so
+  this table is a fixture until a result store or an archive read exists.
+  --
   <b>THE ORE PACKAGE THIS RUN USED</b>
   --
   {#

@@ -143,7 +143,7 @@
                 sample: [
                     ['8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', 'Swap', '-184204.18', '-240812.44'],
                     ['c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', 'Swap', '88204.55', '115284.18'],
-                    ['2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', 'Bond', '612402.00', '612402.00'],
+                    ['7b3e28d4-1c95-4a72-9f03-6d8e5b1a4c27', 'Bond', '612402.00', '722761.24'],
                     ['6b19d702-3c4a-4e18-8f2b-1d7c9a0e5b36', 'Swap', '44102.80', '57664.06'],
                     ['0a8e4f21-7b3d-4c95-9e61-4f2a8b0d7c53', 'FXOption', '-9204.40', '-12038.20']
                 ]
@@ -156,7 +156,7 @@
                 sample: [
                     ['8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', 'Swap', 'IR', 'IR/RATE/GBP/10Y', '0.0001', '-184204.18', '-184481.02', '-2768400.00'],
                     ['c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', 'Swap', 'FX', 'FX/RATE/EUR/USD', '0.01', '88204.55', '88420.18', '21563.00'],
-                    ['2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', 'Bond', 'IR', 'IR/RATE/GBP/5Y', '0.0001', '612402.00', '612430.88', '288800.00']
+                    ['7b3e28d4-1c95-4a72-9f03-6d8e5b1a4c27', 'Bond', 'IR', 'IR/RATE/GBP/5Y', '0.0001', '612402.00', '612430.88', '288800.00']
                 ]
             }
         },
@@ -211,7 +211,7 @@
                 sample: [
                     ['8f2c1a04-9b7e-4d31-a05c-2e6f8d1b3c47', 'Swap', '6', '0', '0'],
                     ['c41b7e90-2d8a-4f61-b7e3-9a0c5d2f8e14', 'Swap', '6', '0', '0'],
-                    ['2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', 'Bond', '2', '0', '0']
+                    ['7b3e28d4-1c95-4a72-9f03-6d8e5b1a4c27', 'Bond', '2', '0', '0']
                 ]
             }
         },
@@ -461,6 +461,99 @@
         }
     ];
 
+    /* Per-trade results. A real run writes npv.csv into its output archive with
+       exactly these columns: TradeId, TradeType, Maturity, MaturityTime, NPV,
+       NpvCurrency, NPV(Base), BaseCurrency, Notional, NotionalCurrency,
+       Notional(Base), NettingSet, CounterParty. One row per trade, each with its
+       own NPV, its base-currency NPV, its notional and its counterparty.
+
+       Six of those columns are drawn below. Every row is a fixture: no
+       operation parses the archive, and ores_compute_results_tbl carries only
+       the archive's location and an outcome. A trade the engine could not build
+       writes no NPV into npv.csv, so the failed row here is keyed to the run's
+       own trade-scoped error fixture in RUNS above, joined by the same TradeId;
+       it carries no price and the error is its answer. The table is a sample of
+       the run's rows, not all of them.
+
+       Each id is the trading trade's id, so trading.v1.trades.get resolves a row
+       to the trade itself. These bonds are rates book holdings: a coupon, a
+       maturity and a netting set apiece. */
+    var TRADES = {
+        /* Headline Position, ACCOUK, 18,204 rows in npv.csv. */
+        '3f7a91c4-6c2e-4b1d-9a84-0e5c2b7d18f3': [
+            { id: '2d0f8a31-5e6c-4b79-a1d2-7c4e9f3b6a05', type: 'Bond', maturity: '2031-04-15',
+                netting: 'NS-ACCOUK-004', ccy: 'GBP', npv: null, npvBase: null,
+                notional: '40,000,000', notionalCcy: 'GBP', cp: 'ACME BANK PLC' },
+            { id: '5a17c8e2-9d3b-4f60-8c21-7e4b0a9d2f18', type: 'Bond', maturity: '2034-09-30',
+                netting: 'NS-ACCOUK-004', ccy: 'GBP', npv: '1,284,402.00', npvBase: '1,516,004.75',
+                notional: '75,000,000', notionalCcy: 'GBP', cp: 'NORTHGATE CLEARING' },
+            { id: '7b3e28d4-1c95-4a72-9f03-6d8e5b1a4c27', type: 'Bond', maturity: '2032-06-15',
+                netting: 'NS-ACCOUK-001', ccy: 'GBP', npv: '612,402.00', npvBase: '722,761.24',
+                notional: '40,000,000', notionalCcy: 'GBP', cp: 'MERIDIAN CAPITAL' },
+            { id: '0e4f9a63-8b17-4d25-a3c9-2f7b1e8d5a04', type: 'Bond', maturity: '2036-01-20',
+                netting: 'NS-ACCOUK-002', ccy: 'EUR', npv: '884,118.00', npvBase: '959,262.86',
+                notional: '50,000,000', notionalCcy: 'EUR', cp: 'HANSA PFANDBRIEF' },
+            { id: 'c9d2b571-3a84-4e16-8f57-1b9c6d0e2384', type: 'Bond', maturity: '2029-11-05',
+                netting: 'NS-ACCOUK-003', ccy: 'GBP', npv: '-184,204.18', npvBase: '-217,438.86',
+                notional: '25,000,000', notionalCcy: 'GBP', cp: 'PACIFIC TRUST' },
+            { id: '4f1a6c38-7e2b-4d91-b605-9c3a8e2f7d15', type: 'Bond', maturity: '2030-03-12',
+                netting: 'NS-ACCOUK-001', ccy: 'USD', npv: '274,880.60', npvBase: '274,880.60',
+                notional: '20,000,000', notionalCcy: 'USD', cp: 'KESTREL ASSURANCE' },
+            { id: '8d5b0e74-2c69-4a13-9e88-5f1b7c3d6a92', type: 'Bond', maturity: '2033-08-25',
+                netting: 'NS-ACCOUK-002', ccy: 'GBP', npv: '441,082.40', npvBase: '520,668.83',
+                notional: '30,000,000', notionalCcy: 'GBP', cp: 'ACME BANK PLC' },
+            { id: '1b7c4f20-6a39-4e58-9d02-8c6f2b5a7e31', type: 'Bond', maturity: '2028-12-31',
+                netting: 'NS-ACCOUK-003', ccy: 'USD', npv: '96,204.10', npvBase: '96,204.10',
+                notional: '10,000,000', notionalCcy: 'USD', cp: 'NORTHGATE CLEARING' }
+        ],
+        /* Board Risk Dashboard, ACMCOR, 11,286 rows in npv.csv. */
+        '4b7e1a02-8d61-4f3c-b2a7-9c1e5d0f7a63': [
+            { id: '6a2d9f41-7b58-4c03-9e17-2d4a8b6f0c93', type: 'Bond', maturity: '2039-05-16',
+                netting: 'NS-ACMCOR-001', ccy: 'GBP', npv: '2,184,402.60', npvBase: '2,578,204.18',
+                notional: '120,000,000', notionalCcy: 'GBP', cp: 'ACME BANK PLC' },
+            { id: 'b73f0c85-4e19-4a26-8d70-5c1e9b3a7f24', type: 'Bond', maturity: '2038-11-30',
+                netting: 'NS-ACMCOR-002', ccy: 'GBP', npv: '1,904,118.20', npvBase: '2,247,406.18',
+                notional: '96,000,000', notionalCcy: 'GBP', cp: 'NORTHGATE CLEARING' },
+            { id: '3e9a1d67-2f84-4b50-a6c3-9d7b1e0c5a48', type: 'Bond', maturity: '2037-02-15',
+                netting: 'NS-ACMCOR-003', ccy: 'EUR', npv: '1,204,118.00', npvBase: '1,306,468.13',
+                notional: '60,000,000', notionalCcy: 'EUR', cp: 'MERIDIAN CAPITAL' },
+            { id: '9c4b6e02-5a17-4d83-bf92-7e0a2c8d1546', type: 'Bond', maturity: '2040-07-01',
+                netting: 'NS-ACMCOR-001', ccy: 'GBP', npv: '884,204.18', npvBase: '1,043,812.44',
+                notional: '44,000,000', notionalCcy: 'GBP', cp: 'HANSA PFANDBRIEF' },
+            { id: '07d5a8f3-6c29-4e14-8b35-1f9d2a7c0e61', type: 'Bond', maturity: '2035-09-20',
+                netting: 'NS-ACMCOR-004', ccy: 'USD', npv: '612,402.00', npvBase: '612,402.00',
+                notional: '32,000,000', notionalCcy: 'USD', cp: 'PACIFIC TRUST' },
+            { id: '5f8e3b17-9d02-4a68-9c41-6b3e0d2a8754', type: 'Bond', maturity: '2029-04-11',
+                netting: 'NS-ACMCOR-002', ccy: 'GBP', npv: '-204,118.40', npvBase: '-241,062.04',
+                notional: '28,000,000', notionalCcy: 'GBP', cp: 'KESTREL ASSURANCE' }
+        ],
+        /* Large Exposures, ACCOHK, 2,292 rows in npv.csv. */
+        '9a20c7d1-4f68-4e93-b7c5-1d8e6f2a4b03': [
+            { id: 'd41a0f86-3b97-4c52-8e10-7a5d2c9b6f35', type: 'Bond', maturity: '2036-06-30',
+                netting: 'NS-ACCOHK-001', ccy: 'HKD', npv: '8,204,118.00', npvBase: '1,051,810.00',
+                notional: '64,000,000', notionalCcy: 'HKD', cp: 'ACME BANK PLC' },
+            { id: '2b7e5a09-8c14-4d37-9f62-0e8b3a1d5c74', type: 'Bond', maturity: '2034-12-15',
+                netting: 'NS-ACCOHK-001', ccy: 'HKD', npv: '6,118,402.00', npvBase: '784,410.51',
+                notional: '48,000,000', notionalCcy: 'HKD', cp: 'NORTHGATE CLEARING' },
+            { id: '6c9d2e48-1a75-4b03-8e29-5f7c0b6a3d81', type: 'Bond', maturity: '2033-03-31',
+                netting: 'NS-ACCOHK-002', ccy: 'USD', npv: '2,884,020.00', npvBase: '2,884,020.00',
+                notional: '36,000,000', notionalCcy: 'USD', cp: 'MERIDIAN CAPITAL' },
+            { id: '84f1b6c3-7e20-4a95-9d18-3c5b2f0e7a69', type: 'Bond', maturity: '2038-08-20',
+                netting: 'NS-ACCOHK-002', ccy: 'USD', npv: '1,904,118.40', npvBase: '1,904,118.40',
+                notional: '24,000,000', notionalCcy: 'USD', cp: 'PACIFIC TRUST' },
+            { id: 'a09c3f57-4b18-4e26-8c93-1d6f5a2b0e74', type: 'Bond', maturity: '2031-10-05',
+                netting: 'NS-ACCOHK-003', ccy: 'USD', npv: '1,204,118.00', npvBase: '1,204,118.00',
+                notional: '18,000,000', notionalCcy: 'USD', cp: 'HANSA PFANDBRIEF' },
+            { id: '5e3a7d90-2c64-4b18-af07-9e1d6b8c3a52', type: 'Bond', maturity: '2027-09-14',
+                netting: 'NS-ACCOHK-003', ccy: 'USD', npv: '-412,884.20', npvBase: '-412,884.20',
+                notional: '20,000,000', notionalCcy: 'USD', cp: 'KESTREL ASSURANCE' }
+        ]
+    };
+
+    /* The six columns the drill-down draws. The header labels are npv.csv's own,
+       because a renamed column would hide the shape of what a run writes. */
+    var TRADE_COLUMNS = ['TradeId', 'TradeType', 'NPV', 'NPV(Base)', 'Notional', 'CounterParty'];
+
     var GAPS = [
         {
             title: 'No operation lists the archive\u2019s contents',
@@ -471,8 +564,8 @@
             body: 'Reporting states the key and does not serve the object. No reporting operation and no BFF route returns it, so every download control here is drawn and not wired. The journey suggests GET /api/reporting/runs/<run-id>/outputs and a second route that streams the object by key; neither exists.'
         },
         {
-            title: 'No parsed results to read',
-            body: 'The result store that would parse the archive is designed in Report post-processing and not built, so A\u2019s figures, A\u2019s table and C\u2019s numbers have no read behind them. Which figures they are is decided by the analytics the configuration names \u2014 npv and sensitivity write NPV, Delta and Gamma; saccr writes EAD \u2014 and that list is a fixture here too, because no operation returns the configuration either. The archive is the only result that exists, and it exists as bytes the screen cannot fetch.'
+            title: 'No operation parses the archive',
+            body: 'Per-trade results are real: npv.csv holds one row per trade with its NPV, its base-currency NPV, its notional and its counterparty, and the archive at the run\u2019s output_storage_key holds that file. What is missing is the read. ores_compute_results_tbl carries the archive\u2019s output_uri, an outcome and an error_message, and no parsed rows. Nothing in the platform parses the archive, so A\u2019s figures, A\u2019s aggregate table, the per-trade table and C\u2019s numbers have no read behind them. The result store that would parse it is designed in Report post-processing and not built, so a screen needs a result store or an archive read before it can serve a trade row. Which figures a run has is decided by the analytics the configuration names \u2014 npv and sensitivity write NPV, Delta and Gamma; saccr writes EAD \u2014 and that list is a fixture here too, because no operation returns the configuration either.'
         },
         {
             title: 'No read of the ORE package',
@@ -489,12 +582,12 @@
     ];
 
     var DEPENDENCY = {
-        A: 'A needs the result store. Every figure and every row above is a reading of the output of the two analytics this run configured, and nothing parses an archive: post-processing is designed and not built. Built with today\u2019s operations, A is the archive footer with an empty screen above it.',
-        B: 'B is the only variant buildable from today\u2019s reads: the state, the output message, the storage key and the errors are all fields of the run. What B cannot have is its own centre \u2014 the manifest \u2014 and any download, because no operation lists or serves the archive. Its file list is also inferred from the configured analytics, not observed inside the tar.',
-        C: 'C needs what A needs \u2014 the parsed numbers \u2014 and then a writer trusted to keep a figure and its caveat in the same sentence. It is the easiest of the three to make wrong and the hardest to check: a column can be inspected, a sentence is believed.'
+        A: 'A needs the result store. Every figure, every row of the aggregate table and every row of the per-trade table is a reading of the archive the two configured analytics wrote, and nothing parses an archive: post-processing is designed and not built. Built with today\u2019s operations, A is the archive footer with an empty screen above it.',
+        B: 'B is the only variant buildable from today\u2019s reads, and only down to the run: the state, the output message, the storage key and the errors are all fields of the run. What B cannot have is its own centre \u2014 the manifest, the per-trade rows behind npv.csv, and any download \u2014 because no operation lists, parses or serves the archive. Its file list is inferred from the configured analytics, not observed inside the tar.',
+        C: 'C needs what A needs \u2014 the parsed numbers and the per-trade rows \u2014 and then a writer trusted to keep a figure and its caveat in the same sentence. It is the easiest of the three to make wrong and the hardest to check: a column can be inspected, a sentence is believed.'
     };
 
-    var S = { variant: 'A', runId: DEFAULT_RUN, file: 'npv.csv', showErrors: false, note: null };
+    var S = { variant: 'A', runId: DEFAULT_RUN, file: 'npv.csv', trade: null, showErrors: false, note: null };
 
     // ------------------------------------------------------------- helpers
 
@@ -645,6 +738,161 @@
         return files.reduce(function (sum, f) { return sum + f.bytes; }, 0);
     }
 
+    /* -------------------------------------------------------- per trade */
+
+    function tradesFor(run) {
+        return TRADES[run.id] || [];
+    }
+
+    function tradeById(run, id) {
+        return tradesFor(run).filter(function (t) { return t.id === id; })[0];
+    }
+
+    /* A trade error is a report error whose subject is the trade: the model
+       already keys those by subject_id, so the row and the error join on the
+       TradeId and nothing is invented to connect them. */
+    function tradeErrors(run, id) {
+        return (run.errors || []).filter(function (e) {
+            return e.subject === 'trade' && e.subjectId === id;
+        });
+    }
+
+    function npvRows(run) {
+        var f = filesFor(run).filter(function (x) { return x.name === 'npv.csv'; })[0];
+        return f ? f.rows : 0;
+    }
+
+    function selectedTrade(run) {
+        return S.trade ? tradeById(run, S.trade) : null;
+    }
+
+    function tradeTable(run) {
+        var trades = tradesFor(run);
+        if (!trades.length) return '';
+        var head = TRADE_COLUMNS.map(function (c, i) {
+            return '<th' + (i > 2 && i < 5 ? ' class="num"' : '') + '>' + esc(c) + '</th>';
+        }).join('');
+        function price(v) {
+            return v === null ? '<span class="faint">\u2014</span>' : esc(v);
+        }
+        var body = trades.map(function (t) {
+            var errs = tradeErrors(run, t.id);
+            return '<tr class="trade-row' + (S.trade === t.id ? ' sel' : '') + '" data-act="trade" data-trade="' +
+                esc(t.id) + '">' +
+                '<td><span class="nm">' + esc(t.id) + '</span>' +
+                    (errs.length ? ' <span class="tag bad">error</span>' : '') + '</td>' +
+                '<td><span class="kind">' + esc(t.type) + '</span></td>' +
+                '<td class="num">' + price(t.npv) + '</td>' +
+                '<td class="num">' + price(t.npvBase) + '</td>' +
+                '<td class="num">' + esc(t.notional) + '</td>' +
+                '<td class="cp">' + esc(t.cp) + '</td>' +
+                '</tr>';
+        }).join('');
+        return '<div class="table-wrap"><table class="manifest tradetable"><thead><tr>' + head +
+            '</tr></thead><tbody>' + body + '</tbody></table></div>';
+    }
+
+    function tradeNotice(run) {
+        return '<div class="notice warn"><strong>No operation parses the archive.</strong> ' +
+            'This per-trade table is a fixture, and the columns are npv.csv\u2019s own: ' +
+            '<span class="mono">TradeId, TradeType, NPV, NPV(Base), Notional, CounterParty</span>. ' +
+            'Per-trade results are real \u2014 a run writes one row per trade into npv.csv inside its archive \u2014 ' +
+            'but <span class="mono">ores_compute_results_tbl</span> carries only the archive\u2019s location and an ' +
+            'outcome, and no operation parses the archive. A built screen cannot serve these rows until a result ' +
+            'store or an archive read exists. It shows the first ' + tradesFor(run).length + ' of ' +
+            num(npvRows(run)) + ' rows.</div>';
+    }
+
+    /* Opening a row answers with the trade's own result and, where the run
+       recorded one against this TradeId, the error. The id is the trading
+       trade's id, so the row leads to the trade. */
+    function tradeDetail(run) {
+        var t = selectedTrade(run);
+        if (!t) {
+            return '<p class="rowfoot">Select a row to read that trade\u2019s result: its NPV, its base-currency ' +
+                'NPV, its notional, its counterparty, and any error the run recorded against it.</p>';
+        }
+        var errs = tradeErrors(run, t.id);
+        var fields = [
+            ['TradeType', t.type],
+            ['Maturity', t.maturity],
+            ['NettingSet', t.netting],
+            ['CounterParty', t.cp],
+            ['NPV', t.npv === null ? '\u2014 no price' : t.npv + ' ' + t.ccy],
+            ['NPV(Base)', t.npvBase === null ? '\u2014 no price' : t.npvBase + ' USD'],
+            ['Notional', t.notional + ' ' + t.notionalCcy],
+            ['BaseCurrency', 'USD']
+        ];
+        var grid = fields.map(function (pair) {
+            return '<div><span class="lbl">' + esc(pair[0]) + '</span>' +
+                '<span class="val mono">' + esc(pair[1]) + '</span></div>';
+        }).join('');
+
+        var verdict = t.npv === null
+            ? '<p class="dim">npv.csv carries no row for this bond: the engine could not build it, so it has no ' +
+              'NPV and no base-currency NPV. The error the run recorded against it is the answer, and it is below.</p>'
+            : '<p class="dim">npv priced this bond' + (errs.length ? ', and the run still recorded a problem against it' : '') +
+              '. The trade behind the row is <span class="mono">trading</span>\u2019s trade with this id, and ' +
+              '<span class="mono">trading.v1.trades.get</span> is what resolves it.</p>';
+
+        return '<div class="tradedetail">' +
+            '<div class="sectionhead" style="margin-top:16px"><h3 class="subhead">Trade ' +
+            esc(t.id) + '</h3><span class="meta">' +
+            (errs.length ? '<span class="tag bad">' + errs.length + ' error row' + (errs.length === 1 ? '' : 's') + '</span>'
+                : '<span class="tag ok">no error recorded</span>') +
+            '<span>joined to the run on TradeId</span></span></div>' +
+            verdict +
+            '<div class="statgrid" style="margin-top:14px">' + grid + '</div>' +
+            (errs.length ? '<div style="margin-top:14px">' + tradeErrorTable(errs) + '</div>' : '') +
+            '<div class="keyline" style="margin-top:14px">' +
+            '<button class="btn small" data-act="open-trade">Open the trade</button>' +
+            '<span class="hint">trading.v1.trades.get exists and resolves this id to the trade itself; no screen ' +
+            'route calls it, and this prototype reads no server, so the control is drawn.</span>' +
+            '</div>' +
+            '</div>';
+    }
+
+    function tradeErrorTable(errors) {
+        return '<div class="table-wrap"><table class="errtable"><thead><tr>' +
+            '<th>Severity</th><th>Scope</th><th>Subject</th><th>Message</th>' +
+            '</tr></thead><tbody>' + errorRows(errors) + '</tbody></table></div>';
+    }
+
+    function tradeFootnote(run) {
+        var failed = tradesFor(run).filter(function (t) { return t.npv === null; }).length;
+        return '<p class="rowfoot">Six of the thirteen columns npv.csv carries. A trade the engine could not build ' +
+            'writes no price into the file, so ' + (failed
+                ? 'the ' + failed + ' row with an empty NPV is drawn from the run\u2019s trade-scoped error rather ' +
+                  'than from npv.csv, and the error is the answer for it. '
+                : 'a failed trade would appear here with an empty NPV and its error. ') +
+            'The trade id is the trading trade\u2019s id, so a row leads to the trade: ' +
+            '<span class="mono">trading.v1.trades.get</span> is the read that resolves it. A read of one trade ' +
+            'exists today; a read of a run\u2019s per-trade results does not.</p>';
+    }
+
+    function tradesBlock(run) {
+        return tradeNotice(run) + tradeTable(run) + tradeDetail(run) + tradeFootnote(run);
+    }
+
+    /* The card B and C give the per-trade table. A draws the same block inside
+       its result card, under the aggregate figures. */
+    function tradesCard(run) {
+        return '<section class="card" id="trades">' +
+            '<header class="sectionhead"><h2>One row per trade</h2>' +
+            '<span class="meta"><span class="tag warn">fixture</span>' + tradesFor(run).length + ' of ' +
+            num(npvRows(run)) + ' rows \u00b7 one row per trade \u00b7 select a row</span></header>' +
+            tradesBlock(run) +
+            '</section>';
+    }
+
+    /* The heading A and C put above the block, and the count B puts in its
+       preview: one row per trade, drawn from a file no operation parses. */
+    function tradesHead() {
+        return '<div class="sectionhead" style="margin-top:20px"><h3 class="subhead">One row per trade</h3>' +
+            '<span class="meta"><span class="tag warn">fixture</span>' +
+            '<span>npv.csv, one row per trade \u00b7 select a row to read the trade</span></span></div>';
+    }
+
     function selectedFile(run) {
         var files = filesFor(run);
         var found = files.filter(function (f) { return f.name === S.file; })[0];
@@ -747,10 +995,12 @@
 
     function amberNote(run) {
         return '<div class="notice warn"><strong>What is fixture.</strong> ' +
-            'Every figure, file name, row count, size and error below is mock, and nothing on this page reads a server. ' +
-            'The figures are fixtures standing in for the output of the analytics this run\u2019s configuration names \u2014 ' +
-            '<span class="mono">' + esc(analyticsText(run)) + '</span> \u2014 and the result store that would parse the ' +
-            'archive and read them out is designed and not built. ' +
+            'Every figure, file name, row count, size, trade row and error below is mock, and nothing on this page ' +
+            'reads a server. ' +
+            'The figures and the per-trade rows are fixtures standing in for the output of the analytics this run\u2019s ' +
+            'configuration names \u2014 <span class="mono">' + esc(analyticsText(run)) + '</span> \u2014 and nothing ' +
+            'parses the archive they were written into: ores_compute_results_tbl holds the archive\u2019s location and ' +
+            'an outcome, not parsed rows. ' +
             'There is no operation that lists the files inside a run\u2019s archive, so no file list can be served \u2014 ' +
             'variant B draws one as a fixture and says so on it. No operation returns the archive or the ORE package, ' +
             'so every download is drawn, not wired.' +
@@ -774,8 +1024,10 @@
             '</div></section>';
     }
 
-    function errorTable(run) {
-        var body = run.errors.map(function (e) {
+    /* One row per recorded error, so the run's error list and a single trade's
+       error list are the same row drawn in the same shape. */
+    function errorRows(errors) {
+        return errors.map(function (e) {
             var subject = e.subject ? esc(e.subject) + ' ' + esc(e.subjectId) : 'the run';
             return '<tr>' +
                 '<td class="sev"><span class="tag ' + (e.severity === 'error' ? 'bad' : 'warn') + '">' +
@@ -785,9 +1037,12 @@
                 '<td class="msg">' + esc(e.message) + '</td>' +
                 '</tr>';
         }).join('');
+    }
+
+    function errorTable(run) {
         return '<div class="table-wrap"><table class="errtable"><thead><tr>' +
             '<th>Severity</th><th>Scope</th><th>Subject</th><th>Message</th>' +
-            '</tr></thead><tbody>' + body + '</tbody></table></div>';
+            '</tr></thead><tbody>' + errorRows(run.errors) + '</tbody></table></div>';
     }
 
     function errorBlock(run) {
@@ -814,8 +1069,9 @@
             '</div>';
     }
 
-    /* A treats the figures and the table as one thing: the run's result is a
-       set of numbers, and the table is where they come from. */
+    /* A treats the figures and the tables as one thing: the run's result is a
+       set of numbers, the aggregate table is where they come from, and the
+       per-trade table under it is the same result one trade at a time. */
     function resultCard(run) {
         var tiles = run.figures.map(function (f) {
             return '<div class="fig"><div class="v">' + esc(f.value) + '</div>' +
@@ -845,6 +1101,7 @@
             '<span class="tag warn">fixture</span><span>no measure below comes from any other analytic</span></span></header>' +
             analyticsLine(run) +
             '<div class="figs" style="margin-top:16px">' + tiles + '</div>' + table +
+            (tradesFor(run).length ? tradesHead() + tradesBlock(run) : '') +
             '<p class="rowfoot">No operation returns these figures or rows. They are what the archive says once something ' +
             'parses it \u2014 <span class="mono">' + esc(analyticsText(run)) + '</span> wrote them \u2014 and the result ' +
             'store that would parse it is designed and not built.</p>' +
@@ -985,10 +1242,19 @@
             '</section>';
     }
 
+    /* npv.csv is the one file in the manifest whose rows are trades. B argues
+       that the file is the unit, so selecting it offers the trade table rather
+       than a handful of preview lines; the table needs six columns, so it draws
+       full width below the split. */
     function previewPanel(run) {
         var f = selectedFile(run);
         var body;
-        if (f.preview.lines) {
+        if (f.name === 'npv.csv' && tradesFor(run).length) {
+            body = '<p class="dim">npv.csv is not a handful of rows to preview: a run writes one row per trade into ' +
+                'it, with the trade\u2019s own NPV, its base-currency NPV, its notional and its counterparty. ' +
+                'B answers with the trade table, full width below this panel, because six columns do not fit a ' +
+                'preview column.</p>';
+        } else if (f.preview.lines) {
             body = '<pre class="codeblock">' + esc(f.preview.lines.join('\n')) + '</pre>';
         } else if (!f.preview.sample.length) {
             body = '<p class="emptyline">No rows: the file is empty.</p>';
@@ -1000,15 +1266,18 @@
                     return '<tr>' + row.map(function (cell) { return '<td>' + esc(cell) + '</td>'; }).join('') + '</tr>';
                 }).join('') + '</tbody></table></div>';
         }
-        var footer = f.kind === 'log'
-            ? 'The last lines of a text log. This preview is fixture like the manifest: nothing read the file.'
-            : (f.preview.lines
-                ? 'The first ' + f.preview.lines.length + ' structured-log lines, which are the run\u2019s errors. Preview is fixture.'
-                : 'First ' + f.preview.sample.length + ' of ' + num(f.rows) + ' rows. The preview is fixture; nothing reads the CSV.');
+        var isTrades = f.name === 'npv.csv' && tradesFor(run).length;
+        var footer = isTrades
+            ? 'The trade rows are a fixture too: no operation parses the archive, so nothing here read npv.csv.'
+            : (f.kind === 'log'
+                ? 'The last lines of a text log. This preview is fixture like the manifest: nothing read the file.'
+                : (f.preview.lines
+                    ? 'The first ' + f.preview.lines.length + ' structured-log lines, which are the run\u2019s errors. Preview is fixture.'
+                    : 'First ' + f.preview.sample.length + ' of ' + num(f.rows) + ' rows. The preview is fixture; nothing reads the CSV.'));
 
         return '<section class="card preview">' +
             '<header class="sectionhead"><h2>Preview</h2>' +
-            '<span class="meta">the numbers, one file at a time</span></header>' +
+            '<span class="meta">' + (isTrades ? 'one row per trade' : 'the numbers, one file at a time') + '</span></header>' +
             '<div class="fname">' + esc(f.name) + '</div>' +
             '<p class="hint" style="margin-bottom:10px">' + rowText(f) + ' rows \u00b7 ' + bytesText(f.bytes) +
             ' \u00b7 selected from the manifest</p>' +
@@ -1026,6 +1295,7 @@
         }
         return saidBlock(run) + errorBlock(run) +
             '<div class="split">' + manifestCard(run) + previewPanel(run) + '</div>' +
+            (selectedFile(run).name === 'npv.csv' && tradesFor(run).length ? tradesCard(run) : '') +
             packageBlock(run);
     }
 
@@ -1035,6 +1305,20 @@
         var paragraphs = storyFor(run).map(function (p) {
             return '<p>' + p + '</p>';
         }).join('');
+
+        /* C links to the trade rows instead of reproducing them: a reader who
+           wants a number in a column follows the sentence down to the table. */
+        var trades = tradesFor(run);
+        if (trades.length) {
+            var carrying = trades.filter(function (t) { return tradeErrors(run, t.id).length; }).length;
+            paragraphs += '<p>The figures above are the run\u2019s aggregate. ' +
+                '<a href="#trades" data-act="goto-trades">The per-trade table</a> is the same result one row at a ' +
+                'time: each trade\u2019s NPV, its base-currency NPV, its notional and its counterparty, the trade id ' +
+                'that leads to the trade, and ' + (carrying
+                    ? 'the ' + carrying + ' of these rows that carries an error the run recorded against it'
+                    : 'no error against any of these rows') +
+                '. It is a fixture, because nothing parses the archive.</p>';
+        }
 
         var filesCard;
         if (run.state === 'running') {
@@ -1079,6 +1363,7 @@
             analyticsLine(run) +
             '<div class="prose" style="margin-top:18px">' + paragraphs + '</div>' +
             '</section>' +
+            (trades.length ? tradesCard(run) : '') +
             filesCard + packageBlock(run);
     }
 
@@ -1149,6 +1434,7 @@
         if (!variantById(id) || S.variant === id) return;
         S.variant = id;
         S.showErrors = false;
+        S.trade = null;
         S.note = null;
         render();
         writeParams();
@@ -1159,8 +1445,17 @@
         if (!run || run.id === S.runId) return;
         S.runId = run.id;
         S.showErrors = false;
+        S.trade = null;
         S.file = 'npv.csv';
         S.note = null;
+        render();
+        writeParams();
+    }
+
+    /* Opening a row is a toggle: the same row closes it again, and the trade it
+       names is the one the panel answers with. */
+    function setTrade(id) {
+        S.trade = S.trade === id ? null : id;
         render();
         writeParams();
     }
@@ -1195,7 +1490,18 @@
             render();
         } else if (act === 'select-file') {
             S.file = el.getAttribute('data-file');
+            S.trade = null;
             render();
+        } else if (act === 'trade') {
+            setTrade(el.getAttribute('data-trade'));
+        } else if (act === 'goto-trades') {
+            var trades = document.getElementById('trades');
+            if (trades && trades.scrollIntoView) {
+                trades.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else if (act === 'open-trade') {
+            setNote('info', 'Nothing was opened. trading.v1.trades.get resolves a trade by its id, and this page ' +
+                'reads no server; the row\u2019s trade id is the trading trade\u2019s id.');
         } else if (act === 'download-file') {
             setNote('warn', 'Nothing was downloaded. No operation lists the files inside a run\u2019s archive, let alone ' +
                 'serves one of them; ' + el.getAttribute('data-file') + ' is a name from a fixture.');
@@ -1231,6 +1537,8 @@
         if (r && runById(r)) S.runId = runById(r).id;
         var f = p.get('file');
         if (f && filesFor(currentRun()).some(function (x) { return x.name === f; })) S.file = f;
+        var t = p.get('trade');
+        if (t && tradeById(currentRun(), t)) S.trade = t;
         if (p.get('errors') === '1') S.showErrors = true;
     }
 
@@ -1239,6 +1547,7 @@
         p.set('variant', S.variant);
         p.set('run', currentRun().id);
         if (S.file !== 'npv.csv') p.set('file', S.file);
+        if (S.trade) p.set('trade', S.trade);
         try {
             /* A file:// document has a null origin and Chrome refuses to
                replace its history entry. The bar already prints the state,

@@ -59,6 +59,7 @@ set(files
     "contact_type_eventing_integration_tests.cpp"
     "convention_kind_eventing_integration_tests.cpp"
     "conventions_document_service_tests.cpp"
+    "conventions_import_operations_service_tests.cpp"
     "counterparty_change_eventing_integration_tests.cpp"
     "counterparty_contact_information_eventing_integration_tests.cpp"
     "counterparty_eventing_integration_tests.cpp"

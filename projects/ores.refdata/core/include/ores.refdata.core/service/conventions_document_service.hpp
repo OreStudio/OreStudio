@@ -69,6 +69,24 @@ private:
     context ctx_;
 };
 
+/**
+ * @brief Applies one staged family's payload, in the way that family writes.
+ *
+ * The payload is the family's own generated value type, serialised as JSON.
+ * The branch for the family decodes it, stamps the session's party on the row,
+ * and calls the same helper the document save calls: a party family replaces
+ * the party's rows, a by-id family replaces the rows the payload names, and a
+ * world family adds only the rows the tenant lacks.
+ *
+ * @return false when the registry does not know the family.
+ * @throws std::runtime_error when the payload does not decode into the family's
+ * type, so a commit rolls back rather than applying a partial family.
+ */
+ORES_REFDATA_CORE_EXPORT bool apply_staged_family(const ores::database::context& ctx,
+                                                  const std::string& family,
+                                                  const std::string& payload,
+                                                  conventions_save_result& result);
+
 }
 
 #endif

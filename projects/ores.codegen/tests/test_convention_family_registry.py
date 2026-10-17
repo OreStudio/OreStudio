@@ -255,11 +255,29 @@ def test_the_fragment_names_one_helper_call_per_family(tmp_path):
     assert "replace_party_rows(ctx,\n                       ois_convention_repository()," in text
     assert "replace_rows_by_id(ctx,\n                       convention_repository()," in text
     assert "add_missing_world_rows(ctx,\n                           ibor_index_convention_repository()," in text
-    assert text.count("replace_party_rows(ctx,") == 1
-    assert text.count("replace_rows_by_id(ctx,") == 1
-    assert text.count("add_missing_world_rows(ctx,") == 1
+    assert text.count("replace_party_rows(ctx,") == 2
+    assert text.count("replace_rows_by_id(ctx,") == 2
+    assert text.count("add_missing_world_rows(ctx,") == 2
     assert text.count(".read_latest(ctx);") == 3
-    assert text.count("_repository()") == 6
+    assert text.count("_repository()") == 9
+
+
+def test_the_fragment_emits_one_staged_branch_per_family(tmp_path):
+    root = _tree(tmp_path, THREE)
+    text = render_fragment(discover_entries(root))
+
+    assert text.count("bool apply_staged_family(") == 1
+    assert text.count('if (family == "convention")') == 1
+    assert text.count('if (family == "ibor_index")') == 1
+    assert text.count('if (family == "ois")') == 1
+    assert text.count("rfl::json::read<") == 3
+    assert text.count("return false;") == 1
+    assert (
+        "        add_missing_world_rows(ctx,\n"
+        "                               ibor_index_convention_repository(),\n"
+        "                               std::move(rows),\n"
+        "                               result.world_kept);" in text
+    )
 
 
 def test_the_header_states_every_field_the_entry_carries(tmp_path):

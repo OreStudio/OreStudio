@@ -1,0 +1,54 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Bundle layout: the artefacts and the objects each participant reads
+
+package "object storage" as storage {
+  folder "bundles/{bundle_id}/" {
+    artifact "manifest.msgpack\n(generated operation type)" as manifest
+    artifact "bundle.zip.zst\n(zstd entries, central directory)" as archive
+    folder "archive entries" {
+      artifact "refdata/currency\n(part: msgpack rows)" as rpart
+      artifact "refdata/calendar\n(part: msgpack rows)" as cpart
+      artifact "trading/trade\n(part: msgpack rows)" as tpart
+    }
+  }
+}
+
+component "producer" as producer
+component "coordinator" as coordinator
+component "refdata owner" as refdata
+component "trading owner" as trading
+component "ORE XML converter" as converter
+
+producer --> manifest : writes
+producer --> archive : writes, by byte copy
+coordinator --> manifest : reads only
+refdata --> rpart : reads its entry
+refdata --> cpart : reads its entry
+trading --> tpart : reads its entry
+converter --> manifest : reads
+converter --> archive : reads every entry
+note bottom of storage
+  The archive embeds the same manifest bytes.
+  A component reads the entries it is allowed
+  to read, and no other.
+end note
+
+@enduml

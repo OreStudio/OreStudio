@@ -623,10 +623,10 @@ No migration is written. The project recreates the database.
   instrument models and the underlying child model are removed or rewritten
   as facts; =equity_basket_constituents= is new; the shared children are
   reused unchanged.
-- *Catalogue.* The 17 routed equity codes keep their routing to
-  =equity_instrument= (the header); the two composite codes keep
-  =composite_instrument=; the position sub-trade routing is repaired
-  (E6); the 13 unrouted codes stay unrouted.
+- *Catalogue.* The 17 routed equity codes move off their product tables and
+  onto the family header, in unit 5 when the header exists; the two composite
+  codes keep =composite_instrument=; the position sub-trade routing is
+  repaired (E6) in unit 2; the 13 unrouted codes stay unrouted.
 - *Mapper.* The 17 forward mappings write the header, the fact row and the
   children. The reverse mappings write every required element. The
   =if constexpr= chains give way to the generated dispatch.
@@ -656,10 +656,10 @@ none depends on a later one.
 | Unit | Task | Check |
 |------+------+-------|
 | 1 | Analyse the equity family and propose its relational data model | this page |
-| 2 | Repair the equity routing: the catalogue's 17 equity codes to the header, the position sub-trade off the composite anchor, the 13 unrouted codes left empty | the generated routing matches the catalogue; a position-only TRS routes to one table |
+| 2 | Repair the equity routing where it disagrees with the stored type today: the position sub-trade off the composite anchor, pinned to the trade that owns it, and the 13 unrouted codes left empty | a position nested in a total return swap reaches its trade's key and writes no equity central row |
 | 3 | Carry the equity digits: lexical leaves for the money members of the equity binding structs, =set_exact= in the reverse mapper, and =variance_strike= to =numeric(38,12)= | a mapper test per money member; the changed goldens are numeric text |
 | 4 | Write the equity legs and children: the swap's legs and amounts and rates, the option block, the strikes and the schedules, and the new =equity_basket_constituents= | the corpus documents' legs, strikes and schedules come back as rows |
-| 5 | Author the equity family header and its fact tables, with the header's common dates | codegen drift clean; the generated eventing tests pass; a trade comes back through the header |
+| 5 | Author the equity family header and its fact tables, with the header's common dates, and re-point the 17 routed codes at the header | codegen drift clean; the generated eventing tests pass; a trade comes back through the header; the catalogue routes every equity code to the header and none to a product table |
 | 6 | Close the option round trip: the six option products and the ORE elements the schema requires | the mapper round trip per option product |
 | 7 | Close the swap and accumulator round trip: the equity swap, the worst-of basket, the accumulator and the TaRF | the mapper round trip per product; the export is valid ORE |
 | 8 | Close the forward, variance and position round trip: the forward, the variance swap, both position codes and the nested TRS sub-trade | the mapper round trip per product |
@@ -668,10 +668,32 @@ none depends on a later one.
 | 11 | Retire the equity variant: =equity_instrument_variant=, =equity_instrument_data=, the equity arm of the shared =trade_instrument= carrier, and the =exporter.cpp= and =trade_mapper.cpp= =if constexpr= branches that select an equity alternative | the family's wire path declares no =std::variant=, and the read carries one typed array per fact table and child (E5) |
 
 Unit 2 lands before the tables because a routing that disagrees with the
-stored type (E6) makes every later round-trip test ambiguous. The children
-land before the header for the same reason the credit rework gives: the
-legs and schedules are keyed by the trade alone, and the header unit
-removes the columns that carry their data.
+stored type (E6) makes every later round-trip test ambiguous. It repairs
+only what disagrees today. The re-pointing of the 17 routed codes is *not*
+part of it, and cannot be: the catalogue's =instrument= column names the
+table that holds a code, and under the atomised shape the central row is
+what holds an instrument — a part reaches its central row by the key and is
+never a routing target ([[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][the
+atomised entity]], "The parts"). So every equity code routes to the header
+once the header exists, exactly as every bond code routes to
+=bond_instrument= and every credit code to =credit_instrument=, and the
+re-pointing lands in unit 5 with the table it names. Pointing 17 codes at a
+table that does not exist yet would break the generated routing.
+
+The children land before the header for the same reason the credit rework
+gives: the legs and schedules are keyed by the trade alone, and the header
+unit removes the columns that carry their data.
+
+One question the staging leaves to the units rather than settling here: a
+fact table is earned the way
+[[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][the atomised entity]] says a
+part is — by its own multiplicity, its own change reason, or its own
+reader — and not by the product taxonomy alone. The proposal above gives one
+fact table per ORE product or per shared binding struct, and the products
+whose fields are one row per trade, moved for the same reason and read with
+the header are column groups in a table's clothes. Each unit that authors a
+fact table states which of the three earns it, or the fields stay on the
+central row.
 
 Unit 11 carries the Regime 3 finding and lands last, once the typed arrays
 unit 5 and units 6 to 8 create exist to carry the read instead of the

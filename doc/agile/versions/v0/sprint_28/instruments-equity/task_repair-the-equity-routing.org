@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 379E8B40-DA9A-4BF1-AAC0-1F3B8E708025
+:END:
+#+title: Task: Repair the equity routing
+#+description: A position nested in a total return swap is written as a central equity row while the catalogue routes the trade to composite_instrument, so the stored trade_type_code and the routing disagree. Pin the nested position to its trade and leave the 13 unrouted codes empty. The 17-code re-pointing belongs to unit 5, with the header.
+#+type: task
+#+level: s1
+#+filetags: :instruments-equity:sprint_28:v0:
+#+owner: marco
+#+branch: feature/repair-the-equity-routing
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A position nested in a total return swap reaches its own trade's key instead of being written as a central equity row, so the routing and the stored type no longer disagree. The 13 unrouted codes stay unrouted.
+
+The 17 routed codes are *not* re-pointed here. The catalogue's =instrument= column names the table that holds a code, and under the atomised shape the central row is what holds an instrument; a part reaches its central row by the key and is never a routing target. The re-pointing therefore lands in unit 5 with the header it names.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
+| Now          | Scope corrected against the atomised-entity rule; implementation not started. |
+| Waiting on   | Nothing.                               |
+| Next         | Fix the E6 routing disagreement.       |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- A position nested in a total return swap is keyed by the trade that owns it and writes no equity central row.
+- The catalogue routes no equity code to a table that does not hold it.
+- The 13 codes with no importer keep an empty =instrument=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -2,7 +2,7 @@
 :ID: 4e0f3f61-7c25-44b5-9c3f-2f4b7b2e9a10
 :END:
 #+title: Create a report prototype
-#+description: Creating a report as four steps on the standard steps UI, on a throwaway page that states the missing scope write, the absent service check behind the pfe rule, and the four configuration types with no screen.
+#+description: Creating a report as eight steps on the standard steps UI, with one step for each configuration type and what binding it means, on a throwaway page that states the missing scope write, the absent service check behind the pfe rule, and the four configuration types with no screen.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
@@ -17,8 +17,10 @@
 
 * Summary
 
-This prototype draws the act of creating a report as four steps on the standard
-steps UI, the one the system bootstrap journey uses. It answers to
+This prototype draws the act of creating a report as eight steps on the standard
+steps UI, the one the system bootstrap journey uses. Steps 2 to 6 bind one
+configuration type each, because binding a configuration of each of the five
+types decides something different. It answers to
 [[file:../../knowledge/journeys/reporting/journey_create_a_report.org][Create a report]].
 
 The shape is decided, so the page carries one reading and no structural
@@ -37,7 +39,9 @@ Creating a report is not one write. It is a definition, five configuration
 bindings, a set of analytic rows, their settings, and a scope, and none of them
 sits in the same table. The person has to hold all of it while answering one
 question: *can this report actually run?* The journey is the way of asking it
-one step at a time.
+one step at a time. One step for all five configurations answered "what does
+this slot supply" and left "what does binding it decide" to the reader, so the
+page now gives each configuration its own step and its own argument.
 
 ** The standard steps UI, and where it is copied from
 
@@ -64,17 +68,26 @@ its rail entry carries a *final* tag so the rail says so too.
 The standard rail knows position only: done, current or ahead. It cannot say how
 many items a save would refuse, because the runtime never asks it to.
 
-** The four steps
+** The eight steps
 
-Switch with the bottom bar, or with =?step=1..4=, so a reviewer can land on the
+Switch with the bottom bar, or with =?step=1..8=, so a reviewer can land on the
 step they want to argue about.
 
 | Step | Title | What it draws |
 |------+-------+---------------|
 | 1 | What it is | The name, the description, the report type as a combo box over the type table, =is_official=, and the concurrency policy. |
-| 2 | What it reads | The five configuration types the definition binds, what each supplies, the candidate in each slot, the number of definitions that share it, and the screen that holds its data. Only conventions has one, at =PATHS.conventions=, =/refdata/conventions=; the other four say no screen exists. The portfolio scope is read off the bound configuration. |
-| 3 | What it runs | The fourteen analytic types, one row each, with the active toggle, the display order and the settings summarised. Adding or editing an analytic opens the add-analytic flow. |
-| 4 | Review and save | Every field value, the five bindings, the analytics with their settings, the scope, then =report_definitions.put= and the row read back with =report_definitions.get=. |
+| 2 | The conventions it binds | What binding a conventions configuration means, where the convention entities live, the picker, the route to =PATHS.conventions=, and what the binding reaches. |
+| 3 | The pricing engines it binds | The same four parts for =pricing_engines=, with no screen stated plainly. |
+| 4 | The market data it binds | The same four parts for =todays_market=, with no screen stated plainly. |
+| 5 | The curve configuration it binds | The same four parts for =curve_configuration=, with no screen stated plainly. |
+| 6 | The run settings it binds | The same four parts for =risk_report_config=, plus the portfolio and book scope the configuration carries. |
+| 7 | What it runs | The fourteen analytic types, one row each, with the active toggle, the display order and the settings summarised. Adding or editing an analytic opens the add-analytic flow. |
+| 8 | Review and save | Every field value, the five bindings, the analytics with their settings, the scope, then =report_definitions.put= and the row read back with =report_definitions.get=. |
+
+The five configuration steps follow the order =report_type_configuration_types=
+states and the seeder writes: =conventions=, =pricing_engines=,
+=todays_market=, =curve_configuration= and =risk_report_config=. Each carries the
+same four parts, so two of them can be read side by side.
 
 ** Why the variants are gone
 
@@ -112,14 +125,43 @@ the admission that no service validates it: the rule lives in the ACME seeder,
 in =generate_risk_config_data.py= at =check_exposure_needs_simulation=. The
 refusal is the screen's own, and a build would have to carry it again.
 
-** The five configurations, and why each row says what it supplies
+** One step for each of the five configurations
 
 A definition binds configurations of exactly five types: =conventions=,
 =pricing_engines=, =todays_market=, =curve_configuration= and
-=risk_report_config=. Each row states the thing its slot supplies, because a
-person choosing between two configurations needs to know what the choice
-decides, and each row names the screen that holds the data. Only one such screen
-exists today, so four rows say so rather than drawing a link that would not
+=risk_report_config=. Each of them now owns a step, and every one of those steps
+carries the same four parts, so a reader comparing two of them compares like
+with like:
+
+1. *What binding it means.* The argument, in plain words and grounded in the
+   type's own model, because the five do not decide the same thing. Binding
+   =conventions= decides what a trade means: the day count, the calendars, the
+   payment frequency and the index every trade is read with. Binding
+   =pricing_engines= decides how a trade is priced: the model and the engine of
+   each product. Binding =todays_market= decides what it is priced from, and
+   which configuration block each market role reads. Binding
+   =curve_configuration= decides which recipes the run has, because without the
+   recipe the curve is not built whatever the market quotes. Binding
+   =risk_report_config= decides how the run behaves, and it carries the analytics
+   and the scope.
+2. *Where the data lives.* The model files, named, so the argument can be
+   checked: =projects/ores.refdata/modeling/= for the convention entities and the
+   curve configuration, =projects/ores.analytics/modeling/= for the pricing
+   models and today's market, =projects/ores.reporting/modeling/= for the run
+   settings. Each step names its own tables and says which one holds which part.
+3. *The picker.* One combo box over the configurations of that type the party
+   holds, from =configurations.list_by_configuration_type_code=, with the count of
+   definitions already bound to the one chosen.
+4. *What it reaches, and what it does not.* Two lists. The reach is what changes
+   in the next run of every definition binding the configuration; the limit is
+   what the binding leaves alone, such as the market data a pricing engine
+   configuration does not name, or the quotes a curve configuration does not
+   hold.
+
+Each step also states the screen that holds the type's data. *Only conventions
+has one*, at =PATHS.conventions=, =/refdata/conventions=. =pricing_engines=,
+=todays_market=, =curve_configuration= and =risk_report_config= have no screen in
+the application, and their steps say so rather than drawing a link that would not
 resolve.
 
 ** The analytics belong to the configuration, not the definition
@@ -133,21 +175,25 @@ row.
 
 The rows hang off the configuration, and the configuration is shared, so the
 person choosing analytics is editing rows other definitions also run. The page
-says so: each slot counts the definitions that bind the configuration, and the
-flow's effect screen names what the next run reaches.
+says so: each configuration step counts the definitions that bind the
+configuration it picks, and the flow's effect screen names what the next run
+reaches. *What it runs* is step 7, after the run settings step that carries the
+analytic rows, so the person changes a set they have just chosen.
 
 ** The scope is read off the configuration
 
 The scope is not a field of the definition. It is a column of the
 =risk_report_config= in the slot, held in that row's portfolio and book junction
-tables, and no operation in the journey's set writes it. Step 2 therefore reads
-the scope off the bound configuration and states which configuration carries it,
-rather than offering a portfolio to choose. The configurations and their scopes
-on this page are the seeder's.
+tables, and no operation in the journey's set writes it. *The run settings it
+binds* — step 6 — therefore reads the scope off the bound configuration and states
+which configuration carries it, rather than offering a portfolio to choose. The
+step says why the definition chooses no portfolio: the scope lives on the
+configuration, and two definitions that bind one configuration read one scope.
+The configurations and their scopes on this page are the seeder's.
 
 ** The review names the field values
 
-Step 4 states values rather than counting them: the definition's fifteen fields
+Step 8 states values rather than counting them: the definition's fifteen fields
 including the ones that stay empty (=fsm_state_id=, =schedule_expression=,
 =scheduler_job_id=, =run_grant_id=, =prepared_input_key=), one binding row per
 configuration type, the analytic rows with their =active= and =display_order=,

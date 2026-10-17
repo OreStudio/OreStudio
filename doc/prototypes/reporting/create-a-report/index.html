@@ -17,31 +17,43 @@
   configurations it reads, chooses the analytics it runs and their settings,
   and reads back what was written.
 
-  The shape is decided. The screen is four steps on the standard steps UI, the
+  The shape is decided. The screen is eight steps on the standard steps UI, the
   one the system bootstrap journey uses: the rail, its done/current/ahead marks
   and the step foot are copied from doc/prototypes/setup/first-run/, which
   copies JourneyPage.tsx.
 
-    1  What it is        the name, the description, the report type as a combo
-                         box over the type table, is_official, and the
-                         concurrency policy
-    2  What it reads     the five configuration types the definition binds, what
-                         each supplies, and the screen that holds its data. Only
-                         conventions has one: PATHS.conventions,
-                         /refdata/conventions. The other four are stated as
-                         missing, never drawn as working links.
-    3  What it runs      the fourteen analytic types with active toggles, and
-                         the add-analytic flow the change journey carries: the
-                         list of types, then the detail with what the analytic is
-                         and how it is calculated and one control per parameter,
-                         then the effect.
-    4  Review and save   every field value, the five bindings, the analytics with
-                         their settings, then report_definitions.put and the
-                         read-back. It is the final step, so it draws no Back.
+    1  What it is                    the name, the description, the report type
+                                     as a combo box over the type table,
+                                     is_official, and the concurrency policy
+    2  The conventions it binds      one step per configuration type, because
+    3  The pricing engines it binds    binding a configuration of each type
+    4  The market data it binds        decides something different. The order is
+    5  The curve configuration it binds  the order report_type_configuration_types
+    6  The run settings it binds       states and the seeder writes:
+                                       conventions, pricing_engines,
+                                       todays_market, curve_configuration,
+                                       risk_report_config.
+    7  What it runs                  the fourteen analytic types with active
+                                     toggles, and the add-analytic flow the change
+                                     journey carries: the list of types, then the
+                                     detail with what the analytic is and how it
+                                     is calculated and one control per parameter,
+                                     then the effect.
+    8  Review and save               every field value, the five bindings, the
+                                     analytics with their settings, then
+                                     report_definitions.put and the read-back. It
+                                     is the final step, so it draws no Back.
+
+  Each of the five configuration steps carries the same four parts: what binding
+  a configuration of that type means, where its data lives, the picker for the
+  configuration this report binds, and what the binding reaches and does not.
+  Only conventions has a screen to link to, PATHS.conventions,
+  /refdata/conventions. The other four are stated as missing, never drawn as
+  working links.
 
   The three structural variants this page used to carry (?variant=A|B|C: one
   form, a wizard, a checklist) are gone. The product owner chose the standard
-  steps UI, and the design note records why the variants were dropped. ?step=1..4
+  steps UI, and the design note records why the variants were dropped. ?step=1..8
   still lands on a step, and ?pfe=without-simulation still opens the draft with
   the rule broken.
 

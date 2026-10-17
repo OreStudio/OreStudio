@@ -353,7 +353,6 @@ tr.off td { color: var(--ink-faint); }
 .slot:first-child { border-top: 1px solid var(--line-soft); }
 .slot .type code { font-family: var(--mono); font-size: 12px; color: var(--accent-bright); }
 .slot .type .req { display: block; color: var(--ink-faint); font-size: 11px; }
-.slot .supplies { color: var(--ink-dim); font-size: 13px; max-width: 62ch; }
 .slot .pick { display: grid; gap: 4px; }
 .slot .pick .shared { color: var(--ink-faint); font-size: 11px; }
 .slot .pick .shared b { color: var(--ink-dim); font-weight: 400; }

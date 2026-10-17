@@ -1080,7 +1080,8 @@ trade fx_instrument_mapper::reverse_fx_accumulator(
     if (range_bounds.empty())
         throw std::runtime_error(
             "FxAccumulator " + boost::uuids::to_string(instr.identity.trade_id) +
-            " holds no range bound, and the ORE schema requires at least one.");
+            " holds no range bound, and the document this binding writes needs at least one"
+            " entry in RangeBounds.");
     for (const auto& row : range_bounds) {
         rangeBound rb;
         if (row.start_date)

@@ -86,12 +86,17 @@ TEST_CASE("range_bound_reads_back_in_the_document_order", tags) {
     CHECK(read[1].range_from->to_string() == "122");
     CHECK_FALSE(read[1].strike.has_value());
 
-    // The export path reads every trade's rows in one statement, ordered the
-    // same way, which is what the batch join relies on.
+    // The digest reads every trade's rows in one statement, ordered the same
+    // way, and so does the export join.
     const auto batch = ores::trading::repository::read_range_bounds_by_trade_ids(
         ctx, {boost::uuids::to_string(trade_id)});
     REQUIRE(batch.size() == 2);
     CHECK(batch[0].sequence_number == 1);
     CHECK(batch[1].sequence_number == 2);
+
+    const auto exported = repo.read_by_instruments_batch(ctx, {boost::uuids::to_string(trade_id)});
+    REQUIRE(exported.size() == 2);
+    CHECK(exported[0].sequence_number == 1);
+    CHECK(exported[1].sequence_number == 2);
     BOOST_LOG_SEV(lg, debug) << "Read range bounds: " << read.size();
 }

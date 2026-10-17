@@ -269,7 +269,8 @@ TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     CHECK_FALSE(r.range_bounds[0].strike_adjustment.has_value());
     CHECK_FALSE(r.range_bounds[0].start_date.has_value());
 
-    // The schema requires at least one entry, so an accumulator without one is
+    // The binding writes the RangeBounds element whatever the list holds, and
+    // the schema refuses an empty one, so an accumulator without a bound is
     // refused rather than written as a document that cannot be read back.
     CHECK_THROWS_WITH(fx_instrument_mapper::reverse_fx_accumulator(instr, {}),
                       Catch::Matchers::ContainsSubstring("holds no range bound"));

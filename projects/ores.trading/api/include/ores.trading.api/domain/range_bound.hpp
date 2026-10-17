@@ -45,12 +45,14 @@ namespace ores::trading::domain {
  * levels an accumulator accrues against, so the entry is the unit the
  * document writes and the unit the table stores.
  *
- * The ORE schema states the list as unbounded RangeBound entries and
- * requires at least one; each entry carries an optional start date as an
- * attribute and the optional levels RangeFrom, RangeTo, Leverage,
- * Strike and StrikeAdjustment. The order is the document's order, and
- * the ordinal preserves it, so export re-emits the entries as the document
- * held them.
+ * The ORE schema states the list as unbounded RangeBound entries. The
+ * RangeBounds wrapper is optional, but the schema requires at least one entry
+ * when a document states it, and this binding writes the wrapper
+ * unconditionally, so a trade that holds no bound cannot be written back. Each
+ * entry carries an optional start date as an attribute and the optional levels
+ * RangeFrom, RangeTo, Leverage, Strike and StrikeAdjustment. The order
+ * is the document's order, and the ordinal preserves it, so export re-emits the
+ * entries as the document held them.
  *
  * A level is money unless it is a ratio. RangeFrom, RangeTo, Strike
  * and StrikeAdjustment are price levels, so each column is exact decimal, at

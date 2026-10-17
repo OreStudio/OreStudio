@@ -126,8 +126,8 @@ public:
      * @brief Writes the fact row and its RangeBounds list back to the document.
      *
      * @throws std::runtime_error when the trade holds no range bound, because
-     * the ORE schema requires at least one and a document without it cannot be
-     * read back.
+     * the binding writes the RangeBounds element unconditionally and the
+     * schema requires an entry inside it.
      */
     static trade
     reverse_fx_accumulator(const ores::trading::domain::fx_accumulator_instrument& instr,

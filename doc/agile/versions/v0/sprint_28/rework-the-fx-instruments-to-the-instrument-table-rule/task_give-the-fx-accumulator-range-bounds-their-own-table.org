@@ -41,7 +41,7 @@ rows, and the Regime 3 check forbids an encoded string field.
 - A child model holds a range bound: an optional start date and the optional levels =RangeFrom=, =RangeTo=, =Leverage=, =Strike= and =StrikeAdjustment=. Each level is exact decimal where it is money.
 - The child table is keyed by the trade and ordered, so the list order survives the round trip.
 - A mapper test holds the digits of a range-bound strike through the round trip.
-- The ORE schema requires at least one =RangeBound=, so an accumulator with no bounds is refused at the boundary with a stated error, not silently exported.
+- An accumulator with no bounds is refused at the boundary with a stated error, not silently exported: the =RangeBounds= wrapper is optional in the schema, but the binding writes it unconditionally and the schema requires an entry inside it, so a trade with no bound has no valid document.
 - =range_bounds_json= is gone from the model, the SQL, the domain type, the entity, the protocol and the mapper.
 
 * Plan
@@ -119,12 +119,31 @@ via its "Verifies task" field.
 | 2 | The digest never reads the child, so the five =:economic:= columns are inert and an accumulator loses the coverage =range_bounds_json= gave it | =ores.trading.trade_type_catalogue.org=, =parent_scoped_queries.hpp/.cpp= | Fixed | =range_bound= joins the digest's shared components with =read_range_bounds_by_trade_ids=, and the shape regenerates. |
 | 3 | Nothing can create a range bound, because the shell command lost its only argument, so an accumulator written through the API is permanently unexportable and the refusal surfaces at package time | =ores.trading.range_bound.org= | Fixed | The entity carries the shell command the family's other children carry, so the rows are written and edited like the rest of the family's children. |
 | 4 | The unit's own acceptance is untested: no refusal test, no absent-level test, no test that the ordinal survives the write, no assertion on the exported child block | =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =xml_exporter_tests.cpp=, =repository_range_bound_repository_tests.cpp= | Fixed | The refusal, the absent levels, the exported =RangeBounds= block and a repository test that writes the entries out of order and reads them back in the document's order are all asserted. |
-| 5 | The leverage still loses its digits at the binding, and a fractional leverage exports as its nearest float | =domain.hpp= | Rejected | The leaf is a double leaf in a generated binding; keeping its text needs a lexical double leaf, which is the binding generator's scope, not this unit's. Filed as [[id:23A830C9-770C-4D5C-8F67-4BB169397228][a capture]]. |
+| 5 | The leverage still loses its digits at the binding, and a fractional leverage exports as its nearest float | =domain.hpp= | Rejected | Keeping its text needs a lexical double leaf, which is a change to the reapply script and the binding's double writer for every family, not to this entity. Filed as [[id:23A830C9-770C-4D5C-8F67-4BB169397228][a capture]] with the mechanism and the lever. |
 | 6 | =stamp_ids= and the batch append each walk two lists with the same lambda | =instrument.hpp=, =instrument_batch_mapper.cpp= | Fixed | One walk over the concatenated list, so a second child is still one entry per list. |
 | 7 | The import loop writes an entry the document states empty, where the sibling children skip an empty row | =ore_import_execute_handler.cpp= | Rejected | The schema allows an empty =RangeBound= and the round trip has to keep it. Skipping it would drop an entry the document stated, which the story's lossless round trip forbids. |
-| 8 | The twelve-decimal bound of =numeric(38, 12)= is unstated, so the digit-preservation claim is unbounded | =ores.trading.range_bound.org= | Fixed | The model states the bound and why the component uses it. |
+| 8 | The twelve-decimal bound of =numeric(38, 12)= is unstated, so the digit-preservation claim is unbounded | =ores.trading.range_bound.org=, =trading_range_bounds_create.sql= | Fixed | The model states the bound and why the component uses it, and the SQL regenerates with it. |
 | 9 | The refusal message names the internal trade uuid rather than the ORE trade id | =fx_instrument_mapper.cpp= | Rejected | The mapper has the domain row only; the ORE id lives on the export item. The package workflow reports the message against the run, which names the trade the user sees. |
 | 10 | Ninety-six parser benchmark rows churn the diff | =benchmarks/xml/history.tsv= | Rejected | The =xml-benchmark-recorded= gate demands a measurement after a binding change, and the rows are that measurement. The Measurements table names it. |
+
+A second review checked the fixes on the new head. It confirmed every fixed
+finding with a call site or a test, and raised four more:
+
+- *The refusal escaped the manual export path.* =ore_commands=::process_export
+  called the exporter bare, so one boundless accumulator ended the shell
+  session instead of reporting the failure. Fixed: the command catches the
+  refusal and reports it, as the package workflow already did.
+- *The twelve-decimal text had not reached the SQL.* Fixed: the SQL regenerated
+  and is committed.
+- *The refusal stated the schema more strongly than it says.* The =RangeBounds=
+  wrapper is optional; what makes the refusal necessary is that this binding
+  writes the wrapper unconditionally and the schema requires an entry inside
+  it. Fixed in the model, the header, the test and the acceptance line.
+- *No test asserts the digest reads the child, and the repository test called
+  the digest reader the export reader.* The second is fixed: the test now
+  asserts both readers. The first stays open: the digest is asserted through
+  the generated shape, and a per-entity digest test belongs to the digest's own
+  unit.
 
 * Result
 

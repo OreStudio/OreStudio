@@ -86,6 +86,7 @@ task and name that file in the Command column.
 | Goldens the digit change rewrote | 2 | =Exotic_FxTaRF.xml= and =Exotic_EquityTaRF.xml= in =assets/test_data/golden_dataset= | the PR head |
 | ORE core suite | 721 cases, all pass | =compass test run --preset linux-clang-release-ninja -- -R ores.ore.core.tests= | the PR head |
 | Trading core suite | pass | the same command with =ores.trading.core.tests= | the PR head |
+| XML benchmark rows recorded | 96 | =./benchmarks/xml/run.sh= | the PR head |
 
 * Notes
 
@@ -114,7 +115,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The range-bound handlers, history provider and change-event mapping are registered nowhere, so the importer's NATS write has no subscriber and every accumulator import fails after the instrument row is written | =registrar_fx.cpp=, =registrar.cpp=, =application.cpp= | Fixed | The child registers with the family that writes it, beside the seven product registrars; the history provider sits with the other shared children and the change event with the FX mappings. |
+| 2 | The digest never reads the child, so the five =:economic:= columns are inert and an accumulator loses the coverage =range_bounds_json= gave it | =ores.trading.trade_type_catalogue.org=, =parent_scoped_queries.hpp/.cpp= | Fixed | =range_bound= joins the digest's shared components with =read_range_bounds_by_trade_ids=, and the shape regenerates. |
+| 3 | Nothing can create a range bound, because the shell command lost its only argument, so an accumulator written through the API is permanently unexportable and the refusal surfaces at package time | =ores.trading.range_bound.org= | Fixed | The entity carries the shell command the family's other children carry, so the rows are written and edited like the rest of the family's children. |
+| 4 | The unit's own acceptance is untested: no refusal test, no absent-level test, no test that the ordinal survives the write, no assertion on the exported child block | =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =xml_exporter_tests.cpp=, =repository_range_bound_repository_tests.cpp= | Fixed | The refusal, the absent levels, the exported =RangeBounds= block and a repository test that writes the entries out of order and reads them back in the document's order are all asserted. |
+| 5 | The leverage still loses its digits at the binding, and a fractional leverage exports as its nearest float | =domain.hpp= | Rejected | The leaf is a double leaf in a generated binding; keeping its text needs a lexical double leaf, which is the binding generator's scope, not this unit's. Filed as [[id:23A830C9-770C-4D5C-8F67-4BB169397228][a capture]]. |
+| 6 | =stamp_ids= and the batch append each walk two lists with the same lambda | =instrument.hpp=, =instrument_batch_mapper.cpp= | Fixed | One walk over the concatenated list, so a second child is still one entry per list. |
+| 7 | The import loop writes an entry the document states empty, where the sibling children skip an empty row | =ore_import_execute_handler.cpp= | Rejected | The schema allows an empty =RangeBound= and the round trip has to keep it. Skipping it would drop an entry the document stated, which the story's lossless round trip forbids. |
+| 8 | The twelve-decimal bound of =numeric(38, 12)= is unstated, so the digit-preservation claim is unbounded | =ores.trading.range_bound.org= | Fixed | The model states the bound and why the component uses it. |
+| 9 | The refusal message names the internal trade uuid rather than the ORE trade id | =fx_instrument_mapper.cpp= | Rejected | The mapper has the domain row only; the ORE id lives on the export item. The package workflow reports the message against the run, which names the trade the user sees. |
+| 10 | Ninety-six parser benchmark rows churn the diff | =benchmarks/xml/history.tsv= | Rejected | The =xml-benchmark-recorded= gate demands a measurement after a binding change, and the rows are that measurement. The Measurements table names it. |
 
 * Result
 

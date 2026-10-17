@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 01509715-290A-4977-8036-5C27AF5FB2F0
+:END:
+#+title: Give report_trigger_event the audit stamps its sibling generators set
+#+description: report_trigger_event_generator.cpp sets only tenant_id, id, report_definition_id, trigger_type, triggered_by and party_id. Each of the other twenty reporting generators sets change_reason_code = system.test, and most also set modified_by, performed_by and recorded_at. Its table has no audit columns at all, so the asymmetry is either deliberate and undocumented or an omission. It invited a wrong fix: an uncommitted edit added report_trigger_event_parent.change_reason_code to report_error_eventing_integration_tests.cpp, which cannot compile because the domain struct has no such member. Decide whether the entity carries audit stamps, then fix the generator or record why it does not.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:codegen:snag:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

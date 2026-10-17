@@ -8,6 +8,7 @@
 #+brief: Report lifecycle and ORE run core
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :reporting:core:component:
 #+created: 2026-05-19

@@ -88,6 +88,7 @@ expresses the conversation, which is the workflow component's P04.
 
 #+begin_src cmake :name extra_dependencies
 find_package(cli CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.shell.api.lib

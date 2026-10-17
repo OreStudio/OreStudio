@@ -58,6 +58,7 @@ target_link_libraries(${lib_target_name}
 # baseline honest for every other component.
 
 find_package(Immer CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.iam.api.lib

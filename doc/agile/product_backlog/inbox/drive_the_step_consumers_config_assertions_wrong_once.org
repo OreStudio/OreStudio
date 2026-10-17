@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: D68B4DF9-71E0-4606-BA41-287E3B7544E4
+:END:
+#+title: Drive the step-consumers config assertions wrong once, with the fleet down
+#+description: The step-consumers gate asserts ack explicit, ack_wait 30s, max_deliver 10 and retention interest, which is what the step_claim_lease invariant is written against. Only the count-and-name assertion has been driven wrong: a stray consumer made it exit 1, and removing the stray returned it to 0. The four config fields have only ever been observed holding their correct values. Change each in turn on a legitimate consumer with the fleet down, record the verbatim failure for each, and restore. A stray consumer is the wrong instrument because it fails on count before the config is examined.
+#+type: capture
+#+level: cross
+#+filetags: :nats:checks:follow-up:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -37,6 +37,7 @@ import type { CommodityForwardConvention } from '../domain/commodity_forward_con
 import type { CommodityFutureConvention } from '../domain/commodity_future_convention.js';
 import type { CommodityPriceSegment } from '../domain/commodity_price_segment.js';
 import type { CommodityVolatilityConfig } from '../domain/commodity_volatility_config.js';
+import type { Convention } from '../domain/convention.js';
 import type { CrossCurrencyBasisConvention } from '../domain/cross_currency_basis_convention.js';
 import type { CrossCurrencyFixFloatConvention } from '../domain/cross_currency_fix_float_convention.js';
 import type { CurrencyPair } from '../domain/currency_pair.js';
@@ -76,7 +77,8 @@ import type { OvernightIndexConvention } from '../domain/overnight_index_convent
 import type { SwapConvention } from '../domain/swap_convention.js';
 import type { SwapIndexConvention } from '../domain/swap_index_convention.js';
 import type { SwaptionVolatilityConfig } from '../domain/swaption_volatility_config.js';
-import type { TenorBasisSwapConvention } from '../domain/tenor_basis_swap_convention.js';
+import type { TenorBasisSwapLongShort } from '../domain/tenor_basis_swap_long_short.js';
+import type { TenorBasisSwapPayReceive } from '../domain/tenor_basis_swap_pay_receive.js';
 import type { TenorBasisTwoSwapConvention } from '../domain/tenor_basis_two_swap_convention.js';
 import type { YieldCurveConfig } from '../domain/yield_curve_config.js';
 import type { YieldVolatilityConfig } from '../domain/yield_volatility_config.js';
@@ -106,7 +108,9 @@ export interface ConventionsDocument {
     bma_basis_swap: BmaBasisSwapConvention[];
     cross_currency_basis: CrossCurrencyBasisConvention[];
     cross_currency_fix_float: CrossCurrencyFixFloatConvention[];
-    tenor_basis_swap: TenorBasisSwapConvention[];
+    convention: Convention[];
+    tenor_basis_swap_pay_receive: TenorBasisSwapPayReceive[];
+    tenor_basis_swap_long_short: TenorBasisSwapLongShort[];
     tenor_basis_two_swap: TenorBasisTwoSwapConvention[];
     deposit: DepositConvention[];
     swap: SwapConvention[];

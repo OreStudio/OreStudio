@@ -61,4 +61,6 @@ target_link_libraries(${lib_target_name}
         libfort::fort
         faker-cxx::faker-cxx)
 
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

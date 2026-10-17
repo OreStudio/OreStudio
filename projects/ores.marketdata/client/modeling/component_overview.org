@@ -4,6 +4,7 @@
 #+title: ores.marketdata.client
 #+description: Client-side NATS wrapper for the marketdata service: request/response helpers and market data subscriptions.
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :marketdata:client:component:
 #+created: 2026-07-29
@@ -78,6 +79,8 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.utility.lib
         libfort::fort)
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

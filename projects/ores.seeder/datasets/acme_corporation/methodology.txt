@@ -24,11 +24,15 @@ GENERATION
    Filler data (names, emails) is generated: Faker for locales it
    supports (en_GB for UK, en_US for US), a small curated name pool for
    Hong Kong (Faker has no English-script HK locale).
-   All generated accounts share one fixed password ("Secure-Password-123",
-   matching the barclays_system_provision.ores convention) -- the real
-   scrypt hash, computed once via ores::security::crypto::password_hasher,
-   is a literal constant in the script (FIXED_PASSWORD_HASH), not
-   re-derived per account.
+   The accounts carry no password material at all. The publishing path
+   creates each account without a credential, and the ACME provisioning
+   step that follows load_staff gives every staff account the shared
+   development password ("Secure-Password-123") through the server's own
+   password API, which validates and hashes it and gives each account its
+   own salt. That password is demonstration data, never a production
+   credential, and it is stated in one place: the set_staff_passwords row
+   of the acme_demo seed profile in
+   projects/ores.sql/populate/iam/iam_seed_profiles_populate.sql.
 
 2. OUTPUT
    Flat-array JSON files, one per DQ artefact family, field names chosen

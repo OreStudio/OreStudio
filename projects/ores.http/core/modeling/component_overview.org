@@ -8,6 +8,7 @@
 #+brief: REST API HTTP route implementations
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :http:core:component:
 #+created: 2026-05-19

@@ -1,0 +1,198 @@
+:PROPERTIES:
+:ID: 442CB9B0-653A-4C76-8427-0D6C839B4419
+:END:
+#+title: XML benchmark
+#+description: How to measure the XML layer's time and cache behaviour, and where the recorded history lives.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:performance:xml:benchmark:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+* What this measures
+
+Two axes, because they answer different questions.
+
+- *Time* is what a caller waits for. It moves on a shared machine and it is
+  recorded anyway, because a change that doubles it is worth seeing.
+- *Cache and instruction counts* are why the time moved. They come from
+  =cachegrind=, which simulates the memory hierarchy without needing
+  privileges.
+
+Three modes, so the cost of the document model can be separated from the cost
+of scanning.
+
+| Mode | What it does |
+|------+--------------|
+| =scan= | reads the events and keeps nothing |
+| =tape= | builds the transient document model |
+| =pugi= | loads a pugixml DOM, the baseline the model is judged against |
+
+* It is a CMake target, built like everything else
+
+=ores.ore.xml.benchmarks= is an executable defined in this directory's
+=CMakeLists.txt= and added from =projects/CMakeLists.txt=. It links
+=ores.ore.core.lib= and =pugixml::pugixml=, and it inherits that directory's
+compile options, so it is built with the same warnings, the same =-Werror= and
+the same build type as the code it measures. Its compile command is identical
+to the one for =ores.ore.core.tests=, =-O3 -DNDEBUG -std=c++23 -Wall -Wextra
+-Werror=.
+
+That is not a detail. A benchmark built with its own flags measures a program
+nobody ships, and the first version of this one did exactly that: it appended
+=-O2= after the tree's =-O3=.
+
+There is no =add_test=, so =ctest= does not run it.
+
+The project's release optimisation is *=-O3=*, which comes from
+=CMAKE_BUILD_TYPE=Release= in the preset rather than from a project override.
+The benchmark uses it and does not change it. Changing it is a project-wide
+performance decision that would invalidate every number recorded here.
+
+* Running it
+
+#+begin_src sh
+./compass.sh build ores.ore.xml.benchmarks
+./benchmarks/xml/run.sh              # measure and append to history.tsv
+./benchmarks/xml/run.sh --no-record  # measure and print, leave the history alone
+./benchmarks/xml/compare.py <older-commit> [<newer-commit>]
+XML_BENCH_BUILD=build/output/other-preset ./benchmarks/xml/run.sh
+#+end_src
+
+=run.sh= builds nothing. It runs the binary CMake produced, which is what makes
+the numbers describe the program the project ships. It is not part of =ctest=
+and not part of any check.
+
+=history.tsv= is long-form: one row per case, metric, repeat count, commit,
+date and compiler. Appending is safe, and =compare.py= prints the delta between
+any two commits that appear in it, using the most recent run for each.
+
+The commit column names the tree that was measured, and every name in it must
+be reachable from =main= or the row is untraceable.
+
+* Dropping the process start-up
+
+The benchmark links a library that initialises boost, postgres and the rest
+before =main= runs. In a short run that start-up is most of the work: measured
+naively, the first-level miss count was seventy times the parse's own.
+
+Each case is therefore measured twice, at =n= repeats and at one, and the
+difference is divided by =n - 1=. Start-up cancels and what remains is the
+parse. This is why a row carries its repeat count.
+
+* Cache tooling, and what it does not cover
+
+=cachegrind= simulates the first level and one last level, and counts
+instructions. It has no second-level model, so a miss that leaves L1 is either
+served by the last level or counted as an LL miss. *L2 is not measured*, and
+nothing in this directory claims to measure it.
+
+The miss rates are recorded as well as the counts, because utilisation is a
+rate. =d1_miss_rate= is D1 misses over data references, and =ll_miss_rate= is
+LL misses over the accesses that missed L1.
+
+=perf= is installed but =/proc/sys/kernel/perf_event_paranoid= is 3, so
+unprivileged processes cannot read hardware cache counters. That is the only
+route to L2 numbers on this machine, and it needs =sudo sysctl
+kernel.perf_event_paranoid=1=.
+
+* A benchmarking framework
+
+No C++ framework reports cache misses, so the cache axis needs cachegrind
+whatever else is adopted.
+
+| Option | Cost | Reach for it when |
+|--------+------+-------------------|
+| Google Benchmark 1.9.5 | a vcpkg dependency; the port is vendored, the source is not cached | the suite grows and you want percentiles, counters and a baseline file |
+| nanobench 4.6.0 | one header, MIT, also vendored as a port | you want low-overhead microbenchmarks and HTML or CSV out |
+| Catch2 =BENCHMARK= | already a dependency | the case is trivial and you want it beside the tests |
+
+This directory uses none of them yet. Adding a dependency means a =vcpkg
+install=, and the measurement works without it. The hand-rolled loop records
+the one statistic that matters on a shared machine, best of five. Google
+Benchmark is the right home for the time axis once the dependency is in,
+because it writes a baseline file a script can diff.
+
+* The baseline at the first CMake-built run
+
+Counts are per parse, with start-up removed. One 63 KB currency file, a
+478 KB portfolio, the 206 KB script library, and the 6.3 MB calendar file.
+
+| Input | Mode | ns/parse | Instructions | D1 misses | LL misses | D1 miss rate |
+|-------+------+----------+--------------+-----------+-----------+--------------|
+| small | scan | 103,935 | 1,539,630 | 1,022 | 0 | 0.2% |
+| small | tape | 121,726 | 1,824,414 | 5,190 | 5 | 0.7% |
+| small | pugi | 49,699 | 769,379 | 6,174 | 0 | 1.7% |
+| portfolio | scan | 628,019 | 7,989,585 | 7,505 | 0 | 0.3% |
+| portfolio | tape | 739,794 | 9,640,786 | 33,782 | 229 | 0.8% |
+| portfolio | pugi | 923,550 | 4,841,973 | 38,521 | 192 | 1.6% |
+| scripts | scan | 62,152 | 747,295 | 3,262 | 0 | 1.4% |
+| scripts | tape | 77,664 | 1,053,780 | 10,739 | 0 | 1.5% |
+| scripts | pugi | 101,172 | 1,545,454 | 11,075 | 0 | 1.4% |
+| large | scan | 11,565,060 | 166,455,617 | 98,384 | 0 | 0.2% |
+| large | tape | 20,318,928 | 200,497,153 | 1,047,567 | 1,032,985 | 1.4% |
+| large | pugi | 15,525,438 | 74,759,475 | 727,010 | 702,823 | 2.6% |
+
+Two readings.
+
+*The tape is the cache cost.* Building it multiplies first-level data misses by
+4.5 on the portfolio and 10.6 on the 6.3 MB file. A token is twenty bytes, so
+the 478 KB document becomes a 721 KB tape and the 6.3 MB document becomes a
+15.9 MB tape. The scan-only column is the floor and it is far below both trees.
+
+*The scanner executes about 1.6 times pugixml's instructions* on the portfolio
+and 2.2 times on the large file, while being faster in wall time on both. It
+wins on time, loses on work per byte, and the difference is a named target
+rather than a mystery.
+
+The zero LL misses on the scan rows mean the working set of a scan fits the
+last level on this machine. A count is clamped at zero because a count whose
+growth is smaller than the run-to-run noise would otherwise be recorded as a
+negative one.
+
+* What the earlier measurements changed
+
+The first runs used a hand-built binary at =-O2= with totals rather than
+per-parse counts. They found two things that were then fixed, and the fixes
+are recorded in =ef31c41f11=: the =normalise= pre-scan was forty percent of the
+parse, and =memcmp= on the tag path was another tenth. The scanner's
+instructions fell by 48% on the portfolio and 25% on the large file.
+
+Their rows are not in the history. A number taken at a different optimisation
+level, from a differently linked binary, is not a baseline.
+
+* The gate
+
+"Run the benchmark when the XML layer changes" is enforced, and only there.
+=xml-benchmark-recorded= fails when a file that changes what the benchmark
+measures has moved and =history.tsv= holds no row at that commit or after it.
+
+The watched files are the XML sources, the public headers they expose, and the
+benchmark's own harness:
+
+- =projects/ores.ore/core/src/xml/*=
+- =projects/ores.ore/core/include/ores.ore.core/xml/*=
+- =benchmarks/xml/bench.cpp=, =run.sh= and =inputs.tsv=
+
+Nothing else asks for a measurement. A documentation edit, a test, a change to
+the writer's callers, or a change anywhere else in the tree never triggers it.
+That is the point: a gate that fires on unrelated work is a gate people learn
+to skip.
+
+A row counts when the committed files it measured are byte-identical to the
+ones in the tree now. Content, not ancestry: a merge on trunk introduces the
+branch's changes, so the recorded branch commit is an ancestor of the merge
+rather than a descendant, and an ancestry test would fail on trunk after every
+merge. Comparing bytes also means a later commit that touches nothing measured
+does not invalidate a measurement already taken.
+
+When a change genuinely cannot move a number, the check is skipped with
+=--only= and the reason recorded on the pull request. That is a deliberate
+escape hatch, not an oversight: the alternatives are a waiver file nobody
+maintains or a benchmark run that proves nothing.
+
+* See also
+
+- [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]].
+- =doc/knowledge/architecture/data_oriented_design.org=, for why the layout is
+  the thing being measured.

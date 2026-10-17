@@ -40,6 +40,7 @@
 #include "ores.refdata.api/domain/commodity_future_convention.hpp"
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/domain/commodity_volatility_config.hpp"
+#include "ores.refdata.api/domain/convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
 #include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
@@ -79,7 +80,8 @@
 #include "ores.refdata.api/domain/swap_convention.hpp"
 #include "ores.refdata.api/domain/swap_index_convention.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_convention.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
@@ -115,7 +117,9 @@ struct conventions_document {
     std::vector<ores::refdata::domain::cross_currency_basis_convention> cross_currency_basis;
     std::vector<ores::refdata::domain::cross_currency_fix_float_convention>
         cross_currency_fix_float;
-    std::vector<ores::refdata::domain::tenor_basis_swap_convention> tenor_basis_swap;
+    std::vector<ores::refdata::domain::convention> convention;
+    std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> tenor_basis_swap_pay_receive;
+    std::vector<ores::refdata::domain::tenor_basis_swap_long_short> tenor_basis_swap_long_short;
     std::vector<ores::refdata::domain::tenor_basis_two_swap_convention> tenor_basis_two_swap;
     std::vector<ores::refdata::domain::deposit_convention> deposit;
     std::vector<ores::refdata::domain::swap_convention> swap;

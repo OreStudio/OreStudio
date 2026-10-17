@@ -1,0 +1,17 @@
+unit	decision	evidence	verdict
+A1	frame	"done = one command that fails if any corpus document does not read, write back, validate and keep its values"	VERIFIED
+B1	sequence	"document layer before schema tables, because the tape keeps order and needs no schema"	VERIFIED
+U1	scanner in product code	"projects/ores.ore/core/src/xml/scanner.cpp"	VERIFIED
+U2	transient model is an ordered tape, not a tree	"document.hpp token is 20 bytes of offsets; no text copied"	VERIFIED
+U3	text length widened from uint16 to uint32	"script library text exceeded 65535 bytes after the first round trip attempt"	VERIFIED
+U4	decoded entity text needs its own arena	"token carries value_decoded; offsets into the document buffer overflowed otherwise"	VERIFIED
+U5	no whitespace skipped before text	"script libraries lost their leading indentation on the first corpus run"	VERIFIED
+U6	comment search starts past the four-character opener	"four ore.xml files aborted the first corpus run on <!-->"	VERIFIED
+U7	whitespace is formatting unless it is the element's whole content	"test whitespace_that_is_the_content_of_an_element_is_kept failed before the rule"	VERIFIED
+U8	writer indents nothing inside mixed content	"test mixed_content_is_not_indented"	VERIFIED
+U9	equality ignores formatting whitespace only	"operator== uses the same rule as the writer"	VERIFIED
+U10	corpus round trip	"1623 of 1623 read, written back and compared equal"	VERIFIED
+U11	written corpus validates against input.xsd	"scripts/validate_ore_examples.sh: 1623 of 1623 passed"	VERIFIED
+U12	decimal format round trip over the corpus	"every numeric leaf reads, renders and reads back equal, none refused"	VERIFIED
+U13	ctest integration	"not run: the build tree predates the checkout's domain.hpp and a full rebuild was still at 436 of 2909 after an hour"	INCONCLUSIVE
+U14	heavy-tier inventory accepts the new check	"local_checks.py and test_local_checks.py updated; 32 tests pass"	VERIFIED

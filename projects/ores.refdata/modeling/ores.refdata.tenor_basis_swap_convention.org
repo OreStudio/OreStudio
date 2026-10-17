@@ -1,381 +1,53 @@
 :PROPERTIES:
 :ID: 67A70592-0AD7-4E33-A348-1B945D2F7FAC
-:ores.sql.schema.domain_entity_artefact_create.enabled: true
 :END:
 #+title: ores.refdata.tenor_basis_swap_convention
-#+description: Codegen entity model for the refdata =tenor_basis_swap_convention= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
-#+type: ores.codegen.entity
+#+description: Codegen family model for the tenor basis swap convention: the central convention row plus its two parts, and the family get and put derived from them.
+#+type: ores.codegen.family
 #+component: refdata
-#+filetags: :model:entity:refdata:
+#+subcomponent: api
+#+filetags: :model:family:refdata:
 #+brief: Conventions for a tenor basis swap, where each leg pays a different tenor off its own index.
 #+entity_singular: tenor_basis_swap_convention
 #+entity_plural: tenor_basis_swap_conventions
 #+entity_title: Tenor Basis Swap Convention
 #+created: 2026-09-29
-#+updated: 2026-09-29
+#+updated: 2026-10-14
 
 Describes how ORE builds the two legs of a tenor basis swap, where each leg
 pays a different tenor off its own index and the two legs may differ in more
 than the tenor. Corresponds to the <TenorBasisSwap> element in ORE
-conventions.xml. The id field is the natural key (ORE <Id> element).
+conventions.xml.
 
 ORE lets a tenor basis swap be written two ways, and the corpus uses both. The
 paying and receiving form names =PayIndex= and =ReceiveIndex= with an optional
 frequency each, and adds the averaging and sub-periods fields. The long and
 short form names =LongIndex= and =ShortIndex= with an optional payment tenor
-each, and adds the spread flags. The two forms do not share a field, so the
-table carries every field of both and each row fills one form.
+each, and adds the spread flags. The corpus also writes =IncludeSpread= and
+=SubPeriodsCouponType= alongside both forms, so each part declares them and the
+shared central row carries neither. Apart from those two fields the two forms
+share nothing, so the family carries one part for each form and a convention
+fills exactly one.
+
+The family's central row is the shared [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][convention]], which names this kind
+with =kind_code= =TENOR_BASIS_SWAP= and holds the ORE document id. Everything
+kind-specific is in the two parts.
 
 * Flags
 :PROPERTIES:
-:schema:           public
-:product:          ores
-:component:        refdata
-:profile:   simple-lookup
+:central_entity: convention
 :END:
 
-* Columns
-
-** id
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::string
-:primary_key: true
-:nullable:    false
-:END:
-
-Unique tenor basis swap identifier.
-
-#+begin_src cpp :name generator
-std::string("EUR-3M-6M-BASIS")
-#+end_src
-
-** party_id
-:PROPERTIES:
-:type:        uuid
-:cpp_type:    boost::uuids::uuid
-:nullable:    false
-:sql_key: true
-:END:
-
-The party that owns the document this row belongs to. Set from the session
-that writes the document, and enforced by row level security, so a party
-sees only its own configuration.
-
-#+begin_src cpp :name generator
-ctx.generate_uuid()
-#+end_src
-
-** pay_index
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-Index the paying leg references, in the paying and receiving form.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** pay_frequency
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-Payment frequency of the paying leg, as ORE's period code.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** receive_index
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-Index the receiving leg references, in the paying and receiving form.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** receive_frequency
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-Payment frequency of the receiving leg, as ORE's period code.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** spread_on_rec
-:PROPERTIES:
-:type:        boolean
-:cpp_type:    std::optional<bool>
-:nullable:    true
-:END:
-
-Whether the quoted spread is added to the receiving leg rather than the paying one.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** include_spread
-:PROPERTIES:
-:type:        boolean
-:cpp_type:    std::optional<bool>
-:nullable:    true
-:END:
-
-Whether the spread is included in the coupon that carries it.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** sub_periods_coupon_type
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-How a coupon built from sub-periods is combined, as the canonical code the mapper stores.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** pay_is_averaged
-:PROPERTIES:
-:type:        boolean
-:cpp_type:    std::optional<bool>
-:nullable:    true
-:END:
-
-Whether the paying leg's coupons are averaged rather than compounded.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** rec_is_averaged
-:PROPERTIES:
-:type:        boolean
-:cpp_type:    std::optional<bool>
-:nullable:    true
-:END:
-
-Whether the receiving leg's coupons are averaged rather than compounded.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** long_index
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-Index the long leg references, in the long and short form.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** long_pay_tenor
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-Payment tenor of the long leg, as ORE's period code.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** short_index
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-Index the short leg references, in the long and short form.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** short_pay_tenor
-:PROPERTIES:
-:type:        text
-:cpp_type:    std::optional<std::string>
-:nullable:    true
-:END:
-
-Payment tenor of the short leg, as ORE's period code.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** spread_on_short
-:PROPERTIES:
-:type:        boolean
-:cpp_type:    std::optional<bool>
-:nullable:    true
-:END:
-
-Whether the quoted spread is added to the short leg rather than the long one.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-** oresmd_uri
-:PROPERTIES:
-:type:     text
-:cpp_type: std::optional<std::string>
-:nullable: true
-:END:
-
-The oresmd URI of the market data this convention needs: one of
-=pay_index=, =receive_index=, =long_index= or =short_index=, as a fixing
-URI. The single field cannot name all four; which one it carries is a
-product decision. Classification: identifier — the leg it names is fully
-specified.
-
-The column holds the address as a value, so refdata depends on the oresmd
-format as a contract only and never on the marketdata library or its tables.
-Nullable, because no convention is required to state its address yet.
-
-#+begin_src cpp :name generator
-std::nullopt
-#+end_src
-
-* SQL
-
-** Flags
-:PROPERTIES:
-:tablename: ores_refdata_tenor_basis_swap_conventions_tbl
-:rls_tenant_isolation: true
-:rls_party_isolation: true
-:END:
-
-* C++
-
-** Flags
-:PROPERTIES:
-:subcomponent:    api
-:END:
-
-** Repository
-:PROPERTIES:
-:entity_singular_short: tenor_basis_swap_convention
-:entity_plural_short:   tenor_basis_swap_conventions
-:entity_singular_words: tenor basis swap convention
-:entity_plural_words:   tenor basis swap conventions
-:END:
-
-** Domain includes
-
-#+begin_src cpp :name includes
-#include <string>
-#include <optional>
-#+end_src
-
-** Entity includes
-
-#+begin_src cpp :name includes
-#include <string>
-#include <optional>
-#include "sqlgen/Timestamp.hpp"
-#+end_src
-
-** Conventions
-:PROPERTIES:
-:iterator_var: tbs
-:END:
-
-** Table display
-
-| column       | header       |
-|--------------+--------------|
-| id           | Id           |
-| pay_index    | Pay Index    |
-| receive_index | Receive Index |
-| modified_by  | Modified By  |
-| version      | Version      |
-
-** Presentation
-:PROPERTIES:
-:collection_name:           tenor_basis_swap_conventions
-:key_field:                 id
-:delete_request_id_field:   ids
-:save_request_item_field:   tenor_basis_swap_convention
-:END:
-
-*** Detail fields
-
-| field | label | widget | type | is_key | is_required | placeholder |
-|-------+-------+--------+------+--------+-------------+-------------|
-| id | Id | idEdit | line_edit | true | true | Enter tenor basis swap id |
-| pay_index | Pay Index | payIndexEdit | line_edit |  |  | e.g. EUR-EURIBOR-6M |
-| pay_frequency | Pay Frequency | payFrequencyEdit | line_edit |  |  | e.g. 6M |
-| receive_index | Receive Index | receiveIndexEdit | line_edit |  |  | e.g. EUR-EURIBOR-3M |
-| receive_frequency | Receive Frequency | receiveFrequencyEdit | line_edit |  |  | e.g. 3M |
-| spread_on_rec | Spread On Rec | spreadOnRecEdit | checkbox |  |  |  |
-| include_spread | Include Spread | includeSpreadEdit | checkbox |  |  |  |
-| sub_periods_coupon_type | Sub Periods Type | subPeriodsCouponTypeEdit | line_edit |  |  | e.g. Compounding |
-| pay_is_averaged | Pay Is Averaged | payIsAveragedEdit | checkbox |  |  |  |
-| rec_is_averaged | Rec Is Averaged | recIsAveragedEdit | checkbox |  |  |  |
-| long_index | Long Index | longIndexEdit | line_edit |  |  | e.g. EUR-EURIBOR-6M |
-| long_pay_tenor | Long Pay Tenor | longPayTenorEdit | line_edit |  |  | e.g. 3M |
-| short_index | Short Index | shortIndexEdit | line_edit |  |  | e.g. EUR-EURIBOR-3M |
-| short_pay_tenor | Short Pay Tenor | shortPayTenorEdit | line_edit |  |  | e.g. 3M |
-| spread_on_short | Spread On Short | spreadOnShortEdit | checkbox |  |  |  |
-
-*** Columns
-
-| enum_name | field | header | type | width |
-|-----------+-------+--------+------+-------|
-| Id | id | Id | string | 180 |
-| PayIndex | pay_index | Pay Index | string | 180 |
-| PayFrequency | pay_frequency | Pay Frequency | string | 120 |
-| ReceiveIndex | receive_index | Receive Index | string | 180 |
-| ReceiveFrequency | receive_frequency | Receive Frequency | string | 120 |
-| SpreadOnRec | spread_on_rec | Spread On Rec | bool | 80 |
-| IncludeSpread | include_spread | Include Spread | bool | 80 |
-| SubPeriodsCouponType | sub_periods_coupon_type | Sub Periods Type | string | 140 |
-| PayIsAveraged | pay_is_averaged | Pay Is Averaged | bool | 80 |
-| RecIsAveraged | rec_is_averaged | Rec Is Averaged | bool | 80 |
-| LongIndex | long_index | Long Index | string | 180 |
-| LongPayTenor | long_pay_tenor | Long Pay Tenor | string | 120 |
-| ShortIndex | short_index | Short Index | string | 180 |
-| ShortPayTenor | short_pay_tenor | Short Pay Tenor | string | 120 |
-| SpreadOnShort | spread_on_short | Spread On Short | bool | 80 |
-| Version | version | Version | int | 80 |
-| ModifiedBy | modified_by | Modified By | string | 120 |
-| RecordedAt | recorded_at | Recorded At | timestamp | 150 |
-
-** Custom repository methods
+* Parts
+
+| part        | entity                       |
+|-------------+------------------------------|
+| pay_receive | tenor_basis_swap_pay_receive |
+| long_short  | tenor_basis_swap_long_short  |
 
 * See also
 
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this family carries.
+- [[id:26F8B022-84E9-41CD-BA89-6881DF4369DB][ores.refdata.tenor_basis_swap_pay_receive]] — the paying and receiving part.
+- [[id:8B1BDAB2-3EC8-47DE-9E52-91C1D2AA51D8][ores.refdata.tenor_basis_swap_long_short]] — the long and short part.

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 9FC4C9F8-9291-4B5E-AA80-D1C7FBA038D0
+:END:
+#+title: Start the fleet without systemd on macOS and Windows
+#+description: compass services start/stop/status are systemd-only: they generate units and drive systemctl --user, and the controller/supervisor that used to exec and cascade-stop children was decommissioned when systemd took over. macOS and Windows runners have no systemd, so the nightly jobs cannot bring NATS up: the macOS run fails with 'nats-server did not become ready within 30s' and 'no systemd user unit nats-server-orestudio.service'. The CI suites need a non-systemd supervisor path: spawn nats-server and the ores binaries with a pid file per service, keep the existing log-based readiness gate (the loop already waits on port 20005), and cascade stop through the same pid files so the stop command stays complete.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

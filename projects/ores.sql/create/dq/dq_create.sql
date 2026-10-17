@@ -103,6 +103,14 @@
 -- Instrument convention artefact tables. One per live party-scoped or
 -- world-data convention table. They all belong to the single
 -- ore.conventions dataset, so the DQ create order here is arbitrary.
+--
+-- The atomised convention is the one exception to one-artefact-per-kind: its
+-- live shape is the central convention row plus the mutually exclusive parts,
+-- and each live table gets its own artefact table. The parts name the central
+-- row rather than referencing it, so the order here is arbitrary too.
+\ir ./dq_conventions_artefact_create.sql
+\ir ./dq_tenor_basis_swap_pay_receives_artefact_create.sql
+\ir ./dq_tenor_basis_swap_long_shorts_artefact_create.sql
 \ir ./dq_average_ois_conventions_artefact_create.sql
 \ir ./dq_bma_basis_swap_conventions_artefact_create.sql
 \ir ./dq_bond_yield_conventions_artefact_create.sql
@@ -123,7 +131,6 @@
 \ir ./dq_overnight_index_conventions_artefact_create.sql
 \ir ./dq_swap_conventions_artefact_create.sql
 \ir ./dq_swap_index_conventions_artefact_create.sql
-\ir ./dq_tenor_basis_swap_conventions_artefact_create.sql
 \ir ./dq_tenor_basis_two_swap_conventions_artefact_create.sql
 \ir ./dq_zero_conventions_artefact_create.sql
 \ir ./dq_zero_inflation_index_conventions_artefact_create.sql

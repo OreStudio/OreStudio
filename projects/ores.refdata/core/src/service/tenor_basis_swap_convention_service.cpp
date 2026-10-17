@@ -25,80 +25,94 @@
 #include "ores.refdata.core/service/tenor_basis_swap_convention_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
-#include "ores.database/repository/valid_at.hpp"
-#include "ores.logging/boost_severity.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_convention.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.api/messaging/tenor_basis_swap_convention_protocol.hpp"
-#include "ores.refdata.core/repository/tenor_basis_swap_convention_repository.hpp"
+#include "ores.refdata.core/repository/convention_repository.hpp"
+#include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
+#include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
-#include <boost/log/sources/severity_feature.hpp>
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <iterator>
+#include <boost/uuid/uuid_io.hpp>
+#include <limits>
 #include <optional>
-#include <stdexcept>
+#include <ranges>
 #include <string>
 #include <utility>
 #include <vector>
 
-using ores::service::messaging::stamp;
-// Every refusal names its outcome; the catalogue supplies the code and the
-// sentence, so a service states what happened and nothing about how to say it.
-using ores::database::domain::outcome_args;
 using ores::database::domain::outcome_code;
 using ores::database::domain::refuse;
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
-tenor_basis_swap_convention_service::tenor_basis_swap_convention_service(context ctx)
-    : ctx_(std::move(ctx)) {}
 namespace {
 
 /**
- * @brief The current row a key names, or an empty vector when there is none.
- *
- * A key record carries each column with the column's own type, and the
- * repository takes the text form every one of its key parameters shares, so
- * the conversion lives here rather than at every call site.
- *
- * The key record carries the key the model declares, which is the one a caller
- * holds. When that is not the storage key the row is found by it and the
- * repository's storage-key read is not used at all.
+ * @brief The current central row a family key names, or an empty vector.
  */
-std::vector<domain::tenor_basis_swap_convention>
-read_one(repository::tenor_basis_swap_convention_repository& repo,
-         const ores::database::context& ctx,
-         const messaging::tenor_basis_swap_convention_key& key) {
-    return repo.read_latest(ctx, key.id);
+std::vector<domain::convention>
+read_convention(repository::convention_repository& repo,
+                const ores::database::context& ctx,
+                const messaging::tenor_basis_swap_convention_key& key) {
+    return repo.read_latest(ctx, boost::uuids::to_string(key.id));
 }
 
 /**
- * @brief The key a domain object states, so a written row can be read back.
- *
- * A create states its own key in the write record, so the key of the row a
- * write produced is the one the object carries.
+ * @brief The key a central domain row states, so the row read back is
+ * addressed exactly as the request addressed it.
  */
-messaging::tenor_basis_swap_convention_key key_from(const domain::tenor_basis_swap_convention& v) {
+messaging::tenor_basis_swap_convention_key key_from(const domain::convention& v) {
     messaging::tenor_basis_swap_convention_key key;
     key.id = v.id;
     return key;
 }
 
 /**
- * @brief Builds the domain object a write record states.
+ * @brief Builds the central domain object a change's write record states.
  *
- * The record carries the user-owned fields and nothing else: tenancy,
+ * The record carries the user-owned fields and nothing else: tenancy, the
  * provenance, the version and the validity window are the service's and the
- * database's to state, and are set after this conversion.
+ * database's to state.
  */
-domain::tenor_basis_swap_convention
-to_domain(const messaging::tenor_basis_swap_convention_write& write) {
-    domain::tenor_basis_swap_convention v;
+domain::convention to_domain(const messaging::convention_write& write) {
+    domain::convention v;
     v.id = write.id;
+    v.kind_code = write.kind_code;
+    v.name = write.name;
+    v.oresmd_uri = write.oresmd_uri;
+    return v;
+}
+
+/**
+ * @brief The live rows of one part kind that belong to one central row.
+ */
+std::vector<domain::tenor_basis_swap_pay_receive>
+read_pay_receive(repository::tenor_basis_swap_pay_receive_repository& repo,
+                 const ores::database::context& ctx,
+                 const domain::convention& central) {
+    return repo.read_latest_by_convention_id(ctx,
+                                             boost::uuids::to_string(central.id),
+                                             0,
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             {},
+                                             std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::tenor_basis_swap_pay_receive
+to_domain_pay_receive(const messaging::tenor_basis_swap_pay_receive_write& write) {
+    domain::tenor_basis_swap_pay_receive v;
+    v.id = write.id;
+    v.convention_id = write.convention_id;
     v.pay_index = write.pay_index;
     v.pay_frequency = write.pay_frequency;
     v.receive_index = write.receive_index;
@@ -108,62 +122,78 @@ to_domain(const messaging::tenor_basis_swap_convention_write& write) {
     v.sub_periods_coupon_type = write.sub_periods_coupon_type;
     v.pay_is_averaged = write.pay_is_averaged;
     v.rec_is_averaged = write.rec_is_averaged;
+    return v;
+}
+
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::tenor_basis_swap_pay_receive_key
+key_from_pay_receive(const domain::tenor_basis_swap_pay_receive& v) {
+    messaging::tenor_basis_swap_pay_receive_key key;
+    key.id = v.id;
+    return key;
+}
+
+/**
+ * @brief The live rows of one part kind that belong to one central row.
+ */
+std::vector<domain::tenor_basis_swap_long_short>
+read_long_short(repository::tenor_basis_swap_long_short_repository& repo,
+                const ores::database::context& ctx,
+                const domain::convention& central) {
+    return repo.read_latest_by_convention_id(ctx,
+                                             boost::uuids::to_string(central.id),
+                                             0,
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             {},
+                                             std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::tenor_basis_swap_long_short
+to_domain_long_short(const messaging::tenor_basis_swap_long_short_write& write) {
+    domain::tenor_basis_swap_long_short v;
+    v.id = write.id;
+    v.convention_id = write.convention_id;
     v.long_index = write.long_index;
     v.long_pay_tenor = write.long_pay_tenor;
     v.short_index = write.short_index;
     v.short_pay_tenor = write.short_pay_tenor;
     v.spread_on_short = write.spread_on_short;
-    v.oresmd_uri = write.oresmd_uri;
+    v.include_spread = write.include_spread;
+    v.sub_periods_coupon_type = write.sub_periods_coupon_type;
     return v;
 }
 
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::tenor_basis_swap_long_short_key
+key_from_long_short(const domain::tenor_basis_swap_long_short& v) {
+    messaging::tenor_basis_swap_long_short_key key;
+    key.id = v.id;
+    return key;
+}
 
 }
 
-messaging::list_tenor_basis_swap_conventions_response
-tenor_basis_swap_convention_service::list_tenor_basis_swap_conventions(
-    const messaging::list_tenor_basis_swap_conventions_request& request) {
-    messaging::list_tenor_basis_swap_conventions_response response;
-    if (!request.order.field.empty() &&
-        !repository::tenor_basis_swap_convention_repository::is_sortable(request.order.field)) {
-        response.result =
-            refuse(outcome_code::order_not_supported,
-                   {.entity = "tenor basis swap conventions", .field = request.order.field});
-        return response;
-    }
-    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
-        return response;
-    }
-    // A stated instant is checked here, so a malformed one is the caller's
-    // mistake rather than a database error. The caller's text is what the
-    // store reads, so a fraction of a second is kept.
-    std::optional<std::string> as_of;
-    if (request.as_of) {
-        as_of = ores::database::repository::parse_as_of(*request.as_of);
-        if (!as_of) {
-            response.result = refuse(outcome_code::as_of_invalid, {.value = *request.as_of});
-            return response;
-        }
-    }
-    response.tenor_basis_swap_conventions = repo_.read_latest(
-        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
-    response.total = repo_.get_total_tenor_basis_swap_convention_count(ctx_, request.filter, as_of);
-    return response;
-}
+tenor_basis_swap_convention_service::tenor_basis_swap_convention_service(context ctx)
+    : ctx_(std::move(ctx)) {}
 
 messaging::get_tenor_basis_swap_convention_response
 tenor_basis_swap_convention_service::get_tenor_basis_swap_convention(
     const messaging::get_tenor_basis_swap_convention_request& request) {
     messaging::get_tenor_basis_swap_convention_response response;
-    auto found = read_one(repo_, ctx_, request.key);
+    auto found = read_convention(central_repo_, ctx_, request.key);
     if (found.empty()) {
         response.result =
             refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_convention"});
         return response;
     }
-    response.tenor_basis_swap_convention = std::move(found.front());
+    response.item = assemble(ctx_, request.key, found.front());
     return response;
 }
 
@@ -171,17 +201,14 @@ messaging::get_many_tenor_basis_swap_conventions_response
 tenor_basis_swap_convention_service::get_many_tenor_basis_swap_conventions(
     const messaging::get_many_tenor_basis_swap_conventions_request& request) {
     messaging::get_many_tenor_basis_swap_conventions_response response;
-    // One entry per requested key, in the order asked for, so the reply is
-    // positional and a caller reads absence from an empty entry rather than
-    // from a missing one.
-    response.entries.reserve(request.keys.size());
-    for (const auto& k : request.keys) {
-        messaging::tenor_basis_swap_convention_lookup entry;
-        entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.tenor_basis_swap_convention = std::move(found.front());
-        response.entries.push_back(std::move(entry));
+    // One request answers the whole set: every central row and every part it
+    // owns is read and assembled in this one call.
+    response.items.reserve(request.keys.size());
+    for (const auto& key : request.keys) {
+        auto found = read_convention(central_repo_, ctx_, key);
+        if (found.empty())
+            continue;
+        response.items.push_back(assemble(ctx_, key, found.front()));
     }
     return response;
 }
@@ -190,14 +217,37 @@ messaging::put_tenor_basis_swap_convention_response
 tenor_basis_swap_convention_service::put_tenor_basis_swap_convention(
     const messaging::put_tenor_basis_swap_convention_request& request) {
     messaging::put_tenor_basis_swap_convention_response response;
-    domain::tenor_basis_swap_convention value;
-    response.result = prepare_change(request.change, request.intent, value);
+    // The central row and every part land in one transaction, so no reader
+    // sees a part disagree with the central version.
+    ores::database::repository::unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
+    domain::convention central;
+    response.result = prepare_convention(request.item.change, request.intent, ctx, central);
     if (response.result.outcome != ores::utility::domain::outcome::ok)
         return response;
-    repo_.write(ctx_, value, request.change.precondition);
-    auto written = read_one(repo_, ctx_, key_from(value));
-    if (!written.empty())
-        response.tenor_basis_swap_convention = std::move(written.front());
+    central_repo_.write(ctx, central, request.item.change.precondition);
+
+    // The store owns the key and the window, so the key the row was written
+    // under is the one the write stated rather than assumed from the request.
+    const auto key = key_from(central);
+    // A part write bumps the central row through the part table's own trigger,
+    // so the central row is read back after the parts land and the item carries
+    // the version the write produced.
+    response.result = reconcile_pay_receive(ctx, central, request.item.pay_receive, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    response.result = reconcile_long_short(ctx, central, request.item.long_short, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+
+    auto stored = read_convention(central_repo_, ctx, key);
+    if (stored.empty()) {
+        response.result = refuse(outcome_code::not_found, {.entity = "convention"});
+        return response;
+    }
+    uow.commit();
+    response.item = assemble(ctx_, key, stored.front());
     return response;
 }
 
@@ -205,175 +255,79 @@ messaging::put_many_tenor_basis_swap_conventions_response
 tenor_basis_swap_convention_service::put_many_tenor_basis_swap_conventions(
     const messaging::put_many_tenor_basis_swap_conventions_request& request) {
     messaging::put_many_tenor_basis_swap_conventions_response response;
-    std::vector<domain::tenor_basis_swap_convention> batch;
-    batch.reserve(request.changes.size());
-    for (const auto& change : request.changes) {
-        domain::tenor_basis_swap_convention value;
-        const auto result = prepare_change(change, request.intent, value);
-        if (result.outcome != ores::utility::domain::outcome::ok) {
-            // Nothing has been written: the whole set is checked before any
-            // of it lands, so a refused element refuses the batch.
-            response.result = result;
+    // One transaction for the whole batch. Each element states its own claim,
+    // and the store checks each row's claim as it is written; an element that
+    // is refused leaves the transaction uncommitted and nothing lands.
+    ores::database::repository::unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
+    response.items.reserve(request.items.size());
+    for (const auto& write : request.items) {
+        domain::convention central;
+        response.result = prepare_convention(write.change, request.intent, ctx, central);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        central_repo_.write(ctx, central, write.change.precondition);
+
+        const auto key = key_from(central);
+        // A part write bumps the central row, so it is read back after them.
+        response.result = reconcile_pay_receive(ctx, central, write.pay_receive, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        response.result = reconcile_long_short(ctx, central, write.long_short, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        auto stored = read_convention(central_repo_, ctx, key);
+        if (stored.empty()) {
+            response.result = refuse(outcome_code::not_found, {.entity = "convention"});
             return response;
         }
-        batch.push_back(std::move(value));
+        response.items.push_back(assemble(ctx_, key, stored.front()));
     }
-    // One statement, so the set lands together. The store checks each row's
-    // claim inside that statement, which is what makes the check above and the
-    // write one decision rather than two.
-    std::vector<ores::utility::domain::precondition> claims;
-    claims.reserve(request.changes.size());
-    for (const auto& change : request.changes)
-        claims.push_back(change.precondition);
-    repo_.write(ctx_, batch, claims);
-    response.tenor_basis_swap_conventions.reserve(batch.size());
-    for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
-        response.tenor_basis_swap_conventions.push_back(
-            written.empty() ? value : std::move(written.front()));
-    }
+
+    uow.commit();
     return response;
 }
 
-messaging::delete_tenor_basis_swap_convention_response
-tenor_basis_swap_convention_service::delete_tenor_basis_swap_convention(
-    const messaging::delete_tenor_basis_swap_convention_request& request) {
-    messaging::delete_tenor_basis_swap_convention_response response;
-    using ores::utility::domain::outcome;
-    using ores::utility::domain::precondition_kind;
-    if (request.removal.precondition.kind == precondition_kind::must_not_exist) {
-        response.result = refuse(outcome_code::precondition_not_supported);
-        return response;
-    }
-    std::optional<std::uint32_t> expected;
-    if (request.removal.precondition.kind == precondition_kind::must_match_version) {
-        if (!request.removal.precondition.version) {
-            response.result = refuse(outcome_code::precondition_incomplete);
-            return response;
-        }
-        expected = request.removal.precondition.version;
-    }
-    switch (repo_.remove(ctx_, request.removal.key.id, expected)) {
-        case repository::tenor_basis_swap_convention_repository::remove_status::removed:
-            break;
-        case repository::tenor_basis_swap_convention_repository::remove_status::missing:
-            response.result =
-                refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_convention"});
-            break;
-        case repository::tenor_basis_swap_convention_repository::remove_status::conflicting: {
-            // A conflicting removal states the version it expected but not the one
-            // the row now holds, and the sentence wants both. The row is read only
-            // on the refusal path.
-            const auto live = read_one(repo_, ctx_, request.removal.key);
-            response.result = refuse(
-                outcome_code::version_conflict,
-                {.entity = "tenor_basis_swap_convention",
-                 .field = "id",
-                 .expected = expected ? std::to_string(*expected) : std::string{},
-                 .current = live.empty() ? std::string{} : std::to_string(live.front().version)});
-            break;
-        }
-        case repository::tenor_basis_swap_convention_repository::remove_status::unsupported:
-            response.result = refuse(outcome_code::precondition_not_supported);
-            break;
-    }
-    return response;
+messaging::tenor_basis_swap_convention_item
+tenor_basis_swap_convention_service::assemble(const context& ctx,
+                                              const messaging::tenor_basis_swap_convention_key& key,
+                                              const std::optional<domain::convention>& central) {
+    messaging::tenor_basis_swap_convention_item item;
+    item.key = key;
+    item.convention = central;
+    if (central)
+        item.pay_receive = read_pay_receive(pay_receive_repo_, ctx, *central);
+    if (central)
+        item.long_short = read_long_short(long_short_repo_, ctx, *central);
+    return item;
 }
 
-messaging::delete_many_tenor_basis_swap_conventions_response
-tenor_basis_swap_convention_service::delete_many_tenor_basis_swap_conventions(
-    const messaging::delete_many_tenor_basis_swap_conventions_request& request) {
-    messaging::delete_many_tenor_basis_swap_conventions_response response;
-    using ores::utility::domain::outcome;
-    using ores::utility::domain::precondition_kind;
-    for (const auto& removal : request.removals) {
-        if (removal.precondition.kind != precondition_kind::any) {
-            // The store removes a set in one statement, which carries no
-            // per-row version. Refusing is the only answer that keeps the
-            // batch atomic: serving it as a sequence of single removals would
-            // leave a partial batch behind as soon as one row had moved on.
-            response.result = refuse(outcome_code::batch_removal_is_unconditional);
-            return response;
-        }
-    }
-    if (request.removals.empty())
-        return response;
-    std::vector<std::string> id_keys;
-    id_keys.reserve(request.removals.size());
-    for (const auto& removal : request.removals)
-        id_keys.push_back(removal.key.id);
-    repo_.remove(ctx_, id_keys);
-    return response;
-}
-
-messaging::list_tenor_basis_swap_convention_versions_response
-tenor_basis_swap_convention_service::list_tenor_basis_swap_convention_versions(
-    const messaging::list_tenor_basis_swap_convention_versions_request& request) {
-    messaging::list_tenor_basis_swap_convention_versions_response response;
-    if (!request.order.field.empty() || request.order.descending) {
-        response.result =
-            refuse(outcome_code::order_not_supported,
-                   {.entity = "tenor basis swap conventions", .field = request.order.field});
-        return response;
-    }
-    if (request.filter) {
-        response.result =
-            refuse(outcome_code::filter_not_supported, {.entity = "tenor basis swap conventions"});
-        return response;
-    }
-    auto all = repo_.read_all(ctx_, request.key.id);
-    // The store reads versions newest first, and the order a caller gets when
-    // it states none is key order, which for a version key is oldest first.
-    std::reverse(all.begin(), all.end());
-    response.total = all.size();
-    const auto begin = std::min<std::size_t>(request.offset, all.size());
-    const auto end = std::min<std::size_t>(begin + request.limit, all.size());
-    response.versions.assign(std::make_move_iterator(all.begin() + begin),
-                             std::make_move_iterator(all.begin() + end));
-    return response;
-}
-
-messaging::get_tenor_basis_swap_convention_version_response
-tenor_basis_swap_convention_service::get_tenor_basis_swap_convention_version(
-    const messaging::get_tenor_basis_swap_convention_version_request& request) {
-    messaging::get_tenor_basis_swap_convention_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_, request.key.tenor_basis_swap_convention.id, request.key.version);
-    if (!found) {
-        response.result =
-            refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_convention"});
-        return response;
-    }
-    response.version = std::move(*found);
-    return response;
-}
-
-ores::utility::domain::result tenor_basis_swap_convention_service::prepare_change(
-    const messaging::tenor_basis_swap_convention_change& change,
+ores::utility::domain::result tenor_basis_swap_convention_service::prepare_convention(
+    const messaging::convention_change& change,
     const ores::utility::domain::change_intent& intent,
-    domain::tenor_basis_swap_convention& out) {
+    const context& ctx,
+    domain::convention& out) {
     using ores::utility::domain::outcome;
     using ores::utility::domain::precondition_kind;
     ores::utility::domain::result result;
     out = to_domain(change.write);
-    const auto current = read_one(repo_, ctx_, key_from(out));
+    const auto current = read_convention(central_repo_, ctx, key_from(out));
     switch (change.precondition.kind) {
         case precondition_kind::must_not_exist:
             if (!current.empty())
-                return refuse(outcome_code::already_exists,
-                              {.entity = "tenor_basis_swap_convention", .field = "id"});
+                return refuse(outcome_code::already_exists, {.entity = "convention"});
             break;
         case precondition_kind::must_match_version:
             if (current.empty())
-                return refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_convention"});
+                return refuse(outcome_code::not_found, {.entity = "convention"});
             // The protocol states the version as a uint32 and the row carries it
             // as an int, so the comparison states the conversion.
             if (!change.precondition.version ||
                 static_cast<std::uint32_t>(current.front().version) !=
                     *change.precondition.version) {
                 return refuse(outcome_code::version_conflict,
-                              {.entity = "tenor_basis_swap_convention",
-                               .field = "id",
+                              {.entity = "convention",
                                .expected = change.precondition.version ?
                                                std::to_string(*change.precondition.version) :
                                                std::string{},
@@ -387,7 +341,7 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_chang
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.
     stamp(out,
-          ctx_,
+          ctx,
           intent.reason_code.empty() ?
               std::string(ores::service::messaging::change_reasons::new_record) :
               intent.reason_code);
@@ -395,87 +349,177 @@ ores::utility::domain::result tenor_basis_swap_convention_service::prepare_chang
     return result;
 }
 
-
-std::vector<domain::tenor_basis_swap_convention>
-tenor_basis_swap_convention_service::list_tenor_basis_swap_conventions(std::uint32_t offset,
-                                                                       std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all tenor basis swap conventions";
-    return repo_.read_latest(ctx_, offset, limit);
-}
-
-std::uint32_t tenor_basis_swap_convention_service::count_tenor_basis_swap_conventions() {
-    BOOST_LOG_SEV(lg(), debug) << "Getting total tenor basis swap conventions count";
-    return repo_.get_total_tenor_basis_swap_convention_count(ctx_);
-}
-
-
-std::optional<domain::tenor_basis_swap_convention>
-tenor_basis_swap_convention_service::get_tenor_basis_swap_convention_at_version(
-    const std::string& id, std::uint32_t version) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor basis swap convention at version. " << "id: " << id
-                               << " version: " << version;
-    return repo_.read_at_version(ctx_, id, version);
-}
-
-std::optional<domain::tenor_basis_swap_convention>
-tenor_basis_swap_convention_service::get_tenor_basis_swap_convention(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting tenor basis swap convention. " << "id: " << id;
-    auto results = repo_.read_latest(ctx_, id);
-    if (results.empty())
-        return std::nullopt;
-    return results.front();
-}
-
-std::vector<domain::tenor_basis_swap_convention>
-tenor_basis_swap_convention_service::get_tenor_basis_swap_conventions(
-    const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
-}
-
-void tenor_basis_swap_convention_service::save_tenor_basis_swap_convention(
-    const domain::tenor_basis_swap_convention& v) {
-    if (v.id.empty())
-        throw std::invalid_argument("Tenor Basis Swap Convention id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving tenor basis swap convention. " << "id: " << v.id;
-    auto t = v;
-    stamp(t, ctx_);
-    repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved tenor basis swap convention. " << "id: " << v.id;
-}
-
-void tenor_basis_swap_convention_service::save_tenor_basis_swap_conventions(
-    const std::vector<domain::tenor_basis_swap_convention>& tenor_basis_swap_conventions) {
-    for (const auto& e : tenor_basis_swap_conventions) {
-        if (e.id.empty())
-            throw std::invalid_argument("Tenor Basis Swap Convention id cannot be empty.");
+ores::utility::domain::result tenor_basis_swap_convention_service::prepare_pay_receive(
+    const messaging::tenor_basis_swap_pay_receive_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::tenor_basis_swap_pay_receive& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_pay_receive(change.write);
+    const auto key = key_from_pay_receive(out);
+    const auto current = pay_receive_repo_.read_latest(ctx, boost::uuids::to_string(key.id));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "tenor_basis_swap_pay_receive"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_pay_receive"});
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "tenor_basis_swap_pay_receive",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
     }
-    BOOST_LOG_SEV(lg(), debug) << "Saving " << tenor_basis_swap_conventions.size()
-                               << " tenor basis swap conventions";
-    auto ts = tenor_basis_swap_conventions;
-    for (auto& e : ts) {
-        stamp(e, ctx_);
+    stamp(out,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
+}
+
+ores::utility::domain::result tenor_basis_swap_convention_service::reconcile_pay_receive(
+    const context& ctx,
+    const domain::convention& central,
+    const std::vector<messaging::tenor_basis_swap_pay_receive_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::tenor_basis_swap_pay_receive> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::tenor_basis_swap_pay_receive row;
+        const auto result = prepare_pay_receive(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.convention_id = central.id;
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.party_id;
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
     }
-    repo_.write(ctx_, ts);
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_pay_receive(pay_receive_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present =
+            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        if (!present)
+            pay_receive_repo_.remove(ctx, boost::uuids::to_string(row.id));
+    }
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        pay_receive_repo_.write(ctx, wanted, claims);
+    return {};
 }
 
-void tenor_basis_swap_convention_service::delete_tenor_basis_swap_convention(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenor basis swap convention. " << "id: " << id;
-    repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed tenor basis swap convention. " << "id: " << id;
+ores::utility::domain::result tenor_basis_swap_convention_service::prepare_long_short(
+    const messaging::tenor_basis_swap_long_short_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::tenor_basis_swap_long_short& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_long_short(change.write);
+    const auto key = key_from_long_short(out);
+    const auto current = long_short_repo_.read_latest(ctx, boost::uuids::to_string(key.id));
+    switch (change.precondition.kind) {
+        case precondition_kind::must_not_exist:
+            if (!current.empty())
+                return refuse(outcome_code::already_exists,
+                              {.entity = "tenor_basis_swap_long_short"});
+            break;
+        case precondition_kind::must_match_version:
+            if (current.empty())
+                return refuse(outcome_code::not_found, {.entity = "tenor_basis_swap_long_short"});
+            if (!change.precondition.version ||
+                static_cast<std::uint32_t>(current.front().version) !=
+                    *change.precondition.version) {
+                return refuse(outcome_code::version_conflict,
+                              {.entity = "tenor_basis_swap_long_short",
+                               .expected = change.precondition.version ?
+                                               std::to_string(*change.precondition.version) :
+                                               std::string{},
+                               .current = std::to_string(current.front().version)});
+            }
+            break;
+        case precondition_kind::any:
+            break;
+    }
+    stamp(out,
+          ctx,
+          intent.reason_code.empty() ?
+              std::string(ores::service::messaging::change_reasons::new_record) :
+              intent.reason_code);
+    out.change_commentary = intent.commentary;
+    return result;
 }
 
-void tenor_basis_swap_convention_service::delete_tenor_basis_swap_conventions(
-    const std::vector<std::string>& ids) {
-    repo_.remove(ctx_, ids);
+ores::utility::domain::result tenor_basis_swap_convention_service::reconcile_long_short(
+    const context& ctx,
+    const domain::convention& central,
+    const std::vector<messaging::tenor_basis_swap_long_short_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::tenor_basis_swap_long_short> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::tenor_basis_swap_long_short row;
+        const auto result = prepare_long_short(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.convention_id = central.id;
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.party_id;
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
+    }
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_long_short(long_short_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present =
+            std::ranges::any_of(wanted, [&](const auto& w) { return w.id == row.id; });
+        if (!present)
+            long_short_repo_.remove(ctx, boost::uuids::to_string(row.id));
+    }
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        long_short_repo_.write(ctx, wanted, claims);
+    return {};
 }
-
-std::vector<domain::tenor_basis_swap_convention>
-tenor_basis_swap_convention_service::get_tenor_basis_swap_convention_history(
-    const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for tenor basis swap convention. "
-                               << "id: " << id;
-    return repo_.read_all(ctx_, id);
-}
-
 }

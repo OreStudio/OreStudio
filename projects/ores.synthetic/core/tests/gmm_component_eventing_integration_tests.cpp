@@ -160,11 +160,8 @@ TEST_CASE("write_gmm_component_publishes_an_event", tags) {
     // active row, so the parent must be written first.
     auto fx_spot_config_id_parent =
         ores::synthetic::generators::generate_synthetic_fx_spot_generation_config(ctx);
-    fx_spot_config_id_parent.change_reason_code = "system.test";
     auto fx_spot_config_id_parent_market_data_generation_config_parent =
         ores::synthetic::generators::generate_synthetic_market_data_generation_config(ctx);
-    fx_spot_config_id_parent_market_data_generation_config_parent.change_reason_code =
-        "system.test";
     // Seed the active market_data_generation_config row
     // ores_synthetic_market_data_generation_configs_tbl references: the referencing row's insert
     // trigger rejects a synthetic key that matches no active row, so it must be written first.

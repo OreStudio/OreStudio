@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 7681078A-B911-4853-BB25-5F2607E87943
+:END:
+#+title: Task: Generalise the codec for nested and repeated types
+#+description: The probe maps one flat record family. Extend the engine and the generator model to nested complex types, repeated children, attributes on leaf elements, and xs:any, and state the policy for content the schema does not name.
+#+type: task
+#+level: s1
+#+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
+#+owner: marco
+#+branch: feature/generalise-the-codec-for-nested-and-repeated-types
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Teach the table engine the shapes the corpus actually holds. The probe maps one
+flat record family; ORE nests complex types, repeats children, puts attributes
+on leaf elements and allows =xs:any=. Each of those needs a decision written in
+the table rather than in the engine.
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- A type may hold another type, to the corpus's full nesting depth.
+- A repeated child fills a contiguous run, not one heap object per element.
+- An attribute on a leaf element is a field like any other.
+- Content the schema does not name is captured and written back, not skipped.
+- The engine fills a record as the document streams past it. It does not build
+  the tape first: the tape costs 4.5 times the first-level cache misses of
+  scanning on the portfolio and 10.6 times on the 6.3 MB file, and the entity
+  path needs none of it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The engine is in =ores.ore.core/xml/binding=. It holds a stack of at most 32
+frames, each a type and the record being filled, and it writes into the record
+as the scanner walks past. Nothing is retained after a frame closes, so the
+document is never materialised. That is the decision the benchmark drove.
+
+What it handles, exercised by a hand-written table for CalendarAdjustments:
+three levels of nesting, a repeated child of a complex type, a repeated leaf,
+a required attribute, optional children, and requiredness checked at the end of
+each element. Verified against the corpus: the five calendar adjustment
+documents in =external/ore= bind, 45 calendars in all, and the whole
+=ore xml= suite is green at 514 cases and 63,540 assertions.
+
+Two positions are worth recording because they are choices, not defaults.
+
+- *A required attribute is checked like a required child.* Both are content
+  the schema requires. Skipping attributes was a bug the test caught.
+- *Content the schema does not name is refused, not dropped.* For a projection
+  that is the right failure: a document carrying an element the model cannot
+  represent should stop, not lose it. The tape keeps the fidelity case, where
+  the whole document is preserved and written back.
+
+The three =xs:any= sites are handled by a residual field: an element the schema
+does not name is captured as its name and its text. That is enough for ORE's
+own use, where the sites hold scalar content. An unknown element with children
+is refused, because a projection cannot represent a subtree it has no field
+for, and storing half of it would be the silent loss the gate exists to stop.
+
+A repeated leaf now carries a scalar kind, so a list of numbers fills a vector
+of numbers rather than a vector of spellings. ORE's instruments need this:
+=Strike=, =Payoff= and =Level= are repeated =xs:float= elements.
+
+Verified: 517 cases and 63,550 assertions in the =ore xml= suite, and the
+benchmark gate re-recorded at the new commit.

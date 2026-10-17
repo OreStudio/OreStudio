@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 29E7FE1A-63C1-4055-BCC5-EEBB2DA32697
+:END:
+#+title: compass check --only still runs the heavy phase's other members
+#+description: compass check --only step-consumers --include-heavy was expected to run one check, but it started the build, db and ctest closure as well and began a build while the fleet was running. --include-heavy admits the phase's own members even when --only names a single check, so --only is not literally only. Either make --only authoritative, or document that it selects within the phase rather than narrowing the phase.
+#+type: capture
+#+level: cross
+#+filetags: :compass:checks:snag:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

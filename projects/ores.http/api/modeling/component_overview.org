@@ -8,6 +8,7 @@
 #+brief: HTTP server and JWT authentication library
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :http:api:component:
 #+created: 2026-05-19
@@ -73,6 +74,7 @@ The suites link what the profile cannot know about.
 
 #+begin_src cmake :name extra_dependencies
 find_package(Boost REQUIRED COMPONENTS json url)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.security.lib

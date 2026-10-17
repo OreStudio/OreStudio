@@ -70,6 +70,26 @@ cannot be told to run a command unconfined as a rule; escalation is per call.
 The path list is therefore the only lever this repository has over the sandbox,
 and it is a lever over files, not over commands.
 
+* The shared network namespace
+
+=compass build= caps concurrent host builds with two abstract AF_UNIX socket
+names, =@ores-build-slot-a= and =@ores-build-slot-b=. An abstract name lives in
+the network namespace rather than on a filesystem, so those slots are shared
+only while the sandbox keeps the host's network namespace. The profile above
+does not pass =--unshare-net=, which is what makes the lock work; a launcher
+that adds it would give every sandbox its own private set of slot names and
+restore the unbounded-build bug the lock exists to prevent.
+
+Nothing inside the sandbox can prove that the namespace is shared.
+=--unshare-pid= makes =/proc/1= the sandbox's own init, so comparing against it
+proves nothing. The launcher can publish the host's namespace instead: the
+runner below exports =ORES_HOST_NETNS= with the inode of the host's
+=/proc/self/ns/net= before it execs =bwrap=. =compass build= refuses when
+=/proc/self/ns/net= in the sandbox has a different inode. Without that
+reference the build header prints the namespace and marks the sharing
+=unverified=, so a private namespace is visible after the fact rather than
+silent.
+
 * The path list
 
 The list is read by the runner below on every confined command, so an edit
@@ -282,6 +302,12 @@ for arg in "$@"; do
   fi
   out+=("$arg")
 done
+
+# Publish the host network namespace so compass can assert that the sandbox
+# shares it. The build lock is an abstract AF_UNIX name, which is shared only
+# within one network namespace; bwrap inherits the environment, so the value
+# reaches the confined command.
+export ORES_HOST_NETNS="$(stat -Lc '%i' /proc/self/ns/net)"
 
 exec /usr/bin/bwrap "${out[@]}"
 #+end_src

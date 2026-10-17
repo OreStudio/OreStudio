@@ -139,7 +139,6 @@ TEST_CASE("write_currency_pair_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto base_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
-    base_currency_parent.change_reason_code = "system.test";
     ores::refdata::repository::currency_repository base_currency_repo;
     base_currency_repo.write(party_ctx, base_currency_parent);
     v.base_currency = base_currency_parent.iso_code;
@@ -147,7 +146,6 @@ TEST_CASE("write_currency_pair_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto quote_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
-    quote_currency_parent.change_reason_code = "system.test";
     ores::refdata::repository::currency_repository quote_currency_repo;
     quote_currency_repo.write(party_ctx, quote_currency_parent);
     v.quote_currency = quote_currency_parent.iso_code;
@@ -157,7 +155,6 @@ TEST_CASE("write_currency_pair_publishes_an_event", tags) {
     // first.
     auto classification_parent =
         ores::refdata::generators::generate_synthetic_currency_pair_classification(ctx);
-    classification_parent.change_reason_code = "system.test";
     ores::refdata::repository::currency_pair_classification_repository classification_repo;
     classification_repo.write(party_ctx, classification_parent);
     v.classification = classification_parent.code;

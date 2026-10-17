@@ -114,22 +114,12 @@ public:
     read_latest(context ctx, {{{primary_key.batch_params}}});
     /**@}*/
 {{#key_finders}}
-{{#parent_column}}
 
     /**
-     * @brief Reads latest {{entity_plural_words}} filtered by {{parent_column}} and {{column}}.
+     * @brief Reads latest {{entity_plural_words}} filtered by {{{key_label}}}.
      */
     std::vector<domain::{{entity_singular}}>
-    read_latest_by_{{suffix}}(context ctx, const std::string& {{parent_column}}, const std::string& {{column}});
-{{/parent_column}}
-{{^parent_column}}
-
-    /**
-     * @brief Reads latest {{entity_plural_words}} filtered by {{column}}.
-     */
-    std::vector<domain::{{entity_singular}}>
-    read_latest_by_{{suffix}}(context ctx, const std::string& {{column}});
-{{/parent_column}}
+    read_latest_by_{{suffix}}(context ctx, {{{params}}});
 {{/key_finders}}
 {{^current_state}}
 {{#key_resolvers}}
@@ -141,6 +131,13 @@ public:
      * after a delete, which closes the transaction-time window rather than
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
+{{#domain_entity.has_party_column}}
+     *
+     * A key names a row of one party, and another party of the tenant may hold
+     * the same key, so the match is kept to the session's party. A null party
+     * column means the row belongs to the whole tenant and is kept for every
+     * party.
+{{/domain_entity.has_party_column}}
      */
     std::vector<domain::{{entity_singular}}>
     read_any_by_{{suffix}}(context ctx, const std::string& {{column}});

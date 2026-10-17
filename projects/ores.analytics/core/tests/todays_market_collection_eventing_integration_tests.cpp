@@ -177,7 +177,6 @@ TEST_CASE("write_todays_market_collection_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto todays_market_config_id_parent =
         ores::analytics::generators::generate_synthetic_todays_market_config(ctx);
-    todays_market_config_id_parent.change_reason_code = "system.test";
     // The todays_market_config is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.

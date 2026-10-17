@@ -39,7 +39,9 @@ Tenor basis swap is rebuilt on the central convention row and the composite pare
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:AE65D02A-417C-41D7-AC5C-163D775AFC0B][Pilot the atomised convention with tenor basis swap]] | STARTED | 2026-10-14 | | Build tenor basis swap on the central convention row and the composite parent-and-parts pattern, and generate the family get and put. |
+| [[id:AE65D02A-417C-41D7-AC5C-163D775AFC0B][Pilot the atomised convention with tenor basis swap]] | DONE | 2026-10-14 | 2026-10-16 | Build tenor basis swap on the central convention row and the composite parent-and-parts pattern, and generate the family get and put. |
+| [[id:293E7326-A3A2-48E5-AD05-2EEA68C4E362][Build the composite family get and put]] | BACKLOG | | | Generate the family get, get_many, put and put_many for a composite entity, so one round trip reads a central row with its parts at one instant and one transaction writes them together. Prove the generated operations on an existing composite before the convention pilot depends on them. The generic get and put stay as they are, and the family names follow the codegen pattern library. |
+| [[id:487AB0EE-0BA4-40FD-ABCF-0471ABD43823][Restore the publish path for an atomised convention]] | DONE | | 2026-10-16 | Give a composite convention a publish path. The DQ artefact and publish path resolves one artefact table to one live table by name, and an atomised kind has three live tables, so the atomised kind has no artefact table and cannot be staged or published through DQ. Restore the path for a composite, for every convention kind, without weakening row-level isolation, losing the dataset staging the path exists for, or making a publish non-idempotent. |
 
 * Decisions
 

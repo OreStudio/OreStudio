@@ -8,6 +8,7 @@
 #+brief: Trading instrument and trade contract types
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :trading:api:component:
 #+created: 2026-05-19
@@ -97,6 +98,8 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         faker-cxx::faker-cxx
         libfort::fort)
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

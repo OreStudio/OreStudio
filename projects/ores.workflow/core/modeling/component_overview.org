@@ -8,6 +8,7 @@
 #+brief: Workflow definition and execution core
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :workflow:core:component:
 #+created: 2026-05-19
@@ -90,6 +91,8 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.core.lib
         sqlgen::sqlgen
         Boost::boost)
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

@@ -919,28 +919,15 @@ std::optional<domain::{{entity_singular}}>
 }
 {{/service_find_by_uuid}}
 {{#service_find_by_code}}
-{{#parent_column}}
 
 std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::find_{{entity_singular_short}}_by_code(const boost::uuids::uuid& {{parent_column}},
-                                                                         const std::string& {{column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}} by {{parent_column}}/{{column}}: "
-                               << {{parent_column}} << "/" << {{column}};
-    auto results = repo_.read_latest_by_code(ctx_, boost::uuids::to_string({{parent_column}}), {{column}});
+{{entity_singular}}_service::find_{{entity_singular_short}}_by_code({{{service_params}}}) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}} by {{log_label}}: "
+                               << {{{log_fields}}};
+    auto results = repo_.read_latest_by_code(ctx_, {{{service_call_args}}});
     if (results.empty()) return std::nullopt;
     return results.front();
 }
-{{/parent_column}}
-{{^parent_column}}
-
-std::optional<domain::{{entity_singular}}>
-{{entity_singular}}_service::find_{{entity_singular_short}}_by_code(const std::string& {{column}}) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding {{entity_singular_words}} by {{column}}: " << {{column}};
-    auto results = repo_.read_latest_by_code(ctx_, {{column}});
-    if (results.empty()) return std::nullopt;
-    return results.front();
-}
-{{/parent_column}}
 {{/service_find_by_code}}
 
 std::vector<domain::{{entity_singular}}>
@@ -1645,3 +1632,429 @@ std::optional<ores::utility::domain::result>
 {{/protocol_derived}}
 }
 {{/junction}}
+{{#family}}
+#include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
+
+#include "ores.{{component_include}}/domain/{{central.entity}}.hpp"
+{{#parts}}
+#include "ores.{{component_include}}/domain/{{entity}}.hpp"
+{{/parts}}
+#include "ores.{{component_include}}/messaging/{{entity_singular}}_protocol.hpp"
+#include "ores.{{component_core}}/repository/{{central.entity}}_repository.hpp"
+{{#parts}}
+#include "ores.{{component_core}}/repository/{{entity}}_repository.hpp"
+{{/parts}}
+#include "ores.database/domain/context.hpp"
+#include "ores.database/domain/outcome_code.hpp"
+#include "ores.database/repository/unit_of_work.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/domain/protocol.hpp"
+#include <boost/uuid/uuid_io.hpp>
+#include <limits>
+#include <optional>
+#include <ranges>
+#include <string>
+#include <utility>
+#include <vector>
+
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
+using ores::service::messaging::stamp;
+
+namespace ores::{{component}}::service {
+
+using namespace ores::logging;
+
+namespace {
+
+/**
+ * @brief The current central row a family key names, or an empty vector.
+ */
+std::vector<domain::{{central.entity}}> read_{{central.entity}}(
+    repository::{{central.entity}}_repository& repo,
+    const ores::database::context& ctx,
+    const messaging::{{entity_singular}}_key& key) {
+    return repo.{{central.read_method}}(ctx, {{central.read_key_expr}});
+}
+
+/**
+ * @brief The key a central domain row states, so the row read back is
+ * addressed exactly as the request addressed it.
+ */
+messaging::{{entity_singular}}_key key_from(const domain::{{central.entity}}& v) {
+    messaging::{{entity_singular}}_key key;
+    key.{{central.key_field.name}} = v.{{central.key_member}};
+    return key;
+}
+
+/**
+ * @brief Builds the central domain object a change's write record states.
+ *
+ * The record carries the user-owned fields and nothing else: tenancy, the
+ * provenance, the version and the validity window are the service's and the
+ * database's to state.
+ */
+domain::{{central.entity}} to_domain(const messaging::{{central.entity}}_write& write) {
+    domain::{{central.entity}} v;
+{{#central.write_fields}}
+{{#enum_from_string}}
+    {
+        const auto parsed = {{{enum_from_string}}}(write.{{name}});
+        v.{{domain_member}} = parsed.value_or({{{enum_default}}});
+    }
+{{/enum_from_string}}
+{{#date_from_string}}
+    if (!write.{{name}}.empty())
+        v.{{domain_member}} = ores::platform::time::datetime::from_iso8601_date(write.{{name}});
+{{/date_from_string}}
+{{#timestamp_from_string}}
+    if (!write.{{name}}.empty())
+        v.{{domain_member}} = ores::platform::time::datetime::from_iso8601_utc(write.{{name}});
+{{/timestamp_from_string}}
+{{^enum_from_string}}
+{{^date_from_string}}
+{{^timestamp_from_string}}
+    v.{{domain_member}} = write.{{name}};
+{{/timestamp_from_string}}
+{{/date_from_string}}
+{{/enum_from_string}}
+{{/central.write_fields}}
+    return v;
+}
+{{#parts}}
+
+/**
+ * @brief The live rows of one part kind that belong to one central row.
+ */
+std::vector<domain::{{entity}}> read_{{part}}(
+    repository::{{entity}}_repository& repo,
+    const ores::database::context& ctx,
+    const domain::{{central.entity}}& central) {
+    return repo.read_latest_by_{{fk_column}}(
+        ctx, {{fk_read_expr}}, 0, std::numeric_limits<std::uint32_t>::max(), {}, std::nullopt);
+}
+
+/**
+ * @brief Builds the part domain object a change's write record states.
+ */
+domain::{{entity}} to_domain_{{part}}(const messaging::{{entity}}_write& write) {
+    domain::{{entity}} v;
+{{#write_fields}}
+{{#enum_from_string}}
+    {
+        const auto parsed = {{{enum_from_string}}}(write.{{name}});
+        v.{{domain_member}} = parsed.value_or({{{enum_default}}});
+    }
+{{/enum_from_string}}
+{{#date_from_string}}
+    if (!write.{{name}}.empty())
+        v.{{domain_member}} = ores::platform::time::datetime::from_iso8601_date(write.{{name}});
+{{/date_from_string}}
+{{#timestamp_from_string}}
+    if (!write.{{name}}.empty())
+        v.{{domain_member}} = ores::platform::time::datetime::from_iso8601_utc(write.{{name}});
+{{/timestamp_from_string}}
+{{^enum_from_string}}
+{{^date_from_string}}
+{{^timestamp_from_string}}
+    v.{{domain_member}} = write.{{name}};
+{{/timestamp_from_string}}
+{{/date_from_string}}
+{{/enum_from_string}}
+{{/write_fields}}
+    return v;
+}
+
+/**
+ * @brief The key a part domain row states.
+ */
+messaging::{{entity}}_key key_from_{{part}}(const domain::{{entity}}& v) {
+    messaging::{{entity}}_key key;
+    key.{{key_field.name}} = v.{{key_member}};
+    return key;
+}
+{{/parts}}
+
+}
+
+{{entity_singular}}_service::{{entity_singular}}_service(context ctx)
+    : ctx_(std::move(ctx)) {}
+
+{{#get_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    auto found = read_{{central.entity}}(central_repo_, ctx_, request.key);
+    if (found.empty()) {
+        response.result = refuse(outcome_code::not_found, {.entity = "{{entity_singular}}"});
+        return response;
+    }
+    response.item = assemble(ctx_, request.key, found.front());
+    return response;
+}
+
+{{/get_operations}}
+{{#get_many_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    // One request answers the whole set: every central row and every part it
+    // owns is read and assembled in this one call.
+    response.items.reserve(request.keys.size());
+    for (const auto& key : request.keys) {
+        auto found = read_{{central.entity}}(central_repo_, ctx_, key);
+        if (found.empty())
+            continue;
+        response.items.push_back(assemble(ctx_, key, found.front()));
+    }
+    return response;
+}
+
+{{/get_many_operations}}
+{{#put_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    // The central row and every part land in one transaction, so no reader
+    // sees a part disagree with the central version.
+    ores::database::repository::unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
+    domain::{{central.entity}} central;
+    response.result = prepare_{{central.entity}}(request.item.change, request.intent, ctx, central);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+    central_repo_.write(ctx, central, request.item.change.precondition);
+
+    // The store owns the key and the window, so the key the row was written
+    // under is the one the write stated rather than assumed from the request.
+    const auto key = key_from(central);
+    // A part write bumps the central row through the part table's own trigger,
+    // so the central row is read back after the parts land and the item carries
+    // the version the write produced.
+{{#parts}}
+    response.result = reconcile_{{part}}(ctx, central, request.item.{{part}}, request.intent);
+    if (response.result.outcome != ores::utility::domain::outcome::ok)
+        return response;
+{{/parts}}
+
+    auto stored = read_{{central.entity}}(central_repo_, ctx, key);
+    if (stored.empty()) {
+        response.result = refuse(outcome_code::not_found, {.entity = "{{central.entity}}"});
+        return response;
+    }
+    uow.commit();
+    response.item = assemble(ctx_, key, stored.front());
+    return response;
+}
+
+{{/put_operations}}
+{{#put_many_operations}}
+messaging::{{response}}
+{{entity_singular}}_service::{{method}}(const messaging::{{request}}& request) {
+    messaging::{{response}} response;
+    // One transaction for the whole batch. Each element states its own claim,
+    // and the store checks each row's claim as it is written; an element that
+    // is refused leaves the transaction uncommitted and nothing lands.
+    ores::database::repository::unit_of_work uow(ctx_);
+    const auto& ctx = uow.ctx();
+
+    response.items.reserve(request.items.size());
+    for (const auto& write : request.items) {
+        domain::{{central.entity}} central;
+        response.result = prepare_{{central.entity}}(write.change, request.intent, ctx, central);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+        central_repo_.write(ctx, central, write.change.precondition);
+
+        const auto key = key_from(central);
+        // A part write bumps the central row, so it is read back after them.
+{{#parts}}
+        response.result = reconcile_{{part}}(ctx, central, write.{{part}}, request.intent);
+        if (response.result.outcome != ores::utility::domain::outcome::ok)
+            return response;
+{{/parts}}
+        auto stored = read_{{central.entity}}(central_repo_, ctx, key);
+        if (stored.empty()) {
+            response.result = refuse(outcome_code::not_found, {.entity = "{{central.entity}}"});
+            return response;
+        }
+        response.items.push_back(assemble(ctx_, key, stored.front()));
+    }
+
+    uow.commit();
+    return response;
+}
+
+{{/put_many_operations}}
+messaging::{{entity_singular}}_item
+{{entity_singular}}_service::assemble(
+    const context& ctx,
+    const messaging::{{entity_singular}}_key& key,
+    const std::optional<domain::{{central.entity}}>& central) {
+    messaging::{{entity_singular}}_item item;
+    item.key = key;
+    item.{{central.entity}} = central;
+{{#parts}}
+    if (central)
+        item.{{part}} = read_{{part}}({{part}}_repo_, ctx, *central);
+{{/parts}}
+    return item;
+}
+
+ores::utility::domain::result
+{{entity_singular}}_service::prepare_{{central.entity}}(
+    const messaging::{{central.entity}}_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::{{central.entity}}& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain(change.write);
+    const auto current = read_{{central.entity}}(central_repo_, ctx, key_from(out));
+    switch (change.precondition.kind) {
+    case precondition_kind::must_not_exist:
+        if (!current.empty())
+            return refuse(outcome_code::already_exists, {.entity = "{{central.entity}}"});
+        break;
+    case precondition_kind::must_match_version:
+{{#central.has_audit_columns}}
+        if (current.empty())
+            return refuse(outcome_code::not_found, {.entity = "{{central.entity}}"});
+        // The protocol states the version as a uint32 and the row carries it
+        // as an int, so the comparison states the conversion.
+        if (!change.precondition.version
+            || static_cast<std::uint32_t>(current.front().{{central.version_member}})
+                   != *change.precondition.version) {
+            return refuse(outcome_code::version_conflict,
+                          {.entity = "{{central.entity}}",
+                           .expected = change.precondition.version
+                                           ? std::to_string(*change.precondition.version)
+                                           : std::string{},
+                           .current =
+                               std::to_string(current.front().{{central.version_member}})});
+        }
+{{/central.has_audit_columns}}
+{{^central.has_audit_columns}}
+        // A resource that keeps no version cannot answer the claim.
+        return refuse(outcome_code::precondition_not_supported);
+{{/central.has_audit_columns}}
+        break;
+    case precondition_kind::any:
+        break;
+    }
+    // The version is the repository's to state, from the claim: it is the one
+    // thing the store's arbiter reads, and stating it in two places is how the
+    // two come to disagree.
+    stamp(out, ctx,
+          intent.reason_code.empty()
+              ? std::string(ores::service::messaging::change_reasons::new_record)
+              : intent.reason_code);
+{{#central.has_audit_columns}}
+    out.{{central.commentary_member}} = intent.commentary;
+{{/central.has_audit_columns}}
+    return result;
+}
+{{#parts}}
+
+ores::utility::domain::result
+{{entity_singular}}_service::prepare_{{part}}(
+    const messaging::{{entity}}_change& change,
+    const ores::utility::domain::change_intent& intent,
+    const context& ctx,
+    domain::{{entity}}& out) {
+    using ores::utility::domain::outcome;
+    using ores::utility::domain::precondition_kind;
+    ores::utility::domain::result result;
+    out = to_domain_{{part}}(change.write);
+    const auto key = key_from_{{part}}(out);
+    const auto current = {{part}}_repo_.{{read_method}}(ctx, {{read_key_expr}});
+    switch (change.precondition.kind) {
+    case precondition_kind::must_not_exist:
+        if (!current.empty())
+            return refuse(outcome_code::already_exists, {.entity = "{{entity}}"});
+        break;
+    case precondition_kind::must_match_version:
+{{#has_audit_columns}}
+        if (current.empty())
+            return refuse(outcome_code::not_found, {.entity = "{{entity}}"});
+        if (!change.precondition.version
+            || static_cast<std::uint32_t>(current.front().{{version_member}})
+                   != *change.precondition.version) {
+            return refuse(outcome_code::version_conflict,
+                          {.entity = "{{entity}}",
+                           .expected = change.precondition.version
+                                           ? std::to_string(*change.precondition.version)
+                                           : std::string{},
+                           .current = std::to_string(current.front().{{version_member}})});
+        }
+{{/has_audit_columns}}
+{{^has_audit_columns}}
+        // A resource that keeps no version cannot answer the claim.
+        return refuse(outcome_code::precondition_not_supported);
+{{/has_audit_columns}}
+        break;
+    case precondition_kind::any:
+        break;
+    }
+    stamp(out, ctx,
+          intent.reason_code.empty()
+              ? std::string(ores::service::messaging::change_reasons::new_record)
+              : intent.reason_code);
+{{#has_audit_columns}}
+    out.{{commentary_member}} = intent.commentary;
+{{/has_audit_columns}}
+    return result;
+}
+
+ores::utility::domain::result
+{{entity_singular}}_service::reconcile_{{part}}(
+    const context& ctx,
+    const domain::{{central.entity}}& central,
+    const std::vector<messaging::{{entity}}_change>& requested,
+    const ores::utility::domain::change_intent& intent) {
+    using ores::utility::domain::outcome;
+    // Every requested row is checked before any of them is written, so a
+    // refused row refuses the family element rather than landing half of it.
+    std::vector<domain::{{entity}}> wanted;
+    wanted.reserve(requested.size());
+    std::vector<ores::utility::domain::precondition> claims;
+    claims.reserve(requested.size());
+    for (const auto& change : requested) {
+        domain::{{entity}} row;
+        const auto result = prepare_{{part}}(change, intent, ctx, row);
+        if (result.outcome != outcome::ok)
+            return result;
+        row.{{fk_member}} = {{fk_assign_expr}};
+{{#copy_party_id}}
+        // A part that carries the owning party takes it from the central row,
+        // which is the row the session stamped. The part table's own policy
+        // reads that column, so it must agree with the central row even when
+        // the session has no party of its own.
+        row.party_id = central.party_id;
+{{/copy_party_id}}
+        wanted.push_back(std::move(row));
+        claims.push_back(change.precondition);
+    }
+    // A row that is live now but absent from the request is closed, so this
+    // part's rows for the central row become exactly the rows the request
+    // carries. The close bumps the central version through the part table's
+    // own trigger, so the C++ never touches it.
+    const auto live = read_{{part}}({{part}}_repo_, ctx, central);
+    for (const auto& row : live) {
+        const bool present = std::ranges::any_of(
+            wanted, [&](const auto& w) { return w.{{pk_member}} == row.{{pk_member}}; });
+        if (!present)
+            {{part}}_repo_.remove(ctx, {{pk_text_expr}});
+    }
+    // One statement, so the requested set for this part lands together. The
+    // store checks each row's claim inside it.
+    if (!wanted.empty())
+        {{part}}_repo_.write(ctx, wanted, claims);
+    return {};
+}
+{{/parts}}
+}
+{{/family}}

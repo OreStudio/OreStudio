@@ -43,7 +43,10 @@ tenant_type make_tenant_type(ores::testing::database_helper& h) {
     tenant_type tt;
     tt.version = 1;
     tt.type = std::string(faker::string::alphanumeric(8)) + "_" + std::to_string(idx);
-    tt.name = std::string(faker::word::noun()) + " " + std::to_string(idx);
+    // The database outlives the test process, so the name has to be unique
+    // across runs, not just within this one.
+    tt.name = std::string(faker::word::noun()) + " " +
+        std::string(faker::string::alphanumeric(8));
     tt.description = std::string(faker::lorem::sentence());
     tt.display_order = idx;
     tt.modified_by = h.db_user();

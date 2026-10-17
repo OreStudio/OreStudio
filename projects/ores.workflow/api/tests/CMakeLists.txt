@@ -54,6 +54,11 @@ target_link_libraries(${tests_target_name}
         faker-cxx::faker-cxx
         Threads::Threads)
 
+# The protocol tests read their fixture payloads from the source tree, so the
+# suite needs the path at compile time.
+target_compile_definitions(${tests_target_name}
+    PRIVATE ORES_WORKFLOW_API_TEST_FIXTURES="${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
+
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM
     COMMAND ${ORES_TEST_ENV_CMD} $<TARGET_FILE:${tests_binary_name}> ${ORES_CATCH2_ARGS}

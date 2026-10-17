@@ -95,7 +95,7 @@ clothes. A part would buy a join, a message and a lookup for nothing.
 | Insert-trigger validations | a rule the database must enforce on write | the =Insert trigger= section and its validation table |
 | Variation | a family of entities states its variation | the profiles and features of the
   [[id:D773166D-0C91-8CB4-3323-42166BC07687][system model]] |
-| Batched reads | a list is read alongside its children | =:has_batch_read:= |
+| Batched reads | an entity is read by a set of keys | nothing to declare: the repository derives =read_latest= over the primary key, and =get_many= carries it on the wire |
 
 These are additions to a pattern, not patterns of their own. Each one is
 declared on the model and is never inferred from a column's presence, per

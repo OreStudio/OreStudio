@@ -44,6 +44,8 @@ target_link_libraries(${tests_target_name}
 # a scoped temporary file, a compression helper -- so the component declares
 # them here rather than the profile carrying every component's needs.
 
+find_package(LibArchive REQUIRED)
+
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
@@ -53,6 +55,11 @@ target_link_libraries(${tests_target_name}
         faker-cxx::faker-cxx
         ores.openssl_cleanup
         Threads::Threads)
+
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ores.platform.lib
+        ores.utility.lib)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

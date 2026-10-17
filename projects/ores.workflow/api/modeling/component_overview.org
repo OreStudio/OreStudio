@@ -5,6 +5,7 @@
 #+description: Domain types and NATS protocol schemas for the workflow component.
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :workflow:api:component:
 #+created: 2026-05-19
@@ -74,4 +75,9 @@ target_link_libraries(${tests_target_name}
         Catch2::Catch2
         faker-cxx::faker-cxx
         Threads::Threads)
+
+# The protocol tests read their fixture payloads from the source tree, so the
+# suite needs the path at compile time.
+target_compile_definitions(${tests_target_name}
+    PRIVATE ORES_WORKFLOW_API_TEST_FIXTURES="${CMAKE_CURRENT_SOURCE_DIR}/fixtures")
 #+end_src

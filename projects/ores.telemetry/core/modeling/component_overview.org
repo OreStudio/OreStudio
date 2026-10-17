@@ -7,6 +7,7 @@
 #+description: Observability library — structured logging, distributed tracing, and the messaging types the telemetry subjects carry.
 #+brief: Structured logging and tracing library
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :telemetry:core:component:
 #+created: 2026-05-19

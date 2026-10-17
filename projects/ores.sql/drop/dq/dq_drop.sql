@@ -60,6 +60,9 @@
 \ir ./dq_currency_countries_artefact_drop.sql
 \ir ./dq_currency_groups_artefact_drop.sql
 \ir ./dq_currency_currency_groups_artefact_drop.sql
+\ir ./dq_conventions_artefact_drop.sql
+\ir ./dq_tenor_basis_swap_pay_receives_artefact_drop.sql
+\ir ./dq_tenor_basis_swap_long_shorts_artefact_drop.sql
 \ir ./dq_average_ois_conventions_artefact_drop.sql
 \ir ./dq_bma_basis_swap_conventions_artefact_drop.sql
 \ir ./dq_bond_yield_conventions_artefact_drop.sql

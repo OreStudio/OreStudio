@@ -156,7 +156,6 @@ TEST_CASE("write_ir_curve_generation_config_publishes_an_event", tags) {
     // first.
     auto config_id_parent =
         ores::synthetic::generators::generate_synthetic_market_data_generation_config(ctx);
-    config_id_parent.change_reason_code = "system.test";
     ores::synthetic::repository::market_data_generation_config_repository config_id_repo;
     config_id_repo.write(party_ctx, config_id_parent);
     v.config_id = config_id_parent.id;

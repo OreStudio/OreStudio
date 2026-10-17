@@ -18,6 +18,8 @@
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid.hpp>
+#include <algorithm>
 #include <map>
 #include <rfl/json.hpp>
 #include <string>
@@ -56,6 +58,55 @@ std::map<std::string, int> element_counts(const std::string& xml) {
     return names;
 }
 
+constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
+
+/// The document without the family whose identity is not a value.
+ores::refdata::messaging::conventions_document
+without_tenor_basis_swap(ores::refdata::messaging::conventions_document d) {
+    std::erase_if(d.convention, [](const auto& c) { return c.kind_code == tenor_basis_swap_kind; });
+    d.tenor_basis_swap_pay_receive.clear();
+    d.tenor_basis_swap_long_short.clear();
+    return d;
+}
+
+/// A tenor basis swap's facts, keyed by the identity the mapper states.
+///
+/// The mapper mints a provisional key for the central row and the part rows
+/// reach it by that key, so two maps of one document agree on the key only
+/// within a single map. What two maps do agree on is the stated identity, the
+/// kind and the name, so the comparison pairs the conventions by that and drops
+/// the provisional keys before it compares the rest.
+std::map<std::string, std::string>
+tenor_basis_swap_facts(const ores::refdata::messaging::conventions_document& d) {
+    std::map<std::string, std::string> out;
+    for (const auto& c : d.convention) {
+        if (c.kind_code != tenor_basis_swap_kind)
+            continue;
+        ores::refdata::messaging::tenor_basis_swap_convention_item item;
+        auto central = c;
+        central.id = boost::uuids::uuid{};
+        item.convention = central;
+        for (const auto& p : d.tenor_basis_swap_pay_receive) {
+            if (p.convention_id != c.id)
+                continue;
+            auto part = p;
+            part.id = boost::uuids::uuid{};
+            part.convention_id = boost::uuids::uuid{};
+            item.pay_receive.push_back(part);
+        }
+        for (const auto& l : d.tenor_basis_swap_long_short) {
+            if (l.convention_id != c.id)
+                continue;
+            auto part = l;
+            part.id = boost::uuids::uuid{};
+            part.convention_id = boost::uuids::uuid{};
+            item.long_short.push_back(part);
+        }
+        out[c.kind_code + "\x1f" + c.name] = rfl::json::write(item);
+    }
+    return out;
+}
+
 } // namespace
 
 std::string conventions_difference(const conventions& original,
@@ -85,9 +136,14 @@ std::string conventions_difference(const conventions& original,
     // that normalisation is deliberate and carries the same information, so
     // comparing the mapped values tolerates it. A value the mapper got wrong
     // survives neither direction, so this catches it.
-    if (rfl::json::write(conventions_mapper::map(original)) !=
-        rfl::json::write(conventions_mapper::map(exported)))
+    const auto mapped_document = conventions_mapper::map(original);
+    const auto mapped_export = conventions_mapper::map(exported);
+    if (rfl::json::write(without_tenor_basis_swap(mapped_document)) !=
+        rfl::json::write(without_tenor_basis_swap(mapped_export)))
         return path + ": the export reads back as different conventions";
+
+    if (tenor_basis_swap_facts(mapped_document) != tenor_basis_swap_facts(mapped_export))
+        return path + ": the export reads back as a different tenor basis swap";
 
     return {};
 }

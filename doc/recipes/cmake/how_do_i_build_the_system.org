@@ -66,7 +66,11 @@ that slot's =-j=:
 #+end_src
 
 reports each slot as held (with the holding environment's identity,
-pid, and start time) or free, plus a tail of that slot's build log.
+pid, and start time) or free, plus a tail of that slot's build log. A
+free slot also reports the last holder recorded in this checkout, from
+=tmp/ores-build-last-holder.<slot>=, or says that no build has taken it
+yet. The abstract socket itself leaves nothing behind, so this sidecar
+is the only way to see a previous holder.
 Every build's combined stdout/stderr is also streamed live to a
 well-known path per slot, =tmp/ores-build.log.<slot>= under the
 checkout (overwritten each run) — =tail -f= it directly if you want
@@ -80,6 +84,17 @@ rather than killing it or falling back to a raw =cmake --build=.
 =--jobs= overrides the slot's job count if you deliberately need a
 different value for one invocation. =--dry-run= does not take a lock
 or write a log.
+
+The lock only works because the sandbox shares the host's network
+namespace: an abstract socket name is exclusive within that namespace,
+not across filesystems. A launcher can publish the host namespace in
+=ORES_HOST_NETNS= (the inode of the host's =/proc/self/ns/net=);
+=compass build= then refuses a sandbox whose namespace differs. Without
+that reference nothing inside the sandbox can prove the namespace is
+shared, so the build header prints the namespace it holds the slot in
+and marks the sharing =unverified=. Two builds that both report slot
+='a' with different namespace inodes are the symptom of a private
+network namespace.
 
 The actual =cmake --build= step (not the configure step) also runs
 inside its own memory-capped =app-build-<env>.slice= when a user
@@ -110,11 +125,13 @@ cmake --build --preset <preset> [--target <target_name>]
 
 =compass build= ([[proj:projects/ores.compass/src/compass.py][=projects/ores.compass/src/compass.py=]]) wrapping
 =cmake --build --preset=. Locking is =_acquire_build_lock=/
-=BUILD_LOCK_SLOTS= in the same file — two =flock=-based slots
-(each =-j3=) under =/tmp/ores-build.lock.a= and
-=/tmp/ores-build.lock.b=, shared by every worktree on the host, so two
-environments build at once and six cores are in flight at most. The memory
-cap comes from
+=BUILD_LOCK_SLOTS= in the same file — two slots (each =-j3=), held by
+binding the abstract AF_UNIX socket names =@ores-build-slot-a= and
+=@ores-build-slot-b=. Abstract names live in the network namespace, not
+on a filesystem, so every worktree and every bubblewrap sandbox on the
+host contends for the same two slots; a lock file in =/tmp= would be
+private to each sandbox. Two environments build at once and six cores are
+in flight at most. The memory cap comes from
 =_ensure_build_slice_deployed=/=_build_slice_name= in the same file,
 syncing
 [[proj:projects/ores.compass/src/systemd/app-build-.slice.d/50-limits.conf][=projects/ores.compass/src/systemd/app-build-.slice.d/50-limits.conf=]].

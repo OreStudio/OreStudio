@@ -154,7 +154,6 @@ TEST_CASE("write_crm_enabled_derived_pair_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto config_id_parent = ores::refdata::generators::generate_synthetic_crm_topology_config(ctx);
-    config_id_parent.change_reason_code = "system.test";
     ores::refdata::repository::crm_topology_config_repository config_id_repo;
     config_id_repo.write(party_ctx, config_id_parent);
     v.config_id = config_id_parent.id;

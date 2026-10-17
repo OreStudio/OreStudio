@@ -25,7 +25,12 @@
 #ifndef ORES_REFDATA_API_MESSAGING_TENOR_BASIS_SWAP_CONVENTION_PROTOCOL_HPP
 #define ORES_REFDATA_API_MESSAGING_TENOR_BASIS_SWAP_CONVENTION_PROTOCOL_HPP
 
-#include "ores.refdata.api/domain/tenor_basis_swap_convention.hpp"
+#include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
+#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
+#include "ores.refdata.api/messaging/convention_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_basis_swap_long_short_protocol.hpp"
+#include "ores.refdata.api/messaging/tenor_basis_swap_pay_receive_protocol.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <cstdint>
@@ -36,88 +41,20 @@
 namespace ores::refdata::messaging {
 
 struct tenor_basis_swap_convention_key {
-    std::string id;
+    boost::uuids::uuid id;
+};
+
+struct tenor_basis_swap_convention_item {
+    tenor_basis_swap_convention_key key;
+    std::optional<ores::refdata::domain::convention> convention;
+    std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> pay_receive;
+    std::vector<ores::refdata::domain::tenor_basis_swap_long_short> long_short;
 };
 
 struct tenor_basis_swap_convention_write {
-    std::string id;
-    std::optional<std::string> pay_index;
-    std::optional<std::string> pay_frequency;
-    std::optional<std::string> receive_index;
-    std::optional<std::string> receive_frequency;
-    std::optional<bool> spread_on_rec;
-    std::optional<bool> include_spread;
-    std::optional<std::string> sub_periods_coupon_type;
-    std::optional<bool> pay_is_averaged;
-    std::optional<bool> rec_is_averaged;
-    std::optional<std::string> long_index;
-    std::optional<std::string> long_pay_tenor;
-    std::optional<std::string> short_index;
-    std::optional<std::string> short_pay_tenor;
-    std::optional<bool> spread_on_short;
-    std::optional<std::string> oresmd_uri;
-};
-
-struct tenor_basis_swap_convention_change {
-    tenor_basis_swap_convention_write write;
-    ores::utility::domain::precondition precondition;
-};
-
-struct tenor_basis_swap_convention_removal {
-    tenor_basis_swap_convention_key key;
-    ores::utility::domain::precondition precondition = ores::utility::domain::removal_precondition;
-};
-
-struct tenor_basis_swap_convention_lookup {
-    tenor_basis_swap_convention_key key;
-    std::optional<ores::refdata::domain::tenor_basis_swap_convention> tenor_basis_swap_convention;
-};
-
-struct tenor_basis_swap_conventions_filter {
-    std::optional<std::vector<std::string>> id_one_of;
-};
-
-struct tenor_basis_swap_convention_event {
-    boost::uuids::uuid event_id;
-    tenor_basis_swap_convention_key key;
-    std::string action;
-    std::uint32_t version;
-    std::chrono::system_clock::time_point occurred_at;
-    std::optional<std::string> correlation_id;
-};
-
-struct tenor_basis_swap_convention_version_key {
-    tenor_basis_swap_convention_key tenor_basis_swap_convention;
-    std::uint32_t version;
-};
-
-struct tenor_basis_swap_convention_versions_filter {
-    std::optional<std::uint32_t> version;
-    std::optional<std::uint32_t> from_version;
-    std::optional<std::uint32_t> to_version;
-};
-
-struct list_tenor_basis_swap_conventions_request {
-    using response_type = struct list_tenor_basis_swap_conventions_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.tenor_basis_swap_conventions.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    ores::utility::domain::order order;
-    std::optional<tenor_basis_swap_conventions_filter> filter;
-    std::optional<std::string> as_of;
-};
-
-struct list_tenor_basis_swap_conventions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::refdata::domain::tenor_basis_swap_convention> tenor_basis_swap_conventions;
-    std::uint64_t total;
+    convention_change change;
+    std::vector<tenor_basis_swap_pay_receive_change> pay_receive;
+    std::vector<tenor_basis_swap_long_short_change> long_short;
 };
 
 struct get_tenor_basis_swap_convention_request {
@@ -135,7 +72,7 @@ struct get_tenor_basis_swap_convention_request {
 
 struct get_tenor_basis_swap_convention_response {
     ores::utility::domain::result result;
-    std::optional<ores::refdata::domain::tenor_basis_swap_convention> tenor_basis_swap_convention;
+    std::optional<tenor_basis_swap_convention_item> item;
 };
 
 struct get_many_tenor_basis_swap_conventions_request {
@@ -154,7 +91,7 @@ struct get_many_tenor_basis_swap_conventions_request {
 
 struct get_many_tenor_basis_swap_conventions_response {
     ores::utility::domain::result result;
-    std::vector<tenor_basis_swap_convention_lookup> entries;
+    std::vector<tenor_basis_swap_convention_item> items;
 };
 
 struct put_tenor_basis_swap_convention_request {
@@ -167,13 +104,13 @@ struct put_tenor_basis_swap_convention_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    tenor_basis_swap_convention_change change;
+    tenor_basis_swap_convention_write item;
     ores::utility::domain::change_intent intent;
 };
 
 struct put_tenor_basis_swap_convention_response {
     ores::utility::domain::result result;
-    std::optional<ores::refdata::domain::tenor_basis_swap_convention> tenor_basis_swap_convention;
+    std::optional<tenor_basis_swap_convention_item> item;
 };
 
 struct put_many_tenor_basis_swap_conventions_request {
@@ -187,112 +124,14 @@ struct put_many_tenor_basis_swap_conventions_request {
      * reads this rather than assuming every call carries a token.
      */
     static constexpr bool requires_session = true;
-    std::vector<tenor_basis_swap_convention_change> changes;
+    std::vector<tenor_basis_swap_convention_write> items;
     ores::utility::domain::change_intent intent;
 };
 
 struct put_many_tenor_basis_swap_conventions_response {
     ores::utility::domain::result result;
-    std::vector<ores::refdata::domain::tenor_basis_swap_convention> tenor_basis_swap_conventions;
+    std::vector<tenor_basis_swap_convention_item> items;
 };
-
-struct delete_tenor_basis_swap_convention_request {
-    using response_type = struct delete_tenor_basis_swap_convention_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.tenor_basis_swap_conventions.delete";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    tenor_basis_swap_convention_removal removal;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_tenor_basis_swap_convention_response {
-    ores::utility::domain::result result;
-};
-
-struct delete_many_tenor_basis_swap_conventions_request {
-    using response_type = struct delete_many_tenor_basis_swap_conventions_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.tenor_basis_swap_conventions.delete_many";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    std::vector<tenor_basis_swap_convention_removal> removals;
-    ores::utility::domain::change_intent intent;
-};
-
-struct delete_many_tenor_basis_swap_conventions_response {
-    ores::utility::domain::result result;
-};
-
-struct list_tenor_basis_swap_convention_versions_request {
-    using response_type = struct list_tenor_basis_swap_convention_versions_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.tenor_basis_swap_conventions_versions.list";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    tenor_basis_swap_convention_key key;
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    ores::utility::domain::order order;
-    std::optional<tenor_basis_swap_convention_versions_filter> filter;
-};
-
-struct list_tenor_basis_swap_convention_versions_response {
-    ores::utility::domain::result result;
-    std::vector<ores::refdata::domain::tenor_basis_swap_convention> versions;
-    std::uint64_t total;
-};
-
-struct get_tenor_basis_swap_convention_version_request {
-    using response_type = struct get_tenor_basis_swap_convention_version_response;
-    static constexpr std::string_view nats_subject =
-        "refdata.v1.tenor_basis_swap_conventions_versions.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    tenor_basis_swap_convention_version_key key;
-};
-
-struct get_tenor_basis_swap_convention_version_response {
-    ores::utility::domain::result result;
-    std::optional<ores::refdata::domain::tenor_basis_swap_convention> version;
-};
-
-/**
- * @brief The subjects this resource's changes are announced on.
- *
- * An event reports what happened and no caller asked for it, so its last
- * segment is the action rather than a verb. One payload is therefore addressed
- * by three subjects, and a subscriber that wants one action subscribes to one
- * of them.
- */
-namespace tenor_basis_swap_convention_event_subjects {
-inline constexpr std::string_view created =
-    "refdata.v1.tenor_basis_swap_conventions_events.created";
-inline constexpr std::string_view updated =
-    "refdata.v1.tenor_basis_swap_conventions_events.updated";
-inline constexpr std::string_view deleted =
-    "refdata.v1.tenor_basis_swap_conventions_events.deleted";
-}
 
 }
 

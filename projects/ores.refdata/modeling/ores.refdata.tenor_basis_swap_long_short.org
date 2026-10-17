@@ -1,0 +1,354 @@
+:PROPERTIES:
+:ID: 8B1BDAB2-3EC8-47DE-9E52-91C1D2AA51D8
+:ores.cpp.shell-command.enabled: true
+:ores.sql.schema.domain_entity_artefact_create.enabled: true
+:END:
+#+title: ores.refdata.tenor_basis_swap_long_short
+#+description: Codegen entity model for the refdata =tenor_basis_swap_long_short= part. The long and short leg form of a tenor basis swap convention.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+entity_singular: tenor_basis_swap_long_short
+#+entity_plural: tenor_basis_swap_long_shorts
+#+entity_title: Tenor Basis Swap Long Short
+#+brief: The long and short leg form of a tenor basis swap convention.
+#+created: 2026-10-14
+#+updated: 2026-10-14
+
+The long and short leg form of a tenor basis swap. ORE writes a tenor basis
+swap as =LongIndex= and =ShortIndex= with an optional payment tenor each, plus
+the spread flag. The corpus also writes =IncludeSpread= and
+=SubPeriodsCouponType= alongside both forms, so this part declares them too
+rather than the shared central row. A row of this part holds that form. The
+paying and receiving form lives in =tenor_basis_swap_pay_receive=, and a
+convention fills exactly one of the two.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        refdata
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:nullable:    false
+:END:
+
+The surrogate key of this part row.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** convention_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+The central convention row this part belongs to.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:sql_key:     true
+:END:
+
+The party that owns the convention this part belongs to. Carried so row level
+security can isolate the part without a join, and stamped from the session that
+writes the document.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** long_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Index the long leg references, in the long and short form.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** long_pay_tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Payment tenor of the long leg, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** short_index
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Index the short leg references, in the long and short form.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** short_pay_tenor
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+Payment tenor of the short leg, as ORE's period code.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** spread_on_short
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the quoted spread is added to the short leg rather than the long one.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** include_spread
+:PROPERTIES:
+:type:        boolean
+:cpp_type:    std::optional<bool>
+:nullable:    true
+:END:
+
+Whether the spread is included in the coupon that carries it.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** sub_periods_coupon_type
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::optional<std::string>
+:nullable:    true
+:END:
+
+How a coupon built from sub-periods is combined, as the canonical code the mapper stores.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+* Artefact columns
+:PROPERTIES:
+:key: convention_name
+:END:
+
+The part stages the convention it belongs to by name and kind, never by
+=convention_id=: the central row's uuid is made by the database when the
+publish inserts it. The name and the kind together are the central identity the
+publish already holds, so the part needs no uuid of its own either. The stored
+party is likewise the party the publish names.
+
+The part's own fields follow the link, because the live table and the staging
+table must carry the same payload.
+
+** convention_name
+:PROPERTIES:
+:type: text
+:END:
+
+** kind_code
+:PROPERTIES:
+:type: text
+:END:
+
+** long_index
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** long_pay_tenor
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** short_index
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** short_pay_tenor
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+** spread_on_short
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** include_spread
+:PROPERTIES:
+:type:     boolean
+:nullable: true
+:END:
+
+** sub_periods_coupon_type
+:PROPERTIES:
+:type:     text
+:nullable: true
+:END:
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_tenor_basis_swap_long_shorts_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation: true
+:END:
+
+* Foreign keys
+
+** convention_id
+:PROPERTIES:
+:table:                ores_refdata_conventions_tbl
+:parent_entity:        convention
+:reuse_existing:       true
+:nullable:             false
+:error_message:        Invalid convention_id: %. No active convention found with this id.
+:list_by:              true
+:list_by_uuid:         true
+:bump_parent_version:  true
+:list_by_as_of:        true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:    api
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: tenor_basis_swap_long_short
+:entity_plural_short:   tenor_basis_swap_long_shorts
+:entity_singular_words: tenor basis swap long short
+:entity_plural_words:   tenor basis swap long shorts
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <optional>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: ls
+:END:
+
+** Table display
+
+| column         | header         |
+|----------------+----------------|
+| long_index     | Long Index     |
+| short_index    | Short Index    |
+| long_pay_tenor | Long Tenor     |
+| short_pay_tenor | Short Tenor   |
+| include_spread | Include Spread |
+| sub_periods_coupon_type | Sub Periods Type |
+| modified_by    | Modified By    |
+| version        | Version        |
+
+** Presentation
+:PROPERTIES:
+:domain_include:           ores.refdata.api/domain/tenor_basis_swap_long_short.hpp
+:domain_class:             refdata::domain::tenor_basis_swap_long_short
+:protocol_include:         ores.refdata.api/messaging/tenor_basis_swap_long_short_protocol.hpp
+:collection_name:          tenor_basis_swap_long_shorts
+:key_field:                id
+:delete_request_id_field:  ids
+:save_request_item_field:  tenor_basis_swap_long_short
+:END:
+
+*** Detail fields
+
+| field           | label          | widget               | type      | is_key | is_required | placeholder         |
+|-----------------+----------------+----------------------+-----------+--------+-------------+---------------------|
+| id              | Id             | idEdit               | line_edit | true   | true        | Enter part id       |
+| long_index      | Long Index     | longIndexEdit        | line_edit | false  | false       | e.g. EUR-EURIBOR-6M |
+| long_pay_tenor  | Long Pay Tenor | longPayTenorEdit     | line_edit | false  | false       | e.g. 3M             |
+| short_index     | Short Index    | shortIndexEdit       | line_edit | false  | false       | e.g. EUR-EURIBOR-3M |
+| short_pay_tenor | Short Pay Tenor | shortPayTenorEdit   | line_edit | false  | false       | e.g. 3M             |
+| spread_on_short | Spread On Short | spreadOnShortEdit   | checkbox  | false  | false       |                     |
+| include_spread  | Include Spread  | includeSpreadEdit   | checkbox  | false  | false       |                     |
+| sub_periods_coupon_type | Sub Periods Type | subPeriodsCouponTypeEdit | line_edit | false | false | e.g. Compounding |
+
+*** Columns
+
+| enum_name      | field           | header         | type      | width |
+|----------------+-----------------+----------------+-----------+-------|
+| LongIndex      | long_index      | Long Index     | string    | 180   |
+| LongPayTenor   | long_pay_tenor  | Long Pay Tenor | string    | 120   |
+| ShortIndex     | short_index     | Short Index    | string    | 180   |
+| ShortPayTenor  | short_pay_tenor | Short Pay Tenor | string   | 120   |
+| SpreadOnShort  | spread_on_short | Spread On Short | bool     | 80    |
+| IncludeSpread  | include_spread  | Include Spread  | bool     | 80    |
+| SubPeriodsCouponType | sub_periods_coupon_type | Sub Periods Type | string | 140 |
+| Version        | version         | Version        | int       | 80    |
+| ModifiedBy     | modified_by     | Modified By    | string    | 120   |
+| RecordedAt     | recorded_at     | Recorded At    | timestamp | 150   |
+
+** Custom repository methods
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:9477A085-0822-485F-BDF7-3C8F4A306E93][ores.refdata.convention]] — the central row this part belongs to.

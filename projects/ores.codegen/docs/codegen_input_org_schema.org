@@ -2,7 +2,7 @@
 :ID: 2A2E8B6D-179D-452C-9169-04E6BB46CC07
 :END:
 #+title: Codegen input org-file schema reference
-#+description: Schema for every org-mode document type consumed by ores.codegen as a generator input: required frontmatter keywords, section hierarchy, and PROPERTIES drawer keys for each of the eight entity-model types and the three generator-config types.
+#+description: Schema for every org-mode document type consumed by ores.codegen as a generator input: required frontmatter keywords, section hierarchy, and PROPERTIES drawer keys for each of the nine entity-model types and the three generator-config types.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:schema:knowledge:
@@ -31,6 +31,7 @@ For the code that reads these files see [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC8
 | =ores.codegen.field_group= | =field_group= | ~11 | C++ struct fragment composed into entities |
 | =ores.codegen.table= (retired) | — | 0 | Superseded by =ores.codegen.entity=; every table model was migrated and the type removed from the generator |
 | =ores.codegen.junction= | =junction= | ~8 | SQL join table + C++ struct + repository |
+| =ores.codegen.family= | — | few | Composite family protocol (C++ header + TypeScript twin); no scaffolder yet, so the model is authored by hand |
 | =ores.codegen.service_registry= | =service_registry= | ~2 | SQL GRANT scripts + shell var declarations |
 | =ores.codegen.module= | — | few | Index: groups entity docs for a namespace |
 | =ores.codegen.component= | — | 0 active | Reserved; future component-level config |
@@ -66,14 +67,17 @@ SQL (table DDL, triggers, constraints) and TypeScript (protocol and domain inter
 
 #+begin_example
 * Flags                    — PROPERTIES: schema, product, component, has_tenant_id
-* Primary key              — PROPERTIES: column, type, cpp_type
-* Natural keys             — (optional) list of column names used as natural keys
 * Columns
-  ** <column_name>         — PROPERTIES: type, cpp_type, nullable, default (opt)
+  ** <column_name>         — PROPERTIES: type, cpp_type, nullable, default (opt),
+                             primary_key (opt), natural_key (opt),
+                             server_owned (opt)
 * SQL
   ** Flags                 — PROPERTIES: tablename
 * C++
-  ** Flags                 — PROPERTIES: component_include, component_core (opt)
+  ** Flags                 — PROPERTIES: component_include, component_core (opt),
+                             service_find_by_uuid (opt),
+                             service_find_by_code_column (opt),
+                             service_find_by_code_parent_column (opt)
   ** Repository            — PROPERTIES: entity_singular_short, entity_plural_short, ...
   ** Domain includes       — #+begin_src cpp :name includes
   ** Entity includes       — #+begin_src cpp :name includes (opt)
@@ -85,6 +89,32 @@ SQL (table DDL, triggers, constraints) and TypeScript (protocol and domain inter
   ** Custom repository methods — freeform
 * See also                 — org-roam links
 #+end_example
+
+A column marked =:primary_key: true= or =:natural_key: true= leaves the plain
+=Columns= bucket for the key bucket it names; a column carries at most one of
+the two, and the order the key columns appear in the =Columns= section is their
+order in the key. Every =natural_key= column joins one composite unique index,
+so a model states its identity once and both the store and the readers take it
+from there. A natural key is not required to be non-nullable, but a column that
+is half of an identity usually is.
+
+A key column marked =:server_owned: true= stays in the key and the unique index
+but leaves the write record, so a caller never states it and the service stamps
+it from the session. A per-party row keyed by a surrogate id uses this for its
+=party_id=: the unique index still scopes the row to its party, and the write
+cannot name a party other than the session's. The flag is refused on any column
+the specification does not list as server-owned, so a caller-owned field is not
+silently dropped from the wire.
+
+*** service_find_by_code (C++ Flags)
+
+=:service_find_by_code_column:= names the column, or the whitespace-separated
+columns, a =find_X_by_code= service method and its =read_latest_by_code=
+repository method read. =:service_find_by_code_parent_column:= names the parent
+column they read first, for an identity whose first column is a foreign key.
+A composite value generates one finder over the parent and every named code
+column, so a hand-written method never has to restate an identity the model
+already declares.
 
 *** view_group (Detail fields)
 
@@ -227,8 +257,54 @@ mandatory FK sides (=* Left=, =* Right=) and optional extra columns.
 * See also
 #+end_example
 
-** ores.codegen.service_registry
+** ores.codegen.family
 
+The protocol of a composite entity: one central row plus its parts.  It
+derives the family's records and its four message pairs — =get=,
+=get_many=, =put= and =put_many= — and drives the C++ protocol header and
+its TypeScript twin from one derivation.  It derives no domain type, SQL
+table or service; see [[id:87E3F021-1C69-48DE-9139-32C44C99B3B9][Codegen patterns: choosing a model shape]],
+section "The generic put and the family put".
+
+*** Frontmatter keywords
+
+| Keyword | Required | Notes |
+|---------+----------+-------|
+| =#+type= | yes | =ores.codegen.family= |
+| =#+component= | yes | Short component name; the central entity and the parts are found in its =modeling/= dir |
+| =#+entity_singular= | yes | snake_case singular of the family |
+| =#+entity_plural= | yes | snake_case plural |
+| =#+entity_title= | yes | Title-case display name |
+| =#+brief= | yes | One-line description |
+| =#+filetags= | yes | At minimum =:model:family:{component}:= |
+
+*** Section hierarchy
+
+#+begin_example
+* Flags                    — PROPERTIES: central_entity
+* Parts                    — | part | entity | table
+* See also
+#+end_example
+
+=central_entity= names another model in the same component's modeling
+directory whose =#+type:= is =ores.codegen.entity=; its C++ domain type is
+=ores::<component>::domain::<central_entity>=.  Each row of the =* Parts=
+table names a part shim (the C++ member name, first column) and the entity
+model that backs it (second column).  Each part must be an
+=ores.codegen.entity= in the same component with a foreign key whose
+=:parent_entity:= is the central entity and whose
+=:bump_parent_version:=, =:list_by:=, =:list_by_uuid:= and
+=:list_by_as_of:= are all =true=; a part that does not satisfy that fails
+the load.
+
+The family derives =<family_singular>_key= (copied from the central
+entity's own key record), =<family_singular>_item= (the key, the central
+row and one typed array per part) and =<family_singular>_write= (the
+central change and one typed array of part changes per part), then the
+four request/response pairs.  Subjects use the family plural, so they do
+not collide with the central entity's own derived subjects.
+
+** ores.codegen.service_registry
 Catalogue of ORE Studio backend services.  Each top-level heading is one service.
 Drives PostgreSQL GRANT scripts and shell variable declarations.
 

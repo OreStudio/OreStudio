@@ -3251,6 +3251,9 @@ export const en: SourceCatalogue = {
         'Load the staff': 'Load the staff',
         'Creates an account for each person the starting point lists, each in its own party.':
             'Creates an account for each person the starting point lists, each in its own party.',
+        'Set the staff passwords': 'Set the staff passwords',
+        "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.":
+            "Sets each staff account's password through the server's own password API, so the demonstration tenant's people can sign in.",
         'Attach the photographs': 'Attach the photographs',
         "Gives the accounts their photographs, and the tenant's party its logo.":
             "Gives the accounts their photographs, and the tenant's party its logo.",

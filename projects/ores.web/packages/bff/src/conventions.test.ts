@@ -121,6 +121,10 @@ function send(
 }
 
 const ID = '55555555-5555-4555-8555-555555555555';
+const PR_ID = '66666666-6666-4666-8666-666666666666';
+const LS_ID = '77777777-7777-4777-8777-777777777777';
+const PR_PART_ID = '88888888-8888-4888-8888-888888888888';
+const LS_PART_ID = '99999999-9999-4999-8999-999999999999';
 const INTENT = { reason_code: 'common.correction', commentary: '' };
 
 describe('convention routes', () => {
@@ -129,16 +133,20 @@ describe('convention routes', () => {
         for (const family of CONVENTION_FAMILIES) {
             replies[`refdata.v1.${family.prefix}.list`] = { result: ok, total: 2 };
         }
+        // A composite family has no list of its own: its count is the central
+        // convention list, filtered by the kind the family carries.
+        replies['refdata.v1.conventions.list'] = { result: ok, total: 4 };
         delete replies['refdata.v1.future_conventions.list'];
         replies['refdata.v1.fra_conventions.list'] = {
             result: { outcome: 'denied', code: '', message: 'No.' },
             total: 0,
         };
-        const { server, sessionId } = buildTestServer(replies);
+        const { server, sessionId, calls } = buildTestServer(replies);
         const response = await send(server, sessionId, 'GET', '/api/conventions/families');
         const families = response.json().families;
         expect(families).toHaveLength(CONVENTION_FAMILIES.length);
         expect(families.find((f: { key: string }) => f.key === 'swap').count).toBe(2);
+        expect(families.find((f: { key: string }) => f.key === 'tenor-basis-swap').count).toBe(4);
         expect(families.find((f: { key: string }) => f.key === 'fra').count).toBeNull();
         // A call that throws leaves its own count null and the others intact.
         expect(families.find((f: { key: string }) => f.key === 'future').count).toBeNull();
@@ -147,6 +155,11 @@ describe('convention routes', () => {
                 .filter((f: { writable: boolean }) => f.writable)
                 .map((f: { key: string }) => f.key),
         ).toEqual(['deposit', 'swap']);
+        // The composite count is scoped by kind, so a second atomised kind does
+        // not inflate the first family's count.
+        expect(
+            calls.find((call) => call.subject === 'refdata.v1.conventions.list')?.body,
+        ).toMatchObject({ filter: { kind_code: 'TENOR_BASIS_SWAP' } });
     });
 
     it('lists the rows of one family under its own subject', async () => {
@@ -167,6 +180,104 @@ describe('convention routes', () => {
         const { server, sessionId } = buildTestServer({});
         const response = await send(server, sessionId, 'GET', '/api/conventions/nonsense');
         expect(response.statusCode).toBe(404);
+    });
+
+    it('reads a composite family as one row per convention, drawn from whichever part is populated', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.conventions.list': {
+                result: ok,
+                total: 2,
+                conventions: [
+                    {
+                        id: PR_ID,
+                        version: 4,
+                        kind_code: 'TENOR_BASIS_SWAP',
+                        name: 'EUR-3M-6M-BASIS',
+                        oresmd_uri: null,
+                    },
+                    {
+                        id: LS_ID,
+                        version: 7,
+                        kind_code: 'TENOR_BASIS_SWAP',
+                        name: 'EUR-6M-12M-BASIS',
+                        oresmd_uri: null,
+                    },
+                ],
+            },
+            'refdata.v1.tenor_basis_swap_conventions.get_many': {
+                result: ok,
+                items: [
+                    {
+                        key: { id: PR_ID },
+                        convention: { id: PR_ID, name: 'EUR-3M-6M-BASIS' },
+                        pay_receive: [
+                            {
+                                id: PR_PART_ID,
+                                version: 2,
+                                convention_id: PR_ID,
+                                pay_index: 'EUR-EURIBOR-6M',
+                                receive_index: 'EUR-EURIBOR-3M',
+                                include_spread: true,
+                                sub_periods_coupon_type: null,
+                            },
+                        ],
+                        long_short: [],
+                    },
+                    {
+                        key: { id: LS_ID },
+                        convention: { id: LS_ID, name: 'EUR-6M-12M-BASIS' },
+                        pay_receive: [],
+                        long_short: [
+                            {
+                                id: LS_PART_ID,
+                                version: 9,
+                                convention_id: LS_ID,
+                                long_index: 'EUR-EURIBOR-12M',
+                                short_index: 'EUR-EURIBOR-6M',
+                                spread_on_short: false,
+                                sub_periods_coupon_type: 'Compounding',
+                            },
+                        ],
+                    },
+                ],
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/conventions/tenor-basis-swap');
+        const body = response.json();
+        expect(body.total).toBe(2);
+        expect(body.rows).toHaveLength(2);
+        // The central row keeps its own identity, version and name.
+        expect(body.rows[0]).toMatchObject({
+            id: PR_ID,
+            version: 4,
+            name: 'EUR-3M-6M-BASIS',
+            pay_index: 'EUR-EURIBOR-6M',
+            receive_index: 'EUR-EURIBOR-3M',
+            include_spread: true,
+        });
+        // The other convention is drawn from the other part.
+        expect(body.rows[1]).toMatchObject({
+            id: LS_ID,
+            version: 7,
+            long_index: 'EUR-EURIBOR-12M',
+            short_index: 'EUR-EURIBOR-6M',
+            spread_on_short: false,
+            sub_periods_coupon_type: 'Compounding',
+        });
+        // The part's own version never replaces the central row's version.
+        expect(body.rows[0].version).toBe(4);
+        expect(body.rows[1].version).toBe(7);
+        // The page is the server's: the central list is filtered by kind, and
+        // the parts are read for exactly that page's keys, in its order.
+        expect(calls[0]?.subject).toBe('refdata.v1.conventions.list');
+        expect(calls[0]?.body).toMatchObject({ filter: { kind_code: 'TENOR_BASIS_SWAP' } });
+        expect(calls[1]?.subject).toBe('refdata.v1.tenor_basis_swap_conventions.get_many');
+        expect(calls[1]?.body).toMatchObject({ keys: [{ id: PR_ID }, { id: LS_ID }] });
+        // The flat subject no longer exists, so a screen that reads it is a
+        // runtime break rather than a compile error.
+        expect(calls.map((call) => call.subject)).not.toContain(
+            'refdata.v1.tenor_basis_swap_conventions.list',
+        );
     });
 
     it('reads the pick lists the terms draw from', async () => {

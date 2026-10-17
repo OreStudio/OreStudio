@@ -138,7 +138,6 @@ TEST_CASE("write_seed_profile_step_publishes_an_event", tags) {
     // the insert trigger's existence check rejects a synthetic key that
     // matches no active row, so the parent must be written first.
     auto seed_profile_id_parent = ores::iam::generators::generate_synthetic_seed_profile(ctx);
-    seed_profile_id_parent.change_reason_code = "system.test";
     ores::iam::repository::seed_profile_repository seed_profile_id_repo;
     seed_profile_id_repo.write(party_ctx, seed_profile_id_parent);
     v.seed_profile_id = seed_profile_id_parent.id;

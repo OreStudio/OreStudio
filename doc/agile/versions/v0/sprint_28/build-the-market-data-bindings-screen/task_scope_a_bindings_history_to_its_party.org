@@ -8,12 +8,12 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/scope-a-bindings-history-to-its-party
-#+pr:
-#+blocked_on:
+#+pr: 3444
+#+blocked_on: Nothing
 #+blocked_since:
 #+created: 2026-10-13
-#+updated: 2026-10-13
-#+environment:
+#+updated: 2026-10-17
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ A binding's history is read by its source name, which every party of a tenant ma
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Implemented on the branch; the resolver is party-scoped and a two-party test passes. Waiting to merge. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Next         | Merge, then story task 9044BB8A draws the History tab. |
+| Last touched | 2026-10-17                               |
 
 * Acceptance
 
@@ -40,9 +40,62 @@ A binding's history is read by its source name, which every party of a tenant ma
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The read belongs to the generator, not to the entity
+
+=feed_binding_service::get_feed_binding_history= turns the declared key into a
+row id through =repo_.read_any_by_source_name=, then reads every version of that
+id. That resolver is not this entity's code: =key_resolvers= in
+=projects/ores.codegen/library/templates/ores.cpp.repository.repository_impl.org=
+emits =read_any_by_<key>= for every entity whose declared =key_field= is not its
+primary key. The resolver filters tenant and key only, orders by =valid_from=
+descending and takes one row, so the newest row of any party wins.
+
+The sibling finder =read_latest_by_<key>= already keeps the session's party, in
+memory and after the fetch. A resolver cannot copy that shape unchanged: its
+=sqlgen::limit(1)= takes one row before any party filter can run, so another
+party's newer row consumes the limit and the caller's own history reads as
+empty. That is the defect, and it is why =assertBindingVisible= in the BFF cannot
+repair it: the BFF can refuse a name the party does not hold, but it cannot make
+the server pick the party's own row.
+
+** What it touches
+
+Measured on =a1152ae6ee=: 57 resolver definitions in 57 generated repository
+files across 10 components. 31 of them own a party column and take this fix; the
+other 26 have no party to scope to. One of the 31 has an optional party column
+(=batch.external_ref= in =ores.compute=), where a null party means the row
+belongs to the whole tenant; the shared =read_latest_by= keeps such a row for
+every party, and this fix keeps the same rule.
+
+The entity screen specification states the rule the code broke, at
+=doc/knowledge/ui/entity_screen_specification.org= line 570: a history is read
+for one row, addressed by the row's own id when its kind has one, *because the
+key a model declares for the row may be shared by other rows: every party holds
+a contact of each type*.
+
+** The change
+
+1. Filter by the session's party inside the resolver, after the read and before
+   the single row is taken, copying the =read_latest_by= rule including the
+   optional column's null case. Drop =sqlgen::limit(1)= so the filter sees every
+   candidate, then keep the newest one: the query keeps its =valid_from=
+   descending order, so the first row left is the party's newest version. The
+   party cannot go into the query itself without splitting the template on the
+   optional column, which is one entity in ten.
+2. Carry the rule in the header doc of =read_any_by_<key>= and in the
+   =key_resolvers= docstring, so the next reader does not have to rediscover it.
+3. Regenerate the components that own a resolver and commit only the resolver
+   bodies.
+
+** Verification
+
+- A repository test in =ores.marketdata.core= with two parties of one tenant
+  holding the same =source_name=, each with its own version, asserting the read
+  returns the caller's party's newest row. Today it returns whichever is newer.
+- The generated code of every affected component compiles, which is the check
+  that the optional-party branch and its null case are right.
+- =compass check= green, with =component-drift= proving the committed generated
+  files match the template.
 
 * Measurements
 
@@ -56,9 +109,60 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Resolver definitions in generated repositories | 57, in 57 files | =grep -rl --include=*_repository.cpp -e read_any_by_ projects/*/core/src/repository > /tmp/r.txt; wc -l < /tmp/r.txt= | =50b2ac29df..HEAD= |
+| Resolvers that own a party column, and take the party filter | 31 | =grep -rl --include=*_repository.cpp -e 'ctx.party_id()' projects/*/core/src/repository > /tmp/p.txt; wc -l < /tmp/p.txt= | =50b2ac29df..HEAD= |
+| Resolvers without a party column, left as they were | 26 | the difference between the two counts above | =50b2ac29df..HEAD= |
+| Resolvers with an optional party column | 1 (=batch.external_ref=, =ores.compute=) | =grep -rl --include=*_repository.cpp -e 'party_id.has_value()' projects/*/core/src/repository > /tmp/o.txt; wc -l < /tmp/o.txt= | =50b2ac29df..HEAD= |
+| Components whose generated repositories change | 7 | =git diff --name-only origin/main...HEAD > /tmp/d.txt; cut -d/ -f2 /tmp/d.txt > /tmp/c.txt; sort -u /tmp/c.txt > /tmp/c2.txt; wc -l < /tmp/c2.txt= | =50b2ac29df..HEAD= |
+| Generated repository files rewritten | 62 (31 headers, 31 implementations) | =git diff --name-only origin/main...HEAD > /tmp/d.txt; grep -c '_repository\.hpp$' /tmp/d.txt; grep -c '_repository\.cpp$' /tmp/d.txt= | =50b2ac29df..HEAD= |
 
 * Notes
+
+** The decision: the template, not this entity
+
+The resolver is emitted by =key_resolvers= for every entity whose declared key
+is not its primary key, so the rule the entity screen specification states at
+line 570 applies to all of them, not to a binding alone. The template fixes it
+once. The alternative, a hand-written override for =feed_binding=, would leave
+the same defect in 30 other resolvers, including the two the specification names
+by example: party identifiers and party contacts, of which every party holds one
+of each type.
+
+** The test and why it would fail on the old code
+
+=feed_binding_history_resolves_to_the_session_party_s_row= in
+=projects/ores.marketdata/core/tests/repository_entity_repository_tests.cpp=
+writes two bindings under one source name, one per party, and reads each back
+under its own party. It measured green on 2026-10-17 with 6 assertions.
+
+The two rows it writes are 5 ms apart, which is what makes the test bite. Read
+from the database after the run:
+
+| Party | valid_from |
+|-------+------------|
+| the other party | 2026-10-17 11:23:05.126433+01 |
+| the session's party | 2026-10-17 11:23:05.120994+01 |
+
+The other party's row is strictly newer, so the old read, which ordered by
+=valid_from= descending and took one row before any party filter ran, returned
+that row for *both* parties. The test asserts each party's own id, and fails.
+
+** The synthetic service test link failure, and why it is gone
+
+Before the rebase, =compass build= failed at =ores.synthetic.service.tests= with
+undefined references to every =feed_kind_registry= member. The test includes
+=projects/ores.synthetic/service/src/feed_kind_registry.hpp=, a private header
+with no export attribute, and the service library was compiled with
+=-fvisibility=hidden=, so the 117 symbols were defined in the shared object but
+absent from its dynamic symbol table.
+
+The rebase onto =50b2ac29df= removed it. Commit =a2c824b07b [codegen] Make hidden
+visibility a part's decision= moved the flag from every part to a per-part
+declaration, and the synthetic service part does not ask for it, because its
+classes carry no export attribute and its suites link them — the rule the
+=hidden_visibility= docstring in =org_loader.py= now states. The target links and
+builds on the rebased tree; the capture raised for it was withdrawn rather than
+kept as a false record.
 
 * Test Scenarios
 
@@ -75,12 +179,64 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3444][#3444]] | [codegen] Scope the history read to the session's party |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dropping the limit in every resolver made the 26 entities with no party column scan every version of a key | =ores.cpp.repository.repository_impl.org= | Fixed | The template keeps =limit(1)= where no party column scopes the read; those 26 generated files are back to what main emits |
+| 2 | The comment explained the defect the change fixed, emitted into 31 files | =ores.cpp.repository.repository_impl.org= | Fixed | Compressed to the reason the filter sits in memory |
+| 3 | The test asserts the resolver, not =get_feed_binding_history= | =repository_entity_repository_tests.cpp= | Accepted | Recorded in Result as not covered |
+| 4 | The filter compares party exactly, so a descendant-party row that row-level security admits is dropped | =ores.cpp.repository.repository_impl.org= | Accepted | No entity in this change holds a descendant party's rows; recorded in Result |
+| 5 | Test order depends on the database writing a later =valid_from= for the second row | =repository_entity_repository_tests.cpp= | Accepted | Measured 5 ms apart; the old read fails against it rather than passing by chance |
+| 6 | The party filter repeats the =read_latest_by= block | =ores.cpp.repository.repository_impl.org= | Accepted | Both are template arms; extracting one fragment is a follow-up, not this fix |
+| 7 | A rejected capture was deleted instead of filed | =the_synthetic_service_test_target_never_links.org= | Fixed | Restored and filed to =discarded/= with the reason it was withdrawn |
 
 * Result
+
+** The decision: the template, and the entities it affects
+
+The party filter is emitted by the generator, not written for =feed_binding=. The
+same rule governs 30 other entities, and the entity screen specification states
+it as a property of history reads in general, so a per-entity override would
+leave the defect in place everywhere else.
+
+The entities that gain the filter, by component:
+
+| Component | Entities |
+|-----------+----------|
+| analytics | credit_simulation_config, credit_simulation_entity_config, credit_simulation_matrix_config, credit_simulation_matrix_row_config, credit_simulation_netting_set_config, pricing_model_config, pricing_model_product, pricing_model_product_parameter, todays_market_collection, todays_market_config, todays_market_configuration, todays_market_configuration_binding |
+| compute | batch (optional party column) |
+| iam | run_grant |
+| marketdata | feed_binding |
+| refdata | book, business_unit, crm_topology_config, curve_definition, netting_agreement, netting_set, netting_set_identifier, party_contact_information, party_identifier, portfolio |
+| reporting | configuration, configuration_parameter, report_configuration, report_definition, report_instance |
+| variability | system_setting |
+
+** Verification, and what it does not cover
+
+=feed_binding_history_resolves_to_the_session_party_s_row= in
+=projects/ores.marketdata/core/tests/repository_entity_repository_tests.cpp=
+writes two bindings under one source name, one per party, and reads each back
+under its own party. Both files were reformatted by clang-format and the case
+passes with 6 assertions. The old read returned the newest row of either party,
+and the two rows the test writes are 5 ms apart, so the case fails against the
+old code rather than passing by accident.
+
+It asserts the resolver, =read_any_by_source_name=, which is where the wrong
+party was chosen. It does not assert =feed_binding_service::get_feed_binding_history=
+end to end, and no case covers a binding whose own delete closed its window
+while another party holds a newer row under the same name.
+
+** Known limits of the emitted filter
+
+- A session with no party reads the whole tenant, which is what every entity's
+  history read did before and what a system caller still needs.
+- The filter compares the row's party exactly. A party context carries the party
+  and its descendants as visible parties, so a row owned by a descendant party
+  is admitted by row-level security but dropped here. No entity in this change
+  holds rows for a descendant party today.
+- The filter runs in memory because the party column may be null and the
+  template does not branch the query on that. The entity solver fetches every
+  version of the key rather than one row; see the review item recorded below.

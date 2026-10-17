@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <algorithm>
 #include <cmath>
 #include <map>
@@ -68,6 +69,21 @@ void set_audit(T& r) {
     r.modified_by = std::string(audit_modified_by);
     r.change_reason_code = std::string(audit_reason_code);
     r.change_commentary = std::string(audit_commentary);
+}
+
+constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
+
+// A convention is identified by its party, its kind and the name it carries in
+// the source document. The mapper knows the kind and the name but not the
+// party, so it cannot state that identity and does not try: the store resolves
+// it once the session's party is known. What the mapper emits instead is a
+// provisional key, minted fresh for each convention it maps, so the part rows
+// can reach their central row inside one mapped document. The store discards
+// the provisional key and writes the row under the key the identity resolves
+// to, so the provisional key is never an identity.
+boost::uuids::uuid provisional_uuid() {
+    static thread_local ores::utility::uuid::uuid_v7_generator generator;
+    return generator();
 }
 
 // ---------------------------------------------------------------------------
@@ -1123,57 +1139,78 @@ reverse_tenor_basis_two_swap(const refdata::domain::tenor_basis_two_swap_convent
     return r;
 }
 
-tenorBasisSwapType reverse_tenor_basis_swap(const refdata::domain::tenor_basis_swap_convention& v) {
+tenorBasisSwapType
+reverse_tenor_basis_swap(const ores::refdata::messaging::tenor_basis_swap_convention_item& v) {
     tenorBasisSwapType r;
-    static_cast<std::string&>(r.Id) = v.id;
-    if (v.pay_index) {
-        tenorBasisSwapType_PayIndex_t x;
-        static_cast<std::string&>(x) = *v.pay_index;
-        r.PayIndex = x;
+    if (v.convention)
+        static_cast<std::string&>(r.Id) = v.convention->name;
+    if (!v.pay_receive.empty()) {
+        const auto& p = v.pay_receive.front();
+        if (p.pay_index) {
+            tenorBasisSwapType_PayIndex_t x;
+            static_cast<std::string&>(x) = *p.pay_index;
+            r.PayIndex = x;
+        }
+        if (p.pay_frequency)
+            r.PayFrequency = *p.pay_frequency;
+        if (p.receive_index) {
+            tenorBasisSwapType_ReceiveIndex_t x;
+            static_cast<std::string&>(x) = *p.receive_index;
+            r.ReceiveIndex = x;
+        }
+        if (p.receive_frequency)
+            r.ReceiveFrequency = *p.receive_frequency;
+        if (p.spread_on_rec)
+            r.SpreadOnRec = make_bool(*p.spread_on_rec);
+        if (p.include_spread)
+            r.IncludeSpread = make_bool(*p.include_spread);
+        if (p.sub_periods_coupon_type) {
+            const auto& s = *p.sub_periods_coupon_type;
+            if (s == "Compounding")
+                r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
+            else if (s == "Averaging")
+                r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
+            else
+                throw std::runtime_error(
+                    "reverse_tenor_basis_swap: unknown sub_periods_coupon_type: " + s);
+        }
+        if (p.pay_is_averaged)
+            r.PayIsAveraged = make_bool(*p.pay_is_averaged);
+        if (p.rec_is_averaged)
+            r.RecIsAveraged = make_bool(*p.rec_is_averaged);
+        return r;
     }
-    if (v.pay_frequency)
-        r.PayFrequency = *v.pay_frequency;
-    if (v.receive_index) {
-        tenorBasisSwapType_ReceiveIndex_t x;
-        static_cast<std::string&>(x) = *v.receive_index;
-        r.ReceiveIndex = x;
+    if (!v.long_short.empty()) {
+        const auto& l = v.long_short.front();
+        if (l.long_index) {
+            tenorBasisSwapType_LongIndex_t x;
+            static_cast<std::string&>(x) = *l.long_index;
+            r.LongIndex = x;
+        }
+        if (l.long_pay_tenor)
+            r.LongPayTenor = *l.long_pay_tenor;
+        if (l.short_index) {
+            tenorBasisSwapType_ShortIndex_t x;
+            static_cast<std::string&>(x) = *l.short_index;
+            r.ShortIndex = x;
+        }
+        if (l.short_pay_tenor)
+            r.ShortPayTenor = *l.short_pay_tenor;
+        if (l.spread_on_short)
+            r.SpreadOnShort = make_bool(*l.spread_on_short);
+        if (l.include_spread)
+            r.IncludeSpread = make_bool(*l.include_spread);
+        if (l.sub_periods_coupon_type) {
+            const auto& s = *l.sub_periods_coupon_type;
+            if (s == "Compounding")
+                r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
+            else if (s == "Averaging")
+                r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
+            else
+                throw std::runtime_error(
+                    "reverse_tenor_basis_swap: unknown sub_periods_coupon_type: " + s);
+        }
     }
-    if (v.receive_frequency)
-        r.ReceiveFrequency = *v.receive_frequency;
-    if (v.spread_on_rec)
-        r.SpreadOnRec = make_bool(*v.spread_on_rec);
-    if (v.include_spread)
-        r.IncludeSpread = make_bool(*v.include_spread);
-    if (v.sub_periods_coupon_type) {
-        const auto& s = *v.sub_periods_coupon_type;
-        if (s == "Compounding")
-            r.SubPeriodsCouponType = subPeriodsCouponType::Compounding;
-        else if (s == "Averaging")
-            r.SubPeriodsCouponType = subPeriodsCouponType::Averaging;
-        else
-            throw std::runtime_error("reverse_tenor_basis_swap: unknown sub_periods_coupon_type: " +
-                                     s);
-    }
-    if (v.pay_is_averaged)
-        r.PayIsAveraged = make_bool(*v.pay_is_averaged);
-    if (v.rec_is_averaged)
-        r.RecIsAveraged = make_bool(*v.rec_is_averaged);
-    if (v.long_index) {
-        tenorBasisSwapType_LongIndex_t x;
-        static_cast<std::string&>(x) = *v.long_index;
-        r.LongIndex = x;
-    }
-    if (v.long_pay_tenor)
-        r.LongPayTenor = *v.long_pay_tenor;
-    if (v.short_index) {
-        tenorBasisSwapType_ShortIndex_t x;
-        static_cast<std::string&>(x) = *v.short_index;
-        r.ShortIndex = x;
-    }
-    if (v.short_pay_tenor)
-        r.ShortPayTenor = *v.short_pay_tenor;
-    if (v.spread_on_short)
-        r.SpreadOnShort = make_bool(*v.spread_on_short);
     return r;
 }
 
@@ -1800,67 +1837,107 @@ conventions_mapper::map_tenor_basis_two_swap(const tenorBasisTwoSwapType& v) {
     return r;
 }
 
-refdata::domain::tenor_basis_swap_convention
+ores::refdata::messaging::tenor_basis_swap_convention_item
 conventions_mapper::map_tenor_basis_swap(const tenorBasisSwapType& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping tenor basis swap convention: " << std::string(v.Id);
 
-    refdata::domain::tenor_basis_swap_convention r;
-    r.id = std::string(v.Id);
+    ores::refdata::messaging::tenor_basis_swap_convention_item r;
+    refdata::domain::convention central;
+    central.kind_code = std::string(tenor_basis_swap_kind);
+    central.name = std::string(v.Id);
+    central.id = provisional_uuid();
+    set_audit(central);
+    r.key.id = central.id;
+    r.convention = central;
 
-    if (v.PayIndex)
-        r.pay_index = std::string(*v.PayIndex);
+    // The form comes from the leg fields alone. IncludeSpread and
+    // SubPeriodsCouponType are written alongside both forms, so they must never
+    // decide it.
+    const bool pay_receive_form = v.PayIndex || v.ReceiveIndex;
+    if (pay_receive_form) {
+        refdata::domain::tenor_basis_swap_pay_receive p;
+        p.id = provisional_uuid();
+        p.convention_id = central.id;
+        if (v.PayIndex)
+            p.pay_index = std::string(*v.PayIndex);
 
-    if (v.PayFrequency)
-        r.pay_frequency = std::string(*v.PayFrequency);
+        if (v.PayFrequency)
+            p.pay_frequency = std::string(*v.PayFrequency);
 
-    if (v.ReceiveIndex)
-        r.receive_index = std::string(*v.ReceiveIndex);
+        if (v.ReceiveIndex)
+            p.receive_index = std::string(*v.ReceiveIndex);
 
-    if (v.ReceiveFrequency)
-        r.receive_frequency = std::string(*v.ReceiveFrequency);
+        if (v.ReceiveFrequency)
+            p.receive_frequency = std::string(*v.ReceiveFrequency);
 
-    if (v.SpreadOnRec)
-        r.spread_on_rec = parse_bool(*v.SpreadOnRec);
+        if (v.SpreadOnRec)
+            p.spread_on_rec = parse_bool(*v.SpreadOnRec);
+
+        if (v.IncludeSpread)
+            p.include_spread = parse_bool(*v.IncludeSpread);
+
+        if (v.SubPeriodsCouponType) {
+            using sp = domain::subPeriodsCouponType;
+            switch (*v.SubPeriodsCouponType) {
+                case sp::Compounding:
+                    p.sub_periods_coupon_type = "Compounding";
+                    break;
+                case sp::Averaging:
+                    p.sub_periods_coupon_type = "Averaging";
+                    break;
+                default:
+                    throw std::runtime_error("Unknown sub-periods coupon type enum value");
+            }
+        }
+
+        if (v.PayIsAveraged)
+            p.pay_is_averaged = parse_bool(*v.PayIsAveraged);
+
+        if (v.RecIsAveraged)
+            p.rec_is_averaged = parse_bool(*v.RecIsAveraged);
+
+        set_audit(p);
+        r.pay_receive.push_back(std::move(p));
+        return r;
+    }
+
+    refdata::domain::tenor_basis_swap_long_short l;
+    l.id = provisional_uuid();
+    l.convention_id = central.id;
+    if (v.LongIndex)
+        l.long_index = std::string(*v.LongIndex);
+
+    if (v.LongPayTenor)
+        l.long_pay_tenor = std::string(*v.LongPayTenor);
+
+    if (v.ShortIndex)
+        l.short_index = std::string(*v.ShortIndex);
+
+    if (v.ShortPayTenor)
+        l.short_pay_tenor = std::string(*v.ShortPayTenor);
+
+    if (v.SpreadOnShort)
+        l.spread_on_short = parse_bool(*v.SpreadOnShort);
 
     if (v.IncludeSpread)
-        r.include_spread = parse_bool(*v.IncludeSpread);
+        l.include_spread = parse_bool(*v.IncludeSpread);
 
     if (v.SubPeriodsCouponType) {
         using sp = domain::subPeriodsCouponType;
         switch (*v.SubPeriodsCouponType) {
             case sp::Compounding:
-                r.sub_periods_coupon_type = "Compounding";
+                l.sub_periods_coupon_type = "Compounding";
                 break;
             case sp::Averaging:
-                r.sub_periods_coupon_type = "Averaging";
+                l.sub_periods_coupon_type = "Averaging";
                 break;
             default:
                 throw std::runtime_error("Unknown sub-periods coupon type enum value");
         }
     }
 
-    if (v.PayIsAveraged)
-        r.pay_is_averaged = parse_bool(*v.PayIsAveraged);
-
-    if (v.RecIsAveraged)
-        r.rec_is_averaged = parse_bool(*v.RecIsAveraged);
-
-    if (v.LongIndex)
-        r.long_index = std::string(*v.LongIndex);
-
-    if (v.LongPayTenor)
-        r.long_pay_tenor = std::string(*v.LongPayTenor);
-
-    if (v.ShortIndex)
-        r.short_index = std::string(*v.ShortIndex);
-
-    if (v.ShortPayTenor)
-        r.short_pay_tenor = std::string(*v.ShortPayTenor);
-
-    if (v.SpreadOnShort)
-        r.spread_on_short = parse_bool(*v.SpreadOnShort);
-
-    set_audit(r);
+    set_audit(l);
+    r.long_short.push_back(std::move(l));
     return r;
 }
 
@@ -2706,10 +2783,18 @@ ores::refdata::messaging::conventions_document conventions_mapper::map(const con
     std::ranges::transform(
         v.CDS, std::back_inserter(r.cds), [](const auto& x) { return map_cds(x); });
 
-    r.tenor_basis_swap.reserve(v.TenorBasisSwap.size());
-    std::ranges::transform(v.TenorBasisSwap,
-                           std::back_inserter(r.tenor_basis_swap),
-                           [](const auto& x) { return map_tenor_basis_swap(x); });
+    // A tenor basis swap is one central convention row plus the part the
+    // document's form populated. The family item is the unit the mapper
+    // speaks, so it is flattened into the three vectors the document carries.
+    for (const auto& x : v.TenorBasisSwap) {
+        auto item = map_tenor_basis_swap(x);
+        if (item.convention)
+            r.convention.push_back(std::move(*item.convention));
+        for (auto& p : item.pay_receive)
+            r.tenor_basis_swap_pay_receive.push_back(std::move(p));
+        for (auto& l : item.long_short)
+            r.tenor_basis_swap_long_short.push_back(std::move(l));
+    }
 
     r.tenor_basis_two_swap.reserve(v.TenorBasisTwoSwap.size());
     std::ranges::transform(v.TenorBasisTwoSwap,
@@ -2842,9 +2927,22 @@ conventions conventions_mapper::reverse(const ores::refdata::messaging::conventi
     for (const auto& x : v.cds)
         r.CDS.push_back(reverse_cds(x));
 
-    r.TenorBasisSwap.reserve(v.tenor_basis_swap.size());
-    for (const auto& x : v.tenor_basis_swap)
-        r.TenorBasisSwap.push_back(reverse_tenor_basis_swap(x));
+    // The central rows of this kind are the ones whose parts the three vectors
+    // joined by convention_id carry; every other kind keeps its own vector.
+    for (const auto& c : v.convention) {
+        if (c.kind_code != tenor_basis_swap_kind)
+            continue;
+        ores::refdata::messaging::tenor_basis_swap_convention_item item;
+        item.key.id = c.id;
+        item.convention = c;
+        for (const auto& p : v.tenor_basis_swap_pay_receive)
+            if (p.convention_id == c.id)
+                item.pay_receive.push_back(p);
+        for (const auto& l : v.tenor_basis_swap_long_short)
+            if (l.convention_id == c.id)
+                item.long_short.push_back(l);
+        r.TenorBasisSwap.push_back(reverse_tenor_basis_swap(item));
+    }
 
     r.TenorBasisTwoSwap.reserve(v.tenor_basis_two_swap.size());
     for (const auto& x : v.tenor_basis_two_swap)

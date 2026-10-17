@@ -4,6 +4,7 @@
 #+title: ores.eventing.core
 #+description: Core eventing service implementation: publishes and dispatches change events over NATS.
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: 
 #+created: 2026-07-29
@@ -44,6 +45,7 @@
 
 #+begin_src cmake :name extra_dependencies
 find_package(Immer CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.eventing.api.lib
@@ -52,9 +54,13 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.utility.lib
         immer)
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies
+find_package(Immer CONFIG REQUIRED)
+
 target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}

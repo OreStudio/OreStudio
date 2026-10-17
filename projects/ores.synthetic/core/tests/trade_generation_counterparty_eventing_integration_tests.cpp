@@ -155,7 +155,6 @@ TEST_CASE("write_trade_generation_counterparty_publishes_an_event", tags) {
     // active row, so the parent must be written first.
     auto config_id_parent =
         ores::synthetic::generators::generate_synthetic_trade_generation_config(ctx);
-    config_id_parent.change_reason_code = "system.test";
     // The trade_generation_config is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.

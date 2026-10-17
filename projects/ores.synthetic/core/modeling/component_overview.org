@@ -8,6 +8,7 @@
 #+brief: Synthetic entity repositories, services, and handlers
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :synthetic:core:component:
 #+created: 2026-05-19

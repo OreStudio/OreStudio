@@ -39,29 +39,39 @@ def test_cdash_rejects_unknown_group():
         _test_run_command("clang-debug", "Staging", [])
 
 
-def test_run_degrades_without_fcntl(monkeypatch):
-    """_acquire_build_lock returns (None, None, jobs) where fcntl is
-    unavailable; the command still runs and cleans up without crashing."""
+def test_run_holds_and_releases_the_build_lock(monkeypatch, tmp_path, capsys):
+    """cmd_test remembers the holder, runs ctest, and closes the lock."""
     import compass
 
     captured = {}
+    lock_state = {}
+
+    class FakeLock:
+        def remember(self):
+            lock_state["remembered"] = True
+
+        def close(self):
+            lock_state["closed"] = True
 
     def fake_acquire():
-        return (None, None, 1)
+        return FakeLock(), "test-slot", 1
 
-    def fake_preset():
-        return "test-preset"
+    def fake_log_path(slot):
+        return tmp_path / f"ores-build.log.{slot}"
 
-    def fake_run(cmd, cwd, **kwargs):
+    def fake_run_logged(cmd, cwd, log, env=None):
         captured["cmd"] = cmd
-        return type("Proc", (), {"returncode": 0})()
+        return 0
 
     monkeypatch.setattr(compass, "_acquire_build_lock", fake_acquire)
-    monkeypatch.setattr(compass, "_tr_read_preset", fake_preset)
-    # This test is the lock's degradation, not the broker's presence.
+    monkeypatch.setattr(compass, "_tr_read_preset", lambda: "test-preset")
     monkeypatch.setattr(compass, "_test_run_preflight", lambda: True)
-    monkeypatch.setattr(compass.subprocess, "run", fake_run)
+    monkeypatch.setattr(compass, "_build_log_path", fake_log_path)
+    monkeypatch.setattr(compass, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(compass, "_run_logged", fake_run_logged)
 
     rc = compass.cmd_test(["run", "--preset", "test-preset"])
     assert rc == 0
     assert captured["cmd"] == ["ctest", "--preset", "test-preset"]
+    assert lock_state == {"remembered": True, "closed": True}
+    assert "Build lock" not in capsys.readouterr().out

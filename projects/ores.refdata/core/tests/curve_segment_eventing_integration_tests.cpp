@@ -173,17 +173,14 @@ TEST_CASE("write_curve_segment_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto curve_definition_id_parent =
         ores::refdata::generators::generate_synthetic_curve_definition(ctx);
-    curve_definition_id_parent.change_reason_code = "system.test";
     // The curve_definition is party-isolated, so it carries the
     // session party: under any other party the child's insert trigger could
     // not see it, and the existence check would reject the child.
     curve_definition_id_parent.party_id = *party_ctx.party_id();
     auto curve_definition_id_parent_curve_configuration_parent =
         ores::refdata::generators::generate_synthetic_curve_configuration(ctx);
-    curve_definition_id_parent_curve_configuration_parent.change_reason_code = "system.test";
     auto curve_definition_id_parent_curve_section_parent =
         ores::refdata::generators::generate_synthetic_curve_section(ctx);
-    curve_definition_id_parent_curve_section_parent.change_reason_code = "system.test";
     // curve_configuration is party-isolated, so it carries the session
     // party, or the row that references it could not see it.
     curve_definition_id_parent_curve_configuration_parent.party_id = *party_ctx.party_id();
@@ -212,7 +209,6 @@ TEST_CASE("write_curve_segment_publishes_an_event", tags) {
     // matches no active row, so the parent must be written first.
     auto segment_type_parent =
         ores::refdata::generators::generate_synthetic_curve_segment_type(ctx);
-    segment_type_parent.change_reason_code = "system.test";
     ores::refdata::repository::curve_segment_type_repository segment_type_repo;
     segment_type_repo.write(party_ctx, segment_type_parent);
     v.segment_type = segment_type_parent.code;

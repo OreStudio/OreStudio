@@ -377,6 +377,36 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("docs", "tooling"),
         paths=("doc/*", "build/scripts/check_pattern_uses.py"),
     ),
+    # The generated tables are the only copy of the schema's shape we keep, so
+    # a hand edit or a schema change that the tables did not follow is the same
+    # failure from here.
+    Check(
+        id="xml-bindings-drift",
+        title="The generated codec tables match the schemas",
+        argv=("python3", "build/scripts/check_xml_bindings_drift.py"),
+        classes=("cpp", "codegen"),
+        paths=("projects/ores.ore/scripts/*",
+               "projects/ores.ore/core/include/ores.ore.core/xml/generated/*",
+               "projects/ores.ore/core/src/xml/generated/*",
+               "build/scripts/check_xml_bindings_drift.py",
+               "external/ore/xsd/*"),
+        fix="Run ./projects/ores.ore/scripts/regenerate_xml_bindings.sh and commit.",
+    ),
+    # The gate is narrow on purpose: it only applies when a file that changes
+    # what the benchmark measures changed. A change to the XML sources, or to
+    # the benchmark's own harness, owes a measurement; nothing else does.
+    Check(
+        id="xml-benchmark-recorded",
+        title="An XML code change has a benchmark row recorded after it",
+        argv=("python3", "build/scripts/check_xml_benchmark_recorded.py"),
+        classes=("cpp",),
+        paths=("projects/ores.ore/core/src/xml/*",
+               "projects/ores.ore/core/include/ores.ore.core/xml/*",
+               "benchmarks/xml/bench.cpp",
+               "benchmarks/xml/run.sh",
+               "benchmarks/xml/inputs.tsv"),
+        fix="Run ./benchmarks/xml/run.sh and commit benchmarks/xml/history.tsv.",
+    ),
     Check(
         id="prototypes",
         title="The prototype inventory matches the tree",
@@ -745,6 +775,21 @@ CATALOGUE: tuple[Check, ...] = (
         phase=HEAVY,
         timeout=7200,
     ),
+    # The corpus test writes the documents it read back to the build tree,
+    # and this reads that output, so it follows the suite that produced it.
+    Check(
+        id="ore-xml-roundtrip",
+        title="The ORE XML written back from the corpus still validates",
+        argv=("bash", "build/scripts/check_ore_xml_roundtrip.sh"),
+        classes=("cpp",),
+        paths=("projects/ores.ore/*", "external/ore/xsd/*", "external/ore/examples/*",
+               "build/scripts/check_ore_xml_roundtrip.sh"),
+        phase=HEAVY,
+        after=("ctest",),
+        timeout=900,
+        fix="Read the [ore][xml][corpus] test's first failure, then validate one "
+            "written document by hand with xmllint --schema external/ore/xsd/input.xsd.",
+    ),
     # Runs against the database the db check above rebuilt, so it stays after
     # it. Every suite writes the reference data it reads and rolls it back,
     # which is what lets the corpus pass on that fresh database.
@@ -756,6 +801,28 @@ CATALOGUE: tuple[Check, ...] = (
         phase=HEAVY,
         timeout=1800,
         fix="Read the suite's plan line and the first ERROR it printed.",
+    ),
+    # The one check whose subject is a server-side object rather than a file.
+    # A durable consumer is declared at runtime, so a service that adds a second
+    # one per subject produces the same C++ as a service that follows the
+    # contract, and no read of the tree can tell them apart. It is therefore in
+    # the heavy phase, where the fleet that declares the streams is expected to
+    # be up, and it fails rather than skips when it cannot reach the server: a
+    # check that answers "nothing to do" when it cannot see what it checks is
+    # one that silently stops checking. `--exclude-heavy` keeps it out of the
+    # ordinary run, so what that run pays today is unchanged.
+    Check(
+        id="step-consumers",
+        title="Every step stream carries one consumer, and the claim's own numbers",
+        argv=("python3", "build/scripts/check_step_consumers.py"),
+        classes=("cpp", "services"),
+        phase=HEAVY,
+        timeout=300,
+        fix="Serve the family with one step_routes table and serve_step_commands,"
+            " so the stream carries one durable named '<stream>_consumer'. If it"
+            " is the ack wait or the delivery bound that moved, step_claim_lease"
+            " is written against them: hold off x (deliveries - 1) must exceed"
+            " the lease.",
     ),
 )
 

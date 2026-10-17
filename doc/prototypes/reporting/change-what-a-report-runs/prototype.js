@@ -45,7 +45,7 @@
     var SHARED_WITH = ['Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity'];
 
     /* The conventions set, for the read-only summary the step draws. Twenty-five
-       kinds, and the curated row count each one offers. ACME owns no document
+       kinds, and the curated row count each one offers. No tenant owns a document
        for any kind, so every row of the summary reads none: the count is the
        fallback, not a document of the party's own. */
     var CONVENTIONS_KINDS = [

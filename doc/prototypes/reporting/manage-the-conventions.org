@@ -64,7 +64,7 @@ tenant. So every row of the table reads *none: the run falls back to the curated
 document*, and the page states that above the table, in the words the reader
 needs:
 
-  ACME owns no convention document today. Every row below reads none, and a run
+  No tenant owns a convention document today. Every row below reads none, and a run
   falls back to the curated document for the kind. No party owns one either.
   This is the state the screen handles first.
 

@@ -847,11 +847,12 @@
         }).join('');
 
         var banner = isAcme
-            ? '<div class="notice warn loud"><b>ACME owns no convention document today.</b> ' +
+            ? '<div class="notice warn loud"><b>No tenant owns a convention document.</b> ' +
               'Every row below reads <span class="mono">none</span>, and a run falls back to the ' +
-              'curated document for the kind. No party owns one either: ' +
-              '22 of the 25 party tables hold no row at all, and the other three hold rows of ' +
-              'the system tenant. <b>This is the state the screen handles first.</b></div>'
+              'curated document for the kind. The twenty-five party tables hold no row for any ' +
+              'tenant, and the ACME seeder writes none, so provisioning ACME does not create them. ' +
+              'The 2,367 curated rows are the system tenant\u2019s. ' +
+              '<b>This is the state the screen handles first.</b></div>'
             : '<div class="notice loud"><b>Fixture state: ACME owns ' + won +
               (won === 1 ? ' document.' : ' documents.') +
               '</b> The database holds none of them. This state exists here so the ' +

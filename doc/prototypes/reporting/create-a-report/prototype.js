@@ -960,7 +960,7 @@
 
     /* The conventions set the bound configuration carries, for the read-only
        summary this step draws. Twenty-five kinds, and the curated row count each
-       one falls back to. ACME owns no document for any kind, so the summary
+       one falls back to. No tenant owns a document for any kind, so the summary
        reads none on every row. */
     var CONVENTIONS_KINDS = [
         { name: 'Deposit', rows: 163 },
@@ -1017,7 +1017,7 @@
             '<div class="card" style="margin-top:14px;background:var(--bg)">' +
             '<div class="sectionhead"><h3>The set this report binds</h3>' +
             '<span class="meta">refdata.v1.conventions_documents.get \u00b7 fixture</span></div>' +
-            '<div class="notice warn"><b>ACME owns no convention document yet.</b> No kind of ' +
+            '<div class="notice warn"><b>No tenant owns a convention document yet.</b> No kind of ' +
             'this set has a document of the party\u2019s own, so every row reads none and the ' +
             'run falls back to the curated document for the kind. That is the state the ' +
             'conventions screen handles first.</div>' +

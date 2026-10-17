@@ -665,12 +665,22 @@ none depends on a later one.
 | 8 | Close the forward, variance and position round trip: the forward, the variance swap, both position codes and the nested TRS sub-trade | the mapper round trip per product |
 | 9 | Prove the equity dates in the common-date view (unit 5 declared them) | a probe across an option, a swap and a position |
 | 10 | Prove the equity round trip over the corpus | 19 documents in =Example_Trades=, 20 trades, equal family rows |
+| 11 | Retire the equity variant: =equity_instrument_variant=, =equity_instrument_data=, the equity arm of the shared =trade_instrument= carrier, and the =exporter.cpp= and =trade_mapper.cpp= =if constexpr= branches that select an equity alternative | the family's wire path declares no =std::variant=, and the read carries one typed array per fact table and child (E5) |
 
 Unit 2 lands before the tables because a routing that disagrees with the
 stored type (E6) makes every later round-trip test ambiguous. The children
 land before the header for the same reason the credit rework gives: the
 legs and schedules are keyed by the trade alone, and the header unit
 removes the columns that carry their data.
+
+Unit 11 carries the Regime 3 finding and lands last, once the typed arrays
+unit 5 and units 6 to 8 create exist to carry the read instead of the
+variant. It is the only unit that edits a *shared* header: =trade_instrument=
+is one variant over every family, so removing the equity arm edits the file
+the other families' arms also live in. Only the equity arm goes; the rate,
+credit, fx, commodity, composite and scripted arms are left as they are.
+Retiring their variants is the same defect in other families and belongs to
+those families, not to this one.
 
 ** Measurements
 

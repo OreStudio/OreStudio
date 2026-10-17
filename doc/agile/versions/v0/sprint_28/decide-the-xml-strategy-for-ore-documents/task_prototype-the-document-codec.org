@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/decide-the-xml-strategy-for-ore-documents
-#+pr:
+#+pr: https://github.com/OreStudio/OreStudio/pull/3421
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -99,7 +99,7 @@ allocation counts do not move.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [#3421](https://github.com/OreStudio/OreStudio/pull/3421) | [xml] Choose the route for the ORE XML layer |
 
 * Review
 

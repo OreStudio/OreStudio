@@ -117,6 +117,44 @@ task and name that file in the Command column.
 
 * Notes
 
+** The decision: the template, not this entity
+
+The resolver is emitted by =key_resolvers= for every entity whose declared key
+is not its primary key, so the rule the entity screen specification states at
+line 570 applies to all of them, not to a binding alone. The template fixes it
+once. The alternative, a hand-written override for =feed_binding=, would leave
+the same defect in 30 other resolvers, including the two the specification names
+by example: party identifiers and party contacts, of which every party holds one
+of each type.
+
+** The test and why it would fail on the old code
+
+=feed_binding_history_resolves_to_the_session_party_s_row= in
+=projects/ores.marketdata/core/tests/repository_entity_repository_tests.cpp=
+writes two bindings under one source name, one per party, and reads each back
+under its own party. It measured green on 2026-10-17 with 6 assertions.
+
+The two rows it writes are 5 ms apart, which is what makes the test bite. Read
+from the database after the run:
+
+| Party | valid_from |
+|-------+------------|
+| the other party | 2026-10-17 11:23:05.126433+01 |
+| the session's party | 2026-10-17 11:23:05.120994+01 |
+
+The other party's row is strictly newer, so the old read, which ordered by
+=valid_from= descending and took one row before any party filter ran, returned
+that row for *both* parties. The test asserts each party's own id, and fails.
+
+** Found while testing, unrelated to this task
+
+=compass build= fails to link =ores.synthetic.service.tests= on =main=:
+=feed_kind_registry= is declared in =projects/ores.synthetic/service/src/= and
+=projects/ores.synthetic/service/CMakeLists.txt= line 51 builds that library
+with =-fvisibility=hidden=, so the symbols the test needs are defined but not
+exported. The binary has never been produced in this tree. Captured separately;
+it does not touch this change, because no synthetic file is in the diff.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

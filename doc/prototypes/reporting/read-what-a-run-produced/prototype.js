@@ -70,6 +70,19 @@
  * scenario shows what the current run's errors leave out. The book tree's
  * selected node drives both sides, so selecting a book compares that book across
  * the two runs.
+ *
+ * A's result panel also plots. The form of each plot follows the shape of its
+ * numbers: NPV and each Greek by book are horizontal bars, sorted, signed and
+ * drawn from a zero rule; the change against the baseline is bars of its own,
+ * because a change and a level are not one series; and the run's NPV across the
+ * runs of the same definition is a line, with the current run and the baseline
+ * marked. A run that produced no Greek has no Greek plot, a selection of one
+ * book has no bar chart, and a single run has no trend, because a plot of one
+ * figure states nothing a sentence cannot. Every plot is inline SVG written in
+ * this file: a prototype opens from file:// with no build, no CDN and no
+ * network, so no chart library is loaded or copied in. Every plot keeps its
+ * exact numbers in a table beside it, and a plot whose figure the errors made
+ * partial carries the same partial marking the figure carries.
  */
 
 (function () {
@@ -901,6 +914,37 @@
         }
     };
 
+    /* The last completed runs of each definition, oldest first, for the trend
+       plot. A series across runs is the one reading a single run cannot give, and
+       it is what makes the comparison legible: the baseline is a point on this
+       line rather than a control with nothing behind it.
+
+       Every number here is that run's own NPV. The two runs the switcher can open
+       appear with the same figures as their own fixtures above; the earlier ones
+       are series-only, because a fourth and fifth full run fixture would add a
+       book tree apiece and no honesty. A run that carried errors wrote a figure
+       over the trades that survived, and `errors` is how many problems it
+       recorded, so its point can be marked partial. A definition with one run has
+       one point and is not plotted. */
+    var RUN_SERIES = {
+        'Headline Position': [
+            { short: '8d41c2e7', startedAt: '2026-10-13 09:02:09', npv: 84102884, errors: 0 },
+            { short: 'c70a9b31', startedAt: '2026-10-14 09:02:14', npv: 85884120, errors: 0 },
+            { short: 'e13f6d80', startedAt: '2026-10-15 09:02:07', npv: 86204118, errors: 2 },
+            { short: '2a58d0f4', startedAt: '2026-10-16 09:02:11', npv: 87219062, errors: 0 },
+            { short: '3f7a91c4', startedAt: '2026-10-17 09:02:11', npv: 88402114, errors: 11 }
+        ],
+        'Board Risk Dashboard': [
+            { short: 'a48e1c02', startedAt: '2026-10-14 08:12:38', npv: 12118402, errors: 0 },
+            { short: 'f0b39d74', startedAt: '2026-10-15 08:12:51', npv: 12604118, errors: 0 },
+            { short: '17c2e850', startedAt: '2026-10-16 08:12:22', npv: 12318404, errors: 1 },
+            { short: '4b7e1a02', startedAt: '2026-10-17 08:12:44', npv: 12884102, errors: 0 }
+        ],
+        'Large Exposures': [
+            { short: '9a20c7d1', startedAt: '2026-10-16 18:02:11', npv: 383853078, errors: 0 }
+        ]
+    };
+
     var GAPS = [
         {
             title: 'No operation lists the archive\u2019s contents',
@@ -1679,6 +1723,1318 @@
         return result;
     }
 
+    /* -------------------------------------------------------------- plots */
+    /* Every plot on this page is inline SVG written here, because a prototype
+       opens from file:// with no build, no CDN and no network: a chart library
+       cannot be loaded, and none is copied in either. The form of each plot
+       follows the shape of its numbers. A magnitude compared across categories
+       is bars, a change over time is a line, and a category set with no
+       magnitude to compare is no plot at all.
+
+       Three rules hold every plot on this page.
+
+       - A bar starts at the zero rule, and a negative value draws a bar on the
+         other side of it. A line states the range of its value axis and does not
+         silently start somewhere else.
+       - A value's sign picks the ok or bad token. The accent is spent on
+         controls and never on data.
+       - A partial result is never plotted as if it were whole. A figure that
+         excludes a trade the engine could not build is a floor, so a bar or a
+         point drawn from it is dashed, the plot carries the partial tag the
+         figure carries, and the caption says what the figure leaves out.
+
+       A plot never replaces the figures a reader checks: the by-book table under
+       these plots carries every bar's exact number, the trend carries its own run
+       table, and every SVG carries a text alternative in its aria-label. */
+
+    var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    function pad2(n) {
+        return n < 10 ? '0' + n : String(n);
+    }
+
+    function stampMs(stamp) {
+        var match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(stamp);
+        if (!match) return 0;
+        return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]),
+            Number(match[4]), Number(match[5]), Number(match[6]));
+    }
+
+    function dayLabel(ms) {
+        var d = new Date(ms);
+        return d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()];
+    }
+
+    function clockLabel(ms) {
+        var d = new Date(ms);
+        return pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
+    }
+
+    /* The value axis, and a bar's value label, in the shortest form that still
+       says the unit. The full figure is in the bar's title and in the table. */
+    function shortMoney(n) {
+        var sign = n < 0 ? '-' : '';
+        var a = Math.abs(n);
+        if (a >= 1e9) return sign + 'USD ' + (a / 1e9).toFixed(1) + ' bn';
+        if (a >= 1e6) return sign + 'USD ' + (a / 1e6).toFixed(1) + ' m';
+        if (a >= 1e3) return sign + 'USD ' + Math.round(a / 1e3) + ' k';
+        return sign + 'USD ' + Math.round(a);
+    }
+
+    function r(n) {
+        return Math.round(n * 10) / 10;
+    }
+
+    /* A figure set the page will not draw. A bar of nothing, or a bar of one
+       thing, is worse than a sentence that says which question the table answers
+       instead. */
+    function plotAbsent(title, why) {
+        return '<div class="plot-absent"><b>' + esc(title) + '</b> ' + esc(why) + '</div>';
+    }
+
+    function plotFigure(spec, svg) {
+        return '<figure class="plot">' +
+            '<div class="plot-head">' +
+            '<span class="plot-title">' + esc(spec.title) + '</span>' +
+            '<span class="plot-unit">' + esc(spec.unit) + '</span>' +
+            (spec.partial ? '<span class="tag bad">partial</span>' : '') +
+            '</div>' + svg +
+            '<figcaption class="plot-cap"><span>' + esc(spec.caption) + '</span>' +
+            (spec.excluded
+                ? '<span class="plot-excl"><span class="tag bad">partial</span><span>' +
+                  esc(spec.excluded) + '</span></span>'
+                : '') +
+            '</figcaption>' +
+            '</figure>';
+    }
+
+    function barsAria(spec) {
+        return 'Horizontal bars: ' + spec.title + ', in ' + spec.unit + '. ' +
+            spec.data.map(function (d) {
+                return d.label + ' ' + money(d.value) + (d.partial ? ' (partial)' : '');
+            }).join('; ') + '. Every bar starts at the zero rule.';
+    }
+
+    function lineAria(spec, lo, hi) {
+        return 'Line: ' + spec.title + ', in ' + spec.unit + '. ' +
+            spec.points.map(function (p) {
+                return p.title || p.label;
+            }).join('; ') + '. The value axis runs from ' + shortMoney(lo) + ' to ' +
+            shortMoney(hi) + ' and does not start at zero.';
+    }
+
+    /* Horizontal bars. A bar is drawn from the zero rule, so a negative value
+       reads as a bar on the other side of it rather than as a short bar. A chart
+       that holds a negative value keeps a gutter left of the zero rule, so the
+       value label of the most negative bar sits beside the bar and not on top of
+       the book names. */
+    function barChart(spec) {
+        var data = spec.data;
+        var W = 820, labelW = 200, valueW = 156, rowH = 26, top = 10, axisH = 28;
+        var values = data.map(function (d) { return d.value; });
+        var floor = Math.min.apply(null, values.concat([0]));
+        var ceil = Math.max.apply(null, values.concat([0]));
+        if (ceil === floor) ceil = floor + 1;
+        var startX = labelW + (floor < 0 ? 124 : 0);
+        var plotW = W - valueW - startX;
+        var H = top + data.length * rowH + axisH;
+        var axisY = top + data.length * rowH;
+
+        function xOf(v) {
+            return startX + (v - floor) / (ceil - floor) * plotW;
+        }
+
+        var zero = xOf(0);
+        var out = '<svg class="plot-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+            'aria-label="' + esc(barsAria(spec)) + '">';
+        out += '<line class="axis" x1="' + startX + '" y1="' + axisY + '" x2="' + (W - valueW) +
+            '" y2="' + axisY + '"></line>';
+        out += '<line class="zero" x1="' + r(zero) + '" y1="' + (top - 2) + '" x2="' + r(zero) +
+            '" y2="' + axisY + '"></line>';
+
+        data.forEach(function (d, i) {
+            var y = top + i * rowH;
+            var mid = y + rowH / 2 + 4;
+            var x1 = xOf(d.value);
+            var left = Math.min(zero, x1);
+            var width = Math.max(2, Math.abs(x1 - zero));
+            var negative = d.value < 0;
+            var labelX = negative ? left - 7 : left + width + 7;
+            out += '<text class="pl-lbl" x="' + (labelW - 12) + '" y="' + mid +
+                '" text-anchor="end">' + esc(d.label) + '</text>';
+            out += '<rect class="bar ' + (negative ? 'neg' : 'pos') + (d.partial ? ' partial' : '') +
+                '" x="' + r(left) + '" y="' + (y + 6) + '" width="' + r(width) +
+                '" height="14" rx="2"><title>' +
+                esc(d.label + ': ' + money(d.value) + (d.partial ? ' (partial)' : '')) +
+                '</title></rect>';
+            out += '<text class="pl-val" x="' + r(labelX) + '" y="' + mid + '" text-anchor="' +
+                (negative ? 'end' : 'start') + '">' + esc(money(d.value)) + '</text>';
+        });
+
+        var ticks = [{ v: floor, anchor: 'start' }, { v: ceil, anchor: 'end' }];
+        if (floor < 0 && ceil > 0) ticks.push({ v: 0, anchor: 'middle' });
+        ticks.forEach(function (t) {
+            out += '<text class="pl-tick" x="' + r(xOf(t.v)) + '" y="' + (axisY + 15) +
+                '" text-anchor="' + t.anchor + '">' + esc(shortMoney(t.v)) + '</text>';
+        });
+
+        return plotFigure(spec, out + '</svg>');
+    }
+
+    /* The value range of a line, padded so the highest and lowest point sit off
+       the frame. A line of levels does not start at zero; the axis states where
+       it does start, and so does the caption. */
+    function lineDomain(points) {
+        var values = points.filter(function (p) {
+            return typeof p.value === 'number';
+        }).map(function (p) { return p.value; });
+        var lo = Math.min.apply(null, values);
+        var hi = Math.max.apply(null, values);
+        var pad = (hi - lo) * 0.22;
+        if (!pad) pad = Math.abs(hi || 1) * 0.05;
+        return { lo: lo - pad, hi: hi + pad };
+    }
+
+    /* A line across runs. The latest point is marked and named, the baseline is
+       marked, a point whose figure is partial is drawn hollow and its segment
+       dashed, and a run with no figure breaks the line rather than drawing a
+       zero. */
+    function lineChart(spec) {
+        var points = spec.points;
+        var W = 820, left = 100, right = 26, top = 36, plotH = 176, bottom = 34;
+        var plotW = W - left - right;
+        var H = top + plotH + bottom;
+        var axisY = top + plotH;
+        var domain = lineDomain(points);
+        var lo = domain.lo, hi = domain.hi;
+        var times = points.map(function (p) { return p.at; });
+        var t0 = Math.min.apply(null, times);
+        var t1 = Math.max.apply(null, times);
+        if (t0 === t1) { t0 -= 3600000; t1 += 3600000; }
+
+        function xOf(t) { return left + (t - t0) / (t1 - t0) * plotW; }
+        function yOf(v) { return top + (hi - v) / (hi - lo) * plotH; }
+
+        var out = '<svg class="plot-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+            'aria-label="' + esc(lineAria(spec, lo, hi)) + '">';
+
+        [lo, (lo + hi) / 2, hi].forEach(function (v) {
+            out += '<line class="grid" x1="' + left + '" y1="' + r(yOf(v)) + '" x2="' +
+                (left + plotW) + '" y2="' + r(yOf(v)) + '"></line>';
+            out += '<text class="pl-tick" x="' + (left - 10) + '" y="' + (r(yOf(v)) + 4) +
+                '" text-anchor="end">' + esc(shortMoney(v)) + '</text>';
+        });
+        out += '<line class="axis" x1="' + left + '" y1="' + axisY + '" x2="' + (left + plotW) +
+            '" y2="' + axisY + '"></line>';
+
+        points.forEach(function (p) {
+            if (typeof p.value === 'number') return;
+            out += '<line class="gap" x1="' + r(xOf(p.at)) + '" y1="' + top + '" x2="' +
+                r(xOf(p.at)) + '" y2="' + axisY + '"><title>' +
+                esc(p.title || 'No figure for this run') + '</title></line>';
+        });
+
+        for (var i = 1; i < points.length; i += 1) {
+            var a = points[i - 1], b = points[i];
+            if (typeof a.value !== 'number' || typeof b.value !== 'number') continue;
+            out += '<line class="seg' + (a.partial || b.partial ? ' partial' : '') +
+                '" x1="' + r(xOf(a.at)) + '" y1="' + r(yOf(a.value)) + '" x2="' +
+                r(xOf(b.at)) + '" y2="' + r(yOf(b.value)) + '"></line>';
+        }
+
+        points.forEach(function (p) {
+            if (typeof p.value !== 'number') return;
+            var cx = r(xOf(p.at));
+            var cy = r(yOf(p.value));
+            var cls = 'pt ' + (p.value < 0 ? 'neg' : 'pos') + (p.partial ? ' partial' : '') +
+                (p.mark ? ' ' + p.mark : '');
+            out += '<circle class="' + cls + '" cx="' + cx + '" cy="' + cy + '" r="' +
+                (p.partial ? 4.5 : (p.mark ? 5 : 3.5)) + '"><title>' +
+                esc(p.title || p.label) + '</title></circle>';
+            if (!p.mark) return;
+            var above = p.mark === 'current';
+            var anchor = cx < left + 90 ? 'start' : (cx > left + plotW - 90 ? 'end' : 'middle');
+            var tx = anchor === 'start' ? cx - 4 : (anchor === 'end' ? cx + 4 : cx);
+            out += '<text class="pl-mark" x="' + r(tx) + '" y="' + r(above ? cy - 12 : cy + 19) +
+                '" text-anchor="' + anchor + '">' + esc(p.markLabel || p.label) + '</text>';
+        });
+
+        var stride = Math.max(1, Math.ceil(points.length / 7));
+        points.forEach(function (p, i) {
+            if (i % stride !== 0 && i !== points.length - 1) return;
+            var anchor = i === 0 ? 'start' : (i === points.length - 1 ? 'end' : 'middle');
+            out += '<text class="pl-tick" x="' + r(xOf(p.at)) + '" y="' + (axisY + 16) +
+                '" text-anchor="' + anchor + '">' + esc(spec.xLabel(p)) + '</text>';
+        });
+
+        return plotFigure(spec, out + '</svg>');
+    }
+
+    /* ------------------------------------------------ the form of a plot */
+    /* The vocabulary this page draws from, and the rule that picks one form.
+       The rule is data, so the table on the page and the choice each plot makes
+       cannot disagree: every one of the six forms below carries the shape of
+       numbers it answers to, and a form is chosen by the shape rather than by
+       taste.
+
+       Bars and lines alone were too narrow. A set of parts that makes up one
+       whole is a donut; several wholes each split the same way are stacked
+       bars; two series over the same categories are a grouped bar; two measures
+       against each other are a scatter. A table stays the right answer for a
+       handful of exact numbers, and no chart replaces it. */
+
+    var FORMS = [
+        {
+            id: 'donut',
+            name: 'Donut',
+            shape: 'One whole, few parts',
+            rule: 'One whole in not more than about six parts becomes a donut. A seventh part and the ones ' +
+                'after it join one \'other\' slice with its own legend row, and the hole carries the total. ' +
+                'Each part states its percentage and its value in the legend beside the slice, never on it.'
+        },
+        {
+            id: 'bars',
+            name: 'Horizontal bars',
+            shape: 'One whole, many parts, or exact comparison',
+            rule: 'One whole in more than about six parts, or parts that must be compared precisely, ' +
+                'is horizontal bars. A pie of fifteen books is unreadable and its angles cannot be compared.'
+        },
+        {
+            id: 'stacked',
+            name: 'Stacked bar',
+            shape: 'Many wholes, each split the same way',
+            rule: 'More than one whole, each decomposing by the same categories, is a stacked bar: one bar ' +
+                'per whole and one segment per part. One whole is a donut; several wholes are stacked bars.'
+        },
+        {
+            id: 'grouped',
+            name: 'Grouped bar',
+            shape: 'Two series over the same categories',
+            rule: 'Two series that share the same categories and the same unit are grouped bars, side by ' +
+                'side, so two things are compared rather than one stacked on the other.'
+        },
+        {
+            id: 'scatter',
+            name: 'Scatter',
+            shape: 'Two measures against each other',
+            rule: 'Two measures plotted against each other are a scatter, so an outlier is visible as a ' +
+                'point away from the rest rather than as two numbers a reader has to find.'
+        },
+        {
+            id: 'line',
+            name: 'Line',
+            shape: 'A change over time',
+            rule: 'A change over time is a line, and a single point is not a trend.'
+        },
+        {
+            id: 'waterfall',
+            name: 'Waterfall',
+            shape: 'A contribution that sums to a total',
+            rule: 'A contribution that adds up to a total is a waterfall, so the parts and the total are one ' +
+                'reading. No figure on this page is a contribution to a known total, so none is drawn as one.'
+        },
+        {
+            id: 'table',
+            name: 'Table',
+            shape: 'Exact and few',
+            rule: 'A handful of exact numbers stays a table, and nothing on this page replaces it: a chart ' +
+                'of three figures is harder to check than the three figures.'
+        }
+    ];
+
+    /* The form table, on the page. It is the rule written down so the next person
+       does not guess, and every caption below cites the row it followed. */
+    function formRule() {
+        var rows = FORMS.map(function (form) {
+            return '<tr><td class="fshape">' + esc(form.shape) + '</td>' +
+                '<td class="fname"><span class="fchip f-' + form.id + '"></span>' + esc(form.name) + '</td>' +
+                '<td class="frule">' + esc(form.rule) + '</td></tr>';
+        }).join('');
+        return '<details class="formrule" open>' +
+            '<summary>How the form of a plot is chosen</summary>' +
+            '<p>Every plot on this page is chosen by the shape of its numbers, and the rule is the same on ' +
+            'every screen. A pie is never used where its angles cannot be compared, and no chart replaces a ' +
+            'number a reader has come to check.</p>' +
+            '<div class="table-wrap"><table class="formtable"><thead><tr>' +
+            '<th>The numbers are</th><th>Form</th><th>The rule that chooses it</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+            '<p class="formfoot">Every donut carries its percentages in the legend beside each slice. A plot ' +
+            'whose figure the errors left partial keeps the dashed or hollow treatment, and a donut draws the ' +
+            'excluded part as a hatched slice of its own so the whole of the pie is not silently smaller than ' +
+            'the run.</p>' +
+            '</details>';
+    }
+
+    /* -------------------------------------------------------- the palette */
+    /* One colour per book and one per scope, the same on every plot of this
+       page. The tokens are the application's own, and no token is spent on
+       anything that is not data: the hatched slice is the bad token, because an
+       exclusion is not a category. */
+    function scopeColour(scope) {
+        /* One scope, one colour, on every plot of this page and on the next
+           screen that draws the same scope: the map is the scope's own name, not
+           its position in a count, so a scope cannot change colour because
+           another scope gained a row. */
+        var map = {
+            Analytics: 'var(--accent-bright)',
+            Configuration: 'var(--warn)',
+            Curve: 'var(--ink-dim)',
+            Report: 'var(--bad)',
+            Trade: 'color-mix(in srgb, var(--ok) 78%, var(--bg))'
+        };
+        return map[scope] || 'var(--ink-dim)';
+    }
+
+    /* The order alternates a dark token with a light one, so two parts that end
+       up beside each other in a legend are never two shades a reader has to
+       compare rather than see. */
+    var TOKENS = ['var(--accent-bright)', 'var(--bad)', 'var(--accent)',
+        'color-mix(in srgb, var(--warn) 46%, var(--ink))',
+        'color-mix(in srgb, var(--ok) 78%, var(--bg))',
+        'color-mix(in srgb, var(--ok) 42%, var(--bg))',
+        'color-mix(in srgb, var(--accent-bright) 46%, var(--ink))',
+        'color-mix(in srgb, var(--accent) 46%, var(--ink))',
+        'color-mix(in srgb, var(--bad) 46%, var(--ink))',
+        'color-mix(in srgb, var(--warn) 78%, var(--bg))'];
+
+    /* A book takes its colour from its name, and the key covers every book of
+       the run's tree rather than the selection, so narrowing the tree to a
+       subtree does not repaint the books that stay. */
+    function bookColourFn(run) {
+        var all = bookLeaves(bookTree(run)).map(function (book) { return book.name; }).sort();
+        var keys = [];
+        all.forEach(function (name) {
+            if (keys.indexOf(name) === -1) keys.push(name);
+        });
+        return function (name) {
+            var index = keys.indexOf(name);
+            return BOOK_TOKENS[(index === -1 ? keys.length : index) % BOOK_TOKENS.length];
+        };
+    }
+
+    var BOOK_TOKENS = ['color-mix(in srgb, var(--ok) 78%, var(--bg))',
+        'color-mix(in srgb, var(--warn) 46%, var(--ink))',
+        'color-mix(in srgb, var(--accent-bright) 46%, var(--ink))',
+        'var(--accent)',
+        'color-mix(in srgb, var(--ok) 42%, var(--bg))',
+        'color-mix(in srgb, var(--warn) 78%, var(--bg))',
+        'color-mix(in srgb, var(--accent) 46%, var(--ink))',
+        'color-mix(in srgb, var(--bad) 46%, var(--ink))',
+        'color-mix(in srgb, var(--ink) 62%, var(--accent))',
+        'var(--accent-bright)'];
+
+    function capitalise(text) {
+        return text ? text.charAt(0).toUpperCase() + text.slice(1) : text;
+    }
+
+    function prettyPct(part, whole) {
+        if (!whole) return '0.0%';
+        return (part / whole * 100).toFixed(1) + '%';
+    }
+
+    function hatching() {
+        return '<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" ' +
+            'patternTransform="rotate(45)">' +
+            '<rect width="6" height="6" fill="var(--bad)" fill-opacity="0.12"></rect>' +
+            '<line x1="0" y1="0" x2="0" y2="6" stroke="var(--bad)" stroke-width="1.6" ' +
+            'stroke-opacity="0.7"></line></pattern></defs>';
+    }
+
+    /* The legend, beside the donut and under the other forms. It is the exact
+       numbers in text, so a slice never has to be measured: each row states the
+       part's name, its value with its unit, and its percentage of the whole. */
+    function donutLegend(rows) {
+        return '<div class="legend"><div class="legendhead"><span>Part</span><span>Value</span>' +
+            '<span>Share</span></div>' + rows.map(function (row) {
+                var swatch = row.hatched
+                    ? '<span class="swatch hatched"></span>'
+                    : '<span class="swatch" style="background:' + row.colour + '"></span>';
+                return '<div class="lrow' + (row.hatched ? ' excl' : '') + '" title="' +
+                    esc(row.title || row.label) + '">' + swatch +
+                    '<span class="lname">' + esc(row.label) + '</span>' +
+                    '<span class="lval">' + esc(row.valueText) + '</span>' +
+                    '<span class="lpct">' + esc(row.pctText) + '</span></div>';
+            }).join('') + '</div>';
+    }
+
+    function arcPath(cx, cy, rOuter, rInner, from, to) {
+        var large = (to - from) > Math.PI ? 1 : 0;
+        var x0 = cx + rOuter * Math.cos(from), y0 = cy + rOuter * Math.sin(from);
+        var x1 = cx + rOuter * Math.cos(to), y1 = cy + rOuter * Math.sin(to);
+        var x2 = cx + rInner * Math.cos(to), y2 = cy + rInner * Math.sin(to);
+        var x3 = cx + rInner * Math.cos(from), y3 = cy + rInner * Math.sin(from);
+        return 'M' + r(x0) + ' ' + r(y0) +
+            ' A' + rOuter + ' ' + rOuter + ' 0 ' + large + ' 1 ' + r(x1) + ' ' + r(y1) +
+            ' L' + r(x2) + ' ' + r(y2) +
+            ' A' + rInner + ' ' + rInner + ' 0 ' + large + ' 0 ' + r(x3) + ' ' + r(y3) + ' Z';
+    }
+
+    /* A donut. It is the form for one whole in a few parts, and the hole is the
+       reason it is a donut rather than a pie: the total sits in the middle, where
+       a reader looks for it, and the parts keep the rim. A part the errors left
+       out is a hatched slice named =excluded=, so the whole of the pie stays the
+       whole of the run. Percentages and values are in the legend beside the
+       slice, never on it: an angle is a bad place to read a number. */
+    function donutChart(spec) {
+        var slices = spec.slices.slice();
+        var W = 340, H = 300, cx = 170, cy = 150, rOuter = 112, rInner = 66;
+        var positive = slices.filter(function (s) { return s.value > 0; });
+        var whole = positive.reduce(function (sum, s) { return sum + s.value; }, 0);
+        /* An exclusion whose value is missing has no share to draw. A wedge of
+           four degrees keeps it visible without claiming a share, and its legend
+           row says excluded rather than a percentage. */
+        var MIN_EXCLUDED = 4 / 360;
+
+        var out = '<svg class="plot-svg plot-donut" viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+            'aria-label="' + esc(spec.aria) + '">' + hatching();
+        var angle = -Math.PI / 2;
+        var legend = [];
+        var sweepTotal = positive.reduce(function (sum, s) {
+            return sum + (s.value / whole);
+        }, 0) + slices.filter(function (s) { return s.excluded && !(s.value > 0); }).length *
+            MIN_EXCLUDED;
+        slices.forEach(function (slice) {
+            var text = slice.valueText || spec.valueText(slice.value);
+            var pct = whole > 0 && slice.value > 0 ? prettyPct(slice.value, whole) : null;
+            legend.push({
+                label: slice.label,
+                colour: slice.colour,
+                hatched: !!slice.excluded,
+                valueText: text,
+                pctText: slice.excluded ? 'excluded' : (pct === null ? '0.0%' : pct),
+                title: slice.title || (slice.label + ': ' + text + (pct ? ' (' + pct + ')' : ''))
+            });
+            var share = slice.value > 0 ? slice.value / whole
+                : (slice.excluded ? MIN_EXCLUDED : 0);
+            if (!(share > 0)) return;
+            var sweep = share / sweepTotal * Math.PI * 2;
+            var to = angle + sweep;
+            var fill = slice.excluded ? 'url(#hatch)'
+                : (slice.colour || 'var(--ink-dim)');
+            var stroke = slice.excluded ? 'var(--bad)' : 'var(--bg)';
+            out += '<path class="slice' + (slice.excluded ? ' excluded' : '') + '" d="' +
+                arcPath(cx, cy, rOuter, rInner, angle, to) + '" fill="' + fill +
+                '" stroke="' + stroke + '" stroke-width="1"><title>' +
+                esc(slice.title || (slice.label + ': ' + text + (pct ? ' (' + pct + ')' : ''))) +
+                '</title></path>';
+            angle = to;
+        });
+        if (!positive.length) {
+            out += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (rOuter + rInner) / 2 +
+                '" fill="none" stroke="var(--line-strong)" stroke-dasharray="4 4"></circle>';
+        }
+
+        out += '<text class="hole-val" x="' + cx + '" y="' + (cy - 2) + '" text-anchor="middle">' +
+            esc(spec.holeValue) + '</text>' +
+            '<text class="hole-lbl" x="' + cx + '" y="' + (cy + 17) + '" text-anchor="middle">' +
+            esc(spec.holeLabel) + '</text></svg>';
+        return '<div class="donut-wrap">' + out + donutLegend(legend) + '</div>' +
+            (spec.note ? '<p class="plot-note">' + esc(spec.note) + '</p>' : '');
+    }
+
+    /* Stacked bars: several wholes, each split the same way. One bar per whole,
+       one segment per part, with the same colour for the same part in every bar,
+       and the exact counts in a table under the plot. A segment that is an
+       exclusion is hatched and named =excluded= in its own legend row. */
+    function stackedChart(spec) {
+        var bars = spec.bars;
+        var W = 700, left = 120, right = 24, top = 24, barH = 26, gap = 18, axisH = 30;
+        var H = top + bars.length * (barH + gap) + axisH;
+        var plotW = W - left - right;
+        var highest = Math.max.apply(null, bars.map(function (bar) {
+            return bar.segments.reduce(function (sum, s) { return sum + Math.max(0, s.value); }, 0);
+        }).concat([0]));
+        if (highest <= 0) highest = 1;
+
+        function xOf(v) { return left + v / highest * plotW; }
+
+        var out = '<svg class="plot-svg plot-stacked" viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+            'aria-label="' + esc(spec.aria) + '">' + hatching();
+        out += '<line class="axis" x1="' + left + '" y1="' + (H - axisH + 2) + '" x2="' + (left + plotW) +
+            '" y2="' + (H - axisH + 2) + '"></line>';
+        [0, highest].forEach(function (v, i) {
+            out += '<text class="pl-tick" x="' + r(xOf(v)) + '" y="' + (H - axisH + 17) +
+                '" text-anchor="' + (i === 0 ? 'start' : 'end') + '">' + esc(num(v)) + '</text>';
+        });
+
+        bars.forEach(function (bar, i) {
+            var y = top + i * (barH + gap);
+            var x = left;
+            out += '<text class="pl-lbl" x="' + (left - 10) + '" y="' + (y + barH / 2 + 4) +
+                '" text-anchor="end">' + esc(bar.label) + '</text>';
+            bar.segments.forEach(function (segment) {
+                var width = Math.max(0, Math.min(plotW - (x - left), segment.value / highest * plotW));
+                if (width <= 0.6) return;
+                out += '<rect class="sbar' + (segment.excluded ? ' excluded' : '') + '" x="' + r(x) +
+                    '" y="' + y + '" width="' + r(width) + '" height="' + barH + '" fill="' +
+                    (segment.excluded ? 'url(#hatch)' : segment.colour) + '" stroke="' +
+                    (segment.excluded ? 'var(--bad)' : 'var(--bg)') + '" stroke-width="1"><title>' +
+                    esc(segment.label + ': ' + num(segment.value) + (segment.excluded ? ' (excluded)' : '')) +
+                    '</title></rect>';
+                x += width;
+            });
+            if (bar.segments.every(function (s) { return s.value <= 0; })) {
+                out += '<text class="pl-tick" x="' + (left + 6) + '" y="' + (y + barH / 2 + 4) + '">' +
+                    esc('no problems recorded') + '</text>';
+            }
+        });
+        return out + '</svg>';
+    }
+
+    function stackedLegend(parts) {
+        return '<div class="legend">' + parts.map(function (part) {
+            return '<div class="lrow' + (part.excluded ? ' excl' : '') + '">' +
+                (part.excluded ? '<span class="swatch hatched"></span>'
+                    : '<span class="swatch" style="background:' + part.colour + '"></span>') +
+                '<span class="lname">' + esc(part.label) + (part.excluded ? ' (excluded)' : '') + '</span></div>';
+        }).join('') + '</div>';
+    }
+
+    /* Grouped bars. Two series over the same categories and the same unit are
+       drawn side by side, because the difference between them is what a reader
+       came for and a stack would make one series start where the other ends.
+       Both grow from the zero rule, and a bar whose figure the errors left
+       partial is dashed like every other partial mark. */
+    function groupedChart(spec) {
+        var rows = spec.categories;
+        var W = 820, left = 196, right = 96, top = 20, rowH = 40, axisH = 30;
+        var H = top + rows.length * rowH + axisH;
+        var plotW = W - left - right;
+        var highest = 0;
+        rows.forEach(function (row) {
+            row.values.forEach(function (value) { highest = Math.max(highest, value); });
+        });
+        if (highest <= 0) highest = 1;
+
+        function xOf(v) { return left + v / highest * plotW; }
+
+        var out = '<svg class="plot-svg plot-grouped" viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+            'aria-label="' + esc(spec.aria) + '">';
+        var axisY = H - axisH + 2;
+        out += '<line class="axis" x1="' + left + '" y1="' + axisY + '" x2="' + (left + plotW) +
+            '" y2="' + axisY + '"></line>';
+        [0, highest].forEach(function (v, i) {
+            out += '<text class="pl-tick" x="' + r(xOf(v)) + '" y="' + (H - axisH + 17) +
+                '" text-anchor="' + (i === 0 ? 'start' : 'end') + '">' + esc(spec.tick(v)) + '</text>';
+        });
+        rows.forEach(function (row, i) {
+            var y = top + i * rowH;
+            out += '<text class="pl-lbl" x="' + (left - 10) + '" y="' + (y + rowH / 2 + 8) +
+                '" text-anchor="end">' + esc(row.label) + '</text>';
+            row.values.forEach(function (value, j) {
+                var barH = 15;
+                var by = y + 3 + j * (barH + 2);
+                out += '<rect class="gbar ' + spec.series[j].id + (spec.series[j].partial ? ' partial' : '') +
+                    '" x="' + left + '" y="' + by + '" width="' + r(Math.max(2, xOf(value) - left)) +
+                    '" height="' + barH + '" fill="' + spec.series[j].colour + '" rx="2"><title>' +
+                    esc(row.label + ' \u00b7 ' + spec.series[j].label + ': ' + spec.tick(value) +
+                        (spec.series[j].partial ? ' (partial)' : '')) + '</title></rect>';
+                out += '<text class="pl-val" x="' + r(Math.min(xOf(value) + 6, W - right + 4)) + '" y="' +
+                    (by + barH - 3) + '">' + esc(spec.tick(value)) + '</text>';
+            });
+        });
+        out += '</svg>';
+        return out + seriesLegend(spec.series);
+    }
+
+    function seriesLegend(series) {
+        return '<div class="legend titled"><span class="lhead">The two series</span>' +
+            '<div class="legendrow">' + series.map(function (s) {
+                return '<div class="lrow' + (s.partial ? ' excl' : '') + '">' +
+                    '<span class="swatch" style="background:' + s.colour + '"></span>' +
+                    '<span class="lname">' + esc(s.label) + (s.partial ? ' (partial)' : '') + '</span></div>';
+            }).join('') + '</div></div>';
+    }
+
+    /* A scatter: two measures against each other, one point per category, so a
+       category away from the rest is visible as distance and not as a row to
+       find. Each point keeps its category's colour, and a point drawn from a
+       partial figure is hollow, the same mark the other plots give it. */
+    function scatterChart(spec) {
+        var points = spec.points;
+        var W = 820, left = 104, right = 40, top = 24, plotH = 250, bottom = 58;
+        var H = top + plotH + bottom;
+        var plotW = W - left - right;
+        var xs = points.map(function (p) { return p.x; });
+        var ys = points.map(function (p) { return p.y; });
+        /* A scatter of measures that span two orders of magnitude is read on a
+           log axis, and the axis says so. A value at zero cannot be placed on a
+           log axis, and the page draws none: a zero Greek has no ratio to any
+           other. */
+        function decade(lo, hi) {
+            return {
+                lo: Math.floor(Math.log10(Math.max(lo, 1))),
+                hi: Math.ceil(Math.log10(Math.max(hi, 10)))
+            };
+        }
+        var xd = decade(Math.min.apply(null, xs), Math.max.apply(null, xs));
+        var yd = decade(Math.min.apply(null, ys), Math.max.apply(null, ys));
+
+        function xOf(v) { return left + (Math.log10(v) - xd.lo) / (xd.hi - xd.lo) * plotW; }
+        function yOf(v) { return top + (yd.hi - Math.log10(v)) / (yd.hi - yd.lo) * plotH; }
+
+        var out = '<svg class="plot-svg plot-scatter" viewBox="0 0 ' + W + ' ' + H + '" role="img" ' +
+            'aria-label="' + esc(spec.aria) + '">';
+        for (var yd1 = yd.lo; yd1 <= yd.hi; yd1 += 1) {
+            out += '<line class="grid" x1="' + left + '" y1="' + r(yOf(Math.pow(10, yd1))) + '" x2="' +
+                (left + plotW) + '" y2="' + r(yOf(Math.pow(10, yd1))) + '"></line>';
+            out += '<text class="pl-tick" x="' + (left - 10) + '" y="' + (r(yOf(Math.pow(10, yd1))) + 4) +
+                '" text-anchor="end">' + esc(spec.tickY(Math.pow(10, yd1))) + '</text>';
+        }
+        for (var xd1 = xd.lo; xd1 <= xd.hi; xd1 += 1) {
+            out += '<line class="grid" x1="' + r(xOf(Math.pow(10, xd1))) + '" y1="' + top + '" x2="' +
+                r(xOf(Math.pow(10, xd1))) + '" y2="' + (top + plotH) + '"></line>';
+            out += '<text class="pl-tick" x="' + r(xOf(Math.pow(10, xd1))) + '" y="' + (top + plotH + 18) +
+                '" text-anchor="middle">' + esc(spec.tickX(Math.pow(10, xd1))) + '</text>';
+        }
+        out += '<line class="axis" x1="' + left + '" y1="' + (top + plotH) + '" x2="' + (left + plotW) +
+            '" y2="' + (top + plotH) + '"></line>';
+        out += '<text class="pl-axis" x="' + (left + plotW / 2) + '" y="' + (H - 12) +
+            '" text-anchor="middle">' + esc(spec.xLabel) + '</text>';
+        out += '<text class="pl-axis" transform="translate(20,' + (top + plotH / 2) +
+            ') rotate(-90)" text-anchor="middle">' + esc(spec.yLabel) + '</text>';
+
+        /* One label per point, placed where it collides with neither another
+           label nor another point's marker. The rule is tried first and the
+           alternatives after it, so a crowded middle of the plot stays
+           readable instead of stacking four names on one spot. */
+        var placed = points.map(function (point) {
+            return { point: point, cx: xOf(point.x), cy: yOf(point.y) };
+        }).sort(function (a, b) { return a.cy - b.cy; });
+        var taken = placed.map(function (item) {
+            return { x: item.cx - 7, y: item.cy - 7, w: 14, h: 14 };
+        });
+        placed.forEach(function (item) {
+            var point = item.point;
+            var cy = r(item.cy);
+            var cx = r(item.cx);
+            var fill = point.partial ? 'none' : point.colour;
+            out += '<circle class="sp' + (point.partial ? ' partial' : '') + '" cx="' + cx + '" cy="' + cy +
+                '" r="6" fill="' + fill + '" stroke="' + (point.partial ? 'var(--bad)' : point.colour) +
+                '" stroke-width="1.6"' + (point.partial ? ' stroke-dasharray="3 2"' : '') + '><title>' +
+                esc(point.title) + '</title></circle>';
+            var options = [
+                { dx: 9, dy: 4, anchor: 'start' },
+                { dx: -9, dy: 4, anchor: 'end' },
+                { dx: 9, dy: -8, anchor: 'start' },
+                { dx: -9, dy: -8, anchor: 'end' },
+                { dx: 9, dy: 16, anchor: 'start' },
+                { dx: -9, dy: 16, anchor: 'end' },
+                { dx: -9, dy: -20, anchor: 'end' },
+                { dx: 9, dy: -20, anchor: 'start' },
+                { dx: -9, dy: -34, anchor: 'end' },
+                { dx: 9, dy: -34, anchor: 'start' },
+                { dx: -9, dy: 34, anchor: 'end' },
+                { dx: 9, dy: 34, anchor: 'start' }
+            ];
+            var width = Math.max(40, point.label.length * 5.8);
+            var box = null;
+            for (var i = 0; i < options.length && !box; i += 1) {
+                var option = options[i];
+                var boxLeft = option.anchor === 'start' ? cx + option.dx : cx + option.dx - width;
+                var candidate = {
+                    x: boxLeft, y: cy + option.dy - 9, w: width, h: 13,
+                    dx: option.dx, dy: option.dy, anchor: option.anchor
+                };
+                if (candidate.x < left + 2 || candidate.x + width > left + plotW + 34) continue;
+                var clear = taken.every(function (other) {
+                    return candidate.x + candidate.w < other.x - 2 || other.x + other.w < candidate.x - 2 ||
+                        candidate.y + candidate.h < other.y - 1 || other.y + other.h < candidate.y - 1;
+                });
+                if (clear) box = candidate;
+            }
+            if (!box) {
+                box = { x: cx + 9, y: cy - 4, w: width, h: 13, dx: 9, dy: 4, anchor: 'start' };
+            }
+            taken.push({ x: box.x, y: box.y, w: box.w, h: box.h });
+            if (Math.abs(box.dy) > 20) {
+                out += '<line class="leader" x1="' + cx + '" y1="' + cy + '" x2="' +
+                    r(cx + box.dx * 0.4) + '" y2="' + r(cy + box.dy * 0.8) + '"></line>';
+            }
+            out += '<text class="pl-lbl" x="' + r(cx + box.dx) + '" y="' + r(cy + box.dy) +
+                '" text-anchor="' + box.anchor + '">' + esc(point.label) + '</text>';
+        });
+        return out + '</svg>';
+    }
+
+    /* The error summary, drawn: one donut for the run's whole of problems and
+       one stacked bar for the same parts across the runs in view. The donut
+       earns the form because there is one whole, and the stacked bar earns its
+       own because the comparison is two wholes, not one. */
+    function scopeRows(errors, extra) {
+        var order = ['Trade', 'Analytics', 'Curve', 'Configuration', 'Report'];
+        var counts = {};
+        errors.forEach(function (e) {
+            counts[e.scope] = (counts[e.scope] || 0) + 1;
+        });
+        var rows = order.filter(function (scope) { return counts[scope]; }).map(function (scope) {
+            return { label: scope, value: counts[scope], colour: scopeColour(scope) };
+        });
+        if (extra) rows.push(extra);
+        return rows;
+    }
+
+    function errorsDonut(run, base) {
+        var sc = scenarioFor(run);
+        var lost = sc ? failedTrades(run).length : 0;
+        var slices = scopeRows(run.errors, lost
+            ? { label: 'excluded: ' + lost + ' trade' + (lost === 1 ? '' : 's') + ' not built',
+                value: lost, excluded: true }
+            : null);
+        if (!slices.length) {
+            return plotAbsent('No error plot for this run',
+                'This run recorded no error and no warning, so there is no whole to divide. A donut of nothing ' +
+                'is not drawn, and the empty error list above is the answer.');
+        }
+        var recorded = run.errors.length;
+        var total = recorded + lost;
+        var counts = slices.filter(function (s) { return !s.excluded; }).map(function (s) {
+            return s.value + ' ' + s.label;
+        }).join(', ');
+        return plotFigure({
+            title: 'Problems the run recorded, by scope' + (base ? ' \u00b7 run ' + run.short : ''),
+            unit: 'count of error rows',
+            partial: !!sc,
+            caption: 'One whole, ' + slices.length + ' part' + (slices.length === 1 ? '' : 's') +
+                ': this run\u2019s problems divided by scope, so the donut is the form and the hole carries the ' +
+                'total. A bar chart would compare the counts and lose the whole they are parts of. Percentages ' +
+                'and counts are in the legend, never on a slice. ' + recorded + ' error row' +
+                (recorded === 1 ? '' : 's') + ': ' + counts + '.',
+            excluded: lost
+                ? 'The hatched slice is the ' + lost + ' trade' + (lost === 1 ? '' : 's') + ' the engine could ' +
+                  'not build, drawn as an excluded slice rather than left out, so the whole of the pie is the whole of ' +
+                  'what the run met and not a smaller set. ' + capitalise(partialFacts(run)) + '.'
+                : ''
+        }, donutChart({
+            slices: slices,
+            valueText: function (value) {
+                return value + (value === 1 ? ' row' : ' rows');
+            },
+            holeValue: String(total),
+            holeLabel: lost ? 'problems, incl. ' + lost + ' excluded' : 'problems recorded',
+            aria: 'Donut: ' + counts + (lost ? ', and ' + lost + ' excluded trade' + (lost === 1 ? '' : 's') : '') +
+                ', ' + total + ' in all. Each part\u2019s percentage and count are in the legend. ' +
+                (lost ? 'The excluded trades are a hatched slice, because the whole is not subtly smaller than ' +
+                    'the run.' : '')
+        })
+    );
+    }
+
+    function stackedErrors(run, base) {
+        /* Every run on this page that recorded a problem, beside the two the
+           comparison pairs: a stacked bar of one whole is a donut with a
+           worse legend, so the form is earned by having the runs to compare. */
+        var runs = [];
+        if (base) runs.push(base);
+        runs.push(run);
+        RUNS.forEach(function (candidate) {
+            if (candidate.errors.length) runs.push(candidate);
+        });
+        runs = runs.filter(function (item, index) {
+            return runs.indexOf(item) === index;
+        }).sort(function (a, b) { return a.startedAt < b.startedAt ? -1 : 1; });
+        var parts = ['Trade', 'Analytics', 'Curve', 'Configuration', 'Report'];
+        var bars = runs.map(function (item) {
+            var counts = {};
+            item.errors.forEach(function (e) { counts[e.scope] = (counts[e.scope] || 0) + 1; });
+            return {
+                label: item.short + (item === run ? ' \u00b7 this run'
+                    : (item === base ? ' \u00b7 baseline' : ' \u00b7 ' + shortState(item))),
+                segments: parts.filter(function (scope) { return counts[scope]; }).map(function (scope) {
+                    return { label: scope, value: counts[scope], colour: scopeColour(scope) };
+                })
+            };
+        });
+        var none = runs.every(function (item) { return !item.errors.length; });
+        if (none) return plotAbsent('No error plot for these runs',
+            'Neither run in view recorded an error or a warning, so there is no part to stack. A stacked bar ' +
+            'of nothing is not drawn, and the empty error list is the answer.');
+        var series = parts.filter(function (scope) {
+            return bars.some(function (bar) {
+                return bar.segments.some(function (s) { return s.label === scope; });
+            });
+        }).map(function (scope) {
+            return { label: scope, colour: scopeColour(scope) };
+        });
+        var partial = !!scenarioFor(run) || !!(base && base.errors.length);
+        var summary = bars.map(function (bar) {
+            return bar.label + ': ' +
+                (bar.segments.length ? bar.segments.map(function (s) {
+                    return s.value + ' ' + s.label;
+                }).join(', ') : 'no problems');
+        }).join('; ');
+        return plotFigure({
+            title: 'Problems by scope, run by run',
+            unit: 'count of error rows',
+            partial: partial,
+            caption: 'Stacked bars, because there is more than one whole and each is split the same way: one ' +
+                'bar per run, one segment per scope, the same colour for the same scope in both. A donut would ' +
+                'show one run and hide the comparison. ' + summary + '.',
+            excluded: partial
+                ? 'A hatched segment would be a run whose error rows the page cannot count whole; no segment ' +
+                  'here is hatched, because every error row of both runs is in the counts. The trades either ' +
+                  'run could not build are named in the donut above, where a whole is drawn.' +
+                  (scenarioFor(run) ? ' ' + capitalise(partialFacts(run)) + '.' : '')
+                : ''
+        }, stackedChart({
+            bars: bars,
+            aria: 'Stacked bars: problems by scope, run by run. ' + summary + '. Each bar is one run and each ' +
+                'segment is one scope.'
+        }) + stackedLegend(series));
+    }
+
+    function greekCompare(run) {
+        var leaves = plottedLeaves(run);
+        var complete = leaves.every(function (book) {
+            return book.delta !== undefined && book.gamma !== undefined;
+        });
+        if (!complete || leaves.length < 2) return '';
+        var sc = scenarioFor(run);
+        var categories = leaves.map(function (book) {
+            return {
+                label: book.name,
+                values: [book.delta, book.gamma]
+            };
+        });
+        var summary = leaves.map(function (book) {
+            return book.name + ' Delta ' + money(book.delta) + ', Gamma ' + money(book.gamma);
+        }).join('; ');
+        return plotFigure({
+            title: 'Delta against Gamma, by book',
+            unit: 'USD per 1 bp shift, both series',
+            partial: !!sc,
+            caption: 'Grouped bars, because Delta and Gamma share the same books and the same unit and the ' +
+                'question is the two side by side: one stack would make Gamma start where Delta ends and the ' +
+                'second series would be a length again, not a value. Gamma is the smaller Greek by ' +
+                'construction, so its bars are shorter and its figure is printed beside each one. ' + summary + '.',
+            excluded: sc
+                ? 'Every bar is partial: ' + sc.noDelta + ' positions carry an NPV and no Delta, so both series ' +
+                  'cover the positions the sensitivity analytic priced and no more. The bars are dashed for that ' +
+                  'reason, and no bar here is the whole answer.'
+                : ''
+        }, groupedChart({
+            categories: categories,
+            series: [
+                { id: 'delta', label: 'Delta', colour: 'var(--accent-bright)', partial: !!sc },
+                { id: 'gamma', label: 'Gamma', colour: 'var(--warn)', partial: !!sc }
+            ],
+            tick: money,
+            aria: 'Grouped bars: Delta and Gamma by book, in USD per 1 bp shift. ' + summary +
+                '. Both series start at zero and are drawn side by side.'
+        }));
+    }
+
+    function deltaGammaScatter(run) {
+        var leaves = plottedLeaves(run);
+        var complete = leaves.every(function (book) {
+            return book.delta !== undefined && book.gamma !== undefined;
+        });
+        if (!complete || leaves.length < 2) return '';
+        var sc = scenarioFor(run);
+        var colour = bookColourFn(run);
+        var points = leaves.map(function (book) {
+            return {
+                label: book.name,
+                x: book.delta,
+                y: book.gamma,
+                colour: colour(book.name),
+                partial: !!sc,
+                title: book.name + ': Delta ' + money(book.delta) + ', Gamma ' + money(book.gamma) +
+                    (sc ? ' (partial)' : '')
+            };
+        });
+        var summary = points.map(function (p) {
+            return p.label + ' Delta ' + money(p.x) + ', Gamma ' + money(p.y);
+        }).join('; ');
+        var biggest = points.slice().sort(function (a, b) { return b.x - a.x; })[0];
+        var gPerD = points.map(function (p) {
+            return { label: p.label, ratio: p.x ? p.y / p.x : 0 };
+        }).sort(function (a, b) { return b.ratio - a.ratio; });
+        return plotFigure({
+            title: 'Gamma against Delta, one point per book',
+            unit: 'Delta USD per 1 bp (across) \u00b7 Gamma USD per 1 bp (up)',
+            partial: !!sc,
+            caption: 'A scatter, because two measures are plotted against each other and the question is ' +
+                'shape, not rank: the largest book by Delta is ' + biggest.label + ' at ' + money(biggest.x) +
+                ', and ' + gPerD[0].label + ' carries the most Gamma for its Delta. A book away from the line ' +
+                'the rest make is visible as distance, which two bar charts cannot show. Both axes are log ' +
+                'decades, and the axis titles say so, because the books span two orders of magnitude and a ' +
+                'linear axis would put six of the ten on top of each other. Every point keeps its book\u2019s ' +
+                'colour from the other plots on this page.',
+            excluded: sc
+                ? 'Every point is partial and drawn hollow: ' + partialFacts(run) + ', so a point sits at the ' +
+                  'Delta the surviving positions priced and not at the book\u2019s whole Delta.'
+                : ''
+        }, scatterChart({
+            points: points,
+            xLabel: 'Delta, USD per 1 bp, log scale',
+            yLabel: 'Gamma, USD per 1 bp, log scale',
+            tickX: shortMoney,
+            tickY: shortMoney,
+            aria: 'Scatter: Gamma against Delta, one point per book, Delta in USD per 1 bp across and Gamma in ' +
+                'USD per 1 bp up, both on a log scale. ' + summary + (sc ? '. Every point is partial.' : '.')
+        }));
+    }
+
+    /* A book's share of the run's NPV as one whole. It is the form the earlier
+       version of this page refused for want of space: five or six books make a
+       readable donut, fifteen would not. */
+    function shareDonut(run) {
+        var leaves = plottedLeaves(run);
+        if (leaves.length < 2) return '';
+        var sc = scenarioFor(run);
+        var lost = sc ? failedTrades(run).length : 0;
+        var colour = bookColourFn(run);
+        var positive = leaves.filter(function (book) { return book.npv > 0; });
+        var negative = leaves.filter(function (book) { return book.npv <= 0; });
+        var sorted = positive.slice().sort(function (a, b) { return b.npv - a.npv; });
+        var kept = sorted.slice(0, 6);
+        var rest = sorted.slice(6);
+        var slices = kept.map(function (book) {
+            return { label: book.name, value: book.npv, colour: colour(book.name) };
+        });
+        if (rest.length) {
+            slices.push({
+                label: 'other: ' + rest.length + ' book' + (rest.length === 1 ? '' : 's'),
+                value: rest.reduce(function (sum, book) { return sum + book.npv; }, 0),
+                colour: 'var(--ink-faint)'
+            });
+        }
+        if (lost) {
+            slices.push({
+                label: 'excluded: ' + lost + ' trade' + (lost === 1 ? '' : 's') + ' not built',
+                value: 0,
+                excluded: true,
+                title: 'The engine could not build ' + lost + ' trade' + (lost === 1 ? '' : 's') +
+                    ', so no NPV slice can carry their value: it is missing, not zero.'
+            });
+        }
+        var whole = kept.concat(rest).reduce(function (sum, book) { return sum + book.npv; }, 0);
+        var scope = plotScope(run);
+        return plotFigure({
+            title: 'Each book\u2019s share of the run\u2019s NPV' + (scope ? ' in ' + scope : ''),
+            unit: 'USD, base currency, each book\u2019s share',
+            partial: !!sc || negative.length > 0,
+            caption: 'One whole, ' + (kept.length + (rest.length ? 1 : 0)) + ' part' +
+                (kept.length + (rest.length ? 1 : 0) === 1 ? '' : 's') + ': the books that make up this ' +
+                'run\u2019s NPV, so the donut is the form and the hole carries the total. The bar chart above ' +
+                'compares the same books by amount; this one is read for the whole they make. Each book\u2019s ' +
+                'percentage and value are in the legend.' +
+                (rest.length ? ' The ' + rest.length + ' smallest book' + (rest.length === 1 ? '' : 's') +
+                    ' after the sixth join one \'other\' slice rather than crowding the rim.' : '') +
+                (negative.length ? ' ' + negative.length + ' book' + (negative.length === 1 ? '' : 's') +
+                    ' carry no positive NPV and are not drawn, because a slice cannot be negative; their ' +
+                    'figures are in the table below.' : ''),
+            excluded: lost
+                ? 'The hatched slice is the excluded one: the engine could not build ' + lost + ' trade' +
+                  (lost === 1 ? '' : 's') + ', so their value is missing from the whole and is drawn as a ' +
+                  'hatched label rather than dropped, and the pie is not silently a smaller set than the run: ' +
+                  capitalise(partialFacts(run)) + '.'
+                : ''
+        }, donutChart({
+            slices: slices,
+            valueText: money,
+            holeValue: shortMoney(whole),
+            holeLabel: 'books\u2019 NPV',
+            aria: 'Donut: each book\u2019s share of the run\u2019s NPV, in USD. ' +
+                kept.map(function (book) {
+                    return book.name + ' ' + money(book.npv) + ', ' + prettyPct(book.npv, whole);
+                }).join('; ') +
+                (rest.length ? '; other ' + money(rest.reduce(function (sum, book) {
+                    return sum + book.npv;
+                }, 0)) + ', ' + prettyPct(rest.reduce(function (sum, book) {
+                    return sum + book.npv;
+                }, 0), whole) : '') +
+                (lost ? '; and ' + lost + ' excluded trades, drawn as a hatched slice' : '') +
+                '. The hole carries the total and every percentage is in the legend.'
+        }));
+    }
+
+    /* The books under the selected node: the same set the tree narrows to and the
+       by-book table lists, so the plot, the tree and the table cannot disagree
+       about which books are in view. */
+    function plottedLeaves(run) {
+        if (!bookTree(run)) return null;
+        return bookLeaves(selectedBookNode(run));
+    }
+
+    function plotScope(run) {
+        var node = selectedBookNode(run);
+        return node && !treeIsRoot(run) ? node.name : null;
+    }
+
+    function npvPlot(run) {
+        var leaves = plottedLeaves(run);
+        var data = leaves.map(function (book) {
+            return { label: book.name, value: book.npv, partial: book.lost > 0 };
+        }).sort(function (a, b) { return b.value - a.value; });
+        var lost = leaves.filter(function (book) { return book.lost > 0; });
+        var scope = plotScope(run);
+        return barChart({
+            title: 'NPV by book' + (scope ? ' in ' + scope : ''),
+            unit: 'USD, base currency',
+            data: data,
+            partial: lost.length > 0,
+            caption: 'Horizontal bars, because a magnitude compared across books is what bars compare: sorted ' +
+                'largest first, each bar from the zero rule, so a negative book would read as a bar left of ' +
+                'zero. The book tree selection drives it, so choosing a node narrows the plot to that subtree ' +
+                'exactly as it narrows the table.',
+            excluded: lost.length
+                ? 'The dashed bars are the books whose aggregate NPV excludes trades the engine could not ' +
+                  'build: ' + lost.map(function (book) { return book.name; }).join(', ') + '. No bar here is a ' +
+                  'book\u2019s whole answer: ' + partialFacts(run) + '.'
+                : ''
+        });
+    }
+
+    /* Delta and Gamma keep the bar form and are drawn as two charts, never stacked
+       with NPV: an NPV and a Greek are different units, and so are the two Greeks.
+       A run that configured no sensitivity analytic has neither, and says so
+       rather than drawing an empty axis. */
+    function greeksPlots(run) {
+        var leaves = plottedLeaves(run);
+        var complete = leaves.every(function (book) {
+            return book.delta !== undefined && book.gamma !== undefined;
+        });
+        if (!complete) {
+            return plotAbsent('No plot for Delta or Gamma',
+                'This run\u2019s configuration names ' + analyticsText(run) + ', so it wrote no sensitivity.csv ' +
+                'and took no Greek. A bar of a measure the run did not produce would be an invention, and the ' +
+                'table below states exactly the measures the run does have.');
+        }
+        var sc = scenarioFor(run);
+        var scope = plotScope(run);
+        var noDelta = sc ? sc.noDelta : 0;
+
+        function one(label, field, why) {
+            var data = leaves.map(function (book) {
+                return { label: book.name, value: book[field], partial: !!sc };
+            }).sort(function (a, b) { return b.value - a.value; });
+            return barChart({
+                title: label + ' by book' + (scope ? ' in ' + scope : ''),
+                unit: 'USD per 1 bp shift',
+                data: data,
+                partial: !!sc,
+                caption: 'Horizontal bars, because a Greek across books is a magnitude compared across ' +
+                    'categories; sorted largest first from the zero rule. Delta and Gamma are two charts and not ' +
+                    'one, because they are different units from each other and from NPV. ' + why,
+                excluded: sc
+                    ? 'Every bar here is partial: ' + noDelta + ' positions carry an NPV and no ' + label +
+                      ', because the sensitivity analytic skipped them. A bar covers only the positions that ' +
+                      'priced, so no figure above it is the whole answer.'
+                    : ''
+            });
+        }
+
+        return one('Delta', 'delta', 'This is the first-order Greek this run took.') +
+            one('Gamma', 'gamma', 'Gamma is the second-order Greek, so its bars are smaller than Delta\u2019s by ' +
+                'construction and its axis is its own.');
+    }
+
+    /* The comparison, drawn. With a baseline in view the change is a chart of its
+       own rather than a second series stacked into the level chart, because the
+       two are different magnitudes on different scales; the level chart keeps the
+       levels, this one carries the subtraction, and each says which it is. */
+    function changePlot(run, base) {
+        if (!base) return '';
+        var leaves = plottedLeaves(run);
+        var baseLeaves = bookLeaves(selectedBookNode(base));
+        var partiality = comparisonPartiality(run, base);
+        var data = leaves.map(function (book) {
+            var before = baseLeaves.filter(function (candidate) {
+                return candidate.name === book.name;
+            })[0];
+            if (!before) return null;
+            return {
+                label: book.name,
+                value: book.npv - before.npv,
+                partial: !!partiality || book.lost > 0 || before.lost > 0
+            };
+        }).filter(Boolean).sort(function (a, b) { return b.value - a.value; });
+        var scope = plotScope(run);
+        var excluded = '';
+        if (partiality) {
+            excluded = partiality.side === 'current'
+                ? 'Every bar here is partial, because the run in view is a floor rather than a whole answer' +
+                  (partiality.scenario ? ': ' + partialFacts(run) + '.' : '.') +
+                  ' A change measured from a floor is a floor as well.'
+                : 'Every bar here is partial, because the baseline completed carrying ' + base.errors.length +
+                  ' problems, so each change is measured against a figure that is not the whole answer.';
+        }
+        return barChart({
+            title: 'NPV change by book against run ' + base.short,
+            unit: 'USD, this run minus the baseline',
+            data: data,
+            partial: !!partiality,
+            caption: 'Horizontal bars, because the change of each book is a magnitude compared across books: ' +
+                'signed, and drawn from a zero rule that is the point of no change, so a book that fell reads ' +
+                'left of it. The level chart above keeps the levels; this one is the comparison' +
+                (scope ? ' of ' + scope : ' across the books') + ', so no bar is read as a level.',
+            excluded: excluded
+        });
+    }
+
+    function trendSeries(definition) {
+        return RUN_SERIES[definition] || [];
+    }
+
+    function seriesEntryRun(entry) {
+        return RUNS.filter(function (candidate) {
+            return candidate.short === entry.short;
+        })[0] || null;
+    }
+
+    /* A series point is partial when the figures behind it are: an earlier run
+       this page holds only as a series records how many problems it carried, and
+       the run in view is partial when the results-with-errors scenario says so,
+       which is the same rule the figures above use. */
+    function seriesPointPartial(entry) {
+        var named = seriesEntryRun(entry);
+        if (named) return !!scenarioFor(named);
+        return entry.errors > 0;
+    }
+
+    /* The exact numbers under the trend: one row per plotted run. A plot never
+       replaces them. */
+    function trendTable(run, base) {
+        var series = trendSeries(run.definition);
+        var rows = series.map(function (entry) {
+            var named = seriesEntryRun(entry);
+            var partial = seriesPointPartial(entry);
+            var state;
+            if (entry.short === run.short) state = 'this run';
+            else if (base && entry.short === base.short) state = 'the baseline';
+            else if (named) state = shortState(named);
+            else state = entry.errors ? entry.errors + ' problems' : 'completed clean';
+            return '<tr>' +
+                '<td><span class="nm">' + esc(entry.short) + '</span></td>' +
+                '<td class="nowrap">' + esc(entry.startedAt) + '</td>' +
+                '<td class="num">' + esc(money(entry.npv)) +
+                    (partial ? ' <span class="tag bad">partial</span>' : '') + '</td>' +
+                '<td>' + esc(state) + '</td>' +
+                '</tr>';
+        }).join('');
+        return '<div class="table-wrap"><table class="trendtable"><thead><tr>' +
+            '<th>Run</th><th>Started</th><th class="num">NPV (USD)</th><th>State</th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+    }
+
+    function trendPlot(run, base) {
+        var series = trendSeries(run.definition);
+        if (series.length < 2) {
+            return plotAbsent('No trend for this run',
+                'This page holds one completed run of ' + run.definition + ', and one point is not a trend: a ' +
+                'line through a single run would state a direction the data does not have. The figures above and ' +
+                'the table beside them are the answer.');
+        }
+        var points = series.map(function (entry) {
+            var partial = seriesPointPartial(entry);
+            var current = entry.short === run.short;
+            var isBaseline = !!base && entry.short === base.short;
+            return {
+                label: entry.short,
+                at: stampMs(entry.startedAt),
+                value: entry.npv,
+                partial: partial,
+                mark: current ? 'current' : (isBaseline ? 'baseline' : null),
+                markLabel: current
+                    ? entry.short + ' \u00b7 this run'
+                    : entry.short + ' \u00b7 baseline',
+                title: entry.short + ', started ' + entry.startedAt + ': ' + money(entry.npv) +
+                    (partial ? ' (partial)' : '')
+            };
+        });
+        var domain = lineDomain(points);
+        var first = points[0];
+        var last = points[points.length - 1];
+        var marked = points.filter(function (point) { return point.mark === 'current'; })[0] || null;
+        var partialRuns = series.filter(seriesPointPartial).map(function (entry) {
+            return entry.short;
+        });
+        var excluded = '';
+        if (partialRuns.length) {
+            excluded = 'The dashed points and segments are runs whose figures are not the whole answer: ' +
+                partialRuns.join(', ') + '. ' + (scenarioFor(run)
+                    ? 'This run is one of them, and ' + partialFacts(run) + '.'
+                    : 'Each of those runs completed carrying errors, so its NPV is a figure over the trades ' +
+                      'that survived.') + ' A point plotted without that mark would read as a complete run.';
+        }
+        return lineChart({
+            title: 'NPV across the runs of ' + run.definition,
+            unit: 'USD, one run a day, base currency',
+            points: points,
+            xLabel: function (point) {
+                return dayLabel(point.at) + ' ' + clockLabel(point.at);
+            },
+            caption: 'A line, because the runs of one definition in order are a change over time: ' +
+                (marked
+                    ? 'the run in view, ' + run.short + ', is the marked and named point'
+                    : 'no point is marked, because the run in view is not one of the plotted runs') + ', and ' +
+                (base
+                    ? 'the baseline ' + base.short + ' is marked on the same axis, so the delta control has a ' +
+                      'place in a series rather than an abstraction'
+                    : 'with no comparison on, only this run is marked') + '. The points run from ' +
+                dayLabel(first.at) + ' to ' + dayLabel(last.at) + ', and the value axis runs from ' +
+                shortMoney(domain.lo) + ' to ' + shortMoney(domain.hi) +
+                ' and does not start at zero, which the axis states rather than leaving it to the eye.',
+            excluded: excluded
+        }) + trendTable(run, base);
+    }
+
+    /* The plotted result. The bars sit directly above the by-book table that
+       carries their numbers, so a plot and the figures a reader checks are one
+       block; the trend follows that table with its own run table. A run whose
+       figures the page cannot plot says which question the table answers
+       instead. */
+    function plotsPanel(run, base) {
+        var leaves = plottedLeaves(run);
+        var blocks = [];
+        if (!bookTree(run)) {
+            blocks.push(plotAbsent('No plot for this run\u2019s figures',
+                'This run\u2019s result is read by legal entity, and a row of its table carries NPV, VaR and EAD ' +
+                'in three units at once. No single bar chart compares three units, so the table below is the ' +
+                'right answer and the page draws no bar of it.'));
+        } else if (leaves.length < 2) {
+            blocks.push(plotAbsent('No plot for one book',
+                'The tree is narrowed to ' + leaves[0].name + ', and a chart of one bar states nothing a ' +
+                'sentence cannot. Its figure is in the tiles above and its exact numbers are in the table below.'));
+        } else {
+            blocks.push(npvPlot(run));
+            blocks.push(shareDonut(run));
+            blocks.push(greeksPlots(run));
+            blocks.push(greekCompare(run));
+            blocks.push(deltaGammaScatter(run));
+            blocks.push(changePlot(run, base));
+        }
+        /* The errors are a result of their own, so they are plotted whether or
+           not this run's figures are: a run read by legal entity still recorded
+           what went wrong. */
+        blocks.push(errorsDonut(run, base));
+        blocks.push(stackedErrors(run, base));
+        return '<div class="plots" id="plots">' +
+            '<div class="sectionhead" style="margin-top:22px"><h3 class="subhead">The result, plotted</h3>' +
+            '<span class="meta"><span class="tag warn">fixture</span>' +
+            '<span>inline SVG \u00b7 the same fixtures as the table below \u00b7 a plot never replaces the numbers</span>' +
+            '</span></div>' + formRule() + blocks.join('') +
+            '<p class="rowfoot">Every mark here is drawn from the fixtures the table below carries, and nothing ' +
+            'reads a server: that by-book table lists every bar\u2019s exact value. No chart library is loaded or ' +
+            'copied in \u2014 a prototype opens from <span class="mono">file://</span> with no build, no CDN and ' +
+            'no network \u2014 so each plot is written as inline SVG in the prototype\u2019s own script.</p>' +
+            '</div>';
+    }
+
+    /* The trend, placed under the by-book table with the run table that is its
+       exact numbers. A series across runs answers a question the single run's
+       table cannot, and it is what makes the delta control legible. */
+    function trendPanel(run, base) {
+        return '<div class="plots" id="trend-plots">' +
+            '<div class="sectionhead" style="margin-top:22px"><h3 class="subhead">The runs behind this result</h3>' +
+            '<span class="meta"><span class="tag warn">fixture</span>' +
+            '<span>one point per completed run of ' + esc(run.definition) + ' \u00b7 the table under the plot carries the numbers</span>' +
+            '</span></div>' + trendPlot(run, base) + '</div>';
+    }
+
     function selectedTrade(run) {
         return S.trade ? tradeById(run, S.trade) : null;
     }
@@ -2272,7 +3628,7 @@
             '<div class="figs" style="margin-top:16px">' + tiles + '</div>' +
             comparisonNote(run, base, partiality) +
             partialFiguresLine(run, 'The four figures above are partial') +
-            bookTreeBlock(run, cmp) + table +
+            bookTreeBlock(run, cmp) + plotsPanel(run, base) + table + trendPanel(run, base) +
             (tradesFor(run).length ? tradesHead(run) + tradesBlock(run) : '') +
             '<p class="rowfoot">No operation returns these figures or rows. They are what the archive says once something ' +
             'parses it \u2014 <span class="mono">' + esc(analyticsText(run)) + '</span> wrote them \u2014 and the result ' +

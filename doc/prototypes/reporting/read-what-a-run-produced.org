@@ -2,7 +2,7 @@
 :ID: 7d062f46-83bf-4e87-89ec-22847f26a9c8
 :END:
 #+title: Read what a run produced prototype
-#+description: Three structural variants of a run's result, a comparison against a previous run of the same definition, and the archive listing drawn as a stated fixture.
+#+description: Three structural variants of a run's result, the plots that fit each number, a comparison against a previous run of the same definition, and the archive listing drawn as a stated fixture.
 #+type: knowledge
 #+level: cross
 #+filetags: :prototype:ui:reporting:
@@ -35,6 +35,18 @@ previous run of the same definition, or no run, and every figure, every book row
 every tree node and the total row then carries its change against that baseline.
 The page opens with the previous run chosen, so a reviewer meets the comparison
 without hunting for it, and =?baseline=none= turns it off.
+
+The result is also plotted, in variant =A=, in the form each set of numbers
+asks for, from a stated vocabulary and a stated rule rather than bars and lines
+alone: bars for NPV and for each Greek across books, a donut for each book's share
+of the run and a donut for the run's problems by scope, grouped bars for Delta
+against Gamma, a scatter of each book's Gamma against its Delta, stacked bars for
+the problems of the two runs the comparison pairs, a signed bar chart for the
+change against the baseline, and a line of NPV across the runs of the same
+definition. Every plot carries a caption saying why that form, keeps its exact
+numbers in the table or the legend beside it, and carries the =partial= marking
+when the errors made the figure it draws partial; a donut draws the excluded part
+as a hatched slice of its own.
 
 * Detail
 
@@ -264,10 +276,105 @@ three unbuildable trades and the 412 positions with an NPV and no Delta. The cod
 marks a baseline that carries errors the same way, though this fixture's baseline
 completed clean, so the baseline branch is not exercised by a screenshot.
 
+** The plots, the vocabulary, and the rule that chooses a form
+
+A run's result is numbers in tables, and a reader can answer some questions from
+them faster as a picture. Variant =A= therefore plots the result, and the form of
+each plot follows the shape of the numbers rather than decorating them. Bars and
+lines alone were too narrow a vocabulary: parts of one whole, several wholes each
+split the same way, two series over one set of categories and two measures plotted
+against each other are four ordinary questions that neither a bar nor a line
+answers.
+
+The rule below is written on the page as well, in the panel that draws the plots,
+so a reader of the prototype meets it where the plots are and not only here.
+
+| The numbers are | Form | The rule that chooses it |
+|-----------------+------+--------------------------|
+| One whole, few parts | Donut | One whole in not more than about six parts becomes a donut. A seventh part and the ones after it join one =other= slice with its own legend row, and the hole carries the total. Each part states its percentage and its value in the legend beside the slice, never on it. |
+| One whole, many parts, or parts that must be compared precisely | Horizontal bars | One whole in more than about six parts, or parts that must be compared precisely, is horizontal bars. A pie of fifteen books is unreadable and its angles cannot be compared. |
+| Many wholes, each split the same way | Stacked bars | More than one whole, each decomposing by the same categories, is a stacked bar: one bar per whole and one segment per part. One whole is a donut; several wholes are stacked bars. |
+| Two series over the same categories | Grouped bars | Two series that share the same categories and the same unit are grouped bars, side by side, so two things are compared rather than one stacked on the other. |
+| Two measures against each other | Scatter | Two measures plotted against each other are a scatter, so an outlier is visible as a point away from the rest rather than as two numbers a reader has to find. |
+| A change over time | Line | A change over time is a line, and a single point is not a trend. |
+| A contribution that sums to a total | Waterfall | A contribution that adds up to a total is a waterfall, so the parts and the total are one reading. |
+| Exact and few | Table only | A handful of exact numbers stays a table, and nothing on this page replaces it: a chart of three figures is harder to check than the three figures. |
+
+What that rule draws on the page:
+
+| Numbers | Form | Why, and where it appears |
+|---------+------+---------------------------|
+| NPV by book | Horizontal bars, sorted largest first, signed, from a zero rule | A magnitude compared across categories is what bars compare, and the selection of the book tree narrows it. |
+| Each book's share of the run's NPV | Donut, with the total in the hole and the share in the legend | One whole, five or six parts: the books that make up the run. Beyond the sixth, the smallest join one =other= slice, so the rim never crowds. |
+| Delta and Gamma by book | The same bar form, twice | Each Greek is a magnitude across the same books, and two charts keep the two units apart. |
+| Delta against Gamma, by book | Grouped bars | The two Greeks share the books and the unit, so they are compared side by side rather than stacked: a stack would make Gamma a length from the end of Delta. |
+| A book's Gamma against its Delta | Scatter, one point per book, both axes log decades | Two measures against each other, so a book away from the line the rest make is a distance and not a row to find. The logs are stated because the books span two orders of magnitude. |
+| The change against the baseline, by book | Bars of their own, signed, from a zero rule that is the point of no change | A change and a level are different magnitudes on different scales, so the change is its own chart and not a second series stacked into the level chart. |
+| The run's problems by scope | Donut, with the count in the hole and the scope's count and share in the legend | One whole, two parts on the fixture run: the problems the run recorded, divided by scope. |
+| The run's problems by scope, across the runs the comparison pairs | Stacked bars | Two wholes, each split the same way, so one bar per run and one segment per scope in the same colour. |
+| NPV across the runs of the definition | A line, with the current run marked and named and the baseline marked | The runs of one definition in order are a change over time, and the line is what makes the delta control legible. |
+| Positions priced, books, counterparties | No plot | A count with no magnitude to compare is a figure, not a chart: a bar of it would be a bar of nothing. |
+| One book, on its own | No plot | A chart of one bar states nothing a sentence cannot. |
+| A run with one completed instance | No trend | One point is not a trend: a line through it would state a direction the data does not have. |
+| Anything that sums to a known total | Not drawn as a waterfall | No figure on this page is a contribution to a known total. The waterfall row of the rule is written and exercised nowhere, because inventing a total to reach would be the invention. |
+
+Every pie is a donut, never a solid disc: the hole carries the total, where a
+reader looks for it, and the slices keep the rim. Every donut carries its
+percentages and its values in the legend, never on the arc, because an angle is a
+bad place to read a number. Every plot carries a title, its unit, an
+=aria-label= that lists the values a screen reader would otherwise read off the
+bars, and a one-line caption that says what it shows and why that form was
+chosen, for example *one whole, five parts*. The exact values stay in text: the
+by-book table under the plots carries every bar's figure, the trend carries a
+table of the runs it plots, and every legend states the value beside its
+percentage. A plot never replaces the figures a reader checks.
+
+Four rules keep the drawing honest.
+
+- *A bar starts at zero.* Every bar is drawn from the zero rule, so a negative
+  book reads as a bar on the other side of it. A line of levels cannot start at
+  zero without flattening the series, so it states the range of its axis in a
+  tick and in the caption: the NPV line runs from USD 83.2 m to USD 89.3 m and
+  says so rather than truncating silently. The scatter states both axes as log
+  decades for the same reason, in the axis title and in the caption.
+- *Colour comes from the tokens, one colour per book and one per scope, and the
+  same across every plot on the page.* A book keeps its colour in the donut, in
+  the grouped bars and in the scatter; a scope keeps its colour in the donut and
+  in the stacked bars, and the scope with the most rows takes the first token so
+  the heaviest part is the one the eye reaches first. The accent is spent on
+  controls and never on data, and the one place a token is spent on something
+  that is not a category is the hatched exclusion, which is the bad token because
+  an exclusion is not a category.
+- *A partial result is never plotted as if it were whole.* A run that carried
+  errors wrote a figure over the trades that survived, so a bar or a point drawn
+  from one is a floor. The plot carries the same =partial= tag the figures carry,
+  the mark itself is dashed or hollow, and the caption names what the figure
+  leaves out. For a donut the excluded part is its own hatched slice, labelled
+  =excluded= with its own legend row, so the whole of the pie is not silently
+  smaller than the run: the share donut hatches the trades the engine could not
+  build, and the problem donut hatches them beside the recorded rows, which is
+  why its hole carries both counts.
+- *Nothing is drawn that the run did not produce.* A run whose configuration
+  names =npv= and =saccr= has no Greek, so it has no grouped bar and no scatter of
+  one, and the page says which analytic set decided that.
+
+The book tree selection drives the plots exactly as it drives the table: choosing
+a node narrows the bars, the donut and the Greeks to the books under it, and
+choosing a single book removes them in favour of the tile and the table row. The
+comparison drives them too: with a baseline in view the change chart appears, the
+stacked bars pair the two runs, and the trend marks the baseline's point; with
+=?baseline=none= the chart is gone and only the current run is marked on the line.
+
+Every plot is inline SVG written in the prototype's own script. A prototype opens
+from =file://= with no build, no CDN and no network, so no chart library is
+loaded and none is copied in.
+
 ** What is fake
 
 The figures, the file names, the row counts, the sizes, the archive key, the book
-and portfolio nodes, and every trade row are mock. Nothing reads a server. The
+and portfolio nodes, and every trade row are mock. So are the plots: each mark is
+drawn from the same fixtures the tables carry, and the run series behind the
+trend is a fixture like the two runs it contains. Nothing reads a server. The
 file names are real ORE output names — =npv.csv=, =saccr.csv=,
 =pricingstats.csv=, =log_structured.json= and the rest — because an invented set
 would hide the shape of the thing being judged. The book and portfolio names are

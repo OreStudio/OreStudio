@@ -40,6 +40,37 @@
   different amounts. A change whose two sides are not both complete is marked
   partial: the results-with-errors scenario shows the current run's case.
 
+  Variant A also plots the result, and the plot is chosen to fit the analytic:
+  horizontal bars for NPV by book and for each Greek by book, a signed bar chart
+  of the change against the baseline, and a line of NPV across the runs of the
+  same definition with the current run and the baseline marked. The book tree
+  selection narrows the bars to the subtree it narrows the table to.
+
+  The plot vocabulary is the ordinary one, and the page states the rule that
+  picks a form: one whole in few parts is a donut, and not more than about six
+  slices; one whole in many parts, or parts that must be compared precisely, is
+  horizontal bars; many wholes each split the same way are stacked bars; two
+  series over the same categories are grouped bars; two measures against each
+  other are a scatter; a change over time is a line; a contribution that sums to
+  a total is a waterfall; and a handful of exact numbers stays a table. Here that
+  gives a donut of each book's share of the run's NPV and a donut of the run's
+  problems by scope, both with the total in the hole and every percentage in the
+  legend; stacked bars of the problems by scope across the two runs the
+  comparison pairs; grouped bars of Delta against Gamma, which share the books and
+  the unit; and a scatter of each book's Gamma against its Delta, so an outlier is
+  a distance rather than a row. A waterfall is drawn nowhere: no figure on this
+  page is a contribution to a known total.
+
+  Every plot carries a title, its unit, an aria-label, a caption saying why that
+  form, and its exact numbers beside it. A plot whose figure the errors left
+  partial carries the same partial marking the figure carries and says in the
+  caption what is excluded; a donut draws the excluded part as a hatched slice of
+  its own, named excluded, so the whole of the pie is not silently smaller than
+  the run. A count with no magnitude to compare, one book, and a single run are
+  not plotted, and the page says so instead. The plots are inline SVG written in
+  prototype.js: a page opened from file:// has no build, no CDN and no network, so
+  no chart library is loaded or copied in.
+
   Honest gaps, repeated on the page: no operation lists the files inside a
   run's archive, no operation or route serves the archive's bytes, and no read
   serves parsed results or the exported ORE package. The manifest and every

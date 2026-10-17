@@ -43,7 +43,11 @@ FAMILIES = {
     "Portfolio": ("migrating", "importer and exporter read trades and their instruments"),
     "PricingEngines": ("migrating", "pricing_engine_mapper, reached from the run document"),
     "CurveConfiguration": ("migrating", "curve_configuration_mapper reads it"),
-    "CreditSimulation": ("migrating", "credit_simulation_mapper reads it"),
+    "CreditSimulation": (
+        "migrating",
+        "the configuration type is seeded and stored; credit_simulation_mapper "
+        "is its only XML reader, reached from the run configuration",
+    ),
     "StressTesting": (
         "migrating",
         "the analytics stress test store is modelled on stresstest.xml and "

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch: feature/delete-the-netting-set-xml-mapper
+#+branch: feature/migrate-credit-simulation-onto-the-codec
 #+pr: 3486
 #+blocked_on:
 #+blocked_since:
@@ -31,7 +31,7 @@ completely in one change: reader, writer, and the deletion of its mapper.
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | Calendar adjustments and currency config read and write through the codec; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Credit simulation and conventions. |
+| Next         | Credit simulation, whose XML mapper turns a document into five analytics tables. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -81,6 +81,24 @@ and the exporter, and the writer's error message still naming the calendar
 table for a currency field. Both live in =src/xml/projection.hpp= now, beside
 the rule that a projection states every row it fills and throws when the
 schema no longer has it.
+
+*The remaining families, sized from a probe of the generator.* Running the
+generator against each remaining schema says which need codec work and which
+need the generator extended first.
+
+| Family | Table | Mapper | Blocker |
+|--------+-------+--------+---------|
+| CreditSimulation | generates | 291 lines, decomposes into five analytics tables | none |
+| PricingEngines | generates | 241 lines, read by run_store and the run configuration service | none |
+| CurveConfiguration | generates | 3,310 lines | none, but the largest |
+| Portfolio | generates | instrument mappers, the largest group | none |
+| StressTesting | refuses | 830 lines | generator lacks the =shiftTypeEntry= shape |
+| ORE run document | refuses | run document mapper | generator lacks =xs:complexContent= |
+
+*Credit simulation is not free.* Its mapper is reached only by its own suites,
+which reads as dead code, but the configuration type is seeded and stored, so
+the family is a product concept with a test-only XML path. It is migrated, not
+deleted: the projection into the five analytics tables is the work.
 
 * Measurements
 

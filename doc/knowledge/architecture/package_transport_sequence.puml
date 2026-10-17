@@ -17,7 +17,7 @@
 '
 @startuml
 
-title Bundle round trip: export, store, coordinate, apply
+title Package round trip: export, store, coordinate, apply
 
 actor Operator
 participant "export operation" as exp
@@ -38,22 +38,22 @@ strd -> strd : read rows in one transaction
 strd -> store : PUT staging/trading.zst\n(compressed entry)
 strd --> exp : part record (owner, kind,\nformat, rows, checksum)
 
-exp -> store : PUT bundles/{bundle_id}/manifest.msgpack
+exp -> store : PUT packages/{package_id}/manifest.msgpack
 exp -> store : assemble archive by byte copy\n(one entry per part, manifest entry)
-exp -> store : PUT bundles/{bundle_id}/bundle.zip.zst
+exp -> store : PUT packages/{package_id}/package.zip.zst
 note over exp, store
   The manifest carries part records only.
   No row ever reaches the bus.
 end note
 
-Operator -> coord : import bundle {bundle_id}
+Operator -> coord : import package {package_id}
 coord -> store : GET manifest.msgpack
 coord -> coord : validate version, target, owners,\npart records; read no part bytes
-coord -> tref : apply bundle {bundle_id}\narchive URI, as_of, target,\nrefdata part reference
+coord -> tref : apply bundle {package_id}\narchive URI, as_of, target,\nrefdata bundle: parts
 tref -> store : GET archive entry refdata/*
 tref -> tref : verify SHA-256, stream rows,\nvalidate, one unit_of_work
 tref --> coord : refdata applied (rows)
-coord -> ttrd : apply bundle {bundle_id}\narchive URI, as_of, target,\ntrading part reference
+coord -> ttrd : apply bundle {package_id}\narchive URI, as_of, target,\ntrading bundle: parts
 ttrd -> store : GET archive entry trading/*
 ttrd -> ttrd : verify SHA-256, stream rows,\nvalidate, one unit_of_work
 ttrd --> coord : trading applied (rows)

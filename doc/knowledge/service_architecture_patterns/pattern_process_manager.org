@@ -87,7 +87,7 @@ must act as a tenant uses [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled W
 - [[id:28438C94-4AE6-4455-8786-4CF02286944B][Report execution]] — the engine runs the report chain the run configuration selects.
 - [[id:25ED321D-A489-449C-BF60-15F1A1B3DBE7][Identity]] — the engine runs the steps the request declares.
 - [[id:7CEE1DB5-D26F-46C5-9687-E37A13A0DC81][Tenant provisioning]] — the engine runs the provisioning plan's steps.
-- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a bundle]] — the coordinator is the manager: it holds each part's state and dispatches the next step from the parts' replies.
+- [[id:0BA30CC1-18C8-48CC-8243-8912880F8DEC][Transporting a package]] — the coordinator is the manager: it holds each bundle's state and dispatches the next step from the bundles' replies.
 
 * Related patterns
 

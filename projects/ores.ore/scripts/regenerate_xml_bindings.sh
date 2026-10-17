@@ -90,6 +90,18 @@ generate \
     --source "$source/netting_set_definitions.cpp"
 
 generate \
+    --schema "$xsd/conventions.xsd" \
+    --schema "$xsd/intradaypowerloaddata.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element Conventions \
+    --root-type conventions \
+    --accessor conventions_document \
+    --namespace ores::ore::xml::generated::conventions \
+    --include "ores.ore.core/xml/generated/conventions.hpp" \
+    --header "$header/conventions.hpp" \
+    --source "$source/conventions.cpp"
+
+generate \
     --schema "$xsd/currencyconfig.xsd" \
     --schema "$xsd/ore_types.xsd" \
     --root-element CurrencyConfig \

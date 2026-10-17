@@ -19,6 +19,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
+#include "ores.ore.core/xml/generated/conventions.hpp"
 #include "ores.ore.core/xml/generated/counterparty_information.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
@@ -47,6 +48,7 @@ using cur::currency_config_document;
 namespace ibor = ores::ore::xml::generated::ibor_fallback_config;
 using ibor::ibor_fallback_config;
 using ibor::ibor_fallback_config_document;
+namespace cnv = ores::ore::xml::generated::conventions;
 namespace cp = ores::ore::xml::generated::counterparty_information;
 using cp::counterparty_information;
 using cp::counterparty_information_document;
@@ -522,4 +524,34 @@ TEST_CASE("every_netting_set_document_in_the_corpus_binds", tags) {
     CHECK(files > 0);
     CHECK(report.empty());
     CHECK(sets > 50);
+}
+
+TEST_CASE("the_generated_conventions_tables_bind_the_corpus", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
+    REQUIRE(fs::is_directory(root));
+
+    std::size_t files = 0;
+    std::size_t deposits = 0;
+    std::string report;
+
+    for (const auto& entry : fs::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().filename() != "conventions.xml")
+            continue;
+        ++files;
+        cnv::conventions record;
+        bind_error error;
+        if (!binder::bind(cnv::conventions_document(), read_file(entry.path()), &record, error)) {
+            report += entry.path().string() + ": " + error.message + "\n";
+            continue;
+        }
+        if (record.deposit.present != 0)
+            ++deposits;
+    }
+
+    INFO("files: " << files << ", deposits: " << deposits);
+    INFO(report);
+    CHECK(files > 0);
+    CHECK(report.empty());
 }

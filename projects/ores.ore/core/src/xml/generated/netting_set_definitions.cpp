@@ -46,25 +46,25 @@ const field netting_set_details_fields[] = {
     {"InitialMarginType", 2378279021u, field_kind::text, std::uint32_t(offsetof(netting_set_details, initial_margin_type)), 3, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
     {"LegalEntityId", 1467691900u, field_kind::text, std::uint32_t(offsetof(netting_set_details, legal_entity_id)), 4, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type netting_set_details_type{"nettingSetDetails", netting_set_details_fields, 5, no_text};
+const record_type netting_set_details_record{"nettingSetDetails", netting_set_details_fields, 5, no_text};
 const field independent_amount_fields[] = {
     {"IndependentAmountHeld", 3265166202u, field_kind::decimal, std::uint32_t(offsetof(independent_amount, independent_amount_held)), 0, false, true, nullptr, nullptr, scalar_kind::decimal, nullptr},
     {"IndependentAmountType", 1315611409u, field_kind::enumeration, std::uint32_t(offsetof(independent_amount, independent_amount_type)), 1, false, true, independent_amount_type_spellings, nullptr, scalar_kind::text, nullptr},
 };
-const record_type independent_amount_type{"IndependentAmount", independent_amount_fields, 2, no_text};
+const record_type independent_amount_record{"IndependentAmount", independent_amount_fields, 2, no_text};
 const field margining_frequency_fields[] = {
     {"CallFrequency", 527678469u, field_kind::text, std::uint32_t(offsetof(margining_frequency, call_frequency)), 0, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
     {"PostFrequency", 3261534015u, field_kind::text, std::uint32_t(offsetof(margining_frequency, post_frequency)), 1, false, true, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type margining_frequency_type{"MarginingFrequency", margining_frequency_fields, 2, no_text};
+const record_type margining_frequency_record{"MarginingFrequency", margining_frequency_fields, 2, no_text};
 const field currencies_fields[] = {
     {"Currency", 342827606u, field_kind::repeated_leaf, std::uint32_t(offsetof(currencies, currency)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type currencies_type{"Currencies", currencies_fields, 1, no_text};
+const record_type currencies_record{"Currencies", currencies_fields, 1, no_text};
 const field eligible_collaterals_fields[] = {
-    {"Currencies", 1366952894u, field_kind::nested, std::uint32_t(offsetof(eligible_collaterals, currencies)), 0, false, true, nullptr, &currencies_type, scalar_kind::text, nullptr},
+    {"Currencies", 1366952894u, field_kind::nested, std::uint32_t(offsetof(eligible_collaterals, currencies)), 0, false, true, nullptr, &currencies_record, scalar_kind::text, nullptr},
 };
-const record_type eligible_collaterals_type{"EligibleCollaterals", eligible_collaterals_fields, 1, no_text};
+const record_type eligible_collaterals_record{"EligibleCollaterals", eligible_collaterals_fields, 1, no_text};
 const field csa_details_fields[] = {
     {"Bilateral", 1696326147u, field_kind::enumeration, std::uint32_t(offsetof(csa_details, bilateral)), 0, false, false, csa_type_spellings, nullptr, scalar_kind::text, nullptr},
     {"CSACurrency", 224323917u, field_kind::enumeration, std::uint32_t(offsetof(csa_details, csa_currency)), 1, false, false, currency_code_spellings, nullptr, scalar_kind::text, nullptr},
@@ -73,36 +73,36 @@ const field csa_details_fields[] = {
     {"ThresholdReceive", 3779227669u, field_kind::decimal, std::uint32_t(offsetof(csa_details, threshold_receive)), 4, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
     {"MinimumTransferAmountPay", 1587252622u, field_kind::decimal, std::uint32_t(offsetof(csa_details, minimum_transfer_amount_pay)), 5, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
     {"MinimumTransferAmountReceive", 1580383517u, field_kind::decimal, std::uint32_t(offsetof(csa_details, minimum_transfer_amount_receive)), 6, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
-    {"IndependentAmount", 4124846393u, field_kind::nested, std::uint32_t(offsetof(csa_details, independent_amount)), 7, false, false, nullptr, &independent_amount_type, scalar_kind::text, nullptr},
-    {"MarginingFrequency", 2473522537u, field_kind::nested, std::uint32_t(offsetof(csa_details, margining_frequency)), 8, false, false, nullptr, &margining_frequency_type, scalar_kind::text, nullptr},
+    {"IndependentAmount", 4124846393u, field_kind::nested, std::uint32_t(offsetof(csa_details, independent_amount)), 7, false, false, nullptr, &independent_amount_record, scalar_kind::text, nullptr},
+    {"MarginingFrequency", 2473522537u, field_kind::nested, std::uint32_t(offsetof(csa_details, margining_frequency)), 8, false, false, nullptr, &margining_frequency_record, scalar_kind::text, nullptr},
     {"MarginPeriodOfRisk", 536785828u, field_kind::text, std::uint32_t(offsetof(csa_details, margin_period_of_risk)), 9, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
     {"CollateralCompoundingSpreadReceive", 923715817u, field_kind::decimal, std::uint32_t(offsetof(csa_details, collateral_compounding_spread_receive)), 10, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
     {"CollateralCompoundingSpreadPay", 3399275754u, field_kind::decimal, std::uint32_t(offsetof(csa_details, collateral_compounding_spread_pay)), 11, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
-    {"EligibleCollaterals", 503940022u, field_kind::nested, std::uint32_t(offsetof(csa_details, eligible_collaterals)), 12, false, false, nullptr, &eligible_collaterals_type, scalar_kind::text, nullptr},
+    {"EligibleCollaterals", 503940022u, field_kind::nested, std::uint32_t(offsetof(csa_details, eligible_collaterals)), 12, false, false, nullptr, &eligible_collaterals_record, scalar_kind::text, nullptr},
     {"ApplyInitialMargin", 3129344359u, field_kind::text, std::uint32_t(offsetof(csa_details, apply_initial_margin)), 13, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
     {"InitialMarginType", 2378279021u, field_kind::enumeration, std::uint32_t(offsetof(csa_details, initial_margin_type)), 14, false, false, csa_type_spellings, nullptr, scalar_kind::text, nullptr},
     {"CalculateIMAmount", 2866581569u, field_kind::text, std::uint32_t(offsetof(csa_details, calculate_im_amount)), 15, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
     {"CalculateVMAmount", 3006881390u, field_kind::text, std::uint32_t(offsetof(csa_details, calculate_vm_amount)), 16, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
     {"NonExemptIMRegulations", 2516026638u, field_kind::text, std::uint32_t(offsetof(csa_details, non_exempt_im_regulations)), 17, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type csa_details_type{"CSADetails", csa_details_fields, 18, no_text};
+const record_type csa_details_record{"CSADetails", csa_details_fields, 18, no_text};
 const field netting_set_fields[] = {
     {"NettingSetId", 999541937u, field_kind::text, std::uint32_t(offsetof(netting_set, netting_set_id)), 0, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"NettingSetDetails", 4112398586u, field_kind::nested, std::uint32_t(offsetof(netting_set, netting_set_details)), 1, false, false, nullptr, &netting_set_details_type, scalar_kind::text, nullptr},
+    {"NettingSetDetails", 4112398586u, field_kind::nested, std::uint32_t(offsetof(netting_set, netting_set_details)), 1, false, false, nullptr, &netting_set_details_record, scalar_kind::text, nullptr},
     {"ActiveCSAFlag", 174373670u, field_kind::text, std::uint32_t(offsetof(netting_set, active_csa_flag)), 2, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
-    {"CSADetails", 2338037164u, field_kind::nested, std::uint32_t(offsetof(netting_set, csa_details)), 3, false, false, nullptr, &csa_details_type, scalar_kind::text, nullptr},
+    {"CSADetails", 2338037164u, field_kind::nested, std::uint32_t(offsetof(netting_set, csa_details)), 3, false, false, nullptr, &csa_details_record, scalar_kind::text, nullptr},
     {"RiskWeight", 1206174034u, field_kind::decimal, std::uint32_t(offsetof(netting_set, risk_weight)), 4, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
 };
-const record_type netting_set_type{"NettingSet", netting_set_fields, 5, no_text};
+const record_type netting_set_record{"NettingSet", netting_set_fields, 5, no_text};
 const field nettingsetdefinitions_fields[] = {
-    {"NettingSet", 2183482524u, field_kind::repeated_nested, std::uint32_t(offsetof(nettingsetdefinitions, netting_set)), 0, false, false, nullptr, &netting_set_type, scalar_kind::text, &append_to<netting_set>},
+    {"NettingSet", 2183482524u, field_kind::repeated_nested, std::uint32_t(offsetof(nettingsetdefinitions, netting_set)), 0, false, false, nullptr, &netting_set_record, scalar_kind::text, &append_to<netting_set>},
 };
-const record_type nettingsetdefinitions_type{"nettingsetdefinitions", nettingsetdefinitions_fields, 1, no_text};
+const record_type nettingsetdefinitions_record{"nettingsetdefinitions", nettingsetdefinitions_fields, 1, no_text};
 
 }
 
 ORES_ORE_CORE_EXPORT auto netting_set_definitions_document() -> const document_type& {
-    static const document_type doc{"NettingSetDefinitions", &nettingsetdefinitions_type};
+    static const document_type doc{"NettingSetDefinitions", &nettingsetdefinitions_record};
     return doc;
 }
 

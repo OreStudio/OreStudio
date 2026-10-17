@@ -174,6 +174,12 @@ class Schema:
                     self.elements.setdefault(name, node)
 
 
+# Elements that are alternatives inside an xs:choice. At most one of them
+# appears per iteration, so none is individually required however the schema
+# writes its minOccurs.
+CHOICE_CHILDREN = set()
+
+
 def simple_content_base(complex_type):
     """The base type of an xs:simpleContent extension, or None.
 
@@ -198,6 +204,8 @@ def children_of(complex_type):
             for element in node:
                 if local(element.tag) == "element":
                     elements.append(element)
+                    if local(node.tag) == "choice":
+                        CHOICE_CHILDREN.add(id(element))
         elif local(node.tag) == "attribute":
             attributes.append(node)
         elif local(node.tag) == "simpleContent":
@@ -431,8 +439,48 @@ def member_declaration(schema, element, money):
     return member, kind, cpp, False
 
 
+# Names the engine already uses in the same namespace. A generated struct that
+# took one of them would shadow it and break the engine's own code.
+RESERVED = {
+    "field",
+    "record_type",
+    "document_type",
+    "event_type",
+    "reader",
+    "binder",
+    "field_kind",
+    "scalar_kind",
+    "residual_element",
+    "bind_error",
+    "token",
+    "token_kind",
+    "document",
+    "is_blank",
+    "no_text",
+}
+
+
+def cpp_names(schema, ordered):
+    """A C++ identifier per schema type, free of the engine's vocabulary.
+
+    The table variables carry a `_record` suffix rather than `_type`, so a
+    struct called DatesType and the table of a struct called Dates cannot
+    collide.
+    """
+    names = {}
+    taken = set()
+    for type_name in ordered:
+        candidate = snake(type_name)
+        while candidate in taken or candidate in RESERVED:
+            candidate = "record_" + candidate
+        taken.add(candidate)
+        names[type_name] = candidate
+    return names
+
+
 def render(schema, root_element, root_type, namespace, accessor, money, include):
     ordered = order_types(schema, root_type)
+    names = cpp_names(schema, ordered)
     header_name = accessor.replace("_document", "")
 
     declarations = []
@@ -440,8 +488,8 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
     for type_name in ordered:
         complex_type = schema.complex_types[type_name]
         elements, attributes = children_of(complex_type)
-        declares.append(f"struct {snake(type_name)};")
-        body = [f"struct {snake(type_name)} {{", "    std::uint16_t present = 0;"]
+        declares.append(f"struct {names[type_name]};")
+        body = [f"struct {names[type_name]} {{", "    std::uint16_t present = 0;"]
         own_kind = content_kind(schema, complex_type)
         if own_kind is not None:
             body.append(f"    {CPP_TYPE[own_kind]} value;")
@@ -451,7 +499,8 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             for field in expand(schema, element):
                 member, kind, cpp, repeated = member_declaration(schema, field, money)
                 if kind == "nested":
-                    cpp = snake(field.get("type") or schema.inline_name.get(id(field), field.get("name")))
+                    target = field.get("type") or schema.inline_name.get(id(field), field.get("name"))
+                    cpp = names[target]
                     if repeated:
                         cpp = f"std::vector<{cpp}>"
                 body.append(f"    {cpp} {member};")
@@ -470,7 +519,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         if own_kind is not None:
             rows.append(
                 f'    {{"", 0u, field_kind::{own_kind}, '
-                f"std::uint32_t(offsetof({snake(type_name)}, value)), "
+                f"std::uint32_t(offsetof({names[type_name]}, value)), "
                 f"{bit}, false, false, nullptr, nullptr, {SCALAR[own_kind]}, nullptr}},"
             )
             bit += 1
@@ -479,7 +528,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             required = attribute.get("use") == "required"
             rows.append(
                 f'    {{"{name}", {hash_name(name)}u, field_kind::text, '
-                f"std::uint32_t(offsetof({snake(type_name)}, {snake(name)})), {bit}, true, "
+                f"std::uint32_t(offsetof({names[type_name]}, {snake(name)})), {bit}, true, "
                 f"{'true' if required else 'false'}, nullptr, nullptr, "
                 f"scalar_kind::text, nullptr}},"
             )
@@ -488,17 +537,19 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
           for element in expand(schema, element):
             name = element.get("name")
             member, kind, cpp, repeated = member_declaration(schema, element, money)
-            required = element.get("minOccurs", "1") != "0"
+            required = element.get("minOccurs", "1") != "0" and id(element) not in CHOICE_CHILDREN
             scalar = SCALAR.get(kind, "scalar_kind::text")
             if kind == "nested":
                 field_kind = "repeated_nested" if repeated else "nested"
-                nested = snake(element.get("type") or element.get("name"))
+                nested = names[
+                    element.get("type") or schema.inline_name.get(id(element), element.get("name"))
+                ]
                 append = f"&append_to<{nested}>" if repeated else "nullptr"
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{field_kind}, '
-                    f"std::uint32_t(offsetof({snake(type_name)}, {member})), {bit}, false, "
+                    f"std::uint32_t(offsetof({names[type_name]}, {member})), {bit}, false, "
                     f"{'true' if required else 'false'}, nullptr, "
-                    f"&{nested}_type, scalar_kind::text, {append}}},"
+                    f"&{nested}_record, scalar_kind::text, {append}}},"
                 )
             else:
                 # Only an enumeration reads its spelling table. A repeated leaf
@@ -511,23 +562,23 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 )
                 rows.append(
                     f'    {{"{name}", {hash_name(name)}u, field_kind::{kind}, '
-                    f"std::uint32_t(offsetof({snake(type_name)}, {member})), {bit}, false, "
+                    f"std::uint32_t(offsetof({names[type_name]}, {member})), {bit}, false, "
                     f"{'true' if required else 'false'}, {tokens}, nullptr, {scalar}, nullptr}},"
                 )
             bit += 1
         if is_residual(complex_type):
             rows.append(
                 f'    {{"", 0u, field_kind::residual, '
-                f"std::uint32_t(offsetof({snake(type_name)}, extras)), "
+                f"std::uint32_t(offsetof({names[type_name]}, extras)), "
                 f"{bit}, false, false, nullptr, nullptr, scalar_kind::text, nullptr}},"
             )
             bit += 1
         text_field = "0" if own_kind is not None else "no_text"
         tables.append(
-            f"const field {snake(type_name)}_fields[] = {{\n"
+            f"const field {names[type_name]}_fields[] = {{\n"
             + "\n".join(rows)
-            + f"\n}};\nconst record_type {snake(type_name)}_type{{\"{type_name}\", "
-            f"{snake(type_name)}_fields, {bit}, {text_field}}};"
+            + f"\n}};\nconst record_type {names[type_name]}_record{{\"{type_name}\", "
+            f"{names[type_name]}_fields, {bit}, {text_field}}};"
         )
 
     spellings = []
@@ -596,7 +647,7 @@ auto append_to(void* container, void** slot) -> void {{
 }}
 
 ORES_ORE_CORE_EXPORT auto {accessor}() -> const document_type& {{
-    static const document_type doc{{"{root_element}", &{snake(root_type)}_type}};
+    static const document_type doc{{"{root_element}", &{names[root_type]}_record}};
     return doc;
 }}
 

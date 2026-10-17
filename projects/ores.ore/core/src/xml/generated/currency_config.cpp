@@ -49,16 +49,16 @@ const field currency_definition_fields[] = {
     {"RoundingPrecision", 1567587679u, field_kind::integer, std::uint32_t(offsetof(currency_definition, rounding_precision)), 8, false, true, nullptr, nullptr, scalar_kind::integer, nullptr},
     {"CurrencyType", 2861236102u, field_kind::text, std::uint32_t(offsetof(currency_definition, currency_type)), 9, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type currency_definition_type{"currencyDefinition", currency_definition_fields, 10, no_text};
+const record_type currency_definition_record{"currencyDefinition", currency_definition_fields, 10, no_text};
 const field currency_config_fields[] = {
-    {"Currency", 342827606u, field_kind::repeated_nested, std::uint32_t(offsetof(currency_config, currency)), 0, false, false, nullptr, &currency_definition_type, scalar_kind::text, &append_to<currency_definition>},
+    {"Currency", 342827606u, field_kind::repeated_nested, std::uint32_t(offsetof(currency_config, currency)), 0, false, false, nullptr, &currency_definition_record, scalar_kind::text, &append_to<currency_definition>},
 };
-const record_type currency_config_type{"currencyConfig", currency_config_fields, 1, no_text};
+const record_type currency_config_record{"currencyConfig", currency_config_fields, 1, no_text};
 
 }
 
 ORES_ORE_CORE_EXPORT auto currency_config_document() -> const document_type& {
-    static const document_type doc{"CurrencyConfig", &currency_config_type};
+    static const document_type doc{"CurrencyConfig", &currency_config_record};
     return doc;
 }
 

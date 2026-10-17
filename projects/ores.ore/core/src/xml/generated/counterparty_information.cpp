@@ -45,31 +45,31 @@ const field counterparty_fields[] = {
     {"SaCcrRiskWeight", 59815872u, field_kind::decimal, std::uint32_t(offsetof(counterparty, sa_ccr_risk_weight)), 4, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
     {"SaCvaRiskBucket", 2448304594u, field_kind::decimal, std::uint32_t(offsetof(counterparty, sa_cva_risk_bucket)), 5, false, false, nullptr, nullptr, scalar_kind::decimal, nullptr},
 };
-const record_type counterparty_type{"counterparty", counterparty_fields, 6, no_text};
+const record_type counterparty_record{"counterparty", counterparty_fields, 6, no_text};
 const field counterparties_fields[] = {
-    {"Counterparty", 3606568069u, field_kind::repeated_nested, std::uint32_t(offsetof(counterparties, counterparty)), 0, false, false, nullptr, &counterparty_type, scalar_kind::text, &append_to<counterparty>},
+    {"Counterparty", 3606568069u, field_kind::repeated_nested, std::uint32_t(offsetof(counterparties, counterparty)), 0, false, false, nullptr, &counterparty_record, scalar_kind::text, &append_to<counterparty>},
 };
-const record_type counterparties_type{"counterparties", counterparties_fields, 1, no_text};
+const record_type counterparties_record{"counterparties", counterparties_fields, 1, no_text};
 const field correlation_fields[] = {
     {"", 0u, field_kind::real, std::uint32_t(offsetof(correlation, value)), 0, false, false, nullptr, nullptr, scalar_kind::real, nullptr},
     {"cpty1", 3369584452u, field_kind::text, std::uint32_t(offsetof(correlation, cpty1)), 1, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
     {"cpty2", 3419917309u, field_kind::text, std::uint32_t(offsetof(correlation, cpty2)), 2, true, true, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type correlation_type{"Correlation", correlation_fields, 3, 0};
+const record_type correlation_record{"Correlation", correlation_fields, 3, 0};
 const field counter_party_correlations_fields[] = {
-    {"Correlation", 3571652271u, field_kind::repeated_nested, std::uint32_t(offsetof(counter_party_correlations, correlation)), 0, false, false, nullptr, &correlation_type, scalar_kind::text, &append_to<correlation>},
+    {"Correlation", 3571652271u, field_kind::repeated_nested, std::uint32_t(offsetof(counter_party_correlations, correlation)), 0, false, false, nullptr, &correlation_record, scalar_kind::text, &append_to<correlation>},
 };
-const record_type counter_party_correlations_type{"counterPartyCorrelations", counter_party_correlations_fields, 1, no_text};
+const record_type counter_party_correlations_record{"counterPartyCorrelations", counter_party_correlations_fields, 1, no_text};
 const field counterparty_information_fields[] = {
-    {"Counterparties", 1165510329u, field_kind::nested, std::uint32_t(offsetof(counterparty_information, counterparties)), 0, false, false, nullptr, &counterparties_type, scalar_kind::text, nullptr},
-    {"Correlations", 4252826708u, field_kind::nested, std::uint32_t(offsetof(counterparty_information, correlations)), 1, false, false, nullptr, &counter_party_correlations_type, scalar_kind::text, nullptr},
+    {"Counterparties", 1165510329u, field_kind::nested, std::uint32_t(offsetof(counterparty_information, counterparties)), 0, false, false, nullptr, &counterparties_record, scalar_kind::text, nullptr},
+    {"Correlations", 4252826708u, field_kind::nested, std::uint32_t(offsetof(counterparty_information, correlations)), 1, false, false, nullptr, &counter_party_correlations_record, scalar_kind::text, nullptr},
 };
-const record_type counterparty_information_type{"counterpartyInformation", counterparty_information_fields, 2, no_text};
+const record_type counterparty_information_record{"counterpartyInformation", counterparty_information_fields, 2, no_text};
 
 }
 
 ORES_ORE_CORE_EXPORT auto counterparty_information_document() -> const document_type& {
-    static const document_type doc{"CounterpartyInformation", &counterparty_information_type};
+    static const document_type doc{"CounterpartyInformation", &counterparty_information_record};
     return doc;
 }
 

@@ -168,19 +168,22 @@ And the accessor needed the export macro, because the library is built with
 hidden visibility and a generated function has no more right to the symbol
 table than a hand-written one did.
 
-* The next family is blocked by a name, not a shape
+* The seventh family, and the naming pass it needed
 
-An attempt at =conventions= reached a genuine blocker that the earlier families
-did not: a generated struct name can collide with a name the engine already
-uses. ORE has a type whose snake case is =event_type=, which is the scanner's
-own event enumeration, and another whose name is the record variable of a third
-(=dates_type= belongs both to a struct named =DatesType= and to the table of a
-struct named =Dates=).
+=conventions= is generated now, the seventh family and the largest document
+model yet.
 
-Neither is a modelling problem. Both are a naming pass the generator needs: the
-struct names must be collected first, then any that collide with the engine's
-vocabulary or with another struct's table variable must be qualified. The
-family was withdrawn rather than committed half-working, and the generator
-improvements it produced, inline simpleType enumerations and the fallback for
-every =xs:= built-in, are kept and are exercised by the six families that do
-build.
+It needed a naming pass, which is what had blocked it. A generated struct name
+can collide with a name the engine already uses, and ORE has a type whose snake
+case is =event_type=, which is the scanner's own event enumeration. The
+generator now collects every struct name before emitting anything and qualifies
+any that collide with the engine's vocabulary. The table variables also carry a
+=record= suffix rather than =type=, so a struct called =DatesType= cannot
+collide with the table of a struct called =Dates=.
+
+It also needed one modelling correction. =conventions= is an =xs:choice= at the
+top level, and choice members are alternatives, so none of them is required
+however the schema writes its =minOccurs=. Treating them as required refused
+sixty-seven documents.
+
+Verified: 527 cases and 63,598 assertions.

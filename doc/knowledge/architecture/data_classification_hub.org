@@ -11,10 +11,11 @@
 
 * Summary
 
-A modeller classifies a set of data before choosing any shape for it. Three
-pages carry that decision: the closed set of classifications, the form that
-records a classification and the pattern it selected, and the one transport a
-classification needs when its owners are several.
+A modeller classifies a set of data before choosing any shape for it. The
+pages below carry that decision in a fixed order: the closed set of
+classifications, the form that records a classification and the pattern it
+selected, and the one transport a classification needs when its owners are
+several.
 
 The order is the argument. The classifications define the words and the
 relatedness test that sanctions each one, and keep a bundle distinct from a
@@ -62,7 +63,7 @@ enumerates every candidate set in the code and the models, with its
 invariant or the finding that none exists, its owner count, whether it is
 a bundle or a package, the atomicity
 it has today with a file reference, the atomicity it requires, and its
-status. Read it after the three pages above: it is the evidence that the
+status. Read it after the pages above: it is the evidence that the
 classification is decidable once, per set, instead of per feature.
 
 ** Why the order earns a structure note
@@ -72,7 +73,7 @@ is safe to read only after step two has said the set crosses owners. A
 reader who searches the transport first, as the mechanism with the most
 detail, gets a design with no test for when it applies; a reader who starts
 at the checklist gets questions whose answers are on another page. The
-three pages settle in one reading when they are read in the order above,
+pages settle in one reading when they are read in the order above,
 and that order is authored here rather than computed from a title match.
 
 * What this cluster does not cover

@@ -201,8 +201,8 @@ that was skipped.
 
 *** An ORE conventions file
 
-- Classification: the file is an *Artefact*. What it converts into is 27
-  *Families* and their *Lists*.
+- Classification: the file is an *Artefact*. What it converts into is one
+  *Family* per convention kind, with its *Lists*.
 - Invariant: none across the families. A zero convention and a CDS
   convention never constrain each other; the file lists them because the
   format lists them.
@@ -212,8 +212,8 @@ that was skipped.
 - Atomicity: per family write. A conversion that must be all-or-nothing
   is one bundle, because the families are related by that one operation
   and refdata owns them all; the file that carried it is a package.
-- Forbidden: one struct with 27 typed arrays. The format's element list
-  is not a type. The test that refuses it is in
+- Forbidden: one struct with a typed array per kind. The format's element
+  list is not a type. The test that refuses it is in
   [[id:B2D74E96-0353-4A3D-8CE5-3FC3C30D864C][Data classifications]],
   section "The anti-type".
 

@@ -19,10 +19,11 @@
 * Summary
 
 Every import journey begins the same way: name a source, a scope and a target.
-What differs is the trigger, the payload and who may act. This screen is the one
-entry step, with those three as variants: seven triggers, four actors, the
-family picker that shows what the file carries, the workflow the import will
-start, and the book tree that names the sandbox the import publishes into.
+What differs is the trigger, the payload and who may act. This screen is the
+one entry step, with those as variants, and with the family picker that
+shows what the file carries, the workflow the
+import will start, and the book tree that names the sandbox the import
+publishes into.
 Staging writes no live row.
 
 It is throwaway. It reads no service. Open [[file:bring-data-in/][the source screen]].
@@ -107,16 +108,16 @@ state, where the progress begins at that publish.
 =?state=source|families|refused=, =?scan=0=,
 =?target=sb-import-onboard|sb-sample-seed|sb-import-repro|sb-import-feed=.
 The bar at the foot switches the trigger and the actor; the target is chosen in
-the tree and kept in the query string. The two refusals are the missing
-permission and the row the validator refuses; a click on an official node or on
-an archived sandbox adds a third, the target refusal.
+the tree and kept in the query string. The refusals are the missing permission
+and the row the validator refuses; a click on an official node or on an
+archived sandbox adds the target refusal.
 
 ** What is real and what is not
 
 The subjects and the permission model are the journeys': =ore upload=,
 =ore import=, =ore import-run=, =marketdata import=, =compute download-input=,
-and the four writes each import borrows. The convention family names and the
-27-family count come from the modelling tree; the merge policies (replace by
+and the writes each import borrows. The convention family names come from the
+modelling tree; the merge policies (replace by
 key, add missing world, skip) come from the draft design. The step states,
 their names, the budgets and the failure policies are the workflow engine's.
 The workflow type, its stage subjects and the per-family stage replies are the
@@ -141,10 +142,10 @@ workflow will this file start, and what will it do.
 
 ** The verdict
 
-Not signed off. The screen asks the owner two things: whether the trigger
-belongs on one screen at all, and whether the operations user is given a
-permission that means "may import for a party" or stays out of the trade and
-market imports. The sandbox target adds a third, and it is the blocking one:
+Not signed off. The screen asks the owner whether the trigger belongs on one
+screen at all, and whether the operations user is given a permission that
+means "may import for a party" or stays out of the trade and market imports.
+The sandbox target adds the blocking question:
 only books and portfolios have a =sandbox_id= in the model, so a conventions
 import cannot publish into the selected sandbox. Either the sandbox covers the
 book-tree families alone, or the model grows a sandbox column for every

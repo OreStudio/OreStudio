@@ -25,7 +25,7 @@ approval proposals, tenant provisioning and the compute path.
 Three results follow from the table. Most candidates are single-owner,
 related sets: they are bundles, and each needs one =unit_of_work=, not the
 package transport. A few span owners: they are packages, they need a
-workflow, and half of those already have one. Several
+workflow, and several already have one. Several
 are wrongly shaped today, and the conventions and curve-configuration
 documents are the two clearest. The gaps are equally concrete: the
 package manifest and part format that
@@ -62,10 +62,11 @@ constraint, its bundles may belong to different owners, and it is never
 atomic as a whole. Relatedness makes a bundle; provenance makes a package.
 The rows with one owner and related families are therefore bundles, and the
 rows with several owners are packages. A single-owner set whose families
-share no invariant is neither: it is a package's contents, and each family
-is its own bundle. B1 is that case.
+share no invariant is a bundle only if one operation names it; with no such
+operation, each family is its own bundle. B1 has the operation, and nothing
+applies the set as one.
 
-Two abbreviations recur. *uow* is one
+*uow* is one
 =ores::database::repository::unit_of_work=: one connection, one
 transaction, committed once. *per owner* means one such transaction in
 each owner's database and no transaction across them, per
@@ -76,27 +77,27 @@ each owner's database and no transaction across them, per
 #+ATTR_HTML: :class hug-leading
 | # | Set | Shape | What it is | Invariant, or none | Owners | Parts | Atomicity today | Atomicity required | Trigger | Status |
 |---+--------+-------+------------+--------------------+--------+-------+-----------------+--------------------+---------+--------|
-| B1 | ORE conventions document | Package | The =conventions_document= operation: every ORE convention kind as one struct of typed arrays | *None across kinds.* A zero convention and a CDS convention never constrain each other (inference, per the classification page) | 1, refdata | 27 part tables, one typed array each; ~30 arrays total | *None.* =save= makes 27 sequential repository writes with no uow: =projects/ores.refdata/core/src/service/conventions_document_service.cpp:216= (writes from line 234) | Per family, because there is no cross-family invariant; a whole-document uow would be correct only as a technical grouping | web, shell, ORE import | Implemented; wrongly shaped (the anti-type) |
-| B2 | ORE curve configuration document | Bundle | The =curve_configuration_document= operation: a config header and every curve, vol and quote child table | The children name the header at one instant; nothing joins one child kind to another | 1, refdata | 31 tables: =config=, =sections=, =definitions= and the curve, vol, correlation and quote tables | *None.* 31 sequential writes, no uow: =projects/ores.refdata/core/src/service/curve_configuration_document_service.cpp:71= | One uow over the header and the children the document carries; a failure must not leave a header with half its curves | web, shell, ORE import | Implemented; wrongly shaped (hand-written union of 31 arrays) |
-| B3 | Analytics pricing-engine document | Bundle | =pricing_engines_document=: pricing model configs, products and parameters | The products and parameters name the config row; nothing joins one product to another | 1, analytics | 3 tables: =config=, =products=, =parameters= | *None.* Three sequential writes, no uow: =projects/ores.analytics/core/src/service/pricing_engines_document_service.cpp:39= | One uow over the three tables | web, shell, ORE import | Implemented; wrongly shaped (union of 3 arrays, one owner) |
-| B4 | Analytics today's-market document | Bundle | =todays_market_document=: config, collections, entries, configurations and bindings | Bindings name configurations, configurations name collections; no invariant across collections | 1, analytics | 5 tables | *None.* Five sequential writes, no uow: =projects/ores.analytics/core/src/service/todays_market_document_service.cpp:41= | One uow over the five tables | web, shell, ORE import | Implemented; wrongly shaped (union of 5 arrays, one owner) |
+| B1 | ORE conventions document | Bundle | The =conventions_document= operation: every ORE convention kind as one struct of typed arrays; one owner and one operation name the set | *None across kinds.* A zero convention and a CDS convention never constrain each other (inference, per the classification page) | 1, refdata | One part table and one typed array per convention kind | *None.* =save= writes the families one after another, with no uow: =projects/ores.refdata/core/src/service/conventions_document_service.cpp:216= (writes from line 234) | Per family, because there is no cross-family invariant; a whole-document uow would be correct only as a technical grouping | web, shell, ORE import | Implemented; wrongly shaped (the anti-type) |
+| B2 | ORE curve configuration document | Bundle | The =curve_configuration_document= operation: a config header and every curve, vol and quote child table | The children name the header at one instant; nothing joins one child kind to another | 1, refdata | =config=, =sections=, =definitions= and the curve, vol, correlation and quote tables | *None.* One write per table, in sequence, no uow: =projects/ores.refdata/core/src/service/curve_configuration_document_service.cpp:71= | One uow over the header and the children the document carries; a failure must not leave a header with half its curves | web, shell, ORE import | Implemented; wrongly shaped (hand-written union of one array per table) |
+| B3 | Analytics pricing-engine document | Bundle | =pricing_engines_document=: pricing model configs, products and parameters | The products and parameters name the config row; nothing joins one product to another | 1, analytics | =config=, =products=, =parameters= | *None.* The writes run in sequence, no uow: =projects/ores.analytics/core/src/service/pricing_engines_document_service.cpp:39= | One uow over the config and its children | web, shell, ORE import | Implemented; wrongly shaped (union of one array per table, one owner) |
+| B4 | Analytics today's-market document | Bundle | =todays_market_document=: config, collections, entries, configurations and bindings | Bindings name configurations, configurations name collections; no invariant across collections | 1, analytics | =config=, =collections=, =entries=, =configurations=, =bindings= | *None.* The writes run in sequence, no uow: =projects/ores.analytics/core/src/service/todays_market_document_service.cpp:41= | One uow over the document's tables | web, shell, ORE import | Implemented; wrongly shaped (union of one array per table, one owner) |
 | B5 | Reporting run document and bindings | Bundle | =run_document= plus the configuration rows and bindings an ORE input names | A binding must name a configuration row that exists at the same instant | 1, reporting | =configurations=, =configuration_analytics=, =configuration_parameter=, =report_configurations=, =risk_report_config= | *None.* Writes run in loops then commit per repository: =projects/ores.reporting/core/src/service/run_document_service.cpp:162= (writes at 199-228) | One uow over the document, its analytics and its bindings | web, shell, ORE import | Implemented; wrongly shaped (document union, one owner) |
 | B6 | A structure with its trades, instruments and legs | Bundle | The deal, the trades that are its legs, and each leg's instrument rows | A leg must agree with the deal's party, counterparty and template at one instant; the =structure_member= insert trigger enforces the role and count | 1, trading | =structure=, =structure_member=, =trade=, every instrument kind, every leg table | *None.* No operation names the set. Each entity is written by its own verb: =projects/ores.trading/core/src/service/structure_service.cpp:405= writes one structure | One uow over the structure, its members and the legs, if one operation ever writes the set | none today (inference: no caller exists) | Absent; the classification page and the transport page name it, no artefact implements it |
-| B7 | A trade with its parts | Bundle | =book_trade=: anchor, activity, booking and state | The four rows must describe the same booking at one instant | 1, trading | =trade=, =trade_activity=, =trade_booking=, =trade_state= | *One uow* over the four writes: =projects/ores.trading/core/src/service/trade_operations_service.cpp:59= (commit at 102) | One uow, and it holds | web, shell, ORE import | Implemented |
+| B7 | A trade with its parts | Bundle | =book_trade=: anchor, activity, booking and state | The rows must describe the same booking at one instant | 1, trading | =trade=, =trade_activity=, =trade_booking=, =trade_state= | *One uow* over those writes: =projects/ores.trading/core/src/service/trade_operations_service.cpp:59= (commit at 102) | One uow, and it holds | web, shell, ORE import | Implemented |
 | B8 | A trade's instruments and legs | Bundle | The instrument kind rows, legs, rates, schedules and amounts a trade needs | Every part must exist for the trade to be priceable; no single instant is enforced | 1, trading | Instrument table per kind, =swap_leg=, =bond_leg=, rate, amount, schedule tables | *None.* The import issues one NATS call per part, then the next: =projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp= (calls at 549, 834, 905) | One uow per trade over trading's tables, which needs one operation and not N calls | ORE import, web, shell | Half-implemented: the anchor is atomic, the parts are not |
-| B9 | ORE environment export imported to reproduce a defect | Package | One snapshot of identity, reference data, market data and trades, imported into a sandbox | Every kind must describe one environment at one instant, or the reproduction mixes two systems | 4 or more: iam, refdata, marketdata, trading | =iam/tenant=, =iam/party=, refdata reference data, =marketdata/curve=, trading books, portfolios, trades, instruments | *None.* No export operation exists; no package type exists | Per owner, sequenced, applied into a sandbox | none | Absent; the transport page's worked example has no artefact |
-| B10 | Portfolio exported for conversion to ORE XML | Package | The report run package: trades, market data and fixings gathered into one tar.gz in storage | The engine must price one book at one instant, or the result mixes two books | 3: trading, marketdata, reporting (plus refdata reads) | =trades= msgpack key, =market data= key, =fixings= key, the run document and its configuration files, the portfolio rebuilt as ORE XML | *Sequenced steps, per-part atomicity, atomic output.* 8-step workflow: =projects/ores.reporting/api/include/ores.reporting.api/workflow/report_execution_workflow.hpp:159= to 433; the package is staged then uploaded whole: =projects/ores.ore/service/src/messaging/report_package_handler.cpp:129= to 240 | Per owner read; the conversion all or nothing at its own boundary | workflow (report execution) | Half-implemented: works for report runs, has no manifest, checksum, =as_of= or per-part retry |
-| B11 | A report input manifest row | Package | One row naming the three storage keys the run gathered | The three keys must name one run's gathering; the row is immutable once written | 1, reporting (the parts belong to trading and marketdata) | =ores_reporting_report_input_bundles_tbl=: ==id==, the three keys, counts, =created_at= | *One insert*, which is atomic by itself: =projects/ores.reporting/core/src/messaging/report_execution_handler.cpp:437= to 452 | Per part, because the row only references them; a read that fails on one key must refuse the package | workflow | Implemented; the closest artefact to the transport page's manifest, and it has no checksum and no =as_of= |
+| B9 | ORE environment export imported to reproduce a defect | Package | One snapshot of identity, reference data, market data and trades, imported into a sandbox | Every kind must describe one environment at one instant, or the reproduction mixes two systems | several: iam, refdata, marketdata, trading | =iam/tenant=, =iam/party=, refdata reference data, =marketdata/curve=, trading books, portfolios, trades, instruments | *None.* No export operation exists; no package type exists | Per owner, sequenced, applied into a sandbox | none | Absent; the transport page's worked example has no artefact |
+| B10 | Portfolio exported for conversion to ORE XML | Package | The report run package: trades, market data and fixings gathered into one tar.gz in storage | The engine must price one book at one instant, or the result mixes two books | several: trading, marketdata, reporting, plus refdata reads | =trades= msgpack key, =market data= key, =fixings= key, the run document and its configuration files, the portfolio rebuilt as ORE XML | *Sequenced steps, per-part atomicity, atomic output.* The workflow runs step by step: =projects/ores.reporting/api/include/ores.reporting.api/workflow/report_execution_workflow.hpp:159= to 433; the package is staged then uploaded whole: =projects/ores.ore/service/src/messaging/report_package_handler.cpp:129= to 240 | Per owner read; the conversion all or nothing at its own boundary | workflow (report execution) | Half-implemented: works for report runs, has no manifest, checksum, =as_of= or per-part retry |
+| B11 | A report input manifest row | Package | The manifest row of the run package, not a data set: one row naming the storage keys the run gathered | The keys must name one run's gathering; the row is immutable once written | 1, reporting (the parts belong to trading and marketdata) | =ores_reporting_report_input_bundles_tbl=: ==id==, the storage keys, counts, =created_at= | *One insert*, which is atomic by itself: =projects/ores.reporting/core/src/messaging/report_execution_handler.cpp:437= to 452 | Per part, because the row only references them; a read that fails on one key must refuse the package | workflow | Implemented; the closest artefact to the transport page's manifest, and it has no checksum and no =as_of= |
 | B12 | Market data or fixings from an external feed | Bundle | Observations and their annex rows written by a feed or an import | The observation and its annex must describe the same point at one instant | 1, marketdata | =market_observation= plus its annex and lineage rows | *One uow* per observation and annex: =projects/ores.marketdata/core/src/repository/market_observation_repository.cpp:766= and 821 | One uow, and it holds | feed controller, schedule, ORE import | Implemented; a bundle: one owner, related rows, one uow |
-| B13 | A compute batch with workunits and results | Bundle | The batch row, one workunit per input tarball, one result per assignment | A batch is complete when every workunit has a canonical result; today the batch row and its workunits can disagree | 1, compute | =batch=, =workunit=, =result=, =work_log_ledger=, =workflow_batch_link= | *None.* The batch is saved, then the workunits in a loop, then the link: =projects/ores.compute/core/src/messaging/report_submit_handler.cpp:120= and 146 to 160. Accepting a result makes three writes: =projects/ores.compute/core/include/ores.compute.core/messaging/result_submit_handler.hpp:186= and 209. No =unit_of_work= exists in =projects/ores.compute= | One uow for the batch and its workunits; one per result acceptance; a restart must not strand a half batch | workflow (submit_compute), event (workunit dispatcher) | Implemented, with no transactionality |
+| B13 | A compute batch with workunits and results | Bundle | The batch row, one workunit per input tarball, one result per assignment | A batch is complete when every workunit has a canonical result; today the batch row and its workunits can disagree | 1, compute | =batch=, =workunit=, =result=, =work_log_ledger=, =workflow_batch_link= | *None.* The batch is saved, then the workunits in a loop, then the link: =projects/ores.compute/core/src/messaging/report_submit_handler.cpp:120= and 146 to 160. Accepting a result makes several writes: =projects/ores.compute/core/include/ores.compute.core/messaging/result_submit_handler.hpp:186= and 209. No =unit_of_work= exists in =projects/ores.compute= | One uow for the batch and its workunits; one per result acceptance; a restart must not strand a half batch | workflow (submit_compute), event (workunit dispatcher) | Implemented, with no transactionality |
 | B14 | Seeder datasets and DQ bundle publication | Package | A named set of datasets published to their target components | The datasets are published in dependency order; the publication claims all-of-nothing when =atomic= is set | Several: dq plus refdata, iam, reporting, assets, synthetic | One dataset per part, each published by a target component's SQL function | *Per dataset atomic*, the package is not. One workflow step per dataset, no compensation: =projects/ores.dq/api/include/ores.dq.api/workflow/bundle_publish_workflow.hpp= (steps from =build_steps=). Each target handler runs one function call: =projects/ores.refdata/core/src/messaging/publish_from_dq_handler.cpp:127=. The =atomic= flag is declared and never read: =projects/ores.dq/api/include/ores.dq.api/messaging/publish_bundle_protocol.hpp:63= | Per dataset; the package is eventually consistent and must say so | web, shell, workflow (tenant provisioning) | Half-implemented: the transport works, the =atomic= promise does not |
-| B15 | An approval proposal: counterparty | Bundle | Staged lines held in an approval request, then applied | The lines must agree with the live rows at the instant of apply, and two applies must not both write | 2 for the record (inbox, refdata); 1 for the writes (refdata) | =approval_request= plus the proposal line tables, then the counterparty, identifier and link tables | *One uow and a request-row lock:* =projects/ores.refdata/service/src/service/counterparty_proposal.cpp:613= (lock at 620). Three workflow steps: =projects/ores.refdata/api/include/ores.refdata.api/workflow/counterparty_apply_workflow.hpp= | One uow; it holds | approval decision, workflow | Implemented |
-| B16 | An approval proposal: book | Bundle | The same for books: preview, raise, then apply | The lines must agree with the live book at apply time | 2 for the record (inbox, refdata); 1 for the writes (refdata) | =approval_request= plus the book proposal lines, then the book table | *One uow:* =projects/ores.refdata/service/src/service/book_proposal.cpp:330= and 463 | One uow; it holds | approval decision, workflow | Implemented |
-| B17 | Tenant or party provisioning | Package | One run that publishes data, imports a legal-entity hierarchy, provisions parties, loads staff, starts feeds and generates trades | The tenant is ready only when every step has run; a party must exist before its feeds, staff and trades | Several: iam, dq, geo, synthetic, trading | One step per declared kind: the system bundle, reference-data bundles, LEI hierarchy, parties, accounts, passwords, images, feeds, trades | *Workflow with N steps, failure policy stop, no compensation:* =projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp:370= (empty =compensation_subject=) and 564 | Per step, sequenced by the engine; a stopped run is resumed, not rolled back | web, shell, workflow | Implemented |
+| B15 | An approval proposal: counterparty | Bundle | Staged lines held in an approval request, then applied | The lines must agree with the live rows at the instant of apply, and two applies must not both write | several for the record (inbox, refdata); one for the writes (refdata) | =approval_request= plus the proposal line tables, then the counterparty, identifier and link tables | *One uow and a request-row lock:* =projects/ores.refdata/service/src/service/counterparty_proposal.cpp:613= (lock at 620). The apply runs as a workflow: =projects/ores.refdata/api/include/ores.refdata.api/workflow/counterparty_apply_workflow.hpp= | One uow; it holds | approval decision, workflow | Implemented |
+| B16 | An approval proposal: book | Bundle | The same for books: preview, raise, then apply | The lines must agree with the live book at apply time | several for the record (inbox, refdata); one for the writes (refdata) | =approval_request= plus the book proposal lines, then the book table | *One uow:* =projects/ores.refdata/service/src/service/book_proposal.cpp:330= and 463 | One uow; it holds | approval decision, workflow | Implemented |
+| B17 | Tenant or party provisioning | Package | One run that publishes data, imports a legal-entity hierarchy, provisions parties, loads staff, starts feeds and generates trades | The tenant is ready only when every step has run; a party must exist before its feeds, staff and trades | Several: iam, dq, geo, synthetic, trading | One step per declared kind: the system bundle, reference-data bundles, LEI hierarchy, parties, accounts, passwords, images, feeds, trades | *Workflow with a step per kind, failure policy stop, no compensation:* =projects/ores.iam/api/include/ores.iam.api/workflow/provision_tenant_workflow.hpp:370= (empty =compensation_subject=) and 564 | Per step, sequenced by the engine; a stopped run is resumed, not rolled back | web, shell, workflow | Implemented |
 | B18 | A sandbox promoted to live | Package | An import applied into a sandbox, examined, then promoted into the official tree | The promoted rows must be one sandbox's rows at one instant | Several (the owners of the imported kinds) | The sandbox's portfolios and books, plus whatever was imported into them | *None.* No promotion operation exists. The sandbox is an entity (=projects/ores.refdata/api/include/ores.refdata.api/domain/sandbox.hpp=) and the import targets it (=projects/ores.ore/core/include/ores.ore.core/planner/import_choices.hpp:150=) | A separate reviewed operation, never a retry of the import | none | Absent; the transport page names it as the compensating control |
 | B19 | A support package | Package | A diagnostic set of logs, samples and configuration for one incident | None found. The kinds travel together because an operator wants them at once | Several (logging, telemetry, iam, config) | None defined | *None.* No artefact | None of its own; each part is a read | none | Absent |
 | B20 | An archival export | Package | A content-addressed archive of a tenant or a period, kept for evidence | A set is archival when it is one instant and one digest, or it cannot prove what it holds | Several | None defined | *No package.* Only a generic tar.gz helper: =projects/ores.storage/core/include/ores.storage.core/filesystem/archiver.hpp= (=pack=, =extract=) | Per owner, with a digest over the manifest | none | Absent |
-| B21 | ORE XML tarball import | Package | An ORE XML directory imported from object storage | The imported trades must name the books and currencies the same import writes | 2 or more: refdata, trading | Currencies, portfolios, books and trades, saved per owner | *One workflow step plus a compensating rollback.* =projects/ores.ore/api/include/ores.ore.api/workflow/ore_import_workflow.hpp=; the rollback deletes the saved ids in reverse: =projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp:3571= | Per owner, sequenced, with a declared compensation | workflow, shell | Implemented as a saga; not a package transport |
+| B21 | ORE XML tarball import | Package | An ORE XML directory imported from object storage | The imported trades must name the books and currencies the same import writes | several: refdata, trading | Currencies, portfolios, books and trades, saved per owner | *One workflow step plus a compensating rollback.* =projects/ores.ore/api/include/ores.ore.api/workflow/ore_import_workflow.hpp=; the rollback deletes the saved ids in reverse: =projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp:3571= | Per owner, sequenced, with a declared compensation | workflow, shell | Implemented as a saga; not a package transport |
 
 ** The frontier: three shapes
 
@@ -109,10 +110,10 @@ B2 to B5, B7, B12 and B13 are written by one component each, and each is a
 bundle of related families. None of them
 needs the package transport, and none needs a coordinator. They need one
 transaction over the tables the document names, opened where the write
-begins and committed after the last row. B1 is single-owner as well, but
-its 27 families share no invariant. It is a package with no manifest: only
-the import operation could relate the families, and no operation declares
-all-or-nothing today, so the finding stays per family.
+begins and committed after the last row. B1 is single-owner as well, and
+one operation names its families, but they share no invariant. It is a
+bundle by that operation only: the import could apply the set as one, no
+operation declares all-or-nothing today, and the finding stays per family.
 
 B7 and B12 already do this, so the pattern is proven in the codebase. B13
 shows the cost of not doing it: the batch is saved, and the workunits are
@@ -126,10 +127,10 @@ operation today, which is why it is absent rather than broken.
 
 *** Sets that span owners and need the workflow
 
-B9, B10, B11, B14, B17, B18, B19, B20 and B21 span two or more owners, or
+B9, B10, B11, B14, B17, B18, B19, B20 and B21 span several owners, or
 carry parts owned by another component, so each is a package. They cannot
 be one
-transaction, and the code does not try. Four of them already use a
+transaction, and the code does not try. Several of them already use a
 workflow run, and B21 adds a compensation that deletes what the step
 wrote.
 
@@ -152,16 +153,18 @@ across them.
 *** Sets that are wrongly shaped today
 
 B1 to B5 and B8 share one fault: a file's element list became a type. The
-conventions document carries 27 arrays because ORE XML lists 27 convention
-kinds, not because a zero convention constrains a CDS convention. The
-curve document carries 31 arrays for the same reason. The analytics and
-reporting documents repeat the shape at smaller size, and the ORE import
-repeats it across messages instead of inside one struct.
+conventions document carries one array per convention kind because ORE XML
+lists those kinds, not because a zero convention constrains a CDS
+convention. The curve document repeats the shape for the curve file's
+element list. The analytics and reporting documents repeat the shape at
+smaller size, and the ORE import repeats it across messages instead of
+inside one struct.
 
 The right shape for each is the one its owner count states. B1 has no
-cross-family invariant, so it is 27 families and their lists, converted
-one at a time. B2 to B5 have a header that the children name, so each is
-one bundle per document with one transaction. B8 is one bundle per trade.
+cross-family invariant, so it is one family after another, each with its
+lists, converted on its own. B2 to B5 have a header that the children name,
+so each is one bundle per document with one transaction. B8 is one bundle
+per trade.
 
 B14 is wrongly shaped in a different way: it declares an =atomic= flag on
 the request and ignores it. A caller can ask for all-or-nothing and
@@ -218,18 +221,18 @@ The gaps are of two kinds, and the two need different answers.
 - *The manifest, part and ledger types.* No =package_format_version=, no
   =bundle_record=, no =part_record=, no part-apply ledger and no =as_of=
   field exists in the
-  code. B11's row is the nearest thing, and it carries three storage keys
-  and two counts.
+  code. B11's row is the nearest thing, and it carries the storage keys
+  and the counts.
 
 *** Sets whose relatedness does not hold
 
 - *B1 and the documents like it are gathered only because a file contains
   them.* The relatedness the classification asks for cannot be written
-  without naming ORE XML. They are a package's contents: B1 is a package
-  with no manifest, its families share no invariant, and no operation
-  declares the import all-or-nothing, so each family is applied on its
-  own. Declare that operation and the import becomes one bundle, atomic in
-  refdata's =unit_of_work=; until then the finding stands.
+  without naming ORE XML. They are a package's contents: B1 is a bundle
+  only because one operation names it, its families share no invariant,
+  and no operation declares the import all-or-nothing, so each family is
+  applied on its own. Declare that operation all-or-nothing and the bundle
+  is atomic in refdata's =unit_of_work=; until then the finding stands.
 - *B14's =atomic= flag.* The request promises a property the workflow
   cannot provide, and no code reads the field. A flag that nothing
   consumes is worse than no flag, because a caller believes it.

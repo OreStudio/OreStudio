@@ -77,17 +77,17 @@ whether the message is a bundle or a package.
 
 ** What happened, and what the gap was
 
-A message carried 27 different entity types in one aggregate, the ORE
+A message carried every convention entity type in one aggregate, the ORE
 conventions document. On MSVC it did not compile: =rfl='s
 =no_duplicate_field_names= is a constexpr check over reflected field
 names whose cost grows with the square of the name count, and the
 instantiation exceeded the compiler's limit. It compiles on clang and on
 gcc.
 
-The compiler was not the design fault. The aggregate held 27
-unrelated entity types because one ORE file contains them: every
-convention kind the document lists. File shape was mistaken for a
-consistency requirement.
+The compiler was not the design fault. The aggregate held every
+convention entity type, unrelated, because one ORE file contains them:
+every kind the document lists. File shape was mistaken for a consistency
+requirement.
 
 The conventions have no cross-family invariant. A zero convention and a
 CDS convention never had to travel together; the document listed them
@@ -107,9 +107,10 @@ gave a modeller a way to notice that. That is the gap this page closes.
 | Artefact | an interchange file at the boundary | none: bytes in object storage | none of its own: the conversion's writes carry it |
 
 The six are exhaustive for the data this system moves. A set that
-needs two of them is two messages, not one shape. The last three are
-often confused, so the difference is stated once here: a *bundle* is a
-set of families that are related, and relatedness is the definition; a
+needs two of them is two messages, not one shape. The bundle, the package
+and the artefact are often confused, so the difference is stated once
+here: a *bundle* is a set of families that are related, and relatedness is
+the definition; a
 *package* is a set of bundles that need not be related, and it is never
 atomic as a whole; an *artefact* is another system's format, and it
 carries neither.
@@ -318,8 +319,8 @@ writes them. An environment export is a package: refdata conventions,
 trading trades and marketdata fixings are in it because they came from
 one system, not because they are related, so no transaction joins them.
 A conventions import is one operation, so its relatedness is that
-operation's intent and not the file's contents: refdata owns all 27
-families, the file is a package, and until the operation declares
+operation's intent and not the file's contents: refdata owns every
+family, the file is a package, and until the operation declares
 all-or-nothing each family is applied on its own.
 
 ** Artefact (document-shaped)
@@ -356,8 +357,8 @@ self-describing archive bytes inside a message.
 Name it, because it is what the missing classification produced. The
 anti-type is a hand-written union of unrelated entities presented as one
 struct: several typed arrays or optional members, one per entity kind, in
-a struct named after a file, a screen or a workflow step. The 27-array
-conventions document is one.
+a struct named after a file, a screen or a workflow step. The conventions
+document with one typed array per kind is one.
 
 It is not a family, because no key joins its members and no single
 transaction gives them one meaning. It is not a bundle, because its

@@ -29,13 +29,13 @@ apply all of them or none". If the blank needs a file, a screen, a step
 or a format, the families are not related, and the set is a package's
 contents. A bundle never spans two owners, because no transaction does.
 
-A package is carried by three artefacts. The *manifest* is a generated,
-modelled operation type naming every bundle and every part. A *part* is
-one bundle's rows of one kind, encoded as a msgpack stream. The
-*package archive* is a content-addressed, zstd-compressed ZIP that holds
-one entry per (owner, kind) and embeds the manifest. The bytes live in
-object storage. The manifest and the part references are kilobytes; the
-rows are never on the wire.
+A package is carried by a manifest, its parts and an archive. The
+*manifest* is a generated, modelled operation type naming every bundle and
+every part. A *part* is one bundle's rows of one kind, encoded as a msgpack
+stream. The *package archive* is a content-addressed, zstd-compressed ZIP
+that holds one entry per (owner, kind) and embeds the manifest. The bytes
+live in object storage. The manifest and the part references are kilobytes;
+the rows are never on the wire.
 
 A coordinator reads only the manifest and dispatches one message per
 bundle, to that bundle's owner. Each message carries the archive
@@ -93,9 +93,9 @@ is the bundle rather than the package.
 
 ** Anatomy: manifest, part, package archive
 
-A package has exactly three artefacts, and the bundles it carries are
-records in the manifest. Each artefact has one writer, one place to
-live, and a fixed set of readers.
+A package carries a manifest, its parts and an archive, and the bundles it
+carries are records in the manifest. Each artefact has one writer, one
+place to live, and a fixed set of readers.
 
 #+ATTR_HTML: :class hug-leading
 | Artefact | What it is | Where it lives | Who may read it |
@@ -235,7 +235,7 @@ to read and parse bytes another owner produced, which is exactly what
 forbids. The index is therefore a boundary control, not a performance
 detail.
 
-The row encoding has four rules:
+The row encoding follows these rules:
 
 1. *One entry, one type, one stream.* An entry is a stream of msgpack
    maps, one map per row, and every map is the owner's generated type
@@ -375,9 +375,9 @@ several bundles is therefore never atomic as a whole.
 
 ** Transactionality
 
-A package serves two cases, and the two do not carry the same guarantee.
-One is a package that carries a single bundle, and that bundle is
-written in one transaction. The other is a package whose bundles span
+The guarantee a package carries depends on how many owners its bundles
+span. One case is a package that carries a single bundle, and that bundle
+is written in one transaction. The other is a package whose bundles span
 several services, and no single transaction covers it. Which case a
 package is decides the mechanism, and the mechanism decides the
 guarantee. A package is never atomic across bundles or owners in either
@@ -404,8 +404,8 @@ work commits it]].
 *** A package whose bundles span several services
 
 An ORE import touches reference data, trades and market data, and those
-rows belong to three services. That set cannot be one transaction. It is
-a package carrying three bundles, one per owner.
+rows belong to several services. That set cannot be one transaction. It is
+a package carrying one bundle per owner.
 
 The platform does not support distributed transactions. There is no
 two-phase commit, no XA, and no transaction that spans services. The
@@ -441,8 +441,8 @@ package as all-or-nothing across bundles or owners.
 
 *** What replaces the distributed transaction
 
-Six things carry the consistency the transaction cannot, in the order a
-bundle passes through them.
+The consistency the transaction cannot supply comes from these, in the
+order a bundle passes through them.
 
 1. *Per-bundle atomicity.* Each owner applies its bundle in one
    transaction. A bundle is all or nothing, and the manifest names
@@ -562,7 +562,7 @@ explicit new export at a newer =as_of=, which produces a new manifest and
 a new =package_id=; the producer mints it, and no owner edits the
 manifest or silently applies an older bundle against newer rows.
 
-Refusal is the chosen behaviour for three reasons. A silent rebase would
+Refusal is the chosen behaviour. A silent rebase would
 make each bundle a different instant, which destroys the one property the
 package exists to provide. The archived package is the evidence of what
 was imported and when; a rebase that changed its meaning would destroy
@@ -630,7 +630,7 @@ file, not distributed atomicity, and not package-wide atomicity.
 
 A developer needs a production defect reproduced from one snapshot of
 the environment: identity, reference data, market data and trades
-together. The snapshot is a package carrying four bundles.
+together. The snapshot is a package carrying one bundle per owner.
 
 *The bundles and their parts.* The =iam= bundle: =iam/tenant= and
 =iam/party=. The =refdata= bundle: =refdata/currency=,
@@ -639,7 +639,7 @@ together. The snapshot is a package carrying four bundles.
 =trading/portfolio=, =trading/trade= and =trading/instrument/*=. Owners:
 =ores.iam=, =ores.refdata=, =ores.marketdata= and =ores.trading=.
 
-The four bundles are not related to one another: iam rows and marketdata
+The bundles are not related to one another: iam rows and marketdata
 rows share no invariant and no operation. They are in one package
 because one export produced them, which is provenance and not
 relatedness. The package is therefore never atomic as a whole.

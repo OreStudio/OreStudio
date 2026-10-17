@@ -21,8 +21,8 @@
 The support export and the archival export are one screen. They differ in
 scope, in what completeness means and in where the file goes — not in the act,
 which is "choose a scope, read the parts, check the manifest, take the files
-away". A promotion package is the same act with a target named. A sandbox is a
-fourth scope: exporting one is how a defect is reproduced elsewhere. The
+away". A promotion package is the same act with a target named. A sandbox is
+another scope: exporting one is how a defect is reproduced elsewhere. The
 receiving side is the import prototype; this is the writing side.
 
 It is throwaway. Open [[file:take-data-out/][the export]].
@@ -32,14 +32,14 @@ It is throwaway. Open [[file:take-data-out/][the export]].
 ** What it argues
 
 - The purpose changes the defaults and the completeness list, not the layout.
-  "Smallest readable set", "dated copy" and "package for a target" are three
-  answers to the same questions.
+  "Smallest readable set", "dated copy" and "package for a target" are answers
+  to the same questions.
 - The manifest is the artefact. Party, source installation, build, instant,
   each part, its checksum and what was left out. No export writes one today;
   the person types it.
-- The read is scoped by rights. Three books are excluded and named. The export
-  refuses rather than returning an empty file, which is the support journey's
-  rule.
+- The read is scoped by rights. Books the person cannot read are excluded and
+  named. The export refuses rather than returning an empty file, which is the
+  support journey's rule.
 - One instant or none. The toggle shows today's parts read seven minutes apart,
   and the archive checklist fails; a set that never existed together cannot be
   signed off as complete.
@@ -68,14 +68,14 @@ card switches between the official tree and a sandbox.
 
 ** What is real and what is not
 
-The three export verbs, the parts each writes, the rights filter, the
-no-as_of gap, the missing manifest, the missing ticket integration and the
-PostgreSQL-backup caveat are the journeys'. The sandbox rules are the model's: a
-sandbox is anchored at an official portfolio, a book and its portfolio share one
-sandbox, a sandbox root portfolio has no parent, and a virtual book has no
-ledger reference and is not sweepable. The counts, sizes, checksums, manifest
-id, sandbox names and snapshot id are invented. No export screen or route
-exists.
+The export verbs, the parts each writes, the rights filter, the no-as_of
+gap, the missing manifest, the missing ticket integration and the
+PostgreSQL-backup caveat are the journeys'. The sandbox rules are the
+model's: a sandbox is anchored at an official portfolio, a book and its
+portfolio share one sandbox, a sandbox root portfolio has no parent, and a
+virtual book has no ledger reference and is not sweepable. The counts, sizes,
+checksums, manifest id, sandbox names and snapshot id are invented. No export
+screen or route exists.
 
 ** The verdict
 

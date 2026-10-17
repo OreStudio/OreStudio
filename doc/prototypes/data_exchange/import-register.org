@@ -18,7 +18,7 @@
 
 * Summary
 
-Four journeys need a question no per-import screen can answer: what has
+The journeys need a question no per-import screen can answer: what has
 happened in this party? A failed family is found here, a retry is told from a
 first attempt here, a promotion records its hops here, and a party-scoped user
 is kept out of another party's rows here. Each row also names the sandbox the
@@ -78,7 +78,7 @@ instance's, and a retry of it keeps the same instance id.
 
 ** The verdict
 
-Not signed off. The screen survives though no journey names it, because four
+Not signed off. The screen survives though no journey names it, because the
 journeys need it as a secondary surface. The owner must decide whether it is an
 import register, a workflow history, or both — and whether it is the place the
 promotion record lives. The sandbox column also asks whether a register is read

@@ -2,7 +2,7 @@
 :ID: C975F023-7525-4A38-A646-0CE4BEEE77D4
 :END:
 #+title: Design: journeys that import and export data
-#+description: The user journeys for importing and exporting ORE and other data, the requirements they impose on an import mechanism, and the two shapes they demand.
+#+description: The user journeys for importing and exporting ORE and other data, the requirements they impose on an import mechanism, and the shapes they demand.
 #+type: design
 #+level: s2
 #+filetags: :design:refdata:conventions:messaging:data_exchange:
@@ -48,23 +48,23 @@ and archive exports, and the preview the person wants before a write.
 #+ATTR_HTML: :class hug-leading
 | Requirement | Journeys | What it means |
 |-------------+----------+---------------|
-| Atomicity | 1, 3, 5, 8, 12 | A file is applied in full or not at all. The person must never read a half file. |
-| Size | 1, 2, 4, 11 | A real party's data exceeds one request. The mechanism must take a file in parts and still be atomic. |
-| Who may do it | 3, 7 | The import is scoped to the session's party. An operations user and a tenant administrator are different actors, and today only the administrator holds the permissions. |
-| Resumability | 1, 6 | A failed or interrupted import can be retried without doubling the data, and the person can read what the first attempt left. |
-| Visibility before commit | 6, 8, 12 | The person sees the per-family effect and the refusals before the live tables change, and nothing staged is visible to a reader. |
-| Cross-component scope | 1, 2, 4, 10, 11 | One file set carries conventions, curves, market data, portfolios, trades and run documents, which live in different owning services. |
-| Audit | 4, 6, 8, 11 | The person can say which file was applied, by whom, into which party, when, and what it wrote. The current exports carry no audit columns. |
-| Idempotency | 2, 4, 6 | Applying the same file twice converges to the same state. Conventions replace by key today; trades do not and duplicate. |
-| Ordering | 2, 4 | Parents are applied before parts: currencies before trades, conventions before curves, run document before its bindings. |
-| Failure reporting | 1, 6, 8, 9 | Every refused row is named with its family or file, and a skipped family is reported, not dropped. |
-| Isolation of one dataset | 5, 10 | A person can import or export one dataset without sweeping in the rest. |
-| Export consistency | 10, 11 | The parts of an export are read at one instant, or the manifest says they were not. |
-| Retention and reversibility | 3, 8, 11 | Omission is not a delete, and a rollback reaches every row the import wrote. |
+| Atomicity | Reproduce a defect; Onboard a party; Import one dataset; See what a failed family left behind; Review an import | A file is applied in full or not at all. The person must never read a half file. |
+| Size | Reproduce a defect; Seed a fresh environment; Promote an environment; Export for archival | A real party's data exceeds one request. The mechanism must take a file in parts and still be atomic. |
+| Who may do it | Onboard a party; Import as a party-scoped user | The import is scoped to the session's party. An operations user and a tenant administrator are different actors, and today only the administrator holds the permissions. |
+| Resumability | Reproduce a defect; Retry a failed import | A failed or interrupted import can be retried without doubling the data, and the person can read what the first attempt left. |
+| Visibility before commit | Retry a failed import; See what a failed family left behind; Review an import | The person sees the per-family effect and the refusals before the live tables change, and nothing staged is visible to a reader. |
+| Cross-component scope | Reproduce a defect; Seed a fresh environment; Promote an environment; Export to share with support; Export for archival | One file set carries conventions, curves, market data, portfolios, trades and run documents, which live in different owning services. |
+| Audit | Promote an environment; Retry a failed import; See what a failed family left behind; Export for archival | The person can say which file was applied, by whom, into which party, when, and what it wrote. The current exports carry no audit columns. |
+| Idempotency | Seed a fresh environment; Promote an environment; Retry a failed import | Applying the same file twice converges to the same state. Conventions replace by key today; trades do not and duplicate. |
+| Ordering | Seed a fresh environment; Promote an environment | Parents are applied before parts: currencies before trades, conventions before curves, run document before its bindings. |
+| Failure reporting | Reproduce a defect; Retry a failed import; See what a failed family left behind; Import market data | Every refused row is named with its family or file, and a skipped family is reported, not dropped. |
+| Isolation of one dataset | Import one dataset; Export to share with support | A person can import or export one dataset without sweeping in the rest. |
+| Export consistency | Export to share with support; Export for archival | The parts of an export are read at one instant, or the manifest says they were not. |
+| Retention and reversibility | Onboard a party; See what a failed family left behind; Export for archival | Omission is not a delete, and a rollback reaches every row the import wrote. |
 
-Two requirements conflict today. The trade import keeps every trade that saved
-and reports the failures, so it is deliberately partial. The run import refuses
-before the first write and then undoes what it stored, so it aims at
+Some requirements conflict today. The trade import keeps every trade that
+saved and reports the failures, so it is deliberately partial. The run import
+refuses before the first write and then undoes what it stored, so it aims at
 all-or-nothing. A mechanism chosen for one contradicts the other unless the
 journeys say which applies where.
 
@@ -73,7 +73,7 @@ document. It does not cover conventions. The conventions save writes each family
 in its own write. So the one component the design is about is the one that is
 neither atomic nor rolled back.
 
-* The two shapes the journeys demand
+* The shapes the journeys demand
 
 ** (a) All-or-nothing within one owning service
 
@@ -97,7 +97,7 @@ atomicity and a named overall outcome.
 
 | Journey | Why this shape |
 |---------+----------------|
-| [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect from an exported environment]] | Trades, conventions and market data come from three services. |
+| [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect from an exported environment]] | Trades, conventions and market data come from several services. |
 | [[id:388355DD-6437-44CB-B48B-63B25B48CF1F][Seed a fresh environment from ORE sample directories]] | Currencies, portfolios, trades and configuration are several owners. |
 | [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party with its conventions and portfolio]] | Conventions are refdata, trades are trading. |
 | [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment between systems]] | The whole set moves, in dependency order, across two installations. |

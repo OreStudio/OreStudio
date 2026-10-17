@@ -94,10 +94,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families on the codec | 2 of 5 (calendar adjustments, currency config) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 3260f93169 |
+| Families on the codec | 3 of 5 (calendar adjustments, currency config, netting sets) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
 | Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3260f93169 |
 | Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | 3260f93169 |
-| XML suites | 521 cases, 79,962 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 3260f93169 |
+| XML suites | 509 cases, 79,094 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
 
 * Notes
 

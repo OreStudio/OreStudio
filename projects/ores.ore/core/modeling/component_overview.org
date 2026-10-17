@@ -177,4 +177,11 @@ target_link_libraries(${tests_target_name}
         Catch2::Catch2
         faker-cxx::faker-cxx
         Threads::Threads)
+
+# The corpus tests read the ORE examples from the checkout and write their
+# output where a validator can reach it. Both paths are compile-time constants
+# so a test run needs no environment beyond the tree it was built from.
+target_compile_definitions(${tests_target_name} PRIVATE
+    ORES_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+    ORES_XML_ROUNDTRIP_DIR="${CMAKE_BINARY_DIR}/xml-roundtrip")
 #+end_src

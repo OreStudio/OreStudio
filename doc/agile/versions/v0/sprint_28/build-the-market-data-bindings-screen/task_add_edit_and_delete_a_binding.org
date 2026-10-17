@@ -26,11 +26,11 @@ Add and Edit are one dialog of the record standard. Add states the new record re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -74,7 +74,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web suite, packages/web | 1572 passed | =cd projects/ores.web/packages/web && npx vitest run= | e9fb3a9f76 |
+| Local check gate | 7 passed, 0 failed | =./compass.sh check= | e9fb3a9f76 |
 
 * Notes
 
@@ -102,3 +103,15 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Add and Edit are one =RecordDialog=, as the record standard draws a record's form, and Delete is the standard's =RemoveRecordDialog=.
+
+The list offers Add when the person may write; the source is chosen from the sources the party does not consume, and the new binding's page opens after the write. The record page draws Edit only for a synthetic binding the person may write, and Delete only to a person who may remove — so the access mark now follows the action rather than standing alone, which is what this task existed to fix.
+
+The source field is a =record= picker rather than a =choice=, because a =choice= renders each option through =t('refdata.choices.<field>.<value>')= and the sources are the party's own. The picker reads a read-only store over the BFF's =bindable-sources= read, and the dialog refuses a source whose series a running feed holds, naming that feed, before the write. The stale version is the server's to refuse, and the shared dialog offers the reload.
+
+The dialog's copy matches the prototype: the source and enabled helps, the held-source refusal, and the delete warning that the series, its observations and the binding's history stay.
+
+Tests: the store's rows and the held-source lookup in =bindableSources.test.ts=, beside the existing binding view tests. The web suite passes 1572 tests and the gate 7 of 7.
+
+Two things the task does not cover. The French and Portuguese words are written and have not been read by a speaker. And the dialog's series-change warning the prototype draws — that this party's old series stops receiving ticks and the new one starts — is not shown yet, because the chosen source's series title is not on the picker row; it wants the sources read to carry the title, which is a small follow-up.

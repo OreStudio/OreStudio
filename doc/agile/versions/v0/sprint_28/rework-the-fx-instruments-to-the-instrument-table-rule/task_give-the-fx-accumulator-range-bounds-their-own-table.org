@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/give-the-fx-accumulator-range-bounds-their-own-table
-#+pr: 3458
+#+pr: 3478
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -107,6 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3478][#3478]] | [trading] Give the accumulator's range bounds their own table |
 | [[https://github.com/OreStudio/OreStudio/pull/3458][#3458]] | [agile] Record where the FX rework stands |
 
 * Review

@@ -199,6 +199,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto fx_vanilla_option_instrument_sub =
         ores::trading::service::messaging::register_fx_vanilla_option_instrument_event_mapping(
             event_source, event_bus, nats);
+    auto range_bound_sub = ores::trading::service::messaging::register_range_bound_event_mapping(
+        event_source, event_bus, nats);
     auto equity_accumulator_instrument_sub =
         ores::trading::service::messaging::register_equity_accumulator_instrument_event_mapping(
             event_source, event_bus, nats);

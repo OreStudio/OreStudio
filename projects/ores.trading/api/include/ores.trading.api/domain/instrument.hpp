@@ -606,9 +606,7 @@ inline void stamp_ids(fx_instrument_data& data,
         }
     };
     std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
-               detail::fx_instrument_arrays);
-    std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
-               detail::fx_instrument_child_arrays);
+               std::tuple_cat(detail::fx_instrument_arrays, detail::fx_instrument_child_arrays));
 }
 
 } // namespace ores::trading::domain

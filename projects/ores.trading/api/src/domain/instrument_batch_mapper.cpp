@@ -180,8 +180,8 @@ void append_fx_arrays(instrument_batch& batch, const fx_instrument_data& carrier
         auto& column = batch.*(columns.second);
         column.insert(column.end(), rows.begin(), rows.end());
     };
-    std::apply([&](const auto... columns) { (append_one(columns), ...); }, fx_batch_arrays);
-    std::apply([&](const auto... columns) { (append_one(columns), ...); }, fx_batch_child_arrays);
+    std::apply([&](const auto... columns) { (append_one(columns), ...); },
+               std::tuple_cat(fx_batch_arrays, fx_batch_child_arrays));
 }
 
 }

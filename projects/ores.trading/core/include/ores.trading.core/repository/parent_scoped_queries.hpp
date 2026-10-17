@@ -42,6 +42,7 @@
 #include "ores.trading.api/domain/instrument_schedule.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
+#include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.core/export.hpp"
 #include <string>
 #include <vector>
@@ -270,6 +271,17 @@ read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::str
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_strike>
 read_strikes_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+
+/**
+ * @brief Reads the range bounds of a set of instruments.
+ *
+ * Rows come back in instrument order, then in the document's ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param trade_ids UUIDs of the trades whose range bounds to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::range_bound>
+read_range_bounds_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
 
 /**
  * @brief Reads the forward terms of a set of instruments.

@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: 2FEA1F01-B63A-412A-BECB-8E20AE4DC911
+:ores.cpp.shell-command.enabled: true
 :END:
 #+title: Range Bound
 #+description: Codegen entity model for one ORE RangeBound entry, keyed to the trade and the entry's ordinal.
@@ -26,10 +27,12 @@ the ordinal preserves it, so export re-emits the entries as the document
 held them.
 
 A level is money unless it is a ratio. =RangeFrom=, =RangeTo=, =Strike=
-and =StrikeAdjustment= are price levels, so each column is exact decimal.
-=Leverage= is a multiplier, so the column is a binary double, the same
-way a basket weight is. A document that states no level leaves the
-column null rather than a zero it never wrote.
+and =StrikeAdjustment= are price levels, so each column is exact decimal, at
+the family's twelve decimal places: a document that states a level with more
+digits than that has its value rounded, which is the precision every money
+column in the component states. =Leverage= is a multiplier, so the column is a
+binary double, the same way a basket weight is. A document that states no level
+leaves the column null rather than a zero it never wrote.
 
 The rows are keyed by the trade alone, so any instrument whose document
 states a =RangeBounds= list can own them. The FX accumulator is the first

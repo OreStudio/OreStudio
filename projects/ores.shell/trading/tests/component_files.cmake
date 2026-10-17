@@ -72,6 +72,7 @@ set(files
     "party_role_type_commands_tests.cpp"
     "payoff_type_commands_tests.cpp"
     "price_type_commands_tests.cpp"
+    "range_bound_commands_tests.cpp"
     "rate_instrument_commands_tests.cpp"
     "return_type_commands_tests.cpp"
     "risk_participation_agreement_instrument_commands_tests.cpp"

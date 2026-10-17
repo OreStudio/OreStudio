@@ -53,10 +53,12 @@ namespace ores::trading::domain {
  * held them.
  *
  * A level is money unless it is a ratio. RangeFrom, RangeTo, Strike
- * and StrikeAdjustment are price levels, so each column is exact decimal.
- * Leverage is a multiplier, so the column is a binary double, the same
- * way a basket weight is. A document that states no level leaves the
- * column null rather than a zero it never wrote.
+ * and StrikeAdjustment are price levels, so each column is exact decimal, at
+ * the family's twelve decimal places: a document that states a level with more
+ * digits than that has its value rounded, which is the precision every money
+ * column in the component states. Leverage is a multiplier, so the column is a
+ * binary double, the same way a basket weight is. A document that states no level
+ * leaves the column null rather than a zero it never wrote.
  *
  * The rows are keyed by the trade alone, so any instrument whose document
  * states a RangeBounds list can own them. The FX accumulator is the first

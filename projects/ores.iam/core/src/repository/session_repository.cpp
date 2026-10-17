@@ -461,7 +461,7 @@ std::vector<domain::session>
 session_repository::read_active_by_account(context ctx, const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto query = sqlgen::read<std::vector<session_entity>> |
-                       where("account_id"_c == account_id_str && is_null("end_time")) |
+                       where("account_id"_c == account_id_str && "end_time"_c.is_null()) |
                        order_by("start_time"_c.desc());
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
@@ -488,7 +488,7 @@ std::uint32_t session_repository::count_by_account(context ctx,
 }
 
 std::vector<domain::session> session_repository::read_all_active(context ctx) {
-    const auto query = sqlgen::read<std::vector<session_entity>> | where(is_null("end_time")) |
+    const auto query = sqlgen::read<std::vector<session_entity>> | where("end_time"_c.is_null()) |
                        order_by("start_time"_c.desc());
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);

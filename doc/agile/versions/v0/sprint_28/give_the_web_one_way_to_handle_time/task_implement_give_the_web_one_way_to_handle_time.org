@@ -28,7 +28,7 @@ A person working in ores.web should have exactly one place that knows how a time
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:19B54929-1098-4FBD-B588-505CC7C3BBFB][Give the web one way to handle time and timestamps]] |
-| Now          | Code, tests and docs are in. The targeted C++ build is queued behind the host build lock; the live endpoint proof is pending. |
+| Now          | Code, tests and docs are in, the C++ tree builds, and both endpoints are proven live against the rebuilt service. |
 | Waiting on   | A build-lock slot for =./compass.sh build ores.iam.service.exe ores.platform.tests -j6=. |
 | Next         | Build, start the fleet, recapture the auth-event fixture, prove the endpoint, close the task. |
 | Last touched | 2026-10-17                               |
@@ -217,10 +217,28 @@ via its "Verifies task" field.
 - The golden accounts fixture is captured from the running fleet; its bytes
   are =2026-10-17 13:00:10.000000Z= and =2026-10-17 13:00:09.000000Z=.
 
-** Pending
+** Proven end to end
 
-- The end-to-end confirmation through the rebuilt =ores.iam.service= and a
-  live =/api/auth-events=: the targeted build was still queued behind the
-  host build lock when this record was written. The SQL proof above is not a
-  substitute for it, and the auth-event fixture cannot be captured until the
-  binary is built and the fleet is started.
+- The rebuilt =ores.iam.service= links and both endpoints were called live
+  through the BFF on =http://127.0.0.1:20402=, after signing in with
+  =POST /api/session= and carrying the rotating session cookie with =-b= and
+  =-c= (a stale jar answers =401= and looks like a broken endpoint; it is not).
+- =GET /api/auth-events= returns =200= with
+  ="eventTime":"2026-10-17 20:20:58.330334Z"=: six fractional digits and a =Z=,
+  where the old rendering was =2026-10-17 14:21:56.694645+00=. The offset that
+  varied with the reading session's timezone is gone from the wire.
+- =GET /api/accounts= returns =200= with
+  ="recordedAt":"2026-10-17 13:00:09.000000Z"=, so the outage that started this
+  work stays fixed against the rebuilt service.
+- No =MalformedResponseError= appears in the BFF journal for either call.
+
+** Still open
+
+- =session.endTime= keeps its producer's =to_db_string= shape (no designator,
+  no =Z=) and its empty string means "still open". Typing it now would turn a
+  silent bug into a crash against live closed sessions, so it is left as a
+  producer fix of its own, recorded under Notes.
+- The =timestamp_to_timepoint= ambiguity between the =std::string_view= and
+  =db_timestamp= overloads is resolved in =06ddd7ed91=: the =db_timestamp=
+  overload appends ="+00"= before parsing, which on the =Z=-suffixed value the
+  read now produces would build =…246326Z+00= and fail.

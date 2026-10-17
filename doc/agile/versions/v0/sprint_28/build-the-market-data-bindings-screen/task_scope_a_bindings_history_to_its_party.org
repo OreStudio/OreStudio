@@ -111,10 +111,10 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | Resolver definitions in generated repositories | 57, in 57 files | =grep -rl --include=*_repository.cpp -e read_any_by_ projects/*/core/src/repository > /tmp/r.txt; wc -l < /tmp/r.txt= | =50b2ac29df..HEAD= |
 | Resolvers that own a party column, and take the party filter | 31 | =grep -rl --include=*_repository.cpp -e 'ctx.party_id()' projects/*/core/src/repository > /tmp/p.txt; wc -l < /tmp/p.txt= | =50b2ac29df..HEAD= |
-| Resolvers without a party column, unchanged by the party filter | 26 | the difference between the two counts above | =50b2ac29df..HEAD= |
+| Resolvers without a party column, left as they were | 26 | the difference between the two counts above | =50b2ac29df..HEAD= |
 | Resolvers with an optional party column | 1 (=batch.external_ref=, =ores.compute=) | =grep -rl --include=*_repository.cpp -e 'party_id.has_value()' projects/*/core/src/repository > /tmp/o.txt; wc -l < /tmp/o.txt= | =50b2ac29df..HEAD= |
-| Components whose generated repositories change | 10 | =git diff --name-only origin/main...HEAD > /tmp/d.txt; cut -d/ -f2 /tmp/d.txt > /tmp/c.txt; sort -u /tmp/c.txt > /tmp/c2.txt; wc -l < /tmp/c2.txt= | =50b2ac29df..HEAD= |
-| Generated repository files rewritten | 88 (31 headers, 57 implementations) | =git diff --name-only origin/main...HEAD > /tmp/d.txt; grep -c '_repository\.' /tmp/d.txt= | =50b2ac29df..HEAD= |
+| Components whose generated repositories change | 7 | =git diff --name-only origin/main...HEAD > /tmp/d.txt; cut -d/ -f2 /tmp/d.txt > /tmp/c.txt; sort -u /tmp/c.txt > /tmp/c2.txt; wc -l < /tmp/c2.txt= | =50b2ac29df..HEAD= |
+| Generated repository files rewritten | 62 (31 headers, 31 implementations) | =git diff --name-only origin/main...HEAD > /tmp/d.txt; grep -c '_repository\.hpp$' /tmp/d.txt; grep -c '_repository\.cpp$' /tmp/d.txt= | =50b2ac29df..HEAD= |
 
 * Notes
 
@@ -185,7 +185,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Dropping the limit in every resolver made the 26 entities with no party column scan every version of a key | =ores.cpp.repository.repository_impl.org= | Fixed | The template keeps =limit(1)= where no party column scopes the read; those 26 generated files are back to what main emits |
+| 2 | The comment explained the defect the change fixed, emitted into 31 files | =ores.cpp.repository.repository_impl.org= | Fixed | Compressed to the reason the filter sits in memory |
+| 3 | The test asserts the resolver, not =get_feed_binding_history= | =repository_entity_repository_tests.cpp= | Accepted | Recorded in Result as not covered |
+| 4 | The filter compares party exactly, so a descendant-party row that row-level security admits is dropped | =ores.cpp.repository.repository_impl.org= | Accepted | No entity in this change holds a descendant party's rows; recorded in Result |
+| 5 | Test order depends on the database writing a later =valid_from= for the second row | =repository_entity_repository_tests.cpp= | Accepted | Measured 5 ms apart; the old read fails against it rather than passing by chance |
+| 6 | The party filter repeats the =read_latest_by= block | =ores.cpp.repository.repository_impl.org= | Accepted | Both are template arms; extracting one fragment is a follow-up, not this fix |
+| 7 | A rejected capture was deleted instead of filed | =the_synthetic_service_test_target_never_links.org= | Fixed | Restored and filed to =discarded/= with the reason it was withdrawn |
 
 * Result
 

@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 48AAB8BF-79FF-4461-B264-1C848C9EAD5C
+:END:
+#+title: Task: Write the exporter from the same tables
+#+description: The write direction need not mirror the read direction. Emit in schema order, write only present fields, format decimals as fixed point rather than shortest round trip, escape only where needed, and build one buffer per record range.
+#+type: task
+#+level: s1
+#+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Write the document back from the same tables. The write direction need not
+mirror the read direction; it has to be valid, cheap and lossless. Three rules
+carry it: schema order, present fields only, and a decimal form that never
+exponentiates.
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- Output validates against =input.xsd= for every document in the corpus.
+- A decimal writes as fixed point at the column's scale and never as an
+  exponent.
+- Only text that needs escaping is escaped, decided by one scan.
+- Reading the output yields the same values as reading the original.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 36BA97C5-F6F8-4101-9141-40390B35237A
+:END:
+#+title: Story: Decide the XML strategy for ORE documents
+#+description: Choose how ORE XML becomes ORE Studio records: keep the generated xsdcpp binding, adopt a document library, or drive a descriptor table from the schema. Evidence comes from a measured prototype.
+#+type: story
+#+level: s2
+#+filetags: :xml:codegen:data_oriented_design:sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Decide what the layer between an ORE XML document and the ORE Studio model
+is, and settle it with measurements rather than preference.
+
+The bond review found that a money value cannot be recovered exactly from the
+generated binding wherever ORE types the element as a bare =xs:float=. That
+was one symptom. The layer has two more problems of the same origin: it builds
+an object graph where the guidelines say the document tree is transient, and
+it splits one mapping across 122,000 generated lines and 800 KB of
+hand-written mapper that cannot be checked against each other.
+
+The story is done when the route is chosen, the evidence is on the page, and
+the work that follows is broken into tasks.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The faithful document layer is built and proven over the corpus. The schema tables and the projection remain. |
+| Waiting on    | Nothing.                               |
+| Next          | Approve route C and take the two small tasks: the corpus gate and the log formatting. |
+| Waiting on    | A decision on the recommendation.      |
+| Next          | Approve route C, then start with the corpus gate and the log-formatting fix, which are the two small ones. |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- One investigation page states the design, the alternatives and the decision.
+- One prototype demonstrates the design on a real ORE document and reports
+  time, allocations and fidelity against the current path.
+- The prototype's output agrees record for record with the production path on
+  the document it covers.
+- The follow-on work is expressed as tasks with sizes, or the route is
+  declined with the reason recorded.
+- Numeric accuracy is stated as an invariant, not a hope: money is a decimal
+  taken from the document's digits, continuous quantities stay binary, and the
+  writer emits a form that reads back to the same value.
+- Round trip is defined as the values surviving and the output validating
+  against =input.xsd=, not as the document being reproduced.
+- All twenty root elements in the corpus are covered, the eleven with a mapper
+  first and the nine without afterwards.
+- Every XML document in the repository parses with the new scanner, and the
+  check that proves it fails the build when one does not.
+- The write direction is specified, including the one place where shortest
+  round-trip formatting is wrong.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C72A8250-F44C-41FC-9C0C-54DF98683596][Prototype the descriptor document codec and measure it]] | DONE | 2026-10-17 | 2026-10-17 | Build a throwaway codec that walks generated descriptor tables instead of a generated DOM, then measure time, allocations and fidelity against the current xsdcpp path. |
+| [[id:FAC7E870-E2C5-46E2-A1BF-1F76BA43836F][Gate the scanner on the XML corpus]] | BACKLOG | | | Run the scanner over every XML document in the repository on every check, and fail on any rejection. 3,971 documents and 44.8 MB today, including the FpML and FIX trees, which are far outside the ORE subset. |
+| [[id:7681078A-B911-4853-BB25-5F2607E87943][Generalise the codec for nested and repeated types]] | BACKLOG | | | The probe maps one flat record family. Extend the engine and the generator model to nested complex types, repeated children, attributes on leaf elements, and xs:any, and state the policy for content the schema does not name. |
+| [[id:2E83CCFB-025F-44F0-B97B-F377CC712BBE][Generate tables for every document family]] | BACKLOG | | | Read all twenty-eight ORE XSDs and emit a table per complex type, with a drift check that fails when a table and its schema disagree. This is the replacement for the generated domain, so it must be reproducible and reviewable. |
+| [[id:48AAB8BF-79FF-4461-B264-1C848C9EAD5C][Write the exporter from the same tables]] | BACKLOG | | | The write direction need not mirror the read direction. Emit in schema order, write only present fields, format decimals as fixed point rather than shortest round trip, escape only where needed, and build one buffer per record range. |
+| [[id:96950350-E907-4C03-87FE-1BAF7950FF3D][Migrate the reference data documents]] | BACKLOG | | | Currency config, calendar adjustments, conventions, netting set definitions and credit simulation. Each moves its importer and exporter onto the codec and deletes its mapper in the same change. |
+| [[id:C010861C-1F2D-4C89-8A3C-4362C0E6F435][Migrate the portfolio documents]] | BACKLOG | | | Trades, envelopes and the instrument families. The largest mapper group and the one the bond work touched, so it lands after the reference data proves the shape. |
+| [[id:A9C63FEC-D64C-438A-994D-C9F0753F0EAC][Migrate the market and configuration documents]] | BACKLOG | | | Curve configuration, today's market, pricing engines, stress testing and the ORE run document. |
+| [[id:5EBC0FAA-6541-420E-B174-E6DA738316E2][Remove xsdcpp]] | BACKLOG | | | Delete the generated domain, the sibling-checkout wiring, the two post-regeneration patches and the knowledge page. Last, because nothing may depend on the generated binding by then. |
+| [[id:5C0C929E-7D90-4954-9F46-5E28E69A1484][Stop formatting a log line per imported record]] | BACKLOG | | | The import path formats a full JSON record for every mapped entity, and it is the largest single cost in the current importer. Guard the trace lines so an off-level log costs nothing. |
+| [[id:04C460E8-3390-4844-9774-A1713A6F3726][Prove the round trip preserves the data and validates]] | BACKLOG | | | Round trip means the values survive and the output validates, not that the document is reproduced. Build the harness: read the corpus, write it, validate against input.xsd, read it back, and compare every field including the exact decimals. Fail on any element the model did not claim. |
+| [[id:8E02E7E1-AB6F-4123-B8F8-54EA4B2D24DE][Map the configuration documents that have no mapper]] | BACKLOG | | | Ibor fallback, reference data, script library, counterparty information and collateral balances. No mapper exists today, so these are new domain models on the codec rather than migrations. |
+| [[id:DBC23EE5-046F-48B8-985B-38E1726180F7][Map the analytics documents that have no mapper]] | BACKLOG | | | Simulation, sensitivity analysis, SIMM calibration and the cross asset model. The largest of the unmapped families and the one that exercises the most of the schema. |
+
+* Decisions
+
+- *The document tree is transient.* The
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][guidelines]] place ORE
+  documents at the boundary, outside the three regimes, and name the entity
+  representation as the review target. The design follows that rather than
+  the usual shape of an XML library.
+- *Three routes were weighed; route C is recommended.* Keep and extend
+  =xsdcpp=, adopt a document library, or own a scanner driven by tables
+  generated from the schema. The investigation carries the numbers.
+- *The mapping becomes data.* A table can be checked against the XSD by
+  constructing it. The mechanical part of the mapping moves into the table,
+  and the semantic part stays a short function.
+
+* Out of scope
+
+- Extending =xsdcpp=. Route A is described and rejected, not scheduled.
+- Reproducing a document byte for byte: comments, indentation, attribute
+  order and the original spelling of a number are out of contract.
+- A general XML library: XPath, run-time schema validation, a DOM.
+- The drift on =trade= and =componentSubTrade=. Route C does not touch the
+  generated binding, so the drift stops blocking anything.
+- Removing =xsdcpp= before every root element has a codec. It is the last
+  task, not an early one.

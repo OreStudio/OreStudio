@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 81B5B745-A079-46E2-93CF-CD3F2738B609
+:END:
+#+title: The XML document codec prototype
+#+description: A throwaway probe that turns an ORE document straight into ORE Studio records through generated descriptor tables.
+#+type: investigation
+#+filetags: :prototype:xml:decide-the-xml-strategy-for-ore-documents:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This directory holds the probe behind
+[[id:B5B38025-C893-4712-9312-11400AC62B58][the investigation]]. It is
+throwaway. Read it as an argument, not as a library.
+
+* What it answers
+
+Three questions, none of which an argument settles.
+
+- How fast can a scanner we own read the ORE corpus?
+- How few allocations can one document cost if no document tree is built?
+- Can a table generated from the XSD carry the mapping in both directions?
+
+* The files
+
+| File | What it is |
+|------+------------|
+| =scanner.hpp=, =scanner.cpp= | A zero-copy pull reader for the XML subset ORE writes. About 500 lines. No dependency, no allocation per event. |
+| =codec.hpp= | The table structures and the one engine that walks them. Two record policies share it. |
+| =gen_tables.py= | The generator. Reads =currencyconfig.xsd= and =ore_types.xsd= and emits the tables. |
+| =currency_tables.cpp= | Generated. Do not edit. |
+| =bench.cpp= | Eight labelled variants behind one switch, so the alternatives are compared side by side. |
+| =bench_baseline.cpp= | The current path alone: =ores::ore::domain::load_data=. |
+| =run.sh= | Regenerates, builds and prints every number the investigation quotes. |
+| =RESULTS.txt= | The output of the last =run.sh=. |
+
+* How to run
+
+#+begin_src sh
+./run.sh > RESULTS.txt
+#+end_src
+
+It needs a configured build tree, because the baseline links the real
+=ores.ore.core= library and borrows that tree's compile flags.
+
+The variants:
+
+- =1= xsdcpp DOM, then the hand-written mapper.
+- =2= pugixml DOM, then the same descriptor table.
+- =3= the codec, into records that own their strings.
+- =4= the codec, into records that borrow the document buffer.
+- =5= the scanner alone, no records.
+- =6= read, write, read again, and compare.
+- =7= every numeric leaf, against what a binary value can hold.
+- =8= pugixml alone, for a parser-to-parser comparison.
+
+* What it does not do
+
+- It maps one document family, =CurrencyConfig=. Every other family needs
+  its own generated table and, for nested types, generator work.
+- It ignores namespace prefixes. It skips unknown subtrees instead of
+  preserving them.
+- It has no defaults and no unit conversion. In the sample those are hooks.
+- The record layouts are written by hand. In a real build the generator
+  would emit them from the org model, and the table would point at their
+  members.
+
+* Where this departs from the coding standards
+
+The probe is throwaway and it is held to the standards that make it readable,
+not to the ones that make it shippable. It keeps the licence header, the
+include order and the naming. It does not adopt =std::expected=: a =result=
+struct with an ok flag is enough to prove a design and costs less churn to
+throw away. The product layer does adopt it, and that is where the standard
+bites.
+
+Two copies of the scanner exist while both layers are alive. The probe's copy
+is a snapshot from before the product one learned to normalise values, so the
+two will disagree on entities and attribute whitespace. That is deliberate:
+the probe answers a design question, and the product layer is the thing that
+answers a correctness one.
+
+* What to carry forward
+
+- The table shape in =codec.hpp=: offset, bit, kind, hash. It is the whole
+  argument.
+- The presence bitmask instead of an optional wrapper.
+- The two layouts over one table, which is what makes the borrowed layout
+  possible without a second mapping.
+- The error contract: one message, one line, one column, no exceptions on
+  the hot path.

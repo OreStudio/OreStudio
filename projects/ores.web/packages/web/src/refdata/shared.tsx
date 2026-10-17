@@ -51,13 +51,33 @@ export function codeDomainOf(list: ClassificationList): string {
 export function useLabelCatalogue(): {
     readonly byCode: ReadonlyMap<string, BadgePresentation>;
     readonly domains: Readonly<Record<string, readonly string[]>>;
+    readonly mapped: Readonly<Record<string, Readonly<Record<string, string>>>>;
 } {
     const catalogue = useQuery({ queryKey: ['labels'], queryFn: api.labels });
     const labels = catalogue.data?.labels ?? [];
     return {
         byCode: new Map(labels.map((label) => [label.code, label])),
         domains: catalogue.data?.domains ?? {},
+        mapped: catalogue.data?.mapped ?? {},
     };
+}
+
+/** The badge a domain paints one of its own codes with, when it paints one. */
+export interface LabelCatalogue {
+    readonly byCode: ReadonlyMap<string, BadgePresentation>;
+    readonly mapped: Readonly<Record<string, Readonly<Record<string, string>>>>;
+}
+
+export function badgeFor(
+    catalogue: LabelCatalogue,
+    domain: string,
+    code: string | null,
+): BadgePresentation | undefined {
+    if (code === null || code === '') {
+        return undefined;
+    }
+    const badgeCode = catalogue.mapped[domain]?.[code];
+    return badgeCode === undefined ? undefined : catalogue.byCode.get(badgeCode);
 }
 
 /** Whether a list's code domain has labels at all, which decides whether a screen shows them. */
@@ -82,6 +102,32 @@ export function RowLabel({
 }): ReactNode {
     const badge = byCode.get(labelCode ?? UNMAPPED) ?? byCode.get(UNMAPPED);
     return <Label text={badge?.label ?? labelCode ?? '—'} badge={badge} />;
+}
+
+/**
+ * A coded value, drawn as its badge when the catalogue paints one.
+ *
+ * This is the one renderer for a field that is a badge: a screen never prints
+ * a catalogue code as bare text, and never builds its own pill. A code with no
+ * badge is written as the code itself, because a form field the catalogue has
+ * not painted must still show what the person chose — the Unmapped badge is for
+ * a row that is expected to be labelled, which a field need not be.
+ */
+export function CodedValue({
+    domain,
+    code,
+    catalogue,
+}: {
+    /** The code domain that owns the field, such as `tenor_kind`. */
+    readonly domain: string;
+    readonly code: string | null;
+    readonly catalogue: LabelCatalogue;
+}): ReactNode {
+    if (code === null || code === '') {
+        return <span className="text-ink-faint">—</span>;
+    }
+    const badge = badgeFor(catalogue, domain, code);
+    return badge === undefined ? <>{code}</> : <Label text={badge.label} badge={badge} />;
 }
 
 export { UNMAPPED };

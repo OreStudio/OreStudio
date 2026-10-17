@@ -2764,9 +2764,12 @@ const pt: SourceCatalogue = {
             none: 'Escolha primeiro um prazo ou uma convenção.',
             pickFailed: 'As listas de seleção não puderam ser lidas. {message}',
             choose: {
-                title: 'Escolher',
-                lead: 'Abra um prazo para o corrigir, abra uma convenção para corrigir o seu conjunto, ou comece um dos dois.',
-                search: 'Pesquisar prazos e convenções',
+                tenorTitle: 'Escolher o prazo',
+                tenorLead: 'O prazo a tratar, ou um novo. Os seus campos são o passo seguinte.',
+                conventionTitle: 'Escolher a convenção',
+                conventionLead:
+                    'A regra que resolve este prazo. Abrir uma mostra os prazos que resolve, cada um medido a partir do que a regra indica.',
+                search: 'Procurar por código ou nome',
                 startTenor: 'Novo prazo',
                 startConvention: 'Nova convenção',
                 tenors: 'Prazos',

@@ -2739,9 +2739,12 @@ export const en: SourceCatalogue = {
             none: 'Choose a tenor or a convention first.',
             pickFailed: 'The pick lists could not be read. {message}',
             choose: {
-                title: 'Choose',
-                lead: 'Open a tenor to correct it, open a convention to correct its set, or start either.',
-                search: 'Search tenors and conventions',
+                tenorTitle: 'Choose the tenor',
+                tenorLead: 'The tenor to work on, or a new one. Its fields are the next step.',
+                conventionTitle: 'Choose the convention',
+                conventionLead:
+                    'The rule that resolves this tenor. Opening one shows the tenors it resolves, each measured from wherever the rule says.',
+                search: 'Search by code or name',
                 startTenor: 'New tenor',
                 startConvention: 'New convention',
                 tenors: 'Tenors',

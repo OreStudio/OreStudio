@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: BC751E92-A47A-4AF7-8137-BE18BEC14B26
+:END:
+#+title: Test Scenario: Verify the tenor resolution screen in ores.web
+#+description: A tenant administrator walks journey 9 in ores.web: lists tenors, edits a tenor, edits its convention and its set, reads the schedules, reviews the difference list, saves, and reads the history.
+#+type: test_scenario
+#+level: s1
+#+filetags: :close-the-tenor-journey-and-remaining-refdata-gaps:sprint_28:v0:
+#+target_dialog:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: clever_dijkstra
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] in [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]]. It is filled in with the target screen and checklist of steps before testing starts; record the outcome by hand in =* Results=.
+
+* Before you start
+
+- The database must be freshly provisioned with Acme Corporation, so the
+  tenant holds the seeded tenors, their conventions and the tenant
+  administrator: =compass db recreate -y -k=, then the ACME bring-up
+  (=projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=).
+  Confirm the run completes with no failed steps.
+- The services must be up: =compass services start=. All of them, not just
+  NATS: the screen reads the catalogue from =ores.refdata=, the pick lists
+  from several services, and the history from =ores.history=.
+- Sign in at =http://127.0.0.1:21602/= as =tenant_admin@acme_corporation=
+  with =Secure-Password-123=.
+
+*Known and expected.* The *Resolved dates* is **not** part of this screen.
+The server serves no operation that resolves a tenor to a date, so the step
+is absent rather than broken. Do not record it as a failure. See the task's
+=* Result= for the sibling task that adds it.
+
+* Scenario Info
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution screen]] |
+| Parent story  | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]]   |
+| Target screen | =ores.web=, the *Define how tenors resolve* card, at =/refdata/tenors=. |
+| Clients       |                                          |
+| State         | PENDING |
+
+* Steps
+
+** Log in as the tenant administrator
+
+- Sign in at =http://127.0.0.1:21602/= as =tenant_admin@acme_corporation=
+  with the password =Secure-Password-123=.
+- Open *Reference data* and find the card *Define how tenors resolve*.
+- Confirms the step: the card is offered to this person. It is a workflow
+  card, so it sits with *Define instrument conventions* among the
+  reference-data cards, not on a screen list of its own.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the screen and read the rail
+
+- Choose *Define how tenors resolve*.
+- Confirms the step: the browser shows the tenor journey, and its rail
+  carries all seven steps in this order: *Choose*, *Tenor*, *Convention*,
+  *The schedule*, *Review*, *Outcome*, *History*.
+- A rail of six, or one whose *The schedule* is missing, is a failure: the
+  schedule step was added late and is the easiest one to lose.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | The catalogue could not be read. The server refused the request (bad_request). Fixed by c73a801fd7, which sends =as_of= on the catalogue read; the step needs re-running. |
+
+** List the tenors and open one
+
+- On *Choose*, the screen lists the tenant's tenors with their code, kind,
+  unit and version, and lists the conventions beneath them.
+- Type part of a tenor code into the search box (try =O/N= or =3M=).
+- Confirms the step: the tenor list narrows to the matches. Open a tenor
+  whose kind and unit are both set — a *period* tenor with a unit — because
+  the next step saves it and a half-formed row is refused.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Edit the tenor
+
+- On *Tenor*, change *Display name* and *Description*.
+- Confirms the step: the banner above the rail shows the tenor code and its
+  version, and the change survives moving to the next step.
+- Leave *Code* alone: it is the key, and the screen does not offer to
+  change it.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Edit the convention and the tenors it resolves
+
+- On *Convention*, change *Description*. Do not change *Code*.
+- In *Tenors in the set*, tick a tenor that is not in the set, and untick
+  one that is.
+- Confirms the step: the unticked tenor's anchor override control greys out,
+  because a tenor not in the set has nothing to measure from.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read the schedule axes
+
+- On *The schedule*, read the cards.
+- Confirms the step: each card names a schedule axis, its name, its
+  description and its source, and the axis a tenor in the set uses is
+  marked *In use by a tenor here*.
+- The screen names the axis and says the dated rolls need the resolve
+  operation. It does not draw dates, and that is expected.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Review the difference list
+
+- On *Review*, read the table.
+- Confirms the step: every change you made is listed with its *Before* and
+  *After*. A field you left alone does not appear. The *Membership* row
+  shows the tenor entering or leaving the set by name.
+- Set *Reason* and, if one is demanded, *Commentary*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Save and read the outcome
+
+- Press *Save*.
+- Confirms the step: the outcome step reports the changes are saved, and
+  the banner shows the record at a higher version than before.
+- Open *See the history*.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Read the history
+
+- On *History*, read the version list.
+- Confirms the step: the saved version is listed with who made it and when.
+- Go *Back to the list* and confirm the edited display name is shown there.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Prove a refusal is reported, not swallowed
+
+- Open a tenor, clear *Display name*, and try to continue.
+- Confirms the step: the *Tenor* step refuses to advance and states what is
+  still needed. The write never runs.
+- This is the client-side half. The server's own refusal — a refusal
+  payload naming the step that refused and the calls already written —
+  needs a stale version to provoke and is covered by the task's tests, not
+  by this scenario.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | PENDING |
+| Completed at  |  |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes
+
+The journey's resolved dates and its rolled schedule are the two parts the
+prototype draws that this screen does not. Both wait on the operation that
+resolves a tenor to a date, which the server does not serve yet; both are
+carried by `Resolve a tenor over the wire, with the refusal it carries`.

@@ -1623,15 +1623,20 @@ export const api = {
         ).written;
     },
 
-    /** The shared label catalogue: every label, and the labels each code domain uses. */
+    /**
+     * The shared label catalogue: every label, the labels each code domain uses,
+     * and the badge each row code of a domain is painted with.
+     */
     async labels(): Promise<{
         readonly labels: readonly BadgePresentation[];
         readonly domains: Readonly<Record<string, readonly string[]>>;
+        readonly mapped: Readonly<Record<string, Readonly<Record<string, string>>>>;
     }> {
         return z
             .object({
                 labels: z.array(badgePresentationSchema),
                 domains: z.record(z.string(), z.array(z.string())),
+                mapped: z.record(z.string(), z.record(z.string(), z.string())),
             })
             .parse(await request('/api/labels', { method: 'GET' }));
     },

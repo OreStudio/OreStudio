@@ -2773,9 +2773,12 @@ const fr: SourceCatalogue = {
             none: "Choisissez d'abord un ténor ou une convention.",
             pickFailed: "Les listes de sélection n'ont pas pu être lues. {message}",
             choose: {
-                title: 'Choisir',
-                lead: "Ouvrez un ténor pour le corriger, ouvrez une convention pour corriger son ensemble, ou commencez l'un ou l'autre.",
-                search: 'Rechercher des ténors et des conventions',
+                tenorTitle: 'Choisir le ténor',
+                tenorLead: "Le ténor à traiter, ou un nouveau. Ses champs sont l'étape suivante.",
+                conventionTitle: 'Choisir la convention',
+                conventionLead:
+                    "La règle qui résout ce ténor. En ouvrir une montre les ténors qu'elle résout, chacun mesuré depuis ce que la règle indique.",
+                search: 'Rechercher par code ou nom',
                 startTenor: 'Nouveau ténor',
                 startConvention: 'Nouvelle convention',
                 tenors: 'Ténors',

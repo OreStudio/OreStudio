@@ -38,6 +38,8 @@
 import { useState, type ReactNode } from 'react';
 import { Button, Detail, Field, Input, Notice, Select, Tag } from '../ui/Primitives.js';
 import { HistoryPanel } from '../refdata/HistoryPanel.js';
+import { BadgeSelect } from '../refdata/BadgeSelect.js';
+import { CodedValue, type LabelCatalogue } from '../refdata/shared.js';
 import { Picker } from './pickers.js';
 import {
     changeText,
@@ -57,9 +59,37 @@ import type { TenorCatalogue, TenorPickLists, TenorsServer } from './tenorsServe
 import type { Translator } from '../i18n/translate.js';
 
 /** The steps in the order the rail draws them, and the index each one sits at. */
+/**
+ * The code domain each field's value belongs to.
+ *
+ * A field whose value is a code is drawn through CodedValue with its domain, so
+ * the badge it shows is the one that domain's mappings paint. A field that is
+ * free text carries no domain and is drawn plainly.
+ */
+const TENOR_FIELD_DOMAINS: Readonly<Record<TenorField, string>> = {
+    code: '',
+    displayName: '',
+    description: '',
+    sortOrder: '',
+    kind: 'tenor_kind',
+    unit: 'tenor_unit',
+    multiplier: '',
+};
+
+/** The code domain each convention field's value belongs to. */
+const CONVENTION_FIELD_DOMAINS: Readonly<Record<ConventionField, string>> = {
+    code: '',
+    description: '',
+    measuredFrom: 'tenor_anchor',
+    resolutionAlgorithm: 'tenor_resolution_algorithm',
+    rollRule: 'business_day_convention_type',
+    oresmdUri: '',
+};
+
 export const TENOR_STEP_IDS = [
-    'choose',
+    'choose-tenor',
     'tenor',
+    'choose-convention',
     'convention',
     'schedule',
     'test',
@@ -79,6 +109,8 @@ export interface TenorStepsInput {
     readonly state: TenorDetails;
     readonly catalogue: TenorCatalogue | undefined;
     readonly catalogueFailure: string | undefined;
+    /** The badge catalogue, so every coded value is drawn the same way. */
+    readonly labels: LabelCatalogue;
     readonly pickLists: TenorPickLists | undefined;
     readonly pickFailure: string | undefined;
     readonly reasons: readonly {
@@ -142,19 +174,131 @@ function optionsOf(
 
 /* ------------------------------------------------------------------- choose */
 
-function ChooseStep({
+function ChooseTenorStep({
+    t,
+    state,
+    catalogue,
+    failure,
+    labels,
+    onMove,
+}: {
+    readonly t: Translator['t'];
+    readonly state: TenorDetails;
+    readonly catalogue: TenorCatalogue | undefined;
+    readonly failure: string | undefined;
+    readonly labels: LabelCatalogue;
+    readonly onMove: (index: number) => void;
+}): ReactNode {
+    const [query, setQuery] = useState('');
+    const needle = query.trim().toLowerCase();
+    const matches = (value: string): boolean =>
+        needle === '' || value.toLowerCase().includes(needle);
+    const tenors = (catalogue?.tenors ?? []).filter(
+        (row) => matches(row.code) || matches(row.display_name),
+    );
+
+    return (
+        <div className="space-y-4">
+            <div className="flex flex-wrap items-center gap-3">
+                <div className="min-w-64 flex-1">
+                    <Input
+                        value={query}
+                        placeholder={t('journey.tenors.choose.search')}
+                        onChange={(event) => setQuery(event.target.value)}
+                    />
+                </div>
+                <Button
+                    variant="primary"
+                    onClick={() => {
+                        state.startTenor();
+                        onMove(tenorStepIndex('tenor'));
+                    }}
+                >
+                    {t('journey.tenors.choose.startTenor')}
+                </Button>
+            </div>
+            {failure !== undefined && (
+                <Notice tone="error">
+                    {t('journey.tenors.choose.readFailed', { message: failure })}
+                </Notice>
+            )}
+            <div className="overflow-x-auto rounded-md border border-line">
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            {['code', 'kind', 'unit', 'version'].map((column) => (
+                                <th key={column} className="px-3 py-2 font-medium">
+                                    {t(`journey.tenors.choose.columns.${column}`)}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {tenors.length === 0 && (
+                            <tr>
+                                <td colSpan={4} className="px-3 py-3 text-ink-muted">
+                                    {t('journey.tenors.choose.emptyTenors')}
+                                </td>
+                            </tr>
+                        )}
+                        {tenors.map((row) => (
+                            <tr
+                                key={row.code}
+                                className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
+                                onClick={() => {
+                                    state.openTenor(row);
+                                    onMove(tenorStepIndex('tenor'));
+                                }}
+                            >
+                                <td className="px-3 py-2 font-mono text-xs">{row.code}</td>
+                                <td className="px-3 py-2">
+                                    <CodedValue
+                                        domain="tenor_kind"
+                                        code={row.kind}
+                                        catalogue={labels}
+                                    />
+                                </td>
+                                <td className="px-3 py-2">
+                                    <CodedValue
+                                        domain="tenor_unit"
+                                        code={row.unit}
+                                        catalogue={labels}
+                                    />
+                                </td>
+                                <td className="px-3 py-2 text-xs">{row.version}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+/* ---------------------------------------------------------- choose convention */
+
+/**
+ * The rule a tenor resolves under, chosen on its own step.
+ *
+ * A convention is a different thing from a tenor and the person arrives at it
+ * for a different reason, so it gets its own step: the tenor is chosen first,
+ * and this step then chooses the rule that resolves it. Having both lists on
+ * one step made it unclear which of the two the walk was about, and choosing a
+ * tenor left the walk on a step that then asked for a convention.
+ */
+function ChooseConventionStep({
     t,
     server,
     state,
     catalogue,
-    failure,
+    labels,
     onMove,
 }: {
     readonly t: Translator['t'];
     readonly server: TenorsServer;
     readonly state: TenorDetails;
     readonly catalogue: TenorCatalogue | undefined;
-    readonly failure: string | undefined;
+    readonly labels: LabelCatalogue;
     readonly onMove: (index: number) => void;
 }): ReactNode {
     const [query, setQuery] = useState('');
@@ -162,10 +306,6 @@ function ChooseStep({
     const needle = query.trim().toLowerCase();
     const matches = (value: string): boolean =>
         needle === '' || value.toLowerCase().includes(needle);
-
-    const tenors = (catalogue?.tenors ?? []).filter(
-        (row) => matches(row.code) || matches(row.display_name),
-    );
     const conventions = (catalogue?.conventions ?? []).filter(
         (row) => matches(row.code) || matches(row.description),
     );
@@ -198,14 +338,6 @@ function ChooseStep({
                 <Button
                     variant="primary"
                     onClick={() => {
-                        state.startTenor();
-                        onMove(tenorStepIndex('tenor'));
-                    }}
-                >
-                    {t('journey.tenors.choose.startTenor')}
-                </Button>
-                <Button
-                    onClick={() => {
                         state.startConvention(tenorCodes);
                         onMove(tenorStepIndex('convention'));
                     }}
@@ -213,94 +345,52 @@ function ChooseStep({
                     {t('journey.tenors.choose.startConvention')}
                 </Button>
             </div>
-            {failure !== undefined && (
-                <Notice tone="error">
-                    {t('journey.tenors.choose.readFailed', { message: failure })}
-                </Notice>
-            )}
             {readFailure !== undefined && (
                 <Notice tone="error">
                     {t('journey.tenors.choose.readFailed', { message: readFailure })}
                 </Notice>
             )}
-            <section className="space-y-2">
-                <h3 className="font-semibold">{t('journey.tenors.choose.tenors')}</h3>
-                <div className="overflow-x-auto rounded-md border border-line">
-                    <table className="w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b border-line text-xs text-ink-muted">
-                                {['code', 'kind', 'unit', 'version'].map((column) => (
-                                    <th key={column} className="px-3 py-2 font-medium">
-                                        {t(`journey.tenors.choose.columns.${column}`)}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {tenors.length === 0 && (
-                                <tr>
-                                    <td colSpan={4} className="px-3 py-3 text-ink-muted">
-                                        {t('journey.tenors.choose.emptyTenors')}
-                                    </td>
-                                </tr>
-                            )}
-                            {tenors.map((row) => (
-                                <tr
-                                    key={row.code}
-                                    className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
-                                    onClick={() => {
-                                        state.openTenor(row);
-                                        onMove(tenorStepIndex('tenor'));
-                                    }}
-                                >
-                                    <td className="px-3 py-2 font-mono text-xs">{row.code}</td>
-                                    <td className="px-3 py-2">{row.kind}</td>
-                                    <td className="px-3 py-2">{row.unit}</td>
-                                    <td className="px-3 py-2 text-xs">{row.version}</td>
-                                </tr>
+            <div className="overflow-x-auto rounded-md border border-line">
+                <table className="w-full text-left text-sm">
+                    <thead>
+                        <tr className="border-b border-line text-xs text-ink-muted">
+                            {['code', 'algorithm', 'version'].map((column) => (
+                                <th key={column} className="px-3 py-2 font-medium">
+                                    {t(`journey.tenors.choose.columns.${column}`)}
+                                </th>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-            <section className="space-y-2">
-                <h3 className="font-semibold">{t('journey.tenors.choose.conventions')}</h3>
-                <div className="overflow-x-auto rounded-md border border-line">
-                    <table className="w-full text-left text-sm">
-                        <thead>
-                            <tr className="border-b border-line text-xs text-ink-muted">
-                                {['code', 'algorithm', 'version'].map((column) => (
-                                    <th key={column} className="px-3 py-2 font-medium">
-                                        {t(`journey.tenors.choose.columns.${column}`)}
-                                    </th>
-                                ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {conventions.length === 0 && (
+                            <tr>
+                                <td colSpan={3} className="px-3 py-3 text-ink-muted">
+                                    {t('journey.tenors.choose.emptyConventions')}
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {conventions.length === 0 && (
-                                <tr>
-                                    <td colSpan={3} className="px-3 py-3 text-ink-muted">
-                                        {t('journey.tenors.choose.emptyConventions')}
-                                    </td>
-                                </tr>
-                            )}
-                            {conventions.map((row) => (
-                                <tr
-                                    key={row.code}
-                                    className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
-                                    onClick={() => {
-                                        void openConvention(row.code);
-                                    }}
-                                >
-                                    <td className="px-3 py-2 font-mono text-xs">{row.code}</td>
-                                    <td className="px-3 py-2">{row.resolution_algorithm}</td>
-                                    <td className="px-3 py-2 text-xs">{row.version}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+                        )}
+                        {conventions.map((row) => (
+                            <tr
+                                key={row.code}
+                                className="cursor-pointer border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
+                                onClick={() => {
+                                    void openConvention(row.code);
+                                }}
+                            >
+                                <td className="px-3 py-2 font-mono text-xs">{row.code}</td>
+                                <td className="px-3 py-2">
+                                    <CodedValue
+                                        domain="tenor_resolution_algorithm"
+                                        code={row.resolution_algorithm}
+                                        catalogue={labels}
+                                    />
+                                </td>
+                                <td className="px-3 py-2 text-xs">{row.version}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
@@ -311,15 +401,31 @@ function TenorFieldRow({
     t,
     state,
     name,
+    labels,
     options,
 }: {
     readonly t: Translator['t'];
     readonly state: TenorDetails;
     readonly name: TenorField;
+    readonly labels: LabelCatalogue;
     readonly options?: readonly { readonly value: string; readonly label: string }[];
 }): ReactNode {
     const label = t(`journey.tenors.tenor.fields.${name}`);
     if (options !== undefined) {
+        const domain = TENOR_FIELD_DOMAINS[name];
+        if (domain !== '') {
+            return (
+                <BadgeSelect
+                    label={label}
+                    domain={domain}
+                    value={state.tenor[name]}
+                    choices={options}
+                    catalogue={labels}
+                    empty={t('journey.tenors.convention.anchorNone')}
+                    onChange={(value) => state.setTenorField(name, value)}
+                />
+            );
+        }
         return (
             <Picker
                 label={label}
@@ -343,11 +449,13 @@ function TenorFieldRow({
 function TenorStep({
     t,
     state,
+    labels,
     pickLists,
     pickFailure,
 }: {
     readonly t: Translator['t'];
     readonly state: TenorDetails;
+    readonly labels: LabelCatalogue;
     readonly pickLists: TenorPickLists | undefined;
     readonly pickFailure: string | undefined;
 }): ReactNode {
@@ -363,23 +471,27 @@ function TenorStep({
                 </Notice>
             )}
             <div className="grid gap-4 md:grid-cols-2">
-                <TenorFieldRow t={t} state={state} name="code" />
-                <TenorFieldRow t={t} state={state} name="displayName" />
-                <TenorFieldRow t={t} state={state} name="description" />
-                <TenorFieldRow t={t} state={state} name="sortOrder" />
+                <TenorFieldRow t={t} state={state} labels={labels} name="code" />
+                <TenorFieldRow t={t} state={state} labels={labels} name="displayName" />
+                <TenorFieldRow t={t} state={state} labels={labels} name="multiplier" />
+                <TenorFieldRow t={t} state={state} labels={labels} name="sortOrder" />
                 <TenorFieldRow
                     t={t}
                     state={state}
+                    labels={labels}
                     name="kind"
                     options={optionsOf(pickLists?.kinds)}
                 />
                 <TenorFieldRow
                     t={t}
                     state={state}
+                    labels={labels}
                     name="unit"
                     options={optionsOf(pickLists?.units)}
                 />
-                <TenorFieldRow t={t} state={state} name="multiplier" />
+                <div className="md:col-span-2">
+                    <TenorFieldRow t={t} state={state} labels={labels} name="description" />
+                </div>
             </div>
             {problems.length > 0 && (
                 <Notice tone="warn">
@@ -397,15 +509,31 @@ function ConventionFieldRow({
     t,
     state,
     name,
+    labels,
     options,
 }: {
     readonly t: Translator['t'];
     readonly state: TenorDetails;
     readonly name: ConventionField;
+    readonly labels: LabelCatalogue;
     readonly options?: readonly { readonly value: string; readonly label: string }[];
 }): ReactNode {
     const label = t(`journey.tenors.convention.fields.${name}`);
     if (options !== undefined) {
+        const domain = CONVENTION_FIELD_DOMAINS[name];
+        if (domain !== '') {
+            return (
+                <BadgeSelect
+                    label={label}
+                    domain={domain}
+                    value={state.convention[name]}
+                    choices={options}
+                    catalogue={labels}
+                    empty={t('journey.tenors.convention.anchorNone')}
+                    onChange={(value) => state.setConventionField(name, value)}
+                />
+            );
+        }
         return (
             <Picker
                 label={label}
@@ -429,11 +557,13 @@ function ConventionFieldRow({
 function ConventionStep({
     t,
     state,
+    labels,
     pickLists,
     pickFailure,
 }: {
     readonly t: Translator['t'];
     readonly state: TenorDetails;
+    readonly labels: LabelCatalogue;
     readonly pickLists: TenorPickLists | undefined;
     readonly pickFailure: string | undefined;
 }): ReactNode {
@@ -450,27 +580,30 @@ function ConventionStep({
                 </Notice>
             )}
             <div className="grid gap-4 md:grid-cols-2">
-                <ConventionFieldRow t={t} state={state} name="code" />
-                <ConventionFieldRow t={t} state={state} name="description" />
+                <ConventionFieldRow t={t} state={state} labels={labels} name="code" />
+                <ConventionFieldRow t={t} state={state} labels={labels} name="description" />
                 <ConventionFieldRow
                     t={t}
                     state={state}
+                    labels={labels}
                     name="measuredFrom"
                     options={anchorOptions}
                 />
                 <ConventionFieldRow
                     t={t}
                     state={state}
+                    labels={labels}
                     name="resolutionAlgorithm"
                     options={optionsOf(pickLists?.algorithms)}
                 />
                 <ConventionFieldRow
                     t={t}
                     state={state}
+                    labels={labels}
                     name="rollRule"
                     options={optionsOf(pickLists?.rollRules)}
                 />
-                <ConventionFieldRow t={t} state={state} name="oresmdUri" />
+                <ConventionFieldRow t={t} state={state} labels={labels} name="oresmdUri" />
             </div>
             <section className="space-y-3">
                 <h3 className="font-semibold">{t('journey.tenors.convention.members')}</h3>
@@ -924,14 +1057,14 @@ function OutcomeStep({
                 <button
                     type="button"
                     className="card p-4 text-left hover:border-accent"
-                    onClick={() => onMove(tenorStepIndex('choose'))}
+                    onClick={() => onMove(tenorStepIndex('choose-tenor'))}
                 >
                     <span className="font-semibold">{t('journey.tenors.outcome.list')}</span>
                 </button>
                 <button
                     type="button"
                     className="card p-4 text-left hover:border-accent"
-                    onClick={() => onMove(tenorStepIndex('choose'))}
+                    onClick={() => onMove(tenorStepIndex('choose-tenor'))}
                 >
                     <span className="font-semibold">{t('journey.tenors.outcome.another')}</span>
                 </button>
@@ -968,7 +1101,7 @@ function HistoryStep({
 /* ------------------------------------------------------------- the step list */
 
 export function tenorSteps(input: TenorStepsInput): readonly JourneyStep<ReactNode>[] {
-    const { t, server, state, pickLists, pickFailure, reasons } = input;
+    const { t, server, state, labels, pickLists, pickFailure, reasons } = input;
     const problems = tenorProblems(state);
     const chosen = reasons.find((reason) => reason.code === state.reasonCode);
     const commentaryMissing = chosen?.requiresCommentary === true && state.commentary.trim() === '';
@@ -1074,16 +1207,16 @@ export function tenorSteps(input: TenorStepsInput): readonly JourneyStep<ReactNo
 
     return [
         {
-            id: 'choose',
-            title: t('journey.tenors.choose.title'),
-            lead: t('journey.tenors.choose.lead'),
+            id: 'choose-tenor',
+            title: t('journey.tenors.choose.tenorTitle'),
+            lead: t('journey.tenors.choose.tenorLead'),
             body: (
-                <ChooseStep
+                <ChooseTenorStep
                     t={t}
-                    server={server}
                     state={state}
                     catalogue={input.catalogue}
                     failure={input.catalogueFailure}
+                    labels={labels}
                     onMove={input.onMove}
                 />
             ),
@@ -1092,11 +1225,35 @@ export function tenorSteps(input: TenorStepsInput): readonly JourneyStep<ReactNo
             id: 'tenor',
             title: t('journey.tenors.tenor.title'),
             lead: t('journey.tenors.tenor.lead'),
-            body: <TenorStep t={t} state={state} pickLists={pickLists} pickFailure={pickFailure} />,
+            body: (
+                <TenorStep
+                    t={t}
+                    state={state}
+                    labels={labels}
+                    pickLists={pickLists}
+                    pickFailure={pickFailure}
+                />
+            ),
             next: {
                 label: t('common.continue'),
                 enabled: state.tenorActive && tenorProblems(state).length === 0,
             },
+        },
+        {
+            id: 'choose-convention',
+            title: t('journey.tenors.choose.conventionTitle'),
+            lead: t('journey.tenors.choose.conventionLead'),
+            body: (
+                <ChooseConventionStep
+                    t={t}
+                    server={server}
+                    state={state}
+                    catalogue={input.catalogue}
+                    labels={labels}
+                    onMove={input.onMove}
+                />
+            ),
+            next: { label: t('common.continue'), enabled: state.conventionActive },
         },
         {
             id: 'convention',
@@ -1106,6 +1263,7 @@ export function tenorSteps(input: TenorStepsInput): readonly JourneyStep<ReactNo
                 <ConventionStep
                     t={t}
                     state={state}
+                    labels={labels}
                     pickLists={pickLists}
                     pickFailure={pickFailure}
                 />

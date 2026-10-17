@@ -248,7 +248,7 @@ export function ServicesPage(): ReactNode {
                     <label className="flex items-center gap-2 text-xs text-ink-faint">
                         {t('operations.logs.range.label')}
                         <select
-                            className="rounded border border-line bg-surface px-2 py-1 text-ink"
+                            className="rounded border border-line bg-surface-base px-2 py-1 text-ink"
                             value={range}
                             onChange={(event) => setRange(event.target.value as LogsRange)}
                         >

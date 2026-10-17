@@ -323,6 +323,10 @@
 
 -- Currency pairs (must drop before currencies, currency_pair_classifications, currency_groups)
 \ir ./refdata_currency_pair_conventions_notify_trigger_drop.sql
+\ir ./refdata_bundle_import_items_notify_trigger_drop.sql
+\ir ./refdata_bundle_import_items_drop.sql
+\ir ./refdata_bundle_imports_notify_trigger_drop.sql
+\ir ./refdata_bundle_imports_drop.sql
 \ir ./refdata_currency_pair_conventions_drop.sql
 \ir ./refdata_currency_pairs_notify_trigger_drop.sql
 \ir ./refdata_currency_pairs_drop.sql

@@ -165,7 +165,7 @@ messaging::stage_bundle_family_response bundle_import_operations_service::stage(
     }
     if (import.front().state != "staging") {
         response.message =
-            "Conventions import '" + key + "' is " + import.front().state + ", not staging.";
+            "Bundle import '" + key + "' is " + import.front().state + ", not staging.";
         return response;
     }
 
@@ -221,7 +221,7 @@ messaging::commit_bundle_import_response bundle_import_operations_service::commi
         auto import = found.front();
         if (import.state != "staging") {
             response.message =
-                "Conventions import '" + key + "' is " + import.state + ", not staging.";
+                "Bundle import '" + key + "' is " + import.state + ", not staging.";
             return response;
         }
 

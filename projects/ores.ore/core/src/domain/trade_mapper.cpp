@@ -75,40 +75,47 @@ trade_mapper::map_swap_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<trading::domain::fx_instrument_variant>
-trade_mapper::map_fx_instrument(const trade& v) {
+std::optional<trading::domain::fx_instrument_data> trade_mapper::map_fx_instrument(const trade& v) {
+    using trading::domain::fx_instrument_data;
     const std::string type = to_string(v.TradeType);
-    if (type == "FxForward")
-        return fx_instrument_mapper::forward_fx_forward(v);
-    if (type == "FxSwap")
-        return fx_instrument_mapper::forward_fx_swap(v);
-    if (type == "FxOption")
-        return fx_instrument_mapper::forward_fx_option(v);
-    if (type == "FxBarrierOption")
-        return fx_instrument_mapper::forward_fx_barrier_option(v);
-    if (type == "FxDigitalOption")
-        return fx_instrument_mapper::forward_fx_digital_option(v);
-    if (type == "FxDigitalBarrierOption")
-        return fx_instrument_mapper::forward_fx_digital_barrier_option(v);
-    if (type == "FxTouchOption" || type == "FxDoubleTouchOption")
-        return fx_instrument_mapper::forward_fx_touch_option(v);
-    if (type == "FxVarianceSwap")
-        return fx_instrument_mapper::forward_fx_variance_swap(v);
-    if (type == "FxAverageForward")
-        return fx_instrument_mapper::forward_fx_average_forward(v);
-    if (type == "FxAccumulator")
-        return fx_instrument_mapper::forward_fx_accumulator(v);
-    if (type == "FxTaRF")
-        return fx_instrument_mapper::forward_fx_tarf(v);
-    if (type == "FxGenericBarrierOption")
-        return fx_instrument_mapper::forward_fx_generic_barrier_option(v);
-    if (type == "FxDoubleBarrierOption")
-        return fx_instrument_mapper::forward_fx_double_barrier_option(v);
-    if (type == "FxEuropeanBarrierOption")
-        return fx_instrument_mapper::forward_fx_european_barrier_option(v);
-    if (type == "FxKIKOBarrierOption")
-        return fx_instrument_mapper::forward_fx_kiko_barrier_option(v);
-    return std::nullopt;
+
+    // The carrier states the product by the array the row sits in, so the
+    // dispatch chooses an array rather than an alternative of a variant.
+    fx_instrument_data data;
+    if (type == "FxForward") {
+        data.forwards.push_back(fx_instrument_mapper::forward_fx_forward(v));
+    } else if (type == "FxSwap") {
+        data.forwards.push_back(fx_instrument_mapper::forward_fx_swap(v));
+    } else if (type == "FxOption") {
+        data.vanilla_options.push_back(fx_instrument_mapper::forward_fx_option(v));
+    } else if (type == "FxBarrierOption") {
+        data.barrier_options.push_back(fx_instrument_mapper::forward_fx_barrier_option(v));
+    } else if (type == "FxDigitalOption") {
+        data.digital_options.push_back(fx_instrument_mapper::forward_fx_digital_option(v));
+    } else if (type == "FxDigitalBarrierOption") {
+        data.digital_options.push_back(fx_instrument_mapper::forward_fx_digital_barrier_option(v));
+    } else if (type == "FxTouchOption" || type == "FxDoubleTouchOption") {
+        data.digital_options.push_back(fx_instrument_mapper::forward_fx_touch_option(v));
+    } else if (type == "FxVarianceSwap") {
+        data.variance_swaps.push_back(fx_instrument_mapper::forward_fx_variance_swap(v));
+    } else if (type == "FxAverageForward") {
+        data.asian_forwards.push_back(fx_instrument_mapper::forward_fx_average_forward(v));
+    } else if (type == "FxAccumulator") {
+        data.accumulators.push_back(fx_instrument_mapper::forward_fx_accumulator(v));
+    } else if (type == "FxTaRF") {
+        data.asian_forwards.push_back(fx_instrument_mapper::forward_fx_tarf(v));
+    } else if (type == "FxGenericBarrierOption") {
+        data.barrier_options.push_back(fx_instrument_mapper::forward_fx_generic_barrier_option(v));
+    } else if (type == "FxDoubleBarrierOption") {
+        data.barrier_options.push_back(fx_instrument_mapper::forward_fx_double_barrier_option(v));
+    } else if (type == "FxEuropeanBarrierOption") {
+        data.barrier_options.push_back(fx_instrument_mapper::forward_fx_european_barrier_option(v));
+    } else if (type == "FxKIKOBarrierOption") {
+        data.barrier_options.push_back(fx_instrument_mapper::forward_fx_kiko_barrier_option(v));
+    } else {
+        return std::nullopt;
+    }
+    return data;
 }
 
 std::optional<trading::domain::bond_instrument_data>

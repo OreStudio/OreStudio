@@ -33,6 +33,13 @@
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
@@ -161,6 +168,63 @@ struct equity_instrument_data {
     equity_instrument_variant instrument;
     std::vector<equity_position_option_underlying> underlyings;
 };
+
+// The FX family states seven products and no family header: each product's
+// table holds the whole product. The carrier is therefore one typed array per
+// product, joined by trade id, rather than an aggregate with a discriminator.
+// The array an element sits in states its type, so no element and no carrier
+// needs a tag. A child the family gains is one more array here. A trade that
+// states no FX instrument leaves every array empty.
+struct fx_instrument_data {
+    std::vector<fx_forward_instrument> forwards;
+    std::vector<fx_vanilla_option_instrument> vanilla_options;
+    std::vector<fx_barrier_option_instrument> barrier_options;
+    std::vector<fx_digital_option_instrument> digital_options;
+    std::vector<fx_asian_forward_instrument> asian_forwards;
+    std::vector<fx_accumulator_instrument> accumulators;
+    std::vector<fx_variance_swap_instrument> variance_swaps;
+};
+
+// Drives a per-product visitor over the carrier's arrays. Exactly one array
+// holds a given trade, because the rows are joined by trade id, so the visitor
+// sees the one row that is. A carrier that holds none calls nothing, and the
+// result is the visitor's own, so a caller that asks a question gets an answer.
+template <typename Visitor>
+auto visit_fx_products(Visitor&& visitor, const fx_instrument_data& data) {
+    using Result = std::invoke_result_t<Visitor, const fx_forward_instrument&>;
+    if constexpr (std::is_void_v<Result>) {
+        if (!data.forwards.empty())
+            visitor(data.forwards.front());
+        else if (!data.vanilla_options.empty())
+            visitor(data.vanilla_options.front());
+        else if (!data.barrier_options.empty())
+            visitor(data.barrier_options.front());
+        else if (!data.digital_options.empty())
+            visitor(data.digital_options.front());
+        else if (!data.asian_forwards.empty())
+            visitor(data.asian_forwards.front());
+        else if (!data.accumulators.empty())
+            visitor(data.accumulators.front());
+        else if (!data.variance_swaps.empty())
+            visitor(data.variance_swaps.front());
+    } else {
+        if (!data.forwards.empty())
+            return visitor(data.forwards.front());
+        if (!data.vanilla_options.empty())
+            return visitor(data.vanilla_options.front());
+        if (!data.barrier_options.empty())
+            return visitor(data.barrier_options.front());
+        if (!data.digital_options.empty())
+            return visitor(data.digital_options.front());
+        if (!data.asian_forwards.empty())
+            return visitor(data.asian_forwards.front());
+        if (!data.accumulators.empty())
+            return visitor(data.accumulators.front());
+        if (!data.variance_swaps.empty())
+            return visitor(data.variance_swaps.front());
+        return Result{};
+    }
+}
 
 // The trade id is the instrument's own key, so there is one id to stamp
 // rather than a trade id and an instrument id that can disagree.
@@ -321,6 +385,25 @@ inline void stamp_ids(equity_instrument_data& data,
         underlying.trade_id = trade_id;
         underlying.trade_activity_id = activity_id;
     }
+}
+
+inline void stamp_ids(fx_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    for (auto& v : data.forwards)
+        stamp_ids(v, trade_id, activity_id);
+    for (auto& v : data.vanilla_options)
+        stamp_ids(v, trade_id, activity_id);
+    for (auto& v : data.barrier_options)
+        stamp_ids(v, trade_id, activity_id);
+    for (auto& v : data.digital_options)
+        stamp_ids(v, trade_id, activity_id);
+    for (auto& v : data.asian_forwards)
+        stamp_ids(v, trade_id, activity_id);
+    for (auto& v : data.accumulators)
+        stamp_ids(v, trade_id, activity_id);
+    for (auto& v : data.variance_swaps)
+        stamp_ids(v, trade_id, activity_id);
 }
 
 } // namespace ores::trading::domain

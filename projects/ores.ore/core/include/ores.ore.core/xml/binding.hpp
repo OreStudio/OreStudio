@@ -40,7 +40,7 @@ namespace ores::ore::xml {
 /**
  * @brief The element type of a repeated leaf.
  */
-enum class scalar_kind : std::uint8_t { text, integer, decimal, real };
+enum class scalar_kind : std::uint8_t { text, integer, decimal, real, enumeration };
 
 enum class field_kind : std::uint8_t {
     /// A string field, filled from the element's text.
@@ -64,6 +64,24 @@ enum class field_kind : std::uint8_t {
 };
 
 struct record_type;
+
+/**
+ * @brief The operations a repeated member needs from the table.
+ *
+ * A repeated member is a std::vector whose element type only the generated
+ * code knows, so growing it, measuring it and reaching into it are three
+ * functions the table carries rather than switches the engine makes on a
+ * member's kind. The reader appends, the writer measures and indexes.
+ */
+struct vector_ops {
+    /// Appends a default-constructed element to a vector and hands back its
+    /// address.
+    void (*append)(void* container, void** slot);
+    /// How many elements the vector holds.
+    auto (*count)(const void* container) -> std::size_t;
+    /// The address of one element, which the caller bounds.
+    auto (*at)(const void* container, std::size_t index) -> const void*;
+};
 
 /**
  * @brief One element the schema does not name, kept so it is not lost.
@@ -99,9 +117,8 @@ struct field {
     const record_type* type;
     /// The element type of a repeated_leaf, ignored otherwise.
     scalar_kind scalar;
-    /// Appends a default-constructed element to a vector and hands back its
-    /// address. Null for every other kind.
-    void (*append)(void* container, void** slot);
+    /// Operations for a repeated member, null for every other kind.
+    const vector_ops* repeated = nullptr;
 };
 
 /**

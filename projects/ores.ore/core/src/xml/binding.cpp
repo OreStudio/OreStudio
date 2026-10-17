@@ -181,6 +181,21 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
                     reinterpret_cast<std::vector<double>*>(slot)->push_back(value);
                     break;
                 }
+                case scalar_kind::enumeration: {
+                    std::int16_t index = -1;
+                    for (std::int16_t i = 0; f.tokens[i] != nullptr; ++i) {
+                        if (text == f.tokens[i]) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index < 0) {
+                        error = "a repeated enumerated element holds no known spelling";
+                        return false;
+                    }
+                    reinterpret_cast<std::vector<std::int16_t>*>(slot)->push_back(index);
+                    break;
+                }
             }
             break;
         }
@@ -208,6 +223,11 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
         const record_type* type;
         std::byte* record;
         const field* leaf;
+        /// Whether a value has been stored for this leaf. An element that
+        /// states no text still states a value, and for an enumeration that
+        /// spelling may be the empty one, so the absence of text is not the
+        /// absence of a value.
+        bool filled;
     };
 
     std::array<frame, max_depth> stack{};
@@ -262,7 +282,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     if (ev.name != doc.root_name)
                         return fail("the root element is not the one this binding names");
                     have_root = true;
-                    stack[depth++] = {doc.root, static_cast<std::byte*>(root), nullptr};
+                    stack[depth++] = {doc.root, static_cast<std::byte*>(root), nullptr, false};
                     continue;
                 }
                 const auto& top = stack[depth - 1];
@@ -292,7 +312,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     // A nested member is a value inside its parent, so it is
                     // already constructed and is destroyed with the parent.
                     mark_present(top.record, *f);
-                    stack[depth++] = {f->type, slot, nullptr};
+                    stack[depth++] = {f->type, slot, nullptr, false};
                     if (f->type->text_field != no_text) {
                         auto* target = &f->type->fields[f->type->text_field];
                         mark_present(slot, *target);
@@ -301,10 +321,10 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                 }
                 if (f->kind == field_kind::repeated_nested) {
                     void* child = nullptr;
-                    f->append(slot, &child);
+                    f->repeated->append(slot, &child);
                     mark_present(top.record, *f);
                     auto* record = static_cast<std::byte*>(child);
-                    stack[depth++] = {f->type, record, nullptr};
+                    stack[depth++] = {f->type, record, nullptr, false};
                     if (f->type->text_field != no_text) {
                         auto* target = &f->type->fields[f->type->text_field];
                         mark_present(record, *target);
@@ -316,7 +336,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                 // with no value, and a bit set only on text would report that
                 // as missing.
                 mark_present(top.record, *f);
-                stack[depth++] = {nullptr, top.record, f};
+                stack[depth++] = {nullptr, top.record, f, false};
                 continue;
             }
             case event_type::attribute: {
@@ -340,11 +360,12 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     continue;
                 if (depth == 0)
                     return fail("text arrived outside the root element");
-                const auto& top = stack[depth - 1];
+                auto& top = stack[depth - 1];
                 std::string message;
                 if (top.type == nullptr) {
                     if (!store(top.record, *top.leaf, ev.value, true, message))
                         return fail(std::move(message));
+                    top.filled = true;
                     continue;
                 }
                 if (top.type->text_field == no_text)
@@ -353,6 +374,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                 const auto& target = top.type->fields[top.type->text_field];
                 if (!store(top.record, target, ev.value, true, message))
                     return fail(std::move(message));
+                top.filled = true;
                 continue;
             }
             case event_type::end_element: {
@@ -360,6 +382,15 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     return fail("an end tag arrived with nothing open");
                 const auto& top = stack[depth - 1];
                 if (top.type == nullptr) {
+                    // An element that closed with no text states the empty
+                    // value, which a text field keeps and an enumeration may
+                    // spell. Nothing is stored for a leaf that already has a
+                    // value.
+                    if (!top.filled) {
+                        std::string message;
+                        if (!store(top.record, *top.leaf, {}, false, message))
+                            return fail(std::move(message));
+                    }
                     --depth;
                     continue;
                 }

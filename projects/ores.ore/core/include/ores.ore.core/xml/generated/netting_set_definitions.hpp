@@ -51,7 +51,7 @@ struct netting_set_details {
 struct independent_amount {
   std::uint64_t present = 0;
   ores::utility::decimal::decimal independent_amount_held;
-  std::int16_t independent_amount_type;
+  std::int16_t independent_amount_type = 0;
 };
 struct margining_frequency {
   std::uint64_t present = 0;
@@ -68,8 +68,8 @@ struct eligible_collaterals {
 };
 struct csa_details {
   std::uint64_t present = 0;
-  std::int16_t bilateral;
-  std::int16_t csa_currency;
+  std::int16_t bilateral = 0;
+  std::int16_t csa_currency = 0;
   std::string index;
   ores::utility::decimal::decimal threshold_pay;
   ores::utility::decimal::decimal threshold_receive;
@@ -82,7 +82,7 @@ struct csa_details {
   ores::utility::decimal::decimal collateral_compounding_spread_pay;
   eligible_collaterals eligible_collaterals;
   std::string apply_initial_margin;
-  std::int16_t initial_margin_type;
+  std::int16_t initial_margin_type = 0;
   std::string calculate_im_amount;
   std::string calculate_vm_amount;
   std::string non_exempt_im_regulations;

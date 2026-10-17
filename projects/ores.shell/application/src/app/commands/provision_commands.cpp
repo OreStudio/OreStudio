@@ -52,14 +52,16 @@ namespace {
 constexpr std::string_view default_profile_code = "empty_operational";
 
 /**
- * @brief How long a command follows a provisioning run it started.
+ * @brief How long a command spends on the work it starts, all runs included.
  *
- * Every starting point publishes bundles whose nested runs take minutes, and
- * the longest of them publishes a dozen in one run, so the wait is generous
- * rather than tight: a command that gave up on work that was still running
- * would report a failure that never happened. A caller on a slow machine
- * raises it, and one that would rather not block lowers it and follows the run
- * with the workflow commands by the id the command prints.
+ * The budget covers the command, not each run it follows: a tenant is created
+ * by one run handing its work to another, and a caller who asked for an hour
+ * waits one hour at most. Every starting point publishes bundles whose nested
+ * runs take minutes, and the longest of them publishes a dozen in one run, so
+ * the wait is generous rather than tight: a command that gave up on work that
+ * was still running would report a failure that never happened. A caller on a
+ * slow machine raises it, and one that would rather not block lowers it and
+ * follows the run with the workflow commands by the id the command prints.
  */
 constexpr std::chrono::seconds default_run_timeout(3600);
 
@@ -103,17 +105,6 @@ std::vector<flag_spec> tenant_flag_specs(std::string description_default) {
              .default_value = std::to_string(default_run_timeout.count())}};
 }
 
-/// The tenant a provisioning request names, and its first administrator.
-struct tenant_fields {
-    std::string code;
-    std::string name;
-    std::string hostname;
-    std::string description;
-    std::string admin_username;
-    std::string admin_email;
-    std::string admin_password;
-};
-
 /**
  * @brief Reads the tenant fields a caller supplied.
  *
@@ -126,8 +117,9 @@ struct tenant_fields {
  *
  * @return the fields, or nothing after reporting what is missing.
  */
-std::optional<tenant_fields> read_tenant_fields(std::ostream& out, const parsed_args& parsed) {
-    tenant_fields fields;
+std::optional<provision_commands::tenant_fields> read_tenant_fields(std::ostream& out,
+                                                                    const parsed_args& parsed) {
+    provision_commands::tenant_fields fields;
     fields.code = parsed.flag("tenant-code");
     fields.name = parsed.flag("tenant-name");
     fields.hostname = parsed.flag("tenant-hostname");
@@ -148,8 +140,8 @@ std::optional<tenant_fields> read_tenant_fields(std::ostream& out, const parsed_
 }
 
 /// The generic provision request a tenant's fields and a starting point make.
-iam::messaging::provision_tenant_command build_tenant_request(const parsed_args& parsed,
-                                                              const tenant_fields& fields) {
+iam::messaging::provision_tenant_command
+build_tenant_request(const parsed_args& parsed, const provision_commands::tenant_fields& fields) {
     iam::messaging::provision_tenant_command req;
     req.profile_code = parsed.flag("profile");
     req.tenant_code = fields.code;
@@ -164,31 +156,70 @@ iam::messaging::provision_tenant_command build_tenant_request(const parsed_args&
 }
 
 /**
- * @brief Sends one provision request and follows the run it starts.
+ * @brief Sends one provision request and blocks until the run it starts ends.
  *
  * The request answers with the run's id rather than the run's result, because
  * the steps it orders take minutes. The run is then followed through the same
  * progress read the browser's journey renders, so both clients watch the same
  * record of the same work.
  *
- * @return true when the run ended with every step complete, false after
- * reporting why not.
+ * @return the run's instance id after it finished, or nothing after reporting
+ * why it did not.
  */
 template <typename Request>
-bool run_and_follow(std::ostream& out,
-                    nats_client& session,
-                    const Request& req,
-                    std::chrono::seconds timeout) {
+std::optional<std::string> run_and_wait(std::ostream& out,
+                                        nats_client& session,
+                                        const Request& req,
+                                        std::chrono::seconds timeout) {
     auto started = do_request(out, session, req, provision_request_timeout, true);
     if (!started)
-        return false;
+        return std::nullopt;
     if (!started->success) {
         fail(out) << started->message << std::endl;
-        return false;
+        return std::nullopt;
     }
 
-    out << "  Run started: " << started->instance_id << std::endl;
-    return workflow_run_commands::wait_for_instance(out, session, started->instance_id, timeout);
+    const auto run = provision_commands::started_run(started->success, started->instance_id);
+    if (!run) {
+        fail(out) << "The provisioning request named no run to wait on." << std::endl;
+        return std::nullopt;
+    }
+
+    out << "  Run started: " << *run << std::endl;
+    if (!workflow_run_commands::wait_for_instance(out, session, *run, timeout))
+        return std::nullopt;
+    return *run;
+}
+
+/**
+ * @brief Blocks until a tenant-owning run, and any run it hands work to, ends.
+ *
+ * The request starts a run that hands the tenant to its own setup run, which
+ * the tenant's own administrator owns. Only that second run finishing makes the
+ * tenant ready, so it is followed too.
+ *
+ * @p timeout is the budget for the whole command, not for each run: a caller
+ * that asked for an hour is not asked to wait two. What the first run leaves is
+ * what the run it hands work to gets.
+ *
+ * @return how the work ended, so the caller words its success for what it can
+ * actually see: a run this session cannot read leaves the tenant's setup
+ * continuing elsewhere, which is not the same as a tenant ready to work in.
+ */
+template <typename Request>
+workflow_run_commands::follow_result run_and_follow(std::ostream& out,
+                                                    nats_client& session,
+                                                    const Request& req,
+                                                    std::chrono::seconds timeout) {
+    const auto started_at = std::chrono::steady_clock::now();
+    const auto instance_id = run_and_wait(out, session, req, timeout);
+    if (!instance_id)
+        return workflow_run_commands::follow_result::failed;
+
+    const auto spent = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::steady_clock::now() - started_at);
+    return workflow_run_commands::follow_child_instance(
+        out, session, *instance_id, workflow_run_commands::remaining_budget(timeout, spent));
 }
 
 /// The timeout a command was given, or nothing after reporting a value it
@@ -203,6 +234,42 @@ std::optional<std::chrono::seconds> read_timeout(std::ostream& out, const parsed
     return timeout;
 }
 
+}
+
+std::optional<std::string> provision_commands::started_run(bool request_succeeded,
+                                                           std::string_view instance_id) {
+    if (!request_succeeded || instance_id.empty())
+        return std::nullopt;
+    return std::string(instance_id);
+}
+
+void provision_commands::report_tenant_outcome(std::ostream& out,
+                                               const tenant_fields& fields,
+                                               tenant_creation created,
+                                               tenant_setup setup) {
+    const bool is_setup = created == tenant_creation::system;
+    const bool continues = setup == tenant_setup::continues_elsewhere;
+
+    out << "✓ ";
+    if (is_setup)
+        out << "System provisioned. ";
+
+    if (continues) {
+        out << "Tenant '" << fields.name << "' created; its setup continues." << std::endl;
+    } else if (is_setup) {
+        out << "Tenant '" << fields.name << "'." << std::endl;
+    } else {
+        out << "Tenant '" << fields.name << "' provisioned." << std::endl;
+    }
+
+    out << "Next: logout, then: login " << fields.admin_username << "@" << fields.hostname
+        << " <password>";
+    if (continues) {
+        out << ", and follow the setup run named above with: workflow wait <its instance id>"
+            << std::endl;
+        return;
+    }
+    out << "  — the tenant is ready to work in." << std::endl;
 }
 
 void provision_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
@@ -323,12 +390,17 @@ void provision_commands::process_setup(std::ostream& out,
 
     out << "[3/3] Provisioning tenant '" << fields->code << "' from '" << parsed->flag("profile")
         << "'..." << std::endl;
-    if (!run_and_follow(out, session, build_tenant_request(*parsed, *fields), *timeout))
+    const auto outcome =
+        run_and_follow(out, session, build_tenant_request(*parsed, *fields), *timeout);
+    if (outcome == workflow_run_commands::follow_result::failed)
         return;
 
-    out << "✓ System provisioned. Tenant '" << fields->name << "'." << std::endl;
-    out << "Next: logout, then: login " << fields->admin_username << "@" << fields->hostname
-        << " <password>  — the tenant is ready to work in." << std::endl;
+    report_tenant_outcome(out,
+                          *fields,
+                          tenant_creation::system,
+                          outcome == workflow_run_commands::follow_result::continues_elsewhere ?
+                              tenant_setup::continues_elsewhere :
+                              tenant_setup::finished);
     BOOST_LOG_SEV(lg(), info) << "System provisioned; tenant " << fields->code;
 }
 
@@ -361,12 +433,17 @@ void provision_commands::process_tenant(std::ostream& out,
 
     out << "Provisioning tenant '" << fields->code << "' from '" << parsed->flag("profile")
         << "'..." << std::endl;
-    if (!run_and_follow(out, session, build_tenant_request(*parsed, *fields), *timeout))
+    const auto outcome =
+        run_and_follow(out, session, build_tenant_request(*parsed, *fields), *timeout);
+    if (outcome == workflow_run_commands::follow_result::failed)
         return;
 
-    out << "✓ Tenant '" << fields->name << "' provisioned." << std::endl;
-    out << "Next: logout, then: login " << fields->admin_username << "@" << fields->hostname
-        << " <password>  — the tenant is ready to work in." << std::endl;
+    report_tenant_outcome(out,
+                          *fields,
+                          tenant_creation::additional,
+                          outcome == workflow_run_commands::follow_result::continues_elsewhere ?
+                              tenant_setup::continues_elsewhere :
+                              tenant_setup::finished);
     BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; " << fields->code;
 }
 
@@ -416,7 +493,9 @@ void provision_commands::process_party(std::ostream& out,
     iam::messaging::provision_party_command req;
     req.party = party;
     req.profile_code = profile;
-    if (!run_and_follow(out, session, req, *timeout))
+    // A party run is the whole job: it hands nothing on, so there is no run to
+    // follow and no result to read.
+    if (!run_and_wait(out, session, req, *timeout))
         return;
 
     out << "✓ Party '" << party << "' provisioned." << std::endl;

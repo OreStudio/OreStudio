@@ -60,6 +60,7 @@ The table is machine-parsed: each data row is =| <integer> | <date> |
 | 29 | 2026-10-08 | Removed ORES_WORKSPACE_SERVICE_DB_* now the workspace service is gone. |
 | 30 | 2026-10-12 | ORES_WEB_BFF_HOST now defaults to 0.0.0.0, so the web interface is reachable from the local network; an existing .env keeps its own value. |
 | 31 | 2026-10-13 | bind the web interface to every interface by default |
+| 32 | 2026-10-16 | Added ORES_WEB_DOC_ROOT, the folder holding the org documents the BFF reads. Sprint 27 built the QA validation runner and the agile browser on it, but the variable was never written into a generated .env, so both were off on every fresh checkout. |
 
 * See also
 

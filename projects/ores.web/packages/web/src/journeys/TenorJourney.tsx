@@ -34,6 +34,7 @@ import { useTranslation } from '../i18n/Provider.js';
 import { JourneyPage } from './JourneyPage.js';
 import { tenorHeader, tenorSteps } from './tenorsSteps.js';
 import { useTenor } from './tenorsState.js';
+import { useLabelCatalogue } from '../refdata/shared.js';
 import type { TenorCatalogue, TenorPickLists, TenorsServer } from './tenorsServer.js';
 
 export interface TenorJourneyProps {
@@ -47,6 +48,13 @@ type Reasons = Awaited<ReturnType<TenorsServer['amendReasons']>>;
 export function TenorJourney({ server, onFinished }: TenorJourneyProps): ReactNode {
     const { t } = useTranslation();
     const tenor = useTenor();
+    /*
+     * The badge catalogue, read once here rather than by each step: a tenor's
+     * kind, its unit and a convention's anchor, algorithm and roll rule are all
+     * codes, and every one of them is drawn through CodedValue so the journey
+     * shows them the way the rest of the application does.
+     */
+    const labels = useLabelCatalogue();
     const [at, setAt] = useState(0);
     const [catalogue, setCatalogue] = useState<TenorCatalogue>();
     const [catalogueFailure, setCatalogueFailure] = useState<string>();
@@ -95,6 +103,7 @@ export function TenorJourney({ server, onFinished }: TenorJourneyProps): ReactNo
     }, [server]);
 
     const steps = tenorSteps({
+        labels,
         t,
         server,
         state: tenor,

@@ -168,7 +168,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:BC751E92-A47A-4AF7-8137-BE18BEC14B26][Verify the tenor resolution screen in ores.web]] | PENDING | Walks the seven steps, the refusal and the history as the tenant administrator. |
 
 * PRs
 

@@ -35,23 +35,39 @@ template <typename T> auto append_to(void *container, void **slot) -> void {
   *slot = &vector->back();
 }
 
+template <typename T> auto count_of(const void *container) -> std::size_t {
+  return static_cast<const std::vector<T> *>(container)->size();
+}
+
+template <typename T>
+auto at_of(const void *container, std::size_t index) -> const void * {
+  return &(*static_cast<const std::vector<T> *>(container))[index];
+}
+
 const char *bool_spellings[] = {"Y",     "YES", "TRUE", "True",  "true",
                                 "1",     "N",   "NO",   "FALSE", "False",
                                 "false", "0",   "",     nullptr};
+
+constexpr vector_ops ibor_fallback_fallbacks_fallback_ops{
+    &append_to<ibor_fallback_fallback>, &count_of<ibor_fallback_fallback>,
+    &at_of<ibor_fallback_fallback>};
 
 const field ibor_fallback_global_settings_fields[] = {
     {"EnableIborFallbacks", 3819828707u, field_kind::enumeration,
      std::uint32_t(
          offsetof(ibor_fallback_global_settings, enable_ibor_fallbacks)),
-     0, false, true, bool_spellings, nullptr, scalar_kind::text, nullptr},
+     0, false, true, bool_spellings, nullptr, scalar_kind::enumeration,
+     nullptr},
     {"UseRfrCurveInTodaysMarket", 2322433244u, field_kind::enumeration,
      std::uint32_t(offsetof(ibor_fallback_global_settings,
                             use_rfr_curve_in_todays_market)),
-     1, false, true, bool_spellings, nullptr, scalar_kind::text, nullptr},
+     1, false, true, bool_spellings, nullptr, scalar_kind::enumeration,
+     nullptr},
     {"UseRfrCurveInSimulationMarket", 780627645u, field_kind::enumeration,
      std::uint32_t(offsetof(ibor_fallback_global_settings,
                             use_rfr_curve_in_simulation_market)),
-     2, false, true, bool_spellings, nullptr, scalar_kind::text, nullptr},
+     2, false, true, bool_spellings, nullptr, scalar_kind::enumeration,
+     nullptr},
 };
 const record_type ibor_fallback_global_settings_record{
     "iborFallbackGlobalSettings", ibor_fallback_global_settings_fields, 3,
@@ -76,7 +92,7 @@ const field ibor_fallback_fallbacks_fields[] = {
     {"Fallback", 1585740251u, field_kind::repeated_nested,
      std::uint32_t(offsetof(ibor_fallback_fallbacks, fallback)), 0, false,
      false, nullptr, &ibor_fallback_fallback_record, scalar_kind::text,
-     &append_to<ibor_fallback_fallback>},
+     &ibor_fallback_fallbacks_fallback_ops},
 };
 const record_type ibor_fallback_fallbacks_record{
     "iborFallbackFallbacks", ibor_fallback_fallbacks_fields, 1, no_text};

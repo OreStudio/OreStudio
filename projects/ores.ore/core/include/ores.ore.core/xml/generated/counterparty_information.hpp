@@ -41,7 +41,7 @@ struct counterparty {
   std::uint64_t present = 0;
   std::string counterparty_id;
   std::string clearing_counterparty;
-  std::int16_t credit_quality;
+  std::int16_t credit_quality = 0;
   ores::utility::decimal::decimal ba_cva_risk_weight;
   ores::utility::decimal::decimal sa_ccr_risk_weight;
   ores::utility::decimal::decimal sa_cva_risk_bucket;
@@ -52,7 +52,7 @@ struct counterparties {
 };
 struct correlation {
   std::uint64_t present = 0;
-  double value;
+  double value = 0;
   std::string cpty1;
   std::string cpty2;
 };

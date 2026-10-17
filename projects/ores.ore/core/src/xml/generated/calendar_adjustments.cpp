@@ -35,10 +35,24 @@ template <typename T> auto append_to(void *container, void **slot) -> void {
   *slot = &vector->back();
 }
 
+template <typename T> auto count_of(const void *container) -> std::size_t {
+  return static_cast<const std::vector<T> *>(container)->size();
+}
+
+template <typename T>
+auto at_of(const void *container, std::size_t index) -> const void * {
+  return &(*static_cast<const std::vector<T> *>(container))[index];
+}
+
+constexpr vector_ops dates_date_ops{
+    &append_to<std::string>, &count_of<std::string>, &at_of<std::string>};
+constexpr vector_ops calendaradjustment_calendar_ops{
+    &append_to<newcalendar>, &count_of<newcalendar>, &at_of<newcalendar>};
+
 const field dates_fields[] = {
     {"Date", 995259257u, field_kind::repeated_leaf,
      std::uint32_t(offsetof(dates, date)), 0, false, false, nullptr, nullptr,
-     scalar_kind::text, nullptr},
+     scalar_kind::text, &dates_date_ops},
 };
 const record_type dates_record{"Dates", dates_fields, 1, no_text};
 const field newcalendar_fields[] = {
@@ -60,7 +74,8 @@ const record_type newcalendar_record{"newcalendar", newcalendar_fields, 4,
 const field calendaradjustment_fields[] = {
     {"Calendar", 2656199999u, field_kind::repeated_nested,
      std::uint32_t(offsetof(calendaradjustment, calendar)), 0, false, false,
-     nullptr, &newcalendar_record, scalar_kind::text, &append_to<newcalendar>},
+     nullptr, &newcalendar_record, scalar_kind::text,
+     &calendaradjustment_calendar_ops},
 };
 const record_type calendaradjustment_record{
     "calendaradjustment", calendaradjustment_fields, 1, no_text};

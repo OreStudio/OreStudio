@@ -26,11 +26,11 @@ Journey 9's resolution column and resolved-dates step show a date the server res
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:65F988DE-2077-4713-9D40-C2937B756BAE][Close the tenor journey and the remaining refdata gaps]] |
-| Now          | Operation built, wired and subscribed; live on the wire. |
+| Now          | Nothing. |
 | Waiting on   | Review of the pull request.            |
-| Next         | A client that calls it: the trader resolve screen (=335C4014=). |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                             |
 
 * Acceptance
@@ -208,3 +208,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=refdata.v1.ops.resolve_tenor= resolves a tenor under a convention and
+replies with the anchor date, the date before the roll, the adjusted date,
+the roll rule and the calendar it rolled on. A resolution the server
+declines is a non-ok =result= on the same reply, carrying the step that
+refused, the row at fault and the dates the resolution had reached, rather
+than an exception reaching the screen as a 500. Journey 9's coverage table
+has no =missing= row left: the three that were are this one operation, and
+the table now names its subject.
+
+It is built on the pure engine rather than on the hand-written resolver the
+reconnaissance pointed at, because that resolver applies no business-day
+convention at all. The operation is the engine's first consumer.
+
+Merged to =main=. The three acceptance bullets are met, with one gap stated
+rather than glossed: no authenticated call was made end to end, because
+nothing calls the operation yet. The evidence at the wire is the live
+subscription answering a session-less request in 748 microseconds, and the
+evidence for the resolution itself is ten cases against real database rows
+through the service, which is the whole of the logic between the handler and
+the engine. The client that closes the last gap is the trader resolve screen,
+=335C4014=.

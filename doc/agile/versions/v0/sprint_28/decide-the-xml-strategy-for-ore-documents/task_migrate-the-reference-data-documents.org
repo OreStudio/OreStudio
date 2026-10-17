@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch: feature/migrate-currency-config-onto-the-codec
+#+branch: feature/delete-the-netting-set-xml-mapper
 #+pr: 3456
 #+blocked_on:
 #+blocked_since:
@@ -29,9 +29,9 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Calendar adjustments and currency config read and write through the codec; three families remain. |
+| Now          | Calendar adjustments and currency config read and write through the codec; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Netting sets, credit simulation and conventions, in that order. |
+| Next         | Credit simulation and conventions. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -68,6 +68,12 @@ the family's own round-trip test caught it before the change left the branch.
 
 *The importer reads text as well as files*, so an export can be imported again
 without a temporary file, which is what the family's round-trip test does.
+
+*The netting set mapper had no reader.* The ore-side mapper turned a
+netting set document into =mapped_netting_sets=, and only its own tests
+called it; the live netting set mapper is the refdata one on the database
+side. So the family needed no projection at all: its table was already
+written and proved, and the mappers and suites that duplicated it are gone.
 
 *Two families share one projection helper.* Currency config followed calendar
 adjustments, and its review found the table lookup copy-pasted in the importer

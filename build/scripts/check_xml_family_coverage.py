@@ -35,7 +35,7 @@ FAMILIES = {
     "CounterpartyInformation": ("supported", "table written and proved; nothing reads it yet"),
     "CurrencyConfig": ("supported", "importer reads it"),
     "IborFallbackConfig": ("supported", "table written and proved; nothing reads it yet"),
-    "NettingSetDefinitions": ("supported", "netting_set_mapper reads it"),
+    "NettingSetDefinitions": ("supported", "table written and proved; nothing reads the ORE XML"),
     "TodaysMarket": ("supported", "todays_market_mapper reads it"),
     # Migrating: product code reads the family, so a mapper still does the
     # work and a table is owed.

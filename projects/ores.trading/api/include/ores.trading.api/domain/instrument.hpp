@@ -33,6 +33,13 @@
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
 #include "ores.trading.api/domain/equity_position_option_underlying.hpp"
 #include "ores.trading.api/domain/flexi_swap_lower_notional.hpp"
+#include "ores.trading.api/domain/fx_accumulator_instrument.hpp"
+#include "ores.trading.api/domain/fx_asian_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_barrier_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_digital_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_forward_instrument.hpp"
+#include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
+#include "ores.trading.api/domain/fx_variance_swap_instrument.hpp"
 #include "ores.trading.api/domain/instrument_option.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
 #include "ores.trading.api/domain/instrument_option_exercise_price.hpp"
@@ -48,6 +55,8 @@
 #include "ores.trading.api/domain/swap_leg_rate.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <concepts>
+#include <optional>
+#include <tuple>
 #include <type_traits>
 #include <variant>
 #include <vector>
@@ -161,6 +170,128 @@ struct equity_instrument_data {
     equity_instrument_variant instrument;
     std::vector<equity_position_option_underlying> underlyings;
 };
+
+/**
+ * @brief The FX family's instrument rows: one typed array per product.
+ *
+ * The family states seven products and no family header, so each product's
+ * table holds the whole product. The carrier is therefore one typed array per
+ * product, joined by trade id, rather than an aggregate with a discriminator:
+ * the array an element sits in states its type, so nothing needs a tag, and a
+ * child the family gains is one more array here. A trade that states no FX
+ * instrument leaves every array empty.
+ */
+struct fx_instrument_data {
+    /**
+     * @brief The fx_forward_instrument rows: FxForward and the FxSwap near leg.
+     */
+    std::vector<fx_forward_instrument> forwards;
+
+    /**
+     * @brief The fx_vanilla_option_instrument rows: FxOption.
+     */
+    std::vector<fx_vanilla_option_instrument> vanilla_options;
+
+    /**
+     * @brief The fx_barrier_option_instrument rows: the five barrier codes.
+     */
+    std::vector<fx_barrier_option_instrument> barrier_options;
+
+    /**
+     * @brief The fx_digital_option_instrument rows: digital, touch and double touch.
+     */
+    std::vector<fx_digital_option_instrument> digital_options;
+
+    /**
+     * @brief The fx_asian_forward_instrument rows: FxAverageForward and FxTaRF.
+     */
+    std::vector<fx_asian_forward_instrument> asian_forwards;
+
+    /**
+     * @brief The fx_accumulator_instrument rows: FxAccumulator.
+     */
+    std::vector<fx_accumulator_instrument> accumulators;
+
+    /**
+     * @brief The fx_variance_swap_instrument rows: FxVarianceSwap.
+     */
+    std::vector<fx_variance_swap_instrument> variance_swaps;
+
+    /**
+     * @brief Value equality.
+     *
+     * A carrier is a value like the entity that holds it: the entity's
+     * comparison is defaulted and reads every member, so a carrier without a
+     * comparison deletes the entity's and fails a build that treats that as
+     * an error.
+     */
+    friend bool operator==(const fx_instrument_data&, const fx_instrument_data&) = default;
+};
+
+namespace detail {
+
+/**
+ * @brief The family's arrays, in the order the family states its products.
+ *
+ * Every walk over the arrays reads this one list, so a product the family
+ * gains is one more entry here and in the batch's pairing of the same seven,
+ * and no walk needs changing.
+ */
+inline constexpr auto fx_instrument_arrays = std::tuple{&fx_instrument_data::forwards,
+                                                        &fx_instrument_data::vanilla_options,
+                                                        &fx_instrument_data::barrier_options,
+                                                        &fx_instrument_data::digital_options,
+                                                        &fx_instrument_data::asian_forwards,
+                                                        &fx_instrument_data::accumulators,
+                                                        &fx_instrument_data::variance_swaps};
+
+/**
+ * @brief Calls a function on the first row the carrier holds, and on no other.
+ *
+ * @return true when the carrier held a row.
+ */
+template <typename Fn>
+bool visit_first_fx_product(const fx_instrument_data& data, Fn&& fn) {
+    bool called = false;
+    const auto visit_one = [&](const auto& rows) {
+        if (called || rows.empty())
+            return;
+        fn(rows.front());
+        called = true;
+    };
+    std::apply([&](const auto... member) { (visit_one(data.*member), ...); }, fx_instrument_arrays);
+    return called;
+}
+
+} // namespace detail
+
+/**
+ * @brief Calls a visitor on the one row an FX carrier holds for a trade.
+ *
+ * @details The carrier states a product by the array its row sits in, so the
+ * first array that holds a row decides and the rest are skipped. The trade id
+ * is the row's key, so the join states one row per trade, and a carrier that a
+ * second row reaches states a fault that the instrument table does not allow.
+ *
+ * The visitor's own return type comes back unchanged, so a caller that asks a
+ * question gets its answer and a caller that only acts gets nothing back. A
+ * carrier that holds no row calls nothing and returns a default-constructed
+ * result. Neither path builds such a carrier: the import path pushes a row
+ * before it answers, and the export path answers only for a trade the batch
+ * holds a row for.
+ */
+template <typename Visitor>
+auto visit_fx_products(Visitor visitor, const fx_instrument_data& data) {
+    using Result = std::invoke_result_t<Visitor, const fx_forward_instrument&>;
+    if constexpr (std::is_void_v<Result>) {
+        detail::visit_first_fx_product(data, visitor);
+    } else {
+        std::optional<Result> result;
+        detail::visit_first_fx_product(data,
+                                       [&](const auto& row) { result.emplace(visitor(row)); });
+        return result.value_or(Result{});
+    }
+}
 
 // The trade id is the instrument's own key, so there is one id to stamp
 // rather than a trade id and an instrument id that can disagree.
@@ -321,6 +452,18 @@ inline void stamp_ids(equity_instrument_data& data,
         underlying.trade_id = trade_id;
         underlying.trade_activity_id = activity_id;
     }
+}
+
+inline void stamp_ids(fx_instrument_data& data,
+                      boost::uuids::uuid trade_id,
+                      boost::uuids::uuid activity_id = {}) {
+    const auto stamp_one = [&](auto& rows) {
+        for (auto& row : rows) {
+            stamp_ids(row, trade_id, activity_id);
+        }
+    };
+    std::apply([&](const auto... member) { (stamp_one(data.*member), ...); },
+               detail::fx_instrument_arrays);
 }
 
 } // namespace ores::trading::domain

@@ -42,7 +42,7 @@ using refdata::domain::currency;
 using namespace ores::logging;
 using namespace ores::ore::domain;
 using trading::domain::swap_instrument_data;
-using trading::domain::fx_instrument_variant;
+using trading::domain::fx_instrument_data;
 using trading::domain::bond_instrument_data;
 using trading::domain::credit_instrument_data;
 using trading::domain::equity_instrument_data;
@@ -113,10 +113,10 @@ std::string exporter::export_conventions(const ores::refdata::messaging::convent
     return domain::save_data(xsd);
 }
 
-std::string exporter::export_portfolio(
-    const std::vector<trading::messaging::trade_export_item>& items,
-    const trading::domain::instrument_batch& instruments,
-    const reference_curve_names& reference_curves) {
+std::string
+exporter::export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
+                           const trading::domain::instrument_batch& instruments,
+                           const reference_curve_names& reference_curves) {
     BOOST_LOG_SEV(lg(), debug) << "Started portfolio export. Items: " << items.size();
 
     domain::portfolio p;
@@ -216,11 +216,11 @@ std::string exporter::export_portfolio(
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for swap type: " << tt;
                         return;
                     }
-                } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
+                } else if constexpr (std::is_same_v<T, fx_instrument_data>) {
                     // FX reverse mappers are per-type; routing by trade_type_code
                     // mirrors trade_mapper::map_fx_instrument. Keep in sync.
                     bool matched = false;
-                    std::visit(
+                    trading::domain::visit_fx_products(
                         [&](const auto& instr) {
                             using I = std::decay_t<decltype(instr)>;
                             using namespace trading::domain;

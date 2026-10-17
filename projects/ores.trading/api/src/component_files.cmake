@@ -748,7 +748,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/fx_forward_instrument_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/fx_forward_instrument_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/fx_forward_instrument_table_io.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/fx_instrument_variant.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/fx_vanilla_option_instrument_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/fx_vanilla_option_instrument_table.hpp"

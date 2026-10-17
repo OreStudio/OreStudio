@@ -84,8 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The variance strike is now money at rest: decimal in the domain and
 numeric(38, 12) in the column, the same shape as the notional. It was the
 only money column in the family still held as a float. Changed in the model

@@ -382,7 +382,7 @@ the reply, so it would be a second command for one read.
 
 *** sampled_at
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 #+begin_src cpp :name comment
@@ -421,7 +421,7 @@ the reply, so it would be a second command for one read.
 
 *** start_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 #+begin_src cpp :name comment
@@ -432,7 +432,7 @@ the reply, so it would be a second command for one read.
 
 *** end_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 #+begin_src cpp :name comment
@@ -496,7 +496,7 @@ the reply, so it would be a second command for one read.
 
 *** start_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 #+begin_src cpp :name comment
@@ -703,7 +703,7 @@ the reply, so it would be a second command for one read.
 
 *** start_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 #+begin_src cpp :name comment
@@ -714,7 +714,7 @@ the reply, so it would be a second command for one read.
 
 *** end_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 #+begin_src cpp :name comment
@@ -811,7 +811,7 @@ the reply, so it would be a second command for one read.
 
 *** start_time
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 #+begin_src cpp :name comment
@@ -995,7 +995,7 @@ the reply, so it would be a second command for one read.
 
 *** sampled_at
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 #+begin_src cpp :name comment

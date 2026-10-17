@@ -4,6 +4,7 @@
 #+title: ores.marketdata.client
 #+description: Client-side NATS wrapper for the marketdata service: request/response helpers and market data subscriptions.
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :marketdata:client:component:
 #+created: 2026-07-29

@@ -4,6 +4,7 @@
 #+title: ores.eventing.api
 #+description: Domain types and NATS protocol for cross-component change-event publication (dataset bundle events, cache invalidation).
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: 
 #+created: 2026-07-29

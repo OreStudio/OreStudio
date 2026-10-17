@@ -5,6 +5,7 @@
 #+description: Pricing model and analytics configuration — model types, product parameters, and batch pricing.
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :analytics:core:component:
 #+created: 2026-05-19

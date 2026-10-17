@@ -8,6 +8,7 @@
 #+brief: Asset image and tag management core
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :assets:core:component:
 #+created: 2026-05-19

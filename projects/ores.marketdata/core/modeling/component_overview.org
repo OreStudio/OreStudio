@@ -8,6 +8,7 @@
 #+brief: Market data ingestion and query core
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :marketdata:core:component:
 #+created: 2026-05-19

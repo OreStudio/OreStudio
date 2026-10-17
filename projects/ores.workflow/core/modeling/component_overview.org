@@ -8,6 +8,7 @@
 #+brief: Workflow definition and execution core
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :workflow:core:component:
 #+created: 2026-05-19

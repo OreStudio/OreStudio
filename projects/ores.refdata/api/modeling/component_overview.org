@@ -8,6 +8,7 @@
 #+brief: Reference data domain types and protocol schemas
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :refdata:api:component:
 #+created: 2026-05-19

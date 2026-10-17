@@ -5,6 +5,7 @@
 #+description: Data-quality infrastructure — badges, datasets, FSM, ORM base classes, and NATS handlers for ORE Studio.
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :dq:core:component:
 #+created: 2026-05-19

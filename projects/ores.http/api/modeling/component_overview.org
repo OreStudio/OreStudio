@@ -8,6 +8,7 @@
 #+brief: HTTP server and JWT authentication library
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :http:api:component:
 #+created: 2026-05-19

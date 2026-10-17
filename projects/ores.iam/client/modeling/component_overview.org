@@ -7,6 +7,7 @@
 #+description: Client-side IAM library — session management and authentication helper for UI and service consumers.
 #+brief: IAM client session management library
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :iam:client:component:
 #+created: 2026-05-19

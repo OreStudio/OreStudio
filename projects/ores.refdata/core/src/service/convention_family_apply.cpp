@@ -18,21 +18,26 @@
  */
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.core/export.hpp"
-#include "ores.refdata.core/repository/convention_repository.hpp"
-#include "ores.refdata.core/repository/deposit_convention_repository.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "convention_family_apply.hpp"
+#include "conventions_row_helpers.hpp"
+#include <rfl/json.hpp>
+// One repository per family the generated apply fragment calls.
+#include "convention_family_apply_includes.inc"
 #include <map>
 #include <utility>
 #include <vector>
 
 namespace ores::refdata::service {
 
+using namespace ores::refdata::repository;
+
 // The generated dispatch owns this translation unit so the exported
 // apply_staged_family does not depend on which service happens to include the
-// fragment.
+// fragment. The helpers the fragment calls are included above it, outside this
+// namespace, because they name their own fully qualified types.
 #include "convention_family_apply.inc"
-#include "conventions_row_helpers.hpp"
-#include "convention_family_apply.hpp"
 
 }

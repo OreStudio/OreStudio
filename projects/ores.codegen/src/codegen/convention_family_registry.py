@@ -47,6 +47,13 @@ FRAGMENT_RELATIVE_PATH = Path(
     "projects/ores.refdata/core/src/service/convention_family_apply.inc"
 )
 
+# The translation unit that compiles the fragment names no repository itself,
+# so the includes it needs are generated beside it rather than kept by hand:
+# a family added to the registry then arrives with its own header.
+INCLUDES_RELATIVE_PATH = Path(
+    "projects/ores.refdata/core/src/service/convention_family_apply_includes.inc"
+)
+
 WRITE_MODE_KEYWORD = "convention_write"
 DECLARABLE_WRITE_MODES = ("party", "by_id")
 
@@ -417,6 +424,27 @@ def render_fragment(entries: list[FamilyEntry]) -> str:
         _staged_apply_body(entries),
     ]
     return _LICENSE + "\n" + _FRAGMENT_PREAMBLE + "\n\n" + "\n\n".join(bodies) + "\n"
+
+
+def render_includes(entries: list[FamilyEntry]) -> str:
+    """The repository includes the apply fragment needs, byte for byte.
+
+    One line per family, sorted, so the translation unit that compiles the
+    fragment declares every repository the fragment calls. The includes stay
+    outside the namespace, which is why they travel as their own fragment
+    rather than being prepended to the code one.
+    """
+    headers = sorted({f'{entry.entity}_repository' for entry in entries})
+    lines = [
+        "// AUTO-GENERATED FILE - DO NOT EDIT MANUALLY",
+        "// Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py",
+        "// One repository per family the apply fragment calls.",
+        "",
+    ]
+    lines.extend(
+        f'#include "ores.refdata.core/repository/{header}.hpp"' for header in headers
+    )
+    return "\n".join(lines) + "\n"
 
 
 def parse_header(text: str) -> list[FamilyEntry]:

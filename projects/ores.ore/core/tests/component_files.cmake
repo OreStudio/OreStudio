@@ -86,7 +86,7 @@ set(files
     "xml_ore_roundtrip_tests.cpp"
     "xml_ore_run_document_mapper_roundtrip_tests.cpp"
     "xml_portfolio_roundtrip_tests.cpp"
-    "xml_pricing_engine_mapper_roundtrip_tests.cpp"
+    "xml_pricing_engine_projection_tests.cpp"
     "xml_pricingengines_roundtrip_tests.cpp"
     "xml_rates_corpus_roundtrip_tests.cpp"
     "xml_remaining_phases_mapper_roundtrip_tests.cpp"

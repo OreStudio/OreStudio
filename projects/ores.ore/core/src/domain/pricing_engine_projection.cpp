@@ -17,11 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
+#include "ores.ore.core/xml/binding.hpp"
+#include "ores.ore.core/xml/emitter.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include "../xml/projection.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <format>
 #include <map>
 #include <optional>
 #include <set>
@@ -34,6 +38,8 @@
 namespace ores::ore::domain {
 
 namespace {
+
+namespace xg = xml::generated::pricing_engines;
 
 constexpr std::string_view audit_modified_by = "ores";
 constexpr std::string_view audit_reason_code = "system.external_data_import";
@@ -59,21 +65,14 @@ void set_audit(T& r) {
     r.change_commentary = std::string(audit_commentary);
 }
 
-// Every generated text element is a distinct struct derived from xsd::string,
-// so the base subobject is the only assignment target a std::string converts
-// to.
-template <typename T>
-void assign_text(T& target, const std::string& value) {
-    static_cast<xsd::string&>(target) = value;
-}
-
 // The document writes the two parameter lists the same way, and the only thing
 // that differs is the scope it records, so one helper covers both.
-void append_parameters(std::vector<analytics::domain::pricing_model_product_parameter>& out,
-                       const boost::uuids::uuid& config_id,
-                       const std::optional<boost::uuids::uuid>& product_id,
-                       const std::string_view scope,
-                       const xsd::vector<domain::parameter>& parameters) {
+void append_parameters(
+    std::vector<analytics::domain::pricing_model_product_parameter>& out,
+    const boost::uuids::uuid& config_id,
+    const std::optional<boost::uuids::uuid>& product_id,
+    const std::string_view scope,
+    const std::vector<xml::generated::pricing_engines::parameter>& parameters) {
     int position = 0;
     for (const auto& parameter : parameters) {
         analytics::domain::pricing_model_product_parameter row;
@@ -82,7 +81,7 @@ void append_parameters(std::vector<analytics::domain::pricing_model_product_para
         row.pricing_model_product_id = product_id;
         row.parameter_scope = std::string(scope);
         row.parameter_name = parameter.name;
-        row.parameter_value = static_cast<const xsd::string&>(parameter);
+        row.parameter_value = parameter.value;
         row.position = position++;
         set_audit(row);
         out.push_back(std::move(row));
@@ -115,7 +114,7 @@ group_parameters(const ores::analytics::messaging::pricing_engines_document& v) 
     std::map<parameter_key, std::vector<const parameter_row*>> groups;
     for (const auto& row : v.parameters) {
         const auto describe = [&row] {
-            return "pricing_engine_mapper: parameter " + boost::uuids::to_string(row.id) + " (" +
+            return "pricing_engine_projection: parameter " + boost::uuids::to_string(row.id) + " (" +
                    row.parameter_name + ")";
         };
         if (row.parameter_scope == scope_global) {
@@ -139,7 +138,7 @@ group_parameters(const ores::analytics::messaging::pricing_engines_document& v) 
 }
 
 ores::analytics::messaging::pricing_engines_document
-pricing_engine_mapper::map(const pricingengines& v) {
+pricing_engine_projection::map(const document& v) {
     ores::analytics::messaging::pricing_engines_document mapped;
 
     auto& config = mapped.config;
@@ -150,13 +149,13 @@ pricing_engine_mapper::map(const pricingengines& v) {
     set_audit(config);
 
     int product_position = 0;
-    for (const auto& source : v.Product) {
+    for (const auto& source : v.product) {
         analytics::domain::pricing_model_product product;
         product.id = new_uuid();
         product.pricing_model_config_id = config.id;
         product.pricing_engine_type_code = source.type;
-        product.model = source.Model;
-        product.engine = source.Engine;
+        product.model = source.model;
+        product.engine = source.engine;
         product.position = product_position++;
         set_audit(product);
         mapped.products.push_back(product);
@@ -165,28 +164,47 @@ pricing_engine_mapper::map(const pricingengines& v) {
                           config.id,
                           product.id,
                           scope_model,
-                          source.ModelParameters.Parameter);
+                          source.model_parameters.parameter);
         append_parameters(mapped.parameters,
                           config.id,
                           product.id,
                           scope_engine,
-                          source.EngineParameters.Parameter);
+                          source.engine_parameters.parameter);
     }
 
-    if (v.GlobalParameters) {
+    if (is_present(*xml::generated::pricing_engines::pricing_engines_document().root, &v,
+                   "GlobalParameters")) {
         append_parameters(mapped.parameters,
                           config.id,
                           std::nullopt,
                           scope_global,
-                          v.GlobalParameters->Parameter);
+                          v.global_parameters.parameter);
     }
 
     return mapped;
 }
 
-pricingengines
-pricing_engine_mapper::reverse(const ores::analytics::messaging::pricing_engines_document& v) {
-    pricingengines document;
+pricing_engine_projection::document pricing_engine_projection::read(std::string_view text) {
+    document record;
+    const auto bound = xml::binder::bind(xg::pricing_engines_document(), text, &record);
+    if (!bound)
+        throw std::runtime_error(std::format("pricing engines: line {}: {}", bound.error().line,
+                                             bound.error().message));
+    return record;
+}
+
+std::string pricing_engine_projection::write(const document& v) {
+    std::string out;
+    const auto emitted = xml::emitter::emit(xg::pricing_engines_document(), &v, out);
+    if (!emitted)
+        throw std::runtime_error(emitted.error().message);
+    return out;
+}
+
+pricing_engine_projection::document pricing_engine_projection::reverse(
+    const ores::analytics::messaging::pricing_engines_document& v) {
+    const auto* root = xg::pricing_engines_document().root;
+    document record;
 
     const auto groups = group_parameters(v);
     const auto in_scope =
@@ -196,10 +214,18 @@ pricing_engine_mapper::reverse(const ores::analytics::messaging::pricing_engines
         const auto it = groups.find({product_id, std::string(scope)});
         return it == groups.end() ? none : it->second;
     };
-    const auto to_parameter = [](const parameter_row& row) {
-        domain::parameter parameter;
+    const auto& product_type = *xml::find_child_type(*root, "Product");
+    const auto& model_parameters_type = *xml::find_child_type(product_type, "ModelParameters");
+    const auto& engine_parameters_type = *xml::find_child_type(product_type, "EngineParameters");
+    const auto& global_parameters_type = *xml::find_child_type(*root, "GlobalParameters");
+    const auto& parameter_type = *xml::find_child_type(model_parameters_type, "Parameter");
+
+    const auto to_parameter = [&parameter_type](const parameter_row& row) {
+        xg::parameter parameter;
         parameter.name = row.parameter_name;
-        assign_text(parameter, row.parameter_value);
+        parameter.value = row.parameter_value;
+        xml::projection::state(parameter_type, &parameter, "name");
+        xml::mark_text_present(parameter_type, &parameter);
         return parameter;
     };
 
@@ -210,18 +236,29 @@ pricing_engine_mapper::reverse(const ores::analytics::messaging::pricing_engines
         products.begin(), products.end(), by_position<analytics::domain::pricing_model_product>);
 
     for (const auto* product : products) {
-        domain::product source;
+        xg::product source;
         source.type = product->pricing_engine_type_code;
-        assign_text(source.Model, product->model);
-        assign_text(source.Engine, product->engine);
+        source.model = product->model;
+        source.engine = product->engine;
+        xml::projection::state(product_type, &source, "type");
+        xml::projection::state(product_type, &source, "Model");
+        xml::projection::state(product_type, &source, "Engine");
 
         for (const auto* row : in_scope(product->id, scope_model))
-            source.ModelParameters.Parameter.push_back(to_parameter(*row));
+            source.model_parameters.parameter.push_back(to_parameter(*row));
         for (const auto* row : in_scope(product->id, scope_engine))
-            source.EngineParameters.Parameter.push_back(to_parameter(*row));
+            source.engine_parameters.parameter.push_back(to_parameter(*row));
 
-        document.Product.push_back(std::move(source));
+        // Both lists are required elements, so an empty one is written as an
+        // empty element rather than left out.
+        xml::projection::state(model_parameters_type, &source.model_parameters, "Parameter");
+        xml::projection::state(product_type, &source, "ModelParameters");
+        xml::projection::state(engine_parameters_type, &source.engine_parameters, "Parameter");
+        xml::projection::state(product_type, &source, "EngineParameters");
+
+        record.product.push_back(std::move(source));
     }
+    xml::projection::state(*root, &record, "Product");
 
     // An empty <GlobalParameters/> and an absent one map to the same rows, so
     // the export writes the element only when a global row exists. No shipped
@@ -229,13 +266,13 @@ pricing_engine_mapper::reverse(const ores::analytics::messaging::pricing_engines
     // of its own.
     const auto& globals = in_scope(std::nullopt, scope_global);
     if (!globals.empty()) {
-        domain::globalParameters parameters;
         for (const auto* row : globals)
-            parameters.Parameter.push_back(to_parameter(*row));
-        document.GlobalParameters = std::move(parameters);
+            record.global_parameters.parameter.push_back(to_parameter(*row));
+        xml::projection::state(global_parameters_type, &record.global_parameters, "Parameter");
+        xml::projection::state(*root, &record, "GlobalParameters");
     }
 
-    return document;
+    return record;
 }
 
 }

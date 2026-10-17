@@ -41,7 +41,7 @@ FAMILIES = {
     # work and a table is owed.
     "ORE": ("migrating", "run_store and the run configuration service read it"),
     "Portfolio": ("migrating", "importer and exporter read trades and their instruments"),
-    "PricingEngines": ("migrating", "pricing_engine_mapper, reached from the run document"),
+    "PricingEngines": ("supported", "run_store and the run configuration service read it"),
     "CurveConfiguration": ("migrating", "curve_configuration_mapper reads it"),
     "CreditSimulation": (
         "migrating",

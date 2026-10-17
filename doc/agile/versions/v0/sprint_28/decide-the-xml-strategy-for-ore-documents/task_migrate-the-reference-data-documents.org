@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch: feature/migrate-credit-simulation-onto-the-codec
+#+branch: feature/migrate-pricing-engines-onto-the-codec
 #+pr: 3486
 #+blocked_on:
 #+blocked_since:
@@ -29,9 +29,9 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Calendar adjustments and currency config read and write through the codec; the netting set XML mapper is deleted. |
+| Now          | Calendar adjustments, currency config and pricing engines read and write through the codec; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Credit simulation, whose XML mapper turns a document into five analytics tables. |
+| Next         | Credit simulation, whose XML mapper turns a document into five analytics tables, then curve configuration. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -75,6 +75,13 @@ called it; the live netting set mapper is the refdata one on the database
 side. So the family needed no projection at all: its table was already
 written and proved, and the mappers and suites that duplicated it are gone.
 
+*Pricing engines moved as a projection, not a mapper.* The family maps a
+document into analytics product and parameter rows, which is work no table
+can carry, so the class survives as =pricing_engine_projection= with the
+codec record as its input. It also owns reading and writing, so its two
+callers in the run store and the run configuration service ask it for a
+document rather than binding one themselves.
+
 *Two families share one projection helper.* Currency config followed calendar
 adjustments, and its review found the table lookup copy-pasted in the importer
 and the exporter, and the writer's error message still naming the calendar
@@ -112,11 +119,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families read and written through the codec | 2 of 5 (calendar adjustments, currency config) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
+| Families read and written through the codec | 3 of 5 (calendar adjustments, currency config, pricing engines) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
 | Families whose XML mapper was deleted because nothing read it | 1 (netting sets) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
+| Pricing engine documents that round trip through the projection | every corpus document | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][pricingengines]"= | pending |
 | Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3260f93169 |
 | Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | 3260f93169 |
-| XML suites | 509 cases, 79,094 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
+| XML suites | 506 cases, 79,184 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
 
 * Notes
 

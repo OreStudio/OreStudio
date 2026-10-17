@@ -117,6 +117,17 @@ generate \
     --header "$header/currency_config.hpp" \
     --source "$source/currency_config.cpp"
 
+generate \
+    --schema "$xsd/pricingengines.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element PricingEngines \
+    --root-type pricingengines \
+    --accessor pricing_engines_document \
+    --namespace ores::ore::xml::generated::pricing_engines \
+    --include "ores.ore.core/xml/generated/pricing_engines.hpp" \
+    --header "$header/pricing_engines.hpp" \
+    --source "$source/pricing_engines.cpp"
+
 # The repository formats its C++ with clang-format and a check enforces it, so
 # the generator's output has to be formatted too, not only correct.
 if command -v clang-format >/dev/null 2>&1; then

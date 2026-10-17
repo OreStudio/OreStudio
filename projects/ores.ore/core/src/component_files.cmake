@@ -64,9 +64,11 @@ set(files
     "xml/generated/netting_set_definitions.cpp"
     "xml/generated/todays_market.cpp"
     "xml/importer.cpp"
+    "xml/record_diff.cpp"
     "xml/roundtrip.cpp"
     "xml/roundtrip_harness.cpp"
     "xml/scanner.cpp"
+    "xml/value_fingerprint.cpp"
 )
 
 # The headers are listed for the install and IDE targets.
@@ -128,8 +130,10 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/generated/netting_set_definitions.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/generated/todays_market.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/importer.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/record_diff.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/roundtrip.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/roundtrip_harness.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/scanner.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/value_fingerprint.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.ore.core/xml/xml.hpp"
 )

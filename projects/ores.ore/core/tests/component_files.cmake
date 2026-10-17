@@ -99,6 +99,7 @@ set(files
     "xml_roundtrip_harness_tests.cpp"
     "xml_roundtrip_reference_tests.cpp"
     "xml_roundtrip_tests.cpp"
+    "xml_roundtrip_values_tests.cpp"
     "xml_scanner_tests.cpp"
     "xml_scripted_golden_roundtrip_tests.cpp"
     "xml_sensitivityanalysis_roundtrip_tests.cpp"

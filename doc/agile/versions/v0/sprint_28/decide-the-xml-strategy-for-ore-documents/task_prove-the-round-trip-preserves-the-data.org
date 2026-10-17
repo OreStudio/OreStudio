@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/prove-the-round-trip-preserves-the-data
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ no test that its data came with it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | The harness proves, for the seven generated families, that every value the corpus states comes back and that every writing validates. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing; later migrations run against it. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -50,6 +50,43 @@ no test that its data came with it.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+* Plan
+
+*Two comparisons, because one is not enough.*
+
+- *The records.* =compare_records= walks two records by the same table and
+  names the first member they disagree about, as a path a reader can follow:
+  =calendaradjustment.Calendar[0].AdditionalHolidays.Date[0]=. It compares
+  presence bits, so a value that vanishes is "was lost" rather than an empty
+  string that matches nothing, and it compares amounts as decimals and
+  continuous quantities as doubles.
+- *The documents.* Two records agreeing only proves the writing keeps what
+  the reading kept. A read-side drop would pass that. So the harness also
+  reads the source and the writing with the document layer -- no schema, no
+  table, no record -- and compares a *value fingerprint*: every leaf value as
+  a path and a value, with each number reduced to the decimal it means. A
+  value the reading dropped is still in the source and missing from the
+  writing, and the fingerprint names it.
+
+The fingerprint is a sorted multiset, so an =xs:all= whose members arrived in
+another order is the same document, and a repeated member that arrived twice
+is two entries.
+
+*Validity is the third leg*, and it stays a script: =xmllint= against
+=input.xsd= over the written tree. A test binary that shells out to a
+validator would need =xmllint= on every machine that runs the suite.
+
+*An empty element states a value.* The fingerprint work found a reading
+defect that the schema hides: =bool= in =ore_types.xsd= is an enumeration
+whose spellings include the empty string, and ORE writes =<EndOfMonth/>= for
+it. The binder marked the field present when the element opened, stored
+nothing when no text arrived, and left the enumeration's index at zero --
+which is =Y=, a different value. =<EndOfMonth/>= was being read as
+=<EndOfMonth>Y</EndOfMonth>=, and every writing validated, so nothing caught
+it. A leaf that closes without text now stores the empty value, which a text
+field keeps and an enumeration resolves to its empty spelling, and an
+enumeration that spells no empty string refuses the document.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -62,7 +99,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Documents whose values survive the writing | 246 of 246 | =publish/bin/ores.ore.core.tests \"[ore][xml][roundtrip-values]\"= | pending |
+| Written documents that validate against =input.xsd= | 246 of 246 | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd= | pending |
+| XML suites | 541 cases, 63,650 assertions | =publish/bin/ores.ore.core.tests \"[ore][xml]\"= | pending |
+| Elements the model did not claim | 0; none of the seven families has an =xs:any= | =grep -l 'field_kind::residual' projects/ores.ore/core/src/xml/generated/*.cpp= | pending |
 
 * Notes
 

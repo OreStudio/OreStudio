@@ -355,7 +355,8 @@ underlyingTypes_group_t make_underlying_type_name(const std::string& name) {
 // Private helper: make_barrier
 // ---------------------------------------------------------------------------
 
-barrierData fx_instrument_mapper::make_barrier(const std::string& type, double level) {
+barrierData fx_instrument_mapper::make_barrier(const std::string& type,
+                                               const ores::utility::decimal::decimal& level) {
     static const std::map<std::string, barrierType> bmap = {
         {"UpAndOut", barrierType::UpAndOut},
         {"UpAndIn", barrierType::UpAndIn},
@@ -373,7 +374,7 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type, double l
     if (it == bmap.end())
         throw std::runtime_error("make_barrier: unrecognized barrier type '" + type + "'");
     b.Type = it->second;
-    b.Levels.Level.push_back(static_cast<float>(level));
+    push_money(b.Levels.Level, level);
     return b;
 }
 
@@ -387,9 +388,9 @@ barrierData fx_instrument_mapper::make_barrier_group(
     const bool has_lower = lower.has_value() && *lower != ores::utility::decimal::decimal{};
     if (!has_lower && !upper.has_value())
         return {};
-    barrierData b = make_barrier(type, (has_lower ? *lower : *upper).to_double());
+    barrierData b = make_barrier(type, has_lower ? *lower : *upper);
     if (has_lower && upper.has_value())
-        b.Levels.Level.push_back(static_cast<float>(upper->to_double()));
+        push_money(b.Levels.Level, *upper);
     return b;
 }
 
@@ -831,9 +832,9 @@ trade fx_instrument_mapper::reverse_fx_forward(const fx_forward_instrument& inst
     fxForwardData fwd;
     static_cast<std::string&>(fwd.ValueDate) = to_ore_date(instr.value_date);
     fwd.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    static_cast<float&>(fwd.BoughtAmount) = static_cast<float>(instr.bought_amount.to_double());
+    set_exact(fwd.BoughtAmount, instr.bought_amount);
     fwd.SoldCurrency = parse_currency_code(instr.sold_currency);
-    static_cast<float&>(fwd.SoldAmount) = static_cast<float>(instr.sold_amount.to_double());
+    set_exact(fwd.SoldAmount, instr.sold_amount);
 
     t.FxForwardData = std::move(fwd);
     return t;
@@ -851,9 +852,9 @@ trade fx_instrument_mapper::reverse_fx_swap(const fx_forward_instrument& instr) 
     fxSwapData sw;
     static_cast<std::string&>(sw.NearDate) = to_ore_date(instr.value_date);
     sw.NearBoughtCurrency = parse_currency_code(instr.bought_currency);
-    static_cast<float&>(sw.NearBoughtAmount) = static_cast<float>(instr.bought_amount.to_double());
+    set_exact(sw.NearBoughtAmount, instr.bought_amount);
     sw.NearSoldCurrency = parse_currency_code(instr.sold_currency);
-    static_cast<float&>(sw.NearSoldAmount) = static_cast<float>(instr.sold_amount.to_double());
+    set_exact(sw.NearSoldAmount, instr.sold_amount);
     // Far leg: not captured in forward mapping — round-trip as empty date/zero amounts.
     static_cast<std::string&>(sw.FarDate) = "";
     static_cast<float&>(sw.FarBoughtAmount) = 0.0f;
@@ -874,10 +875,10 @@ trade fx_instrument_mapper::reverse_fx_option(const fx_vanilla_option_instrument
 
     fxOptionData opt;
     opt.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    static_cast<float&>(opt.BoughtAmount) = static_cast<float>(instr.bought_amount.to_double());
+    set_exact(opt.BoughtAmount, instr.bought_amount);
     opt.SoldCurrency = parse_currency_code(instr.sold_currency);
     if (!instr.sold_amount.is_zero())
-        opt.SoldAmount = static_cast<float>(instr.sold_amount.to_double());
+        set_money(opt.SoldAmount, instr.sold_amount);
 
     opt.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
     if (!instr.settlement.empty()) {
@@ -904,9 +905,9 @@ trade fx_instrument_mapper::reverse_fx_barrier_option(const fx_barrier_option_in
 
     fxBarrierOptionData d;
     d.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    d.BoughtAmount = static_cast<float>(instr.bought_amount.to_double());
+    set_exact(d.BoughtAmount, instr.bought_amount);
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
-    d.SoldAmount = static_cast<float>(instr.sold_amount.to_double());
+    set_exact(d.SoldAmount, instr.sold_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
 
     if (!instr.barrier_type.empty())
@@ -928,9 +929,9 @@ trade fx_instrument_mapper::reverse_fx_double_barrier_option(
     t.TradeType = oreTradeType::FxDoubleBarrierOption;
     fxBarrierOptionData d;
     d.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    d.BoughtAmount = static_cast<float>(instr.bought_amount.to_double());
+    set_exact(d.BoughtAmount, instr.bought_amount);
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
-    d.SoldAmount = static_cast<float>(instr.sold_amount.to_double());
+    set_exact(d.SoldAmount, instr.sold_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
     if (!instr.barrier_type.empty())
         d.BarrierData =
@@ -950,9 +951,9 @@ trade fx_instrument_mapper::reverse_fx_european_barrier_option(
     t.TradeType = oreTradeType::FxEuropeanBarrierOption;
     fxBarrierOptionData d;
     d.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    d.BoughtAmount = static_cast<float>(instr.bought_amount.to_double());
+    set_exact(d.BoughtAmount, instr.bought_amount);
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
-    d.SoldAmount = static_cast<float>(instr.sold_amount.to_double());
+    set_exact(d.SoldAmount, instr.sold_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
     if (!instr.barrier_type.empty())
         d.BarrierData =
@@ -972,16 +973,14 @@ trade fx_instrument_mapper::reverse_fx_kiko_barrier_option(
     t.TradeType = oreTradeType::FxKIKOBarrierOption;
     fxKIKOBarrierOptionData d;
     d.BoughtCurrency = parse_currency_code(instr.bought_currency);
-    d.BoughtAmount = static_cast<float>(instr.bought_amount.to_double());
+    set_exact(d.BoughtAmount, instr.bought_amount);
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
-    d.SoldAmount = static_cast<float>(instr.sold_amount.to_double());
+    set_exact(d.SoldAmount, instr.sold_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
     if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.lower_barrier.to_double()));
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
     if (instr.upper_barrier.has_value())
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.upper_barrier->to_double()));
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
     t.FxKIKOBarrierOptionData = std::move(d);
     return t;
 }
@@ -1003,11 +1002,9 @@ trade fx_instrument_mapper::reverse_fx_generic_barrier_option(
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
 
     if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.lower_barrier.to_double()));
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
     if (instr.upper_barrier.has_value())
-        d.Barriers.BarrierData.push_back(
-            make_barrier(instr.barrier_type, instr.upper_barrier->to_double()));
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
 
     t.FxGenericBarrierOptionData = std::move(d);
     return t;
@@ -1025,9 +1022,8 @@ trade fx_instrument_mapper::reverse_fx_digital_option(const fx_digital_option_in
     fxDigitalOptionData d;
     d.ForeignCurrency = parse_currency_code(instr.foreign_currency);
     d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
-    d.Strike =
-        static_cast<float>(instr.strike.value_or(ores::utility::decimal::decimal{}).to_double());
-    d.PayoffAmount = static_cast<float>(instr.payoff_amount.to_double());
+    set_exact(d.Strike, instr.strike.value_or(ores::utility::decimal::decimal{}));
+    set_exact(d.PayoffAmount, instr.payoff_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date, instr.long_short);
 
     t.FxDigitalOptionData = std::move(d);
@@ -1047,9 +1043,8 @@ trade fx_instrument_mapper::reverse_fx_digital_barrier_option(
     fxDigitalBarrierOptionData d;
     d.ForeignCurrency = parse_currency_code(instr.foreign_currency);
     d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
-    d.Strike =
-        static_cast<float>(instr.strike.value_or(ores::utility::decimal::decimal{}).to_double());
-    d.PayoffAmount = static_cast<float>(instr.payoff_amount.to_double());
+    set_exact(d.Strike, instr.strike.value_or(ores::utility::decimal::decimal{}));
+    set_exact(d.PayoffAmount, instr.payoff_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date, instr.long_short);
 
     if (!instr.barrier_type.empty())
@@ -1078,7 +1073,7 @@ trade fx_instrument_mapper::reverse_fx_touch_option(const fx_digital_option_inst
         d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
     if (!instr.payoff_currency.empty())
         d.PayoffCurrency = parse_currency_code(instr.payoff_currency);
-    d.PayoffAmount = static_cast<float>(instr.payoff_amount.to_double());
+    set_exact(d.PayoffAmount, instr.payoff_amount);
     d.OptionData = make_option_entry("", instr.expiry_date, instr.long_short);
 
     if (!instr.barrier_type.empty())
@@ -1110,7 +1105,7 @@ trade fx_instrument_mapper::reverse_fx_variance_swap(const fx_variance_swap_inst
     validate_long_short(instr.long_short);
     static_cast<std::string&>(d.LongShort) = instr.long_short;
     d.Strike = static_cast<float>(instr.strike);
-    d.Notional = static_cast<float>(instr.notional.to_double());
+    set_exact(d.Notional, instr.notional);
     static_cast<std::string&>(d.Calendar) = "TARGET";
 
     t.FxVarianceSwapData = std::move(d);
@@ -1130,12 +1125,12 @@ trade fx_instrument_mapper::reverse_fx_average_forward(const fx_asian_forward_in
     static_cast<std::string&>(d.PaymentDate) = to_ore_date(instr.payment_date);
     if (!instr.reference_currency.empty())
         d.ReferenceCurrency = parse_currency_code(instr.reference_currency);
-    d.ReferenceNotional = static_cast<float>(
-        instr.reference_notional.value_or(ores::utility::decimal::decimal{}).to_double());
+    set_exact(d.ReferenceNotional,
+              instr.reference_notional.value_or(ores::utility::decimal::decimal{}));
     if (!instr.settlement_currency.empty())
         d.SettlementCurrency = parse_currency_code(instr.settlement_currency);
-    d.SettlementNotional = static_cast<float>(
-        instr.settlement_notional.value_or(ores::utility::decimal::decimal{}).to_double());
+    set_exact(d.SettlementNotional,
+              instr.settlement_notional.value_or(ores::utility::decimal::decimal{}));
     static_cast<std::string&>(d.FXIndex) = instr.fx_index;
     d.FixedPayer = bool_::false_;
     // Minimal observation schedule
@@ -1159,9 +1154,9 @@ trade fx_instrument_mapper::reverse_fx_accumulator(const fx_accumulator_instrume
     accumulatorData d;
     if (!instr.currency.empty())
         d.Currency = parse_currency_code(instr.currency);
-    d.FixingAmount = static_cast<float>(instr.fixing_amount.to_double());
+    set_exact(d.FixingAmount, instr.fixing_amount);
     if (instr.strike != ores::utility::decimal::decimal{})
-        d.Strike = static_cast<float>(instr.strike.to_double());
+        set_money(d.Strike, instr.strike);
     static_cast<std::string&>(d.Underlying.Name) = instr.underlying_code;
     static_cast<std::string&>(d.Underlying.Type) = "FX";
     validate_long_short(instr.long_short);
@@ -1183,7 +1178,7 @@ trade fx_instrument_mapper::reverse_fx_accumulator(const fx_accumulator_instrume
     if (instr.knock_out_barrier.has_value())
         d.Barriers = [&]() {
             accumulatorData_Barriers_t b;
-            b.BarrierData.push_back(make_barrier("UpAndOut", instr.knock_out_barrier->to_double()));
+            b.BarrierData.push_back(make_barrier("UpAndOut", *instr.knock_out_barrier));
             return b;
         }();
 
@@ -1203,10 +1198,9 @@ trade fx_instrument_mapper::reverse_fx_tarf(const fx_asian_forward_instrument& i
     tarfData2 d;
     if (!instr.currency.empty())
         d.Currency = parse_currency_code(instr.currency);
-    d.FixingAmount = static_cast<float>(
-        instr.fixing_amount.value_or(ores::utility::decimal::decimal{}).to_double());
+    set_exact(d.FixingAmount, instr.fixing_amount.value_or(ores::utility::decimal::decimal{}));
     if (instr.strike.has_value())
-        d.Strike = static_cast<float>(instr.strike->to_double());
+        set_money(d.Strike, instr.strike);
     static_cast<std::string&>(d.Underlying.Name) = instr.fx_index;
     static_cast<std::string&>(d.Underlying.Type) = "FX";
     static_cast<std::string&>(d.OptionData.LongShort) = "Long";
@@ -1218,7 +1212,7 @@ trade fx_instrument_mapper::reverse_fx_tarf(const fx_asian_forward_instrument& i
     if (instr.target_amount.has_value()) {
         barrierData bd;
         bd.Type = barrierType::CumulatedProfitCap;
-        bd.Levels.Level.push_back(static_cast<float>(instr.target_amount->to_double()));
+        push_money(bd.Levels.Level, *instr.target_amount);
         d.Barriers.BarrierData.push_back(std::move(bd));
     }
 

@@ -13,7 +13,7 @@
       <Currency>USD</Currency>
       <FixingAmount>1000000</FixingAmount>
       <TargetAmount>100000</TargetAmount>
-      <Strike>1.10000002</Strike>
+      <Strike>1.1</Strike>
       <Underlying>
         <Type>FX</Type>
         <Name>TR20H-EUR-USD</Name>

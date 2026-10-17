@@ -21,7 +21,7 @@
       <BarrierData>
         <Type>DownAndIn</Type>
         <Levels>
-          <Level>0.00899999961</Level>
+          <Level>0.009</Level>
         </Levels>
       </BarrierData>
       <ForeignCurrency>JPY</ForeignCurrency>

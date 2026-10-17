@@ -8,12 +8,12 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3407
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,45 +26,43 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                               |
 
 * Acceptance
 
--
+Met: a bond leg rewrite advanced the parent trade's version, and the as-of
+read reported the legs current at each parent version. Both the test and
+rows read from the database are in
+=evidence/bond_rewrite_version_rows.txt=, with the suite's own output in
+=evidence/bond_versioning_test_output.txt=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Verification. Run the versioning test, read the rows the test wrote, then
+rewrite a bond the ACME provision generated and read the rows again.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| =[bond][versioning]= suite | 9 assertions, 2 test cases, all passed | =ores.trading.core.tests "[bond][versioning]"= | 5d0fa921e8 |
+| Trade versions and leg rows, from the database the test wrote | trade 3 versions, leg 1 row in window 3 | =evidence/bond_rewrite_version_rows.txt= | 5d0fa921e8 |
+| ACME trade version, before and after a bond instrument rewrite | 5 → 6 | =evidence/bond_rewrite_version_rows.txt= | 5d0fa921e8 |
+| Trade-keyed bond legs in the ACME population | 0 | =evidence/bond_rewrite_version_rows.txt= | 5d0fa921e8 |
+| =ores.trading.core= suite | 1180 assertions, 176 test cases, all passed | =ores.trading.core.tests= | 5d0fa921e8 |
 
 * Notes
 
-* Test Scenarios
+=bump_parent_version= is declared on =bond_instrument=, =bond_leg= and the
+three leg children. Each create script calls
+=ores_trading_trades_touch_version_fn= before its own version management.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -74,7 +72,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3407][#3407]] | [trading] Prove the three ACME population acceptances |
 
 * Review
 
@@ -83,3 +81,56 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A bond leg rewrite versions its parent. The versioning fix holds on real
+rows, not only in the test's expectation.
+
+=ores.trading.core.tests "[bond][versioning]"= passes:
+=All tests passed (9 assertions in 2 test cases)=. The suite's output is
+beside this task as =evidence/bond_versioning_test_output.txt=.
+
+- =rewriting_a_bond_leg_advances_the_parent_trade_version= writes the trade,
+  its activity, the issue and the instrument, then rewrites a leg through
+  the generated repository — the write the service makes. It passes
+  =REQUIRE(after_leg.size() == before_leg.size() + 1)= with expansion
+  =3 == 3=, and =CHECK(after_leg.back().version == before_leg.back().version
+  + 1)=.
+- =as_of_read_reports_the_legs_current_at_each_parent_version= passes
+  =CHECK(earlier.empty()) = true, =REQUIRE(current.size() == 1)=,
+  =CHECK(current[0].leg_role == "trs_funding")=,
+  =CHECK(current[0].version == 1)=, =REQUIRE(rows.size() == 1)= and
+  =CHECK(rows[0].leg_role.value() == "trs_funding")=.
+
+The rows come from =ores_dev_bright_faraday=, not from a fixture. The test
+writes to the real database under its own tenant. For
+=trade 01a1468f-c7f0-76e8-b2e8-1ace370bda3d= the trade holds three version
+rows, opening at =22:13:10.48201=, =22:13:10.558431= and =22:13:10.567863=,
+and the leg row =trs_funding= version 1 lies at =22:13:10.568217=, inside
+the third window. The as-of read of each window reports 0 legs for the first
+two windows and 1 leg, =trs_funding v1=, for the third. All rows are quoted
+in =evidence/bond_rewrite_version_rows.txt=.
+
+A bond the ACME provision generated was rewritten through the client verb,
+=bond_instruments set=, as the party the token named. The instrument went
+from version 1 to version 2 and the trade from version 5 to version 6, its
+sixth window opening at =22:14:38.684248=.
+
+*Not met as written, and why.* The acceptance asks for a leg of a
+=generated bond=. The ACME population holds none. =bond_legs= is empty
+(0 rows), as are =bond_leg_amounts= and =bond_leg_rates=; the generator
+writes the leg once per issue through =put_bond_issue_leg_request=
+(=trading_trade_population_writer.cpp=, =write_issue_leg=), and a bond issue
+leg names no trade and declares no parent bump. So the trade-anchored part a
+generated ACME bond does carry is its bond instrument, and that is what was
+rewritten. The leg path itself is proved by the test, on a generated bond.
+
+*Found, and not fixed here.* An as-of read of a parent window can report two
+child versions. The trigger bumps the parent
+(=ores_trading_trades_touch_version_fn=) before it closes the child's own
+current row (=update … set valid_to = clock_timestamp()=), so the parent's
+new window opens before the child's old window ends. For trade
+=fe21a60d-4d15-5601-b650-7ca3f316d8cf= the version 6 window opens at
+=22:14:38.684248= and instrument version 1 closes at =22:14:38.684642=, so
+the join reports instrument versions 1 and 2. The test avoids the region by
+widening each bound by one second, as its own comment says. A reader that
+feeds a parent window back verbatim gets both.

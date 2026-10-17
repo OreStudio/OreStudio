@@ -59,6 +59,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/tag_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/tag_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/messaging/tag_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/ores.assets.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/ores.assets.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/presentation/image_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.assets.core/presentation/tag_history_field_mapper.hpp"

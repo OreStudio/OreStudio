@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 05B35EA3-EA18-4F57-A89F-4DEB40DBD0B7
+:END:
+#+title: The report error handler permissions are unseeded
+#+description: The codegen permission check fails on main: report_errors' handler permission codes were never seeded, so two codegen tests fail. It came in with the report error work and nobody noticed because the failure is in a suite that runs on the generator rather than the service.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Seed the permission codes the report error handlers require. The codegen
+permission check fails on main because `report_errors`' handler codes have no
+rows, so two codegen tests fail.
+
+* Why
+
+It arrived with the report error work and nobody noticed. The check runs against
+the generator rather than the service, and a red generator suite is easy to read
+as somebody else's problem, so a gate has been failing on main unnoticed.
+
+The same omission would break the handler at runtime the first time the subject
+is called, which is how the identical gap surfaced for the reporting file types
+and again for a report run's compute reads. Three times now, a generated handler
+whose permission was never seeded.
+
+Having found it three times, the durable answer is probably not a fourth fix but
+a check that a generated handler's permission exists before the handler is
+allowed to land.
+
+* References
+
+- The codegen permission check, which reports the two failures.
+- The report error work, merged as `95b0c6b2e6`.
+- The two earlier instances: the reporting file types read, and the compute
+  reads a run needs.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what an inbox capture is.

@@ -646,7 +646,10 @@ trade commodity_instrument_mapper::reverse_commodity_variance_swap(
     d.underlyingTypes.Name = std::move(n);
     static_cast<std::string&>(d.LongShort) = "Long";
     d.Strike = static_cast<float>(instr.variance_strike.value_or(0.0));
-    d.Notional = static_cast<float>(instr.quantity);
+    // The variance swap's notional is money, and the shared binding leaf now
+    // carries its digits. The commodity domain holds the quantity as a double,
+    // so the double's own spelling is the value.
+    set_exact(d.Notional, exact_decimal(instr.quantity));
     static_cast<std::string&>(d.Calendar) = "USD";
     t.CommodityVarianceSwapData = std::move(d);
     return t;

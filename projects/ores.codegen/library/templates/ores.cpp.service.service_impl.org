@@ -713,6 +713,16 @@ ores::utility::domain::result
     case precondition_kind::any:
         break;
     }
+{{#domain_entity.has_preserved_fields}}
+    // What the row already records about its own life is the row's to keep.
+    // The write carries no way to state these, so an edit that let them take
+    // a default would clear the stamps the service itself wrote.
+    if (!current.empty()) {
+{{#domain_entity.preserved_fields}}
+        out.{{member}} = current.front().{{member}};
+{{/domain_entity.preserved_fields}}
+    }
+{{/domain_entity.has_preserved_fields}}
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the
     // two come to disagree.

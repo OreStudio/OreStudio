@@ -17,33 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ANALYTICS_QUANT_HPP
 #define ORES_ANALYTICS_QUANT_HPP
 
 /**
- * @brief Dependency-light quantitative math library -- currently the Cross
- * Rates Matrix (CRM) engine.
+ * @brief Quant math library: CRM topology, rate engine, stochastic processes
  *
- * A pure computation library: no database, no NATS, no refdata coupling.
- * Everything it needs (currency codes, spot days, short-term rates) is
- * supplied by the caller as plain parameters -- see @c domain::ccy_pair_input
- * and friends. Depends only on Boost (graph, for the topology build) and
- * immer (for the lock-free runtime rate engine); fully unit-testable in
- * isolation, consumable standalone as a library.
- *
- * Two-phase interface, matching two very different lifecycles:
- * - @b Build (rare): @c service::topology_builder validates a set of
- *   currency pairs into an immutable, fixed @c domain::crm_topology --
- *   a spanning tree with cycle detection at build time, so a config
- *   admitting more than one path between two currencies is always
- *   rejected, never silently resolved.
- * - @b Runtime (continuous, later task): a rate engine consumes a stream of
- *   driver-rate ticks -- possibly from a different thread than its readers
- *   -- and serves batched derived-rate reads via an atomically-swapped
- *   immutable snapshot, propagating staleness end to end.
- *
- * See doc/agile/versions/v0/sprint_23/crm_implementation/ for the story,
- * task and design diagrams this component implements.
+ * Dependency-light quantitative math library: CRM spanning-tree topology, thread-safe derived-rate
+ * engine, and stochastic price processes.
  */
 namespace ores::analytics::quant {}
 

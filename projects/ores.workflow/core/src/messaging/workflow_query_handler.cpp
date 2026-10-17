@@ -187,6 +187,7 @@ void workflow_query_handler::list_instances(ores::nats::message msg) {
         s.created_by = inst.created_by;
         s.created_at = fmt_tp(inst.recorded_at);
         s.completed_at = fmt_opt_tp(inst.completed_at);
+        s.last_event_at = fmt_opt_tp(inst.last_event_at);
         s.error = inst.error;
         s.target_kind = inst.target_kind;
         s.target_id = inst.target_id == boost::uuids::uuid{} ?

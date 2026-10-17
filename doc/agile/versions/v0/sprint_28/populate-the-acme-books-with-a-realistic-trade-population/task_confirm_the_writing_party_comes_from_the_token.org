@@ -8,12 +8,12 @@
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3407
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,45 +26,49 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-15                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                               |
 
 * Acceptance
 
--
+Met against the task's description: a token that names a party sets it on
+the row, and a token that names none is refused rather than defaulting. The
+chain, link by link, is in =evidence/party_from_token_probe.txt=.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Verification, not construction. Read the chain from the claim to the row,
+then exercise it against the running system on a recreated database.
 
 * Measurements
 
-Every number this task claims about a tree, with the command that produced it
-and the commit it was measured at. A number without both is not a measurement,
-because a clean-up record describes a tree and trunk moves under a branch: a
-consumer count, a gate's component count and a suite's size all change with no
-code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
-
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Trading create scripts that stamp the party from the session | 24 | =grep -rho "NEW.party_id := current_setting('app.current_party_id')::uuid" projects/ores.sql/create/trading/*.sql= then =wc -l= | 5d0fa921e8 |
+| Trading handlers calling =require_party= | 0 | =grep -rn "require_party" projects/ores.trading/= then =wc -l= | 5d0fa921e8 |
+| Bond instruments carrying the party their trade carries | 32 of 32, 8 per party over 4 parties | =evidence/party_from_token_probe.txt= | 5d0fa921e8 |
+| Party stamped while the row stated another | stored ACCOUK, stated ACMCOR | =evidence/party_from_token_probe.txt= | 5d0fa921e8 |
+| Write from a session naming no party | refused, =invalid input syntax for type uuid: ""= | =evidence/party_from_token_probe.txt= | 5d0fa921e8 |
+| =request_context= suite | 36 assertions, 12 test cases, all passed | =ores.service.tests "[request_context]"= | 5d0fa921e8 |
+| =ores.service= suite | 282 assertions, 59 test cases, all passed | =ores.service.tests= | 5d0fa921e8 |
+| =ores.trading.core= suite | 1180 assertions, 176 test cases, all passed | =ores.trading.core.tests= | 5d0fa921e8 |
 
 * Notes
 
-* Test Scenarios
+One value is read end to end. The claim is named =party_id=
+(=jwt_claims.hpp= line 140) and is minted from the account's own
+membership at login and at a party switch, never from a request body. The
+request context takes it (=request_context.cpp= line 77). The connection
+pool writes it to =app.current_party_id= on every acquire
+(=tenant_aware_pool.hpp= line 264), and 24 trading create scripts stamp it
+onto the row. The wire cannot state it: =bond_instrument_write= has no
+=tenant_id= and no =party_id= member.
 
-Manual QA scenarios (scaffolded via =compass add test_scenario=)
-that verify this task. Link
-new ones here as they're created; the scenario doc itself links back
-via its "Verifies task" field.
+* Test Scenarios
 
 | Scenario | State | Notes |
 |----------+-------+-------|
@@ -74,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3407][#3407]] | [trading] Prove the three ACME population acceptances |
 
 * Review
 
@@ -83,3 +87,48 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The writing party comes from the token. A write lands in the caller's
+party, and a caller that names no party cannot write.
+
+Every link was confirmed, not re-derived. The file and line of each is in
+=evidence/party_from_token_probe.txt=.
+
+- The =party_id= claim lives at =ores.security/jwt/jwt_claims.hpp=:140 and
+  is read at =jwt_authenticator.cpp=:208. It is minted from the account's
+  own membership: at login (=auth_handler.hpp=:830=), and at a party switch
+  (=account_operations_handler.hpp=:1245=), which refuses a party the
+  account is not a member of. It is never taken from a request body.
+- The claim becomes the request context at
+  =ores.service/src/service/request_context.cpp=:77=.
+- The context becomes =app.current_party_id= on every acquire
+  (=tenant_aware_pool.hpp=:264=, and =bitemporal_operations.cpp=:182= for a
+  raw connection). The pool writes the empty string when the context has no
+  party, so a pooled connection cannot hand this context the last user's
+  party.
+- The setting becomes the row in 24 trading create scripts, for example
+  =trading_bond_instruments_create.sql=:109=.
+- The wire cannot state it. =bond_instrument_write= carries =trade_id=,
+  =trade_type_code=, =trade_activity_id=, =issue_id= and =notional= only.
+
+Proved against the running system. Logged in as
+=tenant_admin@acme_corporation=, whose token names Acme Corporation Plc, a
+=bond_instruments set= stored =party_id ddb2008f…=. All 32 bond instruments
+carry the party their trade carries, 8 per party over 4 parties. A probe row
+that stated ACMCOR under a session naming ACCOUK was stored as ACCOUK. A
+session with =app.current_party_id= empty had its insert refused, with
+=ERROR: invalid input syntax for type uuid: ""= at
+=ores_trading_bond_instruments_insert_fn= line 9.
+
+*Not met, and worth a task of its own.* The refusal is incidental.
+=require_party= (=handler_helpers.hpp=:283=) states exactly this rule, and
+no trading handler calls it. =grep -rn require_party projects/ores.trading/=
+returns 0. =make_request_context= admits a party-less token at tenant scope,
+and the write then dies on a cast of the empty setting. Nothing is
+defaulted, so the acceptance holds, but the failure does not name its cause.
+Its ten call sites sit in configuration-document handlers in three files, in
+analytics, refdata and reporting.
+
+*Noted.* Party and tenant are separate. This task covers party only. The
+capture about a system-tenant caller re-parenting another tenant's run is
+about =tenant_id=, which the session owns, and it is filed elsewhere.

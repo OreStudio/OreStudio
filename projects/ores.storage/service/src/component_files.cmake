@@ -38,4 +38,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.service/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.service/messaging/registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.storage.service/ores.storage.service.hpp"
 )

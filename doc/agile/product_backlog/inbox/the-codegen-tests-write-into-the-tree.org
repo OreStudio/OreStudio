@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: AAC3030D-CEDB-47AD-B549-B291294AFEBD
+:END:
+#+title: The codegen tests write into the working tree
+#+description: Running the codegen test suite leaves modified generated files behind: two files changed under a run of compass check, and neither is the branch's change. The gate that catches the resulting drift cannot then tell the side effect from the work.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the codegen suite render into a temporary directory, or restore what it
+touches, so that running a check never leaves the working tree different from
+how it was found.
+
+* Why
+
+A run of `compass check` on a branch left two generated files modified that the
+branch had not touched: `ores.refdata.api/domain/calendar_rule.hpp` and
+`ores.reporting/core/tests/report_error_eventing_integration_tests.cpp`. The
+first lost a paragraph of documentation that the model does not carry, so
+committing it would have silently reverted a colleague's work. The second
+gained two lines that no gate asks for.
+
+Both were side effects of running the suite rather than the branch's change, and
+`drift-sweep` passes with both reverted, which is how they were identified. That
+takes a deliberate experiment to establish. A person who runs the checks, sees a
+dirty tree, and commits what looks like their own work will merge someone else's
+file back to an older shape.
+
+The reason the experiment was needed is that the check that would catch drift
+compares the working tree against HEAD, so it reports an uncommitted fix and an
+uncommitted side effect identically.
+
+* References
+
+- `drift-sweep`, which renders every catalogue component and passed with both
+  files reverted.
+- The generated-file drift captures, which describe the same confusion between a
+  hand edit and a render.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what an inbox capture is.

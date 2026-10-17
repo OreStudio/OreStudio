@@ -5,13 +5,13 @@
 #+description: Apply the bond pattern to the equity family: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum.
 #+type: story
 #+level: s2
-#+filetags: :next:product_backlog:
+#+filetags: :trading:instrument:equity:data_model:data_oriented_design:sprint_28:v0:
 #+created: 2026-10-02
-#+updated: 2026-10-02
-#+environment:
+#+updated: 2026-10-16
+#+environment: merry_newton
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -21,12 +21,12 @@ Rework options, forwards, swaps, variance swaps, barriers, digitals, Asians, acc
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
-| Parent sprint | [[id:9A17E8DF-7E94-4F55-8A14-BCB7D9A16D6B][Product backlog — next]] |
-| Now           | Not yet started.                       |
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Promoted from the product backlog; the analysis is written. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-02                               |
+| Next          | Land the analysis unit, then start the routing repair. |
+| Last touched  | 2026-10-16                               |
 
 * Acceptance
 
@@ -39,7 +39,7 @@ Rework options, forwards, swaps, variance swaps, barriers, digitals, Asians, acc
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:D65A593A-AE06-4EBD-981E-EDAAF5AF1138][Analyse the equity family against data-oriented design]] | DONE | 2026-10-16 | 2026-10-16 | Walk the equity family's models, SQL, tests and round trip against the data-oriented design criteria and the instrument table rule, and propose the target model. |
 
 * Decisions
 

@@ -17,17 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_MARKETDATA_API_HPP
 #define ORES_MARKETDATA_API_HPP
 
 /**
- * @brief Market data contract
+ * @brief Market data domain types and protocol schemas
  *
- * The shared contract of the market data component: the typed datum and index
- * models with their schema tables, the domain types for series, observations,
- * fixings and feed bindings with their JSON and table I/O, the generated NATS
- * protocols and events, and the sample generators.
+ * Domain types and NATS protocol schemas for the market-data component.
  */
-namespace ores::marketdata {}
+namespace ores::marketdata::api {}
 
 #endif

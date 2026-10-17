@@ -54,6 +54,12 @@ public:
 
     /// UnitedStates::Settlement -- ql/time/calendars/unitedstates.cpp.
     [[nodiscard]] static domain::calendar_ruleset united_states_settlement();
+
+    /// SouthAfrica -- ql/time/calendars/southafrica.cpp. The calendar every
+    /// one of QuantLib's own thirty-five business-day-convention cases is
+    /// driven through, transcribed here so those cases can be replayed
+    /// against the calendar this engine materialises from flat rules.
+    [[nodiscard]] static domain::calendar_ruleset south_africa();
 };
 
 } // namespace ores::analytics::quant::service

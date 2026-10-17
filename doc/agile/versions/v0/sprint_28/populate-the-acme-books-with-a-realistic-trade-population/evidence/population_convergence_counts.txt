@@ -1,0 +1,136 @@
+Evidence for task A40DD310-3C6C-4681-87BB-802890B3E93D
+"Prove the population converges across two provisions"
+
+Measured 2026-10-16 on branch prove/the-three-acme-population-acceptances
+at commit 5d0fa921e8. ACME tenant b7fe3d66-2aed-4d1c-a19b-0406b689640b.
+
+Baseline: services stopped, compass db recreate -y -k, compass services
+restart, then one bootstrap setup ... --profile acme_demo. The tenant
+reached active at 22:10:47, about four minutes after the request.
+
+Counts below are current rows: every query filters
+valid_to = ores_utility_infinity_timestamp_fn(). The trades table is
+write-version, so a bare row count is a count of versions, not of trades.
+Both are given where they differ.
+
+
+== 1. After one provision ==
+
+$ psql ... -c "select count(*) as trades, coalesce(sum(version),0) as sum_version,
+  coalesce(max(version),0) as max_version from ores_trading_trades_tbl
+  where tenant_id='b7fe3d66-...' and valid_to = ores_utility_infinity_timestamp_fn()"
+ trades | sum_version | max_version
+--------+-------------+-------------
+     32 |         160 |           5
+(1 row)
+
+$ psql ... -c "select count(*) as all_rows from ores_trading_trades_tbl
+  where tenant_id='b7fe3d66-...'"
+ all_rows
+----------
+      160
+(1 row)
+
+$ psql ... -c "select version, count(*) from ores_trading_trades_tbl
+  where tenant_id='b7fe3d66-...' and valid_to = ores_utility_infinity_timestamp_fn()
+  group by 1 order by 1"
+ version | count
+---------+-------
+       5 |    32
+
+$ psql ... -c "select count(*) as all_rows, count(*) filter
+  (where valid_to = ores_utility_infinity_timestamp_fn()) as current
+  from ores_trading_bond_instruments_tbl where tenant_id='b7fe3d66-...'"
+ all_rows | current
+----------+---------
+       32 |      32
+
+$ psql ... -c "select p.short_code, count(*) from ores_trading_bond_instruments_tbl i
+  join ores_refdata_parties_tbl p on p.id=i.party_id
+    and p.valid_to = ores_utility_infinity_timestamp_fn()
+  where i.tenant_id='b7fe3d66-...' and i.valid_to = ores_utility_infinity_timestamp_fn()
+  group by 1 order by 1"
+ short_code | count
+------------+-------
+ ACCOHK     |     8
+ ACCOUK     |     8
+ ACCOUS     |     8
+ ACMCOR     |     8
+
+$ psql ... -c "select count(*) from ores_trading_trade_identifiers_tbl
+  where tenant_id='b7fe3d66-...' and valid_to = ores_utility_infinity_timestamp_fn()"
+ count
+-------
+    32
+
+The four generation configs, one per party:
+$ psql ... -c "select id, name, party_id from ores_synthetic_trade_generation_configs_tbl
+  where tenant_id='b7fe3d66-...' and valid_to = ores_utility_infinity_timestamp_fn() order by name"
+                  id                  |            name             |               party_id
+--------------------------------------+-----------------------------+--------------------------------------
+ c5359a84-099c-53a6-a6dd-c8ba72c59d59 | ACME ACCOHK bond population | c276b8a6-a3ab-4477-8adf-34e37f3018be
+ 27dcb076-df61-58aa-8df9-11866b70ac5b | ACME ACCOUK bond population | 80943f25-ac69-40c0-8f9a-52e9aa499339
+ 01ad8f0a-3535-53eb-8cab-85e2b18b440d | ACME ACCOUS bond population | 2c7e3b71-ae00-421d-85e6-14d198985f99
+ 34f07898-b586-5be6-9885-2321f65129d7 | ACME ACMCOR bond population | ddb2008f-a010-4953-bcf9-adc76bb56732
+
+
+== 2. The second run of the generation ==
+
+$ compass shell -l evidence/generate_trades_second_run.txt
+  connect nats://localhost:20605
+  login tenant_admin@acme_corporation Secure-Password-123
+  synthetic generate-trades --config c5359a84-... --config 27dcb076-... \
+      --config 01ad8f0a-... --config 34f07898-...
+
+config c5359a84-099c-53a6-a6dd-c8ba72c59d59 (ACME ACCOHK bond population) party
+  c276b8a6-a3ab-4477-8adf-34e37f3018be as ACME Corporation HK Ltd: planned 8, wrote 0, already present 8
+config 27dcb076-df61-58aa-8df9-11866b70ac5b (ACME ACCOUK bond population) party
+  80943f25-ac69-40c0-8f9a-52e9aa499339 as ACME Corporation UK plc: planned 8, wrote 0, already present 8
+config 01ad8f0a-3535-53eb-8cab-85e2b18b440d (ACME ACCOUS bond population) party
+  2c7e3b71-ae00-421d-85e6-14d198985f99 as ACME Corporation US Inc: planned 8, wrote 0, already present 8
+config 34f07898-b586-5be6-9885-2321f65129d7 (ACME ACMCOR bond population) party
+  ddb2008f-a010-4953-bcf9-adc76bb56732 as Acme Corporation Plc: planned 8, wrote 0, already present 8
+
+  All 32 trade lines read "version 5 (already present)", for example:
+  trade 2d975bcd-af80-59f3-99fd-2cc2179abdbd POP-c5359a84-000000 in book
+    ec17f071-e1cd-4a56-aca7-102c53798274 version 5 (already present)
+
+planned 32, wrote 0, already present 32.
+
+
+== 3. After the second run ==
+
+$ psql ... -c "select count(*) as trades, coalesce(sum(version),0) as sum_version,
+  coalesce(max(version),0) as max_version from ores_trading_trades_tbl
+  where tenant_id='b7fe3d66-...' and valid_to = ores_utility_infinity_timestamp_fn()"
+ trades | sum_version | max_version
+--------+-------------+-------------
+     32 |         160 |           5
+(1 row)
+
+$ psql ... -c "select count(*) as all_rows from ores_trading_trades_tbl
+  where tenant_id='b7fe3d66-...'"
+ all_rows
+----------
+      160
+(1 row)
+
+$ psql ... -c "select count(*) as all_rows, count(*) filter
+  (where valid_to = ores_utility_infinity_timestamp_fn()) as current
+  from ores_trading_bond_instruments_tbl where tenant_id='b7fe3d66-...'"
+ all_rows | current
+----------+---------
+       32 |      32
+
+$ psql ... -c "select count(*) from ores_trading_trade_identifiers_tbl
+  where tenant_id='b7fe3d66-...' and valid_to = ores_utility_infinity_timestamp_fn()"
+ count
+-------
+    32
+
+Before and after are identical: 32 trades, sum(version) 160, max version 5,
+160 trade rows in total, 32 bond instruments, 32 Internal identifiers.
+
+No trade duplicated: the trade count and the row count are unchanged.
+No trade's version advanced: sum(version) and max(version) are unchanged,
+and every trade the generator reported read version 5 both times.

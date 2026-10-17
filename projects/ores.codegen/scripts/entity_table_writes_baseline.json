@@ -356,15 +356,15 @@
     },
     {
       "kind": "sql_function",
-      "name": "ores_marketdata_publish_market_data_observations_from_dq_fn",
-      "file": "projects/ores.sql/create/marketdata/marketdata_publish_from_dq_create.sql",
-      "reason": "predates the check"
+      "name": "ores_marketdata_publish_curve_series_fn",
+      "file": "projects/ores.sql/create/marketdata/marketdata_curve_series_create.sql",
+      "reason": "writes the live market series a published curve configuration names from its staged curves, as every publish from DQ does"
     },
     {
       "kind": "sql_function",
-      "name": "ores_marketdata_publish_curve_series_fn",
-      "file": "projects/ores.sql/create/marketdata/marketdata_curve_series_create.sql",
-      "reason": "publishes the series a party's curve configuration defines, keyed by the oresmd URI a trade's reference resolves by; the rows must land in the publishing transaction, from the JSON array of curves it is handed"
+      "name": "ores_marketdata_publish_market_data_observations_from_dq_fn",
+      "file": "projects/ores.sql/create/marketdata/marketdata_publish_from_dq_create.sql",
+      "reason": "predates the check"
     },
     {
       "kind": "sql_function",

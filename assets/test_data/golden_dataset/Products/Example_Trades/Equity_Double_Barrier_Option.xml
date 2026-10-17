@@ -22,8 +22,8 @@
       <BarrierData>
         <Type>KnockOut</Type>
         <Levels>
-          <Level>3000</Level>
-          <Level>3500</Level>
+          <Level>3000.00</Level>
+          <Level>3500.00</Level>
         </Levels>
       </BarrierData>
       <StartDate>2025-07-12</StartDate>

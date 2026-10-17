@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-imm-roll-tenor-resolution
+#+pr: 3390
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -39,16 +39,20 @@ been a hack.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-15                               |
 
 * Acceptance
 
--
+- A =CREDIT_CDS_IMM= convention resolves its tenors by rolling whole IMM
+  quarters from the anchor, and no resolver path throws for it.
+- The resolution rows for =CREDIT_CDS_IMM= are seeded, not hand-written per
+  tenant.
+- A test pins the resolved date, so a change to the roll rule fails the suite.
 
 * Plan
 
@@ -87,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3390][#3390]] | [agile] Close the IMM roll task as already delivered |
 
 * Review
 
@@ -96,6 +100,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Already delivered. Nothing was implemented for this task, because main already
+does it and the capture it came from had gone stale.
+
+The capture was right when it was written: the resolver threw for an =IMM_ROLL=
+convention. The unified tenor resolution work then superseded that design. The
+algorithm vocabulary is now =(ANCHOR_OFFSET, SCHEDULE_STEP)=, the old
+=IMM_ROLL= algorithm row is gone, and =IMM_ROLL= survives only as a
+=measured_from= anchor. =CREDIT_CDS_IMM= is seeded as a =SCHEDULE_STEP= row
+whose schedule is =ROLL_QUARTER=, in
+=refdata_tenor_convention_resolutions_populate.sql=.
+
+The resolver computes the roll closed-form in
+=projects/ores.refdata/api/src/domain/tenor_resolution.cpp=:
+=roll_quarter_date()= returns the 20th of the March/June/September/December
+quarter, and =walk_roll_quarter()= counts the requested quarters forward from
+the anchor.
+
+That the rule is the 20th, and not a business-day adjustment of it, is a
+correction this task made. The knowledge page had called the 20th "the first
+business day following" it, and the code advanced a weekend date to the next
+weekday. Both were wrong, and neither matched a market convention. There are
+two conventions under the name "IMM date", and the page now documents both:
+the true IMM date is the third Wednesday of the quarter month, used by
+exchange-traded STIR futures, and the CDS roll date is the 20th, used by
+credit default swaps. =ROLL_QUARTER= models the second, because its only
+consumer is =CREDIT_CDS_IMM=. The 20th is kept exactly, weekend or not, since
+that is what lets every contract in a CDS series mature on one date. The
+third-Wednesday IMM date has no schedule and is recorded as a gap.
+
+Two tests pin it: =resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quarter=
+and =resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset=, both in
+=domain_tenor_resolution_tests.cpp=. They pass, and =ores.refdata.api.tests=
+passed in the full gate.
+
+Acceptance met as written above, by the earlier work. No code changed here.
 
 * Promoted from capture
 

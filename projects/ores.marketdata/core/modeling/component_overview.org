@@ -5,6 +5,7 @@
 #+name: marketdata.core
 #+full_name: ores.marketdata.core
 #+description: Market data management — market series, observations, fixings, and import from external sources.
+#+brief: Market data ingestion and query core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :marketdata:core:component:

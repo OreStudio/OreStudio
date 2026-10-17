@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/carry-the-fx-money-digits-across-the-ore-boundary
+#+pr: 3392
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ This unit comes first because it moves the goldens.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Extend the reapply script for required members, then patch the FX money leaves. |
+| Next         | Nothing. |
 | Last touched | 2026-10-16                               |
 
 * Acceptance
@@ -69,12 +69,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| FX money members made lexical leaves | 23 | =grep -c 'domain::moneyFloat' projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp= is 29: the FRA pair, the four credit members and these 23 | the PR head |
+| Money members the script patches | 27 | =grep -cE '^    \("[a-zA-Z0-9_]+", "[a-zA-Z0-9_]+", "(required\|optional)"\),$' scripts/reapply_ore_lexical_form.py= | the PR head |
+| Goldens changed | 3, one numeric line each | =git diff --stat -- assets= | the PR head |
+| ORE core suite | 668 cases, 483,175 assertions, all pass | =ores.ore.core.tests= with the =.env= loaded | the PR head |
+| FX suite | 33 cases, 182 assertions, all pass | =ores.ore.core.tests "[fx]"= | the PR head |
+| Reapply script self-tests | both pass | =scripts/reapply_ore_lexical_form.py --self-test= and =--self-test-missing-anchor= | the PR head |
+| Local checks | 51 of 52, format and both drift checks pass | =compass check --exclude-heavy= | the PR head |
 
 * Notes
 
 - The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 1. Measured there: 35 =exact_decimal= call sites in =fx_instrument_mapper.cpp=, 0 =set_exact= sites, and 6 money leaves carrying the lexical form in the whole tree.
 - The credit task [[id:C5829235-D255-4C13-9EC1-6658CA518B02][Carry the credit instruments' digits]] is the template for the shape of this unit.
+- *The lever was broken before this unit started.* The nightly clang-format run reflowed =_moneyFloat_Info= in =domain.cpp=, and the script's byte-exact "already applied" test then reported a half-applied patch and refused to run. Its own =--self-test= failed on =main=. The script now recognises a patch modulo whitespace, writes the declaration where the earliest user needs it rather than inside the FRA edit, and runs clang-format over what it writes. Both self-tests pass again.
+- *The reach is wider than the family.* The leaf types are shared, so the commodity and equity variance-swap mappers and the equity accumulator and TaRF mappers now write their money with =set_exact=. Their goldens do not change; the three that do are the FX digital option, the FX digital barrier option and the exotic FX TaRF, one numeric line each.
+- *Two money members are deliberately left for other units:* =barrierData_Levels_t.Level= is a vector, so the script does not yet patch it, and =rangeBound= is the accumulator's encoded child, which the range-bounds unit removes.
 
 * Test Scenarios
 
@@ -91,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3392][#3392]] | [ore] Carry the FX money digits across the ORE boundary |
 
 * Review
 
@@ -100,3 +109,22 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The FX family now carries the digits its documents state. 23 money members
+across the seven products are lexical leaves, the reverse mapping writes them
+with =set_exact=, and a mapper test holds a 16-digit amount through both
+directions. The ORE core suite passes: 668 cases, 483,175 assertions.
+
+The unit also repaired the lever it depends on. =reapply_ore_lexical_form.py=
+could not run on =main= at all, because the nightly format run had reflowed one
+of its anchors and its own self-test failed. It now recognises a patch modulo
+whitespace, places the leaf declaration before the earliest user rather than
+inside the FRA edit, and formats what it writes.
+
+Three goldens changed, one numeric line each, and the whole diff was read. The
+reach of the shared leaf types was checked: the commodity and equity variance
+swaps and the equity accumulator and TaRF map their money with =set_exact= now,
+and their goldens do not move.
+
+Left for other units: the barrier level vectors, which the script does not yet
+patch, and the accumulator's encoded range bounds, which its own unit removes.

@@ -5,6 +5,7 @@
 #+name: testing
 #+full_name: ores.testing
 #+description: Catch2 test infrastructure — a PostgreSQL tenant per test run, per-test logging, database context helpers, and readers for the SQL populate scripts.
+#+brief: Catch2 test infrastructure and database fixtures
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :testing:infrastructure:component:

@@ -217,6 +217,15 @@ export interface WorkflowInstanceSummary {
     created_by: string;
     created_at: string;
     completed_at: string | null;
+    /**
+     * @brief When the run last did anything, whether or not it has finished.
+     *
+     * Every transition moves it, and so does the work between two of them, so a
+     * run still open whose timestamp is old is a run nothing is driving. That is
+     * the answer completed_at cannot give, because a run that never finished has
+     * none.
+     */
+    last_event_at: string | null;
     error: string;
     /**
      * @brief What the run acts on, and its identity, as the start message named

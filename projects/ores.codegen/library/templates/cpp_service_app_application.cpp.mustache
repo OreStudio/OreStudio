@@ -1,4 +1,4 @@
-{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/cpp_service_app.org. Edit the org source. }}
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.service-app.application_impl.org. Edit the org source. }}
 {{{cpp_license}}}
 {{#component}}
 #include "{{full_name}}/app/application.hpp"
@@ -7,10 +7,13 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include "{{full_name}}/app/application_exception.hpp"
+<<paste:2A6D90B3-5EA2-48FA-BAC2-472EB4388B6C>>
 
 namespace {{namespace}}::app {
 
 using namespace ores::logging;
+
+<<paste:729726C6-96A1-438C-8663-2CF919C72941>>
 
 ores::database::context application::make_context(
     const ores::database::database_options& db_opts) {
@@ -30,18 +33,23 @@ ores::database::context application::make_context(
 application::application() = default;
 
 boost::asio::awaitable<void>
-application::run(boost::asio::io_context& /*io_ctx*/,
+application::run(boost::asio::io_context& io_ctx,
     const config::options& cfg) const {
+
+{{^has_app_run_body}}
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "{{full_name}}", 0, 1);
 
     auto ctx = make_context(cfg.database);
     (void)ctx;
+    (void)io_ctx;
 
     // TODO: register domain handlers and run NATS server
     BOOST_LOG_SEV(lg(), warn) << "{{full_name}} service is not yet implemented.";
     co_return;
+{{/has_app_run_body}}
+<<paste:2CD994C9-83FF-4C41-8909-5AD2BF3DECCC>>
 }
 
 }

@@ -4324,6 +4324,8 @@ enum class momentType {
 
 ORES_ORE_CORE_EXPORT std::string to_string(momentType);
 
+struct moneyFloat : xsd::base<float> {};
+
 struct varianceSwapData {
     domain::date StartDate{};
     domain::date EndDate{};
@@ -4331,7 +4333,7 @@ struct varianceSwapData {
     domain::underlyingTypes_group_t underlyingTypes{};
     domain::varianceSwapData_LongShort_t LongShort{};
     float Strike{};
-    float Notional{};
+    domain::moneyFloat Notional{};
     domain::calendar Calendar{};
     xsd::optional<domain::momentType> MomentType;
     xsd::optional<bool> AddPastDividends;
@@ -4346,8 +4348,6 @@ enum class longShort {
 
 ORES_ORE_CORE_EXPORT std::string to_string(longShort);
 
-struct moneyFloat : xsd::base<float> {};
-
 struct forwardRateAgreementData {
     domain::date StartDate{};
     domain::date EndDate{};
@@ -4361,9 +4361,9 @@ struct forwardRateAgreementData {
 struct fxForwardData {
     domain::date ValueDate{};
     domain::currencyCode BoughtCurrency{};
-    float BoughtAmount{};
+    domain::moneyFloat BoughtAmount{};
     domain::currencyCode SoldCurrency{};
-    float SoldAmount{};
+    domain::moneyFloat SoldAmount{};
     xsd::optional<domain::settlementType> Settlement;
     xsd::optional<domain::fxForwardSettlementData> SettlementData;
 };
@@ -4381,9 +4381,9 @@ struct fxAverageForwardData {
     domain::date PaymentDate{};
     domain::scheduleData ObservationDates{};
     domain::bool_ FixedPayer{};
-    float ReferenceNotional{};
+    domain::moneyFloat ReferenceNotional{};
     domain::currencyCode ReferenceCurrency{};
-    float SettlementNotional{};
+    domain::moneyFloat SettlementNotional{};
     domain::currencyCode SettlementCurrency{};
     xsd::optional<domain::settlementType> Settlement;
     domain::fxAverageForwardData_FXIndex_t FXIndex{};
@@ -4435,9 +4435,9 @@ struct optionData {
 struct fxOptionData {
     domain::optionData OptionData{};
     domain::currencyCode BoughtCurrency{};
-    float BoughtAmount{};
+    domain::moneyFloat BoughtAmount{};
     domain::currencyCode SoldCurrency{};
-    xsd::optional<float> SoldAmount;
+    xsd::optional<domain::moneyFloat> SoldAmount;
     xsd::optional<float> Delta;
     xsd::optional<domain::fxOptionData_FXIndex_t> FXIndex;
 };
@@ -4473,7 +4473,7 @@ enum class barrierStyle {
 ORES_ORE_CORE_EXPORT std::string to_string(barrierStyle);
 
 struct barrierData_Levels_t {
-    xsd::vector<float> Level;
+    xsd::vector<domain::moneyFloat> Level;
 };
 
 enum class barrierData_RebatePayTime_t {
@@ -4503,16 +4503,16 @@ struct fxBarrierOptionData {
     xsd::optional<domain::fxBarrierOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
     xsd::optional<domain::fxBarrierOptionData_FXIndexDailyHighs_t> FXIndexDailyHighs;
     domain::currencyCode BoughtCurrency{};
-    float BoughtAmount{};
+    domain::moneyFloat BoughtAmount{};
     domain::currencyCode SoldCurrency{};
-    float SoldAmount{};
+    domain::moneyFloat SoldAmount{};
 };
 
 struct fxDigitalOptionData {
     domain::optionData OptionData{};
-    float Strike{};
+    domain::moneyFloat Strike{};
     xsd::optional<domain::currencyCode> PayoffCurrency;
-    float PayoffAmount{};
+    domain::moneyFloat PayoffAmount{};
     domain::currencyCode ForeignCurrency{};
     domain::currencyCode DomesticCurrency{};
 };
@@ -4528,9 +4528,9 @@ struct fxKIKOBarrierOptionData {
     xsd::optional<domain::calendar> Calendar;
     xsd::optional<domain::fxKIKOBarrierOptionData_FXIndex_t> FXIndex;
     domain::currencyCode BoughtCurrency{};
-    float BoughtAmount{};
+    domain::moneyFloat BoughtAmount{};
     domain::currencyCode SoldCurrency{};
-    float SoldAmount{};
+    domain::moneyFloat SoldAmount{};
 };
 
 struct fxDigitalBarrierOptionData {
@@ -4541,8 +4541,8 @@ struct fxDigitalBarrierOptionData {
     xsd::optional<domain::fxDigitalBarrierOptionData_FXIndex_t> FXIndex;
     xsd::optional<domain::fxDigitalBarrierOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
     xsd::optional<domain::fxDigitalBarrierOptionData_FXIndexDailyHighs_t> FXIndexDailyHighs;
-    float Strike{};
-    float PayoffAmount{};
+    domain::moneyFloat Strike{};
+    domain::moneyFloat PayoffAmount{};
     xsd::optional<domain::currencyCode> PayoffCurrency;
     domain::currencyCode ForeignCurrency{};
     domain::currencyCode DomesticCurrency{};
@@ -4554,7 +4554,7 @@ struct fxTouchOptionData {
     domain::currencyCode ForeignCurrency{};
     domain::currencyCode DomesticCurrency{};
     domain::currencyCode PayoffCurrency{};
-    float PayoffAmount{};
+    domain::moneyFloat PayoffAmount{};
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::fxTouchOptionData_FXIndex_t> FXIndex;
     xsd::optional<domain::fxTouchOptionData_FXIndexDailyLows_t> FXIndexDailyLows;
@@ -4565,9 +4565,9 @@ struct fxTouchOptionData {
 struct fxSwapData {
     domain::date NearDate{};
     domain::currencyCode NearBoughtCurrency{};
-    float NearBoughtAmount{};
+    domain::moneyFloat NearBoughtAmount{};
     domain::currencyCode NearSoldCurrency{};
-    float NearSoldAmount{};
+    domain::moneyFloat NearSoldAmount{};
     domain::date FarDate{};
     float FarBoughtAmount{};
     float FarSoldAmount{};
@@ -5883,10 +5883,10 @@ struct tarfData2_Barriers_t {
 
 struct tarfData2 {
     domain::currencyCode Currency{};
-    float FixingAmount{};
-    xsd::optional<float> TargetAmount;
+    domain::moneyFloat FixingAmount{};
+    xsd::optional<domain::moneyFloat> TargetAmount;
     xsd::optional<float> TargetPoints;
-    xsd::optional<float> Strike;
+    xsd::optional<domain::moneyFloat> Strike;
     xsd::optional<domain::tarfData2_Strikes_t> Strikes;
     domain::underlying Underlying{};
     domain::scheduleData ScheduleData{};
@@ -5905,9 +5905,9 @@ struct accumulatorData_RangeBounds_t {
 
 struct accumulatorData {
     domain::currencyCode Currency{};
-    float FixingAmount{};
+    domain::moneyFloat FixingAmount{};
     xsd::optional<bool> DailyFixingAmount;
-    xsd::optional<float> Strike;
+    xsd::optional<domain::moneyFloat> Strike;
     domain::underlying Underlying{};
     domain::optionData OptionData{};
     xsd::optional<domain::date> StartDate;

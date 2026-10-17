@@ -1707,7 +1707,7 @@ trade swap_instrument_mapper::reverse_knock_out_swap(
     knockOutSwapData d;
     d.BarrierData.Type = barrier_type_from_string(instr.barrier_type);
     static_cast<std::string&>(d.BarrierStartDate) = to_ore_date(instr.barrier_start_date);
-    d.BarrierData.Levels.Level.push_back(static_cast<float>(instr.barrier_level.to_double()));
+    push_money(d.BarrierData.Levels.Level, instr.barrier_level);
     for (const auto& sl : legs)
         d.LegData.push_back(reverse_leg(header.start_date,
                                         header.maturity_date,

@@ -75,7 +75,8 @@ def test_a_versions_collection_refuses_a_write():
 # --- the write record: user-owned fields, and nothing else -----------------
 
 from codegen.org_loader import (  # noqa: E402
-    CHANGE_INTENT_FIELDS, SERVER_OWNED_FIELDS, write_record_fields)
+    CHANGE_INTENT_FIELDS, SERVER_OWNED_FIELDS, service_preserved_fields,
+    write_record_fields)
 
 
 def _columns(*names):
@@ -90,6 +91,46 @@ def test_a_write_record_offers_no_server_owned_field():
     assert kept == ["code", "name"]
     for field in SERVER_OWNED_FIELDS:
         assert field not in kept, field
+
+
+def test_a_write_record_drops_the_lifecycle_stamps_the_service_writes():
+    """A caller says what the work is; the service says when it happened.
+
+    A run's start, its last activity and its completion are written by the
+    service that drives it, so a write record that carried them would let an
+    edit that never considered them erase them.
+    """
+    entity = _columns("type", "state_id", "error", "started_at", "completed_at",
+                      "last_event_at", "command_published_at")
+    kept = [c["name"] for c in write_record_fields(entity)]
+    assert kept == ["type", "state_id", "error"]
+
+
+def test_an_edit_carries_the_lifecycle_stamps_the_record_no_longer_carries():
+    """What leaves the record has to come from the row instead.
+
+    The service builds the row it writes from the record alone, so a stamp
+    the record dropped and the service did not carry forward would take its
+    own default and the edit would erase it.
+    """
+    entity = {"columns": [
+        {"column": "type", "cpp_type": "std::string"},
+        {"column": "completed_at", "cpp_type": "std::string"},
+        {"column": "last_event_at", "cpp_type": "std::string"},
+        {"column": "error", "cpp_type": "std::string"},
+    ]}
+    kept = service_preserved_fields(entity)
+    assert [f["name"] for f in kept] == ["completed_at", "last_event_at"]
+    assert [f["member"] for f in kept] == ["completed_at", "last_event_at"]
+
+
+def test_a_key_spelled_like_a_lifecycle_stamp_is_not_carried_forward():
+    """A caller that states the key states it, so the row does not overrule it."""
+    entity = {
+        "columns": [{"column": "value", "cpp_type": "std::string"}],
+        "natural_keys": [{"column": "completed_at", "cpp_type": "std::string"}],
+    }
+    assert service_preserved_fields(entity) == []
 
 
 def test_change_intent_travels_beside_the_record_not_inside_it():

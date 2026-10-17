@@ -22,7 +22,7 @@
       <BarrierData>
         <Type>UpAndOut</Type>
         <Levels>
-          <Level>3500</Level>
+          <Level>3500.00</Level>
         </Levels>
       </BarrierData>
       <Name>RIC:.SPX</Name>

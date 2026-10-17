@@ -5,6 +5,7 @@
 #+name: reporting.core
 #+full_name: ores.reporting.core
 #+description: Report management and ORE risk execution — report types, definitions, instances, and scheduling.
+#+brief: Report lifecycle and ORE run core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :reporting:core:component:

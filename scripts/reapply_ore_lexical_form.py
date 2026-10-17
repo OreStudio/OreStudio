@@ -33,6 +33,7 @@ Usage:
 import argparse
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -253,9 +254,7 @@ FRA_STRUCT_OLD = """struct forwardRateAgreementData {
     float Notional{};
 };
 """
-FRA_STRUCT_NEW = """struct moneyFloat : xsd::base<float> {};
-
-struct forwardRateAgreementData {
+FRA_STRUCT_NEW = """struct forwardRateAgreementData {
     domain::date StartDate{};
     domain::date EndDate{};
     domain::currencyCode Currency{};
@@ -278,8 +277,8 @@ MONEY_SETTER = """void _set_moneyFloat(domain::moneyFloat* obj, const xsdcpp::Po
 """
 
 MONEY_INFO_ANCHOR = "const xsdcpp::ElementInfo _stFreeStyleNumber_Info = {\n"
-MONEY_INFO = """const xsdcpp::ElementInfo _moneyFloat_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_moneyFloat};
+MONEY_INFO = """const xsdcpp::ElementInfo _moneyFloat_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                              (xsdcpp::set_value_t)&domain::_set_moneyFloat};
 """
 
 FRA_CHILD_OLD = """     (xsdcpp::get_field_t)&_get_forwardRateAgreementData_Strike,
@@ -329,6 +328,45 @@ FRA_SER_NEW = """    _serialize_forwardRateAgreementData_Index_t(w, "Index", v.I
 
 # (old, new) edits; each `old` must occur exactly once.
 _MONEY_HPP_EDITS = [(FRA_STRUCT_OLD, FRA_STRUCT_NEW)]
+
+# A money leaf has to be declared before the first struct that uses it, and the
+# earliest user is not fixed: the models decide the struct order, and the FX
+# structs precede the FRA. The placement is computed from MONEY_MEMBERS rather
+# than anchored on one struct.
+MONEY_FLOAT_DECL = "struct moneyFloat : xsd::base<float> {};\n\n"
+
+
+def _money_float_decl_span(text: str) -> tuple[int, int]:
+    """The span of the declaration and the blank lines that follow it."""
+    decl = "struct moneyFloat : xsd::base<float> {};"
+    at = text.find(decl)
+    if at == -1:
+        return -1, -1
+    end = at + len(decl)
+    while end < len(text) and text[end] == "\n":
+        end += 1
+    return at, end
+
+
+def _first_member_struct(text: str) -> int:
+    return min(_struct_span(text, struct)[0] for struct, _, _ in MONEY_MEMBERS)
+
+
+def _place_money_float_decl(text: str) -> str:
+    at, end = _money_float_decl_span(text)
+    if at != -1 and at < _first_member_struct(text):
+        return text
+    if at != -1:
+        text = text[:at] + text[end:]
+    first = _first_member_struct(text)
+    return text[:first] + MONEY_FLOAT_DECL + text[first:]
+
+
+def _drop_money_float_decl(text: str) -> str:
+    at, end = _money_float_decl_span(text)
+    if at == -1:
+        raise AnchorError("domain.hpp: the moneyFloat declaration is missing")
+    return text[:at] + text[end:]
 _MONEY_CPP_EDITS = [
     (MONEY_EXTERN_ANCHOR, MONEY_EXTERN_ANCHOR + MONEY_EXTERN),
     (MONEY_SETTER_ANCHOR, MONEY_SETTER + MONEY_SETTER_ANCHOR),
@@ -341,8 +379,30 @@ _MONEY_CPP_EDITS = [
 ]
 
 
+def _ws_regex(literal: str) -> re.Pattern:
+    """A pattern that recognises `literal` modulo its whitespace runs.
+
+    Used to decide whether a patch is already in place, never to rewrite text.
+    The nightly clang-format job reformats these generated files and reflows
+    the patched regions, so a byte-exact "is it there" test reports a
+    half-applied patch and refuses to work. A whitespace run that held a line
+    break is optional here, because the formatter may join those lines.
+    """
+    out = []
+    for part in re.split(r"(\s+)", literal):
+        if not part:
+            continue
+        out.append(r"\s*" if part.isspace() and "\n" in part else
+                   r"\s+" if part.isspace() else re.escape(part))
+    return re.compile("".join(out))
+
+
+def _present(text: str, literal: str) -> bool:
+    return bool(_ws_regex(literal).search(text))
+
+
 def _apply_edits(text: str, edits: list[tuple[str, str]], name: str) -> str:
-    done = [new in text for _, new in edits]
+    done = [_present(text, new) for _, new in edits]
     if all(done):
         return text
     if any(done):
@@ -365,19 +425,50 @@ def _revert_edits(text: str, edits: list[tuple[str, str]]) -> str:
     return text
 
 
-# The credit products state some money members as bare floats too. Each entry
-# is (struct, member) of an `xsd::optional<float>` member. A money member is
-# turned into a `moneyFloat`, so the document's digits reach the mapper and
-# leave it again. A required plain `float` member is not handled: no credit
-# money member is one, and the patch refuses a shape it does not know.
+# The credit and FX products state some money members as bare floats too. Each
+# entry is (struct, member, shape). A money member is turned into a
+# `moneyFloat`, so the document's digits reach the mapper and leave it again.
+# The shape is "optional" for an `xsd::optional<float>` member and "required"
+# for a plain `float` member: the optional member's getter materialises its
+# default, so it needs its own edit, and the required member's getter already
+# returns the member's address.
+# The shape is "vector" for an `xsd::vector<float>` member, whose elements are
+# the money values.
 # A continuous quantity (a recovery rate, a tranche point, a participation
-# rate) stays a binary float: the data-oriented design rule keeps those as
-# floats, so they are not listed here.
+# rate, a delta, a variance strike, a weight) stays a binary float: the
+# data-oriented design rule keeps those as floats, so they are not listed here.
 MONEY_MEMBERS = [
-    ("creditDefaultSwapData", "UpfrontFee"),
-    ("indexCreditDefaultSwapData", "UpfrontFee"),
-    ("indexCreditDefaultSwapOptionData", "Strike"),
-    ("nameData", "Notional"),
+    ("creditDefaultSwapData", "UpfrontFee", "optional"),
+    ("indexCreditDefaultSwapData", "UpfrontFee", "optional"),
+    ("indexCreditDefaultSwapOptionData", "Strike", "optional"),
+    ("nameData", "Notional", "optional"),
+    # The FX family. Each member below is read by fx_instrument_mapper.
+    ("fxForwardData", "BoughtAmount", "required"),
+    ("fxForwardData", "SoldAmount", "required"),
+    ("fxSwapData", "NearBoughtAmount", "required"),
+    ("fxSwapData", "NearSoldAmount", "required"),
+    ("fxOptionData", "BoughtAmount", "required"),
+    ("fxOptionData", "SoldAmount", "optional"),
+    ("fxBarrierOptionData", "BoughtAmount", "required"),
+    ("fxBarrierOptionData", "SoldAmount", "required"),
+    ("fxKIKOBarrierOptionData", "BoughtAmount", "required"),
+    ("fxKIKOBarrierOptionData", "SoldAmount", "required"),
+    ("fxDigitalOptionData", "Strike", "required"),
+    ("fxDigitalOptionData", "PayoffAmount", "required"),
+    ("fxDigitalBarrierOptionData", "Strike", "required"),
+    ("fxDigitalBarrierOptionData", "PayoffAmount", "required"),
+    ("fxTouchOptionData", "PayoffAmount", "required"),
+    ("fxAverageForwardData", "ReferenceNotional", "required"),
+    ("fxAverageForwardData", "SettlementNotional", "required"),
+    ("tarfData2", "FixingAmount", "required"),
+    ("tarfData2", "TargetAmount", "optional"),
+    ("tarfData2", "Strike", "optional"),
+    ("accumulatorData", "FixingAmount", "required"),
+    ("accumulatorData", "Strike", "optional"),
+    ("varianceSwapData", "Notional", "required"),
+    # A barrier's levels are a list, and every family that states a barrier
+    # reads the same list, so the leaf is shared the way barrierData is.
+    ("barrierData_Levels_t", "Level", "vector"),
 ]
 
 
@@ -397,19 +488,47 @@ def _serializer_span(text: str, struct: str) -> tuple[int, int]:
     return m.start(), end
 
 
-def _member_forms(member: str) -> dict[str, tuple[str, str]]:
-    """The (old, new) text of each place an optional member appears."""
-    return {
-        "hpp": (
+def _member_forms(member: str, shape: str) -> dict[str, tuple[str, str] | None]:
+    """The (old, new) text of each place a money member appears.
+
+    A "required" member has no getter edit: its getter returns the member's
+    address, which is the same address after the type changes.
+    """
+    if shape == "optional":
+        hpp = (
             f"    xsd::optional<float> {member};\n",
             f"    xsd::optional<domain::moneyFloat> {member};\n",
-        ),
-        "ser": (
+        )
+        ser = (
             f'_serialize_float(w, "{member}", *v.{member});',
             f'_serialize_moneyFloat(w, "{member}", *v.{member});',
-        ),
-        "get": ("= float());", "= domain::moneyFloat());"),
-    }
+        )
+        get = ("= float());", "= domain::moneyFloat());")
+    elif shape == "required":
+        hpp = (
+            f"    float {member}{{}};\n",
+            f"    domain::moneyFloat {member}{{}};\n",
+        )
+        ser = (
+            f'_serialize_float(w, "{member}", v.{member});',
+            f'_serialize_moneyFloat(w, "{member}", v.{member});',
+        )
+        get = None
+    elif shape == "vector":
+        hpp = (
+            f"    xsd::vector<float> {member};\n",
+            f"    xsd::vector<domain::moneyFloat> {member};\n",
+        )
+        # A vector serializes one element at a time, so the anchor names the
+        # loop variable rather than a member.
+        ser = (
+            f'_serialize_float(w, "{member}", item);',
+            f'_serialize_moneyFloat(w, "{member}", item);',
+        )
+        get = None
+    else:
+        raise AnchorError(f"unknown money-member shape {shape!r}")
+    return {"hpp": hpp, "ser": ser, "get": get}
 
 
 def _swap_in(text: str, span: tuple[int, int], old: str, new: str, what: str) -> str:
@@ -421,8 +540,8 @@ def _swap_in(text: str, span: tuple[int, int], old: str, new: str, what: str) ->
 
 
 def _apply_members_hpp(text: str, reverse: bool = False) -> str:
-    for struct, member in MONEY_MEMBERS:
-        old, new = _member_forms(member)["hpp"]
+    for struct, member, shape in MONEY_MEMBERS:
+        old, new = _member_forms(member, shape)["hpp"]
         if reverse:
             old, new = new, old
         start, end = _struct_span(text, struct)
@@ -434,8 +553,8 @@ def _apply_members_hpp(text: str, reverse: bool = False) -> str:
 
 
 def _apply_members_cpp(text: str, reverse: bool = False) -> str:
-    for struct, member in MONEY_MEMBERS:
-        forms = _member_forms(member)
+    for struct, member, shape in MONEY_MEMBERS:
+        forms = _member_forms(member, shape)
         ser_old, ser_new = forms["ser"]
         if reverse:
             ser_old, ser_new = ser_new, ser_old
@@ -463,6 +582,8 @@ def _apply_members_cpp(text: str, reverse: bool = False) -> str:
             )
         text = info.sub(lambda m: m.group(1) + to_info + ",", text, count=1)
 
+        if forms["get"] is None:
+            continue
         m = re.search(
             r"void\* _get_" + re.escape(struct) + "_" + re.escape(member) + r"\([^)]*\) \{\n.*?\n\}\n",
             text,
@@ -481,10 +602,12 @@ def _apply_members_cpp(text: str, reverse: bool = False) -> str:
 
 
 def patch_money_hpp(text: str) -> str:
-    return _apply_members_hpp(_apply_edits(text, _MONEY_HPP_EDITS, "domain.hpp"))
+    text = _apply_edits(text, _MONEY_HPP_EDITS, "domain.hpp")
+    return _place_money_float_decl(_apply_members_hpp(text))
 
 
 def unpatch_money_hpp(text: str) -> str:
+    text = _drop_money_float_decl(text)
     return _revert_edits(_apply_members_hpp(text, reverse=True), _MONEY_HPP_EDITS)
 
 
@@ -501,6 +624,27 @@ def unpatch_money_cpp(text: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _format(paths: list[Path]) -> None:
+    """Run clang-format over the patched files, when it is available.
+
+    The tree is checked by a format gate, and the nightly job reformats these
+    files. A widening member name can push an element-info line past the column
+    limit, and formatting here keeps the patch and the gate in step instead of
+    leaving the gate to refuse a line the patch wrote.
+    """
+    binary = shutil.which("clang-format")
+    if binary is None:
+        return
+    # The self-test formats files in a temporary directory, where the style
+    # file is not discoverable, so the style is named explicitly.
+    style = REPO_ROOT / ".clang-format"
+    args = [binary, "-i"]
+    if style.is_file():
+        args.append(f"-style=file:{style}")
+    for path in paths:
+        subprocess.run(args + [str(path)], check=True)
+
+
 def apply_patch(
     xsd_path: Path, cpp_path: Path, hpp_path: Path = DEFAULT_DOMAIN_HPP, verbose: bool = True
 ) -> dict[str, int]:
@@ -511,12 +655,17 @@ def apply_patch(
     new_cpp, counts = patch_cpp(cpp_text)
     new_cpp = patch_money_cpp(new_cpp)
     new_hpp = patch_money_hpp(hpp_text)
+    changed = []
     if new_xsd != xsd_text:
         xsd_path.write_text(new_xsd)
+        changed.append(xsd_path)
     if new_cpp != cpp_text:
         cpp_path.write_text(new_cpp)
+        changed.append(cpp_path)
     if new_hpp != hpp_text:
         hpp_path.write_text(new_hpp)
+        changed.append(hpp_path)
+    _format(changed)
     if verbose:
         xsd_state = "patched" if new_xsd != xsd_text else "already patched"
         cpp_state = "patched" if new_cpp != cpp_text else "already patched"

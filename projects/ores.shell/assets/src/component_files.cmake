@@ -30,4 +30,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/assets/image_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/assets/image_tag_commands.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/app/commands/assets/tag_commands.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.shell/ores.shell.assets.hpp"
 )

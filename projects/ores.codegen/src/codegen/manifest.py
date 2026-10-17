@@ -145,6 +145,16 @@ def discover_models(
                 if apply_exclusions and short_type in comp.exclude_org_types:
                     continue
                 matches.add(org_path)
+            # A composite's parts each own a component_overview.org, and that
+            # overview is the model the component archetypes resolve against:
+            # the umbrella header and export macros land in the part's own
+            # directory through {component_dir}. The catalogue names only the
+            # top-level component, so discovery reaches the parts here, by the
+            # same disk rule that _hosted_subcomponents() validates against.
+            for org_path in modeling_dir.parent.glob(
+                    "*/modeling/component_overview.org"):
+                if org_path.is_file():
+                    matches.add(org_path)
     return sorted(matches)
 
 

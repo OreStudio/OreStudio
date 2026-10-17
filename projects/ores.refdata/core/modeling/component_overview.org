@@ -5,6 +5,7 @@
 #+name: refdata.core
 #+full_name: ores.refdata.core
 #+description: Reference data domain — currencies, countries, counterparties, books, and business structure with temporal persistence.
+#+brief: Reference data domain logic and repositories
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :refdata:core:component:

@@ -14,6 +14,14 @@
 
 Option declarations. =component-service= profile.
 
+A service that adds an option of its own declares the member here:
+=<<paste:0B222F2C-B8B6-41AE-AF03-C61D76AF6833>>= sits after the standard
+=database= member. Supply it as a
+=#+begin_src cpp :name service_app_config_option :implements 0B222F2C-B8B6-41AE-AF03-C61D76AF6833=
+block on the service's =component_overview.org=; the option's command-line
+declaration and its assignment belong to the
+[[id:D9364D78-1F39-4DC0-AAD3-13576F733064][config_parser_impl]] archetype.
+
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
@@ -54,6 +62,7 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+<<paste:0B222F2C-B8B6-41AE-AF03-C61D76AF6833>>
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

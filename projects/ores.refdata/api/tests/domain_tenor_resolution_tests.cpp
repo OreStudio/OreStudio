@@ -186,10 +186,11 @@ TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quar
     const year_month_day horizon{year(2026), month(1), day(1)};
     const year_month_day spot{year(2026), month(1), day(2)};
 
-    // 2 Jan 2026 + 1Y = 2 Jan 2027; the first roll-quarter on-or-after is
-    // 22 Mar 2027 (20 Mar 2027 falls on a Saturday).
+    // 2 Jan 2026 + 1Y = 2 Jan 2027; the first CDS roll date on-or-after is
+    // 20 Mar 2027. It is a Saturday, and the CDS rule keeps it: the date is
+    // not moved to a business day, so a whole series shares it.
     const auto end = resolve_end_date(oneYear, cds, resolution, horizon, spot);
-    CHECK(end == year_month_day{year(2027), month(3), day(22)});
+    CHECK(end == year_month_day{year(2027), month(3), day(20)});
 }
 
 TEST_CASE("resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset", tags) {
@@ -203,8 +204,8 @@ TEST_CASE("resolve_end_date_walks_roll_quarter_from_anchor_with_zero_offset", ta
     const year_month_day horizon{year(2026), month(1), day(1)};
     const year_month_day spot{year(2026), month(1), day(2)};
 
-    // 2 Jan 2026 precedes the March quarter: the first roll-quarter
-    // on-or-after is 20 Mar 2026 (a Friday, so the 20th itself counts).
+    // 2 Jan 2026 precedes the March quarter: the first CDS roll date
+    // on-or-after is 20 Mar 2026.
     const auto end = resolve_end_date(rollTenor, convention, resolution, horizon, spot);
     CHECK(end == year_month_day{year(2026), month(3), day(20)});
 }

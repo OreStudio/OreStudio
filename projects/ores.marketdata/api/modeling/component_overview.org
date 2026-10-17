@@ -5,6 +5,7 @@
 #+name: marketdata.api
 #+full_name: ores.marketdata.api
 #+description: Domain types and NATS protocol schemas for the market-data component.
+#+brief: Market data domain types and protocol schemas
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :marketdata:api:component:

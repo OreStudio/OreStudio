@@ -5,6 +5,7 @@
 #+name: telemetry.database
 #+full_name: ores.telemetry.database
 #+description: Database persistence layer for telemetry log records.
+#+brief: Telemetry log record persistence layer
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :telemetry:database:component:

@@ -3043,6 +3043,23 @@ def versions_subject(component: str, plural: str, verb: str) -> str:
 SERVER_OWNED_FIELDS = frozenset({
     "tenant_id", "party_id", "version", "modified_by", "performed_by",
     "recorded_at", "valid_from", "valid_to",
+    # The lifecycle stamps of an entity whose state machine the service
+    # drives. A caller starts, advances or cancels the work; it does not
+    # decide when the work began, when it last did anything or when it
+    # finished, and a caller that had to restate them would erase them the
+    # first time it edited anything else.
+    "started_at", "completed_at", "last_event_at", "command_published_at",
+})
+
+# The server-owned fields an update carries forward from the row it edits
+# rather than deriving afresh. The rest of the server-owned set is stated anew
+# on every write -- tenancy from the session, the version from the claim, the
+# validity window and the audit stamps from the clock -- but a lifecycle stamp
+# records what happened to the row, and nothing at the time of an edit can
+# restate it. A service that took its own default for one would erase the
+# stamp its own state funnel wrote.
+SERVICE_PRESERVED_FIELDS = frozenset({
+    "started_at", "completed_at", "last_event_at", "command_published_at",
 })
 
 # Why a change is being made is user-owned, but it travels beside the write
@@ -3169,6 +3186,33 @@ def write_record_for(entity: dict[str, Any]) -> list[dict[str, Any]]:
         for column in ((entity.get("primary_key") or {}).get("columns") or [])
         + list(entity.get("natural_keys") or []))
     return write_record_fields(write_record_columns(entity), key_columns)
+
+
+def service_preserved_fields(entity: dict[str, Any]) -> list[dict[str, Any]]:
+    """The fields an update carries forward from the row it edits.
+
+    Each is named twice: ``name`` is the column, and ``member`` is how the
+    domain type reaches it, which for a composed entity is a group member
+    rather than the column itself.
+
+    A key column is left out even when its name is one of these. A caller that
+    states the key states it, and a service that overwrote it from the row
+    would ignore half the address the write names.
+    """
+    key_columns = frozenset(
+        _column_name(column)
+        for column in ((entity.get("primary_key") or {}).get("columns") or [])
+        + list(entity.get("natural_keys") or []))
+    fields: list[dict[str, Any]] = []
+    for column in write_record_columns(entity):
+        name = _column_name(column)
+        if name not in SERVICE_PRESERVED_FIELDS or name in key_columns:
+            continue
+        fields.append({
+            "name": name,
+            "member": (column.get("group_prefix") or "") + name,
+        })
+    return fields
 
 
 def declared_key_field(entity: dict[str, Any]) -> str:
@@ -7083,9 +7127,17 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     fm = doc.frontmatter
 
     c: dict[str, Any] = {}
-    for k in ("name", "full_name", "brief", "description"):
+    for k in ("name", "full_name", "brief"):
         if k in fm:
             c[k] = fm[k]
+    # The umbrella header puts this inside a /** ... */ block and lets
+    # clang-format wrap it, which the formatter only does for a line that is
+    # too long. A description that arrives already broken stays broken, and
+    # every break lands after the " * " prefix, so the continuation lines stop
+    # being comment lines at all. Collapse it here, so the template always
+    # receives the one line clang-format is expecting.
+    if fm.get("description"):
+        c["description"] = " ".join(str(fm["description"]).split())
     # Component kind (flat | api | core | service | composite | adapter)
     # selects the scaffolding variant set via the graph's kind discriminator;
     # defaults to "flat". A composite has sub-components and no code of its
@@ -7123,6 +7175,22 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     # comes out as an INTERFACE library instead.
     c["header_only"] = str(fm.get("header_only", "")).strip().lower() in (
         "true", "yes", "1")
+    # A component's test main links ores.testing for the logging listener, the
+    # database lifecycle listener and the OpenSSL cleanup. A component whose
+    # tests link none of it -- ores.analytics/quant has no database and no
+    # fixture -- says #+test_fixture: none, and the test main stays the bare
+    # Catch2 session its CMake can actually compile.
+    c["has_test_fixture"] = (
+        str(fm.get("test_fixture", "")).strip().lower() != "none")
+    # Paste points: a component model splices hand-written C++ into a generated
+    # service file the same way an entity model does, through the
+    # <<paste:KIND_UUID>> markers its template carries. A service that has
+    # outgrown the stub -- ores.storage/service wires a local store and a real
+    # run loop -- keeps that code in its model here, so regenerating the file
+    # cannot delete it.
+    implementations = _collect_implementations(doc.root)
+    if implementations:
+        c["implementations"] = implementations
     return {"component": c}
 
 

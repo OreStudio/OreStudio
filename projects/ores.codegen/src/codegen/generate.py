@@ -676,6 +676,7 @@ def resolve_targets(
         gen_facets = {f for f in gen_facets
                       if f not in _PROTOCOL_DEPENDENT_FACETS}
     component_kind = None
+    component_is_part = False
     if model_type == "component":
         comp = model_data.setdefault("component", {})
         component_kind = comp.get("kind")
@@ -704,6 +705,15 @@ def resolve_targets(
                 model_path.resolve().parent.parent.relative_to(projects_dir))
         except (ValueError, OSError):
             pass  # not under projects/ — falls back to dotted full_name
+        # A sub-component project -- ores.refdata/api, ores.http/server -- is a
+        # component model whose CMake is hand-authored: history/api is a
+        # header-only INTERFACE library, and the generated flat variant would
+        # replace it with a GLOB that compiles nothing. The CMake facet is
+        # therefore not this model's to write; component_files.cmake has its own
+        # generator, regenerate_cmake_component_files.py, which enumerates the
+        # overviews itself.
+        component_dir = comp.get("dir", "")
+        component_is_part = "/" in component_dir
     units: list[dict] = []
     seen: set[str] = set()
     # The shell registrar is one component-scoped file, not one per entity, so
@@ -725,6 +735,12 @@ def resolve_targets(
     # dependant would then never see its dependee fire.
     deferred: list[tuple[str, dict, str]] = []
     for facet in sorted(gen_facets):
+        # The CMake facet of a sub-component project is hand-maintained: its
+        # link list carries what the model does not, and the templates' baseline
+        # has drifted from 93 of the 94 checked-in files. Nothing here may
+        # rewrite it. Every other facet still renders.
+        if component_is_part and facet.startswith("ores.cmake"):
+            continue
         ts = graph.facet_ts.get(facet, "")
         for arch in graph.facet_archetypes.get(facet, []):
             mts = arch.get("model_types")

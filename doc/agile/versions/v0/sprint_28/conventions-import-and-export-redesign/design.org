@@ -96,11 +96,34 @@ That is exactly the shape the approval proposals already use.
 | B. One message per family, no commit | Per family only | Register the family | Rejected for file import: a half-applied ORE file is a corrupt dataset |
 | C. Open transaction across messages | Impossible today | n/a | Rejected: pins one of two pooled connections, holds row locks with no statement or transaction timeout anywhere, dies with the process, and outlives the 30 s request default |
 | D. Saga with compensations | Convergent | Register the family, a compensating step, a definition | Rejected: conventions live in one service, so a saga buys nothing a local transaction does not, and "a compensation is a new action, not an erasure" |
-| E. Stage per family, apply once | All-or-nothing on commit | Register the family | **Chosen** |
+| E. Stage per family, apply once | All-or-nothing on commit | Register the family | Chosen for large or streamed files |
+| F. In-process session: begin, N stage messages, end, then write once | All-or-nothing | Register the family | Viable only while the service is single-replica |
+| G. Hand the file over as bytes, send =request_id= | All-or-nothing | Register the family | **Preferred for the common case** |
 
 Option E is option D's durability without its cost: the staging rows are the
 saga log, and the single-service apply is the commit. It is also the pattern
 the approval proposals already use, so there is no new mechanism to trust.
+
+Option F is the scheme a reader reaches for first, and it does work today,
+because refdata is deployed as one unit. It is still not worth choosing, for
+three reasons that are facts about this platform rather than style. The service
+registry gives every service a =:replicas:= aspect and =ores.compute.wrapper=
+already runs five, so an in-process session misroutes the moment refdata is
+scaled: the N+1st message can land on an instance that never saw the first.
+Between messages the import exists only in RAM, so a restart discards it and
+the caller must resend. And a session needs a memory cap and an idle expiry,
+because nothing else bounds how many half-sent imports a caller holds open. A
+staging table buys all three for one INSERT per family message, and the commit
+is identical either way.
+
+Option G is cheaper than both, and the platform already does it. An ORE import
+moves as bytes: the caller uploads to =ore/imports/{request_id}.tar.gz= and the
+message carries only =request_id=
+(=projects/ores.ore/modeling/ores.ore.ore_import_messages.org:89=). Doing the
+same for a conventions file means the wire carries no aggregate at all,
+atomicity is one request and one transaction, nothing is staged and no session
+can be lost. The only limit is size: a file above the transport ceiling cannot
+travel that way, which is the case E exists for.
 
 * The design
 

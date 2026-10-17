@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: find out why a run went wrong — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Answers doc/knowledge/journeys/reporting/journey_find_out_why_a_run_went_wrong.org:
+  one run's error rows, placed by scope and subject, down to the trade, the
+  analytic and the curve the engine named.
+
+  The decision this page serves: are a run's errors a place you go, a property
+  of the run you are already looking at, or a ledger across the party's runs?
+  Three variants, switched by ?variant=A|B|C and by the buttons in the foot bar.
+
+    A  the errors are one tab of the run, beside the outputs and the timeline
+    B  the run stays visible and the errors sit in a panel beside it, filtered
+       by scope and severity
+    C  the screen is the errors themselves, all runs together, grouped by
+       scope and then by subject, with the run as a column
+
+  The rows are fixtures copied from a real run whose market data had been
+  removed, plus two other runs of the same report. One trade fails in two
+  analytics with the same message; only detail tells the two rows apart, and
+  every variant draws that difference rather than merging the rows.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

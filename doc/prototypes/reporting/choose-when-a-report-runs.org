@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 0f0263f1-3400-4619-b2ff-fefd2f023f76
+:END:
+#+title: Choose when a report runs prototype
+#+description: Three structural variants of scheduling a report, on a throwaway page that states the missing scheduler read and the absent time zone.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:choose-when-a-report-runs/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype argues where scheduling lives: on the report, in a schedule list,
+or on a calendar. It carries three structural variants switched with =?variant=,
+and it answers to
+[[file:../../knowledge/journeys/reporting/journey_choose_when_a_report_runs.org][Choose when a report runs]].
+
+It is throwaway. It reads no service, and the page says plainly which parts of a
+scheduler it cannot show.
+
+* Detail
+
+** The question
+
+A schedule is one field on a report definition, but "what runs tomorrow morning"
+is a question about the whole set. Those two readings want different screens, and
+the open question is which one earns the space.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | On the report | Scheduling is a field group on the report: a cadence and a time, edited in place, with the next fire times under it. |
+| =B= | A schedule list | One row per schedule, scanned and edited together, so the whole week is answerable in one view. |
+| =C= | A calendar | A weekly grid of when reports fire, each report in its slots, so clashes and quiet nights are visible before they happen. |
+
+** What the page refuses to invent
+
+Two operations exist, =reporting.v1.ops.schedule_report_definitions= and
+=reporting.v1.ops.unschedule_report_definitions=, and a definition carries a
+schedule expression. **There is no operation to read or write a scheduler job
+from this screen, and there is no time zone on the schedule.** The calendar
+variant shows an installation clock and says the times are derived from the
+expression, and the note says a built screen could not show a job's state, its
+last firing or its next due time. A scheduler dashboard drawn as though the
+server served it would be a lie a reviewer could not see.
+
+** What a schedule does and does not reach
+
+It sets when the run starts. It does not change the report's inputs, its
+portfolio or its outputs. Only a tenant administrator may schedule, and only for
+reports their own party owns; every other role reads the cadence and nothing more.
+The page states the party constraint rather than hiding it behind a disabled
+button.
+
+** What is fake
+
+The cadences, the next fire times and the reports are mock. Nothing reads a
+server, and the application has no reporting UI today. The next fire times are
+computed from the expression in the page, which is what a person is actually
+judging when they set a cadence.
+
+** Where the code lives
+
+=doc/prototypes/reporting/choose-when-a-report-runs/=. Three files, plain HTML,
+CSS and JavaScript, no framework and no build step.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+The time zone, which the schedule does not carry at all. Until it does, a
+calendar that draws a local week is drawing a promise the server cannot keep.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the five journeys these answer to.

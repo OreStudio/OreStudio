@@ -22,6 +22,7 @@
 #include "ores.ore.core/export.hpp"
 #include <cstddef>
 #include <cstdint>
+#include <expected>
 #include <string>
 #include <string_view>
 
@@ -87,7 +88,7 @@ struct field {
     std::string_view name;
     std::uint32_t name_hash;
     field_kind kind;
-    std::uint16_t offset;
+    std::uint32_t offset;
     std::uint8_t bit;
     bool is_attribute;
     /// 1 when the schema requires the element or attribute, 0 otherwise.
@@ -110,6 +111,10 @@ struct record_type {
     std::string_view name;
     const field* fields;
     std::uint8_t field_count;
+    /// Index of the field that receives the element's own text, for a type
+    /// written as xs:simpleContent with attributes. 0xFF when the element has
+    /// no text of its own.
+    std::uint8_t text_field;
 };
 
 /**
@@ -153,9 +158,12 @@ public:
      * On failure the record is left in whatever state the engine reached, so a
      * caller that wants to keep partial results must decide that itself. The
      * usual contract is to discard the record.
+     *
+     * @return Nothing on success, or where and why the document could not be
+     * bound.
      */
-    static auto bind(const document_type& doc, std::string_view text, void* root, bind_error& error)
-        -> bool;
+    static auto bind(const document_type& doc, std::string_view text, void* root)
+        -> std::expected<void, bind_error>;
 };
 
 }

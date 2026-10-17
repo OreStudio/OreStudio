@@ -473,9 +473,12 @@ the shape, and the project's money vocabulary gives the classification.
 
 That vocabulary already exists and is already enforced, in
 =build/scripts/check_money_decimal_columns.py= and in the =field_group=
-models. The generator reuses it rather than inventing a second list, which
-also keeps the XML boundary and the database boundary speaking about money in
-the same words.
+models. The generator does **not** read it yet: money currently arrives as a
+hand-written =--money= argument with one entry in it, so a second list does
+exist and it is the generator's own. Every family generated so far takes its
+decimals from =xs:decimal=, which is the schema deciding the kind. Reading the
+enforced vocabulary instead is open work, and until it lands the rule above is
+stated but not kept.
 
 **The bound.** ORE reads those elements as =float= itself. A decimal we write
 back is more precise than ORE can consume, so the round trip is exact inside

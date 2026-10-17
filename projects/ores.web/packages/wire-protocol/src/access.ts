@@ -31,6 +31,7 @@ import {
     type RoleSummary,
 } from './domain.js';
 import { OperationFailedError } from './errors.js';
+import { wireTimestampSchema } from './time.js';
 import {
     subjects as authorizationSubjects,
     type AssignRoleRequest,
@@ -97,7 +98,7 @@ const accessReplySchema = z.object({
                 role: wireRoleSchema,
                 permission_codes: z.array(z.string()).default([]),
                 assigned_by: z.string().default(''),
-                assigned_at: z.string().default(''),
+                assigned_at: wireTimestampSchema,
                 change_reason_code: z.string().default(''),
                 change_commentary: z.string().default(''),
             }),

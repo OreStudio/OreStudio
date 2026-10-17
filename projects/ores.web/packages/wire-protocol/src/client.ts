@@ -142,7 +142,8 @@ import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
 import { nodeIdGenerator, portableIdGenerator, tracingHeaders, type IdGenerator } from './ids.js';
-import { uuid, type Uuid, type WireTimestamp } from './primitives.js';
+import { uuid, type Uuid } from './primitives.js';
+import { wireTimestampOrAbsentSchema, type WireTimestamp } from './time.js';
 
 /** How long the client waits for each kind of call. */
 export interface Timeouts {
@@ -995,7 +996,7 @@ export class OresClient {
     subscribeToEvents(
         relative: string,
         onEvent: (change: {
-            readonly at: string;
+            readonly at: WireTimestamp;
             readonly tenantId: string | undefined;
             readonly partyId: string | undefined;
             readonly key: RecordKey;
@@ -1008,6 +1009,14 @@ export class OresClient {
         return subscribe.call(this.#transport, relative, (payload, envelope) => {
             try {
                 const decoded = this.#codec.decodeAs(payload, changeEventSchema);
+                /*
+                 * A change with no instant cannot be aged, so the reader
+                 * would not know whether it is stale. Dropping it is the safe
+                 * direction, and it is now a null rather than an empty string.
+                 */
+                if (decoded.occurred_at === null) {
+                    return;
+                }
                 onEvent({
                     at: decoded.occurred_at,
                     tenantId: envelope.tenantId,
@@ -1481,7 +1490,7 @@ export class OresClient {
  * it does nothing, which is the safe direction.
  */
 const changeEventSchema = z.object({
-    occurred_at: z.string().default(''),
+    occurred_at: wireTimestampOrAbsentSchema.default(null),
     key: z.record(z.string(), z.unknown()).default({}),
 });
 

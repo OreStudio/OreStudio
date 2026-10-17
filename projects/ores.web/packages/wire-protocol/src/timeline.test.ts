@@ -207,7 +207,7 @@ describe('the story of a party', () => {
         return {
             version: number,
             modified_by: 'priya',
-            recorded_at: `2026-10-0${String(number)}T10:00:00Z`,
+            recorded_at: `2026-10-0${String(number)} 10:00:00.000000Z`,
             fields: [
                 { name: 'ID', value: link },
                 { name: 'Party', value: PARTY },

@@ -29,7 +29,6 @@ import {
     accountSchema,
     partySummarySchema,
     uuidSchema,
-    wireTimestampSchema,
     type AuthEvent,
     type LoginInfo,
     type Session,
@@ -103,6 +102,7 @@ import {
 } from './generated/workflow/protocol/workflow_protocol.js';
 import type { PartyChange } from './generated/refdata/protocol/party_protocol.js';
 import type { Uuid } from './primitives.js';
+import { nullableWireTimestampSchema, wireTimestampSchema } from './time.js';
 
 /**
  * The request and response bodies for every subject this client speaks.
@@ -582,7 +582,12 @@ const wireSessionSchema = z.object({
     tenant_id: uuidSchema,
     id: uuidSchema,
     account_id: uuidSchema,
-    start_time: text,
+    start_time: wireTimestampSchema,
+    /*
+     * The server writes end_time from the database's text form, so it is not
+     * the wire shape. It stays a plain string until the producer is fixed; the
+     * sweep in the timestamp story names it.
+     */
     end_time: text,
     client_ip: text,
     client_identifier: text,
@@ -636,7 +641,7 @@ export type WireSessionPage = z.infer<typeof sessionPageSchema>;
  */
 const wireAuthEventSchema = z.object({
     id: z.string().default(''),
-    event_time: text,
+    event_time: wireTimestampSchema,
     account_id: text,
     event_type: text,
     username: text,
@@ -1471,9 +1476,9 @@ export const workflowStepSummarySchema = z.object({
     description: z.string().default(''),
     status: z.string().default(''),
     step_index: z.number().int().default(0),
-    created_at: z.string().default(''),
-    started_at: z.string().nullable().default(null),
-    completed_at: z.string().nullable().default(null),
+    created_at: wireTimestampSchema,
+    started_at: nullableWireTimestampSchema.default(null),
+    completed_at: nullableWireTimestampSchema.default(null),
     error: z.string().default(''),
     log: z
         .array(
@@ -2048,7 +2053,7 @@ const hostSchema = z.object({
     performed_by: text,
     change_reason_code: text,
     change_commentary: text,
-    recorded_at: text,
+    recorded_at: wireTimestampSchema,
 }) satisfies z.ZodType<Host>;
 
 /** `list_hosts_request`, sent on `compute.v1.hosts.list`. */

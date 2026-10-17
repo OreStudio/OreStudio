@@ -29,16 +29,19 @@
  * are not represented at all.
  */
 
+export { SYSTEM_TENANT_ID, isUuid, uuid } from './primitives.js';
+export type { Uuid } from './primitives.js';
+
 export {
-    SYSTEM_TENANT_ID,
     fromWireTimestamp,
-    isUuid,
     isWireTimestamp,
+    nullableWireTimestampSchema,
     toWireTimestamp,
-    uuid,
     wireTimestamp,
-} from './primitives.js';
-export type { Uuid, WireTimestamp } from './primitives.js';
+    wireTimestampOrAbsentSchema,
+    wireTimestampSchema,
+} from './time.js';
+export type { WireTimestamp } from './time.js';
 
 export {
     ACCOUNT_TYPES,

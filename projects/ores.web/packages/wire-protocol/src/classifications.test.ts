@@ -120,6 +120,7 @@ describe('listClassificationRows', () => {
                         name: 'Major',
                         description: 'Most traded',
                         display_order: 10,
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
                     },
                 ],
             },
@@ -133,7 +134,7 @@ describe('listClassificationRows', () => {
                 displayOrder: 10,
                 version: 2,
                 modifiedBy: '',
-                recordedAt: '',
+                recordedAt: '2026-10-01 10:00:00.000000Z',
                 reasonCode: '',
                 commentary: '',
                 labelCode: null,
@@ -146,7 +147,14 @@ describe('listClassificationRows', () => {
         const { caller, calls } = fakeCaller({
             'refdata.v1.day_counters.list': {
                 result: ok,
-                day_counters: [{ version: 1, code: 'A360', description: 'Actual/360' }],
+                day_counters: [
+                    {
+                        version: 1,
+                        code: 'A360',
+                        description: 'Actual/360',
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
+                ],
             },
         });
         const rows = await listClassificationRows(caller, list('day-counter'));
@@ -170,8 +178,20 @@ describe('listClassificationRows', () => {
             'refdata.v1.rounding_types.list': {
                 result: ok,
                 types: [
-                    { version: 1, code: 'B', name: 'B', display_order: 20 },
-                    { version: 1, code: 'A', name: 'A', display_order: 10 },
+                    {
+                        version: 1,
+                        code: 'B',
+                        name: 'B',
+                        display_order: 20,
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
+                    {
+                        version: 1,
+                        code: 'A',
+                        name: 'A',
+                        display_order: 10,
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
                 ],
             },
         });
@@ -285,14 +305,14 @@ describe('readEntityHistory', () => {
                     {
                         version: 1,
                         modified_by: 'system',
-                        recorded_at: 't1',
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
                         fields: [],
                         changes: { entries: [] },
                     },
                     {
                         version: 2,
                         modified_by: 'alice',
-                        recorded_at: 't2',
+                        recorded_at: '2026-10-02 10:00:00.000000Z',
                         fields: [{ name: 'Name', value: 'Up' }],
                         changes: {
                             entries: [{ field_name: 'Name', old_value: 'UP', new_value: 'Up' }],

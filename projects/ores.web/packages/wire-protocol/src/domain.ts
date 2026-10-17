@@ -20,7 +20,8 @@
  */
 
 import { z } from 'zod';
-import { SYSTEM_TENANT_ID, toWireTimestamp, uuid, wireTimestamp, type Uuid } from './primitives.js';
+import { SYSTEM_TENANT_ID, uuid, type Uuid } from './primitives.js';
+import { toWireTimestamp, wireTimestampSchema } from './time.js';
 
 /**
  * The account classifications the server understands.
@@ -47,19 +48,11 @@ export const uuidSchema = z
     .transform((value): Uuid => uuid(value));
 
 /**
- * An instant as the server writes it: `YYYY-MM-DD HH:MM:SSZ`.
- *
- * Written out rather than imported so this module stays free of a cycle with
- * the wire schemas.
+ * The wire timestamp schema lives in `time.ts`, the module that owns the
+ * server's shape. Re-exported here so a consumer of the domain schemas does
+ * not reach into two modules for the same rule.
  */
-export const wireTimestampSchema = z.string().transform((value, ctx) => {
-    try {
-        return wireTimestamp(value);
-    } catch (cause) {
-        ctx.addIssue({ code: 'custom', message: 'Not a wire timestamp', cause });
-        return z.NEVER;
-    }
-});
+export { wireTimestampSchema };
 
 /**
  * A tenant-scoped account.
@@ -260,7 +253,7 @@ export const tenantDetailSchema = tenantSummarySchema.extend({
     performedBy: z.string(),
     changeReasonCode: z.string(),
     changeCommentary: z.string(),
-    recordedAt: z.string(),
+    recordedAt: wireTimestampSchema,
 });
 
 export type TenantDetail = z.infer<typeof tenantDetailSchema>;
@@ -406,12 +399,15 @@ export type LoginInfoPage = z.infer<typeof loginInfoPageSchema>;
  *
  * `endTime` is empty while the session is open, which is what makes a row an
  * active one; the read that answers only open sessions carries the same shape.
+ * It stays a plain string for now: the server writes it from the database's
+ * text form rather than the wire form, so this field is named in the sweep as
+ * one the producer has not been brought onto the wire shape yet.
  */
 export const sessionSchema = z.object({
     tenantId: uuidSchema,
     id: uuidSchema,
     accountId: uuidSchema,
-    startTime: z.string(),
+    startTime: wireTimestampSchema,
     endTime: z.string(),
     clientIp: z.string(),
     clientIdentifier: z.string(),
@@ -438,12 +434,12 @@ export type SessionPage = z.infer<typeof sessionPageSchema>;
  *
  * The account and the session are text rather than identifiers, because a
  * failed login has neither: the server records the username it was tried for
- * and no account. The time is the storage form, an ISO 8601 string, read as
- * text rather than as an instant.
+ * and no account. The event time is the wire instant, so the server formats it
+ * with the one serializer that every other instant uses.
  */
 export const authEventSchema = z.object({
     id: z.string(),
-    eventTime: z.string(),
+    eventTime: wireTimestampSchema,
     accountId: z.string(),
     eventType: z.string(),
     username: z.string(),
@@ -507,7 +503,7 @@ export const heldRoleSchema = z.object({
     description: z.string(),
     permissionCodes: z.array(z.string()),
     givenBy: z.string(),
-    givenAt: z.string(),
+    givenAt: wireTimestampSchema,
     reasonCode: z.string(),
     commentary: z.string(),
 });
@@ -702,7 +698,7 @@ export const classificationRowSchema = z.object({
     displayOrder: z.int().nullable(),
     version: z.int().nonnegative(),
     modifiedBy: z.string(),
-    recordedAt: z.string(),
+    recordedAt: wireTimestampSchema,
     reasonCode: z.string(),
     commentary: z.string(),
     /** The badge code of the row's label in the shared catalogue, or null when it has none. */
@@ -731,7 +727,7 @@ export const historyChangeSchema = z.object({
 export const historyVersionSchema = z.object({
     version: z.int().nonnegative(),
     modifiedBy: z.string(),
-    recordedAt: z.string(),
+    recordedAt: wireTimestampSchema,
     fields: z.array(historyFieldSchema),
     changes: z.array(historyChangeSchema),
 });

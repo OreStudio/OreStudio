@@ -24,11 +24,11 @@ import type { AuthenticatedCaller } from './account-operations.js';
 import type { TenantSetupRun } from './contracts.js';
 import {
     uuidSchema,
-    wireTimestampSchema,
     type TenantDetail,
     type TenantSetup,
     type TenantSummary,
 } from './domain.js';
+import { nullableWireTimestampSchema, wireTimestampSchema } from './time.js';
 import {
     subjects as tenantSubjects,
     type DeleteTenantRequest,
@@ -313,9 +313,9 @@ const wireWorkflowInstanceSummarySchema = z.object({
     step_count: z.int().nonnegative().default(0),
     correlation_id: z.string().default(''),
     created_by: z.string().default(''),
-    created_at: z.string().default(''),
-    completed_at: z.string().nullable().default(null),
-    last_event_at: z.string().nullable().default(null),
+    created_at: wireTimestampSchema,
+    completed_at: nullableWireTimestampSchema.default(null),
+    last_event_at: nullableWireTimestampSchema.default(null),
     error: z.string().default(''),
     target_kind: z.string().default(''),
     target_id: z.string().default(''),

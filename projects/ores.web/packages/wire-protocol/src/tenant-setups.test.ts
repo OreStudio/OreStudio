@@ -40,7 +40,7 @@ function run(id: string, target: string, status: string): unknown {
         type: 'provision_tenant_workflow',
         status,
         step_count: 4,
-        created_at: '',
+        created_at: '2026-10-01 10:00:00.000000Z',
         error: '',
         target_kind: 'tenant',
         target_id: target,

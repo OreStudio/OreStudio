@@ -23,7 +23,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Routes } from 'react-router';
-import type { AccountAccess } from '@ores/wire-protocol/browser';
+import { wireTimestamp, type AccountAccess } from '@ores/wire-protocol/browser';
 import type { RecordResourceView } from '../api/client.js';
 import { TranslationProvider } from '../i18n/Provider.js';
 
@@ -70,7 +70,7 @@ export function accessOf(codes: string[]): AccountAccess {
                 description: '',
                 permissionCodes: codes,
                 givenBy: 'priya',
-                givenAt: '2026-10-04',
+                givenAt: wireTimestamp('2026-10-04 00:00:00.000000Z'),
                 reasonCode: 'access.new_joiner',
                 commentary: '',
             },

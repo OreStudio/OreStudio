@@ -25,7 +25,7 @@ import { z } from 'zod';
 import { NotAuthenticatedError, OperationFailedError, SessionExpiredError } from './errors.js';
 import { WireCodec } from './codec.js';
 import type { MessageEnvelope, Reply, RequestHeaders, Transport } from './transport.js';
-import { wireTimestamp } from './primitives.js';
+import { wireTimestamp } from './time.js';
 
 interface RecordedCall {
     readonly subject: string;
@@ -1173,14 +1173,14 @@ describe('listening to published events', () => {
         const payload = new WireCodec('msgpack').encode({
             event_id: '44444444-4444-4444-4444-444444444444',
             action: 'updated',
-            occurred_at: '2026-10-10T12:00:03Z',
+            occurred_at: '2026-10-10 12:00:03Z',
         });
         deliver?.(payload, { tenantId: 't1', partyId: 'p1' });
         deliver?.(payload, { tenantId: undefined, partyId: undefined });
 
         expect(heard).toEqual([
-            { at: '2026-10-10T12:00:03Z', tenantId: 't1', partyId: 'p1', key: {} },
-            { at: '2026-10-10T12:00:03Z', tenantId: undefined, partyId: undefined, key: {} },
+            { at: '2026-10-10 12:00:03Z', tenantId: 't1', partyId: 'p1', key: {} },
+            { at: '2026-10-10 12:00:03Z', tenantId: undefined, partyId: undefined, key: {} },
         ]);
     });
 
@@ -1206,7 +1206,7 @@ describe('listening to published events', () => {
             heard.push(change.key),
         );
         const encode = (key: unknown): Uint8Array =>
-            new WireCodec('msgpack').encode({ occurred_at: '2026-10-10T12:00:03Z', key });
+            new WireCodec('msgpack').encode({ occurred_at: '2026-10-10 12:00:03Z', key });
         const envelope = { tenantId: 't1', partyId: undefined };
         deliver?.(encode({ username: 'diane.kay', version: 4, nested: { a: 1 } }), envelope);
         deliver?.(encode(undefined), envelope);

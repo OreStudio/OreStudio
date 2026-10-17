@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/delete-the-netting-set-xml-mapper
-#+pr: 3456
+#+pr: 3486
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -94,7 +94,8 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families on the codec | 3 of 5 (calendar adjustments, currency config, netting sets) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
+| Families read and written through the codec | 2 of 5 (calendar adjustments, currency config) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
+| Families whose XML mapper was deleted because nothing read it | 1 (netting sets) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
 | Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3260f93169 |
 | Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | 3260f93169 |
 | XML suites | 509 cases, 79,094 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
@@ -104,6 +105,12 @@ task and name that file in the Command column.
 - *A rename now fails instead of writing nothing.* =mark_present= reports a
   name the table does not have, and the projection throws rather than emitting
   a document missing the field.
+- *The netting set family has a table and no reader.* Its XML mapper was
+  reached only by its own tests, so the mapper and those tests are gone and the
+  family is covered by the binding, writing and round-trip suites that walk the
+  corpus. A sprint-26 story records netting sets as reading and writing through
+  the refdata store; that store is live, but the ORE XML path into it never had
+  a caller, and this change makes that explicit.
 - *The reading is stricter than xsdcpp.* The binder refuses an element or an
   attribute the schema does not name, and the importer throws. That is the
   codec's policy on a family with no =xs:any=, and it is the behaviour the
@@ -130,6 +137,8 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/3456][#3456]] | [ore] Read and write calendar adjustments through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3470][#3470]] | [ore] Read and write currency config through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3486][#3486]] | [ore] Delete the netting set XML mapper nothing reads |
 
 * Review
 

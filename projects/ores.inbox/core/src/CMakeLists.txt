@@ -69,4 +69,11 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort)
 
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.history.core.lib
+        ores.diff.lib
+        ores.iam.core.lib
+        ores.service.lib)
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

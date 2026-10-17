@@ -71,6 +71,7 @@ dependency of every domain service.
 
 #+begin_src cmake :name extra_dependencies
 find_package(cnats CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ${CNATS_LIB}

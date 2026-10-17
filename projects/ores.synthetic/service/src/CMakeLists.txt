@@ -57,12 +57,25 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.service.lib
+        ores.security.lib
+        ores.synthetic.core.lib
         ores.analytics.quant.lib
-        ores.eventing.core.lib
-        ores.iam.client.lib
         ores.marketdata.api.lib
         ores.marketdata.client.lib
-        ores.marketdata.core.lib)
+        ores.marketdata.core.lib
+        ores.iam.client.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib
+        ores.eventing.core.lib)
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.openssl_cleanup
+        Threads::Threads)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

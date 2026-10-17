@@ -137,7 +137,9 @@ by convention.
 
 #+begin_src cmake :name extra_dependencies
 find_package(jwt-cpp CONFIG REQUIRED)
+
 find_package(Boost REQUIRED COMPONENTS json)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         OpenSSL::SSL

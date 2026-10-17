@@ -80,6 +80,12 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.core.lib
         ores.eventing.core.lib
         ores.eventing.api.lib)
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.openssl_cleanup
+        Threads::Threads)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

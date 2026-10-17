@@ -76,4 +76,6 @@ target_link_libraries(${lib_target_name}
         sqlgen::sqlgen
         Boost::boost)
 
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

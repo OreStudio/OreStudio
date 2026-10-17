@@ -57,12 +57,24 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.eventing.core.lib
         ores.http.api.lib
         ores.http.assets.lib
+        ores.http.core.lib
         ores.http.iam.lib
         ores.http.refdata.lib
-        ores.iam.client.lib)
+        ores.eventing.core.lib
+        ores.iam.client.lib
+        ores.nats.lib
+        ores.service.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.database.lib)
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.openssl_cleanup
+        Threads::Threads)
 
 # Copy development scripts to the runtime output directory.
 set(ores_http_scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")

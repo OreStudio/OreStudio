@@ -78,6 +78,8 @@ target_link_libraries(${lib_target_name}
         ores.platform.lib
     PRIVATE
         ores.utility.lib)
+
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

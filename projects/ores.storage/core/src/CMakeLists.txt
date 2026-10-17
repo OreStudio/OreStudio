@@ -58,7 +58,9 @@ target_link_libraries(${lib_target_name}
 # baseline honest for every other component.
 
 find_package(LibArchive REQUIRED)
+
 find_package(Boost REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.storage.api.lib
@@ -70,5 +72,12 @@ target_link_libraries(${lib_target_name}
         ores.security.lib
         faker-cxx::faker-cxx
         libfort::fort)
+
+target_link_libraries(${lib_target_name}
+    PRIVATE
+        ores.database.lib
+        ores.iam.api.lib
+        LibArchive::LibArchive
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -59,4 +59,6 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.utility.lib)
 
+target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
+
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

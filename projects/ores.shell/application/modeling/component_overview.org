@@ -70,6 +70,7 @@ domain it belongs to, and a later wave moves it into its own
 
 #+begin_src cmake :name extra_dependencies
 find_package(cli CONFIG REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.shell.api.lib
@@ -115,6 +116,12 @@ target_link_libraries(${lib_target_name}
         ores.orgmode.lib
         ores.service.lib
         cli::cli)
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.openssl_cleanup
+        Threads::Threads)
 #+end_src
 
 #+begin_src cmake :name extra_test_dependencies

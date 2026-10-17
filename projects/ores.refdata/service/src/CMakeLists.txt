@@ -57,9 +57,22 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.eventing.core.lib
+        ores.service.lib
+        ores.security.lib
+        ores.refdata.core.lib
         ores.inbox.api.lib
-        ores.inbox.core.lib)
+        ores.inbox.core.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.telemetry.core.lib)
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.openssl_cleanup
+        Threads::Threads)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

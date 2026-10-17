@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/key-netting-sets-by-credit-limit
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,7 +31,7 @@ set to its agreement.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

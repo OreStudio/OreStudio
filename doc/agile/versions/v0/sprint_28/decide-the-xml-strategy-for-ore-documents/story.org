@@ -53,7 +53,7 @@ the work that follows is broken into tasks.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C72A8250-F44C-41FC-9C0C-54DF98683596][Prototype the descriptor document codec and measure it]] | STARTED | 2026-10-17 | 2026-10-17 | Build a throwaway codec that walks generated descriptor tables instead of a generated DOM, then measure time, allocations and fidelity against the current xsdcpp path. |
+| [[id:C72A8250-F44C-41FC-9C0C-54DF98683596][Prototype the descriptor document codec and measure it]] | DONE | 2026-10-17 | 2026-10-17 | Build a throwaway codec that walks generated descriptor tables instead of a generated DOM, then measure time, allocations and fidelity against the current xsdcpp path. |
 
 * Decisions
 

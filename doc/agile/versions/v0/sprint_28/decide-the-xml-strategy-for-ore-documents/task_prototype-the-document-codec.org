@@ -32,9 +32,9 @@ Answer three questions with measurements so the story can choose a route.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now           | Measured. The numbers and the reading are in the investigation. |
+| Now           | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next          | The story's decision.                  |
+| Next          | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

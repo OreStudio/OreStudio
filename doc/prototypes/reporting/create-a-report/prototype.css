@@ -574,3 +574,17 @@ tr.off td { color: var(--ink-faint); }
     .appheader-inner { padding: 12px 14px; }
     .appnav { display: none; }
 }
+
+/* The report type control. A combo box because the type table is the list and
+   more types are expected, so a pair of radios would need a code change. */
+.combo {
+    width: 100%;
+    max-width: 26rem;
+    background: var(--panel-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font: 13px/1.4 var(--mono);
+}
+.combo:focus { outline: none; border-color: var(--accent); }

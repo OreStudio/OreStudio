@@ -528,18 +528,28 @@
             '</div>';
     }
 
+    /* The report types the type table holds. A type is a category row, and the
+       row also names the workflow that runs the report. One is registered
+       today. The control is a combo box rather than a pair of radios because
+       the table is the list and a second type must appear without a code
+       change. */
+    var REPORT_TYPES = [
+        { code: 'risk', label: 'risk', what: 'the full ORE risk analytics run', workflow: 'report_execution_workflow' }
+    ];
+
     function typeField() {
         return '<div class="field">' +
             '<label>Report type</label>' +
-            '<div class="radios">' +
-            ['risk'].map(function (code) {
-                return '<label><input type="radio" name="rtype" data-act="type" value="' + code + '"' +
-                    (S.draft.reportType === code ? ' checked' : '') + '> <span class="mono">' + code + '</span>' +
-                    ' <span class="faint">full ORE risk analytics run</span></label>';
+            '<select data-act="type" class="combo">' +
+            REPORT_TYPES.map(function (one) {
+                return '<option value="' + one.code + '"' +
+                    (S.draft.reportType === one.code ? ' selected' : '') + '>' +
+                    one.code + ' \u2014 ' + one.what + '</option>';
             }).join('') +
-            '</div>' +
-            '<span class="note">The picker reads the type table, not a hardcoded list. One type is registered today, ' +
-            'risk, and it names the workflow that runs the report: report_execution_workflow.</span>' +
+            '</select>' +
+            '<span class="note">The combo box reads the type table, so a type added there appears here without a code ' +
+            'change. One is registered today, <span class="mono">risk</span>, and it names the workflow that runs the ' +
+            'report: <span class="mono">report_execution_workflow</span>.</span>' +
             '</div>';
     }
 

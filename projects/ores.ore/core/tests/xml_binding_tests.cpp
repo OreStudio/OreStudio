@@ -554,6 +554,26 @@ TEST_CASE("the_generated_conventions_tables_bind_the_corpus", tags) {
     CHECK(report.empty());
 }
 
+TEST_CASE("an_element_with_no_text_states_a_value", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The bool type in ore_types.xsd is an enumeration whose last spelling is
+    // the empty string, so <EndOfMonth/> states a value rather than none. An
+    // enumeration that does not spell the empty string refuses one.
+    const std::string refused = "<CurrencyConfig><Currency>"
+                                "<Name>US Dollar</Name><ISOCode>USD</ISOCode>"
+                                "<NumericCode>840</NumericCode><Symbol>$</Symbol>"
+                                "<FractionSymbol>c</FractionSymbol>"
+                                "<FractionsPerUnit>100</FractionsPerUnit>"
+                                "<RoundingType/><RoundingPrecision>2</RoundingPrecision>"
+                                "</Currency></CurrencyConfig>";
+
+    currency_config record;
+    const auto bound = binder::bind(currency_config_document(), refused, &record);
+    REQUIRE_FALSE(bound);
+    CHECK(bound.error().message.find("spelling") != std::string::npos);
+}
+
 TEST_CASE("a_leaf_element_cannot_contain_another_element", tags) {
     auto lg(make_logger(test_suite));
 

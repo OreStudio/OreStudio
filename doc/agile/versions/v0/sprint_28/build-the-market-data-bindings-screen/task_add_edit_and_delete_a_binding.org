@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Add and Edit are one dialog of the record standard. Add states the new record re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -42,9 +42,25 @@ Add and Edit are one dialog of the record standard. Add states the new record re
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Add and Edit are one dialog, as the record screen standard draws a record's form; Delete is the standard's removal dialog. The work is three parts, and one of them needs a decision.
+
+*1. The source field is a picker, not a choice.* The dialog's source field cannot be a =choice=: a choice renders each option through =t('refdata.choices.<field>.<value>')= (=records.tsx:838=), so a source name would render as a missing translation key. It has to be a =record= field, whose picker reads =value=/=label= pairs from a store. So the BFF read gains a store on the web side — one that reads =/api/bindings/bindable-sources= and yields a row per source the party may bind, with the series it would write as the label. For Edit the binding's own source is offered even though it is bound, so the field is the candidate list plus the current source.
+
+*2. The two refusals the prototype shows are checks in the dialog.* The BFF read already says which running feed holds a series (=held_by=), so:
+
+- A source whose series a running feed holds is refused before the write: the dialog says which feed holds it, and Save is off. The server refuses it anyway; this is the answer before the write that step 4 exists for.
+- A stale version is refused by the server, and the standard's dialog offers the reload.
+
+*3. The actions follow the permission, and the kind.* =onEdit= is drawn when the person may write *and* the binding is synthetic — the prototype draws no Edit for a vendor binding. =onDelete= is drawn when the person may remove. Add is offered on the list when the person may write. This is what makes the access mark honest: it was drawn standing alone until now.
+
+Then, per the prototype:
+
+- Add states the new-record reason in a note instead of asking, and opens the new binding's page.
+- Edit offers the source and the enabled flag, warns when the series changes, and asks for an amendment reason and its commentary.
+- Delete names the binding, says that the series, its observations and the binding's history stay, and returns to the list.
+
+Tests go where they can be behaviour rather than implementation: the web package for the dialog's refusals and the action gating, beside the BFF tests step 4 added. The manual scenario =42CD0D45= already covers the list and the record page and will need the new steps.
+
 
 * Measurements
 

@@ -31,7 +31,7 @@
 
 namespace {
 
-const std::string tags("[conventions_import]");
+const std::string tags("[bundle_import]");
 
 /**
  * @brief A context with no connections, so a call that reaches storage fails.

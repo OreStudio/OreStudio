@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
-#+updated: 2026-10-16
+#+updated: 2026-10-17
 #+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -69,7 +69,8 @@ task and name that file in the Command column.
 | Sources naming the variant | 0 | =grep -rn fx_instrument_variant projects/ --include=*.cpp --include=*.hpp= | the PR head |
 | Forward mappers returning their own type | 15 | the =forward_fx_*= declarations in =fx_instrument_mapper.hpp= | the PR head |
 | Test files converted | 5 | =xml_fx_mapper_roundtrip_tests.cpp=, =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =xml_remaining_phases_mapper_roundtrip_tests.cpp=, =planner_import_planner_tests.cpp=, =xml_trade_import_tests.cpp= | the PR head |
-| ORE core suite | 669 cases, 483,181 assertions, all pass | =ores.ore.core.tests= with the =.env= loaded | the PR head |
+| ORE core suite | 706 cases, all pass | =compass test run --preset linux-clang-release-ninja -- -R ores.ore.core.tests= | the PR head |
+| FX products crossing the batch join | 8 documents | =export_portfolio_roundtrips_every_fx_product= | the PR head |
 | ORE service builds | yes | =compass build ores.ore.service= | the PR head |
 
 * Notes
@@ -100,7 +101,20 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The public carrier, its seven members and the visitor carry =//= prose rather than Doxygen | =instrument.hpp= | Fixed | Each member, the struct, the array list and the visitor carry a =@brief=. |
+| 2 | The empty-carrier result contradicts its own comment, and the result it returns means failure | =instrument.hpp= | Fixed | The comment states the invariant both call paths hold, so no carrier that reaches the visitor is empty. |
+| 3 | The visitor reads the first row only, while =stamp_ids= and the batch append process every row | =instrument.hpp= | Fixed | The join states one row per trade id; the comment names that and says a second row is a fault. |
+| 4 | The seven-array list is copied five times, so an eighth product can be missed silently | =instrument.hpp=, =instrument_batch_mapper.cpp= | Fixed | Two lists: the carrier's array order in =detail=, the carrier-to-batch pairing in the batch mapper. The visitor, =stamp_ids=, the append and the rebuild join read them. |
+| 5 | =append_all= is a generic name for one family | =instrument_batch_mapper.cpp= | Fixed | Renamed =append_fx_arrays=. |
+| 6 | The tests read =.front()= on an unchecked vector, so a regression is UB rather than a failure | =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =xml_remaining_phases_mapper_roundtrip_tests.cpp= | Fixed | =single_row()= requires exactly one row before it hands the row out. |
+| 7 | =Visitor&&= is never forwarded, so it misstates ownership | =instrument.hpp= | Fixed | The visitor is taken by value, which is what both call sites pass. |
+| 8 | The dispatch is written out twice, once per result kind | =instrument.hpp= | Fixed | One =visit_first_fx_product= helper serves both branches. |
+| 9 | The =stamp_ids= arrays omit braces while their siblings use them | =instrument.hpp= | Fixed | Folded into the shared array list. |
+| 10 | The new batch comments narrate the code and use the wrong comment form | =instrument_batch_mapper.cpp= | Fixed | Doxygen form, and only the trade-id join rationale is kept. |
+| 11 | Stale text names the variant in the tests and in the mapper brief | =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =planner_import_planner_tests.cpp=, =trade_mapper.hpp= | Fixed | The test comments and the failure text name the carrier row; the brief states every mapped FX code. |
+| 12 | Only FxForward crosses the batch join in a test | =xml_exporter_tests.cpp= | Fixed | New case runs one document per FX product through =append_instrument= and the export join. |
+| 13 | The carrier has no =operator==, unlike its sibling | =instrument.hpp= | Fixed | Defaulted and documented. |
+| 14 | =export_portfolio='s signature was re-wrapped although nothing in it changed | =exporter.cpp= | Rejected | The =format= gate refuses the old wrapping once the file is in the delta, so keeping it fails the check. |
 
 * Result
 
@@ -111,8 +125,9 @@ arrays joined by trade id, with no discriminator anywhere. The fifteen
 chooses the array, and one shared visitor walks the arrays so the importer and
 the exporter keep their per-product bodies.
 
-No behaviour change. The ORE core suite passes at 669 cases and 483,181
-assertions, and both =ores.ore.core.tests= and =ores.ore.service= build.
+No behaviour change. The ORE core suite passes at 706 cases, and both
+=ores.ore.core.tests= and =ores.ore.service= build. One review reply is
+recorded above as rejected, with the gate that refuses it.
 
-The range bounds unit now has its place: one more array on the carrier, and one
-more branch in the visitor.
+The range bounds unit now has its place: one more array on the carrier, stated
+once in each of the two array lists, and no walk or branch to edit.

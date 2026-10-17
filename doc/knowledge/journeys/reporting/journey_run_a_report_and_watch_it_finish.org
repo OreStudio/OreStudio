@@ -149,9 +149,9 @@ from the definition, not a progress read, and the wireframe draws it as such.
 
 * Prototype
 
-None yet. This journey is the design intent for the run screen, and its
+The [[file:../../prototypes/reporting/run-a-report-and-watch-it-finish/][prototype]] argues this journey in three interpretations, and [[file:../../prototypes/reporting/run-a-report-and-watch-it-finish.org][its design note]] says what each argues and what is fake. This journey is the design intent for the run screen, and its
 prototype belongs at
-=doc/prototypes/reporting/run_a_report_and_watch_it_finish/=. The prototype must
+=doc/prototypes/reporting/run-a-report-and-watch-it-finish/=. The prototype must
 draw the confirmation dialog before the write; the run in flight with the phase
 ladder and no step marked current; the terminal state *completed clean* with
 =Report execution completed.= and the time it took; the terminal state

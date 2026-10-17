@@ -1486,17 +1486,6 @@ equity_instrument_mapper::forward_equity_option_position(const trade& t) {
 // Reverse: EquityPosition, EquityOptionPosition
 // ---------------------------------------------------------------------------
 
-namespace {
-
-trade wrap_equity_position(equityOptionPositionData d) {
-    trade t;
-    t.TradeType = oreTradeType::EquityOptionPosition;
-    t.EquityOptionPositionData = std::move(d);
-    return t;
-}
-
-} // namespace
-
 trade equity_instrument_mapper::reverse_equity_option_position(
     const ores::trading::domain::equity_position_instrument& instr,
     const std::vector<ores::trading::domain::equity_position_option_underlying>& underlyings) {
@@ -1526,7 +1515,10 @@ trade equity_instrument_mapper::reverse_equity_option_position(
         entry.Strike = static_cast<float>(row.strike.to_double());
         d.Underlying.push_back(std::move(entry));
     }
-    return wrap_equity_position(std::move(d));
+    trade t;
+    t.TradeType = oreTradeType::EquityOptionPosition;
+    t.EquityOptionPositionData = std::move(d);
+    return t;
 }
 
 trade equity_instrument_mapper::reverse_equity_position(

@@ -1,0 +1,5 @@
+# name	path	repeats
+small	external/ore/examples/Input/currencies.xml	200
+portfolio	external/ore/examples/Products/Input/portfolio.xml	40
+scripts	external/ore/examples/Products/Input/scriptlibrary.xml	20
+large	external/ore/examples/ORE-Python/Notebooks/Dependencies/calendar_adjustments.xml	2

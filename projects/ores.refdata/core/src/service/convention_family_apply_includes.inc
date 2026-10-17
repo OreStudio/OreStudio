@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-// AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-// Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
-// One repository per family the apply fragment calls. Include this outside the
-// namespace that compiles the fragment.
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_convention_family_apply_includes.inc.mustache
+ * To modify, update the template and regenerate.
+ */
 
 
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"

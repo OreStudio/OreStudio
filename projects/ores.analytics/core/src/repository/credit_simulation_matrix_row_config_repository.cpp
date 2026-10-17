@@ -271,10 +271,10 @@ credit_simulation_matrix_row_config_repository::read_any_by_from_rating(
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<credit_simulation_matrix_row_config_entity>> |
                        where("tenant_id"_c == tid && "from_rating"_c == from_rating) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<credit_simulation_matrix_row_config_entity,
-                              domain::credit_simulation_matrix_row_config>(
+    auto found = execute_read_query<credit_simulation_matrix_row_config_entity,
+                                    domain::credit_simulation_matrix_row_config>(
         ctx,
         query,
         [](const auto& entities) {
@@ -282,6 +282,17 @@ credit_simulation_matrix_row_config_repository::read_any_by_from_rating(
         },
         lg(),
         "Reading any matrix row by from_rating.");
+    // A key names a row of one party, and another party of the tenant may hold
+    // the same key, so the read keeps the session's party's rows. The filter
+    // runs before the newest row is taken, not after: the read would otherwise
+    // return another party's newer row and this party's history would read as
+    // empty. A null party column means the row belongs to the whole tenant and
+    // stays readable by every party, as the latest-by finder also has it.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

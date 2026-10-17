@@ -3329,6 +3329,11 @@ def key_resolvers(entity: dict[str, Any]) -> list[dict[str, Any]]:
     closed row, so resolution needs its own read that ignores the window and
     takes the newest match.
 
+    The match is kept to the session's party when the entity owns a party
+    column: the declared key can repeat across the parties of one tenant, so a
+    read without the party can resolve history to another party's row. See
+    ``ores.cpp.repository.repository_impl.org`` for the emitted filter.
+
     Deliberately independent of ``key_finders``. That list drops a finder the
     model states itself, because emitting a second declaration of the same
     method would be a redefinition. There is no such clash here: a model that

@@ -256,14 +256,25 @@ netting_agreement_repository::read_any_by_agreement_number(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<netting_agreement_entity>> |
                        where("tenant_id"_c == tid && "agreement_number"_c == agreement_number) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<netting_agreement_entity, domain::netting_agreement>(
+    auto found = execute_read_query<netting_agreement_entity, domain::netting_agreement>(
         ctx,
         query,
         [](const auto& entities) { return netting_agreement_mapper::map(entities); },
         lg(),
         "Reading any netting agreement by agreement_number.");
+    // A key names a row of one party, and another party of the tenant may hold
+    // the same key, so the read keeps the session's party's rows. The filter
+    // runs before the newest row is taken, not after: the read would otherwise
+    // return another party's newer row and this party's history would read as
+    // empty. A null party column means the row belongs to the whole tenant and
+    // stays readable by every party, as the latest-by finder also has it.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

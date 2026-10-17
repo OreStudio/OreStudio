@@ -98,3 +98,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Nothing to generate. Codegen already emits a protocol and a handler for every
+convention entity: =deposit_convention_protocol.hpp= carries the list, get, put
+and delete subjects under =refdata.v1.deposit_conventions.*=, and every one of
+the 166 generated protocol headers does the same for its own entity. Each has a
+handler and a registrar. The task's premise was that this did not exist.
+
+The remaining gap is not per-family messaging. It is the unit that applies
+several families in one transaction, because a transaction needs one handler and
+one message, and one message carrying every family is the aggregate that fails on
+MSVC. That is the bundle, and its resolution is the staged import: stage the
+families durably, then commit in one message that reads the staged rows and
+applies them in one unit of work. The commit message then carries no family data
+and no aggregate is instantiated.
+
+That work belongs to the bundle task, which follows this one.

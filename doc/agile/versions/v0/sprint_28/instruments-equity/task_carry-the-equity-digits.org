@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: feature/carry-the-equity-digits
-#+pr: 3461
+#+pr: 3466
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3466][#3466]] | [agile] Collapse the duplicated Result heading |
 | [[https://github.com/OreStudio/OreStudio/pull/3461][#3461]] | [trading] Hold the equity variance strike as an exact decimal |
 
 * Review
@@ -81,8 +82,6 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 |   |                 |      |          |       |
-
-* Result
 
 * Result
 

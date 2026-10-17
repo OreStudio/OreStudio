@@ -61,6 +61,7 @@ extractor can rebuild =oresmd_index_map.tsv= with the services down.
 - [[id:F2FA516C-1F86-43EF-80D4-E92F640B6CFD][ores.marketdata]] — the component these commands reach.
 
 #+begin_src cmake :name extra_dependencies
+find_package(cli CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.shell.api.lib

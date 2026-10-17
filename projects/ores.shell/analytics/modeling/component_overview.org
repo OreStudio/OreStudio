@@ -87,6 +87,7 @@ rule in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and adapter kinds.
 
 #+begin_src cmake :name extra_dependencies
+find_package(cli CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.shell.api.lib

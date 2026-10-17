@@ -136,6 +136,8 @@ by convention.
 - [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] -- the naming and component-only checks this component passes.
 
 #+begin_src cmake :name extra_dependencies
+find_package(jwt-cpp CONFIG REQUIRED)
+find_package(Boost REQUIRED COMPONENTS json)
 target_link_libraries(${lib_target_name}
     PUBLIC
         OpenSSL::SSL

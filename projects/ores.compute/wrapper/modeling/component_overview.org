@@ -68,6 +68,7 @@ into its generated file after the profile's baseline.
 - [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — orchestrator that dispatches jobs to this worker.
 
 #+begin_src cmake :name extra_dependencies
+find_package(LibArchive REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.compute.api.lib

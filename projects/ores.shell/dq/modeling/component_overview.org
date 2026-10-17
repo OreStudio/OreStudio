@@ -64,6 +64,7 @@ hand-authored and codegen writes only the two =component_files.cmake= lists.
   for another domain.
 
 #+begin_src cmake :name extra_dependencies
+find_package(cli CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.shell.api.lib

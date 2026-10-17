@@ -70,6 +70,7 @@ dependency of every domain service.
   namespace and links to per-service messaging references.
 
 #+begin_src cmake :name extra_dependencies
+find_package(cnats CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ${CNATS_LIB}

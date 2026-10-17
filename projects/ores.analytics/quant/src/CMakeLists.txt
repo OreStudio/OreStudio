@@ -51,6 +51,9 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
+find_package(Immer CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         Boost::boost

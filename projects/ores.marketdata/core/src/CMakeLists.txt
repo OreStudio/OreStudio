@@ -57,6 +57,8 @@ target_link_libraries(${lib_target_name}
 # Appending to the target rather than replacing the profile keeps the
 # baseline honest for every other component.
 
+find_package(Boost REQUIRED COMPONENTS url)
+find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.marketdata.api.lib

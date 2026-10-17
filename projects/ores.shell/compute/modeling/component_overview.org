@@ -64,6 +64,7 @@ because each orchestrates several entities rather than one.
 - [[id:410D3332-BEED-4B51-B46C-01E92FB5E4F9][ores.shell.iam]] - the adapter part this one follows.
 
 #+begin_src cmake :name extra_dependencies
+find_package(cli CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.shell.api.lib

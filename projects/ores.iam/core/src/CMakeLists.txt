@@ -57,6 +57,7 @@ target_link_libraries(${lib_target_name}
 # Appending to the target rather than replacing the profile keeps the
 # baseline honest for every other component.
 
+find_package(Immer CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.iam.api.lib

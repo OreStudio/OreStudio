@@ -124,6 +124,9 @@ into its generated file after the profile's baseline.
 - [[id:6EA4B5FC-4581-484C-B5EB-ECF868B3A61D][Task: Implement risk recentering]]
 
 #+begin_src cmake :name extra_dependencies
+find_package(Immer CONFIG REQUIRED)
+find_package(magic_enum CONFIG REQUIRED)
+find_package(Eigen3 CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         Boost::boost

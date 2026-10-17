@@ -73,6 +73,7 @@ proves the HTTP one.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the target state, and the raw and wrapped use it separates.
 
 #+begin_src cmake :name extra_dependencies
+find_package(cli CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.shell.api.lib

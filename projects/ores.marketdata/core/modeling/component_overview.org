@@ -63,6 +63,8 @@ into its generated file after the profile's baseline.
 - [[id:57182ECE-6364-421A-A46F-73841F9961B4][ores.marketdata.service]] — NATS service entrypoint.
 
 #+begin_src cmake :name extra_dependencies
+find_package(Boost REQUIRED COMPONENTS url)
+find_package(magic_enum CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.marketdata.api.lib

@@ -70,6 +70,8 @@ generated file after the profile's baseline.
 - [[id:288678EF-EB55-4F89-9005-7B3532671C91][ores.storage.service]] — the service that answers the operation set.
 
 #+begin_src cmake :name extra_dependencies
+find_package(LibArchive REQUIRED)
+find_package(Boost REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.storage.api.lib

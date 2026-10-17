@@ -84,6 +84,7 @@ units project, which is the fractal naming rule in
 - [[id:8C604D55-6F20-41D2-A66A-12A767B81D07][ores.assets]] -- the domain this part projects.
 
 #+begin_src cmake :name extra_dependencies
+find_package(cli CONFIG REQUIRED)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.shell.api.lib

@@ -18,10 +18,12 @@ sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 from codegen.convention_family_registry import (  # noqa: E402
     FRAGMENT_RELATIVE_PATH,
     HEADER_RELATIVE_PATH,
+    INCLUDES_RELATIVE_PATH,
     discover_entries,
     parse_header,
     render_fragment,
     render_header,
+    render_includes,
 )
 
 SCRIPT = (
@@ -95,6 +97,9 @@ def _write_artefacts(root: Path, entries) -> None:
     fragment = root / FRAGMENT_RELATIVE_PATH
     fragment.parent.mkdir(parents=True, exist_ok=True)
     fragment.write_text(render_fragment(entries), encoding="utf-8")
+    includes = root / INCLUDES_RELATIVE_PATH
+    includes.parent.mkdir(parents=True, exist_ok=True)
+    includes.write_text(render_includes(entries), encoding="utf-8")
 
 
 TWO = {

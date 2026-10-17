@@ -259,12 +259,9 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
     while (true) {
         auto result = fetch_steps(session, instance_id);
         if (!result || !result->success) {
-            // Tolerated for a few polls: transport and parse errors, which a
-            // long wait routinely survives, and unsuccessful replies, because
-            // an instance is not queryable the instant it is dispatched, so
-            // even "not found" is transient. The warning deliberately avoids
-            // fail(): were the wait to recover and succeed, an earlier mark
-            // would still abort a load script.
+            // Tolerated for a few polls, as wait_for_instance documents. The
+            // warning deliberately avoids fail(): were the wait to recover and
+            // succeed, an earlier mark would still abort a load script.
             const auto reason = !result ? result.error() : result->message;
             if (result)
                 BOOST_LOG_SEV(lg(), info)
@@ -276,8 +273,8 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                 BOOST_LOG_SEV(lg(), warn) << "Poll " << consecutive_failures << " failed for "
                                           << instance_id << ": " << reason;
             } else {
-                BOOST_LOG_SEV(lg(), info) << "First poll refused instance " << instance_id
-                                          << "; the engine creates the row after it answers.";
+                BOOST_LOG_SEV(lg(), info)
+                    << "First poll refused instance " << instance_id << "; retrying.";
             }
             if (consecutive_failures >= max_consecutive_poll_failures) {
                 fail(out) << "Aborting wait after " << max_consecutive_poll_failures
@@ -333,8 +330,20 @@ bool workflow_run_commands::wait_for_instance(std::ostream& out,
                         << step.step_index << ": " << step.error;
                     return false;
                 }
+                if (result->status == "failed" || result->status == "compensated") {
+                    fail(out) << "Workflow instance " << instance_id << " " << result->status;
+                    if (!result->error.empty())
+                        out << ": " << result->error;
+                    out << std::endl;
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Workflow instance " << instance_id << " " << result->status;
+                    return false;
+                }
                 if (run_completed(*result, expected_steps)) {
-                    out << "✓ All " << total << " step(s) completed." << std::endl;
+                    if (result->steps.empty())
+                        out << "✓ Workflow instance " << instance_id << " completed." << std::endl;
+                    else
+                        out << "✓ All " << total << " step(s) completed." << std::endl;
                     BOOST_LOG_SEV(lg(), info)
                         << "Workflow instance " << instance_id << " completed.";
                     return true;
@@ -380,22 +389,25 @@ const workflow::messaging::workflow_step_summary* workflow_run_commands::last_co
     return last;
 }
 
-std::size_t workflow_run_commands::steps_expected(
-    const workflow::messaging::get_workflow_steps_response& reply,
-    std::size_t expected_steps) {
+std::size_t
+workflow_run_commands::steps_expected(const workflow::messaging::get_workflow_steps_response& reply,
+                                      std::size_t expected_steps) {
     const auto planned = reply.step_count > 0 ? static_cast<std::size_t>(reply.step_count) : 0;
     return std::max(planned, expected_steps);
 }
 
 bool workflow_run_commands::run_completed(
-    const workflow::messaging::get_workflow_steps_response& reply,
-    std::size_t expected_steps) {
+    const workflow::messaging::get_workflow_steps_response& reply, std::size_t expected_steps) {
+    // The status is authoritative and is the only evidence a caller may have:
+    // the steps read answers a run outside the caller's tenant as a success
+    // with an empty list.
+    if (reply.status == "completed")
+        return true;
     return !reply.steps.empty() && reply.steps.size() >= steps_expected(reply, expected_steps) &&
            std::ranges::all_of(reply.steps, &workflow_run_commands::is_step_complete);
 }
 
-std::expected<workflow_run_commands::handoff, std::string>
-workflow_run_commands::handoff_of_result(
+std::expected<workflow_run_commands::handoff, std::string> workflow_run_commands::handoff_of_result(
     const workflow::messaging::get_step_result_response& reply) {
     if (!reply.success || !reply.found)
         return std::unexpected("the server holds no result for the step");
@@ -412,21 +424,39 @@ workflow_run_commands::handoff_of_result(
                    .tenant_id = decoded->tenant_id.value_or("")};
 }
 
+bool workflow_run_commands::is_handoff_followed(std::string_view caller_tenant,
+                                                const handoff& work) {
+    return !work.instance_id.empty() && can_read_run_of(caller_tenant, work.tenant_id);
+}
+
+std::chrono::seconds workflow_run_commands::remaining_budget(std::chrono::seconds timeout,
+                                                             std::chrono::seconds spent) {
+    return timeout > spent ? timeout - spent : std::chrono::seconds(0);
+}
+
 bool workflow_run_commands::can_read_run_of(std::string_view caller_tenant,
                                             std::string_view run_tenant) {
-    return run_tenant.empty() || run_tenant == caller_tenant ||
-           caller_tenant == ores::utility::uuid::max_uuid_str;
+    // Parsing says whether the handoff named a tenant at all. An empty field
+    // and a field that is not a tenant id are both unknown, and an unknown
+    // tenant must not grant access to a run.
+    const auto run = ores::utility::uuid::tenant_id::from_string(run_tenant);
+    if (!run)
+        return false;
+    const auto caller = ores::utility::uuid::tenant_id::from_string(caller_tenant);
+    if (!caller)
+        return false;
+    return caller->is_system() || *caller == *run;
 }
 
 bool workflow_run_commands::report_poll_failure(int consecutive_failures, bool replied) {
     return !(consecutive_failures == 1 && replied);
 }
 
-workflow_run_commands::follow_result workflow_run_commands::follow_child_instance(
-    std::ostream& out,
-    nats_client& session,
-    const std::string& instance_id,
-    std::chrono::seconds timeout) {
+workflow_run_commands::follow_result
+workflow_run_commands::follow_child_instance(std::ostream& out,
+                                             nats_client& session,
+                                             const std::string& instance_id,
+                                             std::chrono::seconds timeout) {
     const auto steps = fetch_steps(session, instance_id);
     if (!steps || !steps->success) {
         const auto reason = !steps ? steps.error() : steps->message;
@@ -446,8 +476,7 @@ workflow_run_commands::follow_result workflow_run_commands::follow_child_instanc
     const auto reply = fetch_step_result(session, step->id, tenant_id);
     if (!reply) {
         fail(out) << "Could not read the result of step '" << step->name
-                  << "' of workflow instance " << instance_id << ": " << reply.error()
-                  << std::endl;
+                  << "' of workflow instance " << instance_id << ": " << reply.error() << std::endl;
         return follow_result::failed;
     }
     const auto handoff = handoff_of_result(*reply);
@@ -460,19 +489,31 @@ workflow_run_commands::follow_result workflow_run_commands::follow_child_instanc
     if (handoff->instance_id.empty())
         return follow_result::complete;
 
-    if (!can_read_run_of(tenant_id, handoff->tenant_id)) {
-        out << "  The run handed its work to instance " << handoff->instance_id
-            << ", which belongs to tenant " << handoff->tenant_id << "." << std::endl;
-        out << "  That run continues the work in that tenant, whose steps this session cannot "
-               "read."
-            << std::endl;
+    if (!is_handoff_followed(tenant_id, *handoff)) {
+        // A tenant the handoff names is reported as such. A handoff that names
+        // none, or names something that is not a tenant id, is unknown, and an
+        // unknown tenant must not grant a cross-tenant read.
+        if (ores::utility::uuid::tenant_id::from_string(handoff->tenant_id)) {
+            out << "  The run handed its work to instance " << handoff->instance_id
+                << ", which belongs to tenant " << handoff->tenant_id << "." << std::endl;
+            out << "  That run continues the work in that tenant, whose steps this session "
+                   "cannot read."
+                << std::endl;
+        } else {
+            out << "  The run handed its work to instance " << handoff->instance_id
+                << ", and the handoff names no tenant this session can follow." << std::endl;
+            out << "  That run continues the setup elsewhere, whose steps this session cannot "
+                   "read."
+                << std::endl;
+        }
         return follow_result::continues_elsewhere;
     }
 
     out << "  The run handed its work to instance " << handoff->instance_id << "; following it."
         << std::endl;
-    return wait_for_instance(out, session, handoff->instance_id, timeout) ? follow_result::complete
-                                                                         : follow_result::failed;
+    return wait_for_instance(out, session, handoff->instance_id, timeout) ?
+               follow_result::complete :
+               follow_result::failed;
 }
 
 void workflow_run_commands::process_start(std::ostream& out,

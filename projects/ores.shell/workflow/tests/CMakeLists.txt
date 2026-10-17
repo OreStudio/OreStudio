@@ -19,7 +19,6 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.testing.lib
-        ores.utility.lib
         ores.workflow.api.lib
         Catch2::Catch2
         ores.openssl_cleanup

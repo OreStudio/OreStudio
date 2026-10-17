@@ -105,17 +105,6 @@ std::vector<flag_spec> tenant_flag_specs(std::string description_default) {
              .default_value = std::to_string(default_run_timeout.count())}};
 }
 
-/// The tenant a provisioning request names, and its first administrator.
-struct tenant_fields {
-    std::string code;
-    std::string name;
-    std::string hostname;
-    std::string description;
-    std::string admin_username;
-    std::string admin_email;
-    std::string admin_password;
-};
-
 /**
  * @brief Reads the tenant fields a caller supplied.
  *
@@ -128,8 +117,9 @@ struct tenant_fields {
  *
  * @return the fields, or nothing after reporting what is missing.
  */
-std::optional<tenant_fields> read_tenant_fields(std::ostream& out, const parsed_args& parsed) {
-    tenant_fields fields;
+std::optional<provision_commands::tenant_fields> read_tenant_fields(std::ostream& out,
+                                                                    const parsed_args& parsed) {
+    provision_commands::tenant_fields fields;
     fields.code = parsed.flag("tenant-code");
     fields.name = parsed.flag("tenant-name");
     fields.hostname = parsed.flag("tenant-hostname");
@@ -150,8 +140,8 @@ std::optional<tenant_fields> read_tenant_fields(std::ostream& out, const parsed_
 }
 
 /// The generic provision request a tenant's fields and a starting point make.
-iam::messaging::provision_tenant_command build_tenant_request(const parsed_args& parsed,
-                                                              const tenant_fields& fields) {
+iam::messaging::provision_tenant_command
+build_tenant_request(const parsed_args& parsed, const provision_commands::tenant_fields& fields) {
     iam::messaging::provision_tenant_command req;
     req.profile_code = parsed.flag("profile");
     req.tenant_code = fields.code;
@@ -189,10 +179,16 @@ std::optional<std::string> run_and_wait(std::ostream& out,
         return std::nullopt;
     }
 
-    out << "  Run started: " << started->instance_id << std::endl;
-    if (!workflow_run_commands::wait_for_instance(out, session, started->instance_id, timeout))
+    const auto run = provision_commands::started_run(started->success, started->instance_id);
+    if (!run) {
+        fail(out) << "The provisioning request named no run to wait on." << std::endl;
         return std::nullopt;
-    return started->instance_id;
+    }
+
+    out << "  Run started: " << *run << std::endl;
+    if (!workflow_run_commands::wait_for_instance(out, session, *run, timeout))
+        return std::nullopt;
+    return *run;
 }
 
 /**
@@ -212,9 +208,9 @@ std::optional<std::string> run_and_wait(std::ostream& out,
  */
 template <typename Request>
 workflow_run_commands::follow_result run_and_follow(std::ostream& out,
-                                                   nats_client& session,
-                                                   const Request& req,
-                                                   std::chrono::seconds timeout) {
+                                                    nats_client& session,
+                                                    const Request& req,
+                                                    std::chrono::seconds timeout) {
     const auto started_at = std::chrono::steady_clock::now();
     const auto instance_id = run_and_wait(out, session, req, timeout);
     if (!instance_id)
@@ -222,8 +218,8 @@ workflow_run_commands::follow_result run_and_follow(std::ostream& out,
 
     const auto spent = std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::steady_clock::now() - started_at);
-    const auto remaining = timeout > spent ? timeout - spent : std::chrono::seconds(0);
-    return workflow_run_commands::follow_child_instance(out, session, *instance_id, remaining);
+    return workflow_run_commands::follow_child_instance(
+        out, session, *instance_id, workflow_run_commands::remaining_budget(timeout, spent));
 }
 
 /// The timeout a command was given, or nothing after reporting a value it
@@ -238,32 +234,42 @@ std::optional<std::chrono::seconds> read_timeout(std::ostream& out, const parsed
     return timeout;
 }
 
-/**
- * @brief Prints how a tenant's creation ended, and where the tenant stands.
- *
- * A run this session cannot read leaves the tenant's own setup continuing in
- * that tenant, so the tenant is not ready and the sign-in hint says so rather
- * than claiming work that has not happened.
- *
- * @param created_line What to print when the setup continues elsewhere.
- * @param ready_line What to print when every run that does the work finished.
- */
-void report_tenant_outcome(std::ostream& out,
-                           const tenant_fields& fields,
-                           bool setup_continues,
-                           std::string_view created_line,
-                           std::string_view ready_line) {
-    out << (setup_continues ? created_line : ready_line) << std::endl;
+}
+
+std::optional<std::string> provision_commands::started_run(bool request_succeeded,
+                                                           std::string_view instance_id) {
+    if (!request_succeeded || instance_id.empty())
+        return std::nullopt;
+    return std::string(instance_id);
+}
+
+void provision_commands::report_tenant_outcome(std::ostream& out,
+                                               const tenant_fields& fields,
+                                               tenant_creation created,
+                                               tenant_setup setup) {
+    const bool is_setup = created == tenant_creation::system;
+    const bool continues = setup == tenant_setup::continues_elsewhere;
+
+    out << "✓ ";
+    if (is_setup)
+        out << "System provisioned. ";
+
+    if (continues) {
+        out << "Tenant '" << fields.name << "' created; its setup continues." << std::endl;
+    } else if (is_setup) {
+        out << "Tenant '" << fields.name << "'." << std::endl;
+    } else {
+        out << "Tenant '" << fields.name << "' provisioned." << std::endl;
+    }
+
     out << "Next: logout, then: login " << fields.admin_username << "@" << fields.hostname
         << " <password>";
-    if (setup_continues) {
+    if (continues) {
         out << ", and follow the setup run named above with: workflow wait <its instance id>"
             << std::endl;
         return;
     }
     out << "  — the tenant is ready to work in." << std::endl;
-}
-
 }
 
 void provision_commands::register_commands(cli::Menu& root_menu, nats_client& session) {
@@ -389,12 +395,12 @@ void provision_commands::process_setup(std::ostream& out,
     if (outcome == workflow_run_commands::follow_result::failed)
         return;
 
-    report_tenant_outcome(
-        out,
-        *fields,
-        outcome == workflow_run_commands::follow_result::continues_elsewhere,
-        "✓ System provisioned. Tenant '" + fields->name + "' created; its setup continues.",
-        "✓ System provisioned. Tenant '" + fields->name + "'.");
+    report_tenant_outcome(out,
+                          *fields,
+                          tenant_creation::system,
+                          outcome == workflow_run_commands::follow_result::continues_elsewhere ?
+                              tenant_setup::continues_elsewhere :
+                              tenant_setup::finished);
     BOOST_LOG_SEV(lg(), info) << "System provisioned; tenant " << fields->code;
 }
 
@@ -432,12 +438,12 @@ void provision_commands::process_tenant(std::ostream& out,
     if (outcome == workflow_run_commands::follow_result::failed)
         return;
 
-    report_tenant_outcome(
-        out,
-        *fields,
-        outcome == workflow_run_commands::follow_result::continues_elsewhere,
-        "✓ Tenant '" + fields->name + "' created; its setup continues.",
-        "✓ Tenant '" + fields->name + "' provisioned.");
+    report_tenant_outcome(out,
+                          *fields,
+                          tenant_creation::additional,
+                          outcome == workflow_run_commands::follow_result::continues_elsewhere ?
+                              tenant_setup::continues_elsewhere :
+                              tenant_setup::finished);
     BOOST_LOG_SEV(lg(), info) << "Tenant provisioned; " << fields->code;
 }
 

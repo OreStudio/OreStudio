@@ -20,8 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Simulation, sensitivity analysis, SIMM calibration and the cross asset model
+are the largest of the unmapped families and the ones that reach most of the
+schema. They come last because nothing depends on them yet.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +36,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Each of the four documents has a domain model and a table.
+- Each reads, writes back and validates.
+- The share of the schema the tables cover is recorded and visible.
 
 * Plan
 

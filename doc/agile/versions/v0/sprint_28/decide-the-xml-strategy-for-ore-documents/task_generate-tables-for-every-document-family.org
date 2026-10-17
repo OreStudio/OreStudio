@@ -20,8 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Replace the generated domain with tables generated from ORE's twenty-eight
+schemas. This is the artefact a reviewer reads instead of 122,000 generated
+lines, so it has to be reproducible and it has to fail when it and the schema
+disagree.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +37,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Every complex type the corpus reaches has a table.
+- Regeneration is one command and its output carries the generated marker.
+- A drift check fails when a table and its schema disagree.
+- The generator reads the schema with =pugixml=, which stays a build-time tool.
 
 * Plan
 

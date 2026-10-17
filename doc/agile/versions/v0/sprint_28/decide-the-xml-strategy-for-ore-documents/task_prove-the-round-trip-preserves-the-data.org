@@ -20,8 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Build the harness that makes every later migration verifiable. Round trip here
+means the values survive and the output validates; it does not mean the
+document is reproduced. Without this harness a family moves to the codec with
+no test that its data came with it.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +37,12 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- The harness reads the corpus, writes it, validates the output with
+  =xmllint= against =input.xsd=, reads it back and compares.
+- The comparison is against the source values, not against the codec's own
+  parse of the source, so a read-side drop cannot pass.
+- Any element the model did not claim fails the harness.
+- The same command reproduces the result on demand.
 
 * Plan
 

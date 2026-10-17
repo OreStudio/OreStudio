@@ -2,30 +2,30 @@
 -- variant 1
 document   : external/ore/examples/Input/currencies.xml (63341 bytes)
 rows       : 179
-best       : 2.461 ms
+best       : 1.277 ms
 allocations: 4674 (526276 bytes)
 sample     : AED|United Arab Emirates dirham|784|||100|Closest|2|Major
 -- variant 2
 document   : external/ore/examples/Input/currencies.xml (63341 bytes)
 rows       : 179
-best       : 0.136 ms
+best       : 0.128 ms
 allocations: 446 (35904 bytes)
 sample     : AED|United Arab Emirates dirham|784|||100|Closest|2|Major
 -- variant 3
 document   : external/ore/examples/Input/currencies.xml (63341 bytes)
 rows       : 179
-best       : 0.208 ms
+best       : 0.188 ms
 allocations: 535 (156432 bytes)
 sample     : AED|United Arab Emirates dirham|784|||100|Closest|2|Major
 -- variant 4
 document   : external/ore/examples/Input/currencies.xml (63341 bytes)
 rows       : 179
-best       : 0.146 ms
+best       : 0.138 ms
 allocations: 2 (161 bytes)
 sample     : 4855
 -- variant 5
 document   : external/ore/examples/Input/currencies.xml (63341 bytes)
-scanner    : 0.11 ms  593 MB/s  4832 events
+scanner    : 0.10 ms  642 MB/s  4832 events
 == round trip
 document   : external/ore/examples/Input/currencies.xml (63341 bytes)
 rows       : 179
@@ -49,39 +49,39 @@ float loss : 68 (9.2%)
 form lost  : 364 (49.3%)
 == parser throughput
 -- currencies.xml
-scanner    : 0.11 ms  600 MB/s  4832 events
-pugixml    : 0.05 ms  1248 MB/s
+scanner    : 0.10 ms  638 MB/s  4832 events
+pugixml    : 0.05 ms  1330 MB/s
 size       : 63341 bytes
-xsdcpp load: 0.42 ms  (allocs 2252, bytes 147079)
-peak rss   : 81800 kB
+xsdcpp load: 0.39 ms  (allocs 2252, bytes 147079)
+peak rss   : 80920 kB
 -- portfolio.xml
-scanner    : 0.77 ms  620 MB/s  24493 events
-pugixml    : 0.94 ms  509 MB/s
+scanner    : 0.71 ms  678 MB/s  24493 events
+pugixml    : 0.80 ms  600 MB/s
 xsdcpp     : not measured (stale build tree)
 -- curveconfig.xml
-scanner    : 1.13 ms  664 MB/s  47944 events
-pugixml    : 1.54 ms  488 MB/s
+scanner    : 1.06 ms  708 MB/s  47944 events
+pugixml    : 1.29 ms  584 MB/s
 size       : 750993 bytes
-xsdcpp load: 6.63 ms  (allocs 73851, bytes 2809121)
-peak rss   : 84256 kB
+xsdcpp load: 5.55 ms  (allocs 73851, bytes 2809121)
+peak rss   : 83384 kB
 -- conventions.xml
-scanner    : 1.59 ms  596 MB/s  67752 events
-pugixml    : 2.22 ms  426 MB/s
+scanner    : 1.44 ms  655 MB/s  67752 events
+pugixml    : 1.74 ms  543 MB/s
 size       : 945027 bytes
-xsdcpp load: 18.44 ms  (allocs 41008, bytes 2796135)
-peak rss   : 84804 kB
+xsdcpp load: 6.15 ms  (allocs 41008, bytes 2796135)
+peak rss   : 83900 kB
 -- calendar_adjustments.xml
-scanner    : 32.80 ms  192 MB/s  621639 events
-pugixml    : 36.48 ms  172 MB/s
+scanner    : 11.07 ms  568 MB/s  621639 events
+pugixml    : 13.52 ms  465 MB/s
 size       : 6290794 bytes
-xsdcpp load: 30.80 ms  (allocs 18029, bytes 23242382)
-peak rss   : 96924 kB
+xsdcpp load: 26.87 ms  (allocs 18029, bytes 23242382)
+peak rss   : 96144 kB
 == the corpus
 documents  : 3971
 bytes      : 47017505 (44.8 MB)
 events     : 2701354
 rejected   : 0
-throughput : 82 MB/s and 7257 files/s
+throughput : 149 MB/s and 13180 files/s
 root elements: 143
   gcl:CodeList                             235
   gcl:CodeListSet                          1

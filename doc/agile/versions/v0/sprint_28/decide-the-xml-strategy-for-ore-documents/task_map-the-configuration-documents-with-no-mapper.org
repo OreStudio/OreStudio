@@ -20,8 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Ibor fallback, reference data, script library, counterparty information and
+collateral balances have no domain model today. They are new models built on
+the codec rather than migrations, and they come after the eleven that have a
+mapper.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +37,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Each of the five documents has a domain model and a table.
+- Each reads, writes back and validates.
+- The models follow the data-oriented design guidelines for their regime.
 
 * Plan
 

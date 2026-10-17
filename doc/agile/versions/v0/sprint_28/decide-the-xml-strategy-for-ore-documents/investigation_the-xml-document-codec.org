@@ -38,8 +38,9 @@ a mapper.
 - *Cost.* The generated DOM is an object graph. Every present optional leaf
   is a =new T=. Every repeated child container is a =new std::vector<T>=,
   even when the document contains no such child.
-- *Ownership.* 122,000 generated lines decide the shape and 800 KB of
-  hand-written mapper across 23 files decide the meaning. Neither can be
+- *Ownership.* About 122,000 generated lines decide the shape, split between a
+  13,500-line =domain.hpp= and a 4.3 MB =domain.cpp=, and about 830 KB of
+  hand-written mapper across 21 files decide the meaning. Neither can be
   checked against the other, and the regeneration that would refresh the
   first is blocked by drift on =trade= and =componentSubTrade=.
 
@@ -74,6 +75,27 @@ The axioms then say how to build the pipeline.
 | Separate hot from cold | The scanner is hot. The schema tables are cold and const. |
 | Handles over pointers | Element names become schema-derived integers, not strings compared at run time. |
 | Batch over per-object | One sink call per completed record, not one per element. |
+
+* Methodology
+
+Three sources of evidence, each one rerunnable.
+
+- *A prototype.* =prototype/= holds a scanner, a table-driving codec and a
+  benchmark with eight labelled variants behind one switch. =prototype/run.sh=
+  regenerates the tables, builds the probe and prints every number this page
+  quotes, into =prototype/RESULTS.txt=. The numbers below are that file's; if
+  the two disagree, the file is right.
+- *The corpus.* =prototype/corpus.cpp= reads every XML document under a set of
+  roots and reports what it rejected. It runs over =external/ore=,
+  =assets/test_data=, =doc/agile=, =external/fpml= and =external/fix=.
+- *The existing tools.* =scripts/validate_ore_examples.sh= validates a tree
+  against =external/ore/xsd/input.xsd= with =xmllint=. It is the bar the corpus
+  already meets, and the bar the writer has to keep.
+
+The environment is =swift_curie=, preset =linux-clang-release-ninja=, on a
+machine shared with eleven other worktrees, so timings move by up to a third
+between runs. The allocation counts do not move, and the argument rests on
+them.
 
 * Paths taken
 
@@ -130,7 +152,7 @@ direction.
 
 ** The scanner
 
-A zero-copy pull reader of about 500 lines. It returns
+A zero-copy pull reader of about 300 lines. It returns
 =event{kind, name, value}=, where the name and value are =string_view=s into
 the document buffer.
 
@@ -223,25 +245,29 @@ Everything below is printed by =prototype/run.sh= and captured in
 
 | Path | Time | Allocations | Bytes |
 |------+------+-------------+-------|
-| xsdcpp DOM then the hand-written mapper | 2.78 ms | 4,674 | 526,276 |
-| pugixml DOM then the table | 0.15 ms | 446 | 35,904 |
-| table codec, records own their strings | 0.21 ms | 535 | 156,432 |
-| table codec, records borrow the buffer | 0.15 ms | 2 | 161 |
+| xsdcpp DOM then the hand-written mapper | 1.28 ms | 4,674 | 526,276 |
+| pugixml DOM then the table | 0.13 ms | 446 | 35,904 |
+| table codec, records own their strings | 0.19 ms | 535 | 156,432 |
+| table codec, records borrow the buffer | 0.14 ms | 2 | 161 |
 | scanner only, no records | 0.10 ms | - | - |
 
-All four record-producing paths agree row for row on all 179 records. The
+The three record-producing paths agree row for row on all 179 records. The
 prototype was checked against the production path, not against itself.
+The borrowed layout is not one of them: it reports a checksum of the fields it
+read rather than a record set, because its records do not own the strings a
+comparison would need.
 
 Two readings, one of them uncomfortable.
 
-- Most of the current path is not parsing. =load_data= alone costs 0.44 ms
-  and 2,252 allocations. About 2.3 ms of the 2.78 ms is the hand-written
-  mapper, and the largest part of that is formatting a log line per record.
+- Most of the current path is not parsing. =load_data= alone costs 0.39 ms
+  and 2,252 allocations. About two thirds of the 1.28 ms the whole path costs
+  is the hand-written mapper, and the largest part of that is formatting a log
+  line per record.
   That is a defect, it is unrelated to XML, and it inflates every comparison
   against the current path.
 - The pull-event interface costs about 40%. The scanner alone beats pugixml
-  on the documents that matter: 618 MB/s against 509 MB/s on 478 KB and 531
-  against 206 on 6.3 MB. The full table codec is slightly slower than
+  on the documents that matter: 678 MB/s against 600 MB/s on 478 KB and 568
+  against 465 on 6.3 MB. The full table codec is slightly slower than
   pugixml plus the same table. Folding the tokenizer into the interpreter
   removes the event struct and the call per event. That is a local, known
   optimisation, and it is the reason the prototype is a design probe and not
@@ -251,18 +277,19 @@ Two readings, one of them uncomfortable.
 
 | Document | Size | Scanner | pugixml | xsdcpp load |
 |----------+------+---------+---------+-------------|
-| currencies.xml | 63 KB | 619 MB/s | 1,206 MB/s | 144 MB/s |
-| portfolio.xml | 478 KB | 618 MB/s | 509 MB/s | not measured |
-| curveconfig.xml | 751 KB | 664 MB/s | 466 MB/s | 97 MB/s |
-| conventions.xml | 945 KB | 586 MB/s | 274 MB/s | 103 MB/s |
-| calendar_adjustments.xml | 6.3 MB | 531 MB/s | 206 MB/s | 135 MB/s |
+| currencies.xml | 63 KB | 638 MB/s | 1,330 MB/s | 162 MB/s |
+| portfolio.xml | 478 KB | 678 MB/s | 600 MB/s | not measured |
+| curveconfig.xml | 751 KB | 708 MB/s | 584 MB/s | 135 MB/s |
+| conventions.xml | 945 KB | 655 MB/s | 543 MB/s | 154 MB/s |
+| calendar_adjustments.xml | 6.3 MB | 568 MB/s | 465 MB/s | 234 MB/s |
 
 pugixml wins on a document that fits in cache and loses by a factor of two
 on the largest one, because on the largest one it is paying for its nodes.
-The scanner holds 530-660 MB/s across the corpus. The machine is shared with
-eleven other worktrees, so the times move by as much as a third between
-runs; the allocation counts do not move at all, and they are the number this
-argument rests on.
+The scanner holds 568-708 MB/s across the corpus. The machine is shared with
+eleven other worktrees, so the times move by as much as a third between runs;
+the allocation counts do not move at all, and they are the number this
+argument rests on. This table is one run's values, printed by =run.sh= into
+=RESULTS.txt=, and a rerun will print different milliseconds.
 
 The =xsdcpp= figure for =portfolio.xml= is missing for an honest reason: the
 built library in this worktree predates the checkout's =domain.hpp=, so the
@@ -271,7 +298,7 @@ compiled with. Loading a portfolio crashes on that mismatch. Rebuilding the
 tree takes about an hour and changes no conclusion here.
 
 Throughput is not the constraint at ORE's document sizes. The largest
-document in the corpus parses in 12 ms. Allocation, and the tree those
+document in the corpus parses in 11 ms. Allocation, and the tree those
 allocations build, are the constraint.
 
 ** Fidelity
@@ -292,10 +319,12 @@ This separates two defects that the bond review ran together.
 - Typing a money element as =float= loses digits for one value in six in a
   real portfolio. That is a wrong answer, and it is what =StrikeData/Value=
   and =settlementData.dv01= do today.
-- Typing it as =double= keeps the value and loses the document's statement
-  of it. A trading system that writes back =100= where the document said
-  =100.00= has not corrupted a number, but it has changed a document, and a
-  round-trip test cannot tell the difference without the lexical form.
+- Typing it as =double= keeps the value for all but two of the 860 leaves
+  and loses the document's statement of it. A trading system that writes back
+  =100= where the document said =100.00= has not corrupted a number, but it
+  has changed a document, and a round-trip test cannot tell the difference
+  without the lexical form. Those two leaves are the ones a double cannot
+  hold, and they are why money is a decimal and not a double.
 
 The codec removes both by never creating a float on the path.
 
@@ -334,8 +363,9 @@ The fix is to start the terminator search past the four-character opener.
 The lesson is the corpus, not the bug. A subset asserted from reading a
 schema is a guess about what writers do.
 
-The corpus has twenty root elements. Eleven of them have a mapper today and
-nine do not.
+The ORE corpus has twenty root elements, which is the number that matters
+here; over the wider corpus, FpML and FIX add another 123, and the count is
+143. Eleven of the twenty have a mapper today and nine do not.
 
 | Root element | Documents | Mapper today |
 |--------------+-----------+--------------|
@@ -464,15 +494,28 @@ carries our classification instead of the schema's.
    generates its table straight from =currencyconfig.xsd= and
    =ore_types.xsd=, and the only thing the generator cannot derive is the
    C++ member name, which it snake-cases and then lets the compiler check.
-3. *A scanner we own is cheap and wins where it counts.* About 500 lines,
+3. *A scanner we own is cheap and wins where it counts.* About 300 lines,
    no dependency, and zero allocations per element. It does not beat pugixml
    at raw scanning on a small document. It does beat it on the measure that
    matters at scale, and it carries the exactness property that no library
    gives us.
 4. *Exact money needs no machinery once the seam never produces a float.*
-   The prototype reaches a decimal from the document's bytes in one step.
+   The shape is a =decimal_text= field kind that carries the document's digits
+   as a span. The prototype declares the kind and does not yet construct a
+   =decimal=, so this is a design argument with a measured format rule behind
+   it, not a working decimal path.
 5. *The remaining cost is the interface, not the algorithm.* The pull event
    is a known, local optimisation with a clear direction.
+
+* Recommendations
+
+Adopt route C, in the order the tasks below set out. Keep =pugixml= as a
+build-time tool for reading the schema and nothing more. Do not build a
+general document library: no XPath, no run-time schema validation, no DOM.
+State the subset and reject anything outside it. Measure per document family
+so the allocation property stays true, and fix the per-record log formatting
+on the import path because it is the largest single cost in the importer
+today and has nothing to do with XML.
 
 * How the work divides
 

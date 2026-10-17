@@ -20,8 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Move curve configuration, today's market, pricing engines, stress testing and
+the ORE run document. Curve configuration alone is the largest single mapper,
+so it is the test of whether the table shape generalises.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +36,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Each of the five families is read and written through the codec.
+- Their mappers are deleted in the same change.
+- The corpus round-trip harness passes for each family's documents.
 
 * Plan
 

@@ -20,8 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Write the document back from the same tables. The write direction need not
+mirror the read direction; it has to be valid, cheap and lossless. Three rules
+carry it: schema order, present fields only, and a decimal form that never
+exponentiates.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +37,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Output validates against =input.xsd= for every document in the corpus.
+- A decimal writes as fixed point at the column's scale and never as an
+  exponent.
+- Only text that needs escaping is escaped, decided by one scan.
+- Reading the output yields the same values as reading the original.
 
 * Plan
 

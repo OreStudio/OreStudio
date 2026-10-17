@@ -34,7 +34,9 @@ the work that follows is broken into tasks.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The prototype is measured and the corpus is gated. The migration is cut into nine tasks, none started. |
+| Now           | The faithful document layer is built and proven over the corpus. The schema tables and the projection remain. |
+| Waiting on    | Nothing.                               |
+| Next          | Approve route C and take the two small tasks: the corpus gate and the log formatting. |
 | Waiting on    | A decision on the recommendation.      |
 | Next          | Approve route C, then start with the corpus gate and the log-formatting fix, which are the two small ones. |
 | Last touched  | 2026-10-17                               |
@@ -65,7 +67,7 @@ the work that follows is broken into tasks.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C72A8250-F44C-41FC-9C0C-54DF98683596][Prototype the descriptor document codec and measure it]] | DONE | 2026-10-17 | 2026-10-17 | Build a throwaway codec that walks generated descriptor tables instead of a generated DOM, then measure time, allocations and fidelity against the current xsdcpp path. |
-| [[id:FAC7E870-E2C5-46E2-A1BF-1F76BA43836F][Gate the scanner on the XML corpus]] | BACKLOG | | | Run the scanner over every XML document in the repository on every check, and fail on any rejection. 3,971 documents and 44.9 MB today, including the FpML and FIX trees, which are far outside the ORE subset. |
+| [[id:FAC7E870-E2C5-46E2-A1BF-1F76BA43836F][Gate the scanner on the XML corpus]] | BACKLOG | | | Run the scanner over every XML document in the repository on every check, and fail on any rejection. 3,971 documents and 44.8 MB today, including the FpML and FIX trees, which are far outside the ORE subset. |
 | [[id:7681078A-B911-4853-BB25-5F2607E87943][Generalise the codec for nested and repeated types]] | BACKLOG | | | The probe maps one flat record family. Extend the engine and the generator model to nested complex types, repeated children, attributes on leaf elements, and xs:any, and state the policy for content the schema does not name. |
 | [[id:2E83CCFB-025F-44F0-B97B-F377CC712BBE][Generate tables for every document family]] | BACKLOG | | | Read all twenty-eight ORE XSDs and emit a table per complex type, with a drift check that fails when a table and its schema disagree. This is the replacement for the generated domain, so it must be reproducible and reviewable. |
 | [[id:48AAB8BF-79FF-4461-B264-1C848C9EAD5C][Write the exporter from the same tables]] | BACKLOG | | | The write direction need not mirror the read direction. Emit in schema order, write only present fields, format decimals as fixed point rather than shortest round trip, escape only where needed, and build one buffer per record range. |

@@ -1,6 +1,12 @@
+:PROPERTIES:
+:ID: 81B5B745-A079-46E2-93CF-CD3F2738B609
+:END:
 #+title: The XML document codec prototype
 #+description: A throwaway probe that turns an ORE document straight into ORE Studio records through generated descriptor tables.
-#+filetags: :prototype:xml:
+#+type: investigation
+#+filetags: :prototype:xml:decide-the-xml-strategy-for-ore-documents:
+#+created: 2026-10-17
+#+updated: 2026-10-17
 
 This directory holds the probe behind
 [[id:B5B38025-C893-4712-9312-11400AC62B58][the investigation]]. It is

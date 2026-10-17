@@ -2,7 +2,7 @@
 :ID: FAC7E870-E2C5-46E2-A1BF-1F76BA43836F
 :END:
 #+title: Task: Gate the scanner on the XML corpus
-#+description: Run the scanner over every XML document in the repository on every check, and fail on any rejection. 3,971 documents and 44.9 MB today, including the FpML and FIX trees, which are far outside the ORE subset.
+#+description: Run the scanner over every XML document in the repository on every check, and fail on any rejection. 3,971 documents and 44.8 MB today, including the FpML and FIX trees, which are far outside the ORE subset.
 #+type: task
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
@@ -20,8 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Read every XML document in the repository with the scanner on every check, and
+fail the build on any rejection. The corpus is the only evidence that the
+subset the scanner accepts is the subset the project holds, and today nothing
+stops a scanner change from narrowing it quietly.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +37,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- One check fails when any XML document in the repository is rejected.
+- The check covers =external/ore=, =external/fpml=, =external/fix=,
+  =assets/test_data= and =doc/agile=, which is 3,971 documents and 44.8 MB.
+- A rejection names the file, the line, the column and the reason.
+- The check runs in the local check suite, not in a one-off script.
 
 * Plan
 

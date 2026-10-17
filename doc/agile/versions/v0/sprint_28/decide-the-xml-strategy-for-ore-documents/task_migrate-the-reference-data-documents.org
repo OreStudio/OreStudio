@@ -20,8 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Move currency config, calendar adjustments, conventions, netting set
+definitions and credit simulation off the generated binding. Each family moves
+completely in one change: reader, writer, and the deletion of its mapper.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +36,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Each family is read and written through the codec, with its mapper deleted
+  in the same change.
+- The corpus round-trip harness passes for each family's documents.
+- No family has two live implementations at the end of the change.
 
 * Plan
 

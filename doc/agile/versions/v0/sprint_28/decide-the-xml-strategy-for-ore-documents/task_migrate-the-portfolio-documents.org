@@ -20,8 +20,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Move trades, envelopes and the instrument families. This is the largest mapper
+group and the one the bond work touched, so it lands after the reference data
+has proved the shape.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +36,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Trades and every instrument family are read through the codec.
+- The instrument mappers are deleted in the same change.
+- Every portfolio document in the corpus round trips and validates.
 
 * Plan
 

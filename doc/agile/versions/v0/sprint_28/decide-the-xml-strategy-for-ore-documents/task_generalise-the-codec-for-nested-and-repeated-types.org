@@ -20,8 +20,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
-
+Teach the table engine the shapes the corpus actually holds. The probe maps one
+flat record family; ORE nests complex types, repeats children, puts attributes
+on leaf elements and allows =xs:any=. Each of those needs a decision written in
+the table rather than in the engine.
 * Status
 
 | Field        | Value                                  |
@@ -35,7 +37,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- A type may hold another type, to the corpus's full nesting depth.
+- A repeated child fills a contiguous run, not one heap object per element.
+- An attribute on a leaf element is a field like any other.
+- Content the schema does not name is captured and written back, not skipped.
 
 * Plan
 

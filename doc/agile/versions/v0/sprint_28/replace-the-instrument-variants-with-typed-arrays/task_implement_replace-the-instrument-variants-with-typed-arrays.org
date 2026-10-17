@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F0E82898-CCA7-4E6F-B60D-69B3A4CED280][Replace the instrument variants with typed arrays]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F0E82898-CCA7-4E6F-B60D-69B3A4CED280][Replace the instrument variants with typed arrays]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -85,3 +85,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+DONE. The credit carrier no longer holds a polymorphic payload field.
+
+- =credit_fact_variant.hpp= is deleted and no consumer references it.
+- =credit_instrument_data= holds one typed array per concrete product type, joined to the header by the trade id each row carries flat: =credit_default_swap_instruments=, =index_credit_default_swap_instruments=, =index_credit_default_swap_option_instruments=, =synthetic_cdo_instruments=, =credit_linked_swap_instruments= and =risk_participation_agreement_instruments=.
+- =instrument.hpp= reads those arrays through typed accessors in place of the variant visit, so no reader needs a discriminator.
+- Consumers migrated: =instrument_batch_mapper.cpp=, =credit_instrument_mapper.cpp= and the ORE import execute handler.
+- Left to their owning environments, as agreed: =rates_fact_variant= and =equity_instrument_variant=.
+
+Every local check passes on =linux-clang-release-ninja=. Nineteen passed in one full
+run and =step-consumers= passed on its own once the fleet was up, because it needs
+a running stream to inspect. =ctest= took 975.5 s and every suite passed. The ORE
+XML round trip passes, which is the evidence that import and export still round
+trip. Base is =origin/main= at =69de13f789=.

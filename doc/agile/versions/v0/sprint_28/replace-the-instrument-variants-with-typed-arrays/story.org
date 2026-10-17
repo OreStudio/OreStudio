@@ -43,7 +43,7 @@ and fx variants are not touched here; other environments own them.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:B4CC636C-FF97-422A-991E-47CAB36A8F99][Scaffold story: Replace the instrument variants with typed arrays]] | STARTED | 2026-10-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:4B474F5E-8F38-488E-AD62-806C4CA167C6][Implement Replace the instrument variants with typed arrays]] | BACKLOG | | | Initial task for: Replace the instrument variants with typed arrays |
+| [[id:4B474F5E-8F38-488E-AD62-806C4CA167C6][Implement Replace the instrument variants with typed arrays]] | DONE | | 2026-10-17 | Initial task for: Replace the instrument variants with typed arrays |
 
 * Decisions
 

@@ -35,9 +35,10 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
-- No trading payload carries a std::variant field; each family holds one typed array per concrete type, joined by key.
-- The variant headers are deleted and no consumer references them.
-- The ORE import and export round trip and the trading suites pass unchanged.
+- No credit payload carries a std::variant field; the credit carrier holds one typed array per concrete fact type, joined by key.
+- credit_fact_variant.hpp is deleted and no consumer references it.
+- The ORE import and export round trip and the credit suites pass unchanged.
+- The rates, equity and fx variants are untouched by this work, because other environments own them.
 
 * Plan
 
@@ -82,7 +83,13 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =fact_rows= had a catch-all that returned the risk participation array for any unknown type | instrument.hpp | Fixed | The last branch names its own type and an unknown one trips a static assertion |
+| 2 | =visit_credit_facts= could not tell a carrier with no row from a visitor that answered false | instrument.hpp | Fixed | Returns =std::optional=; the import handler reports the empty case in =instr_error= |
+| 3 | =as_credit= pushed an unknown leaf into the risk participation array | instrument_batch_mapper.cpp | Fixed | A static assertion refuses it; the push is driven by the shared array tuple |
+| 4 | The six credit types were listed in five places | instrument.hpp, instrument_batch_mapper.cpp | Fixed | One type tuple and one array tuple, a paired fold in the batch mapper, and a static assertion that the tuples line up |
+| 5 | Aggregate initialisation became thirteen sequential assignments | instrument_batch_mapper.cpp | Fixed | Designated initialisers name each field |
+| 6 | The void visitor branch was dead | instrument.hpp | Fixed | Deleted; the visitor must return a value |
+| 7 | The task's acceptance named every family rather than credit | this task | Fixed | Rescoped to credit, matching the story |
 
 * Result
 

@@ -2949,7 +2949,13 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                           "a credit fact type has no import branch");
                         }
                     };
-                    if (!ores::trading::domain::visit_credit_facts(write_fact, r))
+                    const auto fact_written =
+                        ores::trading::domain::visit_credit_facts(write_fact, r);
+                    if (!fact_written) {
+                        instr_error = "a credit trade states no fact row";
+                        return false;
+                    }
+                    if (!*fact_written)
                         return false;
                     if (r.wrapped_index_swap && !write_fact(*r.wrapped_index_swap))
                         return false;

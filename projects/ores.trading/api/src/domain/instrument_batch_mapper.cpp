@@ -18,8 +18,12 @@
  *
  */
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
+#include <cstddef>
+#include <tuple>
 #include <type_traits>
+#include <utility>
 #include <variant>
+#include <vector>
 
 namespace ores::trading::domain {
 namespace {
@@ -54,6 +58,37 @@ swap_instrument_data as_swap(const instrument_batch& batch,
 }
 
 /**
+ * The batch's copy of each credit fact array, in the order credit_fact_arrays
+ * declares. The fold below walks both tuples together, so appending a credit
+ * carrier is one call rather than six inserts that a new product can be left
+ * out of.
+ */
+inline constexpr auto credit_fact_arrays_batch =
+    std::tuple{&instrument_batch::credit_default_swap_instruments,
+               &instrument_batch::index_credit_default_swap_instruments,
+               &instrument_batch::index_credit_default_swap_option_instruments,
+               &instrument_batch::synthetic_cdo_instruments,
+               &instrument_batch::credit_linked_swap_instruments,
+               &instrument_batch::risk_participation_agreement_instruments};
+
+static_assert(std::tuple_size_v<decltype(credit_fact_arrays_batch)> ==
+              std::tuple_size_v<decltype(credit_fact_arrays)>);
+
+template <typename T>
+void append_rows(std::vector<T>& to, const std::vector<T>& from) {
+    to.insert(to.end(), from.begin(), from.end());
+}
+
+template <std::size_t... I>
+void append_credit_fact_arrays(instrument_batch& batch,
+                               const credit_instrument_data& carrier,
+                               std::index_sequence<I...>) {
+    (append_rows(batch.*std::get<I>(credit_fact_arrays_batch),
+                 carrier.*std::get<I>(credit_fact_arrays)),
+     ...);
+}
+
+/**
  * A credit header, the product's fact row and the children the family owns,
  * which are the parts of the family carrier the batch stores separately.
  */
@@ -62,32 +97,27 @@ credit_instrument_data as_credit(const instrument_batch& batch,
                                  const credit_instrument& header,
                                  const Leaf& leaf,
                                  boost::uuids::uuid trade_id) {
-    credit_instrument_data data;
+    static_assert(is_credit_fact_type<Leaf>,
+                  "not a credit fact type: add it to credit_fact_types and credit_fact_arrays");
+    credit_instrument_data data{
+        .legs = find_all(batch.swap_legs, trade_id),
+        .leg_amounts = find_all(batch.swap_leg_amounts, trade_id),
+        .leg_rates = find_all(batch.swap_leg_rates, trade_id),
+        .constituents = find_all(batch.credit_basket_constituents, trade_id),
+        .strikes = find_all(batch.instrument_strikes, trade_id),
+        .schedules = find_all(batch.instrument_schedules, trade_id),
+        .schedule_dates = find_all(batch.instrument_schedule_dates, trade_id),
+        .options = find_all(batch.instrument_options, trade_id),
+        .option_premiums = find_all(batch.instrument_option_premiums, trade_id),
+        .option_exercise_fees = find_all(batch.instrument_option_exercise_fees, trade_id),
+        .option_payment_dates = find_all(batch.instrument_option_payment_dates, trade_id),
+        .option_exercise_prices = find_all(batch.instrument_option_exercise_prices, trade_id)};
     data.instrument = header;
-    if constexpr (std::is_same_v<Leaf, credit_default_swap_instrument>)
-        data.credit_default_swap_instruments.push_back(leaf);
-    else if constexpr (std::is_same_v<Leaf, index_credit_default_swap_instrument>)
-        data.index_credit_default_swap_instruments.push_back(leaf);
-    else if constexpr (std::is_same_v<Leaf, index_credit_default_swap_option_instrument>)
-        data.index_credit_default_swap_option_instruments.push_back(leaf);
-    else if constexpr (std::is_same_v<Leaf, synthetic_cdo_instrument>)
-        data.synthetic_cdo_instruments.push_back(leaf);
-    else if constexpr (std::is_same_v<Leaf, credit_linked_swap_instrument>)
-        data.credit_linked_swap_instruments.push_back(leaf);
-    else
-        data.risk_participation_agreement_instruments.push_back(leaf);
-    data.legs = find_all(batch.swap_legs, trade_id);
-    data.leg_amounts = find_all(batch.swap_leg_amounts, trade_id);
-    data.leg_rates = find_all(batch.swap_leg_rates, trade_id);
-    data.constituents = find_all(batch.credit_basket_constituents, trade_id);
-    data.strikes = find_all(batch.instrument_strikes, trade_id);
-    data.schedules = find_all(batch.instrument_schedules, trade_id);
-    data.schedule_dates = find_all(batch.instrument_schedule_dates, trade_id);
-    data.options = find_all(batch.instrument_options, trade_id);
-    data.option_premiums = find_all(batch.instrument_option_premiums, trade_id);
-    data.option_exercise_fees = find_all(batch.instrument_option_exercise_fees, trade_id);
-    data.option_payment_dates = find_all(batch.instrument_option_payment_dates, trade_id);
-    data.option_exercise_prices = find_all(batch.instrument_option_exercise_prices, trade_id);
+    for_each_credit_fact_array(data, [&leaf](auto& rows) {
+        using Row = typename std::decay_t<decltype(rows)>::value_type;
+        if constexpr (std::is_same_v<Row, Leaf>)
+            rows.push_back(leaf);
+    });
     return data;
 }
 
@@ -186,29 +216,8 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                 batch.credit_basket_constituents.insert(batch.credit_basket_constituents.end(),
                                                         v.constituents.begin(),
                                                         v.constituents.end());
-                batch.credit_default_swap_instruments.insert(
-                    batch.credit_default_swap_instruments.end(),
-                    v.credit_default_swap_instruments.begin(),
-                    v.credit_default_swap_instruments.end());
-                batch.index_credit_default_swap_instruments.insert(
-                    batch.index_credit_default_swap_instruments.end(),
-                    v.index_credit_default_swap_instruments.begin(),
-                    v.index_credit_default_swap_instruments.end());
-                batch.index_credit_default_swap_option_instruments.insert(
-                    batch.index_credit_default_swap_option_instruments.end(),
-                    v.index_credit_default_swap_option_instruments.begin(),
-                    v.index_credit_default_swap_option_instruments.end());
-                batch.synthetic_cdo_instruments.insert(batch.synthetic_cdo_instruments.end(),
-                                                       v.synthetic_cdo_instruments.begin(),
-                                                       v.synthetic_cdo_instruments.end());
-                batch.credit_linked_swap_instruments.insert(
-                    batch.credit_linked_swap_instruments.end(),
-                    v.credit_linked_swap_instruments.begin(),
-                    v.credit_linked_swap_instruments.end());
-                batch.risk_participation_agreement_instruments.insert(
-                    batch.risk_participation_agreement_instruments.end(),
-                    v.risk_participation_agreement_instruments.begin(),
-                    v.risk_participation_agreement_instruments.end());
+                append_credit_fact_arrays(
+                    batch, v, std::make_index_sequence<std::tuple_size_v<decltype(credit_fact_arrays)>>{});
                 batch.instrument_strikes.insert(
                     batch.instrument_strikes.end(), v.strikes.begin(), v.strikes.end());
                 batch.instrument_schedules.insert(

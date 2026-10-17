@@ -19,7 +19,7 @@
 * Summary
 
 After the commit there is one question, and it is per family: what was written,
-what was refused, what was skipped, and what a failure left behind. Four
+what was refused, what was skipped, and what a failure left behind. The
 journeys ask it about the same attempt record, so this is one screen in
 different states. It also draws the difference the design decision turns on:
 one atomic commit, or today's write per family. Above the record sits the
@@ -57,7 +57,7 @@ It is throwaway. Open [[file:one-import-run/][the run]].
 
 ** The workflow run
 
-Progress belongs here and not on a sixth screen, because the run is the
+Progress belongs here and not on another screen, because the run is the
 attempt: the engine exposes one instance's step list, and a separate progress
 screen would split the retry from the record it resumes.
 
@@ -165,7 +165,7 @@ script on a clock.
 Not signed off. The owner must answer the question this screen puts in the
 middle: is a half-applied ORE file ever acceptable? The trade import says yes
 by design and the conventions import says no, and the two cannot both be true
-under one mechanism. The sandbox makes a second question visible: when a run
+under one mechanism. The sandbox makes another question visible: when a run
 fails after the book-tree rows landed, the sandbox holds them and the
 conventions published to the party do not roll back. Is that a clean failure,
 or does the sandbox only hide the half-import?

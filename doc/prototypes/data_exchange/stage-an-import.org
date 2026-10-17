@@ -35,8 +35,9 @@ It is throwaway. Open [[file:stage-an-import/][the staged import]].
 - Staged is a state, not a copy of the live screen. The import id, the expiry
   and the visibility rule sit above every panel, and "live rows changed: 0" is
   the fact the review rests on.
-- The plan is per family, with four counts: new, replaced, unchanged, refused.
-  The row detail compares the staged row with the live row under the same key.
+- The plan is per family, with a count of new, replaced, unchanged and
+  refused rows. The row detail compares the staged row with the live row
+  under the same key.
 - Refusals come before the write. A row whose named value left its list, or
   whose currency the tenant does not hold, is named with the family, the row
   and the reason. The commit refuses the file whole.

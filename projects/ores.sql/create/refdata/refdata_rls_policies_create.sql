@@ -462,6 +462,34 @@ using (
 );
 
 -- -----------------------------------------------------------------------------
+-- -----------------------------------------------------------------------------
+-- Credit limits
+-- -----------------------------------------------------------------------------
+alter table ores_refdata_credit_limits_tbl enable row level security;
+
+drop policy if exists credit_limits_tenant_isolation_policy
+    on ores_refdata_credit_limits_tbl;
+
+create policy credit_limits_tenant_isolation_policy on ores_refdata_credit_limits_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Party isolation: a limit is visible to the parties that can see the firm's
+-- legal entity that set it. FOR SELECT only, as for books.
+drop policy if exists credit_limits_party_isolation_policy
+    on ores_refdata_credit_limits_tbl;
+
+create policy credit_limits_party_isolation_policy
+on ores_refdata_credit_limits_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+
 -- Netting agreements
 -- -----------------------------------------------------------------------------
 alter table ores_refdata_netting_agreements_tbl enable row level security;

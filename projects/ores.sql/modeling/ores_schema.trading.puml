@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 111
+Tables: 113
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1843,6 +1843,42 @@ package "trading" #E8F5E9 {
     string.
     end note
 
+    entity ores_trading_equity_basket_constituents_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * underlying_name : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_basket_constituents_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Basket Constituent Table
+    One row per constituent of an equity worst-of basket, keyed to the trade
+    and the constituent's ordinal within the document.
+    The basket is a list. A list is rows of a child table rather than an
+    encoded string, so the constituents live here and not in the
+    basket_json column that used to hold them. The column is retired with
+    this table.
+    The ORE document states the basket as an unbounded list of Underlying
+    elements carrying a Name, and the list order is the document's order.
+    The ordinal is what identifies a row and preserves that order, so a
+    round trip re-emits the constituents as the document held them.
+    The trade is the key. A constituent is reached through the trade that
+    owns it and by nothing else, so the pair of trade_id and
+    sequence_number is the primary key.
+    end note
+
     entity ores_trading_equity_digital_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -1913,6 +1949,47 @@ package "trading" #E8F5E9 {
     To modify, update the template and regenerate.
     Equity Forward Instrument Table
     Represents EquityForward trades.
+    end note
+
+    entity ores_trading_equity_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+          start_date : date
+          maturity_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Instrument Table
+    One row per equity trade, the family's own header. It holds only what every
+    equity product states the same way: the trade it belongs to, the trade type
+    code, the party, the activity that wrote the version, the instrument's start
+    and maturity dates and its free text. It holds no product economics.
+    No economic field is common to all the routed codes. The underlying is one
+    name for most products and a basket for the worst-of swap, so it stays on the
+    facts and in equity_basket_constituents rather than on the header. A header
+    column has to hold for every code, and the underlying does not.
+    The products' own fields stay in their fact tables, keyed by the same trade
+    and joined to this row by the trade id. A fact table carries no party_id and
+    no trade_type_code: the header is the family's party boundary and its
+    routing boundary.
+    The dates are the family's common dates, the one set of names for the start
+    and the maturity of every equity product, so the blotter reads one column for
+    each across the whole family.
     end note
 
     entity ores_trading_equity_option_instruments_tbl <<temporal>> #C6F0D8 {
@@ -2092,7 +2169,7 @@ package "trading" #E8F5E9 {
         * underlying_name : text
         * currency : text
         * notional : numeric(38, 12)
-        * variance_strike : double
+        * variance_strike : numeric(38, 12)
         * start_date : date
         * maturity_date : date
         * long_short : text
@@ -4240,6 +4317,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_equity_digital_option_instruments_tb
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_digital_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_forward_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_forward_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_equity_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_position_instruments_tbl : "has"

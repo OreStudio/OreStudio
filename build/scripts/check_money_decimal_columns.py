@@ -66,14 +66,19 @@ MONEY_TOKENS = frozenset({
 # `independent_amount_held` an amount that is held.
 HEAD_QUALIFIERS = frozenset({"value", "level", "pay", "receive", "held"})
 
-# Columns whose name says money and whose economics do not: a variance strike
-# is volatility, a vol config's strike factor is a multiplier, and a synthetic
-# generator's price or initial rate is a model parameter. Keyed on the column
-# rather than the file, because excluding the file would hide every later
-# column added to it.
+# Columns whose stated type is deliberate and the name rule would overrule:
+# a variance strike is volatility held as digits, a vol config's strike factor
+# is a multiplier, and a synthetic generator's price or initial rate is a model
+# parameter. Keyed on the column rather than the file, because excluding the
+# file would hide every later column added to it. The list is honoured by both
+# halves of the check, so an entry silences a money-named column and a
+# continuous-named column alike.
 EXCLUDED_COLUMNS = frozenset({
     "ores.trading.fx_variance_swap_instrument::strike",
     "ores.trading.equity_variance_swap_instrument::strike",
+    # The same column after the equity digits work renamed it.
+    "ores.trading.equity_variance_swap_instrument::variance_strike",
+    "ores.trading.fx_variance_swap_instrument::variance_strike",
     "ores.refdata.bond_future_volatility_config::strike_factor",
     "ores.refdata.cds_volatility_config::strike_factor",
     "ores.dq.synthetic_fx_spot_config::gmm_initial_price",
@@ -214,6 +219,8 @@ def continuous_offenders(root: Path):
     """A continuous quantity stated with an exact type it does not have."""
     for path, line_no, name, sql_type, cpp_type in columns(root):
         if classify(name) != "continuous":
+            continue
+        if f"{path.stem}::{name}" in EXCLUDED_COLUMNS:
             continue
         cpp = cpp_type or ""
         if sql_type is None:

@@ -63,3 +63,13 @@ target_link_libraries(${lib_target_name}
 - [[id:D4E6E417-7D34-44B1-A373-73A1C9183137][ores.analytics]] — component group overview.
 
 - [[id:BC804C31-D6F7-4E4E-9C4F-F4578BEAF4F5][ores.analytics.core]] — business logic, persistence, and NATS handlers.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

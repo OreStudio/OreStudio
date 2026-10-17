@@ -73,3 +73,13 @@ target_link_libraries(${lib_target_name}
 - [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
 
 - [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading.core]] — all business logic for the trading domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

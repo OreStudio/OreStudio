@@ -98,3 +98,13 @@ target_link_libraries(${lib_target_name}
 - [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the design this component implements.
 - [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the meta-pattern this component's
   dispatch registry reapplies as a runtime lookup table.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

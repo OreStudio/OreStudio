@@ -63,3 +63,13 @@ target_link_libraries(${lib_target_name}
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
 
 - [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — all orchestration logic.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

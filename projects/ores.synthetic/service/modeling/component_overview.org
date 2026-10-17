@@ -82,3 +82,13 @@ target_link_libraries(${lib_target_name}
 * See also
 
 - [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — repositories, services, and NATS handlers.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

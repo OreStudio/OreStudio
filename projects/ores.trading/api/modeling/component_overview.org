@@ -88,3 +88,15 @@ target_compile_options(${lib_target_name} PUBLIC
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:steps10000000>
     $<$<AND:$<CXX_COMPILER_ID:Clang>,$<COMPILE_LANGUAGE:CXX>>:-fbracket-depth=1024>)
 #+end_src
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.telemetry.core.lib
+    ores.trading.api.lib
+    ores.utility.lib
+)
+#+end_src

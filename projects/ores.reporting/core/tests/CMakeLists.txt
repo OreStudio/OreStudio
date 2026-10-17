@@ -44,7 +44,16 @@ target_link_libraries(${tests_target_name}
 # a scoped temporary file, a compression helper -- so the component declares
 # them here rather than the profile carrying every component's needs.
 
-
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.eventing.core.lib
+    ores.nats.lib
+    ores.refdata.core.lib
+    ores.scheduler.core.lib
+    ores.storage.api.lib
+    ores.storage.core.lib
+    ores.utility.lib
+    ores.workflow.core.lib
+)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

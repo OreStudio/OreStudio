@@ -73,3 +73,13 @@ target_link_libraries(${lib_target_name}
 - [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
 
 - [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]] — all business logic for the reference-data domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

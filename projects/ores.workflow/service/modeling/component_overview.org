@@ -61,3 +61,13 @@ target_link_libraries(${lib_target_name}
 - [[id:7F4B91E2-3D86-4A57-B92C-08E146DA7359][ores.workflow]] — component group overview.
 
 - [[id:440294D7-385D-41EE-92CB-CAB937E65E81][ores.workflow.core]] — all business logic for the workflow domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

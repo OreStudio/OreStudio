@@ -76,3 +76,15 @@ target_link_libraries(${lib_target_name}
 
 - [[id:66D3F1D6-1926-40CF-BCF5-AA42F14AD6D5][ores.analytics.api]] — protocol types and domain entities.
 - [[id:E5952F27-53BD-4C4D-85CD-556B6421B768][ores.analytics.service]] — NATS service entrypoint.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.eventing.core.lib
+    ores.refdata.core.lib
+    ores.utility.lib
+)
+#+end_src

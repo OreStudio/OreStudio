@@ -99,3 +99,25 @@ target_link_libraries(${lib_target_name}
 - [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]] — how parties, books, and business units relate.
 - [[id:7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74][Trading Structure]] — party, book, portfolio, business-unit, business-centre
   hierarchy design.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.eventing.api.lib
+    ores.eventing.core.lib
+    ores.history.core.lib
+    ores.iam.api.lib
+    ores.iam.core.lib
+    ores.inbox.api.lib
+    ores.inbox.core.lib
+    ores.nats.lib
+    ores.platform.lib
+    ores.refdata.service.lib
+    ores.telemetry.core.lib
+    ores.utility.lib
+    ores.variability.api.lib
+)
+#+end_src

@@ -72,3 +72,13 @@ target_link_libraries(${lib_target_name}
 - [[id:BD9653B7-C92B-4A71-9B5D-7ADB4EBCB94F][ores.iam]] — component group overview.
 
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — all business logic for the IAM domain.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

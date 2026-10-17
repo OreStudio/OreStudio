@@ -70,3 +70,16 @@ target_link_libraries(${lib_target_name}
 
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — business logic, persistence, and NATS handlers.
 - [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Messaging Reference]] — subject families and their owning protocol headers; the generated headers are the full catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.iam.api.lib
+    ores.telemetry.core.lib
+    ores.utility.lib
+    ores.workflow.api.lib
+)
+#+end_src

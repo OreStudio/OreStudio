@@ -83,3 +83,13 @@ target_link_libraries(${lib_target_name}
 - [[id:120B6248-6D47-407A-B26A-BE004EB4E33D][ores.history.core]] — the server-side dispatch registry consuming
   these types.
 - [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] — the design this component implements.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

@@ -61,3 +61,13 @@ target_link_libraries(${lib_target_name}
 * See also
 
 - [[id:759530D8-2314-44F3-A50E-71CE7AD02558][ores.marketdata.core]] — all market-data business logic.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.utility.lib
+)
+#+end_src

@@ -103,3 +103,19 @@ target_link_libraries(${lib_target_name}
 - [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] — tenant isolation and bootstrap design.
 - [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — multi-party authentication sequence.
 - [[id:126F3756-77E8-9D14-B8EB-E0FF7C19A384][IAM Account]] — account entity design and state transitions.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.assets.core.lib
+    ores.inbox.api.lib
+    ores.inbox.core.lib
+    ores.refdata.core.lib
+    ores.service.lib
+    ores.telemetry.core.lib
+    ores.utility.lib
+)
+#+end_src

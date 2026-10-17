@@ -113,3 +113,14 @@ target_link_libraries(${lib_target_name}
 
 - [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — repositories, services, and NATS handlers.
 - [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.synthetic.api.lib
+    ores.utility.lib
+)
+#+end_src

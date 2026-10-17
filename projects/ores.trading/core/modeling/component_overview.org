@@ -96,3 +96,20 @@ target_link_libraries(${lib_target_name}
 - [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how the lifecycle is held in the database.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states, transitions and activity types themselves.
 - [[id:0D9D09ED-2FD1-402A-9624-31E26D10812E][ores.trading Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.dq.api.lib
+    ores.dq.core.lib
+    ores.eventing.api.lib
+    ores.eventing.core.lib
+    ores.nats.lib
+    ores.refdata.api.lib
+    ores.refdata.core.lib
+    ores.utility.lib
+)
+#+end_src

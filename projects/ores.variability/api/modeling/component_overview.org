@@ -64,3 +64,15 @@ target_link_libraries(${lib_target_name}
 
 - [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability.core]] — business logic, persistence, and NATS handlers.
 - [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][ores.variability Messaging Reference]] — full NATS subject and message catalogue.
+
+* Test dependencies
+
+The suites link what the profile cannot know about.
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name} PRIVATE
+    ores.telemetry.core.lib
+    ores.utility.lib
+    ores.variability.api.lib
+)
+#+end_src

@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 36BA97C5-F6F8-4101-9141-40390B35237A
+:END:
+#+title: Story: Decide the XML strategy for ORE documents
+#+description: Choose how ORE XML becomes ORE Studio records: keep the generated xsdcpp binding, adopt a document library, or drive a descriptor table from the schema. Evidence comes from a measured prototype.
+#+type: story
+#+level: s2
+#+filetags: :xml:codegen:data_oriented_design:sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: swift_curie
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Decide what the layer between an ORE XML document and the ORE Studio model
+is, and settle it with measurements rather than preference.
+
+The bond review found that a money value cannot be recovered exactly from the
+generated binding wherever ORE types the element as a bare =xs:float=. That
+was one symptom. The layer has two more problems of the same origin: it builds
+an object graph where the guidelines say the document tree is transient, and
+it splits one mapping across 122,000 generated lines and 800 KB of
+hand-written mapper that cannot be checked against each other.
+
+The story is done when the route is chosen, the evidence is on the page, and
+the work that follows is broken into tasks.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The prototype is built and measured. The route is recommended, not yet approved. |
+| Waiting on    | A decision on the recommendation.      |
+| Next          | Review [[id:B5B38025-C893-4712-9312-11400AC62B58][the investigation]] and approve or reject route C. |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- One investigation page states the design, the alternatives and the decision.
+- One prototype demonstrates the design on a real ORE document and reports
+  time, allocations and fidelity against the current path.
+- The prototype's output agrees record for record with the production path on
+  the document it covers.
+- The follow-on work is expressed as tasks with sizes, or the route is
+  declined with the reason recorded.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C72A8250-F44C-41FC-9C0C-54DF98683596][Prototype the descriptor document codec and measure it]] | STARTED | 2026-10-17 | 2026-10-17 | Build a throwaway codec that walks generated descriptor tables instead of a generated DOM, then measure time, allocations and fidelity against the current xsdcpp path. |
+
+* Decisions
+
+- *The document tree is transient.* The
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][guidelines]] place ORE
+  documents at the boundary, outside the three regimes, and name the entity
+  representation as the review target. The design follows that rather than
+  the usual shape of an XML library.
+- *Three routes were weighed; route C is recommended.* Keep and extend
+  =xsdcpp=, adopt a document library, or own a scanner driven by tables
+  generated from the schema. The investigation carries the numbers.
+- *The mapping becomes data.* A table can be checked against the XSD by
+  constructing it. The mechanical part of the mapping moves into the table,
+  and the semantic part stays a short function.
+
+* Out of scope
+
+- Extending =xsdcpp=. Route A is described and rejected, not scheduled.
+- A general XML library: XPath, run-time schema validation, a DOM.
+- The drift on =trade= and =componentSubTrade=. Route C does not touch the
+  generated binding, so the drift stops blocking anything.

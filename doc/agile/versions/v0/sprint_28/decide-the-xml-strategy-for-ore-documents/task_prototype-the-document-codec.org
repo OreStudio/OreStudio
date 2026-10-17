@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: C72A8250-F44C-41FC-9C0C-54DF98683596
+:END:
+#+title: Task: Prototype the descriptor document codec and measure it
+#+description: Build a throwaway codec that walks generated descriptor tables instead of a generated DOM, then measure time, allocations and fidelity against the current xsdcpp path.
+#+type: task
+#+level: s1
+#+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
+#+owner: marco
+#+branch: feature/decide-the-xml-strategy-for-ore-documents
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Answer three questions with measurements so the story can choose a route.
+
+- How fast can a scanner we own read the ORE corpus?
+- How few allocations can one document cost when no document tree is built?
+- Can a table generated from the XSD carry the mapping in both directions?
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
+| Now           | Measured. The numbers and the reading are in the investigation. |
+| Waiting on   | Nothing.                               |
+| Next          | The story's decision.                  |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- A scanner reads a real ORE document with no allocation per event.
+- A generated table maps one real ORE document family into records.
+- The records agree, field for field, with the production path.
+- The same table writes the document back and the reread records agree.
+- Time and allocation counts for both paths are recorded with the command
+  that produced them.
+
+* Plan
+
+Build the smallest thing that answers the three questions, on one document
+family. =CurrencyConfig= was chosen because it is real, it is small, and its
+=currencyDefinition= is an =xs:all=, so the mapping must key on the element
+name rather than on position.
+
+Four variants share one switch so the alternatives are compared on the same
+document in the same process: the current path, pugixml with the same table,
+the codec with owned strings, and the codec with borrowed views. All of them
+end in the same descriptor table, so a difference between them is the
+document model and the record layout, not the mapping.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Current path, =currencies.xml= | 2.78 ms, 4,674 allocations, 526 KB | =prototype/run.sh= | =762c296f11= plus this branch |
+| =load_data= alone, same document | 0.44 ms, 2,252 allocations | =prototype/run.sh= | =762c296f11= plus this branch |
+| pugixml then the table | 0.15 ms, 446 allocations | =prototype/run.sh= | =762c296f11= plus this branch |
+| Codec, owned strings | 0.21 ms, 535 allocations | =prototype/run.sh= | =762c296f11= plus this branch |
+| Codec, borrowed views | 0.15 ms, 2 allocations | =prototype/run.sh= | =762c296f11= plus this branch |
+| Scanner throughput, 63 KB to 6.3 MB | 530-660 MB/s | =prototype/run.sh= | =762c296f11= plus this branch |
+| Round trip, read then write then read | identical for all 179 records | =prototype/run.sh= | =762c296f11= plus this branch |
+| Digits a 32-bit float drops, =portfolio.xml= | 139 of 860 numeric leaves (16.2%) | =prototype/run.sh= | =762c296f11= plus this branch |
+| Digits a 64-bit float drops, =portfolio.xml= | 2 of 860 (0.2%) | =prototype/run.sh= | =762c296f11= plus this branch |
+
+The raw output is =prototype/RESULTS.txt= beside this task. The times move by
+up to a third between runs because twelve worktrees share the machine. The
+allocation counts do not move.
+
+* Notes
+
+- The baseline for =portfolio.xml= is missing. The built library in this
+  worktree predates the checkout's =domain.hpp=, so the executable and the
+  library disagree about the generated =trade= layout and loading a portfolio
+  aborts. The other four documents take the number.
+- The owned-string layout allocates more bytes than pugixml's DOM on the same
+  document, 156 KB against 36 KB. That is because every record is built
+  eagerly at its full width while pugixml allocates per node as it goes. It is
+  the reason the borrowed layout matters: it removes the per-value copy
+  entirely rather than making it cheaper.
+
+* Test Scenarios
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Route C works. The scanner is about 500 lines with no dependency, reads
+530-660 MB/s, and allocates nothing per event. The table carries the mapping
+in both directions from the XSD alone. The borrowed layout costs two
+allocations for a whole document.
+
+The design's weakness is also measured: the pull-event interface makes the
+full codec marginally slower than pugixml on the same table. That is a local
+cost with an obvious fix, and it does not change the architectural argument,
+which rests on allocation and on the document tree not existing.

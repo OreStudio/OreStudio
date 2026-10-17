@@ -122,8 +122,7 @@ TEST_CASE("the index tenor is the tenor field of the series, so two index tenors
     CHECK(pillar_series_uri(six_month) != pillar_series_uri(overnight));
 }
 
-TEST_CASE("a_pillar_whose_template_names_a_tenor_is_keyed_by_that_tenor",
-          "[oresmd][pillar]") {
+TEST_CASE("a_pillar_whose_template_names_a_tenor_is_keyed_by_that_tenor", "[oresmd][pillar]") {
     // 2026-01-28 to 2026-03-19 is the 50 days the same pillar keys without a tenor,
     // so the date the run resolved does not reach the key.
     const auto key = make_pillar_quote_key("GBP", "1D", "SPOT", spot_start, first_end, "1M");
@@ -134,12 +133,10 @@ TEST_CASE("a_pillar_whose_template_names_a_tenor_is_keyed_by_that_tenor",
           "oresmd://ir/GBP?type=quote&instrument=ir_swap&quote=rate&fwd_start=0D&tenor=1D&term=1M");
 }
 
-TEST_CASE("a_pillar_that_starts_on_a_date_ends_on_its_end_date",
-          "[oresmd][pillar]") {
+TEST_CASE("a_pillar_that_starts_on_a_date_ends_on_its_end_date", "[oresmd][pillar]") {
     // ORE refuses a swap that starts on a date and ends on a period, so a named tenor
     // cannot reach a dated pillar's point even when its template has one.
-    const auto key =
-        make_pillar_quote_key("USD", "1D", "1F", spot_start, first_end, "3M");
+    const auto key = make_pillar_quote_key("USD", "1D", "1F", spot_start, first_end, "3M");
 
     CHECK(key.qualifier == "USD/20260128/1D");
     CHECK(key.point == "20260319");

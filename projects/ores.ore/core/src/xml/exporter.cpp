@@ -113,10 +113,10 @@ std::string exporter::export_conventions(const ores::refdata::messaging::convent
     return domain::save_data(xsd);
 }
 
-std::string exporter::export_portfolio(
-    const std::vector<trading::messaging::trade_export_item>& items,
-    const trading::domain::instrument_batch& instruments,
-    const reference_curve_names& reference_curves) {
+std::string
+exporter::export_portfolio(const std::vector<trading::messaging::trade_export_item>& items,
+                           const trading::domain::instrument_batch& instruments,
+                           const reference_curve_names& reference_curves) {
     BOOST_LOG_SEV(lg(), debug) << "Started portfolio export. Items: " << items.size();
 
     domain::portfolio p;

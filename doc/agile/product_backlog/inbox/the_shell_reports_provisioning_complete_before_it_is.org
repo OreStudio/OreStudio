@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 36A716AE-72C5-4AE0-80C9-EEE8673AFB79
+:END:
+#+title: The shell reports a tenant provisioned after two of nine steps
+#+description: bootstrap setup and provision tenant both print 'All 2 step(s) completed' and 'Tenant provisioned' as soon as the provision_tenant_workflow finishes, while the tenant is still being populated by a 9-step tenant_setup_workflow and eleven bundle publishes that run asynchronously. The same run also prints 'Poll failed (1/5): Workflow instance not found' before declaring success. On a fresh database the shell announced a ready tenant while load_staff and start_market_feeds had not run, so its own progress report cannot be trusted; the only reliable signal is the workflow instance and step tables. Either wait for the setup workflow before reporting success, or say what is still running.
+#+type: capture
+#+level: cross
+#+filetags: :provisioning:shell:snag:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

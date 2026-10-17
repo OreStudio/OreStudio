@@ -22,7 +22,10 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include <optional>
+#include <ostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace cli {
@@ -59,12 +62,61 @@ private:
     }
 
 public:
+    /// The tenant a provisioning command names, and its first administrator.
+    struct tenant_fields {
+        std::string code;
+        std::string name;
+        std::string hostname;
+        std::string description;
+        std::string admin_username;
+        std::string admin_email;
+        std::string admin_password;
+    };
+
+    /// What a command created, which decides how its ending is worded.
+    enum class tenant_creation {
+        /// bootstrap setup: the installation and its first tenant.
+        system,
+        /// provision tenant: one tenant in addition to those that exist.
+        additional
+    };
+
+    /// How the work behind a tenant's creation ended.
+    enum class tenant_setup {
+        /// Every run that does the work finished.
+        finished,
+        /// A run this session cannot read continues the work elsewhere.
+        continues_elsewhere
+    };
+
     /**
      * @brief Register provisioning commands.
      *
      * Creates the provision submenu.
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
+
+    /**
+     * @brief The run a provisioning reply says was started, or nothing.
+     *
+     * A reply that reports failure names no run to wait on, and neither does
+     * one that succeeded without naming an instance: waiting on either would
+     * block on a run that does not exist.
+     */
+    static std::optional<std::string> started_run(bool request_succeeded,
+                                                  std::string_view instance_id);
+
+    /**
+     * @brief Prints how a tenant's creation ended, and where the tenant stands.
+     *
+     * A setup this session cannot follow leaves the tenant's own work
+     * continuing in another tenant, so the tenant is not ready and the
+     * sign-in hint says so rather than claiming work that has not happened.
+     */
+    static void report_tenant_outcome(std::ostream& out,
+                                      const tenant_fields& fields,
+                                      tenant_creation created,
+                                      tenant_setup setup);
 
     /**
      * @brief Set an empty installation up: bootstrap setup <username>

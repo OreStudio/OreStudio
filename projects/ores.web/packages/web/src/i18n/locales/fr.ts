@@ -3867,6 +3867,10 @@ const fr: SourceCatalogue = {
             folder: 'Dossier',
             ticksPerHour: 'Ticks par heure',
             seriesHint: "La série dans laquelle cette liaison écrit, et l'URL oresmd qui la nomme.",
+            historyLead:
+                'Chaque version enregistrée de cette liaison et ce qui a changé, de la plus récente à la plus ancienne.',
+            historyGap:
+                "Une version dont la série est détenue par un flux en cours ne peut pas être rétablie ; elle n'offre donc pas de rétablissement.",
             vendorNote:
                 'Une liaison de flux réel est en lecture seule ici. Seule une liaison de flux synthétique peut changer.',
             add: 'Ajouter une liaison',

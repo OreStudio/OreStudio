@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 7d062f46-83bf-4e87-89ec-22847f26a9c8
+:END:
+#+title: Read what a run produced prototype
+#+description: Three structural variants of a run's result, with the archive listing drawn as a stated fixture.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:read-what-a-run-produced/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype argues what "the result" of a run is, and how much of it belongs
+on the screen before a person goes looking for a file. It carries three
+structural variants switched with =?variant=, and it answers to
+[[file:../../knowledge/journeys/reporting/journey_read_what_a_run_produced.org][Read what a run produced]].
+
+It is throwaway. It reads no service, and the archive manifest it draws is a
+fixture, said so on the page.
+
+* Detail
+
+** The question
+
+A run produces an output message, an archive in storage, and a set of files
+inside that archive. Which of those is the thing a person came for? The three
+variants answer differently, and the difference decides how much of the screen is
+numbers and how much is files.
+
+** The three variants
+
+Switch with the bottom bar, or with =?variant=.
+
+| Variant | Name | The structural argument |
+|---------+------+-------------------------|
+| =A= | Figures first | The numbers are the screen: headline figures, then a results table, with the archive as a modest footer action. |
+| =B= | Artefact first | The screen is a manifest of what the run produced: the archive, the files inside it with row counts and sizes, and a download per file. The numbers are a preview of one selected file. |
+| =C= | Narrative first | A short written summary of what the run did and what it means, with the figures embedded and the files at the end, for a reader who wants the sentence before the spreadsheet. |
+
+** Two things the page refuses to fake quietly
+
+The run carries an =output_storage_key= of the form
+=reporting/runs/<instance-id>/output.tar.gz=, and the page shows that shape
+rather than a friendly invented name.
+
+Neither the file list nor the two downloads exist. **No operation lists the files
+inside a run's archive**, and there is no archive download and no ORE package
+download as operations either. Variant =B= draws a manifest and labels it a
+fixture on the panel itself, so the gap is visible rather than designed around.
+That is the honest shape of this journey today.
+
+** A run can complete and still carry errors
+
+The page draws one run that completed clean and one that completed carrying
+eleven rows, eight =Analytics= errors and three =Configuration= warnings. The
+second warns before the figures are trusted, and offers the way to see why.
+
+** What is fake
+
+The figures, the file names, the row counts, the sizes and the archive key are
+mock. Nothing reads a server. The file names are real ORE output names —
+=npv.csv=, =saccr.csv=, =pricingstats.csv=, =log_structured.json= and the rest —
+because an invented set would hide the shape of the thing being judged.
+
+** Where the code lives
+
+=doc/prototypes/reporting/read-what-a-run-produced/=. Three files, plain HTML,
+CSS and JavaScript, no framework and no build step.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+Whether the result is read in the application at all, or exported and read
+elsewhere. The archive listing and the two downloads are the operations this
+journey needs and does not have, and they are the first thing the real build
+would have to add.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and the axis this prototype turns on.
+- [[file:../../knowledge/journeys/reporting/reporting.org][Reporting journeys]] — the five journeys these answer to.

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: read what a run produced — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Read what a run produced, from
+  doc/knowledge/journeys/reporting/journey_read_what_a_run_produced.org:
+  the system's output message, the engine's output archive, the errors that
+  came with it, and the ORE package the run read.
+
+  Three variants, switchable with ?variant=A|B|C, and a run in view switchable
+  with ?run=<instance-id prefix>. A puts the run's figures first, B puts the
+  archive and a manifest of its files first, C puts a written summary first.
+  The variants disagree about what "the result" is, not about colour.
+
+  The fixture bar at the top of the page picks one of five mock runs: completed
+  clean, completed carrying 8 Analytics errors and 3 Configuration warnings,
+  failed, in flight, and a substituting run that completed clean. The bar at
+  the foot prints the live variant and the state it is showing.
+
+  Honest gaps, repeated on the page: no operation lists the files inside a
+  run's archive, no operation or route serves the archive's bytes, and no read
+  serves parsed results or the exported ORE package. The manifest and every
+  figure are drawn from this file.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

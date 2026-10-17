@@ -20,6 +20,7 @@
  */
 
 import type { FeedBindingActivity } from '@ores/contracts';
+import type { BindableSource } from '../../api/bindings.js';
 
 /** The kind of a binding that names a generated producer. */
 export const SYNTHETIC = 'SYNTHETIC';
@@ -82,4 +83,19 @@ export function activityByName(
     activities: readonly FeedBindingActivity[],
 ): ReadonlyMap<string, FeedBindingActivity> {
     return new Map(activities.map((activity) => [activity.source_name, activity]));
+}
+
+/**
+ * The running feed that already holds the series the named source would write, or
+ * nothing when no feed holds it.
+ *
+ * A series holds one feed's points at a time, so a source whose series is held cannot
+ * be bound while that feed runs. The answer is the feed controller's, through the
+ * sources read; nothing here decides it.
+ */
+export function heldBy(
+    sources: readonly BindableSource[] | undefined,
+    sourceName: string,
+): string | undefined {
+    return sources?.find((source) => source.source_name === sourceName)?.held_by ?? undefined;
 }

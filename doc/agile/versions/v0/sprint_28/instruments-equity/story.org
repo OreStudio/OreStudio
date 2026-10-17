@@ -40,7 +40,7 @@ Rework options, forwards, swaps, variance swaps, barriers, digitals, Asians, acc
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D65A593A-AE06-4EBD-981E-EDAAF5AF1138][Analyse the equity family against data-oriented design]] | DONE | 2026-10-16 | 2026-10-16 | Walk the equity family's models, SQL, tests and round trip against the data-oriented design criteria and the instrument table rule, and propose the target model. |
-| [[id:A14672CA-887E-48B9-B7FB-9A0D82356F7E][Record the variant retirement in the equity staging]] | STARTED | 2026-10-17 | | The equity analysis names the nested std::variant as finding E5 and retires it in the mapping, but no staged unit carries it or checks for its absence. Add the unit so the Regime 3 finding has an owner and a gate. |
+| [[id:A14672CA-887E-48B9-B7FB-9A0D82356F7E][Record the variant retirement in the equity staging]] | DONE | 2026-10-17 | 2026-10-17 | The equity analysis names the nested std::variant as finding E5 and retires it in the mapping, but no staged unit carries it or checks for its absence. Add the unit so the Regime 3 finding has an owner and a gate. |
 
 * Decisions
 

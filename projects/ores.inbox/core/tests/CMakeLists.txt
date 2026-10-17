@@ -46,13 +46,13 @@ target_link_libraries(${tests_target_name}
 
 target_link_libraries(${tests_target_name}
     PRIVATE
-        ores.eventing.api.lib
-        ores.eventing.core.lib
-        ores.iam.api.lib
-        ores.iam.core.lib
-        ores.nats.lib
-        ores.service.lib
-        ores.utility.lib)
+        ${lib_target_name}
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

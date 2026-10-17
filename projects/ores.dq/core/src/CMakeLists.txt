@@ -59,14 +59,20 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.dq.api.lib
+        ores.nats.lib
         ores.database.lib
-        ores.diff.lib
         ores.iam.api.lib
+        ores.diff.lib
     PRIVATE
-        Boost::boost
-        Boost::graph
         ores.history.core.lib
-        sqlgen::sqlgen)
+        ores.service.lib
+        ores.utility.lib
+        ores.security.lib
+        sqlgen::sqlgen
+        libfort::fort
+        Boost::graph
+        Boost::boost)
 
 if(MSVC)
     target_compile_options(${lib_target_name} PUBLIC /bigobj)

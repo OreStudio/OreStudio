@@ -57,14 +57,16 @@ target_link_libraries(${lib_target_name}
 # Appending to the target rather than replacing the profile keeps the
 # baseline honest for every other component.
 
-find_package(LibArchive REQUIRED)
-find_package(Boost REQUIRED)
-
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.storage.api.lib
+        ores.nats.lib
     PRIVATE
-        Boost::boost
-        LibArchive::LibArchive
-        ores.database.lib
-        ores.iam.api.lib)
+        ores.service.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

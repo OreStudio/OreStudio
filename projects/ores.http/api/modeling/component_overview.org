@@ -60,19 +60,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-#+begin_src cmake :name extra_dependencies
-find_package(Boost REQUIRED COMPONENTS json url)
-
-target_link_libraries(${lib_target_name}
-    PUBLIC
-        Boost::boost
-        Boost::json
-        Boost::url
-        ores.security.lib
-        ores.telemetry.core.lib
-    PRIVATE
-        OpenSSL::SSL)
-#+end_src
 
 * See also
 
@@ -83,8 +70,27 @@ target_link_libraries(${lib_target_name}
 
 The suites link what the profile cannot know about.
 
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.security.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        Boost::boost
+        Boost::json
+        Boost::url
+    PRIVATE
+        OpenSSL::SSL)
+#+end_src
+
 #+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name} PRIVATE
-    ores.utility.lib
-)
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.testing.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
 #+end_src

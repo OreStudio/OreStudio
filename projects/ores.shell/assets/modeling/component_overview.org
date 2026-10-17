@@ -82,3 +82,26 @@ units project, which is the fractal naming rule in
 - [[id:D7287835-B101-4829-8B93-5C7F4FC9BA70][ores.cpp.shell-command]] -- the facet that emits the units.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] -- the composite and adapter kinds.
 - [[id:8C604D55-6F20-41D2-A66A-12A767B81D07][ores.assets]] -- the domain this part projects.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.shell.api.lib
+        ores.nats.lib
+        ores.logging.lib
+    PRIVATE
+        ores.assets.api.lib
+        ores.platform.lib
+        ores.utility.lib
+        cli::cli)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.testing.lib
+        Catch2::Catch2
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

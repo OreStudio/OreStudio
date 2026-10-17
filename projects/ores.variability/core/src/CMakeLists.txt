@@ -59,13 +59,20 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.variability.api.lib
         ores.database.lib
         ores.logging.lib
+        ores.nats.lib
     PRIVATE
-        Boost::boost
-        ores.diff.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.security.lib
         ores.dq.api.lib
+        ores.history.core.lib
+        ores.diff.lib
         ores.eventing.core.lib
-        ores.history.core.lib)
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -71,3 +71,26 @@ proves the HTTP one.
 
 - [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the component group overview.
 - [[id:286B7167-9B8A-4937-BBA5-E9D285AFECE3][Object Storage]] — the target state, and the raw and wrapped use it separates.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.shell.api.lib
+        ores.nats.lib
+        ores.logging.lib
+    PRIVATE
+        ores.storage.api.lib
+        ores.storage.core.lib
+        ores.platform.lib
+        ores.utility.lib)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.testing.lib
+        Catch2::Catch2
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

@@ -52,15 +52,14 @@ target_link_libraries(${lib_target_name}
 # A component declares here what the profile cannot know: the libraries it
 # needs beyond the baseline above, and the find_package calls they bring.
 
-find_package(Boost REQUIRED COMPONENTS json url)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.security.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
         Boost::boost
         Boost::json
         Boost::url
-        ores.security.lib
-        ores.telemetry.core.lib
     PRIVATE
         OpenSSL::SSL)
 

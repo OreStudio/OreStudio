@@ -53,7 +53,12 @@ target_link_libraries(${lib_target_name}
 # needs beyond the baseline above, and the find_package calls they bring.
 
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.api.lib
+        ores.platform.lib
     PRIVATE
-        ores.rfl.pch)
+        ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

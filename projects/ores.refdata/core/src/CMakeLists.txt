@@ -59,14 +59,22 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.refdata.api.lib
         ores.database.lib
+        ores.nats.lib
         ores.diff.lib
     PRIVATE
-        ores.analytics.quant.lib
         ores.dq.api.lib
         ores.history.core.lib
+        ores.service.lib
+        pugixml::pugixml
         ores.variability.api.lib
         ores.variability.core.lib
-        pugixml::pugixml)
+        ores.analytics.quant.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

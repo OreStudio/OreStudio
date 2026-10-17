@@ -51,17 +51,17 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
-find_package(Immer CONFIG REQUIRED)
-find_package(magic_enum CONFIG REQUIRED)
-find_package(Eigen3 CONFIG REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
         Boost::boost
         Boost::graph
-        Eigen3::Eigen
     PRIVATE
         immer
-        magic_enum::magic_enum)
+        magic_enum::magic_enum
+    PUBLIC
+        # Eigen types appear in public headers (the process params
+        # structs); on a shared build a PRIVATE link would hide its
+        # include directories from consumers.
+        Eigen3::Eigen)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

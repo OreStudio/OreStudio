@@ -41,3 +41,30 @@
 * See also
 
 -
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.logging.lib
+        ores.platform.lib
+        ores.utility.lib
+        Boost::boost
+    PRIVATE
+        faker-cxx::faker-cxx
+        libfort::fort)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.testing.lib
+        ores.refdata.api.lib
+        ores.iam.api.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

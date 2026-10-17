@@ -58,18 +58,22 @@ target_link_libraries(${lib_target_name}
 # baseline honest for every other component.
 
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.workflow.api.lib
     PRIVATE
-        Boost::boost
         ores.database.lib
+        ores.utility.lib
+        ores.service.lib
+        ores.nats.lib
+        ores.history.core.lib
         ores.dq.api.lib
         ores.dq.core.lib
-        ores.history.core.lib
         ores.iam.api.lib
         ores.ore.api.lib
         ores.refdata.api.lib
         ores.reporting.api.lib
-        ores.rfl.pch
         ores.telemetry.core.lib
-        sqlgen::sqlgen)
+        sqlgen::sqlgen
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

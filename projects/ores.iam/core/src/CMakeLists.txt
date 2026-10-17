@@ -57,28 +57,34 @@ target_link_libraries(${lib_target_name}
 # Appending to the target rather than replacing the profile keeps the
 # baseline honest for every other component.
 
-find_package(Immer CONFIG REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.assets.api.lib
+        ores.iam.api.lib
+        ores.geo.lib
+        ores.variability.core.lib
         ores.database.lib
         ores.dq.api.lib
         ores.eventing.api.lib
         ores.eventing.core.lib
-        ores.geo.lib
-        ores.variability.core.lib
+        ores.platform.lib
+        ores.security.lib
+        ores.nats.lib
         ores.workflow.api.lib
+        ores.assets.api.lib
     PRIVATE
-        immer
         ores.history.core.lib
         ores.iam.client.lib
         ores.inbox.api.lib
-        ores.marketdata.api.lib
-        ores.marketdata.core.lib
+        ores.service.lib
+        ores.utility.lib
         ores.refdata.api.lib
         ores.refdata.core.lib
         ores.synthetic.api.lib
-        ores.synthetic.core.lib)
+        ores.synthetic.core.lib
+        ores.marketdata.api.lib
+        ores.marketdata.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort
+        immer)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

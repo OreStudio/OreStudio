@@ -54,12 +54,16 @@ target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
+        ores.logging.lib
+        ores.utility.lib
         ores.nats.lib
     INTERFACE
+        # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
         reflectcpp::reflectcpp
     PRIVATE
-        Boost::boost
+        ores.service.lib
+        ores.platform.lib
         ores.security.lib
-        ores.service.lib)
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

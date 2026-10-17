@@ -58,9 +58,15 @@ target_link_libraries(${lib_target_name}
 # baseline honest for every other component.
 
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.inbox.api.lib
+        ores.nats.lib
     PRIVATE
-        ores.diff.lib
-        ores.history.core.lib
-        ores.iam.core.lib)
+        ores.service.lib
+        ores.platform.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

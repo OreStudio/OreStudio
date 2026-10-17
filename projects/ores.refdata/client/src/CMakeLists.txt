@@ -34,11 +34,11 @@ target_include_directories(${lib_target_name} INTERFACE
 
 target_link_libraries(${lib_target_name}
     INTERFACE
+        ores.nats.lib
+        ores.refdata.api.lib
         ores.eventing.api.lib
         ores.eventing.core.lib
         ores.logging.lib
-        ores.nats.lib
-        ores.refdata.api.lib
         ores.utility.lib)
 
 install(TARGETS ${lib_target_name})

@@ -66,31 +66,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-#+begin_src cmake :name extra_dependencies
-find_package(Immer CONFIG REQUIRED)
-
-target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.assets.api.lib
-        ores.database.lib
-        ores.dq.api.lib
-        ores.eventing.api.lib
-        ores.eventing.core.lib
-        ores.geo.lib
-        ores.variability.core.lib
-        ores.workflow.api.lib
-    PRIVATE
-        immer
-        ores.history.core.lib
-        ores.iam.client.lib
-        ores.inbox.api.lib
-        ores.marketdata.api.lib
-        ores.marketdata.core.lib
-        ores.refdata.api.lib
-        ores.refdata.core.lib
-        ores.synthetic.api.lib
-        ores.synthetic.core.lib)
-#+end_src
 
 * See also
 
@@ -108,14 +83,53 @@ target_link_libraries(${lib_target_name}
 
 The suites link what the profile cannot know about.
 
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.iam.api.lib
+        ores.geo.lib
+        ores.variability.core.lib
+        ores.database.lib
+        ores.dq.api.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.platform.lib
+        ores.security.lib
+        ores.nats.lib
+        ores.workflow.api.lib
+        ores.assets.api.lib
+    PRIVATE
+        ores.history.core.lib
+        ores.iam.client.lib
+        ores.inbox.api.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
+        ores.synthetic.api.lib
+        ores.synthetic.core.lib
+        ores.marketdata.api.lib
+        ores.marketdata.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort
+        immer)
+#+end_src
+
 #+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name} PRIVATE
-    ores.assets.core.lib
-    ores.inbox.api.lib
-    ores.inbox.core.lib
-    ores.refdata.core.lib
-    ores.service.lib
-    ores.telemetry.core.lib
-    ores.utility.lib
-)
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.refdata.core.lib
+        ores.assets.core.lib
+        ores.telemetry.core.lib
+        ores.inbox.api.lib
+        ores.inbox.core.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.testing.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
 #+end_src

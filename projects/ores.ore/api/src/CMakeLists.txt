@@ -34,11 +34,11 @@ target_include_directories(${lib_target_name} INTERFACE
 
 target_link_libraries(${lib_target_name}
     INTERFACE
-        ores.eventing.api.lib
-        ores.logging.lib
         ores.platform.lib
         ores.storage.api.lib
-        ores.utility.lib
-        ores.workflow.api.lib)
+        ores.logging.lib
+        ores.workflow.api.lib
+        ores.eventing.api.lib
+        ores.utility.lib)
 
 install(TARGETS ${lib_target_name})

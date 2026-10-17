@@ -58,22 +58,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-#+begin_src cmake :name extra_dependencies
-target_link_libraries(${lib_target_name}
-    PRIVATE
-        Boost::boost
-        ores.database.lib
-        ores.dq.api.lib
-        ores.dq.core.lib
-        ores.history.core.lib
-        ores.iam.api.lib
-        ores.ore.api.lib
-        ores.refdata.api.lib
-        ores.reporting.api.lib
-        ores.rfl.pch
-        ores.telemetry.core.lib
-        sqlgen::sqlgen)
-#+end_src
 
 * See also
 
@@ -86,13 +70,42 @@ target_link_libraries(${lib_target_name}
 
 The suites link what the profile cannot know about.
 
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.workflow.api.lib
+    PRIVATE
+        ores.database.lib
+        ores.utility.lib
+        ores.service.lib
+        ores.nats.lib
+        ores.history.core.lib
+        ores.dq.api.lib
+        ores.dq.core.lib
+        ores.iam.api.lib
+        ores.ore.api.lib
+        ores.refdata.api.lib
+        ores.reporting.api.lib
+        ores.telemetry.core.lib
+        sqlgen::sqlgen
+        Boost::boost)
+#+end_src
+
 #+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name} PRIVATE
-    ores.database.lib
-    ores.eventing.api.lib
-    ores.eventing.core.lib
-    ores.nats.lib
-    ores.security.lib
-    ores.utility.lib
-)
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.database.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.security.lib
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        ores.openssl_cleanup
+        Threads::Threads)
 #+end_src

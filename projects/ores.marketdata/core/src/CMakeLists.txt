@@ -57,22 +57,25 @@ target_link_libraries(${lib_target_name}
 # Appending to the target rather than replacing the profile keeps the
 # baseline honest for every other component.
 
-find_package(Boost REQUIRED COMPONENTS url)
-find_package(magic_enum CONFIG REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.marketdata.api.lib
         ores.ore.core.lib
     PRIVATE
-        Boost::boost
-        Boost::url
-        magic_enum::magic_enum
-        ores.database.lib
         ores.dq.api.lib
         ores.history.core.lib
         ores.refdata.api.lib
         ores.refdata.core.lib
+        ores.service.lib
         ores.storage.core.lib
-        sqlgen::sqlgen)
+        ores.nats.lib
+        ores.database.lib
+        ores.utility.lib
+        ores.security.lib
+        sqlgen::sqlgen
+        faker-cxx::faker-cxx
+        magic_enum::magic_enum
+        Boost::boost
+        Boost::url)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

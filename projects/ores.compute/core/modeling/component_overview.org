@@ -60,18 +60,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-#+begin_src cmake :name extra_dependencies
-target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.database.lib
-        ores.diff.lib
-        ores.dq.api.lib
-    PRIVATE
-        ores.history.core.lib
-        ores.iam.client.lib
-        ores.logging.lib
-        ores.reporting.api.lib)
-#+end_src
 
 * See also
 
@@ -85,11 +73,39 @@ target_link_libraries(${lib_target_name}
 
 The suites link what the profile cannot know about.
 
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.compute.api.lib
+        ores.database.lib
+        ores.nats.lib
+        ores.dq.api.lib
+        ores.diff.lib
+        ores.service.lib
+    PRIVATE
+        ores.security.lib
+        ores.utility.lib
+        ores.logging.lib
+        ores.platform.lib
+        ores.reporting.api.lib
+        ores.iam.client.lib
+        ores.history.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+#+end_src
+
 #+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name} PRIVATE
-    ores.eventing.api.lib
-    ores.eventing.core.lib
-    ores.refdata.core.lib
-    ores.utility.lib
-)
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.refdata.core.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
 #+end_src

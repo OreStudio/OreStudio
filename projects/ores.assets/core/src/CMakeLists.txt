@@ -58,11 +58,19 @@ target_link_libraries(${lib_target_name}
 # baseline honest for every other component.
 
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.assets.api.lib
+        ores.nats.lib
     PRIVATE
-        Boost::boost
-        ores.database.lib
         ores.dq.api.lib
+        ores.service.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.database.lib
+        ores.security.lib
         ores.history.core.lib
-        ores.telemetry.core.lib)
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

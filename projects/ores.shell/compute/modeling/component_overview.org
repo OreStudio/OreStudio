@@ -62,3 +62,26 @@ because each orchestrates several entities rather than one.
 
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] - the domain component these units project.
 - [[id:410D3332-BEED-4B51-B46C-01E92FB5E4F9][ores.shell.iam]] - the adapter part this one follows.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.shell.api.lib
+        ores.nats.lib
+        ores.logging.lib
+    PRIVATE
+        ores.compute.api.lib
+        ores.platform.lib
+        ores.utility.lib
+        cli::cli)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.testing.lib
+        Catch2::Catch2
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

@@ -67,18 +67,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-#+begin_src cmake :name extra_dependencies
-target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.database.lib
-        ores.diff.lib
-        ores.iam.api.lib
-    PRIVATE
-        Boost::boost
-        Boost::graph
-        ores.history.core.lib
-        sqlgen::sqlgen)
-#+end_src
 
 * See also
 
@@ -103,10 +91,36 @@ endif()
 
 The suites link what the profile cannot know about.
 
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.dq.api.lib
+        ores.nats.lib
+        ores.database.lib
+        ores.iam.api.lib
+        ores.diff.lib
+    PRIVATE
+        ores.history.core.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.security.lib
+        sqlgen::sqlgen
+        libfort::fort
+        Boost::graph
+        Boost::boost)
+#+end_src
+
 #+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name} PRIVATE
-    ores.eventing.api.lib
-    ores.eventing.core.lib
-    ores.utility.lib
-)
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.utility.lib
+        ores.testing.lib
+        ores.openssl_cleanup
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
 #+end_src

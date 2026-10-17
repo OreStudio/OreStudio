@@ -71,3 +71,26 @@ unit projects, which is the fractal naming rule in
 
 - [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] -- the composite this
   part belongs to.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.shell.api.lib
+        ores.nats.lib
+        ores.logging.lib
+    PRIVATE
+        ores.variability.api.lib
+        ores.platform.lib
+        ores.utility.lib
+        cli::cli)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.testing.lib
+        Catch2::Catch2
+        ores.openssl_cleanup
+        Threads::Threads)
+#+end_src

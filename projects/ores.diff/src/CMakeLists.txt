@@ -51,6 +51,12 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
-
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        sqlgen::sqlgen
+        ores.logging.lib
+        ores.platform.lib
+    PRIVATE
+        ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

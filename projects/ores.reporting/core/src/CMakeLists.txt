@@ -59,12 +59,13 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.reporting.api.lib
         ores.database.lib
         ores.logging.lib
+        ores.nats.lib
         ores.scheduler.api.lib
+        ores.service.lib
     PRIVATE
-        Boost::boost
-        Boost::json
         ores.compute.api.lib
         ores.diff.lib
         ores.dq.api.lib
@@ -72,10 +73,17 @@ target_link_libraries(${lib_target_name}
         ores.iam.api.lib
         ores.iam.client.lib
         ores.marketdata.api.lib
+        ores.platform.lib
         ores.storage.api.lib
         ores.storage.core.lib
         ores.trading.api.lib
+        ores.utility.lib
         ores.workflow.core.lib
-        sqlgen::sqlgen)
+        ores.security.lib
+        sqlgen::sqlgen
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost
+        Boost::json)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

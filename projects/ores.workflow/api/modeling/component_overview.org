@@ -54,8 +54,24 @@ JSON I/O via =rfl=, and the NATS protocol schemas consumed by
 
 The suites link what the profile cannot know about.
 
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.utility.lib
+    PRIVATE
+        faker-cxx::faker-cxx
+        libfort::fort)
+#+end_src
+
 #+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name} PRIVATE
-    ores.utility.lib
-)
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
 #+end_src

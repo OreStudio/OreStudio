@@ -53,15 +53,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-#+begin_src cmake :name extra_dependencies
-target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.iam.api.lib
-        ores.nats.lib
-        ores.service.lib
-    PRIVATE
-        Boost::boost)
-#+end_src
 
 * See also
 
@@ -69,3 +60,15 @@ target_link_libraries(${lib_target_name}
 
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — server-side IAM business logic.
 - [[id:AAD74D7C-4789-4E54-8B02-EC60231D78A5][Multi-Party Login Flow]] — authentication sequence this client implements.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.nats.lib
+        ores.iam.api.lib
+        ores.service.lib
+    PRIVATE
+        ores.logging.lib
+        ores.utility.lib
+        Boost::boost)
+#+end_src

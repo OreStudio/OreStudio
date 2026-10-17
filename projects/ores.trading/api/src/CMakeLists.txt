@@ -55,8 +55,12 @@ target_link_libraries(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.dq.api.lib
+        ores.eventing.api.lib
+        ores.platform.lib
     PRIVATE
-        ores.rfl.pch)
+        ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 target_compile_options(${lib_target_name} PUBLIC
     $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/constexpr:depth100000>

@@ -55,16 +55,20 @@ target_link_libraries(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.analytics.quant.lib
-        ores.database.lib
         ores.dq.api.lib
         ores.iam.api.lib
-        ores.marketdata.api.lib
-        ores.nats.lib
         ores.refdata.api.lib
+        ores.eventing.api.lib
+        ores.platform.lib
+        ores.nats.lib
+        ores.marketdata.api.lib
+        ores.database.lib
     PRIVATE
+        ores.utility.lib
         ores.marketdata.client.lib
         ores.marketdata.core.lib
         ores.refdata.core.lib
-        ores.rfl.pch)
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

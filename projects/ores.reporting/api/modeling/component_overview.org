@@ -53,13 +53,6 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-#+begin_src cmake :name extra_dependencies
-target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.workflow.api.lib
-    PRIVATE
-        ores.rfl.pch)
-#+end_src
 
 * See also
 
@@ -72,10 +65,28 @@ target_link_libraries(${lib_target_name}
 
 The suites link what the profile cannot know about.
 
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.api.lib
+        ores.platform.lib
+        ores.workflow.api.lib
+    PRIVATE
+        ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
+#+end_src
+
 #+begin_src cmake :name extra_test_dependencies
-target_link_libraries(${tests_target_name} PRIVATE
-    ores.reporting.api.lib
-    ores.telemetry.core.lib
-    ores.utility.lib
-)
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ores.reporting.api.lib
+        ores.telemetry.core.lib
+        ores.utility.lib
+        ores.testing.lib
+        faker-cxx::faker-cxx
+        Catch2::Catch2
+        ores.openssl_cleanup
+        Threads::Threads)
 #+end_src

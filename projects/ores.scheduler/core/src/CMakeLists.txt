@@ -59,11 +59,18 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.scheduler.api.lib
         ores.database.lib
+        ores.nats.lib
     PRIVATE
-        croncpp::croncpp
         ores.eventing.api.lib
         ores.history.core.lib
-        ores.logging.lib)
+        ores.service.lib
+        ores.utility.lib
+        ores.security.lib
+        ores.logging.lib
+        ores.platform.lib
+        croncpp::croncpp
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

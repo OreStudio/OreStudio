@@ -55,11 +55,15 @@ target_link_libraries(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.diff.lib
+        ores.eventing.api.lib
         ores.iam.api.lib
         ores.inbox.api.lib
+        ores.platform.lib
         ores.workflow.api.lib
     PRIVATE
         ores.dq.api.lib
-        ores.rfl.pch)
+        ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

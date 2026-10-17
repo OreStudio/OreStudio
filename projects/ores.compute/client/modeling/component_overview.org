@@ -62,18 +62,20 @@ What the shared profile cannot know, declared here rather than
 hand-edited into the generated build file. Each block is spliced
 into its generated file after the profile's baseline.
 
-#+begin_src cmake :name extra_dependencies
-target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.compute.api.lib
-        ores.storage.core.lib
-    PRIVATE
-        Boost::boost
-        Boost::json)
-#+end_src
 
 * See also
 
 - [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
 - [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] — registers the uploaded packages as app versions.
 - [[id:F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA][ores.compute.wrapper]] — the worker that runs the packages this part publishes.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.storage.core.lib
+        ores.compute.api.lib
+    PRIVATE
+        ores.utility.lib
+        Boost::boost
+        Boost::json)
+#+end_src

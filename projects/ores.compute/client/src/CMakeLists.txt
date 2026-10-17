@@ -53,9 +53,10 @@ target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.compute.api.lib
         ores.storage.core.lib
+        ores.compute.api.lib
     PRIVATE
+        ores.utility.lib
         Boost::boost
         Boost::json)
 

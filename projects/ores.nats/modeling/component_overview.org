@@ -68,3 +68,28 @@ dependency of every domain service.
   groups, JetStream, NKey/JWT security.
 - [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][ORE Studio Messaging Reference]] — index of every service's subject
   namespace and links to per-service messaging references.
+
+#+begin_src cmake :name extra_dependencies
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ${CNATS_LIB}
+        Boost::program_options
+        reflectcpp::reflectcpp
+    PRIVATE
+        ores.logging.lib
+        ores.utility.lib
+        Boost::boost
+        Boost::json)
+#+end_src
+
+#+begin_src cmake :name extra_test_dependencies
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.testing.lib
+        ores.logging.lib
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
+#+end_src

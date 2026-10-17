@@ -53,9 +53,10 @@ target_link_libraries(${lib_target_name} PRIVATE ores.rfl.pch)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.database.lib
-        ores.telemetry.core.lib
+        ores.telemetry.core.lib      # Core telemetry functionality
+        ores.database.lib       # Database access
     PRIVATE
+        ores.platform.lib
         Boost::boost)
 
 target_include_directories(${lib_target_name} PUBLIC

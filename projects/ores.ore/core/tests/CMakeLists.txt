@@ -44,19 +44,26 @@ target_link_libraries(${tests_target_name}
 # a scoped temporary file, a compression helper -- so the component declares
 # them here rather than the profile carrying every component's needs.
 
-target_link_libraries(${tests_target_name} PRIVATE
-    ores.analytics.api.lib
-    ores.analytics.core.lib
-    ores.eventing.api.lib
-    ores.eventing.core.lib
-    ores.nats.lib
-    ores.platform.lib
-    ores.refdata.api.lib
-    ores.refdata.core.lib
-    ores.reporting.api.lib
-    ores.reporting.core.lib
-    ores.utility.lib
-)
+target_link_libraries(${tests_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.utility.lib
+        ores.platform.lib
+        ores.testing.lib
+        ores.analytics.api.lib
+        ores.analytics.core.lib
+        ores.reporting.api.lib
+        ores.reporting.core.lib
+        ores.refdata.api.lib
+        ores.refdata.core.lib
+        ores.logging.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
+        ores.nats.lib
+        ores.openssl_cleanup
+        Catch2::Catch2
+        faker-cxx::faker-cxx
+        Threads::Threads)
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM

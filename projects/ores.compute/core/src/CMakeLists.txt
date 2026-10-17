@@ -59,13 +59,21 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.compute.api.lib
         ores.database.lib
-        ores.diff.lib
+        ores.nats.lib
         ores.dq.api.lib
+        ores.diff.lib
+        ores.service.lib
     PRIVATE
-        ores.history.core.lib
-        ores.iam.client.lib
+        ores.security.lib
+        ores.utility.lib
         ores.logging.lib
-        ores.reporting.api.lib)
+        ores.platform.lib
+        ores.reporting.api.lib
+        ores.iam.client.lib
+        ores.history.core.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

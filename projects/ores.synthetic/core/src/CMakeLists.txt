@@ -59,14 +59,20 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.database.lib
+        ores.synthetic.api.lib
+        ores.trading.api.lib
+        ores.nats.lib
         ores.dq.api.lib
         ores.iam.api.lib
         ores.refdata.core.lib
-        ores.trading.api.lib
+        ores.database.lib
     PRIVATE
-        Boost::boost
-        ores.history.core.lib)
+        ores.history.core.lib
+        ores.service.lib
+        ores.utility.lib
+        ores.security.lib
+        faker-cxx::faker-cxx
+        Boost::boost)
 
 target_include_directories(${lib_target_name} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR})

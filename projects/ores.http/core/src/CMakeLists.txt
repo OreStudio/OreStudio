@@ -59,12 +59,15 @@ target_link_libraries(${lib_target_name}
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.storage.core.lib
+        ores.http.api.lib
+        ores.iam.core.lib
+        ores.variability.core.lib
         ores.compute.core.lib
         ores.geo.lib
-        ores.iam.core.lib
-        ores.storage.core.lib
-        ores.variability.core.lib
     PRIVATE
+        ores.utility.lib
+        ores.security.lib
         ores.database.lib
         ores.dq.api.lib)
 

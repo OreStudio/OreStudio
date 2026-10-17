@@ -53,9 +53,14 @@ target_link_libraries(${lib_target_name}
 # needs beyond the baseline above, and the find_package calls they bring.
 
 target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.eventing.api.lib
+        ores.platform.lib
     PRIVATE
-        Boost::boost
-        ores.rfl.pch
-        reflectcpp::reflectcpp)
+        ores.utility.lib
+        reflectcpp::reflectcpp
+        faker-cxx::faker-cxx
+        libfort::fort
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -55,7 +55,10 @@ target_link_libraries(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.storage.api.lib
+        ores.platform.lib
     PRIVATE
-        ores.rfl.pch)
+        ores.utility.lib
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

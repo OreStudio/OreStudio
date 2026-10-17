@@ -112,7 +112,6 @@ to_domain(const messaging::fx_accumulator_instrument_write& write) {
     v.long_short = write.long_short;
     v.start_date = write.start_date;
     v.knock_out_barrier = write.knock_out_barrier;
-    v.range_bounds_json = write.range_bounds_json;
     v.description = write.description;
     return v;
 }

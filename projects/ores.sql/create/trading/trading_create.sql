@@ -302,6 +302,9 @@
 \ir ./trading_instrument_strikes_create.sql
 \ir ./trading_instrument_strikes_notify_trigger_create.sql
 
+\ir ./trading_range_bounds_create.sql
+\ir ./trading_range_bounds_notify_trigger_create.sql
+
 -- Credit instruments (depends on reference data above)
 \ir ./trading_credit_instruments_create.sql
 \ir ./trading_credit_instruments_notify_trigger_create.sql

@@ -27,6 +27,12 @@
  * Routes ORE product type: FxAccumulator. knock_out_barrier captures
  * the primary UpAndOut barrier. Multiple barriers and complex fixing
  * schedules are a Phase 2 coverage gap.
+ *
+ * The document's RangeBounds list is a child table, not a column:
+ * [[id:2FEA1F01-B63A-412A-BECB-8E20AE4DC911][ores.trading.range_bound]] holds one
+ * row per entry, keyed by the trade and the entry's ordinal. The list is what
+ * makes the exported accumulator readable, because the ORE schema requires at
+ * least one RangeBound.
  */
 
 create table if not exists "ores_trading_fx_accumulator_instruments_tbl" (
@@ -43,7 +49,6 @@ create table if not exists "ores_trading_fx_accumulator_instruments_tbl" (
     "long_short" text not null,
     "start_date" date not null,
     "knock_out_barrier" numeric(38, 12) null,
-    "range_bounds_json" text null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,

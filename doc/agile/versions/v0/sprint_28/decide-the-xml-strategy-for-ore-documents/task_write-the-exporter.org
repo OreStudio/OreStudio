@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/write-the-exporter-from-the-same-tables
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ exponentiates.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | The emitter writes every generated family, and every document it writes validates against the schema. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The round-trip harness, which compares values rather than text. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -49,6 +49,61 @@ exponentiates.
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+* Plan
+
+*The direction is a walk of the table, not a replay of the reading.* The
+emitter takes the same /document_type/ the binder takes and walks the record
+in table order, which the generator emits in schema order. Nothing about the
+document that was read survives, so a record built by any other route writes
+the same way.
+
+*Three rules carry it.*
+
+- *Present fields only.* A field whose presence bit is clear writes nothing.
+  A required field whose bit is clear is an error, not a silent omission: the
+  writing would not validate, so it is not made.
+- *A decimal is plain text.* The writer calls the decimal's own canonical
+  rendering, which never exponentiates and never invents a column scale. A
+  continuous quantity uses the shortest text that reads back to the same
+  double, and may exponentiate because =xs:float= accepts it.
+- *Escape in one scan.* A text node escapes =&=, =<= and =>=; an attribute also
+  escapes ="= and the whitespace a parser would normalize away. A value that
+  needs none of them is copied whole.
+
+*The table grew one thing: a repeated member's operations.* A repeated member
+is a =std::vector= whose element type only the generated code knows, so
+=field= now carries a =vector_ops= of three functions -- append, count, at.
+The reader appends; the writer measures and indexes. Before this, the row
+carried only =append=, which is why the reading existed and the writing did
+not.
+
+*The writing found three defects in the generator.* None of them was visible
+from the reading, because the reading tests counted documents rather than
+comparing values:
+
+- *A repeated compositor repeats its members.* =conventions.xsd= states the
+  root as =xs:choice minOccurs="0" maxOccurs="unbounded"=, so every member
+  may appear any number of times. The generator read each member's own
+  =maxOccurs= and modelled Deposits as one optional record, so a document with
+  twelve Deposits bound twelve values into one record and the writer emitted a
+  single =<Deposit>= with the values concatenated. The compositor's repetition
+  now reaches its members.
+- *A repeated leaf carries its element's own kind.* Every repeated leaf row
+  said =scalar_kind::text= regardless of the element, so a repeated
+  =xs:integer= wrote =std::string= values into a =std::vector<std::int64_t>=.
+  It was silent heap corruption rather than a wrong answer, and the netting
+  family's =Currencies= is the case: =vector<std::int16_t>= over an
+  enumeration, read as strings.
+- *An enumeration index needs its spellings.* A repeated enumerated element
+  now has =scalar_kind::enumeration=: the reader validates the spelling and
+  stores the index, the writer renders the spelling back.
+
+*A generated record states its own zeros.* An =int16_t= member with no
+initializer is indeterminate in a default-initialized record, so a record
+built by hand carried garbage into a writing and failed on an enumeration
+index that was never set. Every numeric member now states = 0=. The decimal
+already defaulted to zero.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -61,7 +116,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Emitted documents that validate against =input.xsd= | 246 of 246 | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd= | pending |
+| XML suites, all green | 537 cases, 63,635 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
+| Corpus documents written back and re-read stably | 246 | =publish/bin/ores.ore.core.tests "[ore][xml][emitter]"= | pending |
 
 * Notes
 

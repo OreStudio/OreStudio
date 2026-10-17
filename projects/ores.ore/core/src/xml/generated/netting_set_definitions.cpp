@@ -35,6 +35,15 @@ template <typename T> auto append_to(void *container, void **slot) -> void {
   *slot = &vector->back();
 }
 
+template <typename T> auto count_of(const void *container) -> std::size_t {
+  return static_cast<const std::vector<T> *>(container)->size();
+}
+
+template <typename T>
+auto at_of(const void *container, std::size_t index) -> const void * {
+  return &(*static_cast<const std::vector<T> *>(container))[index];
+}
+
 const char *independent_amount_type_spellings[] = {"FIXED", nullptr};
 const char *currency_code_spellings[] = {
     "AED", "AFN",  "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN",
@@ -59,6 +68,11 @@ const char *currency_code_spellings[] = {
     "ZUG", nullptr};
 const char *csa_type_spellings[] = {"Bilateral", "CallOnly", "PostOnly",
                                     nullptr};
+
+constexpr vector_ops currencies_currency_ops{
+    &append_to<std::int16_t>, &count_of<std::int16_t>, &at_of<std::int16_t>};
+constexpr vector_ops nettingsetdefinitions_netting_set_ops{
+    &append_to<netting_set>, &count_of<netting_set>, &at_of<netting_set>};
 
 const field netting_set_details_fields[] = {
     {"NettingSetId", 999541937u, field_kind::text,
@@ -85,8 +99,8 @@ const field independent_amount_fields[] = {
      false, true, nullptr, nullptr, scalar_kind::decimal, nullptr},
     {"IndependentAmountType", 1315611409u, field_kind::enumeration,
      std::uint32_t(offsetof(independent_amount, independent_amount_type)), 1,
-     false, true, independent_amount_type_spellings, nullptr, scalar_kind::text,
-     nullptr},
+     false, true, independent_amount_type_spellings, nullptr,
+     scalar_kind::enumeration, nullptr},
 };
 const record_type independent_amount_record{
     "IndependentAmount", independent_amount_fields, 2, no_text};
@@ -102,8 +116,9 @@ const record_type margining_frequency_record{
     "MarginingFrequency", margining_frequency_fields, 2, no_text};
 const field currencies_fields[] = {
     {"Currency", 342827606u, field_kind::repeated_leaf,
-     std::uint32_t(offsetof(currencies, currency)), 0, false, false, nullptr,
-     nullptr, scalar_kind::text, nullptr},
+     std::uint32_t(offsetof(currencies, currency)), 0, false, false,
+     currency_code_spellings, nullptr, scalar_kind::enumeration,
+     &currencies_currency_ops},
 };
 const record_type currencies_record{"Currencies", currencies_fields, 1,
                                     no_text};
@@ -117,10 +132,10 @@ const record_type eligible_collaterals_record{
 const field csa_details_fields[] = {
     {"Bilateral", 1696326147u, field_kind::enumeration,
      std::uint32_t(offsetof(csa_details, bilateral)), 0, false, false,
-     csa_type_spellings, nullptr, scalar_kind::text, nullptr},
+     csa_type_spellings, nullptr, scalar_kind::enumeration, nullptr},
     {"CSACurrency", 224323917u, field_kind::enumeration,
      std::uint32_t(offsetof(csa_details, csa_currency)), 1, false, false,
-     currency_code_spellings, nullptr, scalar_kind::text, nullptr},
+     currency_code_spellings, nullptr, scalar_kind::enumeration, nullptr},
     {"Index", 2932321867u, field_kind::text,
      std::uint32_t(offsetof(csa_details, index)), 2, false, false, nullptr,
      nullptr, scalar_kind::text, nullptr},
@@ -160,7 +175,7 @@ const field csa_details_fields[] = {
      false, nullptr, nullptr, scalar_kind::text, nullptr},
     {"InitialMarginType", 2378279021u, field_kind::enumeration,
      std::uint32_t(offsetof(csa_details, initial_margin_type)), 14, false,
-     false, csa_type_spellings, nullptr, scalar_kind::text, nullptr},
+     false, csa_type_spellings, nullptr, scalar_kind::enumeration, nullptr},
     {"CalculateIMAmount", 2866581569u, field_kind::text,
      std::uint32_t(offsetof(csa_details, calculate_im_amount)), 15, false,
      false, nullptr, nullptr, scalar_kind::text, nullptr},
@@ -196,7 +211,7 @@ const field nettingsetdefinitions_fields[] = {
     {"NettingSet", 2183482524u, field_kind::repeated_nested,
      std::uint32_t(offsetof(nettingsetdefinitions, netting_set)), 0, false,
      false, nullptr, &netting_set_record, scalar_kind::text,
-     &append_to<netting_set>},
+     &nettingsetdefinitions_netting_set_ops},
 };
 const record_type nettingsetdefinitions_record{
     "nettingsetdefinitions", nettingsetdefinitions_fields, 1, no_text};

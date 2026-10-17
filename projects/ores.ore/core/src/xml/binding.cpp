@@ -181,6 +181,21 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
                     reinterpret_cast<std::vector<double>*>(slot)->push_back(value);
                     break;
                 }
+                case scalar_kind::enumeration: {
+                    std::int16_t index = -1;
+                    for (std::int16_t i = 0; f.tokens[i] != nullptr; ++i) {
+                        if (text == f.tokens[i]) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    if (index < 0) {
+                        error = "a repeated enumerated element holds no known spelling";
+                        return false;
+                    }
+                    reinterpret_cast<std::vector<std::int16_t>*>(slot)->push_back(index);
+                    break;
+                }
             }
             break;
         }
@@ -301,7 +316,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                 }
                 if (f->kind == field_kind::repeated_nested) {
                     void* child = nullptr;
-                    f->append(slot, &child);
+                    f->repeated->append(slot, &child);
                     mark_present(top.record, *f);
                     auto* record = static_cast<std::byte*>(child);
                     stack[depth++] = {f->type, record, nullptr};

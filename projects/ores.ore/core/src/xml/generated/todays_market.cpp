@@ -35,6 +35,171 @@ template <typename T> auto append_to(void *container, void **slot) -> void {
   *slot = &vector->back();
 }
 
+template <typename T> auto count_of(const void *container) -> std::size_t {
+  return static_cast<const std::vector<T> *>(container)->size();
+}
+
+template <typename T>
+auto at_of(const void *container, std::size_t index) -> const void * {
+  return &(*static_cast<const std::vector<T> *>(container))[index];
+}
+
+constexpr vector_ops yield_curves_type_yield_curve_ops{
+    &append_to<yield_curve>, &count_of<yield_curve>, &at_of<yield_curve>};
+constexpr vector_ops discount_curves_type_discounting_curve_ops{
+    &append_to<discounting_curve>, &count_of<discounting_curve>,
+    &at_of<discounting_curve>};
+constexpr vector_ops index_forwarding_curves_type_index_ops{
+    &append_to<index>, &count_of<index>, &at_of<index>};
+constexpr vector_ops swap_index_curves_type_swap_index_ops{
+    &append_to<swap_index>, &count_of<swap_index>, &at_of<swap_index>};
+constexpr vector_ops
+    zero_inflation_index_curves_type_zero_inflation_index_curve_ops{
+        &append_to<zero_inflation_index_curve>,
+        &count_of<zero_inflation_index_curve>,
+        &at_of<zero_inflation_index_curve>};
+constexpr vector_ops
+    yy_inflation_index_curves_type_yy_inflation_index_curve_ops{
+        &append_to<yy_inflation_index_curve>,
+        &count_of<yy_inflation_index_curve>, &at_of<yy_inflation_index_curve>};
+constexpr vector_ops fx_spots_type_fx_spot_ops{
+    &append_to<fx_spot>, &count_of<fx_spot>, &at_of<fx_spot>};
+constexpr vector_ops fx_volatilities_type_fx_volatility_ops{
+    &append_to<fx_volatility>, &count_of<fx_volatility>, &at_of<fx_volatility>};
+constexpr vector_ops swaption_volatilities_type_swaption_volatility_ops{
+    &append_to<swaption_volatility>, &count_of<swaption_volatility>,
+    &at_of<swaption_volatility>};
+constexpr vector_ops yield_volatilities_type_yield_volatility_ops{
+    &append_to<yield_volatility>, &count_of<yield_volatility>,
+    &at_of<yield_volatility>};
+constexpr vector_ops cap_floor_volatilities_type_cap_floor_volatility_ops{
+    &append_to<cap_floor_volatility>, &count_of<cap_floor_volatility>,
+    &at_of<cap_floor_volatility>};
+constexpr vector_ops cds_volatilities_type_cds_volatility_ops{
+    &append_to<cds_volatility>, &count_of<cds_volatility>,
+    &at_of<cds_volatility>};
+constexpr vector_ops default_curves_type_default_curve_ops{
+    &append_to<default_curve>, &count_of<default_curve>, &at_of<default_curve>};
+constexpr vector_ops
+    yy_inflation_cap_floor_volatilities_type_yy_inflation_cap_floor_volatility_ops{
+        &append_to<yy_inflation_cap_floor_volatility>,
+        &count_of<yy_inflation_cap_floor_volatility>,
+        &at_of<yy_inflation_cap_floor_volatility>};
+constexpr vector_ops
+    zero_inflation_cap_floor_volatilities_type_zero_inflation_cap_floor_volatility_ops{
+        &append_to<zero_inflation_cap_floor_volatility>,
+        &count_of<zero_inflation_cap_floor_volatility>,
+        &at_of<zero_inflation_cap_floor_volatility>};
+constexpr vector_ops equity_curves_type_equity_curve_ops{
+    &append_to<equity_curve>, &count_of<equity_curve>, &at_of<equity_curve>};
+constexpr vector_ops equity_volatilities_type_equity_volatility_ops{
+    &append_to<equity_volatility>, &count_of<equity_volatility>,
+    &at_of<equity_volatility>};
+constexpr vector_ops securities_type_security_ops{
+    &append_to<security>, &count_of<security>, &at_of<security>};
+constexpr vector_ops base_correlations_type_base_correlation_ops{
+    &append_to<base_correlation>, &count_of<base_correlation>,
+    &at_of<base_correlation>};
+constexpr vector_ops commodity_curves_type_commodity_curve_ops{
+    &append_to<commodity_curve>, &count_of<commodity_curve>,
+    &at_of<commodity_curve>};
+constexpr vector_ops commodity_volatilities_type_commodity_volatility_ops{
+    &append_to<commodity_volatility>, &count_of<commodity_volatility>,
+    &at_of<commodity_volatility>};
+constexpr vector_ops correlations_type_correlation_ops{
+    &append_to<correlation>, &count_of<correlation>, &at_of<correlation>};
+constexpr vector_ops bond_future_volatilities_type_bond_future_volatility_ops{
+    &append_to<bond_future_volatility>, &count_of<bond_future_volatility>,
+    &at_of<bond_future_volatility>};
+constexpr vector_ops
+    intraday_power_price_curves_type_intraday_power_price_curve_ops{
+        &append_to<intraday_power_price_curve>,
+        &count_of<intraday_power_price_curve>,
+        &at_of<intraday_power_price_curve>};
+constexpr vector_ops todaysmarket_configuration_ops{
+    &append_to<configuration_type>, &count_of<configuration_type>,
+    &at_of<configuration_type>};
+constexpr vector_ops todaysmarket_yield_curves_ops{
+    &append_to<yield_curves_type>, &count_of<yield_curves_type>,
+    &at_of<yield_curves_type>};
+constexpr vector_ops todaysmarket_discounting_curves_ops{
+    &append_to<discount_curves_type>, &count_of<discount_curves_type>,
+    &at_of<discount_curves_type>};
+constexpr vector_ops todaysmarket_index_forwarding_curves_ops{
+    &append_to<index_forwarding_curves_type>,
+    &count_of<index_forwarding_curves_type>,
+    &at_of<index_forwarding_curves_type>};
+constexpr vector_ops todaysmarket_swap_index_curves_ops{
+    &append_to<swap_index_curves_type>, &count_of<swap_index_curves_type>,
+    &at_of<swap_index_curves_type>};
+constexpr vector_ops todaysmarket_zero_inflation_index_curves_ops{
+    &append_to<zero_inflation_index_curves_type>,
+    &count_of<zero_inflation_index_curves_type>,
+    &at_of<zero_inflation_index_curves_type>};
+constexpr vector_ops todaysmarket_yy_inflation_index_curves_ops{
+    &append_to<yy_inflation_index_curves_type>,
+    &count_of<yy_inflation_index_curves_type>,
+    &at_of<yy_inflation_index_curves_type>};
+constexpr vector_ops todaysmarket_fx_spots_ops{
+    &append_to<fx_spots_type>, &count_of<fx_spots_type>, &at_of<fx_spots_type>};
+constexpr vector_ops todaysmarket_fx_volatilities_ops{
+    &append_to<fx_volatilities_type>, &count_of<fx_volatilities_type>,
+    &at_of<fx_volatilities_type>};
+constexpr vector_ops todaysmarket_swaption_volatilities_ops{
+    &append_to<swaption_volatilities_type>,
+    &count_of<swaption_volatilities_type>, &at_of<swaption_volatilities_type>};
+constexpr vector_ops todaysmarket_yield_volatilities_ops{
+    &append_to<yield_volatilities_type>, &count_of<yield_volatilities_type>,
+    &at_of<yield_volatilities_type>};
+constexpr vector_ops todaysmarket_cap_floor_volatilities_ops{
+    &append_to<cap_floor_volatilities_type>,
+    &count_of<cap_floor_volatilities_type>,
+    &at_of<cap_floor_volatilities_type>};
+constexpr vector_ops todaysmarket_cds_volatilities_ops{
+    &append_to<cds_volatilities_type>, &count_of<cds_volatilities_type>,
+    &at_of<cds_volatilities_type>};
+constexpr vector_ops todaysmarket_default_curves_ops{
+    &append_to<default_curves_type>, &count_of<default_curves_type>,
+    &at_of<default_curves_type>};
+constexpr vector_ops todaysmarket_yy_inflation_cap_floor_volatilities_ops{
+    &append_to<yy_inflation_cap_floor_volatilities_type>,
+    &count_of<yy_inflation_cap_floor_volatilities_type>,
+    &at_of<yy_inflation_cap_floor_volatilities_type>};
+constexpr vector_ops todaysmarket_zero_inflation_cap_floor_volatilities_ops{
+    &append_to<zero_inflation_cap_floor_volatilities_type>,
+    &count_of<zero_inflation_cap_floor_volatilities_type>,
+    &at_of<zero_inflation_cap_floor_volatilities_type>};
+constexpr vector_ops todaysmarket_equity_curves_ops{
+    &append_to<equity_curves_type>, &count_of<equity_curves_type>,
+    &at_of<equity_curves_type>};
+constexpr vector_ops todaysmarket_equity_volatilities_ops{
+    &append_to<equity_volatilities_type>, &count_of<equity_volatilities_type>,
+    &at_of<equity_volatilities_type>};
+constexpr vector_ops todaysmarket_securities_ops{&append_to<securities_type>,
+                                                 &count_of<securities_type>,
+                                                 &at_of<securities_type>};
+constexpr vector_ops todaysmarket_base_correlations_ops{
+    &append_to<base_correlations_type>, &count_of<base_correlations_type>,
+    &at_of<base_correlations_type>};
+constexpr vector_ops todaysmarket_commodity_curves_ops{
+    &append_to<commodity_curves_type>, &count_of<commodity_curves_type>,
+    &at_of<commodity_curves_type>};
+constexpr vector_ops todaysmarket_commodity_volatilities_ops{
+    &append_to<commodity_volatilities_type>,
+    &count_of<commodity_volatilities_type>,
+    &at_of<commodity_volatilities_type>};
+constexpr vector_ops todaysmarket_correlations_ops{
+    &append_to<correlations_type>, &count_of<correlations_type>,
+    &at_of<correlations_type>};
+constexpr vector_ops todaysmarket_bond_future_volatilities_ops{
+    &append_to<bond_future_volatilities_type>,
+    &count_of<bond_future_volatilities_type>,
+    &at_of<bond_future_volatilities_type>};
+constexpr vector_ops todaysmarket_intraday_power_price_curves_ops{
+    &append_to<intraday_power_price_curves_type>,
+    &count_of<intraday_power_price_curves_type>,
+    &at_of<intraday_power_price_curves_type>};
+
 const field configuration_type_fields[] = {
     {"id", 926444256u, field_kind::text,
      std::uint32_t(offsetof(configuration_type, id)), 0, true, true, nullptr,
@@ -132,7 +297,8 @@ const field yield_curves_type_fields[] = {
      nullptr, scalar_kind::text, nullptr},
     {"YieldCurve", 2574793089u, field_kind::repeated_nested,
      std::uint32_t(offsetof(yield_curves_type, yield_curve)), 1, false, false,
-     nullptr, &yield_curve_record, scalar_kind::text, &append_to<yield_curve>},
+     nullptr, &yield_curve_record, scalar_kind::text,
+     &yield_curves_type_yield_curve_ops},
 };
 const record_type yield_curves_type_record{
     "yieldCurvesType", yield_curves_type_fields, 2, no_text};
@@ -153,7 +319,7 @@ const field discount_curves_type_fields[] = {
     {"DiscountingCurve", 2800498709u, field_kind::repeated_nested,
      std::uint32_t(offsetof(discount_curves_type, discounting_curve)), 1, false,
      false, nullptr, &discounting_curve_record, scalar_kind::text,
-     &append_to<discounting_curve>},
+     &discount_curves_type_discounting_curve_ops},
 };
 const record_type discount_curves_type_record{
     "discountCurvesType", discount_curves_type_fields, 2, no_text};
@@ -171,7 +337,8 @@ const field index_forwarding_curves_type_fields[] = {
      nullptr, nullptr, scalar_kind::text, nullptr},
     {"Index", 2932321867u, field_kind::repeated_nested,
      std::uint32_t(offsetof(index_forwarding_curves_type, index)), 1, false,
-     false, nullptr, &index_record, scalar_kind::text, &append_to<index>},
+     false, nullptr, &index_record, scalar_kind::text,
+     &index_forwarding_curves_type_index_ops},
 };
 const record_type index_forwarding_curves_type_record{
     "indexForwardingCurvesType", index_forwarding_curves_type_fields, 2,
@@ -192,7 +359,7 @@ const field swap_index_curves_type_fields[] = {
     {"SwapIndex", 216572082u, field_kind::repeated_nested,
      std::uint32_t(offsetof(swap_index_curves_type, swap_index)), 1, false,
      false, nullptr, &swap_index_record, scalar_kind::text,
-     &append_to<swap_index>},
+     &swap_index_curves_type_swap_index_ops},
 };
 const record_type swap_index_curves_type_record{
     "swapIndexCurvesType", swap_index_curves_type_fields, 2, no_text};
@@ -214,7 +381,8 @@ const field zero_inflation_index_curves_type_fields[] = {
      std::uint32_t(offsetof(zero_inflation_index_curves_type,
                             zero_inflation_index_curve)),
      1, false, false, nullptr, &zero_inflation_index_curve_record,
-     scalar_kind::text, &append_to<zero_inflation_index_curve>},
+     scalar_kind::text,
+     &zero_inflation_index_curves_type_zero_inflation_index_curve_ops},
 };
 const record_type zero_inflation_index_curves_type_record{
     "zeroInflationIndexCurvesType", zero_inflation_index_curves_type_fields, 2,
@@ -237,7 +405,8 @@ const field yy_inflation_index_curves_type_fields[] = {
      std::uint32_t(
          offsetof(yy_inflation_index_curves_type, yy_inflation_index_curve)),
      1, false, false, nullptr, &yy_inflation_index_curve_record,
-     scalar_kind::text, &append_to<yy_inflation_index_curve>},
+     scalar_kind::text,
+     &yy_inflation_index_curves_type_yy_inflation_index_curve_ops},
 };
 const record_type yy_inflation_index_curves_type_record{
     "yyInflationIndexCurvesType", yy_inflation_index_curves_type_fields, 2,
@@ -256,7 +425,7 @@ const field fx_spots_type_fields[] = {
      nullptr, scalar_kind::text, nullptr},
     {"FxSpot", 3539204635u, field_kind::repeated_nested,
      std::uint32_t(offsetof(fx_spots_type, fx_spot)), 1, false, false, nullptr,
-     &fx_spot_record, scalar_kind::text, &append_to<fx_spot>},
+     &fx_spot_record, scalar_kind::text, &fx_spots_type_fx_spot_ops},
 };
 const record_type fx_spots_type_record{"fxSpotsType", fx_spots_type_fields, 2,
                                        no_text};
@@ -276,7 +445,7 @@ const field fx_volatilities_type_fields[] = {
     {"FxVolatility", 2190823464u, field_kind::repeated_nested,
      std::uint32_t(offsetof(fx_volatilities_type, fx_volatility)), 1, false,
      false, nullptr, &fx_volatility_record, scalar_kind::text,
-     &append_to<fx_volatility>},
+     &fx_volatilities_type_fx_volatility_ops},
 };
 const record_type fx_volatilities_type_record{
     "fxVolatilitiesType", fx_volatilities_type_fields, 2, no_text};
@@ -300,7 +469,7 @@ const field swaption_volatilities_type_fields[] = {
     {"SwaptionVolatility", 864096863u, field_kind::repeated_nested,
      std::uint32_t(offsetof(swaption_volatilities_type, swaption_volatility)),
      1, false, false, nullptr, &swaption_volatility_record, scalar_kind::text,
-     &append_to<swaption_volatility>},
+     &swaption_volatilities_type_swaption_volatility_ops},
 };
 const record_type swaption_volatilities_type_record{
     "swaptionVolatilitiesType", swaption_volatilities_type_fields, 2, no_text};
@@ -320,7 +489,7 @@ const field yield_volatilities_type_fields[] = {
     {"YieldVolatility", 2809425741u, field_kind::repeated_nested,
      std::uint32_t(offsetof(yield_volatilities_type, yield_volatility)), 1,
      false, false, nullptr, &yield_volatility_record, scalar_kind::text,
-     &append_to<yield_volatility>},
+     &yield_volatilities_type_yield_volatility_ops},
 };
 const record_type yield_volatilities_type_record{
     "yieldVolatilitiesType", yield_volatilities_type_fields, 2, no_text};
@@ -344,7 +513,7 @@ const field cap_floor_volatilities_type_fields[] = {
     {"CapFloorVolatility", 1517070508u, field_kind::repeated_nested,
      std::uint32_t(offsetof(cap_floor_volatilities_type, cap_floor_volatility)),
      1, false, false, nullptr, &cap_floor_volatility_record, scalar_kind::text,
-     &append_to<cap_floor_volatility>},
+     &cap_floor_volatilities_type_cap_floor_volatility_ops},
 };
 const record_type cap_floor_volatilities_type_record{
     "capFloorVolatilitiesType", cap_floor_volatilities_type_fields, 2, no_text};
@@ -364,7 +533,7 @@ const field cds_volatilities_type_fields[] = {
     {"CDSVolatility", 2026193112u, field_kind::repeated_nested,
      std::uint32_t(offsetof(cds_volatilities_type, cds_volatility)), 1, false,
      false, nullptr, &cds_volatility_record, scalar_kind::text,
-     &append_to<cds_volatility>},
+     &cds_volatilities_type_cds_volatility_ops},
 };
 const record_type cds_volatilities_type_record{
     "cdsVolatilitiesType", cds_volatilities_type_fields, 2, no_text};
@@ -384,7 +553,7 @@ const field default_curves_type_fields[] = {
     {"DefaultCurve", 2591710129u, field_kind::repeated_nested,
      std::uint32_t(offsetof(default_curves_type, default_curve)), 1, false,
      false, nullptr, &default_curve_record, scalar_kind::text,
-     &append_to<default_curve>},
+     &default_curves_type_default_curve_ops},
 };
 const record_type default_curves_type_record{
     "defaultCurvesType", default_curves_type_fields, 2, no_text};
@@ -407,7 +576,8 @@ const field yy_inflation_cap_floor_volatilities_type_fields[] = {
      std::uint32_t(offsetof(yy_inflation_cap_floor_volatilities_type,
                             yy_inflation_cap_floor_volatility)),
      1, false, false, nullptr, &yy_inflation_cap_floor_volatility_record,
-     scalar_kind::text, &append_to<yy_inflation_cap_floor_volatility>},
+     scalar_kind::text,
+     &yy_inflation_cap_floor_volatilities_type_yy_inflation_cap_floor_volatility_ops},
 };
 const record_type yy_inflation_cap_floor_volatilities_type_record{
     "yyInflationCapFloorVolatilitiesType",
@@ -432,7 +602,8 @@ const field zero_inflation_cap_floor_volatilities_type_fields[] = {
      std::uint32_t(offsetof(zero_inflation_cap_floor_volatilities_type,
                             zero_inflation_cap_floor_volatility)),
      1, false, false, nullptr, &zero_inflation_cap_floor_volatility_record,
-     scalar_kind::text, &append_to<zero_inflation_cap_floor_volatility>},
+     scalar_kind::text,
+     &zero_inflation_cap_floor_volatilities_type_zero_inflation_cap_floor_volatility_ops},
 };
 const record_type zero_inflation_cap_floor_volatilities_type_record{
     "zeroInflationCapFloorVolatilitiesType",
@@ -452,7 +623,7 @@ const field equity_curves_type_fields[] = {
     {"EquityCurve", 2936862965u, field_kind::repeated_nested,
      std::uint32_t(offsetof(equity_curves_type, equity_curve)), 1, false, false,
      nullptr, &equity_curve_record, scalar_kind::text,
-     &append_to<equity_curve>},
+     &equity_curves_type_equity_curve_ops},
 };
 const record_type equity_curves_type_record{
     "equityCurvesType", equity_curves_type_fields, 2, no_text};
@@ -473,7 +644,7 @@ const field equity_volatilities_type_fields[] = {
     {"EquityVolatility", 3087359073u, field_kind::repeated_nested,
      std::uint32_t(offsetof(equity_volatilities_type, equity_volatility)), 1,
      false, false, nullptr, &equity_volatility_record, scalar_kind::text,
-     &append_to<equity_volatility>},
+     &equity_volatilities_type_equity_volatility_ops},
 };
 const record_type equity_volatilities_type_record{
     "equityVolatilitiesType", equity_volatilities_type_fields, 2, no_text};
@@ -491,7 +662,8 @@ const field securities_type_fields[] = {
      nullptr, scalar_kind::text, nullptr},
     {"Security", 3271434715u, field_kind::repeated_nested,
      std::uint32_t(offsetof(securities_type, security)), 1, false, false,
-     nullptr, &security_record, scalar_kind::text, &append_to<security>},
+     nullptr, &security_record, scalar_kind::text,
+     &securities_type_security_ops},
 };
 const record_type securities_type_record{"securitiesType",
                                          securities_type_fields, 2, no_text};
@@ -511,7 +683,7 @@ const field base_correlations_type_fields[] = {
     {"BaseCorrelation", 1324234668u, field_kind::repeated_nested,
      std::uint32_t(offsetof(base_correlations_type, base_correlation)), 1,
      false, false, nullptr, &base_correlation_record, scalar_kind::text,
-     &append_to<base_correlation>},
+     &base_correlations_type_base_correlation_ops},
 };
 const record_type base_correlations_type_record{
     "baseCorrelationsType", base_correlations_type_fields, 2, no_text};
@@ -531,7 +703,7 @@ const field commodity_curves_type_fields[] = {
     {"CommodityCurve", 473426549u, field_kind::repeated_nested,
      std::uint32_t(offsetof(commodity_curves_type, commodity_curve)), 1, false,
      false, nullptr, &commodity_curve_record, scalar_kind::text,
-     &append_to<commodity_curve>},
+     &commodity_curves_type_commodity_curve_ops},
 };
 const record_type commodity_curves_type_record{
     "commodityCurvesType", commodity_curves_type_fields, 2, no_text};
@@ -552,7 +724,7 @@ const field commodity_volatilities_type_fields[] = {
     {"CommodityVolatility", 1396035809u, field_kind::repeated_nested,
      std::uint32_t(offsetof(commodity_volatilities_type, commodity_volatility)),
      1, false, false, nullptr, &commodity_volatility_record, scalar_kind::text,
-     &append_to<commodity_volatility>},
+     &commodity_volatilities_type_commodity_volatility_ops},
 };
 const record_type commodity_volatilities_type_record{
     "commodityVolatilitiesType", commodity_volatilities_type_fields, 2,
@@ -571,7 +743,8 @@ const field correlations_type_fields[] = {
      nullptr, scalar_kind::text, nullptr},
     {"Correlation", 3571652271u, field_kind::repeated_nested,
      std::uint32_t(offsetof(correlations_type, correlation)), 1, false, false,
-     nullptr, &correlation_record, scalar_kind::text, &append_to<correlation>},
+     nullptr, &correlation_record, scalar_kind::text,
+     &correlations_type_correlation_ops},
 };
 const record_type correlations_type_record{
     "correlationsType", correlations_type_fields, 2, no_text};
@@ -593,7 +766,8 @@ const field bond_future_volatilities_type_fields[] = {
      std::uint32_t(
          offsetof(bond_future_volatilities_type, bond_future_volatility)),
      1, false, false, nullptr, &bond_future_volatility_record,
-     scalar_kind::text, &append_to<bond_future_volatility>},
+     scalar_kind::text,
+     &bond_future_volatilities_type_bond_future_volatility_ops},
 };
 const record_type bond_future_volatilities_type_record{
     "bondFutureVolatilitiesType", bond_future_volatilities_type_fields, 2,
@@ -616,7 +790,8 @@ const field intraday_power_price_curves_type_fields[] = {
      std::uint32_t(offsetof(intraday_power_price_curves_type,
                             intraday_power_price_curve)),
      1, false, false, nullptr, &intraday_power_price_curve_record,
-     scalar_kind::text, &append_to<intraday_power_price_curve>},
+     scalar_kind::text,
+     &intraday_power_price_curves_type_intraday_power_price_curve_ops},
 };
 const record_type intraday_power_price_curves_type_record{
     "intradayPowerPriceCurvesType", intraday_power_price_curves_type_fields, 2,
@@ -625,107 +800,107 @@ const field todaysmarket_fields[] = {
     {"Configuration", 442426457u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, configuration)), 0, false, false,
      nullptr, &configuration_type_record, scalar_kind::text,
-     &append_to<configuration_type>},
+     &todaysmarket_configuration_ops},
     {"YieldCurves", 2319661046u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, yield_curves)), 1, false, false,
      nullptr, &yield_curves_type_record, scalar_kind::text,
-     &append_to<yield_curves_type>},
+     &todaysmarket_yield_curves_ops},
     {"DiscountingCurves", 735889554u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, discounting_curves)), 2, false, false,
      nullptr, &discount_curves_type_record, scalar_kind::text,
-     &append_to<discount_curves_type>},
+     &todaysmarket_discounting_curves_ops},
     {"IndexForwardingCurves", 389056272u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, index_forwarding_curves)), 3, false,
      false, nullptr, &index_forwarding_curves_type_record, scalar_kind::text,
-     &append_to<index_forwarding_curves_type>},
+     &todaysmarket_index_forwarding_curves_ops},
     {"SwapIndexCurves", 1473063730u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, swap_index_curves)), 4, false, false,
      nullptr, &swap_index_curves_type_record, scalar_kind::text,
-     &append_to<swap_index_curves_type>},
+     &todaysmarket_swap_index_curves_ops},
     {"ZeroInflationIndexCurves", 342691689u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, zero_inflation_index_curves)), 5,
      false, false, nullptr, &zero_inflation_index_curves_type_record,
-     scalar_kind::text, &append_to<zero_inflation_index_curves_type>},
+     scalar_kind::text, &todaysmarket_zero_inflation_index_curves_ops},
     {"YYInflationIndexCurves", 3904744445u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, yy_inflation_index_curves)), 6, false,
      false, nullptr, &yy_inflation_index_curves_type_record, scalar_kind::text,
-     &append_to<yy_inflation_index_curves_type>},
+     &todaysmarket_yy_inflation_index_curves_ops},
     {"FxSpots", 2115187128u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, fx_spots)), 7, false, false, nullptr,
-     &fx_spots_type_record, scalar_kind::text, &append_to<fx_spots_type>},
+     &fx_spots_type_record, scalar_kind::text, &todaysmarket_fx_spots_ops},
     {"FxVolatilities", 57966396u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, fx_volatilities)), 8, false, false,
      nullptr, &fx_volatilities_type_record, scalar_kind::text,
-     &append_to<fx_volatilities_type>},
+     &todaysmarket_fx_volatilities_ops},
     {"SwaptionVolatilities", 565983703u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, swaption_volatilities)), 9, false,
      false, nullptr, &swaption_volatilities_type_record, scalar_kind::text,
-     &append_to<swaption_volatilities_type>},
+     &todaysmarket_swaption_volatilities_ops},
     {"YieldVolatilities", 3218877953u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, yield_volatilities)), 10, false,
      false, nullptr, &yield_volatilities_type_record, scalar_kind::text,
-     &append_to<yield_volatilities_type>},
+     &todaysmarket_yield_volatilities_ops},
     {"CapFloorVolatilities", 2170532696u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, cap_floor_volatilities)), 11, false,
      false, nullptr, &cap_floor_volatilities_type_record, scalar_kind::text,
-     &append_to<cap_floor_volatilities_type>},
+     &todaysmarket_cap_floor_volatilities_ops},
     {"CDSVolatilities", 1441038828u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, cds_volatilities)), 12, false, false,
      nullptr, &cds_volatilities_type_record, scalar_kind::text,
-     &append_to<cds_volatilities_type>},
+     &todaysmarket_cds_volatilities_ops},
     {"DefaultCurves", 4036915814u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, default_curves)), 13, false, false,
      nullptr, &default_curves_type_record, scalar_kind::text,
-     &append_to<default_curves_type>},
+     &todaysmarket_default_curves_ops},
     {"YYInflationCapFloorVolatilities", 2379591250u,
      field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, yy_inflation_cap_floor_volatilities)),
      14, false, false, nullptr,
      &yy_inflation_cap_floor_volatilities_type_record, scalar_kind::text,
-     &append_to<yy_inflation_cap_floor_volatilities_type>},
+     &todaysmarket_yy_inflation_cap_floor_volatilities_ops},
     {"ZeroInflationCapFloorVolatilities", 1595860158u,
      field_kind::repeated_nested,
      std::uint32_t(
          offsetof(todaysmarket, zero_inflation_cap_floor_volatilities)),
      15, false, false, nullptr,
      &zero_inflation_cap_floor_volatilities_type_record, scalar_kind::text,
-     &append_to<zero_inflation_cap_floor_volatilities_type>},
+     &todaysmarket_zero_inflation_cap_floor_volatilities_ops},
     {"EquityCurves", 392903410u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, equity_curves)), 16, false, false,
      nullptr, &equity_curves_type_record, scalar_kind::text,
-     &append_to<equity_curves_type>},
+     &todaysmarket_equity_curves_ops},
     {"EquityVolatilities", 2112275293u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, equity_volatilities)), 17, false,
      false, nullptr, &equity_volatilities_type_record, scalar_kind::text,
-     &append_to<equity_volatilities_type>},
+     &todaysmarket_equity_volatilities_ops},
     {"Securities", 251637179u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, securities)), 18, false, false,
      nullptr, &securities_type_record, scalar_kind::text,
-     &append_to<securities_type>},
+     &todaysmarket_securities_ops},
     {"BaseCorrelations", 536998925u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, base_correlations)), 19, false, false,
      nullptr, &base_correlations_type_record, scalar_kind::text,
-     &append_to<base_correlations_type>},
+     &todaysmarket_base_correlations_ops},
     {"CommodityCurves", 1912956786u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, commodity_curves)), 20, false, false,
      nullptr, &commodity_curves_type_record, scalar_kind::text,
-     &append_to<commodity_curves_type>},
+     &todaysmarket_commodity_curves_ops},
     {"CommodityVolatilities", 625707997u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, commodity_volatilities)), 21, false,
      false, nullptr, &commodity_volatilities_type_record, scalar_kind::text,
-     &append_to<commodity_volatilities_type>},
+     &todaysmarket_commodity_volatilities_ops},
     {"Correlations", 4252826708u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, correlations)), 22, false, false,
      nullptr, &correlations_type_record, scalar_kind::text,
-     &append_to<correlations_type>},
+     &todaysmarket_correlations_ops},
     {"BondFutureVolatilities", 1860681100u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, bond_future_volatilities)), 23, false,
      false, nullptr, &bond_future_volatilities_type_record, scalar_kind::text,
-     &append_to<bond_future_volatilities_type>},
+     &todaysmarket_bond_future_volatilities_ops},
     {"IntradayPowerPriceCurves", 3642129393u, field_kind::repeated_nested,
      std::uint32_t(offsetof(todaysmarket, intraday_power_price_curves)), 24,
      false, false, nullptr, &intraday_power_price_curves_type_record,
-     scalar_kind::text, &append_to<intraday_power_price_curves_type>},
+     scalar_kind::text, &todaysmarket_intraday_power_price_curves_ops},
 };
 const record_type todaysmarket_record{"todaysmarket", todaysmarket_fields, 25,
                                       no_text};

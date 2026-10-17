@@ -545,8 +545,7 @@ TEST_CASE("the_generated_conventions_tables_bind_the_corpus", tags) {
             report += entry.path().string() + ": " + bound.error().message + "\n";
             continue;
         }
-        if (record.deposit.present != 0)
-            ++deposits;
+        deposits += record.deposit.size();
     }
 
     INFO("files: " << files << ", deposits: " << deposits);

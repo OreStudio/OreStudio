@@ -35,7 +35,21 @@ template <typename T> auto append_to(void *container, void **slot) -> void {
   *slot = &vector->back();
 }
 
+template <typename T> auto count_of(const void *container) -> std::size_t {
+  return static_cast<const std::vector<T> *>(container)->size();
+}
+
+template <typename T>
+auto at_of(const void *container, std::size_t index) -> const void * {
+  return &(*static_cast<const std::vector<T> *>(container))[index];
+}
+
 const char *credit_quality_type_spellings[] = {"HY", "IG", "NR", nullptr};
+
+constexpr vector_ops counterparties_counterparty_ops{
+    &append_to<counterparty>, &count_of<counterparty>, &at_of<counterparty>};
+constexpr vector_ops counter_party_correlations_correlation_ops{
+    &append_to<correlation>, &count_of<correlation>, &at_of<correlation>};
 
 const field counterparty_fields[] = {
     {"CounterpartyId", 1752888256u, field_kind::text,
@@ -46,7 +60,7 @@ const field counterparty_fields[] = {
      false, nullptr, nullptr, scalar_kind::text, nullptr},
     {"CreditQuality", 3767213893u, field_kind::enumeration,
      std::uint32_t(offsetof(counterparty, credit_quality)), 2, false, false,
-     credit_quality_type_spellings, nullptr, scalar_kind::text, nullptr},
+     credit_quality_type_spellings, nullptr, scalar_kind::enumeration, nullptr},
     {"BaCvaRiskWeight", 2324213039u, field_kind::decimal,
      std::uint32_t(offsetof(counterparty, ba_cva_risk_weight)), 3, false, false,
      nullptr, nullptr, scalar_kind::decimal, nullptr},
@@ -63,7 +77,7 @@ const field counterparties_fields[] = {
     {"Counterparty", 3606568069u, field_kind::repeated_nested,
      std::uint32_t(offsetof(counterparties, counterparty)), 0, false, false,
      nullptr, &counterparty_record, scalar_kind::text,
-     &append_to<counterparty>},
+     &counterparties_counterparty_ops},
 };
 const record_type counterparties_record{"counterparties", counterparties_fields,
                                         1, no_text};
@@ -82,7 +96,7 @@ const field counter_party_correlations_fields[] = {
     {"Correlation", 3571652271u, field_kind::repeated_nested,
      std::uint32_t(offsetof(counter_party_correlations, correlation)), 0, false,
      false, nullptr, &correlation_record, scalar_kind::text,
-     &append_to<correlation>},
+     &counter_party_correlations_correlation_ops},
 };
 const record_type counter_party_correlations_record{
     "counterPartyCorrelations", counter_party_correlations_fields, 1, no_text};

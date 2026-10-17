@@ -174,13 +174,12 @@ struct credit_instrument_data {
 // in. The two tuples together are the one home of the type-to-array map: a new
 // credit product is one entry in each, and every reader below follows them
 // instead of repeating the list. A static assertion proves they line up.
-using credit_fact_types =
-    std::tuple<credit_default_swap_instrument,
-               index_credit_default_swap_instrument,
-               index_credit_default_swap_option_instrument,
-               synthetic_cdo_instrument,
-               credit_linked_swap_instrument,
-               risk_participation_agreement_instrument>;
+using credit_fact_types = std::tuple<credit_default_swap_instrument,
+                                     index_credit_default_swap_instrument,
+                                     index_credit_default_swap_option_instrument,
+                                     synthetic_cdo_instrument,
+                                     credit_linked_swap_instrument,
+                                     risk_participation_agreement_instrument>;
 
 inline constexpr auto credit_fact_arrays =
     std::tuple{&credit_instrument_data::credit_default_swap_instruments,
@@ -196,8 +195,7 @@ template <typename T, typename Tuple>
 struct tuple_contains : std::false_type {};
 
 template <typename T, typename... Ts>
-struct tuple_contains<T, std::tuple<Ts...>> : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {
-};
+struct tuple_contains<T, std::tuple<Ts...>> : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {};
 
 // The array a member pointer points into, so the two tuples can be proved to
 // line up instead of being assumed to.
@@ -211,9 +209,8 @@ struct member_value<Value Owner::*> {
 
 template <std::size_t... I>
 constexpr bool arrays_match_types(std::index_sequence<I...>) {
-    return ((std::is_same_v<typename member_value<
-                                std::decay_t<decltype(std::get<I>(credit_fact_arrays))>>::type::
-                                value_type,
+    return ((std::is_same_v<typename member_value<std::decay_t<decltype(std::get<I>(
+                                credit_fact_arrays))>>::type::value_type,
                             std::tuple_element_t<I, credit_fact_types>>) &&
             ...);
 }
@@ -226,8 +223,8 @@ constexpr bool arrays_match_types(std::index_sequence<I...>) {
 template <typename T>
 inline constexpr bool is_credit_fact_type = detail::tuple_contains<T, credit_fact_types>::value;
 
-static_assert(detail::arrays_match_types(
-    std::make_index_sequence<std::tuple_size_v<credit_fact_types>>{}));
+static_assert(
+    detail::arrays_match_types(std::make_index_sequence<std::tuple_size_v<credit_fact_types>>{}));
 
 // Applies a callable to every credit fact array, const or mutable. The callable
 // receives one array and deduces its row type, so it picks the array it wants

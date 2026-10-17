@@ -217,7 +217,9 @@ void append_instrument(instrument_batch& batch, const trade_instrument& instrume
                                                         v.constituents.begin(),
                                                         v.constituents.end());
                 append_credit_fact_arrays(
-                    batch, v, std::make_index_sequence<std::tuple_size_v<decltype(credit_fact_arrays)>>{});
+                    batch,
+                    v,
+                    std::make_index_sequence<std::tuple_size_v<decltype(credit_fact_arrays)>>{});
                 batch.instrument_strikes.insert(
                     batch.instrument_strikes.end(), v.strikes.begin(), v.strikes.end());
                 batch.instrument_schedules.insert(

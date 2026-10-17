@@ -32,7 +32,10 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/system/error_code.hpp>
+#include <algorithm>
 #include <atomic>
+#include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
@@ -237,6 +240,11 @@ public:
 
     void retry() override {
         answer([this] { natsMsg_Nak(msg_.get(), nullptr); });
+    }
+
+    void retry_after(std::chrono::milliseconds delay) override {
+        const auto ms = static_cast<std::int64_t>(delay.count());
+        answer([this, ms] { natsMsg_NakWithDelay(msg_.get(), ms, nullptr); });
     }
 
     void reject() override {
@@ -809,23 +817,20 @@ void client::js_publish(std::string_view subject,
 namespace {
 
 /**
- * @brief Delete a durable whose stored configuration is not the one asked for.
+ * @brief Bring a stored durable onto the filter set and ack settings asked for.
  *
- * A durable is identified by its name, and JetStream refuses to attach one
- * whose stored configuration differs from what the code now asks for. Two
- * changes leave exactly that:
+ * A durable is identified by its name, so a subject rename, a widened filter
+ * set or a changed delivery bound leaves a consumer holding the old
+ * configuration, and the subscribe that follows fails with the same bare
+ * message whichever changed. Reconcile by updating the stored configuration in
+ * place: the server accepts the change, and the consumer keeps its position, so
+ * widening a filter set does not replay a backlog it had already worked
+ * through.
  *
- * - A subject rename: @c ensure_stream reconciles the *stream*, so the stream
- *   carries the new filter and everything looks right, while the consumer
- *   keeps the old one and the service never starts.
- * - A change to the acknowledgement settings, such as the delivery bound or the
- *   ack policy. The consumer keeps what it was created with, and the subscribe
- *   that asks for the new value fails.
- *
- * Both fail the service's start with the same bare message, so compare every
- * setting this code asks for and delete the consumer when any differs; the
- * subscribe recreates it against the current ones. A consumer whose
- * configuration is stale has no position worth keeping anyway.
+ * The stored configuration is the base of the update, not a fresh one, so every
+ * field this code does not set keeps the value the server holds. A stored
+ * @em singular filter counts as stale: it is what a consumer created one
+ * subject per durable holds, and it cannot serve a family.
  *
  * A consumer that is absent, or that cannot be read, is left alone: the
  * subscribe that follows reports the real reason.
@@ -833,7 +838,7 @@ namespace {
 void reconcile_durable(jsCtx* js,
                        const std::string& stream,
                        const std::string& durable,
-                       const std::string& subject,
+                       const std::vector<std::string>& filters,
                        int max_deliver) {
     jsOptions opts;
     jsOptions_Init(&opts);
@@ -849,40 +854,68 @@ void reconcile_durable(jsCtx* js,
             jsConsumerInfo_Destroy(existing);
         return;
     }
+    jsConsumerConfig* config = existing->Config;
+    if (config == nullptr) {
+        jsConsumerInfo_Destroy(existing);
+        return;
+    }
 
     // All copied before the destroy: these fields are owned by the consumer
-    // info, so the log lines below would otherwise read freed memory.
-    const char* filter = existing->Config != nullptr ? existing->Config->FilterSubject : nullptr;
-    const std::string stored(filter != nullptr ? filter : "");
-    const jsAckPolicy stored_ack =
-        existing->Config != nullptr ? existing->Config->AckPolicy : js_AckNone;
-    const int64_t stored_max_deliver =
-        existing->Config != nullptr ? existing->Config->MaxDeliver : 0;
+    // info, so the log line below would otherwise read freed memory.
+    std::vector<std::string> stored;
+    bool singular = false;
+    if (config->FilterSubjects != nullptr && config->FilterSubjectsLen > 0) {
+        for (int i = 0; i < config->FilterSubjectsLen; ++i) {
+            const char* f = config->FilterSubjects[i];
+            stored.emplace_back(f != nullptr ? f : "");
+        }
+    } else if (config->FilterSubject != nullptr) {
+        singular = true;
+        stored.emplace_back(config->FilterSubject);
+    }
+    const jsAckPolicy stored_ack = config->AckPolicy;
+    const int64_t stored_bound = config->MaxDeliver;
+
+    std::vector<std::string> want(filters);
+    std::sort(stored.begin(), stored.end());
+    std::sort(want.begin(), want.end());
+    const bool stale = singular || stored != want || stored_ack != js_AckExplicit ||
+                       stored_bound != static_cast<int64_t>(max_deliver);
+    if (!stale) {
+        jsConsumerInfo_Destroy(existing);
+        return;
+    }
+
+    // The update reads these pointers during the call, so they outlive it here.
+    std::vector<const char*> raw;
+    raw.reserve(filters.size());
+    for (const auto& f : filters)
+        raw.push_back(f.c_str());
+
+    config->FilterSubjects = raw.data();
+    config->FilterSubjectsLen = static_cast<int>(raw.size());
+    config->FilterSubject = nullptr;
+    config->AckPolicy = js_AckExplicit;
+    config->MaxDeliver = max_deliver;
+
+    jsConsumerInfo* updated = nullptr;
+    jerr = jsErrCode(0);
+    const natsStatus us = js_UpdateConsumer(&updated, js, stream.c_str(), config, &opts, &jerr);
+    if (updated != nullptr)
+        jsConsumerInfo_Destroy(updated);
     jsConsumerInfo_Destroy(existing);
 
-    const bool stale_filter = stored.empty() || subject != stored;
-    const bool stale_ack = stored_ack != js_AckExplicit;
-    const bool stale_bound = stored_max_deliver != static_cast<int64_t>(max_deliver);
-    if (!stale_filter && !stale_ack && !stale_bound)
-        return;
-
-    jsOptions del_opts;
-    jsOptions_Init(&del_opts);
-    jerr = jsErrCode(0);
-    const natsStatus ds = js_DeleteConsumer(js, stream.c_str(), durable.c_str(), &del_opts, &jerr);
-    if (ds != NATS_OK) {
+    if (us != NATS_OK) {
         BOOST_LOG_SEV(lg(), warn) << "NATS durable '" << durable << "' on '" << stream
-                                  << "' holds a stale configuration (filter '" << stored
-                                  << "', ack " << static_cast<int>(stored_ack) << ", max-deliver "
-                                  << stored_max_deliver
-                                  << ") and could not be deleted: " << natsStatus_GetText(ds);
+                                  << "' holds a stale configuration and could not be updated: "
+                                  << natsStatus_GetText(us);
         return;
     }
     BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
-                              << "' held a stale configuration (filter '" << stored << "', ack "
-                              << static_cast<int>(stored_ack) << ", max-deliver "
-                              << stored_max_deliver << "); recreated on '" << subject
-                              << "' with max-deliver " << max_deliver;
+                              << "' migrated in place from " << stored.size() << " filter(s), ack "
+                              << static_cast<int>(stored_ack) << ", max-deliver " << stored_bound
+                              << " to " << filters.size() << " filter(s), max-deliver "
+                              << max_deliver;
 }
 
 }
@@ -907,7 +940,8 @@ subscription client::js_queue_subscribe(std::string_view subject,
                               << ", max-deliver: " << max_deliver << ")";
 
     if (!stream_name.empty())
-        reconcile_durable(impl_->js, std::string(stream_name), durable_str, subj_str, max_deliver);
+        reconcile_durable(
+            impl_->js, std::string(stream_name), durable_str, {subj_str}, max_deliver);
 
     jsSubOptions sub_opts;
     jsSubOptions_Init(&sub_opts);
@@ -922,6 +956,66 @@ subscription client::js_queue_subscribe(std::string_view subject,
 
     if (s != NATS_OK)
         throw std::runtime_error(std::string("js_QueueSubscribe failed: ") + natsStatus_GetText(s));
+
+    auto si = std::make_unique<subscription::impl>();
+    si->sub = sub;
+    si->closure = std::move(cl);
+    return subscription(std::move(si));
+}
+
+subscription client::js_queue_subscribe_multi(std::span<const std::string_view> subjects,
+                                              std::string_view durable_name,
+                                              std::string_view queue_group,
+                                              message_handler handler,
+                                              std::string_view stream_name,
+                                              int max_deliver) {
+
+    auto cl = std::make_unique<sub_closure>();
+    cl->handler = std::move(handler);
+    cl->durable = true;
+
+    std::vector<std::string> full;
+    full.reserve(subjects.size());
+    for (const auto subject : subjects)
+        full.push_back(make_subject(subject));
+
+    const std::string durable_str(durable_name);
+    const std::string queue_str(queue_group);
+
+    BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe-multi: " << full.size()
+                              << " subject(s) (durable: " << durable_str << ", group: " << queue_str
+                              << ", max-deliver: " << max_deliver << ")";
+
+    if (!stream_name.empty())
+        reconcile_durable(impl_->js, std::string(stream_name), durable_str, full, max_deliver);
+
+    // The C API wants a null-terminated-style array of pointers that outlives
+    // the call; the strings themselves live in `full`.
+    std::vector<const char*> raw;
+    raw.reserve(full.size());
+    for (const auto& s : full)
+        raw.push_back(s.c_str());
+
+    jsSubOptions sub_opts;
+    jsSubOptions_Init(&sub_opts);
+    sub_opts.Config.Durable = durable_str.c_str();
+    sub_opts.Config.AckPolicy = js_AckExplicit;
+    sub_opts.Config.MaxDeliver = max_deliver;
+    sub_opts.Queue = queue_str.c_str();
+
+    natsSubscription* sub = nullptr;
+    const natsStatus s = js_SubscribeMulti(&sub,
+                                           impl_->js,
+                                           raw.data(),
+                                           static_cast<int>(raw.size()),
+                                           on_msg,
+                                           cl.get(),
+                                           nullptr,
+                                           &sub_opts,
+                                           nullptr);
+
+    if (s != NATS_OK)
+        throw std::runtime_error(std::string("js_SubscribeMulti failed: ") + natsStatus_GetText(s));
 
     auto si = std::make_unique<subscription::impl>();
     si->sub = sub;

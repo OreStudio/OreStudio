@@ -111,12 +111,9 @@ domain::workflow_step to_domain(const messaging::workflow_step_write& write) {
     v.step_log_json = write.step_log_json;
     v.command_subject = write.command_subject;
     v.command_json = write.command_json;
-    v.command_published_at = write.command_published_at;
     v.idempotency_key = write.idempotency_key;
     v.compensation_subject = write.compensation_subject;
     v.compensation_json = write.compensation_json;
-    v.started_at = write.started_at;
-    v.completed_at = write.completed_at;
     return v;
 }
 
@@ -407,6 +404,14 @@ workflow_step_service::prepare_change(const messaging::workflow_step_change& cha
             break;
         case precondition_kind::any:
             break;
+    }
+    // What the row already records about its own life is the row's to keep.
+    // The write carries no way to state these, so an edit that let them take
+    // a default would clear the stamps the service itself wrote.
+    if (!current.empty()) {
+        out.command_published_at = current.front().command_published_at;
+        out.started_at = current.front().started_at;
+        out.completed_at = current.front().completed_at;
     }
     // The version is the repository's to state, from the claim: it is the one
     // thing the store's arbiter reads, and stating it in two places is how the

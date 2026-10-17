@@ -53,17 +53,17 @@ make_utc(int year, int mon, int mday, int hour, int min, int sec) {
 
 TEST_CASE("to_iso8601_utc_known_fixed_point", tags) {
     const auto tp = make_utc(2026, 1, 15, 14, 30, 0);
-    CHECK(datetime::to_iso8601_utc(tp) == "2026-01-15 14:30:00Z");
+    CHECK(datetime::to_iso8601_utc(tp) == "2026-01-15 14:30:00.000000Z");
 }
 
 TEST_CASE("to_iso8601_utc_dst_edge_point", tags) {
     const auto tp = make_utc(2026, 3, 29, 1, 0, 0);
-    CHECK(datetime::to_iso8601_utc(tp) == "2026-03-29 01:00:00Z");
+    CHECK(datetime::to_iso8601_utc(tp) == "2026-03-29 01:00:00.000000Z");
 }
 
 TEST_CASE("to_iso8601_utc_midnight", tags) {
     const auto tp = make_utc(2026, 12, 31, 0, 0, 0);
-    CHECK(datetime::to_iso8601_utc(tp) == "2026-12-31 00:00:00Z");
+    CHECK(datetime::to_iso8601_utc(tp) == "2026-12-31 00:00:00.000000Z");
 }
 
 TEST_CASE("from_iso8601_utc_accepts_Z_suffix", tags) {
@@ -94,7 +94,7 @@ TEST_CASE("from_iso8601_utc_accepts_space_before_offset", tags) {
 TEST_CASE("to_iso8601_utc_from_iso8601_utc_round_trip", tags) {
     const auto original = make_utc(2026, 4, 8, 10, 30, 45);
     const auto serialised = datetime::to_iso8601_utc(original);
-    CHECK(serialised == "2026-04-08 10:30:45Z");
+    CHECK(serialised == "2026-04-08 10:30:45.000000Z");
     CHECK(datetime::from_iso8601_utc(serialised) == original);
 }
 
@@ -120,19 +120,19 @@ TEST_CASE("from_iso8601_utc_throws_on_malformed_string", tags) {
 
 TEST_CASE("to_db_string_known_fixed_point", tags) {
     const auto tp = make_utc(2026, 1, 15, 14, 30, 0);
-    CHECK(datetime::to_db_string(tp) == "2026-01-15 14:30:00");
+    CHECK(datetime::to_db_string(tp) == "2026-01-15 14:30:00.000000");
 }
 
 TEST_CASE("to_db_string_has_no_timezone_suffix", tags) {
     const auto tp = make_utc(2026, 4, 8, 10, 30, 45);
     const auto s = datetime::to_db_string(tp);
-    CHECK(s == "2026-04-08 10:30:45");
-    CHECK(s.size() == 19);
+    CHECK(s == "2026-04-08 10:30:45.000000");
+    CHECK(s.size() == 26);
 }
 
 TEST_CASE("to_db_string_is_utc_regardless_of_host_timezone", tags) {
     const auto tp = make_utc(2026, 3, 29, 1, 0, 0);
-    CHECK(datetime::to_db_string(tp) == "2026-03-29 01:00:00");
+    CHECK(datetime::to_db_string(tp) == "2026-03-29 01:00:00.000000");
 }
 
 TEST_CASE("to_iso8601_date_formats_calendar_date", tags) {
@@ -224,11 +224,52 @@ TEST_CASE("from_iso8601_utc_still_refuses_the_designatorless_form", tags) {
 TEST_CASE("from_utc_format_reads_a_month_name_as_a_utc_instant", tags) {
     const auto tp = datetime::from_utc_format("2026-Oct-11 16:52:50", "%Y-%b-%d %H:%M:%S");
     CHECK(tp == make_utc(2026, 10, 11, 16, 52, 50));
-    CHECK(datetime::to_iso8601_utc(tp) == "2026-10-11 16:52:50Z");
+    CHECK(datetime::to_iso8601_utc(tp) == "2026-10-11 16:52:50.000000Z");
 }
 
 TEST_CASE("from_utc_format_refuses_text_that_does_not_match_the_format", tags) {
     CHECK_THROWS_AS(datetime::from_utc_format("11/10/2026", "%Y-%b-%d %H:%M:%S"),
                     std::invalid_argument);
     CHECK_THROWS_AS(datetime::from_utc_format("", "%Y-%b-%d %H:%M:%S"), std::invalid_argument);
+}
+
+TEST_CASE("to_iso8601_utc_writes_the_microsecond", tags) {
+    const auto tp = make_utc(2026, 4, 8, 10, 30, 45) + std::chrono::microseconds{652076};
+    CHECK(datetime::to_iso8601_utc(tp) == "2026-04-08 10:30:45.652076Z");
+}
+
+TEST_CASE("a_microsecond_survives_the_round_trip", tags) {
+    const auto original = make_utc(2026, 4, 8, 10, 30, 45) + std::chrono::microseconds{1};
+    const auto serialised = datetime::to_iso8601_utc(original);
+    CHECK(serialised == "2026-04-08 10:30:45.000001Z");
+    CHECK(datetime::from_iso8601_utc(serialised) == original);
+}
+
+TEST_CASE("a_microsecond_survives_the_db_string_round_trip", tags) {
+    const auto original = make_utc(2026, 4, 8, 10, 30, 45) + std::chrono::microseconds{999999};
+    const auto serialised = datetime::to_db_string(original);
+    CHECK(serialised == "2026-04-08 10:30:45.999999");
+    CHECK(datetime::from_db_string(serialised) == original);
+}
+
+TEST_CASE("from_iso8601_utc_reads_fewer_than_six_digits", tags) {
+    const auto expected = make_utc(2026, 4, 8, 10, 30, 45) + std::chrono::microseconds{500000};
+    CHECK(datetime::from_iso8601_utc("2026-04-08 10:30:45.5Z") == expected);
+}
+
+TEST_CASE("from_iso8601_utc_reads_postgres_fraction_with_offset", tags) {
+    const auto expected = make_utc(2026, 4, 8, 10, 30, 45) + std::chrono::microseconds{652076};
+    CHECK(datetime::from_iso8601_utc("2026-04-08 10:30:45.652076+00") == expected);
+    CHECK(datetime::from_iso8601_utc("2026-04-08 10:30:45.652076+00:00") == expected);
+}
+
+TEST_CASE("from_iso8601_utc_keeps_the_second_when_no_fraction_is_stated", tags) {
+    // PostgreSQL states no fraction when the microsecond is zero.
+    const auto expected = make_utc(2026, 4, 8, 10, 30, 45);
+    CHECK(datetime::from_db_string("2026-04-08 10:30:45+00") == expected);
+}
+
+TEST_CASE("from_iso8601_utc_refuses_a_malformed_fraction", tags) {
+    CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 10:30:45.Z"), std::invalid_argument);
+    CHECK_THROWS_AS(datetime::from_iso8601_utc("2026-04-08 10:30:45.12xZ"), std::invalid_argument);
 }

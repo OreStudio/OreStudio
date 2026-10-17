@@ -1,0 +1,67 @@
+Filters: [bond] [versioning]
+Randomness seeded to: 3371417012
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ores.trading.core.tests is a Catch2 v3.16.0 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+rewriting_a_bond_leg_advances_the_parent_trade_version
+-------------------------------------------------------------------------------
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:185
+...............................................................................
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:212: PASSED:
+  REQUIRE( after_leg.size() == before_leg.size() + 1 )
+with expansion:
+  3 == 3
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:213: PASSED:
+  CHECK( after_leg.back().version == before_leg.back().version + 1 )
+with expansion:
+  3 == 3
+
+-------------------------------------------------------------------------------
+as_of_read_reports_the_legs_current_at_each_parent_version
+-------------------------------------------------------------------------------
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:227
+...............................................................................
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:247: PASSED:
+  REQUIRE( after_leg.size() == before_leg.size() + 1 )
+with expansion:
+  3 == 3
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:263: PASSED:
+  CHECK( earlier.empty() )
+with expansion:
+  true
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:268: PASSED:
+  REQUIRE( current.size() == 1 )
+with expansion:
+  1 == 1
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:269: PASSED:
+  CHECK( current[0].leg_role == "trs_funding" )
+with expansion:
+  "trs_funding" == "trs_funding"
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:270: PASSED:
+  CHECK( current[0].version == 1 )
+with expansion:
+  1 == 1
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:274: PASSED:
+  REQUIRE( rows.size() == 1 )
+with expansion:
+  1 == 1
+
+../../../projects/ores.trading/core/tests/repository_bond_composite_versioning_tests.cpp:275: PASSED:
+  CHECK( rows[0].leg_role.value() == "trs_funding" )
+with expansion:
+  "trs_funding" == "trs_funding"
+
+===============================================================================
+All tests passed (9 assertions in 2 test cases)
+

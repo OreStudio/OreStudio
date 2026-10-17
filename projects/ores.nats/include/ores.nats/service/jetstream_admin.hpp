@@ -28,6 +28,21 @@
 namespace ores::nats::service {
 
 /**
+ * @brief What a stream does with a message once its consumers have it.
+ */
+enum class stream_retention {
+    /// Keep every message until the age limit. The server's default, and the
+    /// right choice for a stream of data that outlives its readers.
+    limits,
+    /// Remove a message as soon as every consumer that filters it has
+    /// acknowledged it. A message on a subject no consumer filters is dropped
+    /// the moment it is published, so a stream that uses this is only safe
+    /// while its consumer exists. Reach for it when the messages are commands:
+    /// once a command is served there is nothing left to keep.
+    interest,
+};
+
+/**
  * @brief JetStream stream provisioning.
  *
  * Wraps the cnats stream-creation function. No cnats types appear in this
@@ -54,14 +69,36 @@ public:
      *
      * Idempotent: safe to call on every service startup. The stream uses
      * file-backed storage and retains messages for up to @p max_age_days days.
+     * The filter, the retention policy and the age limit are all reconciled, so
+     * a stream created by an older build converges on the current contract.
      *
      * @param name          Stream name (NATS naming rules: A-Z a-z 0-9 - _).
      * @param subjects      Subjects the stream captures (fully-qualified,
      *                      including any subject prefix).
      * @param max_age_days  How long messages are retained (default: 7 days).
+     * @param retention     What removes a message. The default keeps every
+     *                      message until the age limit.
      */
-    void
-    ensure_stream(std::string_view name, std::vector<std::string> subjects, int max_age_days = 7);
+    void ensure_stream(std::string_view name,
+                       std::vector<std::string> subjects,
+                       int max_age_days = 7,
+                       stream_retention retention = stream_retention::limits);
+
+    /**
+     * @brief Delete every consumer on @p name except @p keep.
+     *
+     * A consumer is identified by its name, so a renamed subject, or a service
+     * that moves from one consumer per subject to one consumer per stream,
+     * leaves consumers behind that nothing declares and nothing reads. They hold
+     * no work worth keeping, because the consumer that carries the whole family
+     * filters every subject, and they leave the stream with bookkeeping that
+     * describes a shape the code no longer has. Delete them.
+     *
+     * Idempotent, so call it on every startup. A failure to prune is not fatal
+     * and is logged rather than thrown: the consumer that serves the stream is
+     * not the one being deleted, so the service still works.
+     */
+    void prune_consumers(std::string_view name, std::string_view keep);
 
 private:
     // An opaque jsCtx*, not owned.

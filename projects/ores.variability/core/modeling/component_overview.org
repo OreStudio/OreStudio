@@ -5,6 +5,7 @@
 #+name: variability.core
 #+full_name: ores.variability.core
 #+description: System variability and configuration management — feature flags, settings, and temporal change tracking.
+#+brief: Feature flag and settings configuration core
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :variability:core:component:

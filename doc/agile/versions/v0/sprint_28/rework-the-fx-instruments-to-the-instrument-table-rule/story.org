@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9
+:END:
+#+title: Story: Rework the FX instruments to the instrument table rule
+#+description: Apply the bond pattern to the FX family: a family header holding exactly its codes, product fact tables, shared children with role codes, and securities keyed by their reference datum.
+#+type: story
+#+level: s2
+#+filetags: :instruments-fx:sprint_28:v0:
+#+created: 2026-10-02
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Rework forwards, swaps, vanilla, barrier, digital, Asian, accumulator and variance products to the instrument table rule of the trade shape investigation (section 14), as the bonds were reworked, with the data-oriented review deciding the tables.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The family is reviewed. Seven units are staged; none is started. |
+| Waiting on    | Nothing.                               |
+| Next          | Start the first unit: carry the FX money digits. |
+| Last touched  | 2026-10-16                               |
+
+* Acceptance
+
+- The family header's trade_type check lists exactly the family's codes, and each product fact table checks its own.
+- Every instrument row is keyed by its trade and pinned to the anchor's trade type and party by a composite foreign key.
+- The family's trade types route to their tables through the trade-type catalogue, not hand-written code.
+- The ORE round trip stays lossless across the family's corpus.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:64E2FF71-5AE6-4F32-A9FA-22306BD21E36][Carry the FX money digits across the ORE boundary]] | DONE | 2026-10-16 | 2026-10-16 | Finding 1 of the FX review. Every FX money leaf in the ORE binding is a plain float, so the document's digits are lost before the mapper runs and all 35 exact_decimal call sites fall back to from_double. Make the family's money members lexical leaves through scripts/reapply_ore_lexical_form.py, write them back with set_exact, and prove the digits survive. |
+| [[id:25681E10-8823-4DD7-910D-7C68FD4168A7][Give the FX accumulator range bounds their own table]] | BACKLOG | | | Finding 2 of the FX review. fx_accumulator_instrument.range_bounds_json holds the ORE RangeBounds list as JSON text in a column, because the list has no child table. Give the child its own model and table keyed by the trade, map it in both directions, and delete the column. |
+| [[id:336BB8B7-8E44-4CA1-A2AE-CAAC4275D666][Agree the FX continuous columns with their domain types]] | BACKLOG | | | Finding 3 of the FX review. fx_variance_swap_instrument.strike is numeric(38, 12) at rest with a double in the domain and the entity. A variance strike is a continuous quantity, so move the column to double precision and check every other FX continuous column agrees with its domain type. |
+| [[id:EB58810C-13FC-4464-A4B5-9981B6AB63E9][Batch the FX service reads onto the repository query]] | BACKLOG | | | Finding 4 of the FX review. The seven FX services issue 21 per-key single reads where the repository already declares a batch read by key vector. The shape is seven of seven services, so decide whether the fix belongs on a shared service base or on each service, and land it for the family. |
+| [[id:7EB271C8-E40C-42E1-BD14-5C32F8C97DA1][Turn the FX soft references into foreign keys]] | BACKLOG | | | Finding 5 of the FX review. The seven FX tables declare no foreign key. Twenty columns carry a soft reference to a named table, deferred to PR 4 by the models' own prose. Tighten them into real keys, or record the reason each one stays soft. |
+| [[id:5E9D2671-6E9B-4DAF-8185-60E52BD3E0E7][Close the money-column gate over the FX deviations]] | BACKLOG | | | The enforcement gap of the FX review. check_money_decimal_columns.py cannot see a continuous quantity whose name reads as money, a money value read through a binary float, or money typed text, and both of its baselines are blank. Teach the check the shapes the family exposes, seed the baselines, and correct the exact-numbers page, which still claims ten columns in the continuous direction. |
+| [[id:D18E2BB8-6B1B-42EF-AB6C-3CE165DB8195][Decide the FX discriminators and the doubled vocabularies]] | BACKLOG | | | Findings 6, 8 and 9 of the FX review. The barrier and digital instruments encode a choice as nullable columns with no discriminator; fx_vanilla_option_instrument states three exercise styles in prose and admits two in its check; and four more closed vocabularies are stated both in a table and in a check. Decide each one and enforce it, or record why it stays. |
+| [[id:1E71B920-178A-4E4F-9115-B1F139BE6430][Carry the barrier levels' digits]] | DONE | 2026-10-16 | 2026-10-16 | Finding 1 of the FX review, second half. The barrier level vector is the one money page the digits unit left as a bulk of floats: barrierData_Levels_t.Level is xsd::vector<float>, so every barrier level in every family crosses the ORE boundary as the nearest float. Teach the reapply script the vector shape, then write the levels with set_exact. |
+
+* Decisions
+
+- The family was reviewed on 2026-10-16, and the review is recorded as [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]]. It found that the per-type tables already meet the explicit-variation check, so a family header and per-product fact tables are not required by the checklist.
+- The units below carry the deviations the review found. If the header and the fact tables are still wanted for another reason, record that reason here and add the acceptance it serves.
+- The units run digits first, because that unit moves the goldens.
+- The nullable-string convention is not a family finding. The trading component holds 91 columns whose domain member cannot carry a NULL; the FX family carries 19 of them. A component task owns the fix.
+
+* Out of scope
+
+- The ten FX trade-type codes that route to no instrument table. The catalogue records them as not yet covered.
+- The ORE binding generator. The digits unit patches the generated binding through the reapply script; changing the generator is a different work item.
+- The FX reference-data entities themselves.

@@ -1,0 +1,17 @@
+PASS ores_dev_brave_hopper_analytics_steps: 1 consumer 'ores_dev_brave_hopper_analytics_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_assets_steps: 1 consumer 'ores_dev_brave_hopper_assets_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_compute_steps: 1 consumer 'ores_dev_brave_hopper_compute_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_dq_steps: 1 consumer 'ores_dev_brave_hopper_dq_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_iam_from_dq_steps: 1 consumer 'ores_dev_brave_hopper_iam_from_dq_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_iam_steps: 1 consumer 'ores_dev_brave_hopper_iam_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_inbox_steps: 1 consumer 'ores_dev_brave_hopper_inbox_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_marketdata_steps: 1 consumer 'ores_dev_brave_hopper_marketdata_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_ore_steps: 1 consumer 'ores_dev_brave_hopper_ore_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_refdata_apply_steps: 1 consumer 'ores_dev_brave_hopper_refdata_apply_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_refdata_steps: 1 consumer 'ores_dev_brave_hopper_refdata_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_reporting_execution_steps: 1 consumer 'ores_dev_brave_hopper_reporting_execution_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_reporting_steps: 1 consumer 'ores_dev_brave_hopper_reporting_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_synthetic_steps: 1 consumer 'ores_dev_brave_hopper_synthetic_steps_consumer', retention=interest, max_age=86400000000000
+PASS ores_dev_brave_hopper_workflow_steps: 1 consumer 'ores_dev_brave_hopper_workflow_steps_consumer', retention=interest, max_age=86400000000000
+
+PASS: every step stream carries exactly its own consumer (15 streams).

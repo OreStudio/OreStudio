@@ -1086,6 +1086,71 @@ TEST_CASE("a definition that declares compensate still rolls its work back", tag
     BOOST_LOG_SEV(lg, debug) << "Default policy still compensates.";
 }
 
+TEST_CASE("a rollback settles the forward steps it abandoned", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    // Three steps the graph is free to start together, so one can fail while
+    // the others are still running. A linear chain cannot say this.
+    f.register_chain(
+        "test_settled_after_rollback_workflow", {{"one", {}}, {"two", {}}, {"three", {}}});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, step_command_buffer);
+    auto compensation = f.nats.subscribe_buffered(compensation_subject, step_command_buffer);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_settled_after_rollback_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
+
+    workflow_step_repository steps;
+    workflow_instance_repository instances;
+    const auto id_at = [&](int index) {
+        for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
+            if (s.step_index == index)
+                return boost::uuids::to_string(s.id);
+        return std::string{};
+    };
+    const auto state_at = [&](int index) {
+        for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
+            if (s.step_index == index)
+                return s.state_id;
+        return boost::uuids::uuid{};
+    };
+    REQUIRE(!id_at(0).empty());
+    REQUIRE(!id_at(2).empty());
+
+    // One step answers, one fails, and the third is still running when the run
+    // decides to roll back.
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, id_at(0), step_outcome::completed)));
+    f.engine->on_step_completed(as_message(
+        completion_for(instance_id, id_at(1), step_outcome::failed, "two broke")));
+
+    // The rollback runs to its end, which is where a compensated run is read.
+    REQUIRE(wait_for_instance(compensation, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+    std::string compensation_id;
+    for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
+        if (s.step_index < 0)
+            compensation_id = boost::uuids::to_string(s.id);
+    REQUIRE(!compensation_id.empty());
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, compensation_id, step_outcome::completed)));
+
+    const auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("compensated"));
+
+    // The run has finished, so no step of it is still running: the step that
+    // answered keeps its result, the one that failed keeps its own failure, and
+    // the one the rollback abandoned is settled rather than left in flight.
+    CHECK(state_at(0) == f.step_states.require("completed"));
+    CHECK(state_at(1) == f.step_states.require("failed"));
+    CHECK(state_at(2) == f.step_states.require("failed"));
+    for (const auto& s : steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000))
+        CHECK(s.state_id != f.step_states.require("in_progress"));
+    BOOST_LOG_SEV(lg, debug) << "A compensated run has no step left running.";
+}
+
 TEST_CASE("workflow_engine drives a run that belongs to another tenant", tags) {
     auto lg(make_logger(test_suite));
 
@@ -1415,6 +1480,77 @@ TEST_CASE("workflow_query_handler filters runs by type and by target", tags) {
     CHECK(has(type_ids, a_none));
     CHECK_FALSE(has(type_ids, b_party));
     BOOST_LOG_SEV(lg, debug) << "Filters checked over " << type_runs.size() << " run(s).";
+}
+
+TEST_CASE("a listed run says when it last did anything", tags) {
+    auto lg(make_logger(test_suite));
+
+    using ores::workflow::messaging::list_workflow_instance_summaries_request;
+    using ores::workflow::messaging::list_workflow_instance_summaries_response;
+    using ores::workflow::messaging::workflow_query_handler;
+
+    fixture f;
+    f.register_steps("test_activity_workflow", {"one"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+    // The list handler reads as the system tenant, so it sees every tenant's
+    // rows and the type name alone would match the runs earlier cases of this
+    // name left behind. The target is new per run, so it names this one run.
+    const auto target = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    auto commands = f.nats.subscribe_buffered(step_subject, step_command_buffer);
+    auto start = start_for("test_activity_workflow", f.tenant(), instance_id);
+    start.target_kind = "tenant";
+    start.target_id = target;
+    f.engine->on_start_workflow(as_message(start));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    auto handler = std::make_shared<workflow_query_handler>(
+        f.nats,
+        f.service_context(),
+        ores::security::jwt::jwt_authenticator::create_hs256(handler_secret),
+        f.instance_states,
+        f.step_states,
+        f.registry);
+
+    auto replies = f.nats.subscribe_buffered(reply_subject, 10);
+    const auto ask = [&]() {
+        list_workflow_instance_summaries_request req;
+        req.target_kind_filter = "tenant";
+        req.target_id_filter = target;
+        auto msg = signed_request(handler_secret, f.tenant(), {});
+        msg.data = ores::nats::default_wire_codec().encode(req);
+        const auto before = replies.size();
+        handler->list_instances(std::move(msg));
+        const auto answer = await_reply<list_workflow_instance_summaries_response>(
+            replies, before, std::chrono::seconds(5));
+        REQUIRE(answer.has_value());
+        REQUIRE(answer->success);
+        REQUIRE(answer->instances.size() == 1);
+        return answer->instances.front();
+    };
+
+    // A run that is still open has no completion, so its activity is the only
+    // thing that says whether anything is driving it: that is the timestamp a
+    // reader polls to tell a live run from an abandoned one.
+    const auto running = ask();
+    CHECK_FALSE(running.completed_at.has_value());
+    REQUIRE(running.last_event_at.has_value());
+    CHECK_FALSE(running.last_event_at->empty());
+
+    // The run finishes, and the list carries both: the completion for a reader
+    // that asks whether it finished, and the activity for the one that asks
+    // when it was last touched.
+    workflow_step_repository steps;
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 1000);
+    REQUIRE(rows.size() == 1);
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(rows.front().id), step_outcome::completed)));
+
+    const auto finished = ask();
+    REQUIRE(finished.completed_at.has_value());
+    REQUIRE(finished.last_event_at.has_value());
+    CHECK_FALSE(finished.last_event_at->empty());
+    BOOST_LOG_SEV(lg, debug) << "A listed run carries its activity and its completion.";
 }
 
 TEST_CASE("workflow_handler retries a run only for a permitted caller in its tenant", tags) {
@@ -1752,4 +1888,232 @@ TEST_CASE("a consumer of two producers waits for both while the producers run to
     CHECK(instance.front().state_id == f.instance_states.require("completed"));
     CHECK(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
     BOOST_LOG_SEV(lg, debug) << "A consumer of two producers waited for both.";
+}
+
+TEST_CASE("a finished run carries the times it ran and was last touched", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_stamped_workflow", {"one", "two"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    workflow_instance_repository instances;
+    workflow_step_repository steps;
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_stamped_workflow", f.tenant(), instance_id)));
+    const auto dispatched = wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5));
+    REQUIRE(dispatched.size() == 1);
+
+    // A run that has just started has been acted on, which is what a reader
+    // watching for silence reads: the start is the first event of the run, not
+    // a state a run sits in with no time against it.
+    const auto started = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(started.size() == 1);
+    REQUIRE(started.front().last_event_at.has_value());
+    CHECK_FALSE(started.front().completed_at.has_value());
+    const auto started_at = *started.front().last_event_at;
+
+    auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    REQUIRE(rows.front().started_at.has_value());
+    const auto first_step_id = boost::uuids::to_string(rows.front().id);
+
+    // Step one answers, which dispatches step two.
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    const auto* const second = [&]() -> const ores::workflow::domain::workflow_step* {
+        for (const auto& r : rows)
+            if (r.name == "two")
+                return &r;
+        return nullptr;
+    }();
+    REQUIRE(second != nullptr);
+
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id,
+                                  boost::uuids::to_string(second->id),
+                                  step_outcome::completed)));
+
+    const auto finished = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(finished.size() == 1);
+    CHECK(finished.front().state_id == f.instance_states.require("completed"));
+
+    // The completion the poll was missing.
+    REQUIRE(finished.front().completed_at.has_value());
+    const auto completed_at = *finished.front().completed_at;
+    // Not strict: a case can finish inside the second it started in, and the
+    // store keeps a timestamp to the second. The live check against a real
+    // provision reads the column itself, at full precision.
+    CHECK(completed_at >= started_at);
+    REQUIRE(finished.front().last_event_at.has_value());
+    CHECK(*finished.front().last_event_at >= completed_at);
+
+    // A poll on the completion terminates for a run that finished. This is the
+    // query a shell polls with -- the list request's id filter -- and it found
+    // nothing at all before the engine wrote the column.
+    const ores::workflow::messaging::workflow_instances_filter mine{
+        .id_one_of = std::vector<boost::uuids::uuid>{
+            boost::uuids::string_generator{}(instance_id)}};
+    const auto page = instances.read_latest(
+        f.h.context(), 0, 1000, ores::utility::domain::order{}, mine, std::nullopt);
+    const auto* const polled = [&]() -> const ores::workflow::domain::workflow_instance* {
+        for (const auto& i : page)
+            if (boost::uuids::to_string(i.id) == instance_id)
+                return &i;
+        return nullptr;
+    }();
+    REQUIRE(polled != nullptr);
+    REQUIRE(polled->completed_at.has_value());
+    CHECK(*polled->completed_at == completed_at);
+
+    // Every step the run took says when it started and when it stopped, and
+    // both fall inside the run that took them.
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    for (const auto& r : rows) {
+        CHECK(r.state_id == f.step_states.require("completed"));
+        REQUIRE(r.started_at.has_value());
+        REQUIRE(r.completed_at.has_value());
+        CHECK(*r.started_at >= started_at);
+        CHECK(*r.completed_at <= completed_at);
+    }
+
+    // The completion is when the run finished, not when its row was last
+    // written: a redelivery of the last answer must not move it on.
+    f.engine->on_step_completed(as_message(completion_for(
+        instance_id, boost::uuids::to_string(second->id), step_outcome::completed)));
+    const auto after_duplicate = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(after_duplicate.size() == 1);
+    REQUIRE(after_duplicate.front().completed_at.has_value());
+    CHECK(*after_duplicate.front().completed_at == completed_at);
+
+    BOOST_LOG_SEV(lg, debug) << "A finished run carried " << rows.size() << " stamped steps.";
+}
+
+TEST_CASE("a live run's activity time moves on while it runs", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_activity_workflow", {"one", "two"});
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    workflow_instance_repository instances;
+    workflow_step_repository steps;
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_activity_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    const auto at_start = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(at_start.size() == 1);
+    REQUIRE(at_start.front().last_event_at.has_value());
+
+    const auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    const auto first_step_id = boost::uuids::to_string(rows.front().id);
+
+    // The step answers, the engine dispatches the next one, and the run's
+    // activity moves on with it. A reader watching for silence reads that as
+    // work: a run that had stopped being touched would keep the older time.
+    std::this_thread::sleep_for(std::chrono::milliseconds(1100));
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+
+    const auto now = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(now.size() == 1);
+    REQUIRE(now.front().last_event_at.has_value());
+    CHECK(*now.front().last_event_at > *at_start.front().last_event_at);
+
+    // The run is still live, so nothing has stamped it as finished.
+    CHECK(now.front().state_id == f.instance_states.require("in_progress"));
+    CHECK_FALSE(now.front().completed_at.has_value());
+
+    BOOST_LOG_SEV(lg, debug) << "Activity moved from the start to the second dispatch.";
+}
+
+TEST_CASE("a retry takes the failure's completion time off the step it resumes", tags) {
+    auto lg(make_logger(test_suite));
+
+    fixture f;
+    f.register_steps("test_retry_stamp_workflow", {"one", "two"}, failure_policy::stop);
+    const auto instance_id = boost::uuids::to_string(boost::uuids::random_generator()());
+
+    workflow_instance_repository instances;
+    workflow_step_repository steps;
+
+    auto commands = f.nats.subscribe_buffered(step_subject, 10);
+    f.engine->on_start_workflow(
+        as_message(start_for("test_retry_stamp_workflow", f.tenant(), instance_id)));
+    REQUIRE(wait_for_instance(commands, instance_id, 1, std::chrono::seconds(5)).size() == 1);
+
+    auto rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 1);
+    const auto first_step_id = boost::uuids::to_string(rows.front().id);
+
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, first_step_id, step_outcome::completed)));
+    REQUIRE(wait_for_instance(commands, instance_id, 2, std::chrono::seconds(5)).size() == 2);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    const auto second_step_id = boost::uuids::to_string(rows.back().id);
+
+    // The second step fails, and the declaration says stop rather than roll
+    // back, so the run stops with the failure recorded.
+    f.engine->on_step_completed(as_message(
+        completion_for(instance_id, second_step_id, step_outcome::failed, "two broke")));
+
+    auto instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    REQUIRE(instance.front().state_id == f.instance_states.require("failed"));
+    REQUIRE(instance.front().completed_at.has_value());
+    const auto stopped_at = *instance.front().completed_at;
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    REQUIRE(rows.back().completed_at.has_value());
+
+    // The retry puts the step back to work, so the state it was in when it
+    // stopped must go with it: a step that is running has not finished, and a
+    // reader must not read the failure's time as this attempt's.
+    const auto outcome = f.engine->retry_instance(
+        boost::uuids::string_generator{}(instance_id), "", f.h.context().tenant_id());
+    REQUIRE(outcome.resumed);
+    REQUIRE(wait_for_instance(commands, instance_id, 3, std::chrono::seconds(5)).size() == 3);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows.back().state_id == f.step_states.require("in_progress"));
+    CHECK_FALSE(rows.back().completed_at.has_value());
+    CHECK(rows.back().started_at.has_value());
+
+    instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("in_progress"));
+    CHECK_FALSE(instance.front().completed_at.has_value());
+
+    // The second attempt answers, and now the run carries the time it actually
+    // finished rather than the time it first stopped.
+    f.engine->on_step_completed(
+        as_message(completion_for(instance_id, second_step_id, step_outcome::completed)));
+    instance = instances.read_latest(f.h.context(), instance_id);
+    REQUIRE(instance.size() == 1);
+    CHECK(instance.front().state_id == f.instance_states.require("completed"));
+    REQUIRE(instance.front().completed_at.has_value());
+    CHECK(*instance.front().completed_at >= stopped_at);
+
+    rows = steps.read_latest_by_workflow_id(f.h.context(), instance_id, 0, 100);
+    REQUIRE(rows.size() == 2);
+    CHECK(rows.back().state_id == f.step_states.require("completed"));
+    REQUIRE(rows.back().completed_at.has_value());
+
+    BOOST_LOG_SEV(lg, debug) << "The retry cleared the stopped step's completion time.";
 }

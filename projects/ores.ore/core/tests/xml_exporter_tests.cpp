@@ -414,3 +414,39 @@ TEST_CASE("export_portfolio_unknown_type_is_skipped", tags) {
     CHECK(!xml.empty());
     CHECK(!xml.contains("UnmappedTrade001"));
 }
+
+TEST_CASE("export_portfolio_names_a_bonds_reference_curve_the_run_forwards", tags) {
+    auto lg(make_logger(test_suite));
+
+    /*
+     * A trade states the curve it is discounted on as the market series' own
+     * URI; ORE resolves the name its market configuration forwards that series
+     * under. The run supplies the mapping, so the document the engine reads
+     * carries ORE's name and not ours.
+     */
+    const auto f = example_path("Cash_Bonds.xml");
+    const auto imported = importer::import_portfolio_with_context(f);
+    REQUIRE(!imported.empty());
+
+    auto [items, instruments] = make_export_payload(imported);
+
+    const auto xml = exporter::export_portfolio(items, instruments);
+    REQUIRE(xml.contains("EUR-EURIBOR-6M"));
+
+    const auto translated = exporter::export_portfolio(
+        items,
+        instruments,
+        [](const std::string& uri) -> std::string {
+            return uri == "EUR-EURIBOR-6M" ? "EUR-ESTER" : uri;
+        });
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << translated;
+
+    /*
+     * Only the reference curve is translated: the same name is also the
+     * documents' index and income curve, and those are not the run's to
+     * rename.
+     */
+    CHECK(!translated.contains("<ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>"));
+    CHECK(translated.contains("<ReferenceCurveId>EUR-ESTER</ReferenceCurveId>"));
+    CHECK(translated.contains("<IncomeCurveId>EUR-EURIBOR-6M</IncomeCurveId>"));
+}

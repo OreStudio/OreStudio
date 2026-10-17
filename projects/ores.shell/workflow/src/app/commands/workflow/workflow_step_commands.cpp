@@ -142,9 +142,8 @@ void workflow_step_commands::register_commands(cli::Menu& root_menu, nats_client
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> <error> "
-        "<step_log_json> <command_subject> <command_json> <command_published_at> <idempotency_key> "
-        "<compensation_subject> <compensation_json> <started_at> <completed_at> <reason> "
-        "<commentary>");
+        "<step_log_json> <command_subject> <command_json> <idempotency_key> <compensation_subject> "
+        "<compensation_json> <reason> <commentary>");
 
     menu->Insert(
         "set",
@@ -152,9 +151,8 @@ void workflow_step_commands::register_commands(cli::Menu& root_menu, nats_client
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <id> <workflow_id> <step_index> <name> <state_id> <request_json> <response_json> "
-        "<error> <step_log_json> <command_subject> <command_json> <command_published_at> "
-        "<idempotency_key> <compensation_subject> <compensation_json> <started_at> <completed_at> "
-        "<reason> <commentary> [--version <n>]");
+        "<error> <step_log_json> <command_subject> <command_json> <idempotency_key> "
+        "<compensation_subject> <compensation_json> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
         "put-many",
@@ -163,8 +161,7 @@ void workflow_step_commands::register_commands(cli::Menu& root_menu, nats_client
         },
         "put-many --count <n> <id> <workflow_id> <step_index> <name> <state_id> <request_json> "
         "<response_json> <error> <step_log_json> <command_subject> <command_json> "
-        "<command_published_at> <idempotency_key> <compensation_subject> <compensation_json> "
-        "<started_at> <completed_at> <reason> <commentary>");
+        "<idempotency_key> <compensation_subject> <compensation_json> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -365,8 +362,8 @@ void workflow_step_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 16 + 2) {
-            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 13 + 2) {
+            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -382,9 +379,6 @@ void workflow_step_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.command_subject, parsed->positionals[next++], "command_subject");
         read_token(req.change.write.command_json, parsed->positionals[next++], "command_json");
-        read_token(req.change.write.command_published_at,
-                   parsed->positionals[next++],
-                   "command_published_at");
         read_token(
             req.change.write.idempotency_key, parsed->positionals[next++], "idempotency_key");
         read_token(req.change.write.compensation_subject,
@@ -392,8 +386,6 @@ void workflow_step_commands::process_add(std::ostream& out,
                    "compensation_subject");
         read_token(
             req.change.write.compensation_json, parsed->positionals[next++], "compensation_json");
-        read_token(req.change.write.started_at, parsed->positionals[next++], "started_at");
-        read_token(req.change.write.completed_at, parsed->positionals[next++], "completed_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
@@ -436,8 +428,8 @@ void workflow_step_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 17 + 2) {
-            fail(out) << "Expected " << (17 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 14 + 2) {
+            fail(out) << "Expected " << (14 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -453,9 +445,6 @@ void workflow_step_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.command_subject, parsed->positionals[next++], "command_subject");
         read_token(req.change.write.command_json, parsed->positionals[next++], "command_json");
-        read_token(req.change.write.command_published_at,
-                   parsed->positionals[next++],
-                   "command_published_at");
         read_token(
             req.change.write.idempotency_key, parsed->positionals[next++], "idempotency_key");
         read_token(req.change.write.compensation_subject,
@@ -463,8 +452,6 @@ void workflow_step_commands::process_set(std::ostream& out,
                    "compensation_subject");
         read_token(
             req.change.write.compensation_json, parsed->positionals[next++], "compensation_json");
-        read_token(req.change.write.started_at, parsed->positionals[next++], "started_at");
-        read_token(req.change.write.completed_at, parsed->positionals[next++], "completed_at");
         req.intent.reason_code = parsed->positionals[next++];
         req.intent.commentary = parsed->positionals[next++];
         req.change.precondition.kind = ores::utility::domain::precondition_kind::any;
@@ -519,8 +506,8 @@ void workflow_step_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 17 + 2) {
-            fail(out) << "Expected " << (change_count * 17 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 14 + 2) {
+            fail(out) << "Expected " << (change_count * 14 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -538,9 +525,6 @@ void workflow_step_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.command_subject, parsed->positionals[next++], "command_subject");
             read_token(change.write.command_json, parsed->positionals[next++], "command_json");
-            read_token(change.write.command_published_at,
-                       parsed->positionals[next++],
-                       "command_published_at");
             read_token(
                 change.write.idempotency_key, parsed->positionals[next++], "idempotency_key");
             read_token(change.write.compensation_subject,
@@ -548,8 +532,6 @@ void workflow_step_commands::process_put_many(std::ostream& out,
                        "compensation_subject");
             read_token(
                 change.write.compensation_json, parsed->positionals[next++], "compensation_json");
-            read_token(change.write.started_at, parsed->positionals[next++], "started_at");
-            read_token(change.write.completed_at, parsed->positionals[next++], "completed_at");
             change.precondition.kind = ores::utility::domain::precondition_kind::must_not_exist;
             req.changes.push_back(std::move(change));
         }

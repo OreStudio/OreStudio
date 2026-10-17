@@ -20381,7 +20381,7 @@ xsdcpp::ChildElementInfo _varianceSwapData_Children[] = {
     {"Notional",
      6,
      (xsdcpp::get_field_t)&_get_varianceSwapData_Notional,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"Calendar",
@@ -20500,7 +20500,7 @@ xsdcpp::ChildElementInfo _fxForwardData_Children[] = {
     {"BoughtAmount",
      2,
      (xsdcpp::get_field_t)&_get_fxForwardData_BoughtAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"SoldCurrency",
@@ -20512,7 +20512,7 @@ xsdcpp::ChildElementInfo _fxForwardData_Children[] = {
     {"SoldAmount",
      4,
      (xsdcpp::get_field_t)&_get_fxForwardData_SoldAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"Settlement",
@@ -20628,7 +20628,7 @@ xsdcpp::ChildElementInfo _fxAverageForwardData_Children[] = {
     {"ReferenceNotional",
      3,
      (xsdcpp::get_field_t)&_get_fxAverageForwardData_ReferenceNotional,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"ReferenceCurrency",
@@ -20640,7 +20640,7 @@ xsdcpp::ChildElementInfo _fxAverageForwardData_Children[] = {
     {"SettlementNotional",
      5,
      (xsdcpp::get_field_t)&_get_fxAverageForwardData_SettlementNotional,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"SettlementCurrency",
@@ -20926,7 +20926,7 @@ void* _get_fxOptionData_SoldCurrency(domain::fxOptionData* parent) {
     return &parent->SoldCurrency;
 }
 void* _get_fxOptionData_SoldAmount(domain::fxOptionData* parent) {
-    return &*(parent->SoldAmount = float());
+    return &*(parent->SoldAmount = domain::moneyFloat());
 }
 void* _get_fxOptionData_Delta(domain::fxOptionData* parent) {
     return &*(parent->Delta = float());
@@ -20950,7 +20950,7 @@ xsdcpp::ChildElementInfo _fxOptionData_Children[] = {
     {"BoughtAmount",
      2,
      (xsdcpp::get_field_t)&_get_fxOptionData_BoughtAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"SoldCurrency",
@@ -20962,7 +20962,7 @@ xsdcpp::ChildElementInfo _fxOptionData_Children[] = {
     {"SoldAmount",
      4,
      (xsdcpp::get_field_t)&_get_fxOptionData_SoldAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      0,
      1},
     {"Delta", 5, (xsdcpp::get_field_t)&_get_fxOptionData_Delta, &domain::_float_Info, 0, 1},
@@ -20980,7 +20980,7 @@ xsdcpp::ChildElementInfo _barrierData_Levels_t_Children[] = {
     {"Level",
      0,
      (xsdcpp::get_field_t)&_get_barrierData_Levels_t_Level,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      4294967295},
     {nullptr}};
@@ -21128,7 +21128,7 @@ xsdcpp::ChildElementInfo _fxBarrierOptionData_Children[] = {
     {"BoughtAmount",
      8,
      (xsdcpp::get_field_t)&_get_fxBarrierOptionData_BoughtAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"SoldCurrency",
@@ -21140,7 +21140,7 @@ xsdcpp::ChildElementInfo _fxBarrierOptionData_Children[] = {
     {"SoldAmount",
      10,
      (xsdcpp::get_field_t)&_get_fxBarrierOptionData_SoldAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {nullptr}};
@@ -21172,7 +21172,7 @@ xsdcpp::ChildElementInfo _fxDigitalOptionData_Children[] = {
     {"Strike",
      1,
      (xsdcpp::get_field_t)&_get_fxDigitalOptionData_Strike,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"PayoffCurrency",
@@ -21184,7 +21184,7 @@ xsdcpp::ChildElementInfo _fxDigitalOptionData_Children[] = {
     {"PayoffAmount",
      3,
      (xsdcpp::get_field_t)&_get_fxDigitalOptionData_PayoffAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"ForeignCurrency",
@@ -21279,7 +21279,7 @@ xsdcpp::ChildElementInfo _fxKIKOBarrierOptionData_Children[] = {
     {"BoughtAmount",
      6,
      (xsdcpp::get_field_t)&_get_fxKIKOBarrierOptionData_BoughtAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"SoldCurrency",
@@ -21291,7 +21291,7 @@ xsdcpp::ChildElementInfo _fxKIKOBarrierOptionData_Children[] = {
     {"SoldAmount",
      8,
      (xsdcpp::get_field_t)&_get_fxKIKOBarrierOptionData_SoldAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {nullptr}};
@@ -21378,13 +21378,13 @@ xsdcpp::ChildElementInfo _fxDigitalBarrierOptionData_Children[] = {
     {"Strike",
      7,
      (xsdcpp::get_field_t)&_get_fxDigitalBarrierOptionData_Strike,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"PayoffAmount",
      8,
      (xsdcpp::get_field_t)&_get_fxDigitalBarrierOptionData_PayoffAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"PayoffCurrency",
@@ -21473,7 +21473,7 @@ xsdcpp::ChildElementInfo _fxTouchOptionData_Children[] = {
     {"PayoffAmount",
      5,
      (xsdcpp::get_field_t)&_get_fxTouchOptionData_PayoffAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"StartDate",
@@ -21545,7 +21545,7 @@ xsdcpp::ChildElementInfo _fxSwapData_Children[] = {
     {"NearBoughtAmount",
      2,
      (xsdcpp::get_field_t)&_get_fxSwapData_NearBoughtAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"NearSoldCurrency",
@@ -21557,7 +21557,7 @@ xsdcpp::ChildElementInfo _fxSwapData_Children[] = {
     {"NearSoldAmount",
      4,
      (xsdcpp::get_field_t)&_get_fxSwapData_NearSoldAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"FarDate", 5, (xsdcpp::get_field_t)&_get_fxSwapData_FarDate, &domain::_date_Info, 1, 1},
@@ -29757,13 +29757,13 @@ void* _get_tarfData2_FixingAmount(domain::tarfData2* parent) {
     return &parent->FixingAmount;
 }
 void* _get_tarfData2_TargetAmount(domain::tarfData2* parent) {
-    return &*(parent->TargetAmount = float());
+    return &*(parent->TargetAmount = domain::moneyFloat());
 }
 void* _get_tarfData2_TargetPoints(domain::tarfData2* parent) {
     return &*(parent->TargetPoints = float());
 }
 void* _get_tarfData2_Strike(domain::tarfData2* parent) {
-    return &*(parent->Strike = float());
+    return &*(parent->Strike = domain::moneyFloat());
 }
 void* _get_tarfData2_Strikes(domain::tarfData2* parent) {
     return &*(parent->Strikes = domain::tarfData2_Strikes_t());
@@ -29805,13 +29805,13 @@ xsdcpp::ChildElementInfo _tarfData2_Children[] = {
     {"FixingAmount",
      1,
      (xsdcpp::get_field_t)&_get_tarfData2_FixingAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"TargetAmount",
      2,
      (xsdcpp::get_field_t)&_get_tarfData2_TargetAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      0,
      1},
     {"TargetPoints",
@@ -29820,7 +29820,7 @@ xsdcpp::ChildElementInfo _tarfData2_Children[] = {
      &domain::_float_Info,
      0,
      1},
-    {"Strike", 4, (xsdcpp::get_field_t)&_get_tarfData2_Strike, &domain::_float_Info, 0, 1},
+    {"Strike", 4, (xsdcpp::get_field_t)&_get_tarfData2_Strike, &domain::_moneyFloat_Info, 0, 1},
     {"Strikes",
      5,
      (xsdcpp::get_field_t)&_get_tarfData2_Strikes,
@@ -29903,7 +29903,7 @@ void* _get_accumulatorData_DailyFixingAmount(domain::accumulatorData* parent) {
     return &*(parent->DailyFixingAmount = bool());
 }
 void* _get_accumulatorData_Strike(domain::accumulatorData* parent) {
-    return &*(parent->Strike = float());
+    return &*(parent->Strike = domain::moneyFloat());
 }
 void* _get_accumulatorData_Underlying(domain::accumulatorData* parent) {
     return &parent->Underlying;
@@ -29960,7 +29960,7 @@ xsdcpp::ChildElementInfo _accumulatorData_Children[] = {
     {"FixingAmount",
      1,
      (xsdcpp::get_field_t)&_get_accumulatorData_FixingAmount,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      1,
      1},
     {"DailyFixingAmount",
@@ -29969,7 +29969,12 @@ xsdcpp::ChildElementInfo _accumulatorData_Children[] = {
      &domain::_bool_Info,
      0,
      1},
-    {"Strike", 3, (xsdcpp::get_field_t)&_get_accumulatorData_Strike, &domain::_float_Info, 0, 1},
+    {"Strike",
+     3,
+     (xsdcpp::get_field_t)&_get_accumulatorData_Strike,
+     &domain::_moneyFloat_Info,
+     0,
+     1},
     {"Underlying",
      4,
      (xsdcpp::get_field_t)&_get_accumulatorData_Underlying,
@@ -70493,7 +70498,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_varianceSwapData(xsdcpp::XmlWriter& w,
     _serialize_underlyingTypes_group_t(w, "underlyingTypes", v.underlyingTypes);
     _serialize_varianceSwapData_LongShort_t(w, "LongShort", v.LongShort);
     _serialize_float(w, "Strike", v.Strike);
-    _serialize_float(w, "Notional", v.Notional);
+    _serialize_moneyFloat(w, "Notional", v.Notional);
     _serialize_calendar(w, "Calendar", v.Calendar);
     if (v.MomentType)
         _serialize_momentType(w, "MomentType", *v.MomentType);
@@ -70567,9 +70572,9 @@ _serialize_fxForwardData(xsdcpp::XmlWriter& w, const char* name, const domain::f
     w.startElement(name);
     _serialize_date(w, "ValueDate", v.ValueDate);
     _serialize_currencyCode(w, "BoughtCurrency", v.BoughtCurrency);
-    _serialize_float(w, "BoughtAmount", v.BoughtAmount);
+    _serialize_moneyFloat(w, "BoughtAmount", v.BoughtAmount);
     _serialize_currencyCode(w, "SoldCurrency", v.SoldCurrency);
-    _serialize_float(w, "SoldAmount", v.SoldAmount);
+    _serialize_moneyFloat(w, "SoldAmount", v.SoldAmount);
     if (v.Settlement)
         _serialize_settlementType(w, "Settlement", *v.Settlement);
     if (v.SettlementData)
@@ -70591,9 +70596,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxAverageForwardData(xsdcpp::XmlWriter& w,
     _serialize_date(w, "PaymentDate", v.PaymentDate);
     _serialize_scheduleData(w, "ObservationDates", v.ObservationDates);
     _serialize_bool_(w, "FixedPayer", v.FixedPayer);
-    _serialize_float(w, "ReferenceNotional", v.ReferenceNotional);
+    _serialize_moneyFloat(w, "ReferenceNotional", v.ReferenceNotional);
     _serialize_currencyCode(w, "ReferenceCurrency", v.ReferenceCurrency);
-    _serialize_float(w, "SettlementNotional", v.SettlementNotional);
+    _serialize_moneyFloat(w, "SettlementNotional", v.SettlementNotional);
     _serialize_currencyCode(w, "SettlementCurrency", v.SettlementCurrency);
     if (v.Settlement)
         _serialize_settlementType(w, "Settlement", *v.Settlement);
@@ -70613,10 +70618,10 @@ _serialize_fxOptionData(xsdcpp::XmlWriter& w, const char* name, const domain::fx
     w.startElement(name);
     _serialize_optionData(w, "OptionData", v.OptionData);
     _serialize_currencyCode(w, "BoughtCurrency", v.BoughtCurrency);
-    _serialize_float(w, "BoughtAmount", v.BoughtAmount);
+    _serialize_moneyFloat(w, "BoughtAmount", v.BoughtAmount);
     _serialize_currencyCode(w, "SoldCurrency", v.SoldCurrency);
     if (v.SoldAmount)
-        _serialize_float(w, "SoldAmount", *v.SoldAmount);
+        _serialize_moneyFloat(w, "SoldAmount", *v.SoldAmount);
     if (v.Delta)
         _serialize_float(w, "Delta", *v.Delta);
     if (v.FXIndex)
@@ -70650,7 +70655,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_barrierData_Levels_t(xsdcpp::XmlWriter& w,
                                                          const domain::barrierData_Levels_t& v) {
     w.startElement(name);
     for (const auto& item : v.Level)
-        _serialize_float(w, "Level", item);
+        _serialize_moneyFloat(w, "Level", item);
     w.endElement(name);
 }
 
@@ -70725,9 +70730,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxBarrierOptionData(xsdcpp::XmlWriter& w,
         _serialize_fxBarrierOptionData_FXIndexDailyHighs_t(
             w, "FXIndexDailyHighs", *v.FXIndexDailyHighs);
     _serialize_currencyCode(w, "BoughtCurrency", v.BoughtCurrency);
-    _serialize_float(w, "BoughtAmount", v.BoughtAmount);
+    _serialize_moneyFloat(w, "BoughtAmount", v.BoughtAmount);
     _serialize_currencyCode(w, "SoldCurrency", v.SoldCurrency);
-    _serialize_float(w, "SoldAmount", v.SoldAmount);
+    _serialize_moneyFloat(w, "SoldAmount", v.SoldAmount);
     w.endElement(name);
 }
 
@@ -70736,10 +70741,10 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxDigitalOptionData(xsdcpp::XmlWriter& w,
                                                         const domain::fxDigitalOptionData& v) {
     w.startElement(name);
     _serialize_optionData(w, "OptionData", v.OptionData);
-    _serialize_float(w, "Strike", v.Strike);
+    _serialize_moneyFloat(w, "Strike", v.Strike);
     if (v.PayoffCurrency)
         _serialize_currencyCode(w, "PayoffCurrency", *v.PayoffCurrency);
-    _serialize_float(w, "PayoffAmount", v.PayoffAmount);
+    _serialize_moneyFloat(w, "PayoffAmount", v.PayoffAmount);
     _serialize_currencyCode(w, "ForeignCurrency", v.ForeignCurrency);
     _serialize_currencyCode(w, "DomesticCurrency", v.DomesticCurrency);
     w.endElement(name);
@@ -70772,9 +70777,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxKIKOBarrierOptionData(
     if (v.FXIndex)
         _serialize_fxKIKOBarrierOptionData_FXIndex_t(w, "FXIndex", *v.FXIndex);
     _serialize_currencyCode(w, "BoughtCurrency", v.BoughtCurrency);
-    _serialize_float(w, "BoughtAmount", v.BoughtAmount);
+    _serialize_moneyFloat(w, "BoughtAmount", v.BoughtAmount);
     _serialize_currencyCode(w, "SoldCurrency", v.SoldCurrency);
-    _serialize_float(w, "SoldAmount", v.SoldAmount);
+    _serialize_moneyFloat(w, "SoldAmount", v.SoldAmount);
     w.endElement(name);
 }
 
@@ -70820,8 +70825,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxDigitalBarrierOptionData(
     if (v.FXIndexDailyHighs)
         _serialize_fxDigitalBarrierOptionData_FXIndexDailyHighs_t(
             w, "FXIndexDailyHighs", *v.FXIndexDailyHighs);
-    _serialize_float(w, "Strike", v.Strike);
-    _serialize_float(w, "PayoffAmount", v.PayoffAmount);
+    _serialize_moneyFloat(w, "Strike", v.Strike);
+    _serialize_moneyFloat(w, "PayoffAmount", v.PayoffAmount);
     if (v.PayoffCurrency)
         _serialize_currencyCode(w, "PayoffCurrency", *v.PayoffCurrency);
     _serialize_currencyCode(w, "ForeignCurrency", v.ForeignCurrency);
@@ -70868,7 +70873,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxTouchOptionData(xsdcpp::XmlWriter& w,
     _serialize_currencyCode(w, "ForeignCurrency", v.ForeignCurrency);
     _serialize_currencyCode(w, "DomesticCurrency", v.DomesticCurrency);
     _serialize_currencyCode(w, "PayoffCurrency", v.PayoffCurrency);
-    _serialize_float(w, "PayoffAmount", v.PayoffAmount);
+    _serialize_moneyFloat(w, "PayoffAmount", v.PayoffAmount);
     if (v.StartDate)
         _serialize_date(w, "StartDate", *v.StartDate);
     if (v.FXIndex)
@@ -70888,9 +70893,9 @@ _serialize_fxSwapData(xsdcpp::XmlWriter& w, const char* name, const domain::fxSw
     w.startElement(name);
     _serialize_date(w, "NearDate", v.NearDate);
     _serialize_currencyCode(w, "NearBoughtCurrency", v.NearBoughtCurrency);
-    _serialize_float(w, "NearBoughtAmount", v.NearBoughtAmount);
+    _serialize_moneyFloat(w, "NearBoughtAmount", v.NearBoughtAmount);
     _serialize_currencyCode(w, "NearSoldCurrency", v.NearSoldCurrency);
-    _serialize_float(w, "NearSoldAmount", v.NearSoldAmount);
+    _serialize_moneyFloat(w, "NearSoldAmount", v.NearSoldAmount);
     _serialize_date(w, "FarDate", v.FarDate);
     _serialize_float(w, "FarBoughtAmount", v.FarBoughtAmount);
     _serialize_float(w, "FarSoldAmount", v.FarSoldAmount);
@@ -74581,13 +74586,13 @@ XSDCPP_MAYBE_UNUSED void
 _serialize_tarfData2(xsdcpp::XmlWriter& w, const char* name, const domain::tarfData2& v) {
     w.startElement(name);
     _serialize_currencyCode(w, "Currency", v.Currency);
-    _serialize_float(w, "FixingAmount", v.FixingAmount);
+    _serialize_moneyFloat(w, "FixingAmount", v.FixingAmount);
     if (v.TargetAmount)
-        _serialize_float(w, "TargetAmount", *v.TargetAmount);
+        _serialize_moneyFloat(w, "TargetAmount", *v.TargetAmount);
     if (v.TargetPoints)
         _serialize_float(w, "TargetPoints", *v.TargetPoints);
     if (v.Strike)
-        _serialize_float(w, "Strike", *v.Strike);
+        _serialize_moneyFloat(w, "Strike", *v.Strike);
     if (v.Strikes)
         _serialize_tarfData2_Strikes_t(w, "Strikes", *v.Strikes);
     _serialize_underlying(w, "Underlying", v.Underlying);
@@ -74635,11 +74640,11 @@ XSDCPP_MAYBE_UNUSED void _serialize_accumulatorData(xsdcpp::XmlWriter& w,
                                                     const domain::accumulatorData& v) {
     w.startElement(name);
     _serialize_currencyCode(w, "Currency", v.Currency);
-    _serialize_float(w, "FixingAmount", v.FixingAmount);
+    _serialize_moneyFloat(w, "FixingAmount", v.FixingAmount);
     if (v.DailyFixingAmount)
         _serialize_bool(w, "DailyFixingAmount", *v.DailyFixingAmount);
     if (v.Strike)
-        _serialize_float(w, "Strike", *v.Strike);
+        _serialize_moneyFloat(w, "Strike", *v.Strike);
     _serialize_underlying(w, "Underlying", v.Underlying);
     _serialize_optionData(w, "OptionData", v.OptionData);
     if (v.StartDate)

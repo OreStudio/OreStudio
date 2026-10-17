@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A8F68794-7F4B-437C-B6D2-4E6016627B71
+:END:
+#+title: A regeneration of the reporting component left projects/ores…
+#+description: A regeneration of the reporting component left projects/ores.reporting/core/src/repository/parameter_definition_entity.cpp at zero bytes and churned include order and comment wrapping across 21 other generated reporting files. Found in the working tree during the atomic step claim work; reverted rather than committed. Either the entity no longer asks for the ostream operator and the template emits nothing, or the run was partial. Worth checking whether the committed tree and the generator disagree for this entity, and whether any other entity is emptied the same way.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

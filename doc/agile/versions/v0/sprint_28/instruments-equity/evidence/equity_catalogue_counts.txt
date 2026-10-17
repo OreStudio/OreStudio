@@ -1,0 +1,33 @@
+Equity family counts, measured at commit d52d9b927e.
+
+Command:
+
+awk -F'|' '$1=="" && $2 ~ /^ [A-Za-z]/ { pt=$4; inst=$7; gsub(/^ +| +$/,"",pt); gsub(/^ +| +$/,"",inst); if (pt=="equity") { t++; if (inst=="") u++; else r++ } } END { printf "total=%d routed=%d unrouted=%d\n", t, r, u }' projects/ores.trading/modeling/ores.trading.trade_type_catalogue.org
+
+Output:
+
+total=32 routed=19 unrouted=13
+
+Of the 19 routed codes, 17 carry an equity_* instrument table and 2
+(TotalReturnSwap, ContractForDifference) carry composite_instrument.
+
+The 13 codes with an empty instrument column, so no table holds them:
+
+  EquityAutoDeltaHedgedOption
+  EquityForwardVolatilityAgreement
+  EquityFutureOption
+  EquityWindowBarrierOption
+  EquityGenericBarrierOption
+  EquityDoubleTouchOption
+  EquityPairwiseVarianceSwap
+  EquityBasketVarianceSwap
+  EquityBestEntryOption
+  EquityBasketOption
+  EquityRainbowOption
+  EquityStrikeResettableOption
+  CashPosition
+
+A count with the narrower pattern '^\| Equity[A-Za-z]+ +\|' returns 29 rows
+and 12 unrouted, because it misses TotalReturnSwap and
+ContractForDifference, whose code does not begin with "Equity" though their
+product_type is equity. Use the product_type filter, not the code prefix.

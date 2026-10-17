@@ -43,6 +43,7 @@ create table if not exists "ores_trading_fx_accumulator_instruments_tbl" (
     "long_short" text not null,
     "start_date" date not null,
     "knock_out_barrier" numeric(38, 12) null,
+    "range_bounds_json" text null,
     "description" text null,
     "modified_by" text not null,
     "performed_by" text not null,

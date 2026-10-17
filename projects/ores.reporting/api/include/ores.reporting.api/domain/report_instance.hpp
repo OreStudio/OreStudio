@@ -127,12 +127,14 @@ struct report_instance final {
     std::string output_storage_key;
 
     /**
-     * @brief When execution began. NULL if cancelled before starting.
+     * @brief When execution began. NULL if cancelled before starting. The admission service writes
+     * it when the run is admitted, so a caller editing the instance never states it.
      */
     std::optional<std::chrono::system_clock::time_point> started_at;
 
     /**
-     * @brief When execution completed. NULL while running or before start.
+     * @brief When execution completed. NULL while running or before start. The service that drives
+     * the run writes it, so a caller editing the instance never states it.
      */
     std::optional<std::chrono::system_clock::time_point> completed_at;
 

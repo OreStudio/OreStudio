@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 704D8C2E-0D2C-46C1-BC8D-754EAF320730
+:END:
+#+title: Task: Make the umbrella header a permanent artefact
+#+description: Land the umbrella-header restructure the retired branch feature/codegen-improvements produced. The change is already written as a clean cherry-pick of 875df5ff79 on branch feature/codegen-umbrella-headers, which still applies to current main with no conflicts. The umbrella header sits in the disabled ores.cpp.scaffold facet, so no regeneration emits it and no gate covers it; 46 copies survive in the tree, stale.
+#+type: task
+#+level: s1
+#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work:sprint_28:v0:
+#+owner: marco
+#+branch: feature/codegen-umbrella-headers
+#+pr: 3386
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Move the aggregate include header out of the disabled scaffold facet and back into ores.cpp.component, which is enabled and gated. Every component then keeps one for its whole life and it is regenerated like any other artefact.
+
+The implementation is already written. Branch =feature/codegen-umbrella-headers=
+carries a clean cherry-pick of the original commit =875df5ff79=, and it still
+applies to current main with no conflicts. This task rebases it, re-verifies it
+against current main, and lands it under Sprint 28 rather than the closed
+Sprint 27 story its trailers name.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-15                               |
+
+* Acceptance
+
+- feature/codegen-umbrella-headers is rebased onto current main, and the branch applies with no conflict.
+- The ores.cpp.component.umbrella_header archetype lives in the ores.cpp.component facet, and ores.cpp.scaffold no longer declares an umbrella header archetype.
+- A {component_include_root} placeholder resolves an adapter's header beside its composite's include root; a multi-module component keeps one per module; a composite emits none because it has no namespace of its own.
+- The loader collapses the component description to one line, so clang-format owns the wrapping and the Doxygen block stays well formed.
+- Every component's umbrella header is regenerated, the codegen drift gate reports no drift, and the scaffold regression test pins the adapter and composite rules.
+- compass build and rat pass.
+- The pull request names this story in its Story-ID trailer, not the closed Sprint 27 story.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The original work is commit =875df5ff79= on the retired branch
+  =feature/codegen-improvements=. It survives in tag
+  =backup/codegen-improvements-pre-rebase= and as the cherry-pick on
+  =feature/codegen-umbrella-headers=.
+- Measured on 2026-10-15 at main =64f77ad0a9=: the cherry-pick merges with no
+  conflicts, and seven of the nine files it touches have not changed on main
+  since its base; only =core.py= and =org_loader.py= moved, and git
+  auto-merges both.
+- The rest of the retired branch is not worth salvaging. Its include-hygiene
+  work is already in main through PR #2698 and later commits, and its
+  clang-tidy rework was superseded by main's own
+  =build/scripts/check_includes.sh=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3386][#3386]] | [codegen] Make the umbrella header a permanent artefact |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The umbrella header is a permanent artefact of =ores.cpp.component=, and every
+component that owns a namespace now regenerates one.
+
+The reason it never did was discovery, not the template.
+=manifest.discover_models= globbed a component's =modeling_dir= one level deep,
+so a composite's parts -- =ores.refdata/api=, =ores.http/server= -- were never
+enumerated. Their =export.hpp=, =tests/main.cpp= and umbrella headers had no
+model in any pass and went stale with nothing reporting it: at =ores.iam/api=
+those files were last written 2026-06-05 while their templates changed
+2026-08-02.
+
+Discovery now walks the parts by the same disk rule that
+=_hosted_subcomponents()= validates the model against, and two regression tests
+pin it. The parts' presence files were then regenerated, their 39 missing
+=#+brief:= values authored, and the component file lists refreshed.
+
+Two guards keep the graph off what main hand-maintains. A part's CMake is
+hand-authored -- =ores.history/api= is a header-only =INTERFACE= library, and 93
+of the 94 =src/CMakeLists.txt= diverge from the template baseline -- so the
+graph skips every =ores.cmake.*= facet for a sub-component project.
+=component_files.cmake= is owned by =regenerate_cmake_component_files.py=
+alone, which its own archetype already claimed.
+
+A service that outgrows the stub now keeps its code in its model.
+=ores.storage/service= is the only component of kind =service=, so it is the
+only one the service-app facet renders, and its =application.cpp=,
+=options.hpp= and =parser.cpp= were hand-written inside generated files.
+Component models carry paste blocks now, and six paste points cover the extra
+includes, the namespace preamble, the body of =run()=, the option's member, its
+declaration and its assignment. Regeneration reproduces the file it had, byte
+for byte.
+
+*Verified.* =check_component_drift --changed= reports no drift across the branch;
+=--component storage-cpp= reports none for storage; =drift-sweep=,
+=cmake-sources=, =paste-blocks= and the other 30 local checks pass; the codegen
+suite is 1431 passed.
+
+The first whole-tree build then reached =ores.analytics.quant.tests= and failed:
+the regenerated test main installed the =ores.testing= listeners, and that
+component's tests deliberately link none of it. Its CMake says why -- "this
+component has no database, so its tests need no DB-backed test fixture" -- so
+the finding was real and the template was wrong to assume a fixture. A
+component now declares =#+test_fixture: none= and gets the bare Catch2 session;
+=ores.analytics/quant= declares it, and regenerating =iam= produces no diff at
+all, so every other component's test main is unchanged.
+
+=pgtap= fails, and fails on =main=: the branch changes no SQL and does not touch
+the suite.

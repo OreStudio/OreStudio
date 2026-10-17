@@ -19,12 +19,14 @@
  */
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/curve_configuration_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_mapper.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
@@ -37,6 +39,8 @@
 #include <optional>
 #include <stdexcept>
 #include <string_view>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace ores::ore::service::messaging {
 
@@ -48,6 +52,14 @@ using ores::ore::messaging::run_configuration_import_execute_result;
 using ores::ore::messaging::saved_document;
 
 namespace {
+
+inline std::string_view logger_name = "ores.ore.service.messaging.run_configuration_operations";
+
+auto& run_configuration_operations_lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
 
 constexpr std::string_view run_document_file = "ore.xml";
 
@@ -351,6 +363,91 @@ input_files export_run(nats_client& owners, const std::string& report_definition
                     .document));
     }
     return files;
+}
+
+ores::ore::service::messaging::reference_curve_names
+reference_curve_names_of(nats_client& owners, const std::string& report_definition_id) {
+    const auto run =
+        call(owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
+
+    /*
+     * The run's own two documents. The curve configuration says which curves the
+     * party defines and what a curve's series URI is; the today's market says
+     * which index the party forwards to each of them. Neither alone names the
+     * curve the way ORE resolves a bond's ReferenceCurveId, so both are read.
+     */
+    std::unordered_map<std::string, std::string> curve_uri_of_curve_name;
+    std::optional<ores::analytics::messaging::todays_market_document> market;
+
+    for (const auto& b : run.bindings) {
+        if (b.configuration_type_code == run_settings_type)
+            continue;
+        const auto configuration = boost::uuids::to_string(b.configuration_id);
+        const auto& code = b.configuration_type_code;
+        if (code == "curve_configuration") {
+            const auto document =
+                call(owners,
+                     rd::get_curve_configuration_document_request{.configuration_id = configuration,
+                                                                  .party_id = run.party_id})
+                    .document;
+
+            std::unordered_map<std::string, std::string> currency_of_definition;
+            for (const auto& d : document.definitions)
+                currency_of_definition[boost::uuids::to_string(d.id)] = d.curve_id;
+
+            for (const auto& y : document.yield_curves) {
+                const auto it = currency_of_definition.find(boost::uuids::to_string(
+                    y.curve_definition_id));
+                if (it == currency_of_definition.end() || !y.day_counter || y.day_counter->empty())
+                    continue;
+                /*
+                 * The name the curve configuration gives the curve, which is
+                 * what a today's market forwards to. ORE writes a yield curve's
+                 * own name as its section, currency and curve id.
+                 */
+                curve_uri_of_curve_name["Yield/" + y.currency + "/" + it->second] =
+                    std::format("oresmd://ir/{}?type=series&instrument=zero&quote=rate"
+                                "&curve_id={}&day_counter={}",
+                                y.currency,
+                                it->second,
+                                *y.day_counter);
+            }
+        } else if (code == "todays_market") {
+            market = call(owners,
+                          an::get_todays_market_document_request{.configuration_id = configuration,
+                                                                 .party_id = run.party_id})
+                         .document;
+        }
+    }
+
+    std::unordered_map<std::string, std::string> index_of_curve_uri;
+    if (market) {
+        std::unordered_set<std::string> forwarding_collections;
+        for (const auto& c : market->collections)
+            if (c.collection == "IndexForwardingCurves")
+                forwarding_collections.insert(boost::uuids::to_string(c.id));
+
+        for (const auto& e : market->entries) {
+            if (!e.key_value || e.key_value->empty())
+                continue;
+            if (!forwarding_collections.contains(
+                    boost::uuids::to_string(e.todays_market_collection_id)))
+                continue;
+            const auto it = curve_uri_of_curve_name.find(e.target);
+            if (it == curve_uri_of_curve_name.end())
+                continue;
+            index_of_curve_uri[it->second] = *e.key_value;
+        }
+    }
+
+    BOOST_LOG_SEV(run_configuration_operations_lg(), ores::logging::debug)
+        << "reference_curve_names_of: " << index_of_curve_uri.size() << " curve name(s) for definition "
+        << report_definition_id;
+
+    return [index_of_curve_uri](const std::string& uri) -> std::string {
+        const auto it = index_of_curve_uri.find(uri);
+        return it == index_of_curve_uri.end() ? uri : it->second;
+    };
 }
 
 }

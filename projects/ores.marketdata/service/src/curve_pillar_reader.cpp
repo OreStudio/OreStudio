@@ -52,7 +52,8 @@ read_pillar_rates(ores::database::context ctx,
                                                      config.index_tenor,
                                                      p.start_tenor_code,
                                                      resolve_tenor_date(refctx, p.start_tenor_code),
-                                                     resolve_tenor_date(refctx, p.end_tenor_code));
+                                                     resolve_tenor_date(refctx, p.end_tenor_code),
+                                                     p.end_tenor_code);
         // The config's own party, as the ingest loop scopes the series it writes:
         // the curve is bootstrapped for that party, so its quotes come from it.
         const auto series = series_repo.read_latest_by_uri(

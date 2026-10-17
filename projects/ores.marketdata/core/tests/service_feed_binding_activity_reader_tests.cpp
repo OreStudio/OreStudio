@@ -90,7 +90,7 @@ TEST_CASE("a source that has written names its series and its last tick", tags) 
 
     CHECK(activity.source_name == "synthetic.bloomberg.audusd");
     CHECK(activity.series_id == "5d0f4a1e-9c2b-4a6e-8f31-0a7b1c2d3e4f");
-    CHECK(activity.last_tick_at == "2026-10-12 23:50:26Z");
+    CHECK(activity.last_tick_at == "2026-10-12 23:50:26.000000Z");
 }
 
 TEST_CASE("a source that has written nothing names neither a series nor a tick", tags) {

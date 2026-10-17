@@ -113,6 +113,7 @@ domain::trade_generation_config to_domain(const messaging::trade_generation_conf
     v.as_of_date = write.as_of_date;
     v.seed = write.seed;
     v.enabled = write.enabled;
+    v.reference_curve_id = write.reference_curve_id;
     return v;
 }
 

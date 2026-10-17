@@ -68,14 +68,15 @@ quant_domain::calendar_rule_kind parse_kind(const std::string& s) {
     throw std::runtime_error("Unknown calendar_rule kind: " + s);
 }
 
+// The shift codes are quant's, spelled once in parse_observance_shift_code.
+// This wrapper only restates a bad code in the exception type the rest of
+// this service throws, so the two never drift apart.
 quant_domain::observance_shift parse_shift(const std::string& s) {
-    if (s == "none")
-        return quant_domain::observance_shift::none;
-    if (s == "nearest_weekday")
-        return quant_domain::observance_shift::nearest_weekday;
-    if (s == "roll_forward_to_monday")
-        return quant_domain::observance_shift::roll_forward_to_monday;
-    throw std::runtime_error("Unknown observance_shift: " + s);
+    try {
+        return quant_domain::parse_observance_shift_code(s);
+    } catch (const std::invalid_argument&) {
+        throw std::runtime_error("Unknown observance_shift: " + s);
+    }
 }
 
 quant_domain::calendar_rule to_quant_rule(const domain::calendar_rule& v) {

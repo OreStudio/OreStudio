@@ -68,6 +68,17 @@ public:
     [[nodiscard]] std::vector<bool>
     is_business_day_batch(std::span<const calendar_query> queries) const;
 
+    /// Answers one query, and the shape a walker uses: rolling a date one day
+    /// at a time asks thousands of these in a loop, where a batch of one
+    /// would allocate a vector per step.
+    ///
+    /// A @p calendar_index past the set is answered @c true -- no holiday is
+    /// known for a calendar that was never supplied, which is what
+    /// @c is_business_day_batch does too. Callers that must not treat a
+    /// missing calendar as an open one check @c calendar_count() first.
+    [[nodiscard]] bool is_business_day(std::size_t calendar_index,
+                                       std::chrono::year_month_day date) const noexcept;
+
     [[nodiscard]] std::size_t calendar_count() const noexcept {
         return calendar_offsets_.empty() ? 0 : calendar_offsets_.size() - 1;
     }

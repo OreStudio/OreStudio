@@ -151,18 +151,23 @@ long each one is without reading every chain.
 :type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
+:server_owned: true
 :END:
 
-Timestamp when the workflow reached a terminal state.
+Timestamp when the workflow reached a terminal state. The engine writes it
+from its state funnel, so a caller editing the run never states it.
 
 ** last_event_at
 :PROPERTIES:
 :type:     timestamp with time zone
 :cpp_type: std::optional<std::chrono::system_clock::time_point>
 :nullable: true
+:server_owned: true
 :END:
 
-Timestamp of the most recent step-completed event processed.
+Timestamp of the run's most recent activity: every state transition, and every
+dispatch the run does between two of them. The engine writes it, so a caller
+editing the run never states it.
 
 * SQL
 

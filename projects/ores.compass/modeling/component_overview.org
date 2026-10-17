@@ -5,6 +5,7 @@
 #+name: compass
 #+full_name: ores.compass
 #+description: Python repository compass: temporal orientation, semantic doc search, and agile scaffolding over the org-roam graph.
+#+brief: Repository orientation and doc search CLI
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :compass:tooling:python:docs:agile:

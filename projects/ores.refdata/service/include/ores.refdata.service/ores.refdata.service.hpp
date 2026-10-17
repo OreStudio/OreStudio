@@ -17,15 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_SERVICE_HPP
 #define ORES_REFDATA_SERVICE_HPP
 
 /**
  * @brief Reference data service
  *
- * Standalone NATS microservice hosting reference data handlers: currencies, countries, parties,
- * counterparties, books, business units, and portfolios.
+ * NATS service entrypoint for the reference-data domain — wires handlers, repositories, and
+ * configuration.
  */
-namespace ores::refdata.service {}
+namespace ores::refdata::service {}
 
 #endif

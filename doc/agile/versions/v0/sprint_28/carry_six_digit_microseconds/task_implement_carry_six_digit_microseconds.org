@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 12498CD8-0BA1-481C-AE57-1C368074995C
+:END:
+#+title: Task: Add six-digit microseconds to the formatter and its parser
+#+description: Initial task for: Carry six-digit microseconds in every timestamp the platform writes
+#+type: task
+#+level: s1
+#+filetags: :carry_six_digit_microseconds:sprint_28:v0:
+#+owner: marco
+#+branch: feature/implement-carry-six-digit-microseconds
+#+pr: 3415
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:DB269522-BDE6-4BDC-BC9C-60288CCA844D][Carry six-digit microseconds in every timestamp the platform writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every timestamp the platform writes carries six digits of microseconds, and the parser reads them back, so a time_point survives a round trip through the database or the wire to the microsecond.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:DB269522-BDE6-4BDC-BC9C-60288CCA844D][Carry six-digit microseconds in every timestamp the platform writes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- to_iso8601_utc writes six fractional digits and parse_utc_timestamp reads one to six back.
+- A time_point survives to_iso8601_utc then from_iso8601_utc to the microsecond.
+- The market observation test asserts the round trip and passes.
+
+* Plan
+
+One unit, in =ores.platform=, because the writer and the reader are one
+contract: changing either alone is a trap, since a writer that states a
+fraction the reader ignores looks fixed until the value is read back.
+
+- =to_iso8601_utc= splits the instant into whole seconds and the microseconds
+  under them with =duration_cast<microseconds>= and =floor<seconds>=. It
+  formats the fraction itself, because =strftime= has no sub-second field and
+  =to_time_t= alone throws the fraction away. The output is always six digits,
+  ="YYYY-MM-DD HH:MM:SS.ffffffZ"=.
+- =parse_utc_timestamp= reads an optional decimal fraction of one to six
+  digits. PostgreSQL states none when the microsecond is zero, so the dot is
+  optional. Fewer than six digits are right-padded, more are truncated, which
+  is the nanosecond a =microseconds= duration cannot hold. A malformed
+  fraction throws rather than being ignored.
+- =to_db_string= derives from =to_iso8601_utc=, so it carries the fraction.
+  The infinity sentinel is untouched: it is a whole-second literal used in SQL
+  comparisons, not a formatted string.
+
+Scope, stated because "to all" would misdescribe it: this is the platform and
+wire layers. The *entity* layer cannot follow. =db_timestamp= is
+=sqlgen::Timestamp=, which is =rfl::Timestamp=, which wraps a =std::tm= — a
+struct with no sub-second field, parsed by =strptime= and written by
+=strftime=. No format string can give it a fraction; the container type would
+have to be replaced across every entity and mapper. The architecture page
+records that asymmetry, so a reader does not expect microseconds from a
+=valid_from=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Non-test files calling =to_iso8601_utc= | 423 | =grep -rl "to_iso8601_utc" projects/ --include=*.cpp --include=*.hpp | grep -v tests | wc -l= | 5d0fa921e8 |
+| Test files asserting the writer's old output | 6 | the failures of `ctest -j 8` on 2026-10-16 | 5d0fa921e8 |
+| Market observation round trip, before | loses the whole fractional second, 0.5 to 0.7 s per run | =ores.marketdata.service.tests=, the diagnostic run | 5d0fa921e8 |
+| Market observation round trip, after | exact below the microsecond | =ores.marketdata.service.tests=, 244 assertions in 44 cases | uncommitted |
+| Platform suite | 349 assertions in 154 cases pass | =ores.platform.tests= | uncommitted |
+| Digest suite fails identically with the change stashed | 4 of 5 cases, 48 assertions, both ways | =ores.trading.core.digest.tests= with =git stash= | 5d0fa921e8 |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3415][#3415]] | [agile] Close the six-digit microsecond story |
+| [[https://github.com/OreStudio/OreStudio/pull/3414][#3414]] | [platform] Carry six-digit microseconds in every timestamp |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The entity layer's =db_timestamp= stops at the second, so "to all" is not achieved. | design of the change | accept | It cannot follow: it wraps a =std::tm=. Recorded as an asymmetry in the architecture page rather than left implied. |
+| 2 | The market ingest test asserted the loss instead of the contract. | app_feed_ingest_loop_tests.cpp | accept | Main had weakened it to =std::chrono::seconds(1)=; it is tightened back to the millisecond. |
+| 3 | =to_db_string= and the infinity sentinel could move together. | datetime.cpp | decline | The sentinel is a whole-second literal compared in SQL, not a string =to_db_string= writes. |
+
+* Result
+
+=to_iso8601_utc= writes six digits of microseconds and =parse_utc_timestamp=
+reads one to six back, so a =time_point= survives a round trip through the
+database or the wire to the microsecond.
+
+=ores.platform.tests= passes with 349 assertions in 154 cases, including new
+cases for the fraction written, the round trip, fewer than six digits,
+PostgreSQL's =+00= form, a whole second with no fraction, and a malformed
+fraction that throws.
+
+=ores.marketdata.service.tests= passes with 244 assertions in 44 cases. That
+suite is the end-to-end proof: the market observation mapper calls the
+platform pair directly, so the tick's microsecond now reaches the
+=microsecond= timestamptz column and comes back. Its assertion is the strict
+millisecond again, not the whole second main had settled for.
+
+Six suites asserted the writer's old output and were updated: =ores.database=,
+=ores.utility=, =ores.shell.api=, =ores.shell.application=,
+=ores.marketdata.api= and =ores.marketdata.core=.
+
+=ores.trading.core.digest.tests= fails, and did so before this change: with
+the change stashed the same 4 of 5 cases and 48 assertions fail. It is not
+this task's defect and is left as found.
+
+Not done, and named so it is not implied to be: the entity layer still stops
+at the whole second, and the digest failure above is still open.

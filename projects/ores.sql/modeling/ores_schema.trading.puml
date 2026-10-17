@@ -1730,6 +1730,7 @@ package "trading" #E8F5E9 {
         * fixing_frequency : text
         * long_short : text
           knock_out_level : numeric(38, 12)
+          range_bounds_json : text
           target_amount : numeric(38, 12)
           target_type : text
         * payoff_type : text
@@ -2051,6 +2052,9 @@ package "trading" #E8F5E9 {
         * trade_activity_id : uuid <<FK>>
           underlying_name : text
           basket_json : text
+          initial_prices_json : text
+          knock_out_levels_json : text
+          fixed_trigger_levels_json : text
         * currency : text
         * notional : numeric(38, 12)
         * return_type : text
@@ -2275,6 +2279,7 @@ package "trading" #E8F5E9 {
         * long_short : text
         * start_date : date
           knock_out_barrier : numeric(38, 12)
+          range_bounds_json : text
           description : text
         * modified_by : text
         * performed_by : text

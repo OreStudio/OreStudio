@@ -51,8 +51,6 @@ struct workflow_instance_write {
     std::string correlation_id;
     std::string created_by;
     int step_count;
-    std::optional<std::chrono::system_clock::time_point> completed_at;
-    std::optional<std::chrono::system_clock::time_point> last_event_at;
 };
 
 struct workflow_instance_change {

@@ -25,7 +25,7 @@ hide circle
 skinparam linetype ortho
 
 note as IndexNote
-566 tables in 21 groups.
+569 tables in 21 groups.
 Each group is drawn in its own file, named under its heading.
 Table naming: <component>_<entity>_tbl
 end note
@@ -600,6 +600,8 @@ entity "reporting" as reporting {
   ores_reporting_parameter_value_domains_tbl
   ores_reporting_report_configurations_tbl
   ores_reporting_report_definitions_tbl
+  ores_reporting_report_error_scopes_tbl
+  ores_reporting_report_errors_tbl
   ores_reporting_report_input_bundles_tbl
   ores_reporting_report_instance_kinds_tbl
   ores_reporting_report_instances_tbl
@@ -613,7 +615,7 @@ entity "reporting" as reporting {
 }
 note bottom of reporting
 Reporting & Analytics
-23 tables — ores_schema.reporting.puml
+25 tables — ores_schema.reporting.puml
 end note
 
 entity "compute" as compute {
@@ -640,12 +642,13 @@ end note
 entity "workflow" as workflow {
   ores_workflow_plan_dependencies_tbl
   ores_workflow_plan_steps_tbl
+  ores_workflow_step_claims_tbl
   ores_workflow_workflow_instances_tbl
   ores_workflow_workflow_steps_tbl
 }
 note bottom of workflow
 Workflow Orchestration (Saga)
-4 tables — ores_schema.workflow.puml
+5 tables — ores_schema.workflow.puml
 end note
 
 entity "database" as database {

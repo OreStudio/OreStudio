@@ -5,6 +5,7 @@
 #+name: synthetic.api
 #+full_name: ores.synthetic.api
 #+description: Domain types, feeds, generators, and NATS protocol schemas for the synthetic data component.
+#+brief: Synthetic data types, feeds, and protocol schemas
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :synthetic:api:component:

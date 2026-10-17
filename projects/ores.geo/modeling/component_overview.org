@@ -5,6 +5,7 @@
 #+name: geo
 #+full_name: ores.geo
 #+description: Geolocation service that maps an IP address to a country code using ip2country data in PostgreSQL.
+#+brief: IP-to-country geolocation service
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :geo:geolocation:component:

@@ -144,9 +144,38 @@ export interface ListFolderFeedsResponse {
     feeds: FolderFeed[];
 }
 
+/**
+ * @brief The feed that holds one series.
+ */
+export interface SeriesOwner {
+    /** @brief The series, as the oresmd URI that names it. */
+    series: string;
+    /** @brief The source name of the running feed that holds the series; empty when no feed holds it. */
+    source_name: string;
+}
+
+/**
+ * @brief Ask which running feed holds each of a list of series.
+ */
+export interface ResolveSeriesOwnersRequest {
+    /** @brief The series to resolve, each as the oresmd URI that names it. */
+    series: string[];
+}
+
+/**
+ * @brief The owner of each series asked about, in the order asked.
+ */
+export interface ResolveSeriesOwnersResponse {
+    success: boolean;
+    message: string;
+    /** @brief The owner of each series asked about, in the order asked. */
+    owners: SeriesOwner[];
+}
+
 export const subjects = {
     list_feed_folders_request: 'synthetic.v1.ops.list_feed_folders',
     list_folder_feeds_request: 'synthetic.v1.ops.list_folder_feeds',
+    resolve_series_owners_request: 'synthetic.v1.ops.resolve_series_owners',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -156,4 +185,5 @@ export const subjects = {
 export const requiresSession = {
     list_feed_folders_request: true,
     list_folder_feeds_request: true,
+    resolve_series_owners_request: true,
 } as const;

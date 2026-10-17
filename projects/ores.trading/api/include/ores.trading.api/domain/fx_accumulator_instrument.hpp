@@ -91,6 +91,17 @@ struct fx_accumulator_instrument final {
     std::optional<ores::utility::decimal::decimal> knock_out_barrier;
 
     /**
+     * @brief JSON array of the ORE RangeBounds entries; empty when the document states none.
+     *
+     * A range bound is a rangeBound: an optional startDate plus the optional levels RangeFrom,
+     * RangeTo, Leverage, Strike and StrikeAdjustment. Each entry is a JSON object holding only the
+     * fields the document states. The list has no child table, so it lives in JSON text. The ORE
+     * schema requires at least one RangeBound, so an export that drops the list cannot be read
+     * back.
+     */
+    std::string range_bounds_json;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;
@@ -123,6 +134,7 @@ inline constexpr std::string_view fx_accumulator_instrument_economic_fields[] = 
     "long_short",
     "start_date",
     "knock_out_barrier",
+    "range_bounds_json",
 };
 
 /**

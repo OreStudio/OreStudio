@@ -5,6 +5,7 @@
 #+name: iam.api
 #+full_name: ores.iam.api
 #+description: Domain types, JSON/table I/O, and NATS protocol schemas for the IAM component.
+#+brief: IAM domain types and NATS protocol schemas
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :iam:api:component:

@@ -65,6 +65,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/generators/workflow_plan_dependency_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/generators/workflow_plan_step_generator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/generators/workflow_step_generator.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_claim_messages.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_instance_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_plan_dependency_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.workflow.api/messaging/workflow_plan_step_protocol.hpp"

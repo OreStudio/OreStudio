@@ -165,6 +165,13 @@ TENANT_002 ores_compute_work_tenants_tbl
 TENANT_002 ores_compute_workflow_batch_links_tbl
 
 # =============================================================================
+# Workflow step claims - the installation's claim on one step, keyed by the step
+# alone. tenant_id is the installation's and is what the policy admits a session
+# by, so it is never part of the key.
+# =============================================================================
+TENANT_002 ores_workflow_step_claims_tbl
+
+# =============================================================================
 # Database info table - single-row system metadata, not tenant-specific.
 # Records schema version, git commit and build environment at creation time.
 # There is exactly one row per database instance; tenant_id has no meaning here.

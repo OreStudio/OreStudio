@@ -17,16 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_ORE_API_HPP
 #define ORES_ORE_API_HPP
 
 /**
  * @brief ORE integration contract
  *
- * The shared contract of the ORE integration component: the protocols for
- * importing an ORE directory and for locating the import tarball in object
- * storage, and the workflow registration the ORE import runs under.
+ * The shared contract for the ORE integration component — the ORE import, saga-step and storage
+ * protocols.
  */
-namespace ores::ore.api {}
+namespace ores::ore::api {}
 
 #endif

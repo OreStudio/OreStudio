@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: F152F087-6D08-49FB-BB6C-62E70453CC0F
+:END:
+#+title: The generated set and save verbs erase a run's timestamps
+#+description: The generated CRUD set and save verbs treat a workflow run's started_at, completed_at and last_event_at as caller-supplied, so an edit erases the completion times. This undoes the stamping the engine now does, the first time anything edits a workflow.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A workflow run now records when it started, when it last did anything and when
+it finished. The generated CRUD verbs do not respect that. `set` and `save`
+treat all three as values the caller supplies, so an edit writes whatever it was
+given, and an edit that was not thinking about them writes nothing over them.
+
+Decide which of the three a caller may state at all, and make the rest the
+engine's to own. A caller editing a run has no business restating when it
+finished, so the fields should be refused or ignored on that path rather than
+taken on trust.
+
+* Why
+
+The engine writes the timestamps and a reader depends on them: until yesterday
+nothing wrote them at all, and a finished run was indistinguishable from a hung
+one, which cost two agents most of a day between them. A generated verb that
+erases them puts that back, and it does so silently, on the first edit anyone
+makes to a workflow.
+
+The same shape will exist on every entity whose lifecycle fields the engine
+owns. Find those, not only the workflow ones, because this is a property of what
+the generator does with a state field rather than a fault in one entity.
+
+Two neighbours worth settling at the same time. `workflow_instance_summary`,
+which the shell's `workflow list` reads, carries `completed_at` but not
+`last_event_at`, so the answer to "is this run abandoned" is in the table and the
+entity but not on that screen's source. And a compensation step reaches
+`compensated` while the forward step it undid stays `in_progress`, so a
+compensated run reads as unfinished.
+
+* References
+
+- The stamping that made this matter: `workflow_engine` writes `started_at`,
+  `completed_at` and `last_event_at` from its state funnels.
+- The task that found it, `stamp_a_workflows_completion_and_activity`, which
+  named all three follow-ups rather than fixing them.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what an inbox capture is.

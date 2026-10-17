@@ -67,6 +67,7 @@ create table if not exists "ores_synthetic_trade_generation_configs_tbl" (
     "as_of_date" date not null,
     "seed" bigint not null,
     "enabled" boolean not null,
+    "reference_curve_id" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

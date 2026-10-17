@@ -36,6 +36,9 @@ export interface EquitySwapInstrument {
     identity: InstrumentIdentity;
     underlying_name: string;
     basket_json: string;
+    initial_prices_json: string;
+    knock_out_levels_json: string;
+    fixed_trigger_levels_json: string;
     currency: string;
     notional: string;
     return_type: string;

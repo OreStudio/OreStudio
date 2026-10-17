@@ -1,0 +1,171 @@
+:PROPERTIES:
+:ID: CE441C28-5ED0-45BF-B442-708AE4EFB1C5
+:END:
+#+title: At Least Once Prerequisites
+#+description: A durable consumer keeps its promise only when the work survives a repeat, one service owns the consumer and prunes what it no longer declares, and the retention matches the message.
+#+type: nats_pattern
+#+level: cross
+#+filetags: :pattern:nats:subscription:
+#+created: 2026-10-15
+#+updated: 2026-10-15
+#+pattern_group: subscription
+
+This page defines the NATS pattern *At Least Once Prerequisites* in the
+[[id:E7A9C1D3-5B8F-4A20-9C6E-1D3F5A7B9C11][nats pattern]] language. A durable
+consumer promises that a message reaches a handler at least once, and that
+promise holds only when three things are already true around it. Without them
+the consumer delivers more often than the work can absorb, or holds a backlog
+nothing will ever read.
+
+* Also known as
+
+- NATS: /at-least-once delivery/, /retention policy/.
+- The pattern language: [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]].
+
+* Context
+
+A service reads its work from a stream through a durable consumer. The
+[[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] survives a
+restart, and the server redelivers a message that no handler acknowledged. Both
+are properties of the transport. What the transport does not supply is anything
+the repeated delivery needs from the code.
+
+* Problem
+
+What has to be true around a durable consumer before its at-least-once delivery
+is safe to rely on?
+
+* Forces
+
+- At-least-once means a message can arrive twice, on another replica, minutes
+  later. The code cannot ask the transport for exactly-once.
+- A consumer is server-side state. It outlives the deployment that created it,
+  so a rename or a redesign leaves it behind.
+- The stream holds messages by its own rules, which are set once and are easy to
+  leave at a default that does not match the message.
+- Each prerequisite hides the others. A missing claim shows up as duplicate
+  work, and a missing owner shows up as a stream that never drains.
+
+* Solution
+
+Three conditions, all of them, in this order of importance.
+
+*The work survives a repeat.* Either the write is idempotent on a stable message
+identity, or the handler wins an atomic claim before it works. A read-then-write
+test is not a claim, because two deliveries read the same "not done" at the same
+time and both proceed.
+
+#+begin_src cpp :results verbatim
+// The claim is the guard the code cannot skip. One delivery wins it.
+if (!store.claim(step_id)) {          // INSERT .. ON CONFLICT DO NOTHING
+    ack.accept();                     // another delivery already has this work
+    return;
+}
+const auto result = do_the_work();
+store.record_completion(step_id, result);
+ack.accept();
+#+end_src
+
+*One service owns the consumer.* The service that declares the stream declares
+every consumer on it, and prunes the ones it no longer declares. A consumer per
+subject is the shape that breaks this: a service with forty-five subjects owns
+forty-five objects, and every renamed subject leaves one behind holding a filter
+nothing publishes to. Declare the family in one table, subscribe one consumer,
+and delete the rest at start.
+
+#+begin_src cpp :results verbatim
+ores::service::messaging::step_routes routes;
+for (const auto subject : subjects)
+    routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+
+// Declares the stream, subscribes ONE consumer for the family, then prunes
+// every consumer on it that this service no longer declares.
+subs.push_back(ores::service::messaging::serve_step_commands(nats, service_name, routes));
+#+end_src
+
+*The retention matches the message.* A command is work: once a consumer has
+served it and acknowledged it, nothing is left to keep, so the stream removes it
+on the acknowledgement (`interest`). Data is not: a tick outlives its readers,
+so the stream keeps it until an age limit (`limits`). The age limit stays as the
+backstop for a message no consumer can take.
+
+#+begin_src cpp :results verbatim
+// A command stream. The message goes as soon as the consumer acks it, and the
+// age limit only decides how long a command survives with no consumer at all.
+admin.ensure_stream(stream, filters, step_stream_max_age_days, stream_retention::interest);
+#+end_src
+
+* Failure handling
+
+#+ATTR_HTML: :class hug-leading
+| Concern | What the pattern does |
+|---------+-----------------------|
+| Errors | The handler answers the delivery itself. A path that records no outcome answers nothing, and the guard retries it; see [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]]. |
+| Timeouts | AckWait is the redelivery timer. Expiry is what makes the claim, rather than the read, the thing that decides who works. |
+| Retries | Redelivery is the retry, bounded by the delivery limit. A message that fails forever must be bounded or rejected. |
+| Idempotency | Required, and supplied by the claim or by an idempotent write. The server's duplicate window is bounded in time and is not enough; see [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]]. |
+| Observability | A pruned consumer and a redelivered message are both server-side facts. Read them from the consumer, not from the process. |
+
+* Pitfalls
+
+- *A read-then-write guard read as a claim.* Two deliveries both see "not done"
+  and both run the work. Symptom: a step applied twice after a restart.
+- *One consumer per subject.* A renamed subject strands a consumer, and a
+  renamed durable fails to attach and stops the service from starting. Symptom:
+  the service restart-loops on a bare subscription error.
+- *The consumer name and the stream name derived separately.* They drift, and a
+  drift is a new consumer with no position. Derive the consumer from the stream.
+- *Reconciling a consumer by deleting it.* The server accepts an in-place update
+  of the filter set, so a widened filter keeps the consumer's position. Deleting
+  it replays everything the stream still holds.
+- *Interest retention on a stream whose consumer was deleted.* A message
+  published while no consumer filters its subject is dropped on the spot.
+  Symptom: work that vanishes with no trace on either side.
+- *Leaving retention at the default.* A command stream then accumulates a day of
+  every step ever dispatched, which for a gather-trades step is a trade
+  population.
+
+* Security
+
+A claim is a write, so it crosses the same trust boundary as the work it guards:
+the handler runs with the tenant and party of the request context, and the claim
+is keyed inside that context. A forged message cannot claim another tenant's
+step. No other security consequence.
+
+* Resulting context
+
+- Benefits :: The service can be restarted, redeployed and scaled to several
+  replicas without losing a command or applying one twice.
+- Liabilities :: The correctness now depends on server-side consumer state. A
+  subject that is published before its stream declares it is lost under interest
+  retention, so the declaration order is a real constraint.
+
+* In ORE Studio
+
+Every service that serves workflow step commands uses this pattern through
+`projects/ores.service/include/ores.service/messaging/step_command_stream.hpp`.
+The declaration is a `step_routes` table, `serve_step_commands` derives the
+stream, the consumer and the dispatch from it, and the handler answers its own
+delivery with `ores::nats::ack_guard`. The streams and their consumers are
+catalogued in [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and
+durable consumers]].
+
+* Related patterns
+
+- [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — the consumer these prerequisites surround.
+- [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]] — where the stream and its retention are set.
+- [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] — the identity a claim is keyed on.
+- [[id:7F0B8658-F96F-41E1-9938-C6B5FE63EDE2][Claim Before You Work]] — the claim itself, and the lease that gives it back.
+- [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]] — what each handler path answers.
+- [[id:C178293A-4B5C-40D7-82F9-011223344556][Own the Subscription Handle]] — the lifetime half of owning the consumer.
+- [[id:26AE458C-5E23-423B-BEBE-1B55D83A7AA5][Idempotent Receiver]] — the pattern-language page this one grounds.
+
+* Sources
+
+- [[https://docs.nats.io/learn/jetstream/retention-policies][NATS documentation, Retention policies]] — what removes a message under limits, interest and workqueue.
+- [[https://docs.nats.io/learn/jetstream/delivery-and-acknowledgment][NATS documentation, Delivery and acknowledgment]] — the delivery lifecycle and at-least-once.
+- [[https://docs.nats.io/learn/jetstream/acknowledgment][NATS documentation, Ack responses and redelivery]] — the redelivery timer a claim has to survive.
+
+* See also
+
+- [[id:B4E6F1A2-7C3D-4E5F-8A9B-0C1D2E3F4A5B][NATS service patterns]] — the structure note that orders this pattern language, and where to read this page in it.

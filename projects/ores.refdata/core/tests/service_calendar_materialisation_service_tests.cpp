@@ -66,15 +66,21 @@ void write_zz_country_sentinel(scoped_database_helper& h,
     cty_repo.write(h.context(), {generate_country_sentinel(gctx)});
 }
 
-// Nth occurrence of a weekday in a given month/year -- Monday is never a
-// weekend day under the engine's default weekend_mask, so dates built this
-// way are safe to use as deterministic, weekday-independent test fixtures
-// (unlike a fixed month/day, whose weekday -- and thus business-day status
-// -- depends on which year "next year" happens to be at test-run time).
-std::chrono::year_month_day nth_monday_of_june(std::chrono::year y, unsigned occurrence) {
+// Nth occurrence of a weekday in June of a given year. The weekday is never a
+// Saturday or Sunday for the callers that use Monday: such a date is a
+// business day whatever the year, so fixtures built this way stay
+// deterministic (unlike a fixed month/day, whose weekday -- and thus
+// business-day status -- depends on which year "next year" happens to be at
+// test-run time).
+std::chrono::year_month_day
+nth_weekday_of_june(std::chrono::year y, std::chrono::weekday w, unsigned occurrence) {
     using namespace std::chrono;
-    const year_month_weekday ymw{y, June, weekday_indexed{Monday, occurrence}};
+    const year_month_weekday ymw{y, June, weekday_indexed{w, occurrence}};
     return year_month_day{sys_days{ymw}};
+}
+
+std::chrono::year_month_day nth_monday_of_june(std::chrono::year y, unsigned occurrence) {
+    return nth_weekday_of_june(y, std::chrono::Monday, occurrence);
 }
 
 calendar_rule make_first_monday_of_june_rule(scoped_database_helper& h,
@@ -181,6 +187,66 @@ TEST_CASE("regenerate_base_less_calendar_applies_rules_and_exceptions", tags) {
     CHECK(found_rule_holiday);
     CHECK(found_extra_holiday);
     CHECK(found_plain_business_day);
+}
+
+TEST_CASE("regenerate_leaves_a_saturday_rule_where_it_is_when_only_sundays_move", tags) {
+    auto lg(make_logger(test_suite));
+
+    scoped_database_helper h;
+    calendar_repository cal_repo;
+    calendar_rule_repository rule_repo;
+    calendar_date_repository date_repo(h.context());
+    calendar_materialisation_service service(h.context());
+
+    auto gctx = ores::testing::make_generation_context(h);
+    write_zz_country_sentinel(h, gctx);
+
+    auto cal = generate_synthetic_calendar(gctx);
+    cal.source = "user";
+    cal.is_editable = true;
+    cal_repo.write(h.context(), {cal});
+
+    // A first-Saturday rule makes the shift visible without depending on the
+    // year the suite runs in. Under sunday_to_monday -- SouthAfrica's "possibly
+    // moved to Monday" observance -- the Saturday is left alone, so the Monday
+    // after it is an ordinary business day. Under roll_forward_to_monday the
+    // same rule would observe on that Monday and close it.
+    auto rule = make_first_monday_of_june_rule(h, cal.code);
+    rule.weekday = 6; // Saturday, std::chrono::weekday's c_encoding.
+    rule.shift = "sunday_to_monday";
+    rule_repo.write(h.context(), {rule});
+
+    const auto today_y = std::chrono::year_month_day{std::chrono::floor<std::chrono::days>(
+                                                         std::chrono::system_clock::now())}
+                             .year();
+    const auto next_year = today_y + std::chrono::years{1};
+    const auto saturday = nth_weekday_of_june(next_year, std::chrono::Saturday, 1);
+    const auto following_monday =
+        std::chrono::year_month_day{std::chrono::sys_days{saturday} + std::chrono::days{2}};
+
+    const auto written = service.regenerate(cal.code, next_year);
+    CHECK(written > 0);
+
+    auto rows = date_repo.read_latest_by_calendar(cal.code);
+    BOOST_LOG_SEV(lg, debug) << "Materialised " << rows.size() << " calendar_date rows";
+    REQUIRE(!rows.empty());
+
+    bool found_natural_saturday = false;
+    bool found_following_monday = false;
+    for (const auto& row : rows) {
+        if (row.date == saturday) {
+            found_natural_saturday = true;
+            // A weekend day, closed for being a weekend rather than for being
+            // the holiday the rule names.
+            CHECK_FALSE(row.is_business_day);
+        }
+        if (row.date == following_monday) {
+            found_following_monday = true;
+            CHECK(row.is_business_day);
+        }
+    }
+    CHECK(found_natural_saturday);
+    CHECK(found_following_monday);
 }
 
 TEST_CASE("regenerate_exception_overrides_rule_holiday_back_to_business_day", tags) {

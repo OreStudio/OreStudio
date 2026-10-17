@@ -23,6 +23,14 @@ _COMPONENT_FILES_TEMPLATES = {
     "cmake_component_files_tests.mustache",
 }
 
+# The paste kinds ores.cpp.service-app offers for the pieces of a service that
+# outgrows the stub: the body of run(), and the service's own command-line
+# option, whose declaration replaces the default options_description. A service
+# that implements either one supplies it from its model, and the template emits
+# the stub only when nothing implements it, so the two never appear together.
+SERVICE_APP_RUN_BODY_PASTE_KIND = "2CD994C9-83FF-4C41-8909-5AD2BF3DECCC"
+SERVICE_APP_CONFIG_DECL_PASTE_KIND = "F98CC722-3E53-4B86-90E7-69EC5D25702E"
+
 # Templates whose context needs the component's shell-command units injected
 # at render time -- the opted-in models scanned from the modeling directory of
 # the entity being rendered, plus the local units the component's shell
@@ -752,6 +760,25 @@ _SHELL_RECIPE_TEMPLATE = "shell_recipe.org.mustache"
 _HTTP_RECIPE_TEMPLATE = "http_recipe.org.mustache"
 
 
+def _component_include_root(component):
+    """The include root a component's own headers live under.
+
+    An adapter is a module of the composite that owns the namespace, and it
+    shares that composite's include root: ``ores.http.assets`` writes into
+    ``include/ores.http/``. Every other kind owns ``include/<full_name>/``.
+
+    The umbrella header is the output that has to follow, because a module's
+    header belongs with the rest of that module's headers. ``dir`` is the
+    component root on disk relative to ``projects/``, so its first segment is
+    the composite the adapter belongs to.
+    """
+    full_name = component.get('full_name', '')
+    component_dir = component.get('dir', full_name)
+    if component.get('kind') == 'adapter' and '/' in component_dir:
+        return component_dir.split('/')[0]
+    return full_name
+
+
 def resolve_output_path(output_pattern, model_data, model_type):
     """
     Resolve placeholders in an output path pattern.
@@ -859,6 +886,8 @@ def resolve_output_path(output_pattern, model_data, model_type):
         result = result.replace('{component_dir}', component_dir)
         result = result.replace('{component}', name)
         result = result.replace('{component_full}', full_name)
+        result = result.replace(
+            '{component_include_root}', _component_include_root(component))
 
     elif model_type == 'schema' and 'entity' in model_data:
         # Lookup-entity models (#+type: ores.codegen.lookup_entity) load into
@@ -1108,9 +1137,10 @@ def _substitute_paste_markers(text, data):
     every block in the current entity that ``:implements`` that kind UUID.
 
     Org-mode entity models carry an ``implementations`` dict keyed by kind
-    UUID under ``domain_entity`` (or ``junction``, for junction models).
-    For each marker, look up the matching list of code bodies, join them
-    with a blank line, and substitute.
+    UUID under ``domain_entity`` (or ``junction``, for junction models, or
+    ``component``, for a component overview whose service template offers a
+    paste point). For each marker, look up the matching list of code bodies,
+    join them with a blank line, and substitute.
 
     Missing kinds produce an empty substitution and the entire marker line
     (including its newline) is collapsed, leaving no trace in the output.
@@ -1123,7 +1153,8 @@ def _substitute_paste_markers(text, data):
     case-insensitive -- a case mismatch between the two must not silently
     drop an author's paste block, which a case-sensitive dict lookup would
     do without any error or warning."""
-    de = data.get("domain_entity") or data.get("junction") or {}
+    de = (data.get("domain_entity") or data.get("junction")
+          or data.get("component") or {})
     impls = de.get("implementations") or {}
     impls_lower = {k.lower(): v for k, v in impls.items()}
 
@@ -2941,6 +2972,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             ) if include_dir.is_dir() else []
             component['headers'] = headers
             component['has_headers'] = bool(headers)
+
+        # Which of the service-app paste points this component fills. The
+        # templates render their stub and their default options_description only
+        # when the matching point is empty, so a supplied piece never appears
+        # beside the default it replaces.
+        pasted = {k.lower() for k in (component.get('implementations') or {})}
+        component['has_app_run_body'] = (
+            SERVICE_APP_RUN_BODY_PASTE_KIND.lower() in pasted)
+        component['has_app_config_decl'] = (
+            SERVICE_APP_CONFIG_DECL_PASTE_KIND.lower() in pasted)
 
         data['component'] = component
 
@@ -5419,6 +5460,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             shell_menu_name,
             shell_recipe_document,
             sibling_entity_singulars,
+            service_preserved_fields,
             write_record_for,
         )
         for _field in (
@@ -5550,6 +5592,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # The write record's fields, which the service builds a domain object
         # from: one derivation, so the record and the service agree.
         domain_entity['write_fields'] = write_record_for(domain_entity)
+        # The service-owned fields the record cannot carry because only the
+        # row knows them. An update builds the row afresh, so without these
+        # the service's own defaults would clear what its state funnels wrote.
+        domain_entity['preserved_fields'] = service_preserved_fields(domain_entity)
+        domain_entity['has_preserved_fields'] = bool(domain_entity['preserved_fields'])
         _prepare_enum_write_fields(domain_entity)
         _prepare_date_write_fields(domain_entity)
         # The same list as operations, which is what the service and handler

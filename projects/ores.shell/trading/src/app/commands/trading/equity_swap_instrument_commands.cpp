@@ -143,7 +143,8 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
         "add <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <basket_json> "
-        "<currency> <notional> <return_type> <start_date> <maturity_date> <long_short> "
+        "<initial_prices_json> <knock_out_levels_json> <fixed_trigger_levels_json> <currency> "
+        "<notional> <return_type> <start_date> <maturity_date> <long_short> "
         "<payment_frequency_code> <description> <reason> <commentary>");
 
     menu->Insert(
@@ -152,7 +153,8 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
         "set <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> <basket_json> "
-        "<currency> <notional> <return_type> <start_date> <maturity_date> <long_short> "
+        "<initial_prices_json> <knock_out_levels_json> <fixed_trigger_levels_json> <currency> "
+        "<notional> <return_type> <start_date> <maturity_date> <long_short> "
         "<payment_frequency_code> <description> <reason> <commentary> [--version <n>]");
 
     menu->Insert(
@@ -161,8 +163,9 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
         "put-many --count <n> <trade_id> <trade_type_code> <trade_activity_id> <underlying_name> "
-        "<basket_json> <currency> <notional> <return_type> <start_date> <maturity_date> "
-        "<long_short> <payment_frequency_code> <description> <reason> <commentary>");
+        "<basket_json> <initial_prices_json> <knock_out_levels_json> <fixed_trigger_levels_json> "
+        "<currency> <notional> <return_type> <start_date> <maturity_date> <long_short> "
+        "<payment_frequency_code> <description> <reason> <commentary>");
 
     menu->Insert(
         "delete",
@@ -357,8 +360,8 @@ void equity_swap_instrument_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -370,6 +373,15 @@ void equity_swap_instrument_commands::process_add(std::ostream& out,
         read_token(
             req.change.write.underlying_name, parsed->positionals[next++], "underlying_name");
         read_token(req.change.write.basket_json, parsed->positionals[next++], "basket_json");
+        read_token(req.change.write.initial_prices_json,
+                   parsed->positionals[next++],
+                   "initial_prices_json");
+        read_token(req.change.write.knock_out_levels_json,
+                   parsed->positionals[next++],
+                   "knock_out_levels_json");
+        read_token(req.change.write.fixed_trigger_levels_json,
+                   parsed->positionals[next++],
+                   "fixed_trigger_levels_json");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         read_token(req.change.write.notional, parsed->positionals[next++], "notional");
         read_token(req.change.write.return_type, parsed->positionals[next++], "return_type");
@@ -422,8 +434,8 @@ void equity_swap_instrument_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 13 + 2) {
-            fail(out) << "Expected " << (13 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 16 + 2) {
+            fail(out) << "Expected " << (16 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -435,6 +447,15 @@ void equity_swap_instrument_commands::process_set(std::ostream& out,
         read_token(
             req.change.write.underlying_name, parsed->positionals[next++], "underlying_name");
         read_token(req.change.write.basket_json, parsed->positionals[next++], "basket_json");
+        read_token(req.change.write.initial_prices_json,
+                   parsed->positionals[next++],
+                   "initial_prices_json");
+        read_token(req.change.write.knock_out_levels_json,
+                   parsed->positionals[next++],
+                   "knock_out_levels_json");
+        read_token(req.change.write.fixed_trigger_levels_json,
+                   parsed->positionals[next++],
+                   "fixed_trigger_levels_json");
         read_token(req.change.write.currency, parsed->positionals[next++], "currency");
         read_token(req.change.write.notional, parsed->positionals[next++], "notional");
         read_token(req.change.write.return_type, parsed->positionals[next++], "return_type");
@@ -499,8 +520,8 @@ void equity_swap_instrument_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 13 + 2) {
-            fail(out) << "Expected " << (change_count * 13 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 16 + 2) {
+            fail(out) << "Expected " << (change_count * 16 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -514,6 +535,15 @@ void equity_swap_instrument_commands::process_put_many(std::ostream& out,
             read_token(
                 change.write.underlying_name, parsed->positionals[next++], "underlying_name");
             read_token(change.write.basket_json, parsed->positionals[next++], "basket_json");
+            read_token(change.write.initial_prices_json,
+                       parsed->positionals[next++],
+                       "initial_prices_json");
+            read_token(change.write.knock_out_levels_json,
+                       parsed->positionals[next++],
+                       "knock_out_levels_json");
+            read_token(change.write.fixed_trigger_levels_json,
+                       parsed->positionals[next++],
+                       "fixed_trigger_levels_json");
             read_token(change.write.currency, parsed->positionals[next++], "currency");
             read_token(change.write.notional, parsed->positionals[next++], "notional");
             read_token(change.write.return_type, parsed->positionals[next++], "return_type");

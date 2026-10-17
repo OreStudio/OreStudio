@@ -17,14 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_MARKETDATA_CLIENT_HPP
 #define ORES_MARKETDATA_CLIENT_HPP
 
 /**
  * @brief Market data client
  *
- * The typed, authenticated facade non-UI consumers use to reach the market
- * data service, and the streaming FX spot subscription.
+ * Client-side NATS wrapper for the marketdata service: request/response helpers and market data
+ * subscriptions.
  */
 namespace ores::marketdata::client {}
 

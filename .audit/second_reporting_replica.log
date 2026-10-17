@@ -1,0 +1,217 @@
+Initialised logging.
+2026-10-16 15:26:09.722233 [INFO] [ores.reporting.service.app.host] Command line arguments: ["--log-enabled","--log-level","info","--log-to-console","--nats-tls-ca","/home/marco/Development/OreStudio/ores_dev_brave_hopper/build/keys/nats/ca.crt","--nats-tls-cert","/home/marco/Development/OreStudio/ores_dev_brave_hopper/build/keys/nats/ores.reporting.service.crt","--nats-tls-key","/home/marco/Development/OreStudio/ores_dev_brave_hopper/build/keys/nats/ores.reporting.service.key","--http-base-url","http://localhost:20401"]
+2026-10-16 15:26:09.722350 [INFO] [ores.reporting.service.app.application] Starting ores.reporting.service v0.0.28 [x64-linux] Protocol 0.1 (local 3870d5a893 2026/10/16 14:20:39)
+2026-10-16 15:26:09.728967 [INFO] [ores.nats.service.client] mTLS enabled (ca=/home/marco/Development/OreStudio/ores_dev_brave_hopper/build/keys/nats/ca.crt, cert=/home/marco/Development/OreStudio/ores_dev_brave_hopper/build/keys/nats/ores.reporting.service.crt)
+2026-10-16 15:26:09.737041 [INFO] [ores.nats.service.client] NATS connect: nats://localhost:20405 (subject prefix: 'ores.dev.brave_hopper')
+2026-10-16 15:26:09.737193 [INFO] [ores.iam.client.client.service_token_provider] Authenticating service account: ores_brave_hopper_reporting_service
+2026-10-16 15:26:09.809032 [INFO] [ores.iam.client.client.service_token_provider] Service authentication successful for ores_brave_hopper_reporting_service (lifetime=1800s, refresh_margin=360s)
+2026-10-16 15:26:09.895993 [INFO] [ores.utility.database.context_factory] Schema fingerprint expected by this build: 8416fa11a736f85e
+2026-10-16 15:26:09.896036 [INFO] [ores.utility.database.context_factory] Schema fingerprint recorded in database ores_dev_brave_hopper: 8416fa11a736f85e (database was built from commit 89595cac80 at 2026/10/16 14:30:48)
+2026-10-16 15:26:09.896044 [INFO] [ores.utility.database.context_factory] Schema fingerprint check passed.
+2026-10-16 15:26:09.954605 [INFO] [ores.utility.database.context_factory] Schema fingerprint expected by this build: 8416fa11a736f85e
+2026-10-16 15:26:09.954640 [INFO] [ores.utility.database.context_factory] Schema fingerprint recorded in database ores_dev_brave_hopper: 8416fa11a736f85e (database was built from commit 89595cac80 at 2026/10/16 14:30:48)
+2026-10-16 15:26:09.954645 [INFO] [ores.utility.database.context_factory] Schema fingerprint check passed.
+2026-10-16 15:26:09.954716 [INFO] [ores.eventing.service.event_bus] Subscriber 1 subscribed to event type 'ores::reporting::messaging::report_definition_event' (total subscribers: 1)
+2026-10-16 15:26:09.954731 [INFO] [ores.eventing.service.postgres_event_source] Registering canonical event mapping: channel='ores_reporting_report_definitions', prefix='reporting.v1.report_definitions_events'
+2026-10-16 15:26:09.954748 [INFO] [ores.eventing.service.event_bus] Subscriber 2 subscribed to event type 'ores::eventing::domain::published_entity_event<ores::reporting::messaging::report_definition_event>' (total subscribers: 1)
+2026-10-16 15:26:09.954753 [INFO] [ores.eventing.service.postgres_event_source] Registering canonical event mapping: channel='ores_reporting_concurrency_policies', prefix='reporting.v1.concurrency_policies_events'
+2026-10-16 15:26:09.954760 [INFO] [ores.eventing.service.event_bus] Subscriber 3 subscribed to event type 'ores::eventing::domain::published_entity_event<ores::reporting::messaging::concurrency_policy_event>' (total subscribers: 1)
+2026-10-16 15:26:09.954764 [INFO] [ores.eventing.service.postgres_event_source] Registering canonical event mapping: channel='ores_reporting_report_instances', prefix='reporting.v1.report_instances_events'
+2026-10-16 15:26:09.954770 [INFO] [ores.eventing.service.event_bus] Subscriber 4 subscribed to event type 'ores::eventing::domain::published_entity_event<ores::reporting::messaging::report_instance_event>' (total subscribers: 1)
+2026-10-16 15:26:09.954774 [INFO] [ores.eventing.service.postgres_event_source] Registering canonical event mapping: channel='ores_reporting_report_types', prefix='reporting.v1.report_types_events'
+2026-10-16 15:26:09.954791 [INFO] [ores.eventing.service.event_bus] Subscriber 5 subscribed to event type 'ores::eventing::domain::published_entity_event<ores::reporting::messaging::report_type_event>' (total subscribers: 1)
+2026-10-16 15:26:09.954799 [INFO] [ores.eventing.service.postgres_event_source] Starting postgres event source. Registered entities: [ores_reporting_report_types, ores_reporting_report_instances, ores_reporting_concurrency_policies, ores_reporting_report_definitions]
+2026-10-16 15:26:09.969615 [INFO] [ores.database.service.postgres_listener_service] Dedicated listener connection established.
+2026-10-16 15:26:09.969783 [INFO] [ores.database.service.postgres_listener_service] Starting listener thread.
+2026-10-16 15:26:09.972306 [INFO] [ores.database.service.postgres_listener_service] Listener thread started.
+2026-10-16 15:26:09.972611 [INFO] [ores.database.service.postgres_listener_service] Listening on channel: ores_reporting_report_definitions
+2026-10-16 15:26:09.972747 [INFO] [ores.database.service.postgres_listener_service] Listening on channel: ores_reporting_concurrency_policies
+2026-10-16 15:26:09.972871 [INFO] [ores.database.service.postgres_listener_service] Listening on channel: ores_reporting_report_instances
+2026-10-16 15:26:09.973171 [INFO] [ores.service.service.runner] Fetched JWKS public key from IAM
+2026-10-16 15:26:09.973231 [INFO] [ores.security.jwt.jwt_authenticator] JWT authenticator configured with RS256 verifier, issuer: (none), audience: (none)
+2026-10-16 15:26:09.973603 [INFO] [ores.database.service.postgres_listener_service] Listening on channel: ores_reporting_report_types
+2026-10-16 15:26:10.003680 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definition_templates.list (group: ores.reporting.service)
+2026-10-16 15:26:10.003852 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types.list (group: ores.reporting.service)
+2026-10-16 15:26:10.003933 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types.put (group: ores.reporting.service)
+2026-10-16 15:26:10.003982 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types.delete (group: ores.reporting.service)
+2026-10-16 15:26:10.004034 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types_versions.list (group: ores.reporting.service)
+2026-10-16 15:26:10.004085 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types.get (group: ores.reporting.service)
+2026-10-16 15:26:10.004129 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types.get_many (group: ores.reporting.service)
+2026-10-16 15:26:10.004172 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types.put_many (group: ores.reporting.service)
+2026-10-16 15:26:10.004246 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types.delete_many (group: ores.reporting.service)
+2026-10-16 15:26:10.004292 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_types_versions.get (group: ores.reporting.service)
+2026-10-16 15:26:10.004340 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions.list (group: ores.reporting.service)
+2026-10-16 15:26:10.004413 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions.put (group: ores.reporting.service)
+2026-10-16 15:26:10.004487 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions.delete (group: ores.reporting.service)
+2026-10-16 15:26:10.004915 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions_versions.list (group: ores.reporting.service)
+2026-10-16 15:26:10.005235 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions.get (group: ores.reporting.service)
+2026-10-16 15:26:10.005432 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions.get_many (group: ores.reporting.service)
+2026-10-16 15:26:10.005481 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions.put_many (group: ores.reporting.service)
+2026-10-16 15:26:10.005533 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions.delete_many (group: ores.reporting.service)
+2026-10-16 15:26:10.005581 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_definitions_versions.get (group: ores.reporting.service)
+2026-10-16 15:26:10.005633 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.ops.schedule_report_definitions (group: ores.reporting.service)
+2026-10-16 15:26:10.005680 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.ops.unschedule_report_definitions (group: ores.reporting.service)
+2026-10-16 15:26:10.005742 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.run_documents.put (group: ores.reporting.service)
+2026-10-16 15:26:10.005788 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.ops.bind_configuration (group: ores.reporting.service)
+2026-10-16 15:26:10.005837 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.run_documents.get (group: ores.reporting.service)
+2026-10-16 15:26:10.005880 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.run_documents.delete (group: ores.reporting.service)
+2026-10-16 15:26:10.006079 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances.list (group: ores.reporting.service)
+2026-10-16 15:26:10.006133 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances.put (group: ores.reporting.service)
+2026-10-16 15:26:10.006183 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances.delete (group: ores.reporting.service)
+2026-10-16 15:26:10.006228 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances_versions.list (group: ores.reporting.service)
+2026-10-16 15:26:10.006274 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances.get (group: ores.reporting.service)
+2026-10-16 15:26:10.006319 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances.get_many (group: ores.reporting.service)
+2026-10-16 15:26:10.006368 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances.put_many (group: ores.reporting.service)
+2026-10-16 15:26:10.006461 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances.delete_many (group: ores.reporting.service)
+2026-10-16 15:26:10.006801 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.report_instances_versions.get (group: ores.reporting.service)
+2026-10-16 15:26:10.006866 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.ops.trigger_report_instance (group: ores.reporting.service)
+2026-10-16 15:26:10.006940 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies.list (group: ores.reporting.service)
+2026-10-16 15:26:10.006990 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies.put (group: ores.reporting.service)
+2026-10-16 15:26:10.007149 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies.delete (group: ores.reporting.service)
+2026-10-16 15:26:10.007311 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies_versions.list (group: ores.reporting.service)
+2026-10-16 15:26:10.007601 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies.get (group: ores.reporting.service)
+2026-10-16 15:26:10.007809 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies.get_many (group: ores.reporting.service)
+2026-10-16 15:26:10.007873 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies.put_many (group: ores.reporting.service)
+2026-10-16 15:26:10.008000 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies.delete_many (group: ores.reporting.service)
+2026-10-16 15:26:10.008059 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.concurrency_policies_versions.get (group: ores.reporting.service)
+2026-10-16 15:26:10.009051 [INFO] [ores.service.messaging.step_command_stream] Serving 8 step command(s) on 'ores_dev_brave_hopper_reporting_execution_steps' as 'ores_dev_brave_hopper_reporting_execution_steps_consumer'
+2026-10-16 15:26:10.009275 [INFO] [ores.nats.service.client] NATS js-queue-subscribe-multi: 8 subject(s) (durable: ores_dev_brave_hopper_reporting_execution_steps_consumer, group: ores.reporting.service, max-deliver: 10)
+2026-10-16 15:26:10.015330 [INFO] [ores.service.messaging.step_command_stream] Serving 2 step command(s) on 'ores_dev_brave_hopper_reporting_steps' as 'ores_dev_brave_hopper_reporting_steps_consumer'
+2026-10-16 15:26:10.015430 [INFO] [ores.nats.service.client] NATS js-queue-subscribe-multi: 2 subject(s) (durable: ores_dev_brave_hopper_reporting_steps_consumer, group: ores.reporting.service, max-deliver: 10)
+2026-10-16 15:26:10.016729 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.list (group: ores.reporting.service)
+2026-10-16 15:26:10.016829 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.get (group: ores.reporting.service)
+2026-10-16 15:26:10.016948 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.get_many (group: ores.reporting.service)
+2026-10-16 15:26:10.017029 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.put (group: ores.reporting.service)
+2026-10-16 15:26:10.017533 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.put_many (group: ores.reporting.service)
+2026-10-16 15:26:10.017815 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.delete (group: ores.reporting.service)
+2026-10-16 15:26:10.017890 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.delete_many (group: ores.reporting.service)
+2026-10-16 15:26:10.018182 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.list_by_analytic_type_code (group: ores.reporting.service)
+2026-10-16 15:26:10.018467 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.list_by_configuration_type_code (group: ores.reporting.service)
+2026-10-16 15:26:10.018726 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types.list_by_produced_by_file_type_code (group: ores.reporting.service)
+2026-10-16 15:26:10.020581 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types_versions.list (group: ores.reporting.service)
+2026-10-16 15:26:10.020655 [INFO] [ores.nats.service.client] NATS queue-subscribe: ores.dev.brave_hopper.reporting.v1.file_types_versions.get (group: ores.reporting.service)
+2026-10-16 15:26:10.020710 [INFO] [ores.service.service.runner] Registered 58 subscription(s).
+2026-10-16 15:26:10.020749 [INFO] [ores.reporting.service.report_scheduling_service] Starting scheduler reconciliation for report definitions.
+2026-10-16 15:26:10.046195 [INFO] [ores.reporting.service.report_scheduling_service] Reconciliation complete. Tenants: 2, removed: 0, restored: 0, cleared: 0, failed: 0.
+2026-10-16 15:26:10.046256 [INFO] [ores.service.service.heartbeat_publisher] Heartbeat publisher started for 'ores.reporting.service' instance=01a1451b-27fe-7be9-9847-618132a5d950 interval=15s
+2026-10-16 15:26:10.046372 [INFO] [ores.service.service.runner] Service ready.
+2026-10-16 15:26:10.046384 [INFO] [ores.service.service.runner] Waiting for requests...
+2026-10-16 15:28:13.487729 [INFO] [ores.reporting.messaging.report_execution_handler] gather_trades starting | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 definition=26c90761-a658-47c5-9944-f103410a3e2e
+2026-10-16 15:28:13.501052 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:28:13.535589 [INFO] [ores.reporting.messaging.report_execution_handler] gather_trades: resolved 2 book(s) in scope
+2026-10-16 15:28:13.542244 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to running: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:28:13.544708 [ERROR] [ores.reporting.messaging.report_execution_handler] gather_trades failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to running: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:28:13.558025 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:28:13.560381 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:28:13.560492 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:28:13.680377 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during bundle assembly
+2026-10-16 15:28:13.695581 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:28:13.701996 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:28:13.702123 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:28:13.720202 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during market data gathering
+2026-10-16 15:28:13.738772 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:28:13.741815 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:28:13.741926 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:29:49.813086 [INFO] [ores.reporting.messaging.report_execution_handler] gather_trades starting | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 definition=26c90761-a658-47c5-9944-f103410a3e2e
+2026-10-16 15:29:49.826530 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:29:49.845922 [INFO] [ores.reporting.messaging.report_execution_handler] gather_trades: resolved 2 book(s) in scope
+2026-10-16 15:29:49.848799 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to running: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:29:49.848933 [ERROR] [ores.reporting.messaging.report_execution_handler] gather_trades failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to running: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:29:49.861827 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:29:49.864871 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:29:49.865014 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:12.983151 [INFO] [ores.reporting.messaging.report_execution_handler] gather_trades starting | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 definition=26c90761-a658-47c5-9944-f103410a3e2e
+2026-10-16 15:33:12.998800 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:33:13.019518 [INFO] [ores.reporting.messaging.report_execution_handler] gather_trades: resolved 2 book(s) in scope
+2026-10-16 15:33:13.023737 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to running: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.023887 [ERROR] [ores.reporting.messaging.report_execution_handler] gather_trades failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to running: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.037414 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:33:13.039865 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.040054 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.098678 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Workflow compensation triggered
+2026-10-16 15:33:13.112078 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:33:13.114480 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.114589 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.131228 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during result collection
+2026-10-16 15:33:13.146359 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:33:13.148946 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.149084 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.176940 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during compute submission
+2026-10-16 15:33:13.194522 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:33:13.197687 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.197878 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.216001 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during ORE package preparation
+2026-10-16 15:33:13.230463 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:33:13.232865 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.233062 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.250837 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during market data gathering
+2026-10-16 15:33:13.274218 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:33:13.276722 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:33:13.276861 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.532853 [INFO] [ores.service.messaging.step_command_stream] Step 2003e140-7273-4396-a13f-bc44ecffd8d9 is held by another delivery; retrying ores.dev.brave_hopper.reporting.v1.ops.gather_trades in 30000ms
+2026-10-16 15:36:40.620965 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Workflow compensation triggered
+2026-10-16 15:36:40.634668 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:36:40.637308 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.637423 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.660645 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during result collection
+2026-10-16 15:36:40.674201 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:36:40.676485 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.676599 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.700336 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during compute submission
+2026-10-16 15:36:40.713665 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:36:40.715766 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.715856 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.734135 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during ORE package preparation
+2026-10-16 15:36:40.747607 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:36:40.749851 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.749959 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.771859 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during bundle assembly
+2026-10-16 15:36:40.785537 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:36:40.787899 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.788005 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.805161 [INFO] [ores.reporting.messaging.report_execution_handler] fail (compensation) | instance=29f70300-2e4b-44ca-87c2-dfd433d32bc6 error=Report execution failed during market data gathering
+2026-10-16 15:36:40.818582 [INFO] [ores.database.service.tenant_context] Tenant context set to: b0973dd8-2eac-49aa-9306-80f9a068eeea
+2026-10-16 15:36:40.821258 [ERROR] [ores.reporting.repository.report_instance_repository] Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:36:40.821349 [ERROR] [ores.reporting.messaging.report_execution_handler] Failed to mark instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 as failed: Repository error: Executing INSERT failed: ERROR:  report_instance 29f70300-2e4b-44ca-87c2-dfd433d32bc6 cannot move from completed to failed: no such transition
+CONTEXT:  PL/pgSQL function ores_reporting_validate_instance_transition_fn() line 75 at RAISE
+2026-10-16 15:37:24.993340 [INFO] [ores.service.service.runner] Shutdown signal received. Draining...
+2026-10-16 15:37:24.993474 [INFO] [ores.service.service.runner] Shutdown complete: ores.reporting.service
+2026-10-16 15:37:24.993597 [INFO] [ores.eventing.service.postgres_event_source] Stopping postgres event source.
+2026-10-16 15:37:24.993608 [INFO] [ores.database.service.postgres_listener_service] Stopping listener thread.

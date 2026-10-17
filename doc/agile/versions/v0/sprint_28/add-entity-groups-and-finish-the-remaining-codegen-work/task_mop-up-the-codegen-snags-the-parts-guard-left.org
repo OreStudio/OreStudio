@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 7CAF12CD-807D-47FB-B481-81394268513F
+:END:
+#+title: Task: Mop up the codegen snags the parts guard left
+#+description: The parts now generate their presence files, but not their CMake: generate.py holds the graph off every ores.cmake.* facet for a sub-component project, because 93 of the 94 checked-in src/CMakeLists.txt diverge from the template baseline and regenerating one deletes behaviour. The same shape leaves ores.geo's hand-migrated CMake and ores.history/api's hand-written header-only INTERFACE library reconciling against templates that no longer match them. Sources: the captures bring-the-part-cmake-link-lists-under-the-model and reconcile-the-generated-files-main-hand-edited.
+#+type: task
+#+level: s1
+#+filetags: :add-entity-groups-and-finish-the-remaining-codegen-work:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr: 3400
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Delete the guard in generate.py that keeps the codegen graph out of a sub-component project's CMake. Every part's src/CMakeLists.txt and tests/CMakeLists.txt is generated from its model again, and the two files main hand-wrote against their templates are reconciled rather than reverted.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F271E263-0E08-4746-8A35-0F66CC4CEB42][Add entity groups and finish the remaining codegen work]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- The ores.cmake.* guard in generate.py is gone, and the graph renders a part's CMake the way it renders any other component's.
+- Every component's link list is model-derived: the api, core and service src templates carry the baseline, and a component that deviates says so in extra_dependencies. No component's links change.
+- ores.cmake.component.api_src and .core_src emit component_files.cmake rather than file(GLOB_RECURSE), completing the 2026-07-30 migration that 88 of the 94 checked-in files already follow.
+- ores.geo's CMake is regenerated from its model, with the ores.database and ores.telemetry.core links its sources need, and the component builds.
+- ores.history/api declares header_only, so its template emits the INTERFACE library it is hand-written as.
+- compass check passes, whole-tree build and ctest included.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3400][#3400]] | [agile] File the codegen mop-up task |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

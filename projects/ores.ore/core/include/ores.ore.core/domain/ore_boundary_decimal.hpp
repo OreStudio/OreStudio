@@ -22,6 +22,7 @@
 
 #include "ores.ore.core/domain/domain_xsd.hpp"
 #include "ores.utility/decimal/decimal.hpp"
+#include <optional>
 #include <type_traits>
 
 /**
@@ -90,6 +91,40 @@ template <typename Leaf>
 void set_exact(Leaf& leaf, const ores::utility::decimal::decimal& value) {
     static_cast<float&>(leaf) = static_cast<float>(value.to_double());
     leaf.lexical(value.to_string());
+}
+
+/**
+ * @brief Sets an optional money leaf to a stored decimal.
+ *
+ * @details An absent value leaves the leaf unset. The leaf is the same lexical
+ * float set_exact writes, so the digits survive the round trip. The leaf type
+ * is a template parameter because this header does not carry the binding's
+ * struct definitions.
+ */
+template <typename Leaf>
+void set_money(xsd::optional<Leaf>& field, const ores::utility::decimal::decimal& value) {
+    Leaf leaf;
+    set_exact(leaf, value);
+    field = leaf;
+}
+
+template <typename Leaf>
+void set_money(xsd::optional<Leaf>& field,
+               const std::optional<ores::utility::decimal::decimal>& value) {
+    if (value)
+        set_money(field, *value);
+}
+
+/**
+ * @brief Appends a money value to a binding list, digits and all.
+ *
+ * @details A barrier's levels are a list in the binding, and the list element
+ * is the same lexical float the other money leaves are.
+ */
+template <typename Vector>
+void push_money(Vector& levels, const ores::utility::decimal::decimal& value) {
+    levels.emplace_back();
+    set_exact(levels.back(), value);
 }
 
 }

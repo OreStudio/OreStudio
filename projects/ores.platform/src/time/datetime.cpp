@@ -30,7 +30,17 @@ namespace ores::platform::time {
 
 std::string datetime::to_iso8601_utc(const std::chrono::system_clock::time_point& tp) {
 
-    const auto time = std::chrono::system_clock::to_time_t(tp);
+    // Split the instant into whole seconds and the microseconds under them. The
+    // fraction is formatted here rather than left to strftime, which has no
+    // sub-second field, so a timestamp written here keeps the microsecond the
+    // database column also keeps.
+    const auto since_epoch =
+        std::chrono::duration_cast<std::chrono::microseconds>(tp.time_since_epoch());
+    const auto whole = std::chrono::floor<std::chrono::seconds>(since_epoch);
+    const auto fraction = since_epoch - whole;
+
+    const auto time =
+        std::chrono::system_clock::to_time_t(std::chrono::system_clock::time_point{whole});
     std::tm tm_buf;
 
     if (time_utils::gmtime_safe(&time, &tm_buf) == nullptr)
@@ -38,6 +48,7 @@ std::string datetime::to_iso8601_utc(const std::chrono::system_clock::time_point
 
     std::ostringstream oss;
     oss << std::put_time(&tm_buf, "%Y-%m-%d %H:%M:%S");
+    oss << '.' << std::setw(6) << std::setfill('0') << fraction.count();
     oss << 'Z';
     return oss.str();
 }
@@ -101,7 +112,26 @@ parse_utc_timestamp(const std::string& str, const bool designator_required, cons
     if (clean.size() > 10 && clean[10] == 'T')
         clean[10] = ' ';
 
-    return parse_utc_format(clean, "%Y-%m-%d %H:%M:%S", who, str);
+    // A decimal fraction carries up to six digits of microseconds. PostgreSQL
+    // states it only when it is non-zero, so the dot is optional, and a caller
+    // may supply fewer than six digits.
+    auto whole = clean;
+    std::chrono::microseconds fraction{0};
+    if (const auto dot = clean.rfind('.'); dot != std::string::npos) {
+        const auto digits = clean.substr(dot + 1);
+        if (digits.empty() || digits.find_first_not_of("0123456789") != std::string::npos)
+            throw std::invalid_argument(std::string(who) +
+                                        ": malformed fractional seconds in: " + str);
+        whole = clean.substr(0, dot);
+        // Right-pad to the six digits a time_point is read back at; anything past
+        // six is below the microsecond it keeps.
+        const auto six = digits.size() >= 6
+                             ? digits.substr(0, 6)
+                             : digits + std::string(6 - digits.size(), '0');
+        fraction = std::chrono::microseconds{std::stoll(six)};
+    }
+
+    return parse_utc_format(whole, "%Y-%m-%d %H:%M:%S", who, str) + fraction;
 }
 
 }

@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 9F5AE053-FBD3-4E4C-BE77-FB261E60A0A7
+:END:
+#+title: Task: Review the FX family's data model
+#+description: Walk the Regime 2 checklist over the seven FX instrument models, their generated tables and C++, and the ORE import and export seam, and record the findings as an investigation.
+#+type: task
+#+level: s1
+#+filetags: :audit-the-fx-instrument-family:sprint_28:v0:
+#+owner: marco
+#+branch: feature/audit-the-fx-instrument-family-against-dod
+#+pr: 3387
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CB068089-426F-4F08-AE58-0CAAD36DC43A][Audit the FX instrument family against the data-oriented design guidelines]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the evidence the parent story needs: walk the Regime 2 checklist over
+the FX instrument family and record what holds, what does not, and which
+findings are recorded deferrals.
+
+The review is read-only. It changes no model, no generated artefact and no
+mapper.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CB068089-426F-4F08-AE58-0CAAD36DC43A][Audit the FX instrument family against the data-oriented design guidelines]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                       |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- Walk every Regime 2 decision check over the seven FX entity models, with the evidence for each result. Done: the results are the *What holds* and *Findings* tables of the investigation.
+- Spot-check the invariant checks once and state what was read. Done: 29 domain headers, 14 codecs, the repository entities and the protocols.
+- Map each finding to a criterion, with file-and-line evidence. Done: ten findings.
+- Separate a defect from a recorded decision. Done: the 20 soft references, the service read loops and the nullable-string convention are recorded as component-wide, not as family oversights.
+- State what was not checked. Done: the *Out of scope* section of the parent story.
+
+* Plan
+
+1. Scope the family: the seven entity models, their seven tables, and the
+   generated artefacts.
+2. Classify the family against the three regimes.
+3. Walk the Regime 2 decision checks per model, and the invariant checks once.
+4. Read the ORE import and export seam, because the *One-way numeric conversion*
+   check is decided there.
+5. Re-check every critical claim in the main thread before recording it.
+
+* Measurements
+
+Measured at =2a0b0e8993=, the merge base with =main=, on a clean checkout. The
+same table is in the investigation, which is where the findings that use it
+live.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| FX entity models | 7 | =ls projects/ores.trading/modeling/ores.trading.fx_*.org= | 2a0b0e8993 |
+| Declared columns, the seven models | 98 | column census over the =** name= headings | 2a0b0e8993 |
+| Columns in the generated tables | 154 (22 numeric, 75 text) | =create table= body parsed per file | 2a0b0e8993 |
+| =exact_decimal= call sites in the FX mapper | 35 | =grep -c exact_decimal projects/ores.ore/core/src/domain/fx_instrument_mapper.cpp= | 2a0b0e8993 |
+| =set_exact= call sites in the FX mapper | 0 | =grep -c set_exact projects/ores.ore/core/src/domain/fx_instrument_mapper.cpp= | 2a0b0e8993 |
+| Money leaves carrying the lexical form, whole tree | 6 | =grep -c moneyFloat projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp= is 7: the leaf and six members | 2a0b0e8993 |
+| Real foreign keys in the seven tables | 0 | =grep -i references projects/ores.sql/create/trading/trading_fx_*= | 2a0b0e8993 |
+| Soft-reference claims in the seven models | 20 | =grep -ic 'soft fk' projects/ores.trading/modeling/ores.trading.fx_*.org= | 2a0b0e8993 |
+| Nullable columns with a non-optional string domain member, trading | 91, of which 19 are FX | =nullable: true= beside =:cpp_type: std::string= | 2a0b0e8993 |
+| Per-key read loops in the seven services | 21 | the three loops of =get_many= and =put_many= per service | 2a0b0e8993 |
+| FX codes in the catalogue, routed | 26, of which 16 | =ores.trading.trade_type_catalogue.org:66-91= | 2a0b0e8993 |
+
+* Notes
+
+- The review found the structural half clean and the conversion seam unmigrated.
+  The one claim that took two passes is the conversion seam: the mapper calls
+  =exact_decimal= at all 35 money sites, which reads as correct, and no FX
+  binding carries the lexical form the exact overload needs.
+- Three early findings were withdrawn during the re-check: the nested
+  =identity= and =audit= projection, the nullable strings, and the soft
+  references. Each is a component-wide pattern, not a family defect.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3387][#3387]] | [agile] Review the FX family's data model against the DOD guidelines |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The review is recorded as [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]].
+Regime 2 scores 2 of 5 with debt High: the structural half is a clean 5, and
+the debt sits in the ORE conversion seam, one encoded-JSON column and one
+column that disagrees with its domain type.

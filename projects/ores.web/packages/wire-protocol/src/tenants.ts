@@ -315,6 +315,7 @@ const wireWorkflowInstanceSummarySchema = z.object({
     created_by: z.string().default(''),
     created_at: z.string().default(''),
     completed_at: z.string().nullable().default(null),
+    last_event_at: z.string().nullable().default(null),
     error: z.string().default(''),
     target_kind: z.string().default(''),
     target_id: z.string().default(''),

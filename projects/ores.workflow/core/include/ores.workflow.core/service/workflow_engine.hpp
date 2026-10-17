@@ -31,6 +31,7 @@
 #include "ores.workflow.api/domain/workflow_step.hpp"
 #include "ores.workflow.api/service/workflow_registry.hpp"
 #include "ores.workflow.core/export.hpp"
+#include "ores.workflow.core/repository/step_claim_repository.hpp"
 #include "ores.workflow.core/repository/workflow_instance_repository.hpp"
 #include "ores.workflow.core/repository/workflow_plan_dependency_repository.hpp"
 #include "ores.workflow.core/repository/workflow_plan_step_repository.hpp"
@@ -248,6 +249,13 @@ private:
      *
      * Reads the instance, applies the change and writes it back, because the
      * generated repository exposes no state-transition method of its own.
+     *
+     * This is the one place an instance's state changes, so it is also where
+     * the two timestamps a reader polls are written. =last_event_at= moves on
+     * every transition, which is what tells a live run from an abandoned one.
+     * =completed_at= is written on the first transition into a terminal state
+     * and cleared when the run goes back to work, so a resumed run carries the
+     * time it finished rather than the time it first stopped.
      */
     void set_instance_state(const boost::uuids::uuid& instance_id,
                             const boost::uuids::uuid& state_id,
@@ -259,15 +267,83 @@ private:
      *
      * Reads the step, applies the change and writes it back, because the
      * generated repository exposes no state-transition method of its own.
+     *
+     * The transition is logged here, so every move of a step -- dispatched,
+     * answered, compensated, retried, re-dispatched by a recovery and failed by
+     * the deadline pass -- is one line a reader can follow. =started_at= is
+     * written when the step first goes to work. =completed_at= is written when
+     * the step first settles and cleared when a retry puts it back to work, so
+     * a resumed step does not carry the time its earlier attempt stopped.
+     *
+     * @param step          The step, as the caller read it. Its identity, name
+     *                      and position go to the log line.
+     * @param state_id      The state the step moves to.
+     * @param response_json The step's answer, when it has one, or empty.
+     * @param error         The step's failure, when it has one, or empty.
+     * @param step_log_json The service's own log for the step, or empty.
      */
-    void set_step_state(const boost::uuids::uuid& step_id,
+    void set_step_state(const domain::workflow_step& step,
                         const boost::uuids::uuid& state_id,
                         const std::string& response_json,
                         const std::string& error,
                         const std::string& step_log_json = {});
 
+    /**
+     * @brief Marks an instance as having been acted on, leaving its state alone.
+     *
+     * Work happens between an instance's own transitions -- a start dispatches
+     * its first steps, a step command is re-dispatched by a recovery -- and a
+     * reader watching =last_event_at= for silence must not read that work as
+     * abandonment.
+     *
+     * A run that will never finish is how the engine leaves the runs it cannot
+     * reach: a test tenant that was dropped with a run still in progress, or a
+     * run whose worker never reported. Nothing rewrites such a run, so its
+     * =last_event_at= stops where it stopped and a reader tells it from a live
+     * run by asking whether that timestamp is older than the run's own step
+     * budget. Failing them here would be a guess -- the work may be real, and a
+     * service that comes back is one retry away -- so the engine records the
+     * truth and leaves the decision to a person.
+     */
+    void note_instance_activity(const boost::uuids::uuid& instance_id);
+
+    /**
+     * @brief Whether an instance state is one a run never leaves by itself.
+     *
+     * A run that reaches one of these has finished, whatever it finished as: a
+     * completed run, a run stopped on a failure, and a run whose work was
+     * rolled back are all done. A person reading the timestamps wants to know
+     * when each of them stopped rather than which of the three it was.
+     */
+    [[nodiscard]] bool is_instance_terminal(const boost::uuids::uuid& state_id) const;
+
+    /**
+     * @brief Whether a step state is one a step reaches and stops in.
+     *
+     * A failed step counts: it is not moving on by itself, and the only way
+     * back is the retry a person asks for.
+     */
+    [[nodiscard]] bool is_step_terminal(const boost::uuids::uuid& state_id) const;
+
     /** @brief Stamps a step as having published its command. */
     void stamp_command_published(const boost::uuids::uuid& step_id);
+
+    /**
+     * @brief Settles the forward steps a rollback has abandoned.
+     *
+     * A run rolls back when one of its steps reported a failure. The steps it
+     * had dispatched beside that one are still in flight and will never be
+     * waited on again, so leaving them =in_progress= has a compensated run
+     * read as unfinished and report a step that is still running. They are
+     * failed here, which is the only terminal state the step machine reaches
+     * from =in_progress=, and the reason says why.
+     *
+     * Called as the run decides to roll back rather than when the rollback
+     * ends, so a sibling that answers late is a duplicate rather than an
+     * answer that could advance a run already on its way out.
+     */
+    void settle_abandoned_forward_steps(const boost::uuids::uuid& instance_id,
+                                        const std::string& reason);
 
     /**
      * @brief One step the engine is waiting on an answer for.
@@ -375,6 +451,7 @@ private:
     repository::workflow_plan_step_repository plan_step_repo_;
     repository::workflow_plan_dependency_repository plan_dependency_repo_;
     repository::workflow_step_repository step_repo_;
+    repository::step_claim_repository claim_repo_;
 
     /**
      * @brief When each service last reported for duty, by canonical name.

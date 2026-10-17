@@ -5,6 +5,7 @@
 #+name: scheduler.api
 #+full_name: ores.scheduler.api
 #+description: Domain types and NATS protocol schemas for the scheduler component.
+#+brief: Scheduler domain types and NATS protocol schemas
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :scheduler:api:component:

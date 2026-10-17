@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:user_journey:refdata:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-16
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator defines how a tenor code resolves under a convention, down to the date it produces on a named calendar.
@@ -171,7 +171,7 @@ it.
 |------+-----------+---------+--------|
 | See the tenors | List the catalog | =refdata.v1.tenors.list= | exists |
 | See the tenors | Offer the kind filter | =refdata.v1.tenor_kinds.list= | exists |
-| See the tenors | Resolve each row for the resolution column | no operation (a resolve operation would be needed) | missing |
+| See the tenors | Resolve each row for the resolution column | =refdata.v1.ops.resolve_tenor= | exists |
 | Open the tenor | Read the row | =refdata.v1.tenors.get= | exists |
 | Open the tenor | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
 | Open the tenor | Write the row | =refdata.v1.tenors.put= | exists |
@@ -184,7 +184,7 @@ it.
 | Its resolution | Write the set membership, the anchor override or the offsets | =refdata.v1.tenor_convention_resolutions.put=, =.delete= | exists |
 | The schedule | List the schedule axes | =refdata.v1.tenor_schedules.list= | exists |
 | The schedule | List the events an event-lookup axis reads | =refdata.v1.calendar_events.list= | partial |
-| The resolved dates | Resolve the tenor to a date | no operation (a resolve operation would be needed) | missing |
+| The resolved dates | Resolve the tenor to a date | =refdata.v1.ops.resolve_tenor= | exists |
 | The resolved dates | Offer the roll rules | =refdata.v1.business_day_convention_types.list= | exists |
 | The resolved dates | Read the calendar a date rolls on | =refdata.v1.calendars.list= | exists |
 | Review and write | Write the tenor | =refdata.v1.tenors.put= | exists |
@@ -193,12 +193,18 @@ it.
 | Check the history | Read every version with its diff | =refdata.v1.history.get= (=entity_type= =ores.refdata.tenor=) | exists |
 | Check the history | List the version rows | =refdata.v1.tenors_versions.list= | exists |
 | Check the history | Revert by writing the old values | =refdata.v1.tenors.put= | exists |
-| The refusal | Carry the refusal to the screen | no message (the server throws) | missing |
+| The refusal | Carry the refusal to the screen | =refdata.v1.ops.resolve_tenor= (the =result= on its response) | exists |
 
-Two coverage rows are =missing=, and both need one thing the server does not
-carry: an operation that resolves a tenor over the wire. The resolution column
-and the resolved-dates step are the same missing operation, drawn in two
-places. A third row is =missing= for the refusal that operation would carry.
+No coverage row is =missing= any more. The three that were were one
+operation, and it now exists:
+=refdata.v1.ops.resolve_tenor= resolves a tenor under a convention and
+replies with the anchor date, the date before the roll, the adjusted date,
+the roll rule and the calendar it rolled on. The resolution column and the
+resolved-dates step are the same operation drawn in two places, and the
+refusal travels on the same reply: a resolution the server declines is a
+=result= with a non-ok outcome on =resolve_tenor_response=, naming the step
+that refused and the row at fault, rather than a thrown exception reaching
+the screen as a 500.
 
 The =partial= rows are gone. Every one of them was waiting on something this
 journey's own work has since built: the resolution junction was read-only and

@@ -17,14 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_REFDATA_CLIENT_HPP
 #define ORES_REFDATA_CLIENT_HPP
 
 /**
- * @brief Consumer-side reference data helpers.
+ * @brief Reference data client
  *
- * Convention-aware formatting of currency pair rates, and the tenant-scoped
- * cache of currency pair conventions a client keeps between calls.
+ * Consumer-side reference-data helpers: convention-aware FX rate formatting and the
+ * currency-pair-convention tenant cache.
  */
 namespace ores::refdata::client {}
 

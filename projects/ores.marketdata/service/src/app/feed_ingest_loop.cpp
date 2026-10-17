@@ -38,6 +38,7 @@
 #include <format>
 #include <optional>
 #include <string_view>
+#include <vector>
 
 namespace ores::marketdata::service::app {
 
@@ -216,6 +217,41 @@ domain::market_series make_feed_series(const domain::feed_binding& binding,
     return series;
 }
 
+/**
+ * @brief The dates one tick is recorded under: the day it was published, and the close
+ * of the last completed business day.
+ *
+ * ORE reads a market time series by the date it carries -- a market.txt line's first
+ * field, which the export takes from the observation's own datetime -- and a report
+ * that values at the previous business day's close asks for that date. A live producer
+ * can only publish a value it holds now, so a deployment whose feeds started today has
+ * no close for yesterday and every end-of-day report fails on a valuation date with no
+ * quotes. Recording each observation under the close as well gives the series a
+ * valuation date's worth of history from the producer's first tick, so a fresh
+ * environment can value a report at the close it values at, with nothing run by hand
+ * and no backfill of dates the producer never saw.
+ *
+ * One business day is as far back as this reaches, because one is what an end-of-day
+ * report asks for; a longer lookback would be history the producer has no state for.
+ * The time of day is kept, so the rows of one date stay in the order they arrived and
+ * a reader that takes the last one takes the newest close.
+ */
+std::vector<std::chrono::system_clock::time_point>
+observation_dates(std::chrono::system_clock::time_point published_at) {
+    using namespace std::chrono;
+    std::vector<system_clock::time_point> dates{published_at};
+
+    const auto published_day = floor<days>(published_at);
+    auto close_day = published_day - days{1};
+    while (weekday{close_day} == Saturday || weekday{close_day} == Sunday)
+        close_day -= days{1};
+
+    // A producer that publishes on a weekend records no second date: the close a report
+    // asks for is already the one the last business day of ticks recorded.
+    if (weekday{published_day} != Saturday && weekday{published_day} != Sunday)
+        dates.push_back(close_day + (published_at - published_day));
+    return dates;
+}
 bool feed_ingest_loop::persist(const domain::feed_binding& binding,
                                const datum::market_datum& tick_datum,
                                const messaging::market_tick& tick) {
@@ -256,16 +292,18 @@ bool feed_ingest_loop::persist(const domain::feed_binding& binding,
             existing.push_back(std::move(series));
         }
 
-        domain::market_observation obs;
-        obs.id = uuid_gen();
-        obs.tenant_id = tenant_ctx.tenant_id();
-        obs.party_id = binding.party_id;
-        obs.series_id = existing.front().id;
-        obs.observation_datetime = tick.observation_time;
-        obs.value = tick.value;
-        obs.source = tick.source;
-        obs.oresmd_uri = tick.oresmd_uri;
-        repository::market_observation_repository{}.insert(tenant_ctx, obs);
+        for (const auto& recorded_at : observation_dates(tick.observation_time)) {
+            domain::market_observation obs;
+            obs.id = uuid_gen();
+            obs.tenant_id = tenant_ctx.tenant_id();
+            obs.party_id = binding.party_id;
+            obs.series_id = existing.front().id;
+            obs.observation_datetime = recorded_at;
+            obs.value = tick.value;
+            obs.source = tick.source;
+            obs.oresmd_uri = tick.oresmd_uri;
+            repository::market_observation_repository{}.insert(tenant_ctx, obs);
+        }
         return true;
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to store the tick for " << tick.oresmd_uri

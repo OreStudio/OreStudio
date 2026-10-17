@@ -11,34 +11,60 @@
 
 * Summary
 
-IMM (International Monetary Market) dates are the quarterly expiry/delivery
-dates used by exchange-traded interest rate futures and CDS roll
-conventions: the first business day following 20 March, 20 June, 20
-September, and 20 December each year. They are a fixed, exchange-defined
-alternative to the ordinary [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
-grid, used wherever an instrument's own contract cycle — rather than a
-horizon-date-relative calculation — determines maturity.
+Two different sets of quarterly dates trade under the name "IMM date", and
+they are not the same dates. This page states both, because the difference
+matters to the resolver, and records which one ORE Studio models.
+
+| Convention | Dates | Used by |
+|------------+-------+---------|
+| True IMM date | The *third Wednesday* of March, June, September, December — between the 15th and the 21st | Exchange-traded money-market and FX futures and options (Eurodollar, Short Sterling) |
+| CDS roll date | *20 March, 20 June, 20 September, 20 December*, exactly, weekend or not | Credit default swap termination dates and quarterly premium dates |
+
+The second set is the one usually meant by "IMM date" in a credit context. It
+is not the IMM date at all: it falls close to it, so the market calls it that
+by abuse of language. The difference is visible in almost any quarter — in
+March 2027 the third Wednesday is the 17th, while the CDS roll date is the
+20th, a Saturday.
+
+* Which one this project models, and why
+
+The resolver's =ROLL_QUARTER= schedule models the *CDS roll date*: the 20th of
+the quarter month, exactly, with no business-day adjustment. Its only consumer
+is =CREDIT_CDS_IMM=, a credit convention, and the CDS rule is the one that
+underpins it. The absence of a business-day adjustment is the point of the
+rule rather than an omission: CDS standardisation fixes one termination date
+per series so that every contract in the series matures on the same day, and
+the date is allowed to fall on a weekend. Advancing it to the next business
+day would resolve two contracts in one series to different dates.
+
+The true IMM date — the third Wednesday — is *not* modelled. Exchange-traded
+STIR futures, which use it, have no resolver schedule today. Adding one means
+a second schedule alongside =ROLL_QUARTER=, not a change to it, because the
+two rules disagree in most quarters. See the gap noted under "Uses" below.
 
 * Detail
 
 ** Definition and notation
 
-An IMM date is the first business day following 20 March, 20 June, 20
-September, or 20 December. Notation =nIMM= refers to rolling forward by n
-IMM quarters (e.g. =IMM3= is three IMM dates forward). Unlike a standard
-[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]], an IMM date is not
+The true IMM date is the third Wednesday of March, June, September, or
+December. The CDS roll date is the 20th of those months, without adjustment.
+Notation =nIMM= refers to rolling forward by n quarters (e.g. =IMM3= is three
+roll dates forward), and it inherits the same ambiguity: in a credit
+document it counts 20ths, and in a futures document it counts third
+Wednesdays. Unlike a standard
+[[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]], neither date is
 computed relative to a [[id:6857871D-CFDE-4D9F-A83A-4A84CD3F4448][horizon
-date]] by calendar arithmetic — it is one of a fixed set of four dates per
-year, and "the next IMM date" or "IMM3 from here" is a lookup into that
+date]] by calendar arithmetic — each is one of a fixed set of four dates per
+year, and "the next roll date" or "IMM3 from here" is a lookup into that
 fixed set, not an arithmetic offset.
 
 ** The roll schedule in the resolution model
 
 In the unified tenor model (decided 2026-08-09 — see
 [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s "How a tenor
-resolves" section), the IMM roll dates are the =ROLL_QUARTER= schedule:
-*closed-form*, derivable by rule (20th + business-day adjustment), so
-the dates stay code-side in the resolver rather than being seeded as
+resolves" section), the CDS roll dates are the =ROLL_QUARTER= schedule:
+*closed-form*, derivable by rule (the 20th of the quarter month, exactly),
+so the dates stay code-side in the resolver rather than being seeded as
 data. A CDS tenor resolves under =SCHEDULE_STEP= as "anchor + calendar
 offset, then n steps along ROLL_QUARTER": =1Y 1RQ= is one year offset
 plus one roll step. The old =IMM_ROLL= algorithm row is superseded —
@@ -52,16 +78,24 @@ Bootstrapping Architecture]].
 
 - As an alternative bucketing scheme for position reporting, alongside
   standard monthly [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][tenor]]
-  buckets.
-- As the underlying schedule for Eurodollar / Short Sterling futures used
-  in USD curve bootstrapping — see
-  [[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]'s
-  Short-Term Interest Rate (STIR) Futures section, where the nearest IMM
-  quarterly contract is discounted back to fill the =6M=--=2Y= gap.
+  buckets. This use wants the true IMM dates, so it is not served by
+  =ROLL_QUARTER= today.
 - In CDS curves, where all standard tenors resolve relative to the nearest
   following CDS roll date rather than to the horizon date directly — see
   [[id:0AC88EB3-DB7F-4135-9DA6-0ED4583FEC29][Tenor]]'s Credit/CDS Curves
-  convention, which this fixed roll-date set underpins.
+  convention, which this fixed roll-date set underpins. This is the use
+  =ROLL_QUARTER= serves.
+
+** Gap: the true IMM date has no schedule
+
+Exchange-traded STIR futures settle on the true IMM date — the third
+Wednesday — and
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]]'s
+Short-Term Interest Rate (STIR) Futures section has the nearest IMM quarterly
+contract discounted back to fill the =6M=--=2Y= gap. Nothing in the resolver
+computes that date today, and =ROLL_QUARTER= cannot stand in for it: the two
+rules disagree in most quarters. A futures IMM schedule is a second schedule
+alongside =ROLL_QUARTER=, and it is not built.
 
 * See also
 

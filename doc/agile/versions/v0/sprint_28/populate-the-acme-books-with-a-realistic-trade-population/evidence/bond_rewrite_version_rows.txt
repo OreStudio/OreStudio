@@ -1,0 +1,179 @@
+Evidence for task CF5876D6-721E-434C-83FD-286D861EF265
+"Prove a bond rewrite versions the parent"
+
+Measured 2026-10-16 on branch prove/the-three-acme-population-acceptances
+at commit 5d0fa921e8, against the database recreated and provisioned once
+the same day. ACME tenant b7fe3d66-2aed-4d1c-a19b-0406b689640b.
+
+The suite output is beside this file as bond_versioning_test_output.txt.
+
+
+== 1. The test, re-run ==
+
+$ set -a && . ./.env && set +a && export ORES_TEST_LOG_ENABLED=false && \
+  build/output/linux-clang-release-ninja/publish/bin/ores.trading.core.tests \
+  "[bond][versioning]" -s
+===============================================================================
+All tests passed (9 assertions in 2 test cases)
+
+test case 1, rewriting_a_bond_leg_advances_the_parent_trade_version:
+  REQUIRE( after_leg.size() == before_leg.size() + 1 )  with expansion: 3 == 3
+  CHECK( after_leg.back().version == before_leg.back().version + 1 )
+test case 2, as_of_read_reports_the_legs_current_at_each_parent_version:
+  CHECK( earlier.empty() )                              with expansion: true
+  REQUIRE( current.size() == 1 )                        with expansion: 1 == 1
+  CHECK( current[0].leg_role == "trs_funding" )          "trs_funding" == "trs_funding"
+  CHECK( current[0].version == 1 )                      with expansion: 1 == 1
+  REQUIRE( rows.size() == 1 )                           with expansion: 1 == 1
+  CHECK( rows[0].leg_role.value() == "trs_funding" )     "trs_funding" == "trs_funding"
+
+The path is the generated repository: bond_leg_repository().write(ctx, leg),
+the same write the service makes. The test writes real rows to
+ores_dev_bright_faraday under its own test tenant.
+
+
+== 2. The rows, from the database the test wrote to ==
+
+test tenant d1fc28b0-f294-4570-9106-126f75984b62,
+trade 01a1468f-c7f0-76e8-b2e8-1ace370bda3d:
+
+$ psql ... -c "select version, valid_from, valid_to from ores_trading_trades_tbl
+  where id='01a1468f-c7f0-76e8-b2e8-1ace370bda3d' order by version"
+ version |          valid_from           |           valid_to
+---------+-------------------------------+-------------------------------
+       1 | 2026-10-16 22:13:10.48201+01  | 2026-10-16 22:13:10.558273+01
+       2 | 2026-10-16 22:13:10.558431+01 | 2026-10-16 22:13:10.56776+01
+       3 | 2026-10-16 22:13:10.567863+01 | 9999-12-31 23:59:59+00
+(3 rows)
+
+$ psql ... -c "select trade_id, leg_role, leg_number, version, valid_from, valid_to
+  from ores_trading_bond_legs_tbl where trade_id='01a1468f-c7f0-76e8-b2e8-1ace370bda3d'"
+              trade_id               |  leg_role   | leg_number | version |          valid_from           |        valid_to
+--------------------------------------+-------------+------------+---------+-------------------------------+------------------------
+ 01a1468f-c7f0-76e8-b2e8-1ace370bda3d | trs_funding |          1 |       1 | 2026-10-16 22:13:10.568217+01 | 9999-12-31 23:59:59+00
+
+The leg landed inside the trade's third window. The trade was at version 2
+before the leg write and version 3 after it. The leg write advanced the
+parent.
+
+As-of read of the trade's own windows (the predicate
+read_by_trade_id_as_of takes: the part's window overlaps the parent
+window):
+$ psql ... -c "select t.version as trade_version,
+    (select count(*) from ores_trading_bond_legs_tbl l where l.trade_id = t.id
+       and l.valid_from < t.valid_to and l.valid_to > t.valid_from) as legs_current,
+    (select string_agg(l.leg_role || ' v' || l.version, ',') from ores_trading_bond_legs_tbl l
+       where l.trade_id = t.id and l.valid_from < t.valid_to and l.valid_to > t.valid_from) as legs
+  from ores_trading_trades_tbl t where t.id='01a1468f-c7f0-76e8-b2e8-1ace370bda3d' order by t.version"
+ trade_version | legs_current |      legs
+---------------+--------------+----------------
+             1 |            0 |
+             2 |            0 |
+             3 |            1 | trs_funding v1
+(3 rows)
+
+No leg is reported for the booking window or the window before the leg
+write. The leg is reported for the window the write created.
+
+
+== 3. A generated ACME bond, rewritten through the client verb ==
+
+$ compass shell -l evidence/acme_bond_rewrite.txt
+  bond_instruments get fe21a60d-4d15-5601-b650-7ca3f316d8cf
+    -> version 1, change_reason_code system.initial_load,
+       change_commentary "Generated trade population."
+  bond_instruments set fe21a60d-... Bond 010c22be-139d-4c76-9b41-7867d0e01b77 \
+    9a68ed8a-f85d-54ce-b3a6-c5f9dac5fe2e 5565273.69 system.test \
+    "Proving a bond rewrite versions the parent" --version 1
+    -> {"result":{"outcome":"ok",...},"bond_instrument":{"identity":{"version":2,...}}}
+
+$ psql ... -c "select version, valid_from, valid_to from ores_trading_trades_tbl
+  where id='fe21a60d-4d15-5601-b650-7ca3f316d8cf' order by version"
+ version |          valid_from           |           valid_to
+---------+-------------------------------+-------------------------------
+       1 | 2026-10-16 22:10:31.967998+01 | 2026-10-16 22:10:31.979887+01
+       2 | 2026-10-16 22:10:31.980021+01 | 2026-10-16 22:10:31.984873+01
+       3 | 2026-10-16 22:10:31.984982+01 | 2026-10-16 22:10:31.998162+01
+       4 | 2026-10-16 22:10:31.998266+01 | 2026-10-16 22:10:32.124151+01
+       5 | 2026-10-16 22:10:32.124881+01 | 2026-10-16 22:14:38.684143+01
+       6 | 2026-10-16 22:14:38.684248+01 | 9999-12-31 23:59:59+00
+(6 rows)
+
+The trade was at version 5 before the rewrite and version 6 after it.
+
+$ psql ... -c "select version, party_id, change_reason_code, change_commentary,
+  valid_from, valid_to from ores_trading_bond_instruments_tbl
+  where trade_id='fe21a60d-4d15-5601-b650-7ca3f316d8cf' order by version"
+ version |               party_id               | change_reason_code  |             change_commentary              |           valid_from           |           valid_to
+---------+--------------------------------------+---------------------+--------------------------------------------+-------------------------------+-------------------------------
+       1 | ddb2008f-a010-4953-bcf9-adc76bb56732 | system.initial_load | Generated trade population.                | 2026-10-16 22:10:32.125288+01 | 2026-10-16 22:14:38.684642+01
+       2 | ddb2008f-a010-4953-bcf9-adc76bb56732 | system.test         | Proving a bond rewrite versions the parent | 2026-10-16 22:14:38.684821+01 | 9999-12-31 23:59:59+00
+(2 rows)
+
+
+== 4. Finding: the population carries no trade-keyed bond leg ==
+
+$ psql ... -c "select count(*) as all_rows,
+    count(*) filter (where valid_to = ores_utility_infinity_timestamp_fn()) as current
+  from <table> where tenant_id='b7fe3d66-...'"
+  ores_trading_bond_legs_tbl        0 rows / 0 current
+  ores_trading_bond_leg_amounts_tbl 0 rows / 0 current
+  ores_trading_bond_leg_rates_tbl   0 rows / 0 current
+  ores_trading_bond_issue_legs_tbl  4 rows / 4 current
+  ores_trading_bond_issues_tbl      4 rows / 4 current
+
+The generator writes the leg once per issue, keyed by issue_id:
+projects/ores.synthetic/core/src/trading/trading_trade_population_writer.cpp,
+write_issue_leg, put_bond_issue_leg_request. bond_issue_leg declares no
+bump_parent_version (projects/ores.trading/modeling/ores.trading.
+bond_issue_leg.org) and its create script touches no parent.
+$ cd projects/ores.trading/modeling && grep -rl '^:bump_parent_version: true' *.org
+  bond_instrument, bond_leg, bond_leg_amount, bond_leg_rate,
+  bond_leg_amortization, structure_member, trade_additional_field,
+  trade_booking, trade_identifier, trade_party_role, trade_portfolio,
+  trade_state
+
+So a trade-keyed leg cannot be rewritten on a generated ACME bond: none
+exists. The trade-anchored part the population does carry is the bond
+instrument, and section 3 rewrites that.
+
+
+== 5. Finding: an as-of read of a parent window can report two child versions ==
+
+$ psql ... -c "select t.version as trade_version, i.version as instrument_version,
+    i.change_reason_code as instrument_reason,
+    (select count(*) from ores_trading_bond_legs_tbl l where l.trade_id = t.id
+       and l.valid_from < t.valid_to and l.valid_to > t.valid_from) as legs_current
+  from ores_trading_trades_tbl t
+  left join ores_trading_bond_instruments_tbl i
+    on i.trade_id = t.id and i.valid_from < t.valid_to and i.valid_to > t.valid_from
+  where t.id = 'fe21a60d-4d15-5601-b650-7ca3f316d8cf' order by t.version"
+ trade_version | instrument_version |  instrument_reason  | legs_current
+---------------+--------------------+---------------------+--------------
+             1 |                    |                     |            0
+             2 |                    |                     |            0
+             3 |                    |                     |            0
+             4 |                    |                     |            0
+             5 |                  1 | system.initial_load |            0
+             6 |                  1 | system.initial_load |            0
+             6 |                  2 | system.test         |            0
+(7 rows)
+
+Trade version 6 opens at 22:14:38.684248. Instrument version 1 closes at
+22:14:38.684642, which is after that. Both instrument versions overlap the
+trade's version 6 window, so the as-of read reports two.
+
+The trigger bumps the parent before it closes the child's own row:
+
+projects/ores.sql/create/trading/trading_bond_instruments_create.sql
+  perform ores_trading_trades_touch_version_fn(...);   -- parent opens first
+  ...
+  update "ores_trading_bond_instruments_tbl"
+  set valid_to = clock_timestamp()                     -- child closes after
+  where ... valid_to = ores_utility_infinity_timestamp_fn();
+
+The gap is the work between the two statements, about 394 microseconds
+here. The test avoids it by widening each bound by a second
+(repository_bond_composite_versioning_tests.cpp lines 242 to 246 say so).
+A reader that feeds a parent window back verbatim, as the test's own
+read_trade_versions comment invites, gets two child versions.

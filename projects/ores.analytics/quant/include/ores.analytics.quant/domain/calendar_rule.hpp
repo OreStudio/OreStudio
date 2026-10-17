@@ -20,8 +20,10 @@
 #ifndef ORES_ANALYTICS_QUANT_DOMAIN_CALENDAR_RULE_HPP
 #define ORES_ANALYTICS_QUANT_DOMAIN_CALENDAR_RULE_HPP
 
+#include "ores.analytics.quant/export.hpp"
 #include <chrono>
 #include <optional>
+#include <string_view>
 
 namespace ores::analytics::quant::domain {
 
@@ -55,6 +57,12 @@ enum class observance_shift {
     /// Saturday or Sunday both move to the following Monday (the UK
     /// convention, e.g. New Year's Day).
     roll_forward_to_monday,
+    /// Sunday moves to the following Monday; a Saturday stays where it is,
+    /// which -- Saturdays being weekends -- observes nothing that year, so
+    /// the following Monday stays a business day. SouthAfrica's "possibly
+    /// moved to Monday" holidays (ql/time/calendars/southafrica.cpp:
+    /// @c d == N || (d == N+1 && w == Monday)) are the source.
+    sunday_to_monday,
 };
 
 /// One indefinite, timeless recurring rule for a calendar -- "what day this
@@ -91,6 +99,20 @@ struct calendar_exception final {
     /// rule would otherwise mark a holiday); false = additional holiday.
     bool is_business_day;
 };
+
+/// Parses an @c ores_refdata_calendar_rules_tbl.shift code -- the soft-enum
+/// refdata persists beside this one. The one place the persisted spellings
+/// meet this component's enum; every caller beyond it passes the enum, which
+/// is why refdata's materialiser delegates here rather than spelling the
+/// codes a second time.
+///
+/// @throws std::invalid_argument if @p code names no shift.
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT observance_shift
+parse_observance_shift_code(std::string_view code);
+
+/// The persisted code a shift was parsed from.
+[[nodiscard]] ORES_ANALYTICS_QUANT_EXPORT std::string_view
+to_observance_shift_code(observance_shift shift);
 
 } // namespace ores::analytics::quant::domain
 

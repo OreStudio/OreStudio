@@ -17,16 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_MARKETDATA_CORE_HPP
 #define ORES_MARKETDATA_CORE_HPP
 
 /**
- * @brief Market data engine
+ * @brief Market data ingestion and query core
  *
- * The ORE key, index and oresmd URI codecs, the series classifier, the import
- * and export services, the repositories, and the NATS handlers that serve
- * the market data protocols.
+ * Market data management — market series, observations, fixings, and import from external sources.
  */
-namespace ores::marketdata {}
+namespace ores::marketdata::core {}
 
 #endif

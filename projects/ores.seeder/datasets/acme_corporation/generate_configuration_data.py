@@ -82,35 +82,35 @@ DOCUMENT_NAMES = {
     "curve_configuration": "{label} curve configuration",
 }
 
-# The currencies an entity builds an overnight discount curve for, as
-# (overnight index, OIS convention, overnight deposit convention or None). The
-# conventions are the ids of the instrument convention set, and each was checked
-# against it. A currency with no OIS convention in that set, such as the Korean won
-# and the Taiwan dollar, has no curve here, and neither has a currency whose FX
-# books are all that the entity holds, such as the Chilean peso.
+# The currencies an entity builds an overnight discount curve for, as (overnight
+# index, OIS convention). The conventions are the ids of the instrument convention
+# set, and each was checked against it. A currency with no OIS convention in that
+# set, such as the Korean won and the Taiwan dollar, has no curve here, and neither
+# has a currency whose FX books are all that the entity holds, such as the Chilean
+# peso.
 OVERNIGHT = {
-    "USD": ("USD-SOFR", "USD-SOFR-OIS", "USD-ON-SOFR-DEPOSIT"),
-    "EUR": ("EUR-ESTER", "EUR-ESTER-OIS", "EUR-ON-DEPOSIT-ESTER"),
-    "GBP": ("GBP-SONIA", "GBP-OIS-CONVENTIONS", None),
-    "JPY": ("JPY-TONAR", "JPY-OIS-CONVENTIONS", None),
-    "CHF": ("CHF-SARON", "CHF-OIS", "CHF-ON-DEPOSIT"),
-    "CAD": ("CAD-CORRA", "CAD-OIS-CONVENTIONS", "CAD-ON-DEPOSIT"),
-    "AUD": ("AUD-AONIA", "AUD-OIS", "AUD-ON-DEPOSIT"),
-    "NZD": ("NZD-OCR", "NZD-OIS", "NZD-ON-DEPOSIT"),
-    "SEK": ("SEK-SIOR", "SEK-OIS-CONVENTIONS", "SEK-ON-DEPOSIT"),
-    "NOK": ("NOK-NOWA", "NOK-OIS", "NOK-ON-DEPOSIT"),
-    "DKK": ("DKK-DESTR", "DKK-DESTR-OIS", "DKK-ON-DEPOSIT-DESTR"),
-    "HKD": ("HKD-HONIA", "HKD-OIS", "HKD-ON-HONIA-DEPOSIT"),
-    "SGD": ("SGD-SORA", "SGD-OIS", "SGD-ON-DEPOSIT"),
-    "ZAR": ("ZAR-ZARONIA", "ZAR-ZARONIA-OIS", "ZAR-ON-DEPOSIT-ZARONIA"),
-    "PLN": ("PLN-POLONIA", "PLN-OIS", "PLN-ON-POLONIA-DEPOSIT"),
-    "CZK": ("CZK-CZEONIA", "CZK-OIS", "CZK-ON-DEPOSIT"),
-    "HUF": ("HUF-BUBORON", "HUF-OIS", "HUF-ON-DEPOSIT"),
-    "ILS": ("ILS-TELBORON", "ILS-OIS", "ILS-ON-DEPOSIT"),
-    "TRY": ("TRY-TLREF", "TRY-OIS", "TRY-ON-DEPOSIT"),
-    "BRL": ("BRL-CDI", "BRL-OIS", "BRL-ON-DEPOSIT"),
-    "MXN": ("MXN-FTIIE", "MXN-OIS", "MXN-ON-DEPOSIT"),
-    "INR": ("INR-MIBOROIS", "INR-OIS", "INR-ON-DEPOSIT"),
+    "USD": ("USD-SOFR", "USD-SOFR-OIS"),
+    "EUR": ("EUR-ESTER", "EUR-ESTER-OIS"),
+    "GBP": ("GBP-SONIA", "GBP-OIS-CONVENTIONS"),
+    "JPY": ("JPY-TONAR", "JPY-OIS-CONVENTIONS"),
+    "CHF": ("CHF-SARON", "CHF-OIS"),
+    "CAD": ("CAD-CORRA", "CAD-OIS-CONVENTIONS"),
+    "AUD": ("AUD-AONIA", "AUD-OIS"),
+    "NZD": ("NZD-OCR", "NZD-OIS"),
+    "SEK": ("SEK-SIOR", "SEK-OIS-CONVENTIONS"),
+    "NOK": ("NOK-NOWA", "NOK-OIS"),
+    "DKK": ("DKK-DESTR", "DKK-DESTR-OIS"),
+    "HKD": ("HKD-HONIA", "HKD-OIS"),
+    "SGD": ("SGD-SORA", "SGD-OIS"),
+    "ZAR": ("ZAR-ZARONIA", "ZAR-ZARONIA-OIS"),
+    "PLN": ("PLN-POLONIA", "PLN-OIS"),
+    "CZK": ("CZK-CZEONIA", "CZK-OIS"),
+    "HUF": ("HUF-BUBORON", "HUF-OIS"),
+    "ILS": ("ILS-TELBORON", "ILS-OIS"),
+    "TRY": ("TRY-TLREF", "TRY-OIS"),
+    "BRL": ("BRL-CDI", "BRL-OIS"),
+    "MXN": ("MXN-FTIIE", "MXN-OIS"),
+    "INR": ("INR-MIBOROIS", "INR-OIS"),
 }
 
 # The holding company holds Group Treasury, whose intercompany loans and hedges
@@ -124,10 +124,16 @@ ENTITY_CURRENCIES = {
 }
 
 # The overnight swap tenors the curve is built from, and the days between the trade
-# and the start of the swap. Sterling settles on the trade date and the other
-# currencies two days after it.
-OIS_TENORS = ["1M", "3M", "6M", "1Y", "2Y", "3Y", "5Y", "7Y", "10Y", "15Y", "20Y", "30Y"]
-SPOT_LAG = {"GBP": "0D"}
+# and the start of the swap. The synthetic feeds publish exactly this pillar ladder
+# and start every pillar on the trade date: see the template entries of
+# synthetic_feeds_bloomberg_populate.sql, which is the ladder a live deployment fills
+# and so the ladder a curve has to name. One year is 12M and not 1Y, because the
+# RATES_SPOT_FORWARD convention the feed resolves its pillars under names the year that
+# way and would refuse a pillar code it has no resolution for. A deposit segment would
+# name a money market quote no feed publishes, which is why an overnight curve here is
+# swaps throughout.
+OIS_TENORS = ["1M", "3M", "6M", "12M", "2Y", "3Y", "5Y", "7Y", "10Y", "15Y", "20Y", "30Y"]
+SPOT_LAG = "0D"
 
 # The currencies that quote against the dollar with the dollar as the base, and
 # the ones that quote with the dollar as the quote. A pair follows market
@@ -272,8 +278,8 @@ def todays_market():
 
 
 def curve_configuration():
-    """An overnight discount curve for each currency of the entity, built from a
-    deposit and overnight swaps, on the quotes ORE's own examples use."""
+    """An overnight discount curve for each currency of the entity, built from the
+    overnight swap ladder the synthetic feeds publish."""
     headers, definitions, yields, segments, quotes = [], [], [], [], []
     for company, currencies in ENTITY_CURRENCIES.items():
         header_id = new_uuid(f"curve_configuration:{company}")
@@ -282,7 +288,7 @@ def curve_configuration():
             description=f"The curves ACME Corporation {LABEL[company]} marks its trades on.",
             configuration_id=new_uuid(f"configuration:curve_configuration:{company}")))
         for position, currency in enumerate(currencies):
-            index, ois_convention, deposit_convention = OVERNIGHT[currency]
+            index, ois_convention = OVERNIGHT[currency]
             curve_id = f"{currency}1D"
             definition_id = new_uuid(f"curve_configuration:{company}:{curve_id}")
             definitions.append(row(
@@ -308,14 +314,8 @@ def curve_configuration():
                         curve_definition_id=definition_id, curve_segment_id=segment_id,
                         quote_text=key, position=number))
 
-            next_position = 0
-            if deposit_convention:
-                segment(next_position, "Deposit", deposit_convention,
-                        [f"MM/RATE/{currency}/0D/1D"])
-                next_position += 1
-            lag = SPOT_LAG.get(currency, "2D")
-            segment(next_position, "OIS", ois_convention,
-                    [f"IR_SWAP/RATE/{currency}/{lag}/1D/{tenor}" for tenor in OIS_TENORS])
+            segment(0, "OIS", ois_convention,
+                    [f"IR_SWAP/RATE/{currency}/{SPOT_LAG}/1D/{tenor}" for tenor in OIS_TENORS])
     return headers, definitions, yields, segments, quotes
 
 

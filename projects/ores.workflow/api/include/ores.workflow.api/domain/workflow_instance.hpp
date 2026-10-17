@@ -124,12 +124,15 @@ struct workflow_instance final {
     int step_count = 0;
 
     /**
-     * @brief Timestamp when the workflow reached a terminal state.
+     * @brief Timestamp when the workflow reached a terminal state. The engine writes it from its
+     * state funnel, so a caller editing the run never states it.
      */
     std::optional<std::chrono::system_clock::time_point> completed_at;
 
     /**
-     * @brief Timestamp of the most recent step-completed event processed.
+     * @brief Timestamp of the run's most recent activity: every state transition, and every
+     * dispatch the run does between two of them. The engine writes it, so a caller editing the run
+     * never states it.
      */
     std::optional<std::chrono::system_clock::time_point> last_event_at;
 

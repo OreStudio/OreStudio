@@ -133,6 +133,7 @@ one is visible as an omission.
 - [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — the consumer this pattern answers.
 - [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]] — why a redelivery is safe to repeat.
 - [[id:8D34E5F6-0718-4C93-8EB5-C6D7E8F90112][Never Let an Exception Cross the Bus]] — what happens to a handler that throws.
+- [[id:CE441C28-5ED0-45BF-B442-708AE4EFB1C5][At Least Once Prerequisites]] — the claim or idempotent write an answer commits.
 
 * Sources
 

@@ -148,7 +148,7 @@ TEST_CASE("a_series_filter_keeps_only_the_points_of_the_series", tags) {
     CHECK(output.count == 1);
     REQUIRE(output.screen_lines.size() == 1);
     CHECK(output.screen_lines[0] ==
-          "2026-10-06 09:00:00Z  " + rating_point_uri + "  0.01  synthetic.rating");
+          "2026-10-06 09:00:00.000000Z  " + rating_point_uri + "  0.01  synthetic.rating");
     CHECK(output.rows.size() == 2);
 }
 
@@ -178,15 +178,15 @@ TEST_CASE("two_ticks_render_the_expected_screen_lines_and_csv_rows", tags) {
     CHECK(output.count == 2);
     REQUIRE(output.screen_lines.size() == 2);
     CHECK(output.screen_lines[0] ==
-          "2026-10-06 09:00:00Z  " + eurusd_uri + "  1.0812  synthetic.eurusd");
+          "2026-10-06 09:00:00.000000Z  " + eurusd_uri + "  1.0812  synthetic.eurusd");
     CHECK(output.screen_lines[1] ==
-          "2026-10-06 10:00:00Z  " + eurusd_uri + "  1.0815  synthetic.eurusd");
+          "2026-10-06 10:00:00.000000Z  " + eurusd_uri + "  1.0815  synthetic.eurusd");
     CHECK(out.str() == output.screen_lines[0] + "\n" + output.screen_lines[1] + "\n");
 
     REQUIRE(output.rows.size() == 3);
     CHECK(output.rows[0] == "observation_time,oresmd_uri,value,source");
-    CHECK(output.rows[1] == "2026-10-06 09:00:00Z," + eurusd_uri + ",1.0812,synthetic.eurusd");
-    CHECK(output.rows[2] == "2026-10-06 10:00:00Z," + eurusd_uri + ",1.0815,synthetic.eurusd");
+    CHECK(output.rows[1] == "2026-10-06 09:00:00.000000Z," + eurusd_uri + ",1.0812,synthetic.eurusd");
+    CHECK(output.rows[2] == "2026-10-06 10:00:00.000000Z," + eurusd_uri + ",1.0815,synthetic.eurusd");
 }
 
 TEST_CASE("a_csv_field_holding_a_separator_is_quoted", tags) {
@@ -195,7 +195,7 @@ TEST_CASE("a_csv_field_holding_a_separator_is_quoted", tags) {
     const auto row =
         marketdata_commands::tick_row(tick(eurusd_uri, "1.0812", "synthetic, quoted", 9));
 
-    CHECK(row == "2026-10-06 09:00:00Z," + eurusd_uri + ",1.0812,\"synthetic, quoted\"");
+    CHECK(row == "2026-10-06 09:00:00.000000Z," + eurusd_uri + ",1.0812,\"synthetic, quoted\"");
 }
 
 TEST_CASE("a_stream_that_receives_nothing_still_writes_the_header", tags) {

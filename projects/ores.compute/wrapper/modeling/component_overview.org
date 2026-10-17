@@ -5,6 +5,7 @@
 #+name: compute.wrapper
 #+full_name: ores.compute.wrapper
 #+description: Compute worker wrapper — executes ORE risk runs and reports results to ores.compute.core.
+#+brief: Compute worker node for ORE risk runs
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:wrapper:component:

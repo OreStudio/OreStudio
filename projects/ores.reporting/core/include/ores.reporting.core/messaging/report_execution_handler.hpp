@@ -28,7 +28,9 @@
 #include "ores.reporting.core/export.hpp"
 #include "ores.service/service/cache/run_token_cache.hpp"
 #include "ores.workflow.core/service/fsm_state_map.hpp"
+#include <cstddef>
 #include <optional>
+#include <span>
 #include <string>
 
 namespace ores::reporting::messaging {
@@ -46,6 +48,11 @@ namespace ores::reporting::messaging {
  *  reporting.v1.ops.ignore_compute_results  — post-processing, substituted
  *  reporting.v1.ops.finalise_report                — marks instance as completed
  *  reporting.v1.ops.fail_report                    — marks instance as failed (compensation)
+ *
+ * One durable consumer carries the whole family, so each method answers its own
+ * delivery: @c ack.accept() once it has recorded the step's outcome, @c
+ * ack.reject() for a delivery that carries no step context, and no answer on
+ * any other exit, which leaves the delivery to be retried.
  */
 class ORES_REPORTING_CORE_EXPORT report_execution_handler {
 private:
@@ -78,6 +85,18 @@ private:
     void mark_instance_failed(const std::string& tenant_id,
                               const std::string& instance_id,
                               const std::string& error_message);
+
+    /**
+     * @brief Records the errors the run's own output carries.
+     *
+     * The engine writes its errors into the output the run fetched, so the
+     * account of them arrives with the results and is stored against the run
+     * once they are. A read that finds nothing, or finds what it cannot read,
+     * is logged and not fatal: the run still has a report.
+     */
+    void record_engine_errors(const std::string& tenant_id,
+                              const std::string& instance_id,
+                              std::span<const std::byte> archive);
 
     /**
      * @brief A client that carries the run's token, for calls to an owner.

@@ -196,3 +196,55 @@ for all using (
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
+
+-- -----------------------------------------------------------------------------
+-- Report Errors
+-- -----------------------------------------------------------------------------
+alter table ores_reporting_report_errors_tbl enable row level security;
+
+drop policy if exists report_errors_tenant_isolation_policy
+    on ores_reporting_report_errors_tbl;
+
+create policy report_errors_tenant_isolation_policy
+on ores_reporting_report_errors_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Report Error Scopes
+-- System-owned vocabulary: seeded by the system tenant and read by every
+-- tenant that reads a report's errors. A tenant does not copy it at
+-- provisioning, and does not extend it: the codes are the engine's own group
+-- names, and an error's scope has to mean the same thing in every tenant.
+-- -----------------------------------------------------------------------------
+alter table ores_reporting_report_error_scopes_tbl enable row level security;
+
+drop policy if exists report_error_scopes_read_policy
+    on ores_reporting_report_error_scopes_tbl;
+
+create policy report_error_scopes_read_policy
+on ores_reporting_report_error_scopes_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_utility_system_tenant_id_fn()
+);
+
+-- One policy, not a read one beside a write one: a report's errors are checked
+-- against the system tenant's rows whatever tenant owns the report, so a row a
+-- tenant adds here is a row no error can ever name. Restricting the write would
+-- refuse a row nothing reads, which is a cost with no rule behind it.
+drop policy if exists report_error_scopes_modification_policy
+    on ores_reporting_report_error_scopes_tbl;
+
+create policy report_error_scopes_modification_policy
+on ores_reporting_report_error_scopes_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

@@ -5,6 +5,7 @@
 #+name: refdata.api
 #+full_name: ores.refdata.api
 #+description: Domain types, JSON/CSV/table I/O, and NATS protocol schemas for the reference-data component.
+#+brief: Reference data domain types and protocol schemas
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :refdata:api:component:

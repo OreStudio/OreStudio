@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -9,31 +9,28 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_component_header.hpp.mustache
+ * To modify, update the template and regenerate.
+ */
 #ifndef ORES_DQ_CORE_HPP
 #define ORES_DQ_CORE_HPP
 
 /**
- * @brief Data Quality component for tracking and ensuring data integrity.
+ * @brief Internal implementation of the data quality component.
  *
- * The ores::dq namespace provides types and services for managing meta-data
- * related to data quality. This includes:
- * - Data lineage and provenance tracking
- * - Quality metrics and validation rules
- * - Data profiling and anomaly detection metadata
- * - Audit trails and data transformation history
- *
- * The component is organized into the following sub-namespaces:
- * - domain: Core data quality types and value objects
- * - service: Business logic for data quality operations
- * - repository: Persistence layer for data quality metadata
+ * Data-quality infrastructure — badges, datasets, FSM, ORM base classes, and NATS handlers for ORE
+ * Studio.
  */
-namespace ores::dq {}
+namespace ores::dq::core {}
 
 #endif

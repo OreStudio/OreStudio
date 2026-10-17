@@ -1,0 +1,5 @@
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+synthetic generate-trades --config c5359a84-099c-53a6-a6dd-c8ba72c59d59 --config 27dcb076-df61-58aa-8df9-11866b70ac5b --config 01ad8f0a-3535-53eb-8cab-85e2b18b440d --config 34f07898-b586-5be6-9885-2321f65129d7
+logout
+exit

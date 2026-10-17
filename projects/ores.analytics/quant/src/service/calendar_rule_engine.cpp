@@ -94,6 +94,10 @@ std::chrono::year_month_day apply_shift(std::chrono::year_month_day date, observ
             if (w == Sunday)
                 return year_month_day{d + days{1}};
             return date;
+        case observance_shift::sunday_to_monday:
+            if (w == Sunday)
+                return year_month_day{d + days{1}};
+            return date;
     }
     return date;
 }

@@ -20,11 +20,17 @@
 #ifndef ORES_SERVICE_MESSAGING_STEP_COMMAND_STREAM_HPP
 #define ORES_SERVICE_MESSAGING_STEP_COMMAND_STREAM_HPP
 
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
-#include <cctype>
+#include "ores.service/messaging/workflow_helpers.hpp"
+#include <cstddef>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
 namespace ores::service::messaging {
 
@@ -41,23 +47,52 @@ inline constexpr int step_max_deliver = 10;
  * @brief How long the server keeps a step command that nobody acknowledged.
  *
  * A command only has to outlive the service being restarted or redeployed, so
- * this is a day rather than the seven a stream keeps by default. A longer
- * retention would accumulate the payload of every step ever dispatched - which
- * for a gather-trades step is a trade population - long after the run that
- * asked for it had failed or finished.
+ * this is a day rather than the seven a stream keeps by default. It is a
+ * backstop, not the main rule: under @c step_stream_retention a command is
+ * removed as soon as the consumer has it, and this bound only decides how long
+ * a command survives when no consumer can take it.
  */
 inline constexpr int step_stream_max_age_days = 1;
 
 /**
- * @brief The name of the stream that holds a service's step commands.
+ * @brief What removes a step command once a consumer has it.
+ *
+ * A step command is work rather than data. Once the service has served it and
+ * acknowledged it there is nothing left to keep, so @c interest says exactly
+ * that, and the stream does not accumulate a day of every step ever dispatched
+ * - which for a gather-trades step is a trade population. The cost is that a
+ * command published while no consumer filters its subject is dropped instead of
+ * held, so every step subject has to be declared before anything publishes to
+ * it.
+ */
+inline constexpr ores::nats::service::stream_retention step_stream_retention =
+    ores::nats::service::stream_retention::interest;
+
+namespace detail {
+
+inline std::string_view logger_name = "ores.service.messaging.step_command_stream";
+
+inline auto& lg() {
+    static auto instance = ores::logging::make_logger(logger_name);
+    return instance;
+}
+
+}
+
+/**
+ * @brief The name of the stream that holds one family of a service's step
+ *        commands.
  *
  * Derived from the service's own name, so it cannot drift from the registrar
  * that serves those subjects: @c ores.refdata.service becomes
  * @c <prefix>_refdata_steps.
+ *
+ * @param group Names the family when one service serves two of them. Leave it
+ *        empty for the service's only family.
  */
 [[nodiscard]] inline std::string step_stream_name(const ores::nats::service::client& nats,
                                                   std::string_view service_name,
-                                                  std::string_view label) {
+                                                  std::string_view group) {
     constexpr std::string_view ores_prefix = "ores.";
     constexpr std::string_view service_suffix = ".service";
     if (service_name.starts_with(ores_prefix))
@@ -65,91 +100,226 @@ inline constexpr int step_stream_max_age_days = 1;
     if (service_name.ends_with(service_suffix))
         service_name.remove_suffix(service_suffix.size());
     std::string suffix(service_name);
-    if (!label.empty()) {
+    if (!group.empty()) {
         suffix += '_';
-        suffix += label;
+        suffix += group;
     }
     suffix += "_steps";
     return nats.make_stream_name(suffix);
 }
 
 /**
- * @brief The durable name for the consumer of one step-command subject.
+ * @brief The name of the one consumer that reads a step-command stream.
  *
- * A durable is identified by its name, so the name is derived from the subject
- * it reads: stable across restarts, and unique within the service's stream. A
- * JetStream name may not contain a dot, so every character outside the allowed
- * set becomes a dash.
+ * A stream holds one family of step commands, and one consumer reads the whole
+ * family, so the stream names the consumer. The service and group already
+ * appear in the stream name, and a second derivation of the same key could only
+ * drift from the first.
  */
-[[nodiscard]] inline std::string step_durable_name(std::string_view subject) {
-    std::string name;
-    name.reserve(subject.size());
-    for (const char c : subject)
-        name += std::isalnum(static_cast<unsigned char>(c)) != 0 ? c : '-';
-    return name;
+[[nodiscard]] inline std::string step_durable_name(std::string_view stream) {
+    return std::string(stream) + "_consumer";
 }
 
 /**
- * @brief Creates the stream that holds a service's step commands.
+ * @brief The step commands one service serves: each subject and the call that
+ *        handles it.
  *
- * The workflow engine dispatches a step command with @c js_publish, so the
- * subject has to be covered by a stream or the dispatch waits out the pub-ack
- * timeout and the run fails with nothing to explain it. The service that serves
- * the subject declares the coverage, from the same list it subscribes, so the
- * two cannot disagree.
+ * One table holds the whole family, and three things derive from it: the stream
+ * that covers the subjects, the consumer that filters them, and the dispatch
+ * from a delivered subject to its handler. They cannot disagree, because there
+ * is one list.
  *
- * This is the one place a service should create that stream: it names the
- * stream, builds the filters the subjects need, and sets a retention suited to
- * a command rather than to a data stream. Call it during startup, before the
- * registrar subscribes, because a subject is not durable until its stream is.
- *
- * @param subjects The service's step-command subjects, relative and unprefixed.
- * @return the stream name, to pass to @c js_queue_subscribe.
- * @throws std::runtime_error when the stream cannot be created. The caller
- *         decides whether that is fatal; for a service whose steps are its
- *         work, it is, because no step can then be delivered.
- * @param label Distinguishes this group of step commands from another the same
- *        service serves. A service that declares two groups under one name has
- *        the second wipe the first, because @c ensure_stream replaces a
- *        stream's subject list rather than widening it. Leave it empty for a
- *        service with a single group.
+ * The group names the family. A service that serves two independent families -
+ * say its data-quality steps and its workflow-apply steps - declares two
+ * tables, and each gets its own stream and consumer under that service's name.
  */
-template <typename Range>
-[[nodiscard]] inline std::string ensure_step_stream(ores::nats::service::client& nats,
-                                                    std::string_view service_name,
-                                                    const Range& subjects,
-                                                    std::string_view label = {}) {
-    const std::string stream = step_stream_name(nats, service_name, label);
-    nats.make_admin().ensure_stream(
-        stream, nats.covering_subjects(subjects), step_stream_max_age_days);
-    return stream;
-}
+class step_routes {
+public:
+    explicit step_routes(std::string group = {})
+        : group_(std::move(group)) {}
+
+    step_routes(const step_routes&) = delete;
+    step_routes& operator=(const step_routes&) = delete;
+    step_routes(step_routes&&) = default;
+    step_routes& operator=(step_routes&&) = default;
+
+    /// Adds one subject and the call that serves it.
+    step_routes& on(std::string_view subject, ores::nats::message_handler handler) {
+        subjects_.emplace_back(subject);
+        handlers_.push_back(std::move(handler));
+        return *this;
+    }
+
+    [[nodiscard]] const std::string& group() const noexcept {
+        return group_;
+    }
+
+    [[nodiscard]] const std::vector<std::string>& subjects() const noexcept {
+        return subjects_;
+    }
+
+    [[nodiscard]] const std::vector<ores::nats::message_handler>& handlers() const noexcept {
+        return handlers_;
+    }
+
+private:
+    std::string group_;
+    std::vector<std::string> subjects_;
+    std::vector<ores::nats::message_handler> handlers_;
+};
 
 /**
- * @brief Subscribes one step command durably, on the service's own stream.
+ * @brief Serves a family of step commands on one durable consumer.
  *
- * The durable name, the stream and the delivery bound are the same three
- * arguments at every call site, and they have to agree with each other: a
- * subscribe that names the wrong stream reads nothing, and one that omits the
- * bound redelivers a poison command for ever. This is the one place they are
- * assembled, so a service's registrar says only which subject and which
- * handler.
+ * Declares the stream that covers the family, then subscribes one durable
+ * consumer carrying the whole family as its filter set, then prunes the
+ * consumers this service no longer declares. Call it once per family, during
+ * startup.
  *
- * @param stream the name @c ensure_step_stream returned.
+ * A consumer per subject is what this replaces. One consumer per subject means
+ * a service owns one server-side object per subject it serves - forty-five of
+ * them for a service with forty-five data-quality steps - and every subject
+ * that is renamed or dropped leaves a consumer behind holding a filter nothing
+ * publishes to, and, when the name is reused, a consumer whose stored filter
+ * the subscribe that follows will not attach.
+ *
+ * The stream removes a command once the consumer has it, so it does not grow
+ * into a day-long archive of every step ever dispatched.
+ *
+ * The handler answers the delivery itself, with @c ores::nats::ack_guard, so
+ * that a handler which records no outcome is redelivered. Passing a handler
+ * that cannot answer is what makes at-least-once delivery a promise the code
+ * does not keep.
+ *
+ * @throws std::invalid_argument when the service declares no subjects, and
+ *         std::runtime_error when the stream cannot be created. For a service
+ *         whose steps are its work, either is fatal: no step can then be
+ *         delivered.
  */
-template <typename Handler>
-[[nodiscard]] inline ores::nats::service::subscription
-subscribe_step_command(ores::nats::service::client& nats,
-                       std::string_view subject,
-                       std::string_view queue_group,
-                       std::string_view stream,
-                       Handler handler) {
-    return nats.js_queue_subscribe(subject,
-                                   step_durable_name(subject),
-                                   queue_group,
-                                   std::move(handler),
-                                   stream,
-                                   step_max_deliver);
+[[nodiscard]] inline ores::nats::service::subscription serve_step_commands(
+    ores::nats::service::client& nats, std::string_view service_name, const step_routes& routes) {
+    using namespace ores::logging;
+
+    const auto& subjects = routes.subjects();
+    if (subjects.empty())
+        throw std::invalid_argument("A service must serve at least one step-command subject.");
+
+    const std::string stream = step_stream_name(nats, service_name, routes.group());
+    auto admin = nats.make_admin();
+    admin.ensure_stream(
+        stream, nats.covering_subjects(subjects), step_stream_max_age_days, step_stream_retention);
+
+    // The consumer filters relative subjects; a delivery names the fully
+    // prefixed one, so the dispatch table is built on the same prefixing.
+    const auto& handlers = routes.handlers();
+    auto by_subject =
+        std::make_shared<std::vector<std::pair<std::string, ores::nats::message_handler>>>();
+    by_subject->reserve(subjects.size());
+    for (std::size_t i = 0; i < subjects.size(); ++i)
+        by_subject->emplace_back(nats.make_subject(subjects[i]), handlers[i]);
+
+    std::vector<std::string_view> filters;
+    filters.reserve(subjects.size());
+    for (const auto& subject : subjects)
+        filters.push_back(subject);
+
+    const std::string durable = step_durable_name(stream);
+
+    // The holder a claim records is this service, because this service is what
+    // runs the step's work. It is computed once, so every claim this process
+    // takes names one identity rather than one per delivery.
+    const std::string claim_owner = ores::workflow::messaging::step_claim_owner(service_name);
+
+    BOOST_LOG_SEV(detail::lg(), info) << "Serving " << subjects.size() << " step command(s) on '"
+                                      << stream << "' as '" << durable << "'";
+
+    auto sub = nats.js_queue_subscribe_multi(
+        filters,
+        durable,
+        service_name,
+        [by_subject, &nats, claim_owner](ores::nats::message msg) {
+            for (const auto& [subject, handler] : *by_subject) {
+                if (msg.subject != subject)
+                    continue;
+
+                /*
+                 * A command is served only by the delivery that holds the claim
+                 * on its step. Delivery is at-least-once, so two deliveries for
+                 * one step can arrive at once and both would otherwise do the
+                 * work; the claim is what makes exactly one of them do it.
+                 *
+                 * Only a real step command is claimed. A message without the
+                 * workflow headers names no step, so there is nothing to claim
+                 * and it goes straight to its handler.
+                 */
+                if (const auto wf = workflow_step_context::from_message(nats, msg)) {
+                    const auto outcome = claim_step(nats, wf->step_id, wf->tenant_id, claim_owner);
+                    if (outcome != step_claim_outcome::claimed) {
+                        // The handler answers the delivery itself, so every path
+                        // that does not reach it is answered here.
+                        ores::nats::ack_guard ack(msg);
+                        if (outcome == step_claim_outcome::busy) {
+                            // Another delivery holds a live lease, so the work is
+                            // running elsewhere. Come back rather than do it twice,
+                            // and come back after a pause: an immediate redelivery
+                            // lands on the same live lease, loses the same race,
+                            // and spends the delivery budget in a loop.
+                            BOOST_LOG_SEV(detail::lg(), info)
+                                << "Step " << wf->step_id
+                                << " is held by another delivery; retrying " << msg.subject
+                                << " in " << ores::workflow::messaging::step_claim_hold_off.count()
+                                << "ms";
+                            ack.retry_after(ores::workflow::messaging::step_claim_hold_off);
+                        } else if (outcome == step_claim_outcome::not_in_progress) {
+                            // The step is already done or already failed, so its
+                            // state refuses this replay and there is nothing here
+                            // for this delivery to do.
+                            ack.accept();
+                        } else if (outcome == step_claim_outcome::unknown) {
+                            // No such step, and nothing can ever serve it.
+                            BOOST_LOG_SEV(detail::lg(), warn)
+                                << "Step " << wf->step_id << " is not a workflow step; rejecting "
+                                << msg.subject;
+                            ack.reject();
+                        } else {
+                            // The engine could not be reached or could not decide.
+                            // Failing closed is deliberate: running the work
+                            // unclaimed is what the claim exists to prevent.
+                            BOOST_LOG_SEV(detail::lg(), warn)
+                                << "Could not claim step " << wf->step_id << " for " << msg.subject
+                                << "; retrying rather than running it unclaimed.";
+                            ack.retry();
+                        }
+                        return;
+                    }
+                }
+
+                handler(std::move(msg));
+                return;
+            }
+            // The consumer filters exactly the declared subjects, so a delivery
+            // that matches none is a programming error. Answer it, because
+            // nothing can ever serve it and the server would otherwise
+            // redeliver it until the bound.
+            ores::nats::ack_guard ack(msg);
+            BOOST_LOG_SEV(detail::lg(), error)
+                << "No step-command handler for delivered subject " << msg.subject;
+            ack.reject();
+        },
+        stream,
+        step_max_deliver);
+
+    // The consumer that serves the whole family now exists, so the consumers
+    // this service used to declare one subject at a time are dead weight: they
+    // filter subjects the new consumer already covers, and under interest
+    // retention an unconsumed filter is what pins a message in the stream.
+    //
+    // Prune after subscribing, never before. Between the two the stream would
+    // have no consumer at all, and a command published in that window would be
+    // dropped on the spot rather than held for this service.
+    admin.prune_consumers(stream, durable);
+
+    return sub;
 }
 
 }

@@ -60,6 +60,8 @@
 \ir ./reporting_concurrency_policies_validate_fn_create.sql
 \ir ./reporting_report_instance_kinds_create.sql
 \ir ./reporting_report_instance_kinds_notify_trigger_create.sql
+\ir ./reporting_report_error_scopes_create.sql
+\ir ./reporting_report_error_scopes_notify_trigger_create.sql
 \ir ./reporting_report_trigger_types_create.sql
 \ir ./reporting_report_trigger_types_notify_trigger_create.sql
 
@@ -73,6 +75,8 @@
 \ir ./reporting_report_instances_create.sql
 \ir ./reporting_report_instances_fsm_guard_create.sql
 \ir ./reporting_report_instances_notify_trigger_create.sql
+\ir ./reporting_report_errors_create.sql
+\ir ./reporting_report_errors_notify_trigger_create.sql
 \ir ./reporting_report_input_bundles_create.sql
 \ir ./reporting_in_flight_instance_fn_create.sql
 \ir ./reporting_resolve_book_ids_fn_create.sql

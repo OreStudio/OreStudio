@@ -169,6 +169,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/yield_curve_process_type_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/yield_curve_process_type_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/messaging/yield_curve_process_type_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/ores.synthetic.core.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/ores.synthetic.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/presentation/folder_history_field_mapper.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.synthetic.core/presentation/fx_spot_generation_config_history_field_mapper.hpp"

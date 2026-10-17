@@ -7,20 +7,21 @@
 #+level: cross
 #+filetags: :nats:jetstream:messaging:knowledge:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-15
 
 * Summary
 
 JetStream is the persistence and delivery layer of NATS. Plain NATS delivers a
 message to whoever is subscribed at that instant and forgets it; JetStream
 writes messages into a named *stream* and lets a *consumer* read them later,
-from where it left off. ORE Studio uses it for three things and no more: the
+from where it left off. ORE Studio uses it for two things and no more: the
 market data a service must not lose while its consumer is restarting, and the
-workflow engine's commands. Four streams exist,
-each with a subject filter, and a durable consumer is the one kind of
-subscription that survives a service restart. The failure to know about is that
-a *subject rename* reconciles the stream and strands the consumers, so the
-services that read durably never start.
+workflow engine's messages, both the engine's own control commands and the step
+commands it dispatches to the services that serve them. A durable consumer is the
+one kind of subscription that survives a service restart. Two failures to know
+about. A *subject rename* leaves a consumer whose stored filter differs from the
+one the code now asks for, and a service that declares a consumer per subject
+leaves server-side objects that nothing declares and nothing reads.
 
 * What JetStream adds
 
@@ -62,15 +63,22 @@ and needs no history, so it stays on plain request/reply.
 
 * How we use it
 
-Two calls in =ores.nats= are the whole surface. Everything else is naming.
+Two calls in =ores.nats=, and one in =ores.service=, are the whole surface.
+Everything else is naming.
 
 #+begin_src cpp :results verbatim
 // The publisher side: create the stream if it is absent, then keep it honest.
-admin.ensure_stream(stream_name, {subject_filter});
+admin.ensure_stream(stream_name, {subject_filter}, max_age_days, retention);
 
 // The reader side: name the stream and the subscribe reconciles the durable
 // first, then attaches a durable queue group that survives a restart.
 nats.js_queue_subscribe(subject, durable_name, queue_group, handler, stream_name);
+
+// The service side: declare a family of step commands once, and serve the whole
+// family on one durable consumer.
+ores::service::messaging::step_routes routes;
+routes.on(subject, handler);
+serve_step_commands(nats, service_name, routes);
 #+end_src
 
 Three rules make the names line up:
@@ -85,39 +93,62 @@ Three rules make the names line up:
   broadcast subject that carries a source name or a key below its prefix — a
   tick, an assignment — is covered with a trailing =.>=.
 
-Every stream is file-backed and retains for seven days
-(=ensure_stream='s =max_age_days= default). A stream's subject filter is the
-contract that decides which publishes it holds, so =ensure_stream= compares it
-against the one asked for and *updates* it when it differs. A durable consumer
-stores its own filter, so =js_queue_subscribe= reconciles that one the same way
-when the caller names the stream. Both reconciles are what make a renamed
-subject heal.
+Every stream is file-backed. The *retention policy* follows the kind of message
+the stream carries. A data stream keeps every message for seven days
+(=ensure_stream='s =max_age_days= default) under the =limits= policy. A
+step-command stream is a queue of work, so it uses =interest= retention with a
+one-day backstop: the server removes a command as soon as the consumer that
+filters it has acknowledged it, and the day only bounds a command no consumer
+can take. A stream's subject filter is the contract that decides which publishes
+it holds, so =ensure_stream= compares it, the retention policy and the age limit
+against the ones asked for and *updates* them when any differs, in place. A
+durable consumer stores its own filter, so =js_queue_subscribe= reconciles that
+one the same way when the caller names the stream, also in place. Both
+reconciles are what make a renamed subject heal without losing a position.
 
 * The streams we create
 
-Four exist, and each is created by the service that owns the data in it:
+Each stream is created by the service that owns the data or the work in it.
 
-| Stream (after the prefix) | Subject filter | Created by |
-|---------------------------+----------------+------------|
-| =marketdata_ticks= | =marketdata.v1.ops.market_tick.>= | =ores.marketdata.service= |
-| =synthetic_ticks= | =synthetic.v1.ops.tick.>= | =ores.marketdata.service= and =ores.synthetic.service= |
-| =synthetic_sandbox_ticks= | =synthetic.v1.ops.sandbox_tick.>= | =ores.synthetic.service= |
-| =workflow= | =workflow.v1.ops.start_workflow= and =workflow.v1.ops.step_completed= | =ores.workflow.service= |
+| Stream (after the prefix) | Subject filter | Retention | Created by |
+|---------------------------+----------------+-----------+------------|
+| =marketdata_ticks= | =marketdata.v1.ops.market_tick.>= | limits, 7 days | =ores.marketdata.service= |
+| =synthetic_ticks= | =synthetic.v1.ops.tick.>= | limits, 7 days | =ores.marketdata.service= and =ores.synthetic.service= |
+| =synthetic_sandbox_ticks= | =synthetic.v1.ops.sandbox_tick.>= | limits, 7 days | =ores.synthetic.service= |
+| =workflow= | =workflow.v1.ops.start_workflow= and =workflow.v1.ops.step_completed= | limits, 7 days | =ores.workflow.service= |
+| =<service>_steps= | the service's step-command subjects | interest, 1 day backstop | the service, through =serve_step_commands= |
+| =<service>_<group>_steps= | a second family of step commands | interest, 1 day backstop | the service, through =serve_step_commands= |
 
 =synthetic_ticks= is created by two services on purpose: the marketdata ingest
 loop has to be able to read synthetic ticks whether or not the synthetic
 service has ever run in this deployment. =ensure_stream= is idempotent, so the
 second caller finds it and reconciles rather than failing.
 
+A service that serves two independent families of step commands declares two
+=step_routes= tables, and the group names the second one. The groups in use are
+=apply= for refdata's book and counterparty apply steps, =from_dq= for IAM's
+data-quality steps, and =execution= for reporting's report-execution steps.
+
 * The durable consumers
 
-| Consumer | Subject | Held by |
-|----------+---------+---------|
-| =workflow-engine-start= | =workflow.v1.ops.start_workflow= | =ores.workflow.service= |
-| =workflow-engine-step-completed= | =workflow.v1.ops.step_completed= | =ores.workflow.service= |
+| Consumer | Stream | Held by |
+|----------+--------+---------|
+| =workflow-engine-start= | =workflow= | =ores.workflow.service= |
+| =workflow-engine-step-completed= | =workflow= | =ores.workflow.service= |
+| =<stream>_consumer= | each step-command stream | the service that declared the stream |
 
 The two engine consumers are a single position each, because the engine is a
 single logical reader.
+
+A step-command stream has exactly one consumer, named after the stream, and it
+filters every subject the service declared. One consumer per subject is what
+this replaces: a service with forty-five data-quality steps owned forty-five
+server-side objects, and every renamed subject left one behind. On start,
+=serve_step_commands= subscribes the one consumer and then deletes every other
+consumer on the stream, so a service that still carries the older shape cleans
+it up on its first start. The prune runs after the subscribe, never before:
+between the two the stream would have no consumer at all, and under =interest=
+retention a command published in that window would be dropped rather than held.
 
 * What a subject rename strands
 
@@ -133,9 +164,9 @@ fleet reads one short with nothing in that service's own log but
 =js_QueueSubscribe failed=.
 
 =js_queue_subscribe= closes that hole. Pass the stream name — as
-=make_stream_name= returns it — and the call reads the durable's stored filter
-first, deletes a consumer whose filter differs, and lets the subscribe recreate
-it against the current subject:
+=make_stream_name= returns it — and the call reads the durable's stored
+configuration first, updates the filter, the ack policy and the delivery bound
+in place where any differs, and only then attaches:
 
 #+begin_src cpp :results verbatim
 const std::string engine_stream(nats.make_stream_name("workflow"));
@@ -148,13 +179,15 @@ nats.js_queue_subscribe(
     engine_stream);
 #+end_src
 
+The update is in place because the alternative costs the consumer its position.
+The server accepts a changed filter set, and the consumer keeps its cursor, so
+widening a filter set does not replay a backlog the consumer had already worked
+through. A stored singular filter counts as stale, because one consumer cannot
+serve a family through it.
+
 A caller that passes no stream name subscribes without the check, which is what
 an ephemeral or externally managed consumer wants. A consumer that is absent, or
 that cannot be read, is left alone so the subscribe reports the real reason.
-
-Deleting the consumer discards its position, so the recreated one delivers from
-the start policy again. That is at-least-once by design: a consumer whose filter
-is wrong has no useful position to keep.
 
 To read a stored filter by hand:
 
@@ -164,10 +197,9 @@ nats --server "$ORES_NATS_URL" --tlsca build/keys/nats/ca.crt \
      consumer info <stream> <durable>
 #+end_src
 
-Verified on 2026-10-07: a durable planted on
-=workflow.v1.events.step-completed= was replaced on the next workflow service
-start by one filtered on =workflow.v1.ops.step_completed=, and the service came
-up running.
+Verified on 2026-10-15 against server 2.14.6: a push consumer with a queue group
+and one filter was widened to three filters, and its delivered sequence stayed
+where it was. Its stored configuration was updated, not replaced.
 
 * See also
 
@@ -182,3 +214,6 @@ up running.
   Specification]] — the grammar a stream's subjects have to obey.
 - [[id:C0B3C6F4-62DC-4DEA-966D-A84108AAB9AE][A subject rename strands every
   durable consumer]] — the memory: name the stream so the rename heals.
+- [[id:CE441C28-5ED0-45BF-B442-708AE4EFB1C5][At Least Once Prerequisites]] —
+  the pattern a stream and a consumer have to satisfy before their delivery is
+  safe to rely on.

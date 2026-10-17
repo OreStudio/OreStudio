@@ -29,7 +29,9 @@
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_input_bundle_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
+#include "ores.reporting.core/service/engine_error_log.hpp"
 #include "ores.reporting.core/service/execution_storage_plan.hpp"
+#include "ores.reporting.core/service/report_error_recorder.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage.api/net/object_keys.hpp"
@@ -42,6 +44,7 @@
 #include <chrono>
 #include <format>
 #include <rfl/json.hpp>
+#include <span>
 #include <string_view>
 
 namespace ores::reporting::messaging {
@@ -115,6 +118,14 @@ void report_execution_handler::mark_instance_failed(const std::string& tenant_id
             inst->completed_at = std::chrono::system_clock::now();
             inst->output_message = error_message;
             inst_svc.save_instance(*inst);
+            // The failure is recorded against the run in the same place the
+            // engine's own errors go, so a reader sees one answer to what went
+            // wrong rather than two. This branch runs once, for the first
+            // writer, so the run's error is written once.
+            service::report_error_recorder recorder(tenant_ctx);
+            const auto failure = recorder.record_run_failure(instance_id, error_message);
+            if (!failure.empty())
+                BOOST_LOG_SEV(lg(), error) << failure;
             BOOST_LOG_SEV(lg(), info)
                 << "Marked report instance " << instance_id << " as failed: " << error_message;
         }
@@ -191,14 +202,19 @@ std::string report_execution_handler::run_token(const std::string& tenant_id,
 }
 
 void report_execution_handler::gather_trades(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<gather_trades_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode gather_trades_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -217,6 +233,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
             const auto err = "risk_report_config not found for definition " + req.definition_id;
             mark_instance_failed(req.tenant_id, req.report_instance_id, err);
             wf->fail(err);
+            ack.accept();
             return;
         }
 
@@ -232,6 +249,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
                                     "running.";
             mark_instance_failed(req.tenant_id, req.report_instance_id, err);
             wf->fail(err);
+            ack.accept();
             return;
         }
 
@@ -244,6 +262,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
         auto inst = inst_svc.get_instance(sg(req.report_instance_id));
         if (!inst) {
             wf->fail("Report instance not found: " + req.report_instance_id);
+            ack.accept();
             return;
         }
         inst->fsm_state_id = instance_states_.require("running");
@@ -274,6 +293,7 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
                 (err.empty() ? (exp_resp ? exp_resp->message : "(no response)") : err);
             mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
             wf->fail(failure);
+            ack.accept();
             return;
         }
 
@@ -290,22 +310,29 @@ void report_execution_handler::gather_trades(ores::nats::message msg) {
                                   << " books=" << book_ids.size();
 
         wf->complete(rfl::json::write(result));
+        ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "gather_trades failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
+        ack.accept();
     }
 }
 
 void report_execution_handler::gather_market_data(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<gather_market_data_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode gather_market_data_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -340,6 +367,7 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
                 (err.empty() ? (md_resp ? md_resp->message : "(no response)") : err);
             mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
             wf->fail(failure);
+            ack.accept();
             return;
         }
 
@@ -354,22 +382,29 @@ void report_execution_handler::gather_market_data(ores::nats::message msg) {
                                   << req.report_instance_id << " series=" << md_resp->series_count;
 
         wf->complete(rfl::json::write(result));
+        ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "gather_market_data failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
+        ack.accept();
     }
 }
 
 void report_execution_handler::assemble_bundle(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<assemble_bundle_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode assemble_bundle_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -382,14 +417,17 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
     try {
         if (req.trades_storage_key.empty()) {
             wf->fail("assemble_bundle: trades_storage_key is missing");
+            ack.accept();
             return;
         }
         if (req.market_data_storage_key.empty()) {
             wf->fail("assemble_bundle: market_data_storage_key is missing");
+            ack.accept();
             return;
         }
         if (req.fixings_storage_key.empty()) {
             wf->fail("assemble_bundle: fixings_storage_key is missing");
+            ack.accept();
             return;
         }
 
@@ -424,22 +462,57 @@ void report_execution_handler::assemble_bundle(ores::nats::message msg) {
                                   << req.report_instance_id << " bundle=" << bundle_id;
 
         wf->complete(rfl::json::write(result));
+        ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "assemble_bundle failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
+        ack.accept();
+    }
+}
+
+void report_execution_handler::record_engine_errors(const std::string& tenant_id,
+                                                    const std::string& instance_id,
+                                                    std::span<const std::byte> archive) {
+    try {
+        const auto read = service::read_engine_errors_from_archive(archive);
+        if (!read.ok()) {
+            BOOST_LOG_SEV(lg(), warn) << "The errors of report instance " << instance_id
+                                      << " were not read: " << read.error;
+            return;
+        }
+        if (read.errors.empty())
+            return;
+
+        service::report_error_recorder recorder(
+            ores::database::service::tenant_context::with_tenant(ctx_, tenant_id));
+        const auto failure = recorder.record_engine_errors(instance_id, read.errors);
+        if (!failure.empty()) {
+            BOOST_LOG_SEV(lg(), error) << failure;
+            return;
+        }
+        BOOST_LOG_SEV(lg(), info) << "Recorded " << read.errors.size() << " engine error(s) for "
+                                  << "report instance " << instance_id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Recording the errors of report instance " << instance_id << " failed: " << e.what();
     }
 }
 
 void report_execution_handler::collect_results(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<collect_compute_results_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode collect_compute_results_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -453,6 +526,7 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
     const auto refuse = [&](const std::string& failure) {
         mark_instance_failed(req.tenant_id, req.report_instance_id, failure);
         wf->fail(failure);
+        ack.accept();
     };
 
     try {
@@ -550,6 +624,14 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
         instance->output_storage_key = key;
         inst_svc.save_instance(*instance);
 
+        // The errors the run produced belong to the run, and the account of them
+        // is the archive that has just been fetched: the engine wrote its own
+        // log into that output. Reading it here is what makes a run that failed
+        // its analytics distinguishable from one that did not.
+        record_engine_errors(req.tenant_id,
+                             req.report_instance_id,
+                             std::as_bytes(std::span(body.data(), body.size())));
+
         collect_compute_results_result result;
         result.success = true;
         result.message = std::format("Retrieved {} bytes of run output to {}", body.size(), key);
@@ -559,28 +641,36 @@ void report_execution_handler::collect_results(ores::nats::message msg) {
                                   << " bytes=" << body.size();
 
         wf->complete(rfl::json::write(result));
+        ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "collect_compute_results failed: " << e.what();
         mark_instance_failed(req.tenant_id, req.report_instance_id, e.what());
         wf->fail(e.what());
+        ack.accept();
     }
 }
 
 void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<resolve_prepared_input_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode resolve_prepared_input_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
 
     if (req.prepared_input_key.empty()) {
         wf->fail("resolve_prepared_input: the run configuration names no prepared input");
+        ack.accept();
         return;
     }
 
@@ -594,17 +684,23 @@ void report_execution_handler::resolve_prepared_input(ores::nats::message msg) {
     result.message = std::format("Resolved prepared input {}", req.prepared_input_key);
     result.tarball_uris = {req.prepared_input_key};
     wf->complete(rfl::json::write(result));
+    ack.accept();
 }
 
 void report_execution_handler::ignore_compute_results(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<ignore_compute_results_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode ignore_compute_results_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -617,17 +713,23 @@ void report_execution_handler::ignore_compute_results(ores::nats::message msg) {
     result.success = true;
     result.message = std::format("Results of batch {} left unread by configuration.", req.batch_id);
     wf->complete(rfl::json::write(result));
+    ack.accept();
 }
 
 void report_execution_handler::finalise(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<finalise_report_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode finalise_report_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -642,6 +744,7 @@ void report_execution_handler::finalise(ores::nats::message msg) {
         auto inst = inst_svc.get_instance(sg(req.report_instance_id));
         if (!inst) {
             wf->fail("Report instance not found: " + req.report_instance_id);
+            ack.accept();
             return;
         }
 
@@ -658,21 +761,28 @@ void report_execution_handler::finalise(ores::nats::message msg) {
         result.success = true;
         result.message = "Report instance marked as completed.";
         wf->complete(rfl::json::write(result));
+        ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "finalise failed: " << e.what();
         wf->fail(e.what());
+        ack.accept();
     }
 }
 
 void report_execution_handler::fail(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<fail_report_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode fail_report_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -687,9 +797,11 @@ void report_execution_handler::fail(ores::nats::message msg) {
         result.success = true;
         result.message = "Report instance marked as failed.";
         wf->complete(rfl::json::write(result));
+        ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "fail handler error: " << e.what();
         wf->fail(e.what());
+        ack.accept();
     }
 }
 

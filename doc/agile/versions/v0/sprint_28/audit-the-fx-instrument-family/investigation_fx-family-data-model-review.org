@@ -1,0 +1,208 @@
+:PROPERTIES:
+:ID: 38931409-479B-40C3-A118-16D234C687C9
+:END:
+#+title: Investigation: FX family data model review
+#+description: The seven FX instrument models and their generated artefacts reviewed against the Regime 2 data-oriented design checklist: what holds, what does not, and which findings are recorded deferrals.
+#+type: investigation
+#+level: s1
+#+filetags: :audit-the-fx-instrument-family:sprint_28:v0:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+A point-in-time record of a review of the FX instrument family against
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]],
+Regime 2, the persisted domain data, plus the Regime 3 projection of the one
+field that carries an encoded document.
+
+The family is the second of the instrument families reviewed with this lens.
+Bonds were the pilot and were reworked to the method; the FX family was not,
+so this review asks whether the tree meets the guidelines rather than whether
+it was built to them.
+
+* Context
+
+The FX family holds 26 trade-type codes in
+=ores.trading.trade_type_catalogue.org=. Sixteen of them route to one of
+seven instrument tables. The seven models are flat, single-row instruments
+keyed by the trade; there is no FX family header, no per-product fact table
+and no shared child table, unlike the rates and bonds families.
+
+The review was commissioned to establish, with evidence, whether that model
+meets the Regime 2 checklist, and to separate a defect from a recorded
+decision.
+
+* Methodology
+
+The family is seven entity models under =projects/ores.trading/modeling/=,
+their seven tables and notify triggers under
+=projects/ores.sql/create/trading/=, and 98 declared columns in total. The
+generated tables carry 154 columns, the difference being the eight scaffolding
+columns per table.
+
+The Regime 2 checklist was walked per entity model for the decision checks,
+and once for the invariant checks. The generated C++ was read for the
+invariant surface: the domain headers, the repository entity and mapper, the
+JSON and table codecs, and the eventing and protocol headers. The ORE import
+and export seam was read in =projects/ores.ore/core/=, because the
+*One-way numeric conversion* check is decided there and nowhere else.
+
+The work was split three ways — the conversion seam, the model-to-generated
+artefact census, and the service, wire and catalogue surfaces — and every
+critical claim below was then re-checked in the main thread. No build, test
+or database run: every claim is from source artefacts.
+
+The commands behind the counts, and the tree they were measured at. The tree
+is =2a0b0e8993=, the merge base with =main=, on a clean checkout.
+
+| What | Value | Command |
+|------+-------+---------|
+| FX entity models | 7 | =ls projects/ores.trading/modeling/ores.trading.fx_*.org= |
+| FX tables and notify triggers | 7 and 7 | =ls projects/ores.sql/create/trading/trading_fx_*= |
+| Declared columns, the seven models | 98 | column census over the =** name= headings |
+| Columns in the generated tables | 154 (22 numeric, 75 text) | =create table= body parsed per file |
+| Money and continuous columns by name | 24 (22 numeric, 2 text) | the classifier of =check_money_decimal_columns.py= |
+| =exact_decimal= call sites in the FX mapper | 35 | =grep -c exact_decimal projects/ores.ore/core/src/domain/fx_instrument_mapper.cpp= |
+| =set_exact= call sites in the FX mapper | 0 | =grep -c set_exact projects/ores.ore/core/src/domain/fx_instrument_mapper.cpp= |
+| Money leaves carrying the lexical form, whole tree | 6 | =grep -c moneyFloat projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp= is 7: the leaf and six members |
+| Real foreign keys in the seven tables | 0 | =grep -i references projects/ores.sql/create/trading/trading_fx_*= |
+| Soft-reference claims in the seven models | 20 | =grep -ic 'soft fk' projects/ores.trading/modeling/ores.trading.fx_*.org= |
+| Nullable columns with a non-optional string domain member, trading | 91, of which 19 are FX | =nullable: true= beside =:cpp_type: std::string= |
+| Per-key read loops in the seven services | 21 | the three loops of =get_many= and =put_many= per service |
+| FX codes in the catalogue, routed | 26, of which 16 | =ores.trading.trade_type_catalogue.org:66-91= |
+
+* Paths taken
+
+- *The model and its generated artefacts.* For each of the seven models the
+  column drawer was compared with the generated SQL column, the generated
+  domain member and the generated repository entity member. This is the path
+  that found the one type disagreement and the encoded-JSON column.
+- *The ORE boundary.* =fx_instrument_mapper.cpp= was read in full, then the
+  binding it reads from, then the helper it calls. This is the path that
+  changed the review's conclusion: the mapper reads every money leaf through
+  =exact_decimal=, which looks correct, and the value is already lossy before
+  the call.
+- *The service and wire surfaces.* The seven repository headers, the seven
+  services, the seven protocols and the import handler were read for batch
+  access and for the Regime 3 shape.
+- *Withdrawn: a family-level finding on the wire projection.* The JSON codecs
+  project the domain type directly, so =identity= and =audit= appear as nested
+  objects. The
+  [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design page]]
+  already names that a codegen limitation component-wide, in *There is no
+  entity*, so it is not an FX finding. It is recorded here only so the next
+  review does not raise it again.
+
+* Conclusions
+
+** What holds
+
+| Check | Result |
+|-------+--------|
+| Identity by key | PASS. All seven tables carry =primary key (tenant_id, trade_id, valid_from, valid_to)=, and the relation to the trade is the key itself, not an owning-parent link. The instrument carries no identity of its own: the trade names it. |
+| Table-shaped children | PASS with one exception. Six of the seven instruments are flat single-row tables with no child record at all. The exception is =fx_accumulator_instrument.range_bounds_json=, which is finding 2. |
+| Explicit variation | PASS. The family states its variation as per-type tables, not as an inheritance web: 16 catalogue codes route to seven tables, and the =trade_type_code= check on each table is generated from the single catalogue, so the sets are disjoint. The =fx_instrument_variant= in =fx_instrument_variant.hpp:34-40= is a closed variant of the same seven, and it is an in-process carrier only — it never crosses the wire. |
+| Core/cold split | PASS. All seven models set =:domain_audit_group: ores.dq.audit_record=, and the generated domain type folds the audit columns into an =audit= member. |
+| Exact money at rest | PASS for 21 of the 22 numeric columns. Every money column is =numeric(38, 12)= with =ores::utility::decimal::decimal=, and no money column is stored as text. The one exception is finding 3. |
+| Value semantics | PASS. 0 raw pointer members, 0 destructor declarations across the 29 =fx_*.hpp= domain headers, and each type is a plain value with a key and a defaulted =operator==. |
+| No shared-ownership webs | PASS. =shared_ptr=, =unique_ptr= and =weak_ptr= do not appear in any of the generated FX domain, repository, service or eventing headers. |
+| Codec drift | PASS. All 14 generated codecs (seven JSON, seven table) carry the AUTO-GENERATED banner and name their mustache template. No hand-written codec stands in for a generated one. |
+| Flat value messages | PASS. The export carrier is =instrument_batch= at =trade_operations_protocol.hpp:170=: one typed array per concrete entity, joined by trade id. No protocol in the family holds a =std::variant= field, and the reason a variant cannot cross the wire is recorded at =trade_operations_protocol.hpp:163-169=. |
+| Batched collection access | FAIL on the read side. Batch writes, batch removals and batch history reads are used correctly; the three read loops are finding 4. |
+
+** Findings
+
+Severity, effort and the criterion each maps to. *Recorded* marks a finding
+that a decision elsewhere already covers; those are context for the
+remediation, not new work.
+
+| # | Severity | Effort | Criterion | Finding | Evidence |
+|---+----------+--------+-----------+---------+----------|
+| 1 | Critical | Large | One-way numeric conversion | No FX money value keeps the document's digits. Every money leaf in the seven ORE bindings is a plain =float=, not =moneyFloat=, so it carries no lexical form and the XML parse discards the text. The mapper then calls =exact_decimal=, which overloads: the =xsd::base<T>= overload reads the lexical form, and the =double= overload rebuilds the value with =from_double=. A plain =float= can only select the second, so all 35 call sites are a binary-float fallback. | =moneyFloat= declared at =projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp:4349= and used by 6 members tree-wide, none FX; =float BoughtAmount{};= =:4364=; =float SoldAmount{};= =:4366=; =float Strike{};= =:4333=; =xsd::optional<float> SoldAmount= =:4440=; =xsd::vector<float> Level= =:4476=; the two overloads at =ore_boundary_decimal.hpp:56-67= and =:76-80=; the 35 sites at =fx_instrument_mapper.cpp:303,305,411,413,436,438,459,462,490,492,514,516,538,540,562,564,572,574,606,608,631,632,656,657,663,693,722,744,746,769,771,779,806,809,815=. |
+| 2 | Critical | Medium | Table-shaped children | =fx_accumulator_instrument.range_bounds_json= holds the ORE =RangeBounds= list as a JSON array in a =text= column. A range bound is six fields — =startDate=, =RangeFrom=, =RangeTo=, =Leverage=, =Strike= and =StrikeAdjustment= — so this is a child record with no table. The model states the reason in its own prose, which is a coverage gap and not a decision: the ORE schema requires at least one bound, so an export that drops the list cannot be read back. The same field also breaks the Regime 3 rule against an encoded string field, and the levels pass through float text on the way in and out. | =ores.trading.fx_accumulator_instrument.org:187-203= ("The list has no child table, so it lives in JSON text"); =trading_fx_accumulator_instruments_create.sql:46=; =fx_accumulator_instrument.hpp:102=; =fx_accumulator_instrument_protocol.hpp:53=; the float text channel at =fx_instrument_mapper.cpp:88-92,96-119,174=. |
+| 3 | Important | Small | Exact money at rest | =fx_variance_swap_instrument.strike= is =numeric(38, 12)= in the model and the table, and =double= in the domain type and the repository entity. A variance strike is volatility, which is a continuous quantity, so the domain type is right and the column is wrong; the defect is the disagreement, and the value is exact at rest and lossy in the domain. | =ores.trading.fx_variance_swap_instrument.org:165-166=; =trading_fx_variance_swap_instruments_create.sql:43=; =fx_variance_swap_instrument.hpp:86=; =fx_variance_swap_instrument_entity.hpp:56=; the mapper can only cast, at =fx_instrument_mapper.cpp:721= and =:1112=. |
+| 4 | Important | Medium | Batched collection access | The seven services issue 21 per-key single reads where the repository already declares the batch read: one loop per =get_many=, one per =put_many= precondition check, and one per =put_many= read-back. The batch read exists and is a single query; the services use it only in their convenience overloads. No row-at-a-time callback exists anywhere. | Batch read at =fx_forward_instrument_repository.hpp:108-109= and its single query at =fx_forward_instrument_repository.cpp:344-359=; the three loops at =fx_forward_instrument_service.cpp:175,207,227=. The same three loops appear in all seven services. |
+| 5 | Important | Small | Identity by key | The family declares no database foreign key at all. Every reference-data link is a text code validated at most by a non-empty or closed-set check, and 20 of the columns are labelled in the models as a soft reference to a named table: the trade-type table, the currency table, and the four closed type tables. Every claim defers the real key to "PR 4". *Recorded.* | =grep -i references projects/ores.sql/create/trading/trading_fx_*= returns nothing; =ores.trading.fx_accumulator_instrument.org:42,98,157=; =fx_variance_swap_instrument.org:202=; the 20 claims are =grep -ic 'soft fk' projects/ores.trading/modeling/ores.trading.fx_*.org=. |
+| 6 | Minor | Small | Explicit variation | =fx_barrier_option_instrument= models the barrier direction as a mandatory =lower_barrier= plus a nullable =upper_barrier=, with nothing tying the engaged level to =barrier_type=. An =UpAndIn= option must still carry a lower level, and no check refuses a single-barrier product that fills both. =fx_digital_option_instrument= has the same shape over three nullable columns — =strike=, =lower_barrier=, =upper_barrier= — with no discriminator and no mutual-exclusion check. | =ores.trading.fx_barrier_option_instrument.org:201,216= and its checks at =trading_fx_barrier_option_instruments_create.sql= (=lower_barrier= is =not null=, =upper_barrier= is =null=); =ores.trading.fx_digital_option_instrument.org:194,221,231=. |
+| 7 | Minor | Small | Type discipline (outside the checklist) | 19 nullable columns have a non-optional =std::string= in the domain type, while the repository entity carries =std::optional<std::string>=. The mapper settles the difference with =value_or("")= on read and =.empty() ? nullopt= on write, so a NULL and an empty string are one value in the domain and a stored empty string is rewritten as NULL. This is not a family failure: the trading models hold 91 instances and FX holds 19 of them. | =fx_forward_instrument.hpp:79,84= against =fx_forward_instrument_entity.hpp:56-57=; the mapper at =fx_forward_instrument_mapper.cpp:62-63,92-93=. |
+| 8 | Minor | Small | Explicit variation | =fx_vanilla_option_instrument= contradicts itself on the exercise-style vocabulary two lines apart: the prose says the closed set is European, Bermudan and American, and the check it generates admits two. =ores_trading_exercise_types_tbl= is seeded with all three, so the table refuses a code its own vocabulary and this model's prose both admit. | =ores.trading.fx_vanilla_option_instrument.org:181= and =:184= against =trading_fx_vanilla_option_instruments_create.sql:67=, and the seed at =projects/ores.sql/populate/trading/trading_exercise_types_populate.sql=. |
+| 9 | Minor | Small | Duplication (outside the checklist) | The other four FX vocabularies are stated twice: once in the seeded vocabulary table and once in each table's check. The two copies agree today and nothing keeps them equal. | =trading_barrier_types_populate.sql= against =trading_fx_barrier_option_instruments_create.sql= (ten codes each); =option_types=, =long_short_types= and =moment_types= likewise. |
+| 10 | Minor | Small | Documentation | The exact-numbers page states that the continuous direction holds ten columns, four of them a =double= over a =numeric=. The two baselines beside the check are each a single blank line, and a scan of the tree finds two such columns: this family's variance strike and =ores.compute.host.credit_total=. The page also forbids restating the baselines in prose, because the prose copy drifts — which is what happened. | =exact_numbers_and_economic_change.org:59-64=; =build/scripts/money_decimal_columns.baseline= and =continuous_decimal_columns.baseline=; =ores.compute.host.org:102-105=. |
+
+** The enforcement gap**
+
+=check_money_decimal_columns.py= sees none of findings 1 to 3, and each one
+escapes by a different route.
+
+- Finding 3 is in =EXCLUDED_COLUMNS= for the money direction, because a
+  variance strike is volatility. The name =strike= reads as money, so the
+  continuous direction skips it too.
+- Finding 1 never reaches the check. The check reads the models, and the loss
+  is in the ORE binding.
+- Finding 2 has no money token in its name at all.
+
+Both baselines are a single blank line, so the gate asserts nothing about this
+family in either direction. =check_model_sql_types.py= passes the family,
+correctly: the model and the generated table agree, and finding 3 is a
+disagreement with the generated C++, which that check does not read.
+
+** Corrections made while checking**
+
+- The conversion seam was first recorded as passing, because the mapper calls
+  =exact_decimal= at every money site. That reading is wrong. The lexical
+  branch needs an =xsd::base<T>= leaf, no FX binding is one, and the call
+  silently takes the =from_double= overload. The helper's name was read, not
+  its behaviour.
+- The nested =identity= and =audit= JSON projection was first recorded as a
+  Regime 3 finding. It is not a family failure: the design page names it a
+  codegen limitation for every grouped entity.
+- The 19 nullable strings were first recorded as an FX defect. They are a
+  component convention that predates the family.
+- ="PR 4"= was first read as a bare placeholder. The soft references are a
+  recorded deferral with a stated target, so finding 5 is context, not
+  oversight.
+
+** Score
+
+Regime 2, *2 of 5*, debt *High*. The single number hides a split worth
+stating, as it did for the bonds review. The structural half is a clean 5:
+identity is the key, the variation is per-type tables, the core and cold parts
+are split, the money is exact at rest, and every generated invariant holds.
+The debt is in the conversion seam and in one column. Every FX money value
+enters through a binary float, one accumulator field carries a document tree
+in a text column, and one column disagrees with its domain type.
+
+The difference from bonds is worth recording: bonds failed on six stragglers
+inside a seam that was otherwise migrated. FX has no migrated site at all —
+the family was never brought to the lexical-form boundary.
+
+* Recommendations
+
+1. *Migrate the FX money bindings first.* It is the only systemic Critical and
+   it has one root cause. Add the FX money members to
+   =scripts/reapply_ore_lexical_form.py=, then write the reverse with
+   =set_exact=, as the credit task did. The script must grow first: it records
+   that it handles =xsd::optional<float>= members only and refuses a required
+   plain =float=, and most FX money members are required.
+2. *Give =RangeBounds= a child table*, keyed by the instrument, and delete
+   =range_bounds_json=. That closes finding 2 and the float text channel with
+   it. The ORE schema requires at least one bound, so the child table also
+   needs an insert rule for the empty case.
+3. *Move the variance strike to =double precision=*, using the mirror mode of
+   =scripts/convert_money_column_to_decimal.py=, so the column agrees with the
+   continuous domain type.
+4. *Close the gate.* Teach =check_money_decimal_columns.py= to see a
+   continuous quantity whose name reads as money, and seed the baselines.
+   Until then the family has a check that cannot see its own defects.
+5. *Take the service read loops to the component, not the family* (4): it is
+   7 of 7 services, so it is a service-base or codegen question.
+6. *Decide the rest rather than fixing them:* the barrier discriminator (6),
+   the doubled vocabularies (8, 9) and the prose exercise-style list.
+7. *Correct the exact-numbers page* (10) so it stops restating a baseline it
+   calls authoritative.
+
+* See also
+
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the criteria applied here.
+- [[id:AE72D444-02B1-4428-B56C-062B849ED568][Code Review Data Model Skill]] — the review procedure.
+- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] — the target model for the component.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the wire rule that =instrument_batch= follows.

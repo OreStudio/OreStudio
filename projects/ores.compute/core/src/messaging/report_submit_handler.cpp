@@ -56,14 +56,23 @@ report_submit_handler::report_submit_handler(ores::nats::service::client& nats,
     , run_tokens_(ores::iam::client::make_run_token_minter(service_nats_)) {}
 
 void report_submit_handler::submit(ores::nats::message msg) {
+    // The handler answers the delivery itself, so that a command which records
+    // no outcome is redelivered rather than acknowledged as done.
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        // Not a step command at all, so there is no step to fail and nothing a
+        // second delivery would achieve.
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<submit_compute_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode submit_compute_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -74,6 +83,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
     try {
         if (req.tarball_uris.empty()) {
             wf->fail("submit_compute: no tarball URIs in request");
+            ack.accept();
             return;
         }
 
@@ -84,6 +94,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
         if (run_tokens_.token_for(key, req.tenant_id).empty()) {
             wf->fail("submit_compute: the run has no run token; its grant is missing or IAM "
                      "refused the exchange");
+            ack.accept();
             return;
         }
 
@@ -122,6 +133,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
         const auto candidates = app_versions.read_latest(tenant_ctx);
         if (candidates.empty()) {
             wf->fail("submit_compute: no application version is available to run");
+            ack.accept();
             return;
         }
         const auto app_version_uuid =
@@ -171,9 +183,18 @@ void report_submit_handler::submit(ores::nats::message msg) {
                                   << " batch=" << batch_id << " workunits=" << workunit_ids.size()
                                   << " step=" << wf->step_id;
 
+        // The batch, its workunits and the link that defers this step's outcome
+        // to the batch bridge are all committed, and the bridge holds the step's
+        // completion. Redelivering the command would create a second batch for
+        // the same run, so the delivery is done with here.
+        ack.accept();
+
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "submit_compute failed: " << e.what();
         wf->fail(e.what());
+        // The failure reaches the engine, so the delivery is done with;
+        // redelivering would only report the same failure again.
+        ack.accept();
     }
 }
 

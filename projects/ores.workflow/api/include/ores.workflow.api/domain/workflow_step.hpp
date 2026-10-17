@@ -110,7 +110,9 @@ struct workflow_step final {
     std::string command_json;
 
     /**
-     * @brief Timestamp when the step command was published to NATS.
+     * @brief Timestamp when the step command was published to NATS. The engine writes it when it
+     * dispatches or re-dispatches the step, and the deadline pass reads it to judge the step's
+     * silence, so a caller editing the step never states it.
      */
     std::optional<std::chrono::system_clock::time_point> command_published_at;
 
@@ -131,12 +133,14 @@ struct workflow_step final {
     std::string compensation_json;
 
     /**
-     * @brief Timestamp when the step began executing.
+     * @brief Timestamp when the step began executing. The engine writes it with the row it creates
+     * at dispatch, so a caller editing the step never states it.
      */
     std::optional<std::chrono::system_clock::time_point> started_at;
 
     /**
-     * @brief Timestamp when the step reached a terminal state.
+     * @brief Timestamp when the step reached a terminal state. The engine writes it from its state
+     * funnel, so a caller editing the step never states it.
      */
     std::optional<std::chrono::system_clock::time_point> completed_at;
 

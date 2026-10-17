@@ -5,6 +5,7 @@
 #+name: utility
 #+full_name: ores.utility
 #+description: Foundation utilities: Base64, gzip and SHA-256, UUID v7 and tenant identity, reflect-cpp reflectors, the seeded generation engine, program-options mapping, short-code strings, and test data generation.
+#+brief: Foundation byte codecs, identity, and generation utilities
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :utility:foundation:component:

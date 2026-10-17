@@ -1,0 +1,15 @@
+               workflow               | step_index |               name               |   state   |                                                      err                                                      
+--------------------------------------+------------+----------------------------------+-----------+---------------------------------------------------------------------------------------------------------------
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |         -5 | submit_compute_compensation      | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |         -4 | prepare_ore_package_compensation | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |         -3 | assemble_bundle_compensation     | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |         -2 | gather_market_data_compensation  | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |         -1 | gather_trades_compensation       | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |          0 | gather_trades                    | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |          1 | gather_market_data               | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |          2 | assemble_bundle                  | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |          3 | prepare_ore_package              | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |          4 | submit_compute                   | completed | 
+ d7efdb15-9776-4c7f-a81b-4ba3dab95615 |          5 | collect_compute_results          | failed    | Reading the run's compute workunits failed: Service error on compute.v1.workunits.list_by_batch_id: forbidden
+(11 rows)
+

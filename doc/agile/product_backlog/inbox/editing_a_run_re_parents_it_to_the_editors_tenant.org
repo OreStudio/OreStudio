@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: 401EE8EF-D8CF-4A1A-83A8-C4B4A33706B9
+:END:
+#+title: Editing a run re-parents it to the editor's tenant
+#+description: tenant_id is server-owned and stamped from the session, so a system-tenant caller editing another tenant's run moves the row to its own tenant, leaving two open rows for one id. Met while fixing the timestamps; pre-existing and unrelated to them.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make an edit through the generated verbs keep a row in the tenant that owns it.
+Today `tenant_id` is server-owned and stamped from the session, so a caller in
+the system tenant editing another tenant's run writes the row into its own
+tenant. The result is two open rows for one id, one in each tenant, and whichever
+the reader picks depends on the reader.
+
+Decide whether a caller may edit across tenants at all. If it may, the owning
+tenant has to survive the write. If it may not, the verb should refuse rather
+than silently re-parent.
+
+* Why
+
+Met while fixing the erase-on-set timestamps, and unrelated to them. It is
+pre-existing and reachable, and it produces exactly the shape the bitemporal
+machinery exists to prevent: two current rows for one identity.
+
+The reason it has stayed invisible is the same reason the other tenant defects
+have: nothing reads the row by id alone, so both rows answer and the reader
+takes whichever it finds first.
+
+* References
+
+- `tenant_id` is server-owned, which is what puts the session's tenant onto the
+  row rather than the caller's.
+- The timestamps work that met it, merged as `ae1c6fd260`.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]] — what an inbox capture is.

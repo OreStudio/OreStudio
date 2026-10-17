@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 64E2FF71-5AE6-4F32-A9FA-22306BD21E36
+:END:
+#+title: Task: Carry the FX money digits across the ORE boundary
+#+description: Finding 1 of the FX review. Every FX money leaf in the ORE binding is a plain float, so the document's digits are lost before the mapper runs and all 35 exact_decimal call sites fall back to from_double. Make the family's money members lexical leaves through scripts/reapply_ore_lexical_form.py, write them back with set_exact, and prove the digits survive.
+#+type: task
+#+level: s1
+#+filetags: :instruments-fx:sprint_28:v0:
+#+owner: marco
+#+branch: feature/carry-the-fx-money-digits-across-the-ore-boundary
+#+pr: 3392
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make every FX money value keep the digits the ORE document wrote. Today each
+FX money leaf is a plain =float= in the binding, so the XML parse discards the
+text and the mapper's =exact_decimal= call takes the =from_double= overload.
+The stored decimal is therefore the binary float's spelling, not the document's
+number.
+
+This unit comes first because it moves the goldens.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- Every FX money leaf in the binding is a lexical leaf, and each one is patched by =scripts/reapply_ore_lexical_form.py=, never by hand.
+- The script handles a required plain =float= member, or it refuses the shape with a stated reason. Today it handles =xsd::optional<float>= only, and most FX money members are required.
+- Every FX money field that has a continuous sibling stays a binary float. A variance strike, a ratio and a quantity are not money.
+- The forward mapping reads each money leaf with the =xsd::base<T>= overload of =exact_decimal=, and the reverse mapping writes each one with =set_exact=.
+- A mapper test holds the digits of each money member: a value with more significant digits than a float carries survives the round trip.
+- No golden that changes has a non-numeric change.
+
+* Plan
+
+1. Classify every FX binding member as money or continuous, with the exact-money rule of the data-oriented design page.
+2. Extend =scripts/reapply_ore_lexical_form.py= to a required member, with a self-test for the new shape.
+3. Add the FX money members to the script's table and run it. Check the diff by hand: the struct, the getter, the element info and the serializer of each member.
+4. Replace the reverse casts with =set_exact=.
+5. Add the digit tests, then regenerate the goldens and read every changed line.
+6. Run the ORE core and trading core suites, and the codegen tests.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| FX money members made lexical leaves | 23 | =grep -c 'domain::moneyFloat' projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp= is 29: the FRA pair, the four credit members and these 23 | the PR head |
+| Money members the script patches | 27 | =grep -cE '^    \("[a-zA-Z0-9_]+", "[a-zA-Z0-9_]+", "(required\|optional)"\),$' scripts/reapply_ore_lexical_form.py= | the PR head |
+| Goldens changed | 3, one numeric line each | =git diff --stat -- assets= | the PR head |
+| ORE core suite | 668 cases, 483,175 assertions, all pass | =ores.ore.core.tests= with the =.env= loaded | the PR head |
+| FX suite | 33 cases, 182 assertions, all pass | =ores.ore.core.tests "[fx]"= | the PR head |
+| Reapply script self-tests | both pass | =scripts/reapply_ore_lexical_form.py --self-test= and =--self-test-missing-anchor= | the PR head |
+| Local checks | 51 of 52, format and both drift checks pass | =compass check --exclude-heavy= | the PR head |
+
+* Notes
+
+- The evidence for this task is [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]], finding 1. Measured there: 35 =exact_decimal= call sites in =fx_instrument_mapper.cpp=, 0 =set_exact= sites, and 6 money leaves carrying the lexical form in the whole tree.
+- The credit task [[id:C5829235-D255-4C13-9EC1-6658CA518B02][Carry the credit instruments' digits]] is the template for the shape of this unit.
+- *The lever was broken before this unit started.* The nightly clang-format run reflowed =_moneyFloat_Info= in =domain.cpp=, and the script's byte-exact "already applied" test then reported a half-applied patch and refused to run. Its own =--self-test= failed on =main=. The script now recognises a patch modulo whitespace, writes the declaration where the earliest user needs it rather than inside the FRA edit, and runs clang-format over what it writes. Both self-tests pass again.
+- *The reach is wider than the family.* The leaf types are shared, so the commodity and equity variance-swap mappers and the equity accumulator and TaRF mappers now write their money with =set_exact=. Their goldens do not change; the three that do are the FX digital option, the FX digital barrier option and the exotic FX TaRF, one numeric line each.
+- *Two money members are deliberately left for other units:* =barrierData_Levels_t.Level= is a vector, so the script does not yet patch it, and =rangeBound= is the accumulator's encoded child, which the range-bounds unit removes.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3392][#3392]] | [ore] Carry the FX money digits across the ORE boundary |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The FX family now carries the digits its documents state. 23 money members
+across the seven products are lexical leaves, the reverse mapping writes them
+with =set_exact=, and a mapper test holds a 16-digit amount through both
+directions. The ORE core suite passes: 668 cases, 483,175 assertions.
+
+The unit also repaired the lever it depends on. =reapply_ore_lexical_form.py=
+could not run on =main= at all, because the nightly format run had reflowed one
+of its anchors and its own self-test failed. It now recognises a patch modulo
+whitespace, places the leaf declaration before the earliest user rather than
+inside the FRA edit, and formats what it writes.
+
+Three goldens changed, one numeric line each, and the whole diff was read. The
+reach of the shared leaf types was checked: the commodity and equity variance
+swaps and the equity accumulator and TaRF map their money with =set_exact= now,
+and their goldens do not move.
+
+Left for other units: the barrier level vectors, which the script does not yet
+patch, and the accumulator's encoded range bounds, which its own unit removes.

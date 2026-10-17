@@ -365,7 +365,7 @@ export interface ApprovalPartProgress {
      * @brief The account that answered the part, as a UUID string, or empty.
      */
     decided_by: string;
-    decided_at: string;
+    decided_at: string | null;
     comment: string;
 }
 

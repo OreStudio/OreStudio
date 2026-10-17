@@ -1,0 +1,69 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING</b>
+  --
+  <b>REPORTS: ACMCOR - Acme Corporation</b>
+  --
+  {
+    <b>Party</b> ACMCOR | 14 definitions | (8 clean) | (2 carrying errors) | (1 failed) | (3 never run) | (0 running)
+  }
+  --
+  {
+    Filter [ All ] [ Failed ] [ Carrying errors ] [ Running ] [ Never run ] [ Clean ] | [ Refresh ] | Watching: live run events
+  }
+  --
+  {#
+    Report | Type | Schedule | Health | Errors | Started | Completed
+    Group Consolidated Exposure | risk | scheduled 06:00 | completed clean | - | 06:00:02 | 06:04:31
+    Group FX Hedges | risk | scheduled 06:00 | completed while carrying errors | (20 errors) | 06:00:02 | 06:07:18
+    Group Intercompany Loans | risk | scheduled 06:00 | running | - | 08:12:44 | -
+    Liquidity Buffer Bonds | risk | scheduled 06:00 | failed | - | 06:00:03 | 06:01:02
+    Large Exposures | risk | on demand | never run | - | - | -
+    Leverage Ratio | risk | scheduled 07:00 | completed clean | - | 07:00:01 | 07:03:40
+    Headline Position | risk | on demand | completed clean | - | 07:41:12 | 07:42:55
+    Sample bundle smoke test | risk | on demand | completed while carrying errors | (11 errors) | 08:02:10 | 08:03:01
+    Board Risk Dashboard | risk | scheduled 06:30 weekdays | failed | - | 06:30:01 | 06:30:09
+  }
+  --
+  Summary: (2 completed carrying errors) | (1 running) | (1 never run in the shown page) | (2 failed)
+  --
+  Read-only. One row per report definition the party owns, with the health of its
+  latest run. The five health words are never run, running, completed clean,
+  completed while carrying errors, and failed. A run carrying errors is marked in
+  the warning tone and states its count, so it is apart from a clean run without
+  opening it; the report still succeeded. A definition with no run says so; it is
+  not clean. The party comes from the session and every row is party-scoped by
+  row-level security.
+  --
+  <b>A ROW THAT CHANGES WHILE THE SCREEN IS OPEN</b>
+  --
+  Group Intercompany Loans: running at 08:12:44, then completed while carrying
+  errors at 08:15:02 with (3 errors). The row changes in place from the run
+  update event; the person does not refresh.
+  --
+  <b>A PARTY THAT OWNS NO REPORT</b>
+  --
+  The header states the party and the table is replaced by one sentence: this
+  party owns no report definition. An empty table is not shown.
+}
+
+@enduml

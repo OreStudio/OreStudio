@@ -1,0 +1,86 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: RUN OUTPUTS</b>
+  --
+  <b>RUN: Group Consolidated Exposure - 4b7e1a02</b>
+  --
+  {#
+    State | Completed | Took | Kind
+    completed | 08:15:02 | 2 m 18 s | from report_instance_kind
+  }
+  --
+  <b>WHAT THE SYSTEM SAID</b>
+  --
+  {
+    Output message: Report execution completed.
+  }
+  --
+  <b>THE ENGINE'S OUTPUT ARCHIVE</b>
+  --
+  {#
+    Archive | reporting/runs/<instance-id>/output.tar.gz | [ Download ]
+  }
+  The archive is the run's output directory, archived by the compute run. This
+  screen does not list the files inside it: no operation lists an archive's
+  contents, so the reader opens the archive. An empty file list is not drawn.
+  --
+  <b>WHAT THE RUN SAID WAS WRONG</b>
+  --
+  {#
+    Severity | Scope | Count
+    error | Analytics | 8
+    warning | Configuration | 3
+  }
+  11 rows in all. The archive is complete and the run still carries these. Open
+  the errors for the subject of each one.
+  --
+  <b>THE ORE PACKAGE THIS RUN USED</b>
+  --
+  {#
+    Pre-processing | Package | Action
+    execute | prepared by ore.v1.ops.prepare_ore_package | [ Open package ]
+    substitute | prepared_input_key from the definition | [ Open package ]
+  }
+  The package is the engine's input. It is what a person would run locally to
+  reproduce the output. No read in the set returns it or lists its files.
+  --
+  <b>A RUN IN FLIGHT: NO OUTPUT YET</b>
+  --
+  {#
+    State | Started | Output message | Archive
+    running | 08:12:44 | - | not yet retrieved
+  }
+  The archive key is written only once the run's results are retrieved. The panel
+  says the output will arrive; it does not show an empty archive.
+  --
+  <b>A RUN THAT FAILED: NOTHING TO TAKE</b>
+  --
+  {#
+    State | Output message | Archive | Package
+    failed | - | none | none
+  }
+  There is no archive and no package to hand over. The screen says so and sends
+  the reader to the run's errors, including the Report scope rows the model
+  states itself when no engine saw the failure.
+}
+
+@enduml

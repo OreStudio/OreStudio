@@ -1,0 +1,257 @@
+:PROPERTIES:
+:ID: 969C14D2-4280-4D7C-8F51-1D395B521C83
+:END:
+#+title: User Journey: Read what a run produced
+#+description: A person opens one finished run and reads what it produced: the system's output message, the engine's output archive, the exported ORE package, and the errors that came with it.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-17
++#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person opens one finished run and reads what it produced: the system's output message, the engine's output archive, the exported ORE package, and the errors that came with it.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"What did this run actually produce?" The person has a run in front of them,
+usually the latest one of a report they care about, and wants the file or the
+package that came out of it. They want to know where the engine's output landed,
+what the system said when the run ended, and what else the run left behind.
+The journey is done when they can take the output away, or say why there is no
+output to take.
+
+The person is not asking what the numbers mean. Reading the CSV artefacts is
+reading a report; this journey is about the run's own products: the archive, the
+package the engine read, and the record of what the run said.
+
+* Actor and trigger
+
+The trading desk and the market risk function read this journey. The desk takes
+the output of a Headline Position run to a meeting, and the market risk function
+takes the same output for sign-off and for the file it keeps. Both act inside
+their party, and they arrive from a run's row on
+[[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] or
+from the run page of
+[[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]].
+
+The trigger is a run that has finished, or a person asking whether it has
+produced anything yet. The journey starts when the person opens the run's
+outputs and ends when they have the archive, or the package, or the reason
+neither exists.
+
+This is a read-only journey. It downloads what the run already wrote; it does
+not run, rerun or edit anything.
+
+* Steps
+
+1. *Open the run.* The person opens the run from its row, or the screen opens it
+   after a run completes. The header states the run's name, the definition it
+   came from, its kind, its state, and when it started and completed. A person
+   who has just finished
+   [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]]
+   arrives with the run already in front of them.
+2. *Read what the system said.* The run carries an =output_message=, the
+   system's own sentence about the run. A completed run states exactly
+   =Report execution completed.= The screen shows that sentence as it is, and it
+   does not paraphrase it into a friendlier one. The message is the run's whole
+   account of itself when nothing went wrong, and it is the first thing a person
+   reads when they ask what happened.
+3. *Read where the output is.* A completed run carries an =output_storage_key=,
+   the storage key of its output archive, of the form
+   =reporting/runs/<instance-id>/output.tar.gz=. The screen shows the key and
+   offers the archive. The key is the answer to "where did it land": it names
+   the run's own directory in storage, so a person can quote it, find it with a
+   storage tool, or hand it to another reader. The screen does not pretend to
+   list what is inside the archive, because nothing lists the files in it — see
+   *What is missing*.
+4. *Read the errors that came with the output.* Output and errors are not
+   alternatives. A run that completed while carrying errors produced its
+   archive and recorded its errors, and a reader who takes the archive must know
+   what the run said was wrong. The outputs screen therefore carries the error
+   summary: the count, the severities and the scopes. A reader who wants the
+   detail follows
+   [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]].
+   The archive is still the answer to "what did this run produce", and the errors
+   are the answer to "what is missing from it".
+5. *Read the exported ORE package.* Pre-processing produces the engine's input,
+   and the step that prepares it is =ore.v1.ops.prepare_ore_package=. The
+   package is the engine's input, and it is what a person would run locally to
+   reproduce the output. The screen states
+   the package the run produced and offers it where the run has one. A run whose
+   definition substitutes pre-processing resolves a prepared input instead, and
+   the package it resubmits is named by the definition's =prepared_input_key=.
+   The two are different objects, and the screen says which one this run used.
+6. *A run still in flight.* Output does not exist until retrieval. The run's
+   =output_storage_key= is set only once the run's results have been retrieved,
+   so a running run states that no output is available yet and that the panel
+   will fill when the run completes. It does not draw an empty archive, which
+   would read as a run that produced nothing.
+7. *A run that failed.* A failed run has no archive and no package to hand over.
+   The screen says there is nothing to take, states that the run failed, and
+   sends the reader to the run's errors. The empty answer is explained, not
+   dressed as an empty folder.
+8. *Take it away, or leave.* The person copies the storage key, downloads the
+   archive through the route the screen provides, or follows the error screen.
+   The run remains the record: its outputs do not expire with the screen, and a
+   person who comes back later reads the same key.
+
+* Screens and wireframes
+
+One screen. The run header, the output panel, the errors summary and the ORE
+package panel are panels of that screen, because they are one answer: what this
+run produced and what it said about it. The screen is read-only: it creates
+nothing, changes nothing and destroys nothing.
+
+The outputs panel is deliberately thin. It names the archive, offers it, and
+says that its contents are not listed, because no operation lists them. The
+wireframe shows the three states a person meets: a completed run with an archive,
+a run in flight with no output yet, and a failed run with nothing to take.
+
+#+caption: Read what a run produced: the output message, the archive's storage key, the exported ORE package, and the states where there is nothing to take.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_read_what_a_run_produced.png]]
+
+* Prototype
+
+None yet. This journey is the design intent for the run's outputs screen, and
+its prototype belongs at =doc/prototypes/reporting/read_what_a_run_produced/=.
+The prototype must draw a completed run with an archive and a package; a
+completed run carrying errors, where the archive and the error summary sit
+together; a run in flight with no output yet; and a failed run with nothing to
+take. It must also draw the archive panel without a file list, and say in the
+panel why the list is absent.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =report_instance= | The run: state, =completed_at=, =output_message= and =output_storage_key= | [[id:9FCCF6C8-9C10-403B-BDA4-C3E28706BD67][ores.reporting.report_instance]] |
+| =report_definition= | The definition behind the run: its name, its schedule, and the =prepared_input_key= a substituting run resolves | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_instance_kind= | The kind of run, so a reader knows what this run set out to do | [[id:79A42255-AACC-43BA-B876-60D421F6DBD0][ores.reporting.report_instance_kind]] |
+| =report_error_event= | The errors the run recorded beside its output: severity, scope and message | [[id:080B3871-8BAA-4AAA-A98F-3E79F4B83BAA][ores.reporting.report_error_event]] |
+| =report_error_scope= | The vocabulary that names what each error is about | [[id:FF774B04-12E6-4BDF-B94C-222095651C4F][ores.reporting.report_error_scope]] |
+| =party= | The owner of the run and the archive | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+The run is the row and the archive is its =output_storage_key=. The package is
+not a column: it is the object the pre-processing step prepared, and the screen
+reaches it through the definition's =prepared_input_key= when the run
+substituted pre-processing. The errors are rows of the run, read as a group,
+and the summary counts them by severity and by scope.
+
+Every entity above carries =party_id= and is party-scoped by row-level security.
+The run and the definition are bitemporal, so the name and the definition the
+run started with are the run's own; editing the definition today does not rename
+the output of a run from last week.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the run | Read the run | =reporting.v1.report_instances.get= | exists |
+| Open the run | Read the run's definition | =reporting.v1.report_definitions.get= | exists |
+| Open the run | Read the kind of run | =reporting.v1.report_instance_kinds.get= | exists |
+| Read the output location | Read the archive key the run recorded | carried by =reporting.v1.report_instances.get= | exists |
+| Read the errors | List the run's errors | =reporting.v1.report_error_events.list_by_report_instance_id= | exists |
+| Read the errors | Read one error | =reporting.v1.report_error_events.get= | exists |
+| Read the errors | Read the scope vocabulary | =reporting.v1.report_error_scopes.list= | exists |
+| Read the package | Prepare the ORE package the engine reads | =ore.v1.ops.prepare_ore_package= | exists |
+| Watch for output | Learn that the run completed and its output landed | =reporting.v1.report_instances_events.updated= | exists |
+| Take the archive | List the files inside the run's archive | (no operation lists an archive's contents) | missing |
+| Take the archive | Read or stream the archive's bytes | (no reporting operation serves the archive) | missing |
+| Take the package | Read the exported ORE package, or list its files | (no operation in the set returns it) | missing |
+| The screen itself | Read a run's outputs from the browser | (no BFF route) | missing |
+
+The output message and the storage key are fields of the run, so the read that
+opens the run already answers "where did it land". The errors are a list by
+report instance. The package is an operation of the ORE component, and no
+reporting read returns it. The archive's own bytes are behind storage, not
+reporting: the run names the key and the screen needs a route that can fetch the
+object it names.
+
+The reads are gated by =reporting::report_instances:read= and
+=reporting::report_definitions:read=, and the errors by
+=reporting::report_error_events:read= and =reporting::report_error_scopes:read=.
+The error codes are held by no role below =TenantAdmin= and =SuperAdmin=.
+
+No BFF route serves this screen. The prototype adds one, for example
+=GET /api/reporting/runs/<run-id>/outputs=, which returns the run's output
+message, its storage key, the package it used and the error summary, and a
+second route that streams the archive by its key. The handler authenticates the
+caller's token and checks the read codes above.
+
+* What is missing
+
+1. *A route and a screen.* No BFF route serves reporting, and nothing in the web
+   application shows a report today. The run's outputs screen is new.
+2. *No file list for the archive.* The run names one archive,
+   =reporting/runs/<instance-id>/output.tar.gz=, and no operation lists the
+   files inside it. A person who wants one CSV must download the archive and
+   open it. A read of the archive's entries is the missing piece, and the
+   screen states the absence rather than showing an empty list.
+3. *No read of the archive itself.* Reporting states the key; no reporting
+   operation returns the bytes. The download is a BFF and storage concern, and
+   it is not designed here. The screen can quote the key today and cannot hand
+   the object over without that route.
+4. *No read of the exported ORE package.* =ore.v1.ops.prepare_ore_package= is
+   the step that prepares the package, and no operation in the set returns it or
+   lists its contents. A person who wants to reproduce the run locally has the
+   same problem as with the output archive: they need the object, and the
+   journey can only name where it came from.
+5. *The parsed results are not built.* The run produces the engine's output
+   archive and records where it landed. The result store that would ingest the
+   archive is designed on
+   [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] and is
+   not built, so there are no report rows to query and "what did this run
+   produce" is answered by an archive rather than by a table. The screen must
+   not draw a results table it has no read for.
+6. *The run does not name the job that produced the archive.* =report_instance=
+   carries no batch or workunit id, so the screen cannot link this output to the
+   compute job whose =output_uri= it came from. The key is on the run; the
+   lineage to the grid is not.
+7. *The error permissions sit too high.* =reporting::report_error_events:read=
+   and =reporting::report_error_scopes:read= are held by no role below
+   =TenantAdmin= and =SuperAdmin=, which hold =*=. A trading desk can open the
+   archive and cannot read the errors that say what is missing from it, which is
+   the one warning the outputs screen exists to give.
+8. *The package a substituting run used is named on the definition, not the
+   run.* A run that resolves a prepared input leaves the definition to state
+   =prepared_input_key=, and a later edit to the definition changes what the
+   screen reports for an earlier run. The definition keeps its history, and the
+   run does not name the version of the definition it used, so the screen has no
+   key to the prepared input the run actually read.
+
+* Related journeys
+
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door that leads to a run's row
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run that produced this output, and the terminal panel it lands on
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — the errors that sit beside the archive when a run completed carrying them
+- [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] — the schedule that will produce the next run's output
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — retrieval and post-processing, the phases that produce and record the output
+- [[id:D697A04C-387C-451E-AC90-1989FCDFCAB9][Report post-processing]] — what reading the archive will become
+- [[id:08C54927-C7BD-48B7-BF7B-13DC3702FF68][Report pre-processing]] — the phase that produces the input package
+- [[id:3594348F-6679-4D8B-858F-38B073FDFAFE][Report compute handoff]] — the result the archive arrives through
+- [[id:7786B8F5-0B30-4265-842F-7E63710433B8][Report execution substitution]] — why a run may resolve a prepared input instead of preparing one
+- [[id:6E218159-C7FB-47AE-9779-B2645CE19B05][Report pages]] — what each report's output is meant to be
+- [[id:DF1F4A61-319E-475D-B526-5DC6B62DCF3F][Sample bundle smoke test]] — a report whose output is the engine's archive and nothing more
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — the component
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how the screen composes its reads
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:40CBBDAB-2CAE-4840-87DB-D817C5ACF196][Task: Extract the ores.reporting user journeys]] — the work that owns it
+- [[id:500AC7E3-E87C-4EC8-88A2-B46FB310F865][Headline Position]] — the report whose output a desk takes away
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows

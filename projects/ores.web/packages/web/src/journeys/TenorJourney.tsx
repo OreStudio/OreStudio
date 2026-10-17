@@ -51,7 +51,7 @@ export function TenorJourney({ server, onFinished }: TenorJourneyProps): ReactNo
     /*
      * The badge catalogue, read once here rather than by each step: a tenor's
      * kind, its unit and a convention's anchor, algorithm and roll rule are all
-     * codes, and every one of them is drawn through RowLabel so the journey
+     * codes, and every one of them is drawn through CodedValue so the journey
      * shows them the way the rest of the application does.
      */
     const labels = useLabelCatalogue();

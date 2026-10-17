@@ -106,16 +106,6 @@ function precondition(version: number | null): unknown {
 }
 
 /**
- * The tenor routes: the catalogue with its conventions and schedules, the pick
- * lists, one convention's set, the resolution of a drafted rule, and the writes
- * of a tenor, a convention and a membership row.
- *
- * The resolution route answers about the rows it is handed, not about the rows
- * the store holds, so a person authoring a rule reads its answer before
- * writing it. A rule the server declines comes back as a 200 whose result is
- * not ok: the refusal is the answer, not a transport failure.
- */
-/**
  * The tenors in their own order: O/N before T/N before 1M, not alphabetically.
  *
  * The table holds that order in `sort_order`, and the server refuses to order a
@@ -128,6 +118,16 @@ function orderBy(rows: readonly Record<string, unknown>[]): readonly Record<stri
     );
 }
 
+/**
+ * The tenor routes: the catalogue with its conventions and schedules, the pick
+ * lists, one convention's set, the resolution of a drafted rule, and the writes
+ * of a tenor, a convention and a membership row.
+ *
+ * The resolution route answers about the rows it is handed, not about the rows
+ * the store holds, so a person authoring a rule reads its answer before
+ * writing it. A rule the server declines comes back as a 200 whose result is
+ * not ok: the refusal is the answer, not a transport failure.
+ */
 export function registerTenorRoutes(
     server: FastifyInstance,
     requireSession: (request: FastifyRequest) => LiveSession,

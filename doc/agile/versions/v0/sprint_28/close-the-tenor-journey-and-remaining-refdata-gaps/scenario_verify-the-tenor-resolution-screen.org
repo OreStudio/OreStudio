@@ -28,10 +28,11 @@ This page documents a test scenario verifying [[id:C73F5C2E-1FE8-48BC-B2A2-1092E
 - Sign in at =http://127.0.0.1:21602/= as =tenant_admin@acme_corporation=
   with =Secure-Password-123=.
 
-*Known and expected.* The *Resolved dates* is **not** part of this screen.
-The server serves no operation that resolves a tenor to a date, so the step
-is absent rather than broken. Do not record it as a failure. See the task's
-=* Result= for the sibling task that adds it.
+*Known and expected.* The journey's answer is the *Test* step, which resolves
+the rule as the form holds it and shows the date. It needs a horizon and a
+calendar before it will run, and a rule whose anchor is =SPOT= also needs a
+spot date; a refusal naming one of those is the server answering, not a
+failure.
 
 * Scenario Info
 
@@ -64,17 +65,19 @@ is absent rather than broken. Do not record it as a failure. See the task's
 
 - Choose *Define how tenors resolve*.
 - Confirms the step: the browser shows the tenor journey, and its rail
-  carries all seven steps in this order: *Choose*, *Tenor*, *Convention*,
-  *The schedule*, *Review*, *Outcome*, *History*.
-- A rail of six, or one whose *The schedule* is missing, is a failure: the
-  schedule step was added late and is the easiest one to lose.
+  carries all nine steps in this order: *Choose the tenor*, *Tenor*, *Choose
+  the convention*, *Convention*, *The schedule*, *Test*, *Review*, *Outcome*,
+  *History*.
+- A rail of seven, or one whose *The schedule* is missing, is a failure: the
+  schedule step was added late and is the easiest one to lose, and the *Test*
+  step is newer still.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | The catalogue could not be read. The server refused the request (bad_request). Fixed by c73a801fd7, which sends =as_of= on the catalogue read; the step needs re-running. |
+| Notes  | The catalogue could not be read. The server refused the request (bad_request). Fixed: the catalogue read now sends =as_of=; the step needs re-running. |
 
 ** List the tenors and open one
 
@@ -203,5 +206,5 @@ is absent rather than broken. Do not record it as a failure. See the task's
 
 The journey's resolved dates and its rolled schedule are the two parts the
 prototype draws that this screen does not. Both wait on the operation that
-resolves a tenor to a date, which the server does not serve yet; both are
+resolves a tenor to a date, which the server now serves; both are
 carried by `Resolve a tenor over the wire, with the refusal it carries`.

@@ -28,11 +28,11 @@ code as text and never builds its own pill. See =CodedValue= in
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-16                               |
 
 * Acceptance
@@ -57,7 +57,7 @@ code as text and never builds its own pill. See =CodedValue= in
 | Republishing a mapping must supersede the row it replaces | BACKLOG | | | Publishing =ore.badge_mappings= with 'upsert' leaves the previous row current instead of closing it, so a code ends up with two rows that both read as current: after repointing =tenor_unit= to its own badges, =DAY= held both =origin_primary= (2026-10-15) and =tenor_unit_day= (2026-10-16), each with =valid_to= at infinity. The reader takes whichever it meets last, so which badge a screen shows depends on row order, and the census by shared badge code counts rows that are already superseded. Found 2026-10-16; it gates the mapping fixes, because a fix that leaves the old row in place cannot be trusted. |
 | Draw the remaining coded fields as badges | BACKLOG | | | Take the census list and move each field onto CodedValue, one screen at a time, each with the tests that prove a painted code shows its badge and an unpainted one shows its code. |
 | Hold the rule with a check | BACKLOG | | | A check that fails when a screen prints a code as text, so the rule survives the next screen rather than depending on review. |
-| [[id:D651CC6F-F3AC-4510-B484-586C2FB520A5][Land the coded-value badges and the shared control]] | STARTED | 2026-10-17 | | Task for: Draw every coded value as its badge |
+| [[id:D651CC6F-F3AC-4510-B484-586C2FB520A5][Land the coded-value badges and the shared control]] | DONE | 2026-10-17 | 2026-10-17 | Task for: Draw every coded value as its badge |
 
 * Decisions
 

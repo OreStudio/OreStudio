@@ -58,7 +58,6 @@ import type { JourneyStep, StepId } from './runtime.js';
 import type { TenorCatalogue, TenorPickLists, TenorsServer } from './tenorsServer.js';
 import type { Translator } from '../i18n/translate.js';
 
-/** The steps in the order the rail draws them, and the index each one sits at. */
 /**
  * The code domain each field's value belongs to.
  *
@@ -86,6 +85,7 @@ const CONVENTION_FIELD_DOMAINS: Readonly<Record<ConventionField, string>> = {
     oresmdUri: '',
 };
 
+/** The steps in the order the rail draws them, and the index each one sits at. */
 export const TENOR_STEP_IDS = [
     'choose-tenor',
     'tenor',
@@ -421,7 +421,6 @@ function TenorFieldRow({
                     value={state.tenor[name]}
                     choices={options}
                     catalogue={labels}
-                    empty={t('journey.tenors.convention.anchorNone')}
                     onChange={(value) => state.setTenorField(name, value)}
                 />
             );
@@ -431,7 +430,6 @@ function TenorFieldRow({
                 label={label}
                 value={state.tenor[name]}
                 options={options}
-                empty={t('journey.tenors.convention.anchorNone')}
                 onChange={(value) => state.setTenorField(name, value)}
             />
         );

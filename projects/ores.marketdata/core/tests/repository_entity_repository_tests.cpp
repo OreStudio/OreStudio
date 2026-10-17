@@ -76,8 +76,8 @@ TEST_CASE("feed_binding_history_resolves_to_the_session_party_s_row", tags) {
 
     // A source name is unique per party, not per tenant, so two parties can
     // hold the same one and each has its own binding.
-    const auto source_name = std::string("TEST/SHARED/") +
-                             boost::uuids::to_string(boost::uuids::random_generator()());
+    const auto source_name =
+        std::string("TEST/SHARED/") + boost::uuids::to_string(boost::uuids::random_generator()());
 
     auto mine = generate_synthetic_feed_binding(ctx);
     mine.source_name = source_name;

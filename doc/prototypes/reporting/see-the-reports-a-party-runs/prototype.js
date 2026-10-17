@@ -59,7 +59,7 @@
         },
         {
             id: 'r-liquidity-buffer-bonds',
-            name: 'Liquidity Buffer Bonds',
+            name: 'Bucketed DV01',
             type: 'risk',
             party: 'ACMCOR',
             schedule: '0 30 5 * * ?',
@@ -147,7 +147,7 @@
         },
         {
             id: 'r-sample-bundle-smoke-test',
-            name: 'Sample bundle smoke test',
+            name: 'Intraday Risk Monitor',
             type: 'risk',
             party: 'ACCOUK',
             schedule: null,
@@ -308,7 +308,7 @@
             started: '2026-10-16 17:20:02',
             ended: '2026-10-16 17:20:46',
             errors: [
-                E('error', 'Report', 'Sample bundle smoke test',
+                E('error', 'Report', 'Intraday Risk Monitor',
                     'The sample bundle did not load: the fixture names book "ACME-NEW" and no such book exists.')
             ]
         },

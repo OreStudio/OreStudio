@@ -16,7 +16,7 @@
  *      scope and then by subject, with the run as a column.
  *
  * Every row is a fixture. The twenty-one rows of the first run are copied from
- * a real run of ACME EOD Risk whose market data had been removed; the other
+ * a real run of SA-CCR Exposure whose market data had been removed; the other
  * two runs of the same report are fixtures too. Nothing here reads a server:
  * no operation and no BFF route serves a run's errors to a browser today, and
  * no reporting screen exists in the application.
@@ -142,7 +142,7 @@
     var RUNS = [
         {
             id: 'r1',
-            definition: 'ACME EOD Risk',
+            definition: 'SA-CCR Exposure',
             definitionVersion: 'definition v7',
             party: 'ACME',
             label: '2026-10-15 18:00',
@@ -157,7 +157,7 @@
         },
         {
             id: 'r2',
-            definition: 'ACME EOD Risk',
+            definition: 'SA-CCR Exposure',
             definitionVersion: 'definition v7',
             party: 'ACME',
             label: '2026-10-14 18:00',
@@ -172,7 +172,7 @@
         },
         {
             id: 'r3',
-            definition: 'ACME EOD Risk',
+            definition: 'SA-CCR Exposure',
             definitionVersion: 'definition v7',
             party: 'ACME',
             label: '2026-10-16 18:00',
@@ -372,7 +372,7 @@
 
     function fixtureNote() {
         return '<div class="notice warn">PROTOTYPE \u00b7 EVERY ROW HERE IS A FIXTURE. The 2026-10-15 rows ' +
-            'are copied from a real run of ACME EOD Risk whose market data had been removed; the ' +
+            'are copied from a real run of SA-CCR Exposure whose market data had been removed; the ' +
             '2026-10-14 and 2026-10-16 runs are fixtures too. Nothing reads a server: no operation and ' +
             'no route serves a run\u2019s errors to a browser, and the application has no reporting screen ' +
             'today. Errors are immutable and read as a group: nothing here is created, edited or ' +

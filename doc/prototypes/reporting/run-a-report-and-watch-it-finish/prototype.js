@@ -123,7 +123,7 @@
         },
         {
             id: 'd-liquidity-buffer',
-            name: 'Liquidity Buffer Bonds',
+            name: 'Bucketed DV01',
             party: 'ACCOUS',
             type: 'Liquidity',
             schedule: 'On demand',

@@ -36,11 +36,11 @@ salt
     Group Consolidated Exposure | risk | scheduled 06:00 | completed clean | - | 06:00:02 | 06:04:31
     Group FX Hedges | risk | scheduled 06:00 | completed while carrying errors | (20 errors) | 06:00:02 | 06:07:18
     Group Intercompany Loans | risk | scheduled 06:00 | running | - | 08:12:44 | -
-    Liquidity Buffer Bonds | risk | scheduled 06:00 | failed | - | 06:00:03 | 06:01:02
+    Bucketed DV01 | risk | scheduled 06:00 | failed | - | 06:00:03 | 06:01:02
     Large Exposures | risk | on demand | never run | - | - | -
     Leverage Ratio | risk | scheduled 07:00 | completed clean | - | 07:00:01 | 07:03:40
     Headline Position | risk | on demand | completed clean | - | 07:41:12 | 07:42:55
-    Sample bundle smoke test | risk | on demand | completed while carrying errors | (11 errors) | 08:02:10 | 08:03:01
+    Intraday Risk Monitor | risk | on demand | completed while carrying errors | (11 errors) | 08:02:10 | 08:03:01
     Board Risk Dashboard | risk | scheduled 06:30 weekdays | failed | - | 06:30:01 | 06:30:09
   }
   --

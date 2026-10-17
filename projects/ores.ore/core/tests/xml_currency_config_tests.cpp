@@ -23,6 +23,7 @@
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -113,6 +114,51 @@ TEST_CASE("a_currency_absent_optional_fields_stay_absent", tags) {
     CHECK(imported[0].monetary_nature == "commodity");
 
     require_round_trip(imported);
+}
+
+TEST_CASE("every_rounding_type_the_schema_allows_round_trips", tags) {
+    auto lg(make_logger(test_suite));
+
+    for (const std::string spelling : {"Up", "Down", "Closest", "Floor", "Ceiling"}) {
+        INFO(spelling);
+        const std::string document = "<CurrencyConfig><Currency>"
+                                     "<Name>Any</Name><ISOCode>ANY</ISOCode>"
+                                     "<Symbol>a</Symbol><FractionSymbol>b</FractionSymbol>"
+                                     "<FractionsPerUnit>1</FractionsPerUnit>"
+                                     "<RoundingType>" +
+                                     spelling +
+                                     "</RoundingType>"
+                                     "<RoundingPrecision>0</RoundingPrecision>"
+                                     "</Currency></CurrencyConfig>";
+
+        const auto imported = ores::ore::xml::importer::import_currency_config_text(document);
+        REQUIRE(imported.size() == 1);
+        CHECK(imported[0].rounding_type == spelling);
+        require_round_trip(imported);
+    }
+}
+
+TEST_CASE("a_rounding_type_ore_does_not_have_is_refused_on_export", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto imported = ores::ore::xml::importer::import_currency_config_text(text);
+    REQUIRE(imported.size() == 1);
+    imported[0].rounding_type = "Sideways";
+
+    CHECK_THROWS_AS(ores::ore::xml::exporter::export_currency_config(imported), std::runtime_error);
+}
+
+TEST_CASE("a_numeric_code_that_is_not_a_number_is_left_out", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto imported = ores::ore::xml::importer::import_currency_config_text(text);
+    REQUIRE(imported.size() == 1);
+    imported[0].numeric_code = "not-a-number";
+
+    const auto written = ores::ore::xml::exporter::export_currency_config(imported);
+    const auto reread = ores::ore::xml::importer::import_currency_config_text(written);
+    REQUIRE(reread.size() == 1);
+    CHECK(reread[0].numeric_code.empty());
 }
 
 TEST_CASE("every_currency_config_in_the_corpus_round_trips", tags) {

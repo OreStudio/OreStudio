@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/generate-per-family-protocols
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -58,6 +58,21 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+* Notes
+
+- The aggregate cannot be deleted before its replacement exists. Deleting
+  =conventions_document= now would leave the import path with no wire type,
+  because the per-family operations and the bundle do not exist yet. So this
+  task comes before the deletion, not after it.
+- Order within the task. First generate one protocol message pair per family
+  from the registry, additively, each in its own translation unit. Then generate
+  the handler and registrar per family. Then the bundle operation that applies
+  the families in one unit of work. Only then can the document operation and its
+  aggregate be deleted, and the ORE path move onto the new shape.
+- The registry already carries what the protocols need: family key, domain type,
+  subject stem and write mode. The subject stem is the natural subject prefix for
+  each family's messages, so the protocols and the apply fragment share one
+  derivation and cannot disagree.
 
 * Test Scenarios
 

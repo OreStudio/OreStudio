@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: prime_origin
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -37,7 +37,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A51392C5-F7CE-419C-9671-7F648E83C36C][Model each convention family on its own]] | BACKLOG | | | Replace the hand-listed document model with one operation model per convention family, so a family is declared once and carries its own fields. No aggregate of unrelated families survives. |
-| [[id:941E929E-5A51-412F-8092-479F907727C5][Generate a protocol and handler per family]] | BACKLOG | | | Codegen emits the protocol, handler and registrar per family. One translation unit per family, so no unit reflects every family at once and the MSVC instantiation limit is never approached. |
+| [[id:941E929E-5A51-412F-8092-479F907727C5][Generate a protocol and handler per family]] | STARTED | 2026-10-17 | | Codegen emits the protocol, handler and registrar per family. One translation unit per family, so no unit reflects every family at once and the MSVC instantiation limit is never approached. |
 | [[id:DF403F87-5783-4145-A143-BCF03D54CFBE][Declare the conventions bundle]] | BACKLOG | | | A bundle is a set of related families of one owner applied as one unit. The import applies every family refdata owns in one unit of work, atomically, and reports per family. |
 | [[id:61D203C8-663C-408D-9940-F6100996861A][Rewire the ORE path to families and packages]] | BACKLOG | | | The importer maps a conventions file into per-family messages or one bundle request. The ORE file is a package at the boundary, never a wire type. The exporter reassembles from per-family reads taken at one instant. |
 | [[id:B1C4EB87-A3D4-42A6-94A6-73FDC56C868E][Replace the web family list with the registry]] | BACKLOG | | | The web BFF stops carrying a hand-maintained family table and reads the generated registry, so adding a family needs no edit there. |

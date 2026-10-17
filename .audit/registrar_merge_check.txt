@@ -1,0 +1,38 @@
+ok     projects/ores.analytics/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.assets/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.compute/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.dq/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.iam/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.inbox/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.marketdata/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.ore/service/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.refdata/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.refdata/service/src/messaging/book_proposal_registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.reporting/core/src/messaging/registrar.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+ok     projects/ores.workflow/core/src/messaging/identity_step_handler.cpp
+         REPLACED by our shape: ensure_step_stream
+         REPLACED by our shape: subscribe_step_command
+
+ok: all 12 merged registrar file(s) still name everything origin/main serves, apart from the two our shape replaces.

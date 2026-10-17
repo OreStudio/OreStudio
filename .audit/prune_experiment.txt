@@ -1,0 +1,18 @@
+Prune experiment on ores_dev_brave_hopper_assets_steps, 2026-10-16T01:58:45+01:00
+--- consumers before planting:
+[
+  "ores_dev_brave_hopper_assets_steps_consumer"
+]
+--- consumers after planting dsh-dummy3:
+[
+  "dsh-dummy3",
+  "ores_dev_brave_hopper_assets_steps_consumer"
+]
+--- restarting ores.assets.service
+--- consumers after the restart:
+[
+  "ores_dev_brave_hopper_assets_steps_consumer"
+]
+--- service log:
+Oct 16 01:58:45 Wiener sh[2336266]: 2026-10-16 01:58:45.414912 [INFO] [ores.service.messaging.step_command_stream] Serving 1 step command(s) on 'ores_dev_brave_hopper_assets_steps' as 'ores_dev_brave_hopper_assets_steps_consumer'
+Oct 16 01:58:45 Wiener sh[2336266]: 2026-10-16 01:58:45.417093 [INFO] [ores.nats.service.jetstream_admin] Pruned 1 consumer(s) on 'ores_dev_brave_hopper_assets_steps' that the service no longer declares

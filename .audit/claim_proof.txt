@@ -1,0 +1,28 @@
+DELETE 0
+     proof     |               step_id                |  owner  | attempts 
+---------------+--------------------------------------+---------+----------
+ 1 first claim | 00000000-0000-4000-8000-00000000c1a1 | first/1 |        1
+(1 row)
+
+                 proof                  | rows_returned 
+----------------------------------------+---------------
+ 2 second claim while the lease is live |             0
+(1 row)
+
+              proof               |  owner  | attempts 
+----------------------------------+---------+----------
+ 3 holder after the refused claim | first/1 |        1
+(1 row)
+
+UPDATE 1
+              proof               |               step_id                |  owner   | attempts 
+----------------------------------+--------------------------------------+----------+----------
+ 5 takeover after the lease ended | 00000000-0000-4000-8000-00000000c1a1 | second/2 |        2
+(1 row)
+
+DELETE 1
+           proof           | rows_left 
+---------------------------+-----------
+ 6 rows left after release |         0
+(1 row)
+

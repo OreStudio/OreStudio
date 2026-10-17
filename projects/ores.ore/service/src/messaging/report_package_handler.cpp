@@ -64,14 +64,19 @@ report_package_handler::report_package_handler(ores::nats::service::client& nats
     , run_tokens_(ores::iam::client::make_run_token_minter(service_nats_)) {}
 
 void report_package_handler::prepare_package(ores::nats::message msg) {
+    ores::nats::ack_guard ack(msg);
+
     auto wf = workflow_step_context::from_message(nats_, msg);
-    if (!wf)
+    if (!wf) {
+        ack.reject();
         return;
+    }
 
     const std::string_view sv(reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
     auto parsed = rfl::json::read<prepare_ore_package_request>(sv);
     if (!parsed) {
         wf->fail("Failed to decode prepare_ore_package_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -82,14 +87,17 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
     try {
         if (req.definition_id.empty()) {
             wf->fail("prepare_ore_package: definition_id is missing");
+            ack.accept();
             return;
         }
         if (req.trades_storage_key.empty()) {
             wf->fail("prepare_ore_package: trades_storage_key is missing");
+            ack.accept();
             return;
         }
         if (req.market_data_storage_key.empty()) {
             wf->fail("prepare_ore_package: market_data_storage_key is missing");
+            ack.accept();
             return;
         }
 
@@ -101,6 +109,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
         if (run_token.empty()) {
             wf->fail("prepare_ore_package: the run has no run token; its grant is missing or "
                      "IAM refused the exchange");
+            ack.accept();
             return;
         }
 
@@ -161,6 +170,7 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             wf->fail("prepare_ore_package: the run document names no portfolio file, so the "
                      "gathered trades have nowhere to go for run " +
                      req.report_instance_id);
+            ack.accept();
             return;
         }
 
@@ -174,11 +184,13 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
             wf->fail("prepare_ore_package: the gathered trades are not a readable trade "
                      "export: " +
                      rows.error().what());
+            ack.accept();
             return;
         }
         if (!rows->success) {
             wf->fail("prepare_ore_package: the gather step stored a failed trade export: " +
                      rows->message);
+            ack.accept();
             return;
         }
 
@@ -235,9 +247,11 @@ void report_package_handler::prepare_package(ores::nats::message msg) {
                                   << req.report_instance_id << " tarball=" << tarball_key;
 
         wf->complete(rfl::json::write(result));
+        ack.accept();
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "prepare_ore_package failed: " << e.what();
         wf->fail(e.what());
+        ack.accept();
     }
 }
 

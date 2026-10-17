@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 39086BC0-283E-4930-95DE-14EA85CCC568
+:END:
+#+title: ores_workflow_workflow_steps_tbl.idempotency_key is not null…
+#+description: ores_workflow_workflow_steps_tbl.idempotency_key is not null default empty, has no unique index, and nothing reads it for a decision; the engine sets it to the step's own UUID and only display code and the shell read it. The name promises the guarantee the claim change is adding, so either give it one or rename it. Found while grounding the atomic step claim.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

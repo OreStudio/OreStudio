@@ -24,6 +24,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include <chrono>
 #include <optional>
@@ -260,6 +261,97 @@ inline std::optional<cached_step_result> check_step_idempotency(ores::nats::serv
         // normal execution. The engine's own idempotency guard (step state
         // check on step-completed) prevents double-application.
         return std::nullopt;
+    }
+}
+
+/**
+ * @brief What the engine answered when a delivery asked to claim a step.
+ *
+ * The five answers are the five things a delivery can do about a step: run its
+ * work, come back, stop, give up, or try again because it could not find out.
+ * A transport branches on this rather than on a message, so the decision is
+ * made once, here, where the reply is read.
+ */
+enum class step_claim_outcome {
+    /**
+     * This delivery owns the step's work and is the only delivery that does.
+     */
+    claimed,
+    /**
+     * Another delivery holds a live claim, so the work is running elsewhere.
+     * The delivery should come back rather than do the work a second time.
+     */
+    busy,
+    /**
+     * The step has already left in_progress, so its work is done or has
+     * already failed and this delivery has nothing to do.
+     */
+    not_in_progress,
+    /**
+     * There is no such step, and nothing can ever serve it.
+     */
+    unknown,
+    /**
+     * The engine could not be reached or could not decide, so nothing is known
+     * about the step. The caller must not run the work on this answer.
+     */
+    unreachable
+};
+
+/**
+ * @brief Asks the workflow service to claim one step for this delivery.
+ *
+ * A step command is delivered at least once, so two deliveries for one step can
+ * arrive at once and both would do the work. Each asks here first, and the
+ * engine grants the claim to exactly one of them.
+ *
+ * Returns an outcome rather than throwing, and never fails open: a transport
+ * that cannot tell whether it holds the step must not run the work, because
+ * running it unclaimed is the thing the claim exists to prevent.
+ *
+ * @param nats      NATS client used to make the synchronous request.
+ * @param step_id   UUID string echoed from the X-Workflow-Step-Id header.
+ * @param tenant_id Tenant the step belongs to, echoed from X-Tenant-Id. The
+ *                  engine grants a claim only for a step of that tenant.
+ * @param owner     Who holds the step while this delivery works it: the
+ *                  caller's own service name and process id, so that the claim
+ *                  names the process working the step rather than one the
+ *                  engine invented.
+ */
+inline step_claim_outcome claim_step(ores::nats::service::client& nats,
+                                     const std::string& step_id,
+                                     const std::string& tenant_id,
+                                     const std::string& owner) {
+
+    using namespace ores::workflow::messaging;
+
+    const claim_step_request req{.step_id = step_id, .tenant_id = tenant_id, .owner = owner};
+    const auto data = ores::nats::default_wire_codec().encode(req);
+
+    try {
+        // Five seconds, not the shared 30s default, and deliberately: this sits
+        // on a delivered command's own path, and the server redelivers a command
+        // it has not seen answered after 30 seconds. A claim that takes longer
+        // than the ack wait is worth abandoning, because the answer comes back
+        // to a delivery the server has already taken away.
+        const auto reply_msg =
+            nats.request_sync(claim_step_request::nats_subject, data, {}, std::chrono::seconds(5));
+
+        const auto resp =
+            ores::nats::default_wire_codec().decode<claim_step_response>(reply_msg.data);
+        if (!resp || !resp->success)
+            return step_claim_outcome::unreachable;
+        if (resp->claimed)
+            return step_claim_outcome::claimed;
+        if (resp->state == "unknown")
+            return step_claim_outcome::unknown;
+        if (resp->state == "in_progress")
+            return step_claim_outcome::busy;
+        return step_claim_outcome::not_in_progress;
+    } catch (const std::exception&) {
+        // Fails closed, unlike check_step_idempotency above: a delivery that
+        // cannot find out whether it holds the step returns to the queue.
+        return step_claim_outcome::unreachable;
     }
 }
 

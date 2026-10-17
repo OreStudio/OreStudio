@@ -32,7 +32,6 @@
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.service/messaging/step_command_stream.hpp"
-#include <array>
 
 // Function-local static: must outlive the history.v1.get subscription.
 ores::history::service::dispatch_registry& history_registry() {
@@ -73,16 +72,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
             publish_pricing_engines_from_dq_request::nats_subject,
             publish_todays_market_from_dq_request::nats_subject,
         };
-        const auto step_stream = ores::service::messaging::ensure_step_stream(
-            nats, "ores.analytics.service", publish_subjects);
-        for (const auto subject : publish_subjects) {
-            subs.push_back(ores::service::messaging::subscribe_step_command(
-                nats,
-                subject,
-                "ores.analytics.service",
-                step_stream,
-                [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); }));
-        }
+        ores::service::messaging::step_routes routes;
+        for (const auto subject : publish_subjects)
+            routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
+        subs.push_back(
+            ores::service::messaging::serve_step_commands(nats, "ores.analytics.service", routes));
     }
 
     // Generic history.v1.get subject and the generated per-entity providers.

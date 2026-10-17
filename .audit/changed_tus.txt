@@ -1,0 +1,23 @@
+OK    projects/ores.analytics/core/src/messaging/registrar.cpp
+OK    projects/ores.compute/core/src/messaging/registrar.cpp
+OK    projects/ores.compute/core/src/messaging/report_submit_handler.cpp
+OK    projects/ores.dq/core/src/messaging/registrar.cpp
+OK    projects/ores.iam/core/src/messaging/registrar.cpp
+OK    projects/ores.iam/service/src/app/application.cpp
+OK    projects/ores.inbox/core/src/messaging/registrar.cpp
+OK    projects/ores.marketdata/core/src/messaging/registrar.cpp
+OK    projects/ores.nats/src/service/jetstream_admin.cpp
+OK    projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp
+OK    projects/ores.ore/service/src/messaging/registrar.cpp
+OK    projects/ores.ore/service/src/messaging/report_package_handler.cpp
+OK    projects/ores.ore/service/src/messaging/run_configuration_handler.cpp
+OK    projects/ores.refdata/core/src/messaging/registrar.cpp
+OK    projects/ores.refdata/service/src/messaging/book_proposal_registrar.cpp
+OK    projects/ores.reporting/core/src/messaging/registrar.cpp
+OK    projects/ores.reporting/core/src/messaging/report_execution_handler.cpp
+OK    projects/ores.synthetic/core/src/messaging/registrar.cpp
+OK    projects/ores.synthetic/service/src/app/application.cpp
+OK    projects/ores.workflow/core/src/messaging/identity_step_handler.cpp
+OK    projects/ores.workflow/core/src/service/workflow_engine.cpp
+
+OK: all 21 changed translation units compile.

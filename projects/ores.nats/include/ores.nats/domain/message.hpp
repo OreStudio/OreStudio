@@ -20,6 +20,7 @@
 #ifndef ORES_NATS_DOMAIN_MESSAGE_HPP
 #define ORES_NATS_DOMAIN_MESSAGE_HPP
 
+#include <chrono>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -49,6 +50,19 @@ public:
     virtual void accept() = 0;
     /// The work failed; deliver the message again.
     virtual void retry() = 0;
+    /**
+     * @brief The work failed this time and should come back later, not
+     *        immediately.
+     *
+     * An immediate retry suits a message whose failure was its own. It does not
+     * suit one that another delivery is already working: the redelivery lands
+     * at once, loses the same race, and spends the delivery budget in a tight
+     * loop. A delay gives the holder time to finish, so the next delivery finds
+     * the work done rather than contending for it again.
+     *
+     * @param delay How long before the server redelivers, in milliseconds.
+     */
+    virtual void retry_after(std::chrono::milliseconds delay) = 0;
     /// The message can never be handled; stop delivering it.
     virtual void reject() = 0;
 };
@@ -141,6 +155,14 @@ public:
 
     void retry() noexcept {
         answer(&ack_handle::retry);
+    }
+
+    /// Retries the delivery after @p delay rather than at once.
+    void retry_after(std::chrono::milliseconds delay) noexcept {
+        if (handle_ && !answered_) {
+            answered_ = true;
+            handle_->retry_after(delay);
+        }
     }
 
     void reject() noexcept {

@@ -1859,6 +1859,10 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     using ores::ore::messaging::ore_import_execute_request;
     using ores::ore::messaging::ore_import_execute_result;
 
+    // Every path below publishes the step's outcome, so the delivery is
+    // answered where that happens; the guard retries anything else.
+    ores::nats::ack_guard ack(msg);
+
     const auto step_id = extract_workflow_header(msg, ores::workflow::messaging::step_id_header);
     const auto inst_id =
         extract_workflow_header(msg, ores::workflow::messaging::instance_id_header);
@@ -1874,6 +1878,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 ores::workflow::messaging::step_outcome::failed,
                                 "",
                                 "Failed to decode ore_import_execute_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -1910,6 +1915,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             << " error=" << failure;
         publish_step_completion(
             nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
+        ack.accept();
         return;
     }
 
@@ -1930,6 +1936,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             << " error=" << failure;
         publish_step_completion(
             nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
+        ack.accept();
         return;
     }
 
@@ -1955,6 +1962,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 << " error=" << err;
             publish_step_completion(
                 nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", err);
+            ack.accept();
             return;
         }
         for (const auto& c : list_resp->currencies)
@@ -1983,6 +1991,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                     ores::workflow::messaging::step_outcome::failed,
                                     "",
                                     failure);
+            ack.accept();
             return;
         }
         choices = std::move(*parsed_choices);
@@ -2009,6 +2018,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                     ores::workflow::messaging::step_outcome::failed,
                                     "",
                                     failure);
+            ack.accept();
             return;
         }
     }
@@ -2027,6 +2037,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             << " error=" << failure;
         publish_step_completion(
             nats_, step_id, inst_id, ores::workflow::messaging::step_outcome::failed, "", failure);
+        ack.accept();
         return;
     }
 
@@ -2061,6 +2072,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                     ores::workflow::messaging::step_outcome::failed,
                                     "",
                                     failure);
+            ack.accept();
             return;
         }
         result.saved_currency_iso_codes.push_back(iso);
@@ -2097,6 +2109,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                     ores::workflow::messaging::step_outcome::failed,
                                     "",
                                     failure);
+            ack.accept();
             return;
         }
         result.saved_portfolio_names.push_back(name);
@@ -2133,6 +2146,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                     ores::workflow::messaging::step_outcome::failed,
                                     "",
                                     failure);
+            ack.accept();
             return;
         }
         result.saved_book_names.push_back(name);
@@ -3583,14 +3597,18 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             rfl::json::write(result),
             std::format("All {} trade save(s) failed.", result.item_errors.size()),
             step_log);
+        ack.accept();
     } else {
         publish_step_completion(
             nats_, step_id, inst_id, outcome, rfl::json::write(result), "", step_log);
+        ack.accept();
     }
 }
 
 void ore_import_execute_handler::rollback(ores::nats::message msg) {
     using ores::ore::messaging::ore_import_rollback_request;
+
+    ores::nats::ack_guard ack(msg);
 
     const auto step_id = extract_workflow_header(msg, ores::workflow::messaging::step_id_header);
     const auto inst_id =
@@ -3607,6 +3625,7 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
                                 ores::workflow::messaging::step_outcome::failed,
                                 "",
                                 "Failed to decode ore_import_rollback_request");
+        ack.accept();
         return;
     }
     const auto& req = *parsed;
@@ -3711,6 +3730,7 @@ void ore_import_execute_handler::rollback(ores::nats::message msg) {
                             ores::workflow::messaging::step_outcome::completed,
                             "{\"success\":true}",
                             "");
+    ack.accept();
 }
 
 }

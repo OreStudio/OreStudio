@@ -1,0 +1,5 @@
+             observation             | claims | attempts | worst_case_attempts 
+-------------------------------------+--------+----------+---------------------
+ claims live during a real provision |      0 |        0 |                   0
+(1 row)
+

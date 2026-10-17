@@ -23,11 +23,13 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/workflow/identity_workflow.hpp"
-#include <array>
 #include <chrono>
 #include <rfl/json.hpp>
+#include <string>
 #include <string_view>
 #include <thread>
+#include <utility>
+#include <vector>
 
 namespace identity_ns = ores::workflow::workflow;
 
@@ -49,10 +51,17 @@ auto& lg() {
  * a real step handler takes it, so the fixture exercises the same contract.
  */
 void handle(ores::nats::service::client& nats, ores::nats::message msg) {
+    // The handler answers the delivery, so that a command it records no outcome
+    // for is redelivered rather than silently dropped.
+    ores::nats::ack_guard ack(msg);
+
     const auto ctx = ores::service::messaging::workflow_step_context::from_message(nats, msg);
     if (!ctx) {
+        // Not a step command at all, so there is no step to fail and nothing a
+        // second delivery would achieve.
         BOOST_LOG_SEV(lg(), warn) << "Identity command arrived without workflow headers on "
                                   << msg.subject;
+        ack.reject();
         return;
     }
 
@@ -64,6 +73,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
     if (!parsed) {
         ctx->fail("Failed to parse the identity step command: " +
                   std::string(parsed.error().what()));
+        ack.accept();
         return;
     }
 
@@ -89,6 +99,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
                       .level = ores::workflow::messaging::step_log_level::warn,
                       .message = "identity step '" + step.name + "' deliberately warned",
                       .context = step.name}});
+        ack.accept();
         return;
     }
 
@@ -99,6 +110,7 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
                       .level = ores::workflow::messaging::step_log_level::error,
                       .message = "identity step '" + step.name + "' was asked to fail",
                       .context = step.name}});
+        ack.accept();
         return;
     }
 
@@ -107,11 +119,13 @@ void handle(ores::nats::service::client& nats, ores::nats::message msg) {
                                   << "' asked for unknown behaviour '" << outcome << "'.";
         ctx->fail("identity step '" + step.name + "' asked for unknown behaviour '" + outcome +
                   "'");
+        ack.accept();
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Identity step '" << step.name << "' reporting completion.";
     ctx->complete(result_json);
+    ack.accept();
 }
 
 }
@@ -120,32 +134,15 @@ std::vector<ores::nats::service::subscription>
 register_identity_step_handlers(ores::nats::service::client& nats, std::string_view queue_group) {
     std::vector<ores::nats::service::subscription> subs;
 
-    static constexpr std::array step_subjects{identity_ns::identity_step_command_subject,
-                                              identity_ns::identity_compensation_command_subject};
-    const auto step_stream =
-        ores::service::messaging::ensure_step_stream(nats, queue_group, step_subjects);
+    // One table holds the family, so the stream coverage, the consumer filters
+    // and the dispatch cannot disagree about what this service serves.
+    ores::service::messaging::step_routes routes;
+    routes.on(identity_ns::identity_step_command_subject,
+              [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); });
+    routes.on(identity_ns::identity_compensation_command_subject,
+              [&nats](ores::nats::message msg) { handle(nats, std::move(msg)); });
 
-    subs.push_back(
-        ores::service::messaging::subscribe_step_command(nats,
-                                                         identity_ns::identity_step_command_subject,
-                                                         std::string(queue_group),
-                                                         step_stream,
-                                                         [&nats](ores::nats::message msg) {
-                                                             ores::nats::ack_guard ack(msg);
-                                                             handle(nats, std::move(msg));
-                                                             ack.accept();
-                                                         }));
-
-    subs.push_back(ores::service::messaging::subscribe_step_command(
-        nats,
-        identity_ns::identity_compensation_command_subject,
-        std::string(queue_group),
-        step_stream,
-        [&nats](ores::nats::message msg) {
-            ores::nats::ack_guard ack(msg);
-            handle(nats, std::move(msg));
-            ack.accept();
-        }));
+    subs.push_back(ores::service::messaging::serve_step_commands(nats, queue_group, routes));
 
     return subs;
 }

@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: chore/add-the-equity-variant-unit
-#+pr: 3416
+#+pr: 3417
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -74,6 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3417][#3417]] | [agile] Close the equity staging task |
 | [[https://github.com/OreStudio/OreStudio/pull/3416][#3416]] | [agile] Stage the equity variant retirement as a unit |
 
 * Review

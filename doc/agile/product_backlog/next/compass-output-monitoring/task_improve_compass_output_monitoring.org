@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-17
-#+updated: 2026-07-17
+#+updated: 2026-10-17
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -55,13 +55,15 @@ meaningful output.
    family (current + 4 rotated). On each new run: drop
    =build.log.4=, shift =.3→.4=, =.2→.3=, =.1→.2=, =build.log→.1=,
    write a fresh =build.log=.
-5. *Build-lock interaction*: the build-lock file itself stays at
-   =/tmp/ores-build-lock.<slot>= (host-wide by design — shared across
-   every worktree/environment on the box, so it must live outside
-   any one checkout). It no longer writes the build log directly;
-   instead it points at the log's new location under that
-   invocation's own =./tmp/compass_output/= (so
-   =compass build --status= can still find and tail it).
+5. *Build-lock interaction*: the host-wide lock stays host-wide, but
+   it is now two abstract AF_UNIX socket names,
+   =@ores-build-slot-a= and =@ores-build-slot-b=, not files under
+   =/tmp=. An abstract name lives in the network namespace, which
+   every sandbox shares, whereas =/tmp= is private to each sandbox.
+   The lock no longer points at a log; it records its last holder
+   beside the log in the invocation's own =./tmp/compass_output/=
+   (or =./tmp/= before this task lands), so =compass build --status=
+   can still report both the live holder and the last one.
 6. *Retrofit*: apply this to every compass command already migrated
    to the old =/tmp= scheme (=build=, =build --direct site=,
    =build --direct settings=, =build --direct skills=, and any other
@@ -93,7 +95,7 @@ meaningful output.
 - Every compass command that produces meaningful output writes to =./tmp/compass_output/<command>.log=, not =/tmp=.
 - Each log file's first line records the command executed and a timestamp.
 - Rotation keeps at most 5 generations per command family (current + =.1= through =.4=), oldest dropped.
-- The build-lock file at =/tmp/ores-build-lock.<slot>= still exists (host-wide coordination unaffected) but now only points at the per-checkout log location; =compass build --status= still works.
+- The host-wide lock is still host-wide (abstract AF_UNIX names =@ores-build-slot-a= and =@ores-build-slot-b=, unaffected by private sandbox =/tmp=), and =compass build --status= still reports the live holder and the last holder of a free slot.
 - =compass services start= acquires a host-wide lock capped at 4 concurrently-running environments, held until =compass services stop=.
 - A =services start= attempt with no free slot prints a clear message and lists the environments currently holding a slot.
 - =doc/llm/claude_code_settings.org= / recipes updated if the reported log-path message text changes.

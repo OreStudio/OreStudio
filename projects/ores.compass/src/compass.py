@@ -30,8 +30,9 @@ import time
 
 import systemctl_bus
 
+# POSIX-only; the per-worktree lock degrades without it.
 try:
-    import fcntl  # POSIX-only; the per-worktree lock degrades without it.
+    import fcntl
 except ImportError:
     fcntl = None
 from collections import defaultdict
@@ -5321,28 +5322,21 @@ def _cmd_test_run(args):
         return 1
 
     lock, slot_name, _ = _acquire_build_lock()
-    if slot_name is not None:
-        print(f"🔒 Build lock: slot '{slot_name}' held as abstract AF_UNIX "
-              f"socket '{_BUILD_LOCK_SOCKET_PREFIX}{slot_name}'")
-    log_path = _build_log_path(slot_name) if slot_name else None
-    log = None
-    if log_path is not None:
-        print(f"📝 Test output: {log_path} (tail -f to follow)")
-        log = open(log_path, "w")
+    lock.remember()
+    log_path = _build_log_path(slot_name)
+    print(f"📝 Test output: {log_path} (tail -f to follow)")
+    log = open(log_path, "w")
     try:
         print(f"🔨 {' '.join(cmd)}")
-        rc = (_run_logged(cmd, PROJECT_ROOT, log) if log is not None
-              else subprocess.run(cmd, cwd=PROJECT_ROOT).returncode)
+        rc = _run_logged(cmd, PROJECT_ROOT, log)
         if rc != 0:
             print(f"❌ ctest failed with exit code {rc}: {' '.join(cmd)}",
                   file=sys.stderr)
             return rc
         return 0
     finally:
-        if log is not None:
-            log.close()
-        if lock is not None:
-            lock.close()
+        log.close()
+        lock.close()
 
 
 def _cmd_test_results(args):
@@ -6786,6 +6780,8 @@ def _systemctl_is_active(unit) -> bool:
 BUILD_LOCK_SLOTS = (("a", 3), ("b", 3))
 BUILD_LOCK_POLL_INTERVAL = 1.0
 
+# This is the one home of the bubblewrap rationale; other comments point here.
+#
 # Every build runs under bubblewrap, which gives it a private, empty /tmp and
 # a private /dev/shm, and /run/user/1000 is mounted read-only. A lock file in
 # any of those places is per-sandbox: every environment locks its own file,
@@ -6795,9 +6791,19 @@ BUILD_LOCK_POLL_INTERVAL = 1.0
 # lives in that namespace, not on a filesystem. Binding it is exclusive
 # within the namespace and the kernel frees it when the holding process
 # exits, so there is no stale lock and no writable path is needed.
+#
+# The shared namespace is the mechanism's load-bearing assumption, and it
+# cannot be proved from inside the sandbox: --unshare-pid makes /proc/1 the
+# sandbox's own init, so comparing against it proves nothing. A launcher can
+# publish the host namespace in ORES_HOST_NETNS as the inode of the host's
+# /proc/self/ns/net (stat -Lc %i); _acquire_build_lock then refuses a
+# mismatch. Without that reference the build header prints the namespace it
+# holds the slot in and marks the sharing unverified, so two sandboxes that
+# each took slot 'a' are distinguishable after the fact.
 _BUILD_LOCK_SOCKET_PREFIX = "ores-build-slot-"
 _BUILD_LOCK_PROBE_TIMEOUT = 2.0
 _BUILD_LOCK_ACCEPT_TIMEOUT = 0.25
+_HOST_NETNS_ENV = "ORES_HOST_NETNS"
 
 # WS-7 change 2: dash-truncated template drop-in (same mechanism as
 # compass_claude.py's app-claude-.slice.d/) so every app-build-<env>.slice
@@ -6834,13 +6840,87 @@ def _ensure_build_slice_deployed() -> None:
 
 
 def _build_lock_socket_name(slot_name):
-    """The abstract AF_UNIX name for a slot.
-
-    The leading NUL is what makes the name abstract: the kernel keeps it in
-    the network namespace instead of creating a file, so it survives the
-    sandbox's private /tmp.
-    """
+    """The abstract AF_UNIX name for a slot; see _BUILD_LOCK_SOCKET_PREFIX."""
     return "\0" + _BUILD_LOCK_SOCKET_PREFIX + slot_name
+
+
+def _abstract_namespace_failure():
+    """Why the abstract AF_UNIX namespace is unusable here, or None.
+
+    hasattr(socket, "AF_UNIX") is true on macOS and Windows, which have
+    AF_UNIX but no abstract namespace. So the platform is detected by
+    performing the lock's own operation: bind a throwaway abstract name,
+    then bind it again. Only an exclusive name makes the second bind fail
+    with EADDRINUSE; any other result means the mechanism cannot hold a
+    lock and must be refused.
+    """
+    name = _build_lock_socket_name(f"probe-{os.getpid()}-{time.monotonic_ns()}")
+    sockets = []
+    try:
+        for _ in range(2):
+            sockets.append(socket.socket(socket.AF_UNIX, socket.SOCK_STREAM))
+        sockets[0].bind(name)
+        try:
+            sockets[1].bind(name)
+        except OSError as exc:
+            return None if exc.errno == errno.EADDRINUSE else exc
+        return OSError(errno.EADDRINUSE,
+                       "a second bind of the same abstract name succeeded, so "
+                       "the name is not exclusive")
+    except (AttributeError, OSError) as exc:
+        return exc
+    finally:
+        for probe in sockets:
+            probe.close()
+
+
+def _refuse_unusable_build_lock(detail):
+    """Print the one refusal for an unusable lock and stop."""
+    print(f"❌ Cannot use the build lock: {detail}\n"
+          "   Build-lock slots are Linux abstract AF_UNIX socket names. They live\n"
+          "   in the network namespace, not on a filesystem, so every sandbox on\n"
+          "   the host contends for the same slots.\n"
+          "   Refusing to continue without the lock.", file=sys.stderr)
+    sys.exit(1)
+
+
+def _network_namespace_id():
+    """The inode of this process's network namespace, or None if unreadable."""
+    try:
+        return str(os.stat("/proc/self/ns/net").st_ino)
+    except OSError:
+        return None
+
+
+def _network_namespace_shared():
+    """'asserted' when the launcher's reference matched, else 'unverified'."""
+    if os.environ.get(_HOST_NETNS_ENV, "").strip():
+        return "asserted"
+    return "unverified"
+
+
+def _shared_network_namespace_failure():
+    """Why the sandbox does not share the launcher's namespace, or None.
+
+    There is nothing inside the sandbox to compare against unless the
+    launcher publishes the host's namespace, because --unshare-pid makes
+    /proc/1 the sandbox's own init. ORES_HOST_NETNS carries the inode of
+    the host's /proc/self/ns/net, and only then can this refuse a sandbox
+    that unshared the network namespace.
+    """
+    reference = os.environ.get(_HOST_NETNS_ENV, "").strip()
+    if not reference:
+        return None
+    current = _network_namespace_id()
+    if current is None:
+        return (f"cannot read /proc/self/ns/net to compare with "
+                f"{_HOST_NETNS_ENV}={reference}")
+    if reference != current:
+        return (f"the sandbox is in network namespace {current}, but "
+                f"{_HOST_NETNS_ENV} says the host is in {reference}; the "
+                f"build-lock slots are shared only when the sandbox shares "
+                f"the host network namespace")
+    return None
 
 
 def _build_lock_identity_line(jobs):
@@ -6848,7 +6928,38 @@ def _build_lock_identity_line(jobs):
     env_name = _read_env_map().get("ORES_ENV_NAME") or PROJECT_ROOT.name
     identity = env_name.replace("-", " ").replace("_", " ")
     started = datetime.datetime.now().isoformat(timespec="seconds")
-    return f"{identity} | pid={os.getpid()} | jobs={jobs} | {PROJECT_ROOT} | since {started}\n"
+    return (f"{identity} | pid={os.getpid()} | jobs={jobs} | "
+            f"netns={_network_namespace_id() or 'unknown'} | {PROJECT_ROOT} | "
+            f"since {started}\n")
+
+
+def _build_lock_last_holder_path(slot_name):
+    return _build_log_dir() / f"ores-build-last-holder.{slot_name}"
+
+
+def _record_build_lock_last_holder(slot_name, identity):
+    """Record the holder beside the build log, where a sandboxed reader sees it.
+
+    The abstract socket dies with its holder, so a free slot has no last
+    holder inside the namespace. The sidecar lives in the checkout's tmp/
+    because the sandbox's /tmp is private; it is per checkout, not host-wide.
+    """
+    try:
+        _build_lock_last_holder_path(slot_name).write_text(identity,
+                                                           encoding="utf-8")
+    except OSError as exc:
+        print(f"⚠️  Cannot record the last build-lock holder for slot "
+              f"'{slot_name}': {exc}", file=sys.stderr)
+
+
+def build_lock_last_holder(slot_name):
+    """The last holder this checkout recorded, or None if there has been none."""
+    try:
+        holder = _build_lock_last_holder_path(slot_name).read_text(
+            encoding="utf-8").strip()
+    except (FileNotFoundError, OSError):
+        return None
+    return holder or None
 
 
 class BuildLockSlot:
@@ -6861,15 +6972,15 @@ class BuildLockSlot:
     name when its process exits, so there is no stale lock to clean up.
 
     A daemon thread accepts connections on the socket and answers each one
-    with the identity line, which is how build_lock_holder and
-    build_lock_status name the holder without a shared filesystem.
+    with the identity line, which is how build_lock_holder names the live
+    holder. See the comment on _BUILD_LOCK_SOCKET_PREFIX for why the lock
+    is an abstract name.
     """
 
-    def __init__(self, slot_name, jobs, sock, identity):
+    def __init__(self, slot_name, sock, identity):
         self.slot_name = slot_name
-        self.jobs = jobs
         self._sock = sock
-        self._identity = identity.encode("utf-8")
+        self._identity = identity
         self._stop = threading.Event()
         self._thread = threading.Thread(
             target=self._answer_identity_requests,
@@ -6886,11 +6997,23 @@ class BuildLockSlot:
             except OSError:
                 return
             try:
-                conn.sendall(self._identity)
+                conn.sendall(self._identity.encode("utf-8"))
             except OSError:
                 pass
             finally:
                 conn.close()
+
+    def announce(self):
+        """Print the lock in the build header and remember this holder."""
+        print(f"🔒 Build lock: slot '{self.slot_name}' held as abstract AF_UNIX "
+              f"socket '{_BUILD_LOCK_SOCKET_PREFIX}{self.slot_name}' "
+              f"(netns {_network_namespace_id() or 'unknown'}; shared namespace "
+              f"{_network_namespace_shared()})")
+        self.remember()
+
+    def remember(self):
+        """Record this holder for `compass build --status` after release."""
+        _record_build_lock_last_holder(self.slot_name, self._identity)
 
     def close(self):
         if self._stop.is_set():
@@ -6904,14 +7027,17 @@ class BuildLockSlot:
 
 
 def build_lock_holder(slot_name):
-    """Read the identity of the slot's current holder, or None if it is free.
+    """Read the identity of the slot's live holder, or None if it is free.
 
     The holder's daemon thread answers a connection on the slot's abstract
     socket with its identity line. A free slot has no listener, so the
-    connection fails and there is nobody to report; unlike the old lock
-    file there is no stale content left behind by the previous holder.
+    connection fails and there is nobody to report; use
+    build_lock_last_holder for the last holder this checkout saw.
     """
-    probe = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        probe = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    except (AttributeError, OSError):
+        return None
     probe.settimeout(_BUILD_LOCK_PROBE_TIMEOUT)
     try:
         probe.connect(_build_lock_socket_name(slot_name))
@@ -6937,7 +7063,12 @@ def _build_lock_slot_free(slot_name):
     unusable here; it is reported loudly and treated as "not free" so no
     caller mistakes a broken probe for an idle host.
     """
-    probe = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        probe = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    except (AttributeError, OSError) as exc:
+        print(f"⚠️  Cannot probe build-lock slot '{slot_name}': {exc}",
+              file=sys.stderr)
+        return False
     try:
         probe.bind(_build_lock_socket_name(slot_name))
         return True
@@ -6954,11 +7085,17 @@ def _build_lock_slot_free(slot_name):
 def build_lock_status():
     """List of (slot_name, jobs, free, holder) for every build-lock slot.
 
-    holder is only known while the slot is held: the holder answers the
-    probe itself, so a free slot reports None rather than a stale name.
+    holder is the live holder while the slot is held. While it is free,
+    holder is the last holder this checkout recorded, or None if no build
+    has taken the slot here yet. A last holder is diagnostic only: pair it
+    with free before concluding that anyone holds anything.
     """
-    return [(name, jobs, _build_lock_slot_free(name), build_lock_holder(name))
-            for name, jobs in BUILD_LOCK_SLOTS]
+    result = []
+    for name, jobs in BUILD_LOCK_SLOTS:
+        free = _build_lock_slot_free(name)
+        holder = build_lock_last_holder(name) if free else build_lock_holder(name)
+        result.append((name, jobs, free, holder))
+    return result
 
 
 def _check_publish_artifacts(build_dir):
@@ -7082,11 +7219,12 @@ def _acquire_build_lock():
     are abstract AF_UNIX socket names, so they are host-wide, not
     per-checkout, and they are not files: each build sandbox has a private
     /tmp, so a lock file there would let every environment take slot 'a'
-    at once. Concurrent `cmake --build` invocations across environments
-    contend for the same CPUs and have been observed to truncate/corrupt
-    shared library outputs when one build is killed mid-link while another
-    links against the same target -- these slots cap how many builds run
-    at once and at what parallelism each gets.
+    at once (see the comment on _BUILD_LOCK_SOCKET_PREFIX). Concurrent
+    `cmake --build` invocations across environments contend for the same
+    CPUs and have been observed to truncate/corrupt shared library outputs
+    when one build is killed mid-link while another links against the same
+    target -- these slots cap how many builds run at once and at what
+    parallelism each gets.
 
     A slot is held for as long as its bound socket stays open. The kernel
     frees the abstract name when the holding process exits (including a
@@ -7103,16 +7241,17 @@ def _acquire_build_lock():
     keep it alive for as long as the lock must be held; close() releases
     it.
 
-    If the abstract socket cannot be bound at all, this refuses to build
-    with a loud error: building unlocked must never be silent.
+    If the platform has no abstract AF_UNIX namespace, or the launcher
+    published a host network namespace this process is not in, this
+    refuses with a loud error: building unlocked must never be silent.
     """
-    if not hasattr(socket, "AF_UNIX"):
-        print("❌ Cannot acquire a build lock: this platform has no AF_UNIX "
-              "sockets.\n"
-              "   Build-lock slots are abstract AF_UNIX names, shared through "
-              "the network namespace.\n"
-              "   Refusing to build without the lock.", file=sys.stderr)
-        sys.exit(1)
+    failure = _abstract_namespace_failure()
+    if failure is not None:
+        _refuse_unusable_build_lock(
+            f"the abstract AF_UNIX namespace is unavailable ({failure})")
+    failure = _shared_network_namespace_failure()
+    if failure is not None:
+        _refuse_unusable_build_lock(failure)
 
     _acquire_worktree_build_lock()
     announced = False
@@ -7125,14 +7264,12 @@ def _acquire_build_lock():
                 sock.close()
                 if exc.errno == errno.EADDRINUSE:
                     continue
-                print(f"❌ Cannot acquire a build lock: binding abstract "
-                      f"socket '{_BUILD_LOCK_SOCKET_PREFIX}{name}' failed: "
-                      f"{exc}\n"
-                      "   Refusing to build without the lock.", file=sys.stderr)
-                sys.exit(1)
+                _refuse_unusable_build_lock(
+                    f"binding abstract socket "
+                    f"'{_BUILD_LOCK_SOCKET_PREFIX}{name}' failed: {exc}")
             sock.listen(8)
             sock.settimeout(_BUILD_LOCK_ACCEPT_TIMEOUT)
-            lock = BuildLockSlot(name, jobs, sock,
+            lock = BuildLockSlot(name, sock,
                                  _build_lock_identity_line(jobs))
             if announced:
                 print(f"🔓 Build lock '{name}' acquired.")
@@ -7204,9 +7341,9 @@ def cmd_build(argv):
                          "settings only. Neither flag, or both, deploys both "
                          "surfaces.")
     ap.add_argument("--status", action="store_true",
-                    help="Print who currently holds each build-lock slot, "
-                         "plus a tail of its build log, and exit without "
-                         "building.")
+                    help="Print who currently holds each build-lock slot, or "
+                         "who last held a free one, plus a tail of its build "
+                         "log, and exit without building.")
     ap.add_argument("--no-index", action="store_true",
                     help="Skip the org-id rescan a direct build runs first "
                          "(about 3s). Only safe when no page has been added, "
@@ -7214,9 +7351,18 @@ def cmd_build(argv):
     args = ap.parse_args(argv)
 
     if args.status:
+        failure = _abstract_namespace_failure()
+        if failure is not None:
+            _refuse_unusable_build_lock(
+                f"the abstract AF_UNIX namespace is unavailable ({failure})")
+        failure = _shared_network_namespace_failure()
+        if failure is not None:
+            _refuse_unusable_build_lock(failure)
         for name, jobs, free, holder in build_lock_status():
-            if free:
-                print(f"🔓 slot '{name}' (-j{jobs}): free.")
+            if free and holder:
+                print(f"🔓 slot '{name}' (-j{jobs}): free. Last holder: {holder}")
+            elif free:
+                print(f"🔓 slot '{name}' (-j{jobs}): no build has taken it yet.")
             else:
                 print(f"🔒 slot '{name}' (-j{jobs}): held by "
                       f"{holder or 'unknown holder'}")
@@ -7289,8 +7435,7 @@ def cmd_build(argv):
         lock, slot_name, slot_jobs = _acquire_build_lock()
         jobs = args.jobs if args.jobs is not None else slot_jobs
         source = "--jobs" if args.jobs is not None else f"build-lock slot '{slot_name}'"
-        print(f"🔒 Build lock: slot '{slot_name}' held as abstract AF_UNIX "
-              f"socket '{_BUILD_LOCK_SOCKET_PREFIX}{slot_name}'")
+        lock.announce()
     print(f"⚙️  Parallel build jobs: {jobs} (source: {source})")
     build_cmd += ["-j", str(jobs)]
     import compass_claude

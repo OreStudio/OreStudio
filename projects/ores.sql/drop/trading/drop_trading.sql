@@ -238,6 +238,8 @@
 \ir ./trading_equity_barrier_option_instruments_drop.sql
 \ir ./trading_equity_digital_option_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_digital_option_instruments_drop.sql
+\ir ./trading_equity_cliquet_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_cliquet_option_instruments_drop.sql
 \ir ./trading_equity_option_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_option_instruments_drop.sql
 

@@ -19,6 +19,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
+#include "ores.ore.core/xml/generated/counterparty_information.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -39,6 +40,9 @@ using ores::ore::xml::generated::calendar_adjustments_document;
 using ores::ore::xml::generated::calendaradjustment;
 using ores::ore::xml::generated::currency_config;
 using ores::ore::xml::generated::currency_config_document;
+using ores::ore::xml::generated::ibor_fallback_config;
+using ores::ore::xml::generated::counterparty_information;
+using ores::ore::xml::generated::counterparty_information_document;
 using ores::ore::xml::generated::ibor_fallback_config;
 using ores::ore::xml::generated::ibor_fallback_config_document;
 
@@ -356,4 +360,68 @@ TEST_CASE("every_ibor_fallback_document_in_the_corpus_binds", tags) {
     CHECK(files > 0);
     CHECK(report.empty());
     CHECK(fallbacks > 10);
+}
+
+TEST_CASE("a_generated_element_with_text_and_attributes_binds_both", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Correlation is xs:simpleContent: the element carries a value of its own
+    // beside its attributes, which is the one shape a leaf cannot express.
+    const std::string text =
+        "<CounterpartyInformation>"
+        "<Counterparties><Counterparty>"
+        "<CounterpartyId>CPTY_A</CounterpartyId><CreditQuality>IG</CreditQuality>"
+        "<BaCvaRiskWeight>0.05</BaCvaRiskWeight>"
+        "</Counterparty></Counterparties>"
+        "<Correlations>"
+        "<Correlation cpty1=\"CPTY_A\" cpty2=\"CPTY_B\">0.75</Correlation>"
+        "</Correlations>"
+        "</CounterpartyInformation>";
+
+    counterparty_information record;
+    bind_error error;
+    const bool bound = binder::bind(counterparty_information_document(), text, &record, error);
+
+    INFO(error.message);
+    REQUIRE(bound);
+    REQUIRE(record.counterparties.counterparty.size() == 1);
+    CHECK(record.counterparties.counterparty[0].counterparty_id == "CPTY_A");
+    CHECK(record.counterparties.counterparty[0].credit_quality == 1);
+    CHECK(record.counterparties.counterparty[0].ba_cva_risk_weight.to_string() == "0.05");
+
+    REQUIRE(record.correlations.correlation.size() == 1);
+    CHECK(record.correlations.correlation[0].cpty1 == "CPTY_A");
+    CHECK(record.correlations.correlation[0].cpty2 == "CPTY_B");
+    CHECK(record.correlations.correlation[0].value == 0.75);
+}
+
+TEST_CASE("every_counterparty_document_in_the_corpus_binds", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root = fs::path(ORES_SOURCE_DIR) / "external" / "ore";
+    REQUIRE(fs::is_directory(root));
+
+    std::size_t files = 0;
+    std::size_t parties = 0;
+    std::string report;
+
+    for (const auto& entry : fs::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().filename() != "counterparty.xml")
+            continue;
+        ++files;
+        counterparty_information record;
+        bind_error error;
+        if (!binder::bind(
+                counterparty_information_document(), read_file(entry.path()), &record, error)) {
+            report += entry.path().string() + ": " + error.message + "\n";
+            continue;
+        }
+        parties += record.counterparties.counterparty.size();
+    }
+
+    INFO("files: " << files << ", parties: " << parties);
+    INFO(report);
+    CHECK(files > 0);
+    CHECK(report.empty());
+    CHECK(parties > 3);
 }

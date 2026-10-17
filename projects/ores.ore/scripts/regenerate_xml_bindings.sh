@@ -48,6 +48,19 @@ generate \
     --source "$source/ibor_fallback_config.cpp" \
     --money Spread
 
+# The correlation value type lives in simulation.xsd, so that schema is read
+# only to resolve it. Nothing else from it is emitted here.
+generate \
+    --schema "$xsd/counterparty.xsd" \
+    --schema "$xsd/simulation.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element CounterpartyInformation \
+    --root-type counterpartyInformation \
+    --accessor counterparty_information_document \
+    --include "ores.ore.core/xml/generated/counterparty_information.hpp" \
+    --header "$header/counterparty_information.hpp" \
+    --source "$source/counterparty_information.cpp"
+
 generate \
     --schema "$xsd/currencyconfig.xsd" \
     --schema "$xsd/ore_types.xsd" \

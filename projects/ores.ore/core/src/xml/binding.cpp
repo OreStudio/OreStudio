@@ -28,6 +28,9 @@ namespace ores::ore::xml {
 
 namespace {
 
+/// The value record_type::text_field holds when a type has no text of its own.
+constexpr std::uint8_t no_text = 0xFF;
+
 constexpr auto hash_name(std::string_view name) -> std::uint32_t {
     std::uint32_t h = 2166136261u;
     for (const char c : name) {
@@ -281,13 +284,26 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root, b
                     // already constructed and is destroyed with the parent.
                     mark_present(top.record, *f);
                     stack[depth++] = {f->type, slot};
+                    if (f->type->text_field != no_text) {
+                        // xs:simpleContent: the element carries text of its
+                        // own beside its attributes.
+                        pending = &f->type->fields[f->type->text_field];
+                        pending_record = slot;
+                        mark_present(pending_record, *pending);
+                    }
                     continue;
                 }
                 if (f->kind == field_kind::repeated_nested) {
                     void* child = nullptr;
                     f->append(slot, &child);
                     mark_present(top.record, *f);
-                    stack[depth++] = {f->type, static_cast<std::byte*>(child)};
+                    auto* record = static_cast<std::byte*>(child);
+                    stack[depth++] = {f->type, record};
+                    if (f->type->text_field != no_text) {
+                        pending = &f->type->fields[f->type->text_field];
+                        pending_record = record;
+                        mark_present(pending_record, *pending);
+                    }
                     continue;
                 }
                 // The bit means "this element appeared", not "it carried

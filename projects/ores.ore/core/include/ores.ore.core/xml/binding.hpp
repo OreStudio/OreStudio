@@ -110,6 +110,10 @@ struct record_type {
     std::string_view name;
     const field* fields;
     std::uint8_t field_count;
+    /// Index of the field that receives the element's own text, for a type
+    /// written as xs:simpleContent with attributes. 0xFF when the element has
+    /// no text of its own.
+    std::uint8_t text_field;
 };
 
 /**

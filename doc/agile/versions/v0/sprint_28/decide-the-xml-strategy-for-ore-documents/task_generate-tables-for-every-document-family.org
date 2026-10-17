@@ -116,6 +116,12 @@ types as =xs:float=. That element, =Spread=, is passed to the generator as
 money, and the corpus document writes =-0.00055099999999999995=, which no double
 holds. It arrives as a decimal with every digit intact.
 
+A fourth family, =counterpartyInformation=, is generated for the last shape
+the others do not have: =xs:simpleContent= with an extension, which means an
+element carrying text of its own *beside* its attributes. That is the shape
+the instrument and simulation schemas are built on, so it blocked all of them.
+The engine gained a text field per record type and the generator emits it.
+
 The drift check is =build/scripts/check_xml_bindings_drift.py=. It regenerates
 into a temporary root and compares, so a hand edit to a generated file and a
 schema change the tables did not follow fail the same way.

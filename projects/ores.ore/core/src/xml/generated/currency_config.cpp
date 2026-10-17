@@ -26,6 +26,8 @@ namespace ores::ore::xml::generated {
 
 namespace {
 
+constexpr std::uint8_t no_text = 0xFF;
+
 template <typename T>
 auto append_to(void* container, void** slot) -> void {
     auto* vector = static_cast<std::vector<T>*>(container);
@@ -47,11 +49,11 @@ const field currency_definition_fields[] = {
     {"RoundingPrecision", 1567587679u, field_kind::integer, std::uint16_t(offsetof(currency_definition, rounding_precision)), 8, false, true, nullptr, nullptr, scalar_kind::integer, nullptr},
     {"CurrencyType", 2861236102u, field_kind::text, std::uint16_t(offsetof(currency_definition, currency_type)), 9, false, false, nullptr, nullptr, scalar_kind::text, nullptr},
 };
-const record_type currency_definition_type{"currencyDefinition", currency_definition_fields, 10};
+const record_type currency_definition_type{"currencyDefinition", currency_definition_fields, 10, no_text};
 const field currency_config_fields[] = {
     {"Currency", 342827606u, field_kind::repeated_nested, std::uint16_t(offsetof(currency_config, currency)), 0, false, false, nullptr, &currency_definition_type, scalar_kind::text, &append_to<currency_definition>},
 };
-const record_type currency_config_type{"currencyConfig", currency_config_fields, 1};
+const record_type currency_config_type{"currencyConfig", currency_config_fields, 1, no_text};
 
 }
 

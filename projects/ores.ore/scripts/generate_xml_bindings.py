@@ -122,6 +122,22 @@ class Schema:
                         self.complex_types.setdefault(name, inline[0])
 
 
+def simple_content_base(complex_type):
+    """The base type of an xs:simpleContent extension, or None.
+
+    An element written this way carries text of its own beside its attributes,
+    which is a different shape from every other leaf: the text belongs to the
+    element, and the attributes sit on the same record.
+    """
+    for node in complex_type:
+        if local(node.tag) != "simpleContent":
+            continue
+        for extension in node:
+            if local(extension.tag) == "extension":
+                return extension.get("base")
+    return None
+
+
 def children_of(complex_type):
     """Elements and attributes of a complexType, in schema order."""
     elements, attributes = [], []
@@ -132,7 +148,25 @@ def children_of(complex_type):
                     elements.append(element)
         elif local(node.tag) == "attribute":
             attributes.append(node)
+        elif local(node.tag) == "simpleContent":
+            for extension in node:
+                if local(extension.tag) != "extension":
+                    continue
+                for attribute in extension:
+                    if local(attribute.tag) == "attribute":
+                        attributes.append(attribute)
     return elements, attributes
+
+
+def content_kind(schema, complex_type):
+    """The primitive kind of an element's own text, or None."""
+    base = simple_content_base(complex_type)
+    if base is None:
+        return None
+    if base in PRIMITIVES:
+        return PRIMITIVES[base]
+    resolved = resolve_simple(schema, base)
+    return resolved or "text"
 
 
 def is_residual(complex_type):
@@ -273,6 +307,9 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         elements, attributes = children_of(complex_type)
         declares.append(f"struct {snake(type_name)};")
         body = [f"struct {snake(type_name)} {{", "    std::uint16_t present = 0;"]
+        own_kind = content_kind(schema, complex_type)
+        if own_kind is not None:
+            body.append(f"    {CPP_TYPE[own_kind]} value;")
         for attribute in attributes:
             body.append(f"    std::string {snake(attribute.get('name'))};")
         for element in elements:
@@ -293,6 +330,14 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         elements, attributes = children_of(complex_type)
         rows = []
         bit = 0
+        own_kind = content_kind(schema, complex_type)
+        if own_kind is not None:
+            rows.append(
+                f'    {{"", 0u, field_kind::{own_kind}, '
+                f"std::uint16_t(offsetof({snake(type_name)}, value)), "
+                f"{bit}, false, false, nullptr, nullptr, {SCALAR[own_kind]}, nullptr}},"
+            )
+            bit += 1
         for attribute in attributes:
             name = attribute.get("name")
             required = attribute.get("use") == "required"
@@ -337,11 +382,12 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 f"{bit}, false, false, nullptr, nullptr, scalar_kind::text, nullptr}},"
             )
             bit += 1
+        text_field = "0" if own_kind is not None else "no_text"
         tables.append(
             f"const field {snake(type_name)}_fields[] = {{\n"
             + "\n".join(rows)
             + f"\n}};\nconst record_type {snake(type_name)}_type{{\"{type_name}\", "
-            f"{snake(type_name)}_fields, {bit}}};"
+            f"{snake(type_name)}_fields, {bit}, {text_field}}};"
         )
 
     spellings = []
@@ -386,6 +432,8 @@ ORES_ORE_CORE_EXPORT auto {accessor}() -> const document_type&;
 namespace {namespace} {{
 
 namespace {{
+
+constexpr std::uint8_t no_text = 0xFF;
 
 template <typename T>
 auto append_to(void* container, void** slot) -> void {{

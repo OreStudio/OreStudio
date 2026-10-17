@@ -122,7 +122,7 @@ describe('an account of a tenant', () => {
                 lastAttemptIp: '0.0.0.0',
                 failedLogins: 0,
                 locked: false,
-                lastLogin: '1970-01-01 00:00:00Z',
+                lastLogin: null,
                 online: false,
                 passwordResetRequired: false,
             },

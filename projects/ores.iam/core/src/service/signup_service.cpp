@@ -24,6 +24,7 @@
 #include "ores.security/validation/email_validator.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <optional>
 
 namespace ores::iam::service {
 
@@ -175,7 +176,7 @@ signup_result signup_service::register_user(const std::string& username,
                           .last_attempt_ip = {},
                           .failed_logins = 0,
                           .locked = false,
-                          .last_login = {},
+                          .last_login = std::nullopt,
                           .online = false,
                           .password_reset_required = false};
 

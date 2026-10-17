@@ -20,7 +20,7 @@
  */
 
 import { describe, expect, it, vi } from 'vitest';
-import { formatDateTime, isZeroTimestamp, parseTimestamp } from './Time.js';
+import { formatDateTime, parseTimestamp } from './Time.js';
 
 /**
  * A moment a server states is drawn with its time, and not only its date.
@@ -67,22 +67,6 @@ describe('formatDateTime', () => {
         } finally {
             logged.mockRestore();
         }
-    });
-});
-
-describe('isZeroTimestamp', () => {
-    it('states the epoch as no moment at all', () => {
-        expect(isZeroTimestamp('1970-01-01 00:00:00Z')).toBe(true);
-        const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-        try {
-            expect(() => isZeroTimestamp('')).toThrow('Not a wire timestamp: ""');
-        } finally {
-            logged.mockRestore();
-        }
-    });
-
-    it('states a real moment as a moment', () => {
-        expect(isZeroTimestamp('2026-09-29 21:03:00Z')).toBe(false);
     });
 });
 

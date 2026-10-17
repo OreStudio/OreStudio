@@ -61,20 +61,6 @@ export function parseTimestamp(at: string): Date {
     }
 }
 
-/**
- * Whether a wire timestamp names no moment.
- *
- * An account that has never signed in carries the wire's zero instant,
- * `1970-01-01 00:00:00Z`, which is the epoch rather than a sign-in. This is a
- * display rule for that server sentinel; an absent instant is `null` and never
- * an empty string, so a value that is not a wire timestamp throws.
- *
- * @throws {TypeError} when the value is not a wire timestamp.
- */
-export function isZeroTimestamp(value: string): boolean {
-    return parseTimestamp(value).getTime() === 0;
-}
-
 /** How long ago a moment was, in the person's language, such as "2 hours ago". */
 export function relativeTime(at: Date, now: Date, language: string): string {
     let amount = (at.getTime() - now.getTime()) / 1000;

@@ -35,6 +35,7 @@
 #include <format>
 #include <limits>
 #include <openssl/evp.h>
+#include <optional>
 #include <set>
 #include <stdexcept>
 #include <unordered_map>
@@ -185,7 +186,7 @@ domain::account account_operations_service::create_account(const std::string& us
                           .last_attempt_ip = {},
                           .failed_logins = 0,
                           .locked = false,
-                          .last_login = {},
+                          .last_login = std::nullopt,
                           .online = false};
 
     std::vector<domain::login_info> login_infos{li};
@@ -256,7 +257,7 @@ account_operations_service::create_service_account(const std::string& username,
                           .last_attempt_ip = {},
                           .failed_logins = 0,
                           .locked = false,
-                          .last_login = {},
+                          .last_login = std::nullopt,
                           .online = false};
 
     std::vector<domain::login_info> login_infos{li};

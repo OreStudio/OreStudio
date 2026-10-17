@@ -533,7 +533,7 @@ const wireLoginInfoSchema = z.object({
     last_attempt_ip: text,
     failed_logins: z.int().nonnegative().default(0),
     locked: z.boolean().default(false),
-    last_login: wireTimestampSchema,
+    last_login: nullableWireTimestampSchema,
     online: z.boolean().default(false),
     password_reset_required: z.boolean().default(false),
 });

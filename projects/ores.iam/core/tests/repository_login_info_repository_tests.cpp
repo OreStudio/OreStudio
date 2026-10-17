@@ -77,6 +77,25 @@ TEST_CASE("read_login_infos", tags) {
     CHECK(read_lis[0].account_id == target_account_id);
 }
 
+TEST_CASE("a_login_record_that_never_signed_in_keeps_no_instant", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto gen_ctx = ores::testing::make_generation_context(h);
+
+    login_info_repository repo;
+
+    auto li = generate_synthetic_login_info(gen_ctx);
+    li.last_login = std::nullopt;
+    const auto target_account_id = li.account_id;
+    repo.write(h.context(), {li});
+
+    auto read_lis = repo.read_latest(h.context(), boost::uuids::to_string(target_account_id));
+
+    REQUIRE(read_lis.size() == 1);
+    CHECK_FALSE(read_lis[0].last_login.has_value());
+}
+
 TEST_CASE("read_nonexistent_login_info", tags) {
     auto lg(make_logger(test_suite));
 

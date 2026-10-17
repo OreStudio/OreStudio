@@ -379,7 +379,7 @@ export const loginInfoSchema = z.object({
     lastAttemptIp: z.string(),
     failedLogins: z.int().nonnegative(),
     locked: z.boolean(),
-    lastLogin: wireTimestampSchema,
+    lastLogin: nullableWireTimestampSchema,
     online: z.boolean(),
     passwordResetRequired: z.boolean(),
 });

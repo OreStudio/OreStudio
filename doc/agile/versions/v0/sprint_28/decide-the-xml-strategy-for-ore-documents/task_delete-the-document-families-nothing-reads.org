@@ -86,12 +86,12 @@ xsdcpp leaves, which is the last task.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Corpus root elements, classified | 20 | =python3 build/scripts/check_xml_family_coverage.py= | d64f55d23f |
-| Families supported by a table | 7 | same | d64f55d23f |
-| Families migrating from a mapper | 6 | same | d64f55d23f |
-| Families unused and deleted | 7 | same | d64f55d23f |
-| Test cases removed with the seven families | 11 | =publish/bin/ores.ore.core.tests "[ore][xml]"= before (541) and after (530) | pending |
-| XML suites after the deletion and the review | 530 cases, 63,560 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | pending |
+| Corpus root elements, classified | 20 | =python3 build/scripts/check_xml_family_coverage.py= | 2b51096de6 |
+| Families supported by a table | 7 | same | 2b51096de6 |
+| Families migrating from a mapper | 6 | same | 2b51096de6 |
+| Families unused and deleted | 7 | same | 2b51096de6 |
+| Test cases removed with the seven families | 11 | =publish/bin/ores.ore.core.tests "[ore][xml]"= before (541) and after (530) | 2b51096de6 |
+| XML suites after the deletion and the review | 530 cases, 63,560 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 2b51096de6 |
 
 * Test Scenarios
 

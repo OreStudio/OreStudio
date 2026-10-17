@@ -161,14 +161,32 @@ instructions fell by 48% on the portfolio and 25% on the large file.
 Their rows are not in the history. A number taken at a different optimisation
 level, from a differently linked binary, is not a baseline.
 
-* What is not a gate
+* The gate
 
-"When the XML layer changes, run the benchmark" is a convention, not a check.
-Making it one means a check that fails when =projects/ores.ore/core/src/xml/*=
-changed and =history.tsv= gained no row for the current commit. That is a
-deliberate omission: a gate on a benchmark that takes minutes needs a waiver
-mechanism, and choosing one is a design decision rather than an obvious
-default.
+"Run the benchmark when the XML layer changes" is enforced, and only there.
+=xml-benchmark-recorded= fails when a file that changes what the benchmark
+measures has moved and =history.tsv= holds no row at that commit or after it.
+
+The watched files are the XML sources, the public headers they expose, and the
+benchmark's own harness:
+
+- =projects/ores.ore/core/src/xml/*=
+- =projects/ores.ore/core/include/ores.ore.core/xml/*=
+- =benchmarks/xml/bench.cpp=, =run.sh= and =inputs.tsv=
+
+Nothing else asks for a measurement. A documentation edit, a test, a change to
+the writer's callers, or a change anywhere else in the tree never triggers it.
+That is the point: a gate that fires on unrelated work is a gate people learn
+to skip.
+
+A row counts if its commit is the last commit that touched those files, or a
+descendant of it, so a later commit that touches nothing measured, such as a
+record update, does not invalidate a measurement already taken.
+
+When a change genuinely cannot move a number, the check is skipped with
+=--only= and the reason recorded on the pull request. That is a deliberate
+escape hatch, not an oversight: the alternatives are a waiver file nobody
+maintains or a benchmark run that proves nothing.
 
 * See also
 

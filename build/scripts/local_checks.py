@@ -377,6 +377,21 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("docs", "tooling"),
         paths=("doc/*", "build/scripts/check_pattern_uses.py"),
     ),
+    # The gate is narrow on purpose: it only applies when a file that changes
+    # what the benchmark measures changed. A change to the XML sources, or to
+    # the benchmark's own harness, owes a measurement; nothing else does.
+    Check(
+        id="xml-benchmark-recorded",
+        title="An XML code change has a benchmark row recorded after it",
+        argv=("python3", "build/scripts/check_xml_benchmark_recorded.py"),
+        classes=("cpp",),
+        paths=("projects/ores.ore/core/src/xml/*",
+               "projects/ores.ore/core/include/ores.ore.core/xml/*",
+               "benchmarks/xml/bench.cpp",
+               "benchmarks/xml/run.sh",
+               "benchmarks/xml/inputs.tsv"),
+        fix="Run ./benchmarks/xml/run.sh and commit benchmarks/xml/history.tsv.",
+    ),
     Check(
         id="prototypes",
         title="The prototype inventory matches the tree",

@@ -9,7 +9,7 @@ naming each one by hand.
 
 Usage::
 
-    regenerate_convention_family_registry.py            # write both artefacts
+    regenerate_convention_family_registry.py            # write every artefact
     regenerate_convention_family_registry.py --check    # exit non-zero if stale
 """
 
@@ -25,9 +25,11 @@ sys.path.insert(0, str(REPO_ROOT / "projects" / "ores.codegen" / "src"))
 from codegen.convention_family_registry import (  # noqa: E402
     FRAGMENT_RELATIVE_PATH,
     HEADER_RELATIVE_PATH,
+    INCLUDES_RELATIVE_PATH,
     discover_entries,
     render_fragment,
     render_header,
+    render_includes,
 )
 
 
@@ -44,6 +46,7 @@ def main() -> int:
     artefacts = (
         (HEADER_RELATIVE_PATH, render_header(entries)),
         (FRAGMENT_RELATIVE_PATH, render_fragment(entries)),
+        (INCLUDES_RELATIVE_PATH, render_includes(entries)),
     )
 
     if args.check:

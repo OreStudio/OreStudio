@@ -8,7 +8,7 @@
 #+filetags: :reporting:sql:codegen:web:manage-reports-from-the-list-a-party-runs:sprint_28:v0:
 #+owner: marco
 #+branch: feature/close-the-reporting-gaps-phase-1
-#+pr:
+#+pr: 3484
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -210,7 +210,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3484][#3484]] | [reporting,sql] Close the first phase of the reporting gaps |
 
 * Review
 

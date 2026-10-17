@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC
+:END:
+#+title: Story: Manage reports from the list a party runs
+#+description: Give report management its own UX, whose front door is the list of reports a party runs, and keep the analytic authoring surfaces out of it.
+#+type: story
+#+level: s2
+#+filetags: :reporting:ux:web:bff:sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Report management gets a UX of its own, and its front door is the list of
+reports a party runs. The person opens reporting and lands on one row per report
+definition their party owns. That row is where the arc of a report becomes
+visible to a person: what exists, when it last ran, whether it is healthy, and
+when it runs next. Everything else in the group is reached from a row.
+
+The arc is the whole argument of the screen. A definition exists (its name, its
+type, its party). It ran (the start and the duration of its latest run). It is
+healthy or it is not (one of five health words, derived from that run and never
+from the definition). And it will run again, or it waits for a person (its
+schedule, and, where the server can answer, when it fires next). A report that
+has never run appears on the same list with a word that says so, because nothing
+ran and nothing was checked.
+
+Complex inputs keep their own surfaces. A report does not author its
+conventions, and this story does not author a party's analytics. Report
+management chooses and links out; the authoring UX is somebody else's front
+door.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The decision is written and the first task holds the specification and the gap list. No route, no endpoint and no screen exists. |
+| Waiting on    | Nothing.                               |
+| Next          | Close the first task, then take the first gap it records as its own task. |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- Opening reporting lands on the list of reports the party runs, and not on a
+  choice of areas.
+- One row per definition the party owns, and each row states its name, its
+  report type, its schedule, when its latest run started, how long it took, its
+  health word, and the errors that run recorded.
+- The health word is one of =failed=, =completed with errors=, =running=,
+  =never run= and =completed clean=, and it is derived from the definition's
+  latest run.
+- A row that completed while carrying errors is drawn apart from a row that
+  completed clean, without the person opening anything, and the errors cell
+  separates errors from warnings.
+- A definition that has never run does not read as clean.
+- A party that owns no definition is stated as such, in words, and not shown as
+  an empty table.
+- Choosing the conventions a report binds reaches a list of named convention
+  sets and one link out to authoring. Report management does not author a set.
+- Authoring a party's analytics is reached the same way: a link out, and not a
+  surface on this screen.
+- Every read the screen makes is party-scoped from the session, and a person who
+  may not read a row is shown no action that would be refused after they press
+  it.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:B15A20EA-29CD-4F01-9709-545BF9334A51][Specify the reports a party runs screen and its server gaps]] | DONE | 2026-10-17 | 2026-10-17 | Name the route, the BFF endpoint and the read subjects for the reports-a-party-runs screen, and carry the initial list of what the server cannot yet supply. |
+
+* Decisions
+
+- *The front door is the list of definitions, not the ledger of runs.* The
+  person arrives with no identifier, so the screen answers from the party alone.
+  What is scheduled is the thing a trading desk checks before the first number
+  is quoted. The prototype's ledger-first and attention-first variants remain
+  readings of the same facts, and they are filters and histories behind this
+  list, not the landing page.
+- *Health comes from the latest run, never from the definition.* A definition
+  can be perfectly healthy while its last run failed. The latest run is the run
+  with the greatest start among the runs of that definition.
+- *Complex inputs get their own screens.* Report management chooses a named set
+  and links out. The pattern is
+  [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the convention sets a report
+  chooses]]: a short list, a choice, and one link. This story borrows that
+  pattern for analytics rather than inventing a second one, and that story is
+  the place the pattern is argued.
+- *The analytics half is not authoring.* Analytics need the same treatment
+  conventions received, so report management does not carry the analytic
+  authoring story. Authoring analytics is its own UX, and it is deferred.
+- *A gap is a deliverable.* Where the server cannot answer a column, the answer
+  is a recorded gap, not a change to the design. The first task carries the
+  initial list.
+
+* The journeys this story opens
+
+The screen the story asks for is the one
+[[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]]
+describes, and that journey is the design intent. The prototype is
+[[file:../../../../../prototypes/reporting/see-the-reports-a-party-runs/][See the
+reports a party runs]], in the group
+[[id:e6c652da-a2c5-437a-948a-02e017c7afd5][Reporting prototypes]], and its
+design note says what each of the three variants argues and what is fake.
+
+* What this story does not cover
+
+The rest of the group is already written down, and it is not this story:
+
+- Reading a run's outputs is
+  [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]].
+- Diagnosing a failure, down to the trade, the analytic or the curve, is
+  [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]].
+- The schedule editor, which chooses when a report runs, is
+  [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]].
+- Running one report now and watching it finish is
+  [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it
+  finish]].
+
+This story owns the front door those four are reached from. It does not restate
+them, and it does not change them.
+
+* Out of scope
+
+- *The implementation itself.* The first task is a specification and a
+  server-side gap analysis. The screen, its endpoint and the reads it needs are
+  the work that follows.
+- *Authoring conventions.* A person chooses a named set here and follows one
+  link out. Creating a set, naming it and binding its kinds belongs to
+  conventions.
+- *Authoring, editing or publishing a party's analytics.* Report management
+  links out to that surface when it exists. No analytic is created, edited or
+  published from this story.
+- *Any change to the prototype.* The prototype is the design intent. Where it
+  shows something the server cannot supply, the gap is recorded, and the
+  prototype is not rewritten to hide it.
+- *Any schema, service or seeder change to close a gap.* Each gap the first task
+  records becomes the task that closes it, and those are their own work.
+- *The other six reporting journeys.* Their screens, their writes and their
+  states are not designed here.
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group
+  this story opens, and the vocabulary the rows use.
+- [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the convention sets a report
+  chooses]] — the conventions pattern this story borrows for analytics.
+- [[id:e6c652da-a2c5-437a-948a-02e017c7afd5][Reporting prototypes]] — the ten
+  prototypes, and the one this story implements.

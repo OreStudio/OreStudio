@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: F601BA2C-C879-4880-95C2-02110E5D168E
+:END:
+#+title: Story: Follow the child run a workflow hands off
+#+description: bootstrap setup and provision tenant report 'All 2 step(s) completed' and 'the tenant is ready to work in' as soon as the provision_tenant_workflow finishes, while the tenant is still being populated by the 9-step tenant_setup_workflow that start_tenant_setup creates. The child run's id is already in the final step's response as child_instance_id, so the shell can follow it; it simply never reads it. The follow loop has no notion of a child run.
+#+type: story
+#+level: s2
+#+filetags: :shell:workflow:provisioning:sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who provisions a tenant should not be told it is ready while its setup is still running. The provisioning run records the id of the run it creates, so the shell should follow that child run to completion before it reports success.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- run_and_follow follows a non-empty child_instance_id from the last completed step's response, so provision tenant and bootstrap setup both wait for the tenant setup to finish
+- the success message is only printed once the child run has completed, and a failing child run fails the command
+- the transient 'Workflow instance not found' first-poll warning is not printed as a warning
+- proven by provisioning a tenant on a recreated database and showing the command does not return until tenant_setup_workflow has completed with 0 step errors
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BCE20779-90B8-4D5A-8970-3E1223E3C71E][Scaffold story: Follow the child run a workflow hands off]] | STARTED | 2026-10-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8FCC9994-9B12-433F-B142-750D07A5D070][Follow child_instance_id from the handoff step]] | BACKLOG | | | Initial task for: Follow the child run a workflow hands off |
+
+* Decisions
+
+* Out of scope
+
+-

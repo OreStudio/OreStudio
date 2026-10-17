@@ -42,6 +42,7 @@ Rework options, forwards, swaps, variance swaps, barriers, digitals, Asians, acc
 | [[id:D65A593A-AE06-4EBD-981E-EDAAF5AF1138][Analyse the equity family against data-oriented design]] | DONE | 2026-10-16 | 2026-10-16 | Walk the equity family's models, SQL, tests and round trip against the data-oriented design criteria and the instrument table rule, and propose the target model. |
 | [[id:A14672CA-887E-48B9-B7FB-9A0D82356F7E][Record the variant retirement in the equity staging]] | DONE | 2026-10-17 | 2026-10-17 | The equity analysis names the nested std::variant as finding E5 and retires it in the mapping, but no staged unit carries it or checks for its absence. Add the unit so the Regime 3 finding has an owner and a gate. |
 | [[id:379E8B40-DA9A-4BF1-AAC0-1F3B8E708025][Repair the equity routing]] | DONE | 2026-10-17 | 2026-10-17 | The catalogue routes an equity code to a table other than the one the importer writes, so the stored trade_type_code and the routing disagree. Point the 17 routed codes at the equity table, take the position sub-trade off the composite anchor, and leave the 13 unrouted codes empty. |
+| [[id:8D0357A4-C17A-4459-9A7F-5D2731ECDA65][Write the equity basket as rows]] | BACKLOG | | | The worst-of basket swap holds its constituents as a JSON string in basket_json. A list is rows of a child table, so author equity_basket_constituents keyed by the trade and the constituent's ordinal, and retire the JSON column from the model. |
 
 * Decisions
 

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C548228E-1C67-4B2B-AD1E-8FFD412D81E9
+:END:
+#+title: Make sunday_to_monday survive regeneration of the refdata calendar rule
+#+description: Commit a1d358e5da added sunday_to_monday to projects/ores.refdata/api/include/ores.refdata.api/domain/calendar_rule.hpp, which is marked AUTO-GENERATED, and never updated the model it comes from: projects/ores.refdata/modeling/ores.refdata.calendar_rule.org line 189 still lists only none, nearest_weekday and roll_forward_to_monday, and the valid-values column at line 316 agrees with three. Any codegen run drops the fourth value from the generated header; this happened and had to be reverted by hand. The functional fix in the materialiser and its test is hand-written and survives. Fix the model, not the generated file.
+#+type: capture
+#+level: cross
+#+filetags: :refdata:codegen:snag:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

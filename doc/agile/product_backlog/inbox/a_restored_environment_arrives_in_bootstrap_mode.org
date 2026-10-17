@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: F98C1C83-9847-44C1-ACD0-5E7DE2534AFF
+:END:
+#+title: A restored environment arrives in bootstrap mode with no human admin
+#+description: After a database recreate the database came back in bootstrap mode with no human administrator, so a soak run could not log in until the documented bootstrap create-initial-admin step was performed mid-run. A freshly restored environment that nobody can authenticate against is a provisioning gap, and the step is discoverable only if you already know it exists. Seed the initial admin as part of the restore, or have the restore report that it is in bootstrap mode.
+#+type: capture
+#+level: cross
+#+filetags: :provisioning:db:snag:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

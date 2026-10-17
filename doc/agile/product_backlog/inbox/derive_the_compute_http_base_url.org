@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 859678B0-3755-48DF-8849-727C7250EEA5
+:END:
+#+title: Derive the compute node's HTTP base URL instead of copying a stale host profile
+#+description: The .env.<host> profiles are gitignored hand-maintained copies with no regeneration path. goedel, newton and simba carried ORES_COMPUTE_HTTP_BASE_URL=http://192.168.1.172:20400 while the environment's HTTP server moved to 20401, so every remote job failed with 'connect: Connection refused' and the grid ran on local wrappers only for about fourteen hours before anyone noticed. The profiles are stale in other ways too: service DB ports at 5433 against 5432 in .env, and variables this environment no longer has. env deploy copies the profile faithfully, so the defect stays invisible until work is dispatched. Derive the URL from .env at deploy time, or give the profiles a generator.
+#+type: capture
+#+level: cross
+#+filetags: :compute:deploy:snag:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

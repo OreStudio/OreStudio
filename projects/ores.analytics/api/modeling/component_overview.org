@@ -5,6 +5,7 @@
 #+description: Domain types and NATS protocol schemas for the analytics component.
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :analytics:api:component:
 #+created: 2026-05-19

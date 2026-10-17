@@ -4,6 +4,7 @@
 #+title: ores.compute.client
 #+description: Consumer-side compute helper: engine package upload with client-vs-server hash verification.
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :compute:client:component:
 #+created: 2026-09-06

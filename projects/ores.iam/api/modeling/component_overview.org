@@ -8,6 +8,7 @@
 #+brief: IAM domain types and NATS protocol schemas
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :iam:api:component:
 #+created: 2026-05-19

@@ -8,6 +8,7 @@
 #+brief: Trading instrument and trade contract types
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :trading:api:component:
 #+created: 2026-05-19

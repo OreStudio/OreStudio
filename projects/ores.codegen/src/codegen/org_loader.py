@@ -7187,6 +7187,12 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
     # carry.
     c["win32_static_library"] = str(fm.get("win32_static_library", "")).strip().lower() in (
         "true", "yes", "1")
+    # 47 of the 183 part CMake files build with hidden symbol visibility and the
+    # rest do not, part by part rather than component by component: a part whose
+    # classes carry no export attribute cannot be hidden, because the suites that
+    # link it would find no symbols to resolve. Each part says which it is.
+    c["hidden_visibility"] = str(fm.get("hidden_visibility", "")).strip().lower() in (
+        "true", "yes", "1")
     c["has_test_fixture"] = (
         str(fm.get("test_fixture", "")).strip().lower() != "none")
     # Paste points: a component model splices hand-written C++ into a generated

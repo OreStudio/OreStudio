@@ -8,6 +8,7 @@
 #+brief: Compute domain types and NATS protocol schemas
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :compute:api:component:
 #+created: 2026-05-19

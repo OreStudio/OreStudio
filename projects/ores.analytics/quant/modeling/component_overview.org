@@ -4,6 +4,7 @@
 #+title: ores.analytics.quant
 #+description: Dependency-light quantitative math library: CRM spanning-tree topology, thread-safe derived-rate engine, and stochastic price processes.
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :analytics:quant:crm:synthetic:component:
 #+created: 2026-07-11

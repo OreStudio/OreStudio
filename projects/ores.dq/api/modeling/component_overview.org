@@ -5,6 +5,7 @@
 #+description: Domain types, JSON/table I/O, and NATS protocol schemas for the data-quality component.
 #+type: ores.codegen.component
 #+component_kind: api
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :dq:api:component:
 #+created: 2026-05-19

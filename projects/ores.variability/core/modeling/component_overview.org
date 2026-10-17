@@ -8,6 +8,7 @@
 #+brief: Feature flag and settings configuration core
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :variability:core:component:
 #+created: 2026-05-19

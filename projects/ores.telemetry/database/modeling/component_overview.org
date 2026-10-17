@@ -7,6 +7,7 @@
 #+description: Database persistence layer for telemetry log records.
 #+brief: Telemetry log record persistence layer
 #+type: ores.codegen.component
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :telemetry:database:component:
 #+created: 2026-05-19

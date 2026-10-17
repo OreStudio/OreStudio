@@ -8,6 +8,7 @@
 #+brief: Identity and access management core
 #+type: ores.codegen.component
 #+component_kind: core
+#+hidden_visibility: true
 #+level: cross
 #+filetags: :iam:core:component:
 #+created: 2026-05-19

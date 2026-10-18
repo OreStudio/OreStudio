@@ -49,7 +49,7 @@ then the check that would have caught the family's whole class of defect.
 | The cap/floor's own fields reach a home | 4, 5 | Medium |
 | The leg's direction is set for every product | 9 | Small |
 | The boundary keeps the document's digits | 7 | Medium |
-| The carrier states its product arrays once | 6, 8 | Medium |
+| The carrier states its product arrays once | 6 | Medium |
 | A column without a producer fails the gate | all | Medium |
 
 * Tasks

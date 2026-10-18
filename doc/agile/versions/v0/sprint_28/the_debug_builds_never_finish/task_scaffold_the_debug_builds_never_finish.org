@@ -8,7 +8,7 @@
 #+filetags: :the_debug_builds_never_finish:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/the-debug-builds-never-finish
-#+pr:
+#+pr: 3559
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3559][#3559]] | [ci] Cap the compiler cache and free room before it is saved |
 
 * Review
 

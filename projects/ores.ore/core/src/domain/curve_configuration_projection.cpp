@@ -169,7 +169,7 @@ std::optional<int> optional_int(const record_reader& v, std::string_view name) {
  */
 std::optional<int> integer_text(const record_reader& v, std::string_view name) {
     const auto value = v.text(name);
-    if (!value || value->empty())
+    if (!value)
         return std::nullopt;
     try {
         return std::stoi(*value);
@@ -178,12 +178,17 @@ std::optional<int> integer_text(const record_reader& v, std::string_view name) {
     }
 }
 
+// The schema allows four spellings of a boolean and no others, so anything else
+// stops the import rather than reading as false.
 std::optional<bool> boolean_text(const record_reader& v, std::string_view name) {
     const auto value = v.text(name);
     if (!value)
         return std::nullopt;
-    const auto& s = *value;
-    return s == "true" || s == "1" || s == "Y" || s == "YES" || s == "TRUE" || s == "True";
+    if (*value == "true" || *value == "1")
+        return true;
+    if (*value == "false" || *value == "0")
+        return false;
+    throw refusal("'" + *value + "' is not a boolean for " + std::string(name));
 }
 
 void set_integer_text(record_writer w, std::string_view name, const std::optional<int>& value) {
@@ -2844,8 +2849,10 @@ curve_configuration_projection::map(const document& v) {
         mapped.sections.push_back(std::move(row));
     }
 
-    // One position across every section, in the order the schema declares them,
-    // so the definitions sort back into the order the document wrote them.
+    // One position across every section, in the order the mapper has always
+    // used. That order is not the schema's element order, and it is the order
+    // the stored rows were numbered in, so it must not be reordered without
+    // renumbering them.
     int position = 0;
     const auto each = [&root](std::string_view section, std::string_view entry) {
         const auto found = root.child(section);

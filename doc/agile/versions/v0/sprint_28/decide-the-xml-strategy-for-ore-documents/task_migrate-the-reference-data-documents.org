@@ -31,7 +31,7 @@ completely in one change: reader, writer, and the deletion of its mapper.
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | Calendar adjustments, currency config, pricing engines, credit simulation and curve configuration read and write through the codec; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Stress testing, whose mapper is the last one over a document the product still reads. |
+| Next         | Stress testing: its mapper is the next family's, and the smallest of the two document families still read through the binding. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance

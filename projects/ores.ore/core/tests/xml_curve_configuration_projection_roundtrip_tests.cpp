@@ -18,6 +18,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
+#include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
@@ -262,4 +263,183 @@ TEST_CASE("an_element_the_projection_cannot_hold_is_refused", tags) {
     const auto parsed = read_document(text);
     CHECK_THROWS_WITH(curve_configuration_projection::map(parsed),
                       Catch::Matchers::ContainsSubstring("writes Segments"));
+}
+
+namespace {
+
+using record_writer = ores::ore::xml::record_writer;
+
+/// The row tree of a document, written without any of its required members.
+curve_configuration_projection::document empty_document() {
+    return curve_configuration_projection::document{};
+}
+
+record_writer writer_of(curve_configuration_projection::document& d) {
+    return record_writer(
+        *ores::ore::xml::generated::curve_configuration::curve_configuration_document().root, &d);
+}
+
+}
+
+TEST_CASE("an_element_the_projection_cannot_hold_is_refused_at_import", tags) {
+    auto lg(make_logger(test_suite));
+
+    {
+        auto d = empty_document();
+        auto e = writer_of(d).child("EquityVolatilities").append("EquityVolatility");
+        e.child("OneDimSolverConfig");
+        CHECK_THROWS_WITH(curve_configuration_projection::map(d),
+                          Catch::Matchers::ContainsSubstring("OneDimSolverConfig"));
+    }
+    {
+        auto d = empty_document();
+        auto e = writer_of(d).child("CommodityVolatilities").append("CommodityVolatility");
+        e.child("OneDimSolverConfig");
+        CHECK_THROWS_WITH(curve_configuration_projection::map(d),
+                          Catch::Matchers::ContainsSubstring("OneDimSolverConfig"));
+    }
+    {
+        auto d = empty_document();
+        auto e = writer_of(d).child("CommodityVolatilities").append("CommodityVolatility");
+        e.child("ApoFutureSurface");
+        CHECK_THROWS_WITH(curve_configuration_projection::map(d),
+                          Catch::Matchers::ContainsSubstring("ApoFutureSurface"));
+    }
+    {
+        auto d = empty_document();
+        auto e = writer_of(d).child("CDSVolatilities").append("CDSVolatility");
+        e.child("Constant");
+        CHECK_THROWS_WITH(curve_configuration_projection::map(d),
+                          Catch::Matchers::ContainsSubstring("Constant"));
+    }
+    {
+        auto d = empty_document();
+        auto e = writer_of(d).child("CDSVolatilities").append("CDSVolatility");
+        e.child("PriceInfo");
+        CHECK_THROWS_WITH(curve_configuration_projection::map(d),
+                          Catch::Matchers::ContainsSubstring("PriceInfo"));
+    }
+    {
+        auto d = empty_document();
+        auto e = writer_of(d).child("BaseCorrelations").append("BaseCorrelation");
+        e.child("RecoveryGrid");
+        CHECK_THROWS_WITH(curve_configuration_projection::map(d),
+                          Catch::Matchers::ContainsSubstring("RecoveryGrid"));
+    }
+    {
+        auto d = empty_document();
+        writer_of(d).child("ReportConfiguration");
+        CHECK_THROWS_WITH(curve_configuration_projection::map(d),
+                          Catch::Matchers::ContainsSubstring("writes no curve family"));
+    }
+    {
+        auto d = empty_document();
+        auto e = writer_of(d).child("YieldCurves").append("YieldCurve");
+        e.child("Segments").append("BondYieldShifted").set_text("ExtrapolateFlat", "maybe");
+        CHECK_THROWS_WITH(curve_configuration_projection::map(d),
+                          Catch::Matchers::ContainsSubstring("is not a boolean"));
+    }
+}
+
+TEST_CASE("a_row_the_document_has_no_place_for_is_refused_on_export", tags) {
+    auto lg(make_logger(test_suite));
+
+    {
+        const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <YieldCurves>
+    <YieldCurve>
+      <CurveId>EUR-ALL</CurveId>
+      <CurveDescription>One segment</CurveDescription>
+      <Currency>EUR</Currency>
+      <DiscountCurve>EUR-ALL</DiscountCurve>
+      <Segments>
+        <Direct><Type>Zero</Type><Quotes><Quote>ZERO/RATE/EUR/1Y</Quote></Quotes></Direct>
+      </Segments>
+    </YieldCurve>
+  </YieldCurves>
+</CurveConfiguration>)");
+        auto mapped = curve_configuration_projection::map(original);
+        REQUIRE(!mapped.segments.empty());
+        mapped.segments.front().segment_type = "Nonexistent";
+        CHECK_THROWS_WITH(curve_configuration_projection::reverse(mapped),
+                          Catch::Matchers::ContainsSubstring("unknown type"));
+    }
+    {
+        const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <YieldCurves>
+    <YieldCurve>
+      <CurveId>EUR-ALL</CurveId>
+      <CurveDescription>An entry quote</CurveDescription>
+      <Currency>EUR</Currency>
+      <DiscountCurve>EUR-ALL</DiscountCurve>
+      <Segments/>
+    </YieldCurve>
+  </YieldCurves>
+</CurveConfiguration>)");
+        auto mapped = curve_configuration_projection::map(original);
+        REQUIRE(!mapped.definitions.empty());
+        ores::refdata::domain::curve_quote quote;
+        quote.curve_definition_id = mapped.definitions.front().id;
+        quote.quote_text = "ZERO/RATE/EUR/1Y";
+        mapped.quotes.push_back(quote);
+        CHECK_THROWS_WITH(
+            curve_configuration_projection::reverse(mapped),
+            Catch::Matchers::ContainsSubstring("holds a quote directly on its entry"));
+    }
+}
+
+TEST_CASE("the_segment_document_states_one_of_every_element", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <YieldCurves>
+    <YieldCurve>
+      <CurveId>EUR-ALL</CurveId>
+      <CurveDescription>Every segment element</CurveDescription>
+      <Currency>EUR</Currency>
+      <DiscountCurve>EUR-ALL</DiscountCurve>
+      <BootstrapConfig><Accuracy>0.01</Accuracy></BootstrapConfig>
+      <Report><PillarDates>1Y, 2Y</PillarDates></Report>
+      <Segments>
+        <Simple>
+          <Type>Deposit</Type>
+          <Conventions>EUR-DEPOSIT</Conventions>
+          <Priority>2</Priority>
+          <Quotes><Quote optional="true">MM/RATE/EUR/1D</Quote></Quotes>
+        </Simple>
+        <FittedBond>
+          <Type>FittedBond</Type>
+          <ExtrapolateFlat>true</ExtrapolateFlat>
+          <Quotes><Quote>BOND/PRICE/EUR/1Y</Quote></Quotes>
+        </FittedBond>
+        <IborFallback>
+          <Type>Ibor Fallback</Type>
+          <IborIndex>CHF-LIBOR-SN</IborIndex>
+          <RfrCurve>CHF-SARON</RfrCurve>
+          <RfrIndex>CHF-SARON</RfrIndex>
+          <Spread>-0.00055099999999999995</Spread>
+        </IborFallback>
+      </Segments>
+    </YieldCurve>
+  </YieldCurves>
+</CurveConfiguration>)");
+
+    const auto mapped = curve_configuration_projection::map(original);
+    CHECK(mapped.definitions.size() == 1);
+    CHECK(mapped.sections.size() == 1);
+    CHECK(mapped.segments.size() == 3);
+    CHECK(mapped.bootstrap_configs.size() == 1);
+    // A yield curve's Report states only its pillar dates, so it lives on the
+    // settings row rather than in the report table.
+    REQUIRE(mapped.yield_curves.size() == 1);
+    CHECK(mapped.yield_curves.front().has_report);
+    CHECK(mapped.yield_curves.front().report_pillar_dates == std::optional<std::string>("1Y, 2Y"));
+    REQUIRE(!mapped.quotes.empty());
+    CHECK(mapped.quotes.front().optional_flag == std::optional<std::string>("true"));
+    REQUIRE(mapped.segments.front().priority);
+    CHECK(*mapped.segments.front().priority == 2);
+    CHECK(mapped.segments[1].extrapolate_flat == std::optional<bool>(true));
+    CHECK(mapped.segments[2].rfr_index == std::optional<std::string>("CHF-SARON"));
+    REQUIRE(mapped.segments[2].spread);
+    CHECK_FALSE(mapped.segments[2].spread->is_zero());
 }

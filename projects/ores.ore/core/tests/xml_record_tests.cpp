@@ -394,3 +394,62 @@ TEST_CASE("a_reader_and_a_writer_refuse_a_name_the_table_lacks", tags) {
     auto write_entry = record_writer(entry_record, &other.entry.emplace_back());
     CHECK_THROWS_WITH(write_entry.set_spelling("Kind", "C", "kind"), "'C' is not a valid kind");
 }
+
+TEST_CASE("a_reader_and_a_writer_refuse_a_member_of_another_kind", tags) {
+    auto lg(make_logger(test_suite));
+
+    root record{};
+    const auto read = record_reader(root_record, &record);
+    CHECK_THROWS_WITH(read.integer("Entry"),
+                      "'Entry' of the root table holds a repeated child element, not an integer");
+
+    auto write = record_writer(root_record, &record);
+    CHECK_THROWS_WITH(write.set_text("Entry", "x"),
+                      "'Entry' of the root table holds a repeated child element, not text");
+}
+
+TEST_CASE("a_reader_states_which_members_the_table_declares", tags) {
+    auto lg(make_logger(test_suite));
+
+    root record{};
+    const auto read = record_reader(root_record, &record);
+    // Declared by the table, absent from this document.
+    CHECK(read.declares("Entry"));
+    CHECK_FALSE(read.has("Entry"));
+    // Not declared at all, which is a different answer.
+    CHECK_FALSE(read.declares("Entries"));
+
+    const auto entries = record_reader(entry_record, &record.entry.emplace_back());
+    CHECK(entries.declares("Active"));
+    CHECK_FALSE(entries.declares("active"));
+}
+
+TEST_CASE("a_repeated_leaf_reads_and_writes_its_values", tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::string text = "<Root><Entry><Name>leaves</Name>"
+                             "<Item><Tag>a</Tag><Tag>b</Tag></Item></Entry></Root>";
+    root parsed{};
+    REQUIRE(read_root(text, parsed));
+
+    const auto entries = record_reader(root_record, &parsed).children("Entry");
+    REQUIRE(entries.size() == 1);
+    const auto items = entries.front().children("Item");
+    REQUIRE(items.size() == 1);
+    CHECK(items.front().values("Tag") == std::vector<std::string>({"a", "b"}));
+
+    root written{};
+    auto w = record_writer(root_record, &written);
+    auto e = w.append("Entry");
+    e.set_text("Name", "written");
+    auto item = e.append("Item");
+    item.append_value("Tag", "a");
+    item.append_value("Tag", "b");
+
+    root back{};
+    REQUIRE(read_root(emitted(written), back));
+    const auto written_items =
+        record_reader(root_record, &back).children("Entry").front().children("Item");
+    REQUIRE(written_items.size() == 1);
+    CHECK(written_items.front().values("Tag") == std::vector<std::string>({"a", "b"}));
+}

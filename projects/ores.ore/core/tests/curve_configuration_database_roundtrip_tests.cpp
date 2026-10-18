@@ -52,8 +52,8 @@
  * @file curve_configuration_database_roundtrip_tests.cpp
  * @brief The curve configuration through the database.
  *
- * The in-memory walk proves the mapper over the corpus; this proves the tables
- * hold what the mapper produces, and that the database refuses what the model
+ * The in-memory walk proves the projection over the corpus; this proves the
+ * tables hold what the projection produces, and that the database refuses what the model
  * says it must: a convention, a day counter or a segment type it does not hold.
  */
 

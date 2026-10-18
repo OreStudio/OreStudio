@@ -74,15 +74,6 @@ const field& require_kind(const record_type& type,
     return f;
 }
 
-/// The presence mask is the first member of every record the table describes.
-auto present(const void* record, const field& f) -> bool {
-    return (*static_cast<const std::uint64_t*>(record) & (1ull << f.bit)) != 0;
-}
-
-void mark(void* record, const field& f) {
-    *static_cast<std::uint64_t*>(record) |= (1ull << f.bit);
-}
-
 const void* slot_of(const void* record, const field& f) {
     return static_cast<const std::byte*>(record) + f.offset;
 }
@@ -102,26 +93,26 @@ auto record_reader::declares(std::string_view name) const -> bool {
 }
 
 auto record_reader::has(std::string_view name) const -> bool {
-    return present(record_, require_field(*type_, name));
+    return bit_is_set(record_, require_field(*type_, name));
 }
 
 auto record_reader::text(std::string_view name) const -> std::optional<std::string> {
     const auto& f = require_kind(*type_, name, field_kind::text, "text");
-    if (!present(record_, f))
+    if (!bit_is_set(record_, f))
         return std::nullopt;
     return *static_cast<const std::string*>(slot_of(record_, f));
 }
 
 auto record_reader::integer(std::string_view name) const -> std::optional<std::int64_t> {
     const auto& f = require_kind(*type_, name, field_kind::integer, "an integer");
-    if (!present(record_, f))
+    if (!bit_is_set(record_, f))
         return std::nullopt;
     return *static_cast<const std::int64_t*>(slot_of(record_, f));
 }
 
 auto record_reader::real(std::string_view name) const -> std::optional<double> {
     const auto& f = require_kind(*type_, name, field_kind::real, "a real number");
-    if (!present(record_, f))
+    if (!bit_is_set(record_, f))
         return std::nullopt;
     return *static_cast<const double*>(slot_of(record_, f));
 }
@@ -129,7 +120,7 @@ auto record_reader::real(std::string_view name) const -> std::optional<double> {
 auto record_reader::decimal(std::string_view name) const
     -> std::optional<ores::utility::decimal::decimal> {
     const auto& f = require_kind(*type_, name, field_kind::decimal, "a decimal");
-    if (!present(record_, f))
+    if (!bit_is_set(record_, f))
         return std::nullopt;
     return *static_cast<const ores::utility::decimal::decimal*>(slot_of(record_, f));
 }
@@ -152,14 +143,14 @@ auto record_reader::own_text() const -> std::optional<std::string> {
     if (type_->text_field == no_text)
         return std::nullopt;
     const auto& f = type_->fields[type_->text_field];
-    if (!present(record_, f))
+    if (!bit_is_set(record_, f))
         return std::nullopt;
     return *static_cast<const std::string*>(slot_of(record_, f));
 }
 
 auto record_reader::child(std::string_view name) const -> std::optional<record_reader> {
     const auto& f = require_kind(*type_, name, field_kind::nested, "a child element");
-    if (!present(record_, f) || f.type == nullptr)
+    if (!bit_is_set(record_, f) || f.type == nullptr)
         return std::nullopt;
     return record_reader(*f.type, slot_of(record_, f));
 }
@@ -167,7 +158,7 @@ auto record_reader::child(std::string_view name) const -> std::optional<record_r
 auto record_reader::children(std::string_view name) const -> std::vector<record_reader> {
     const auto& f = require_kind(*type_, name, field_kind::repeated_nested, "a repeated child");
     std::vector<record_reader> out;
-    if (!present(record_, f) || f.repeated == nullptr || f.type == nullptr)
+    if (!bit_is_set(record_, f) || f.repeated == nullptr || f.type == nullptr)
         return out;
     const auto count = f.repeated->count(slot_of(record_, f));
     out.reserve(count);
@@ -182,7 +173,7 @@ auto record_reader::values(std::string_view name) const -> std::vector<std::stri
         throw std::runtime_error(
             std::format("'{}' of the {} table does not hold text values", name, type_->name));
     std::vector<std::string> out;
-    if (!present(record_, f) || f.repeated == nullptr)
+    if (!bit_is_set(record_, f) || f.repeated == nullptr)
         return out;
     const auto count = f.repeated->count(slot_of(record_, f));
     out.reserve(count);
@@ -212,13 +203,13 @@ auto record_writer::slot_of(const field& f) const -> void* {
 }
 
 void record_writer::state(std::string_view name) {
-    mark(record_, require_field(*type_, name));
+    set_bit(record_, require_field(*type_, name));
 }
 
 void record_writer::set_text(std::string_view name, std::string_view value) {
     require_kind(*type_, name, field_kind::text, "text");
     *static_cast<std::string*>(slot_of(field_of(name))) = std::string(value);
-    mark(record_, field_of(name));
+    set_bit(record_, field_of(name));
 }
 
 void record_writer::set_optional_text(std::string_view name,
@@ -231,7 +222,7 @@ void record_writer::set_optional_text(std::string_view name,
 void record_writer::set_integer(std::string_view name, std::int64_t value) {
     require_kind(*type_, name, field_kind::integer, "an integer");
     *static_cast<std::int64_t*>(slot_of(field_of(name))) = value;
-    mark(record_, field_of(name));
+    set_bit(record_, field_of(name));
 }
 
 void record_writer::set_optional_integer(std::string_view name,
@@ -244,7 +235,7 @@ void record_writer::set_optional_integer(std::string_view name,
 void record_writer::set_real(std::string_view name, double value) {
     require_kind(*type_, name, field_kind::real, "a real number");
     *static_cast<double*>(slot_of(field_of(name))) = value;
-    mark(record_, field_of(name));
+    set_bit(record_, field_of(name));
 }
 
 void record_writer::set_optional_real(std::string_view name, const std::optional<double>& value) {
@@ -257,7 +248,7 @@ void record_writer::set_decimal(std::string_view name,
                                 const ores::utility::decimal::decimal& value) {
     require_kind(*type_, name, field_kind::decimal, "a decimal");
     *static_cast<ores::utility::decimal::decimal*>(slot_of(field_of(name))) = value;
-    mark(record_, field_of(name));
+    set_bit(record_, field_of(name));
 }
 
 void record_writer::set_optional_decimal(
@@ -298,12 +289,12 @@ void record_writer::set_own_text(std::string_view value) {
         throw std::runtime_error(std::format("the {} table holds no text of its own", type_->name));
     const auto& f = type_->fields[type_->text_field];
     *static_cast<std::string*>(slot_of(f)) = std::string(value);
-    mark(record_, f);
+    set_bit(record_, f);
 }
 
 auto record_writer::child(std::string_view name) -> record_writer {
     const auto& f = require_kind(*type_, name, field_kind::nested, "a child element");
-    mark(record_, f);
+    set_bit(record_, f);
     return record_writer(*f.type, slot_of(f));
 }
 
@@ -312,7 +303,7 @@ void record_writer::append_value(std::string_view name, std::string_view value) 
     if (f.scalar != scalar_kind::text)
         throw std::runtime_error(
             std::format("'{}' of the {} table does not hold text values", name, type_->name));
-    mark(record_, f);
+    set_bit(record_, f);
     void* slot = nullptr;
     f.repeated->append(slot_of(f), &slot);
     *static_cast<std::string*>(slot) = std::string(value);
@@ -320,7 +311,7 @@ void record_writer::append_value(std::string_view name, std::string_view value) 
 
 auto record_writer::append(std::string_view name) -> record_writer {
     const auto& f = require_kind(*type_, name, field_kind::repeated_nested, "a repeated child");
-    mark(record_, f);
+    set_bit(record_, f);
     void* slot = nullptr;
     f.repeated->append(slot_of(f), &slot);
     return record_writer(*f.type, slot);

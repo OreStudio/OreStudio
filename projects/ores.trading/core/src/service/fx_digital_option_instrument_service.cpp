@@ -183,7 +183,14 @@ fx_digital_option_instrument_service::get_many_fx_digital_option_instruments(
     response.entries.reserve(request.keys.size());
     // One read for the whole key set. The store returns every row the keys
     // name, and the reply joins them back to the order asked for, so a caller
-    // sees the same positional answer without a round trip per key.
+    // sees the same positional answer without a round trip per key. The set is
+    // capped for the reason the list filter's is: one statement carries every
+    // key, and the store's bind count is finite.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
     std::vector<std::string> keys;
     keys.reserve(request.keys.size());
     for (const auto& k : request.keys)

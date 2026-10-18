@@ -401,10 +401,17 @@ messaging::{{response}}
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
-{{#service_batch_reads}}
+{{#service_batch_reads_by_trade_id}}
     // One read for the whole key set. The store returns every row the keys
     // name, and the reply joins them back to the order asked for, so a caller
-    // sees the same positional answer without a round trip per key.
+    // sees the same positional answer without a round trip per key. The set is
+    // capped for the reason the list filter's is: one statement carries every
+    // key, and the store's bind count is finite.
+    if (request.keys.size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "keys", .limit = "1000"});
+        return response;
+    }
     std::vector<std::string> keys;
     keys.reserve(request.keys.size());
     for (const auto& k : request.keys)
@@ -421,8 +428,8 @@ messaging::{{response}}
         }
         response.entries.push_back(std::move(entry));
     }
-{{/service_batch_reads}}
-{{^service_batch_reads}}
+{{/service_batch_reads_by_trade_id}}
+{{^service_batch_reads_by_trade_id}}
     for (const auto& k : request.keys) {
         messaging::{{entity_singular}}_lookup entry;
         entry.key = k;
@@ -431,7 +438,7 @@ messaging::{{response}}
             entry.{{entity_singular}} = std::move(found.front());
         response.entries.push_back(std::move(entry));
     }
-{{/service_batch_reads}}
+{{/service_batch_reads_by_trade_id}}
     return response;
 }
 
@@ -478,7 +485,7 @@ messaging::{{response}}
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.{{entity_plural_short}}.reserve(batch.size());
-{{#service_batch_reads}}
+{{#service_batch_reads_by_trade_id}}
     // One read for the whole written set, for the same reason as the batch
     // get: the store already holds every row the write just landed.
     std::vector<std::string> written_keys;
@@ -494,14 +501,14 @@ messaging::{{response}}
                                       });
         response.{{entity_plural_short}}.push_back(row == written_rows.end() ? value : *row);
     }
-{{/service_batch_reads}}
-{{^service_batch_reads}}
+{{/service_batch_reads_by_trade_id}}
+{{^service_batch_reads_by_trade_id}}
     for (const auto& value : batch) {
         auto written = read_one(repo_, ctx_, key_from(value));
         response.{{entity_plural_short}}.push_back(
             written.empty() ? value : std::move(written.front()));
     }
-{{/service_batch_reads}}
+{{/service_batch_reads_by_trade_id}}
     return response;
 }
 

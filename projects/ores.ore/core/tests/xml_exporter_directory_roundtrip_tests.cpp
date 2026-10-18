@@ -132,7 +132,9 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", tags) {
                   << " mapped=" << summary.trades_mapped
                   << " passthrough=" << summary.trades_passthrough);
 
-    CHECK(summary.total_xml_files > 0);
+    // The count pins the corpus the claim is made over: a dropped directory
+    // must fail here rather than shrink the proof quietly.
+    CHECK(summary.total_xml_files == 132);
     CHECK(summary.output_files_written + summary.unsupported + summary.failed ==
           summary.total_xml_files);
     CHECK(summary.trades_mapped > 0);

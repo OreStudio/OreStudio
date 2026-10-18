@@ -2983,6 +2983,10 @@ TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components", 
     REQUIRE(round != nullptr);
     CHECK(round->instrument.identity.trade_type_code == "CompositeTrade");
     CHECK(round->instrument.description == "ACME-BASKET");
+    // The trading domain keeps a component's id and the basket name, not the
+    // component's product, so the write states neither the components nor
+    // anything they held. The loss is stated here rather than left implicit.
+    CHECK(round->legs.empty());
 
     const auto written = portfolio_projection::write(exported(items[0]));
     const auto reread_items = portfolio_projection::map(portfolio_projection::read(written));
@@ -3151,4 +3155,119 @@ TEST_CASE("a_written_product_states_the_terms_the_schema_requires", tags) {
     CHECK(worst_of_again->initial_prices_json == worst_of->initial_prices_json);
     CHECK(worst_of_again->knock_out_levels_json == worst_of->knock_out_levels_json);
     CHECK(worst_of_again->fixed_trigger_levels_json == worst_of->fixed_trigger_levels_json);
+}
+
+TEST_CASE("a_collar_keeps_both_arms_of_its_strike_lists", tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::string text = R"(<Portfolio>
+  <Trade id="collar-1">
+    <TradeType>CapFloor</TradeType>
+    <CapFloorData>
+      <LongShort>Long</LongShort>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <DayCounter>ACT/360</DayCounter>
+        <Notionals><Notional>1000000</Notional></Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-03-01</StartDate>
+            <EndDate>2029-03-01</EndDate>
+            <Tenor>3M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData><Index>EURIBOR-3M</Index></FloatingLegData>
+      </LegData>
+      <Caps><Cap>0.03</Cap><Cap>0.05</Cap></Caps>
+      <Floors><Floor>0.0121</Floor></Floors>
+    </CapFloorData>
+  </Trade>
+</Portfolio>)";
+
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    REQUIRE(items.size() == 1);
+    const auto* instrument =
+        std::get_if<ores::trading::domain::swap_instrument_data>(&items[0].instrument);
+    REQUIRE(instrument != nullptr);
+    REQUIRE(instrument->strikes.size() == 3);
+
+    const auto role = [&instrument](std::string_view name) {
+        return std::count_if(instrument->strikes.begin(),
+                             instrument->strikes.end(),
+                             [name](const auto& row) { return row.strike_role == name; });
+    };
+    CHECK(role("cap") == 2);
+    CHECK(role("floor") == 1);
+    CHECK(instrument->strikes[0].strike_role == "cap");
+    CHECK(instrument->strikes[0].sequence_number == 1);
+    CHECK(instrument->strikes[0].bare_value->to_string() == "0.03");
+    CHECK(instrument->strikes[1].sequence_number == 2);
+    CHECK(instrument->strikes[1].bare_value->to_string() == "0.05");
+    CHECK(instrument->strikes[2].strike_role == "floor");
+    CHECK(instrument->strikes[2].sequence_number == 1);
+    CHECK(instrument->strikes[2].bare_value->to_string() == "0.0121");
+
+    // The writing returns each row to its own list, and the reads back agree.
+    const auto back = rebuild(items[0]);
+    const auto* round = std::get_if<ores::trading::domain::swap_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    REQUIRE(round->strikes.size() == 3);
+    const auto round_role = [&round](std::string_view name, int sequence) {
+        const auto found =
+            std::find_if(round->strikes.begin(), round->strikes.end(), [&](const auto& row) {
+                return row.strike_role == name && row.sequence_number == sequence;
+            });
+        return found == round->strikes.end() ? std::string{} : found->bare_value->to_string();
+    };
+    CHECK(round_role("cap", 1) == "0.03");
+    CHECK(round_role("cap", 2) == "0.05");
+    CHECK(round_role("floor", 1) == "0.0121");
+}
+
+
+TEST_CASE("a_trade_type_the_schema_does_not_name_is_not_written", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::trading::messaging::trade_export_item item;
+    item.ore_id = "unknown-1";
+    item.anchor.trade_type = "NotATradeType";
+    const auto document = portfolio_projection::reverse({item}, {});
+    CHECK(document.trade.empty());
+}
+
+TEST_CASE("a_trade_whose_product_cannot_be_read_still_imports", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schedule states a date the trading domain cannot hold, so the rates
+    // family refuses the instrument. The trade is still the trade: its anchor
+    // and its envelope are kept and the failure is logged.
+    const std::string text = R"(<Portfolio>
+  <Trade id="broken-1">
+    <TradeType>Swap</TradeType>
+    <Envelope><CounterParty>CPTY_C</CounterParty></Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <DayCounter>ACT/360</DayCounter>
+        <Notionals><Notional>1000000</Notional></Notionals>
+        <ScheduleData>
+          <Dates><Dates><Date>16/12/2022</Date></Dates></Dates>
+        </ScheduleData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>)";
+
+    const auto items = portfolio_projection::map(portfolio_projection::read(text));
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].ore_id == "broken-1");
+    CHECK(items[0].anchor.trade_type == "Swap");
+    REQUIRE(items[0].envelope.has_value());
+    CHECK(items[0].envelope->counter_party == std::optional<std::string>("CPTY_C"));
+    CHECK(std::holds_alternative<std::monostate>(items[0].instrument));
 }

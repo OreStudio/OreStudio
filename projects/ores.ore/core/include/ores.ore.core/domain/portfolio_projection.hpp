@@ -69,8 +69,15 @@ public:
      *
      * The anchor's trade type and the ORE id are the projection's; the booking,
      * the party and the dates belong to the import planner.
+     *
+     * A trade whose product a family cannot map still imports: its anchor and
+     * its envelope are kept and its instrument is empty, and the failure is
+     * logged with the origin. A document that does not bind is refused by
+     * read(), not here.
+     *
+     * @param origin The file the text came from, named in the log.
      */
-    static std::vector<xml::trade_import_item> map(const document& v);
+    static std::vector<xml::trade_import_item> map(const document& v, std::string_view origin = {});
 
     /**
      * @brief Builds a Portfolio document from the trades and the instruments.
@@ -80,7 +87,8 @@ public:
      * as its type and its envelope, because the envelope is keyed by the trade
      * and not by the product.
      *
-     * @throws std::runtime_error for a trade type the schema does not name.
+     * A trade whose type the schema does not name is dropped with a warning:
+     * there is no element to write it as.
      */
     static document reverse(const std::vector<trading::messaging::trade_export_item>& items,
                             const trading::domain::instrument_batch& instruments,

@@ -728,9 +728,12 @@ auto read_index_cds_option(const record_reader& trade) -> credit_instrument_data
                 append_basket(result, *basket);
         }
 
-        // The strike is the option's one shared strike row.
+        // The strike is the option's one shared strike row, and its role says
+        // so because the same table holds a cap/floor's arms.
         if (const auto strike = od->decimal("Strike")) {
             instrument_strike row;
+            row.strike_role = "single";
+            row.sequence_number = 1;
             row.bare_value = *strike;
             stamp_row(row);
             result.strikes.push_back(std::move(row));
@@ -1418,8 +1421,13 @@ void write_index_cds_option(record_writer& trade, const credit_instrument_data& 
     write_index_swap_data(
         swap_data, wrapped ? *wrapped : index_credit_default_swap_instrument{}, v);
 
-    if (!v.strikes.empty() && v.strikes.front().bare_value)
-        set_decimal_from_double(data, "Strike", v.strikes.front().bare_value->to_double());
+    // An index option states one strike with no arm, so the row it reads is the
+    // one whose role says so rather than whichever row came first.
+    const auto strike = std::find_if(v.strikes.begin(), v.strikes.end(), [](const auto& row) {
+        return row.strike_role == "single";
+    });
+    if (strike != v.strikes.end() && strike->bare_value)
+        set_decimal_from_double(data, "Strike", strike->bare_value->to_double());
 
     write_option_block(data.child("OptionData"), v);
 }

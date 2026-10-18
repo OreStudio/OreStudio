@@ -1011,6 +1011,9 @@ void write_equity_cliquet_option(record_writer& trade, const equity_option_instr
     else
         throw std::runtime_error("an EquityCliquetOption cannot state the option type '" +
                                  v.option_type + "': the schema has no such type");
+    // The row holds no moneyness, and the schema requires one. One is the
+    // value that leaves the payoff unchanged; it is a structural default, not
+    // a quote from the document.
     set_decimal_from_double(data, "Moneyness", 1.0);
     // The schema requires a schedule, and a row that keeps no frequency states
     // the element without a rule rather than dropping it.
@@ -1024,8 +1027,11 @@ void write_equity_worst_of_basket_swap(record_writer& trade, const equity_swap_i
     data.set_spelling("LongShort", "Long", "long short");
     data.set_spelling("Currency", v.currency, "currency");
     data.set_decimal("Quantity", v.notional);
+    // The schema requires the funding leg's three terms and the row holds
+    // none of them. The index is the marker a reader resolves against the
+    // trade, and the rate is the structural zero; neither is a quote.
     set_decimal_from_double(data, "FixedRate", 0.0);
-    data.set_text("FloatingIndex", "EUR-EURIBOR-3M");
+    data.set_text("FloatingIndex", "PLACEHOLDER");
     data.set_spelling("FloatingDayCountFraction", "Actual/360", "day counter");
 
     auto names = names_of(v.basket_json);

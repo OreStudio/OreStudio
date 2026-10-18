@@ -699,6 +699,9 @@ void write_fx_average_forward(record_writer& trade, const fx_asian_forward_instr
     data.set_decimal("SettlementNotional", v.settlement_notional.value_or(decimal{}));
     data.set_text("FXIndex", v.fx_index);
     data.set_flag("FixedPayer", false);
+    // The accumulators observe on a one-month grid and the row holds no start
+    // date, so the rule states the tenor with an empty start rather than a
+    // date the row does not have.
     write_schedule_rule(data.child("ObservationDates"), "", "1M");
 }
 
@@ -773,6 +776,8 @@ void write_fx_tarf(record_writer& trade, const fx_asian_forward_instrument& v) {
     // The mapper states the direction the document it writes needs rather than
     // the one the row carries.
     data.child("OptionData").set_text("LongShort", "Long");
+    // A TaRF's schedule is annual and the row holds no start date; the rule
+    // states the tenor with an empty start.
     write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
     if (v.target_amount.has_value())

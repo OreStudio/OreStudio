@@ -837,27 +837,26 @@ auto read_capfloor(const record_reader& trade) -> swap_instrument_data {
             }
     }
 
-    // The shared strike table holds one row per trade, while the schema states
-    // a cap/floor's strikes as two lists. The first cap, or the first floor
-    // when no cap is stated, is the row.
-    const auto caps = data->child("Caps");
-    const auto floors = data->child("Floors");
-    std::optional<decimal> strike;
-    if (caps) {
-        const auto values = caps->children("Cap");
-        if (!values.empty())
-            strike = decimal_text(values.front());
-    } else if (floors) {
-        const auto values = floors->children("Floor");
-        if (!values.empty())
-            strike = decimal_text(values.front());
-    }
-    if (strike) {
-        instrument_strike strike_row;
-        strike_row.bare_value = *strike;
-        stamp_row(strike_row);
-        result.strikes.push_back(std::move(strike_row));
-    }
+    // The schema states a cap/floor's strikes as two lists, so every cap and
+    // every floor is its own row, carrying the list it came from and its
+    // ordinal within that list. A collar states both lists and holds all of
+    // them.
+    const auto append_strikes =
+        [&result](const record_reader& holder, std::string_view element, const char* role) {
+            int sequence_number = 0;
+            for (const auto& value : holder.children(element)) {
+                instrument_strike row;
+                row.strike_role = role;
+                row.sequence_number = ++sequence_number;
+                row.bare_value = decimal_text(value);
+                stamp_row(row);
+                result.strikes.push_back(std::move(row));
+            }
+        };
+    if (const auto caps = data->child("Caps"))
+        append_strikes(*caps, "Cap", "cap");
+    if (const auto floors = data->child("Floors"))
+        append_strikes(*floors, "Floor", "floor");
 
     if (const auto schedule = leg->child("ScheduleData"))
         read_schedule(result, *schedule, "swap", 1, "schedule");
@@ -1532,10 +1531,22 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
         }
     }
 
-    // The shared strike table holds one row per trade; the document states the
-    // strike as a cap. A floor has no separate column to return to.
-    if (!v.strikes.empty() && v.strikes.front().bare_value)
-        data.child("Caps").append("Cap").set_own_text(v.strikes.front().bare_value->to_string());
+    // Each stored strike returns to the list its role names, so a floor comes
+    // back as a floor and a collar keeps both arms. The row's ordinal decides
+    // its place in that list, and a role this product does not state is left
+    // out rather than guessed into a cap.
+    auto ordered = v.strikes;
+    std::sort(ordered.begin(), ordered.end(), [](const auto& lhs, const auto& rhs) {
+        return lhs.sequence_number < rhs.sequence_number;
+    });
+    for (const auto& row : ordered) {
+        if (!row.bare_value)
+            continue;
+        if (row.strike_role == "floor")
+            data.child("Floors").append("Floor").set_own_text(row.bare_value->to_string());
+        else if (row.strike_role == "cap")
+            data.child("Caps").append("Cap").set_own_text(row.bare_value->to_string());
+    }
 }
 
 void write_swaption(record_writer& trade, const swap_instrument_data& v) {

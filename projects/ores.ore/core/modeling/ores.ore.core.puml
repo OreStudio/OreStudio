@@ -24,13 +24,7 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace ore #F2F2F2 {
         namespace domain #F2F2F2 {
-            class bond_instrument_mapper {
-            }
             class calendar_adjustment_mapper {
-            }
-            class commodity_instrument_mapper {
-            }
-            class composite_instrument_mapper {
             }
             class mapped_fx <<struct>> {
                 +pair : refdata::domain::currency_pair
@@ -51,19 +45,9 @@ namespace ores #F2F2F2 {
             }
             class conventions_mapper {
             }
-            class credit_instrument_mapper {
+            class portfolio_projection {
             }
             class currency_mapper {
-            }
-            class equity_instrument_mapper {
-            }
-            class fx_instrument_mapper {
-            }
-            class scripted_instrument_mapper {
-            }
-            class swap_instrument_mapper {
-            }
-            class trade_mapper {
             }
         }
         namespace hierarchy #F2F2F2 {
@@ -237,14 +221,6 @@ namespace ores #F2F2F2 {
 ' trade_mapper dispatches one ORE trade to the instrument mapper that owns its
 ' asset class. Each instrument mapper carries a forward_* and a reverse_* pair
 ' per trade type it handles.
-ores::ore::domain::trade_mapper ..> ores::ore::domain::swap_instrument_mapper : dispatches
-ores::ore::domain::trade_mapper ..> ores::ore::domain::fx_instrument_mapper : dispatches
-ores::ore::domain::trade_mapper ..> ores::ore::domain::credit_instrument_mapper : dispatches
-ores::ore::domain::trade_mapper ..> ores::ore::domain::bond_instrument_mapper : dispatches
-ores::ore::domain::trade_mapper ..> ores::ore::domain::equity_instrument_mapper : dispatches
-ores::ore::domain::trade_mapper ..> ores::ore::domain::commodity_instrument_mapper : dispatches
-ores::ore::domain::trade_mapper ..> ores::ore::domain::scripted_instrument_mapper : dispatches
-ores::ore::domain::trade_mapper ..> ores::ore::domain::composite_instrument_mapper : dispatches
 
 ' The importer reads four document kinds; the exporter writes all four. The
 ' exporter reaches the instrument mappers as well as the document mappers,

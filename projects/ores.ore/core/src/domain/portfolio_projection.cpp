@@ -143,7 +143,8 @@ std::string portfolio_projection::write(const document& v) {
     return out;
 }
 
-std::vector<xml::trade_import_item> portfolio_projection::map(const document& v) {
+std::vector<xml::trade_import_item> portfolio_projection::map(const document& v,
+                                                              std::string_view origin) {
     const auto& type = *pf::portfolio_document().root;
     const auto root = xml::record_reader(type, &v);
 
@@ -171,18 +172,20 @@ std::vector<xml::trade_import_item> portfolio_projection::map(const document& v)
                 break;
             }
         } catch (const std::exception& e) {
+            const auto where = origin.empty() ? std::string("the document") : std::string(origin);
             BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "Failed to map the instrument of trade " << item.ore_id << ": " << e.what();
+                << "Failed to map trade " << item.ore_id << " of type " << item.anchor.trade_type
+                << " from " << where << ": " << e.what();
         }
         r.push_back(std::move(item));
     }
     return r;
 }
 
-portfolio_projection::document portfolio_projection::reverse(
-    const std::vector<trading::messaging::trade_export_item>& items,
-    const trading::domain::instrument_batch& instruments,
-    const portfolio_reference_curves& reference_curves) {
+portfolio_projection::document
+portfolio_projection::reverse(const std::vector<trading::messaging::trade_export_item>& items,
+                              const trading::domain::instrument_batch& instruments,
+                              const portfolio_reference_curves& reference_curves) {
     document doc;
     const auto& type = *pf::portfolio_document().root;
     xml::record_writer root(type, &doc);
@@ -192,8 +195,14 @@ portfolio_projection::document portfolio_projection::reverse(
         throw std::runtime_error("the portfolio table has no Trade element");
 
     for (const auto& item : items) {
-        if (!accepts_spelling(*trade_type, "TradeType", item.anchor.trade_type))
+        if (!accepts_spelling(*trade_type, "TradeType", item.anchor.trade_type)) {
+            // The schema has no such trade type, so there is no document to
+            // write. Naming the trade keeps the loss visible to the operator.
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Dropping trade " << item.ore_id << " of type " << item.anchor.trade_type
+                << ": the schema names no such trade type";
             continue;
+        }
 
         doc.trade.emplace_back();
         xml::record_writer trade(*trade_type, &doc.trade.back());
@@ -203,8 +212,7 @@ portfolio_projection::document portfolio_projection::reverse(
         if (item.envelope)
             write_envelope(trade, *item.envelope);
 
-        const auto instrument =
-            trading::domain::rebuild_instrument(instruments, item.anchor.id);
+        const auto instrument = trading::domain::rebuild_instrument(instruments, item.anchor.id);
         if (std::holds_alternative<std::monostate>(instrument))
             continue;
 

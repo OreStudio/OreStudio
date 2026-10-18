@@ -221,7 +221,7 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     using namespace ores::platform::filesystem;
     const auto text = file::read_content(path);
     auto r = domain::portfolio_projection::map(
-        domain::portfolio_projection::read(text, path.generic_string()));
+        domain::portfolio_projection::read(text, path.generic_string()), path.generic_string());
 
     for (auto& item : r)
         item.source_file = path;

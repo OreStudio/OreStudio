@@ -8,7 +8,7 @@
 #+filetags: :instruments-equity:sprint_28:v0:
 #+owner: marco
 #+branch: feature/close-the-model-phase
-#+pr:
+#+pr: 3503
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3503][#3503]] | [agile] Close the equity model phase |
 
 * Review
 

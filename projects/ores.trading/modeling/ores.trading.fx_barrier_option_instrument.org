@@ -17,7 +17,7 @@
 
 Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
 FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
-=upper_barrier= is optional (single-barrier products leave it NULL).
+the level sits in =lower_barrier= or =upper_barrier= by the style's direction.
 
 * Flags
 :PROPERTIES:
@@ -210,7 +210,7 @@ Barrier level of a =Down...= or =FixingFloor= style. Null when the style
 engages the upper level, which an =Up...= or =FixingCap= style does.
 
 #+begin_src cpp :name generator
- ores::utility::decimal::decimal::from_string("1.2").value()
+std::nullopt
 #+end_src
 
 ** upper_barrier
@@ -223,6 +223,10 @@ engages the upper level, which an =Up...= or =FixingCap= style does.
 
 Barrier level of an =Up...= or =FixingCap= style. Null when the style engages
 the lower level. A product that states two levels holds one in each.
+
+#+begin_src cpp :name generator
+ ores::utility::decimal::decimal::from_string("1.2").value()
+#+end_src
 
 ** underlying_code
 :PROPERTIES:

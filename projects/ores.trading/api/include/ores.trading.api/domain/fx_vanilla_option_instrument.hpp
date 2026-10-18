@@ -37,7 +37,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief FX Vanilla Option instrument (European and American).
+ * @brief FX Vanilla Option instrument (European, Bermudan and American).
  *
  * Represents FxOption trades. Strike is implicit in bought/sold
  * amounts; there is no separate strike field in ORE's FxOptionData.

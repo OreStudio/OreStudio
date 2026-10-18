@@ -48,7 +48,8 @@ unit decides each and makes the tree enforce the decision.
 - *The exercise style admits Bermuda.* ORE's =exerciseStyle= is the closed set
   European, Bermudan and American, the lookup already seeds all three, and the
   model's prose states all three, so the check is the one that is wrong. The
-  check widens to admit =Bermudan= and the prose states the set once.
+  check is removed with the other duplicates, which leaves the lookup as the
+  statement of the set, and the prose states it once.
 - *The lookup table is the single statement of each closed vocabulary.* Five
   vocabularies (=long_short=, =option_type=, =barrier_type=, =exercise_style=,
   =moment_type=) are stated in a lookup and again in the table's check. The
@@ -103,11 +104,12 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Duplicated vocabulary checks removed | 10 | =git diff --stat origin/main -- 'projects/ores.trading/modeling/*.org'=, in =evidence/fx-vocabularies.txt= | the PR head |
+| Duplicated vocabulary checks removed | 10 | =git diff origin/main -- 'projects/ores.trading/modeling/*.org' \| grep -c '^-.* in ('=, in =evidence/fx-vocabularies.txt= | the PR head |
 | Level checks on the barrier table | 5 of its 12 | =grep -c "check (" projects/ores.sql/create/trading/trading_fx_barrier_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
 | Digital checks keyed on the trade type | 4 | =grep -c 'check (("trade_type_code"' projects/ores.sql/create/trading/trading_fx_digital_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
 | Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
 | ORE core suite | pass | the same command with =ores.ore.core.tests= | the PR head |
+| Economic-digest suite | not in the build | =compass build ores.trading.core.digest.tests= reports an unknown target, and no CMakeLists adds =projects/ores.trading/core/digest_tests= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -141,6 +143,24 @@ via its "Verifies task" field.
 
 * Result
 
+The three findings are settled in the model and the mapper. The duplicated
+vocabularies are gone: ten =in (...)= checks named a set the lookup now
+validates. The vanilla option's exercise style is the lookup's set, and the
+model states it once. A single barrier holds its level in the column its
+direction names, and the mapper places it by direction.
+
+* Outstanding
+
+- The economic-digest suite cannot run: no CMakeLists adds
+  =projects/ores.trading/core/digest_tests=, so the suite that writes a
+  generated barrier row is not in the build. The generated row is a valid
+  Up-style row now, but the suite must be wired before it can prove it.
+- The wire-protocol twins still type =lower_barrier= as a string; they need a
+  regeneration once the codegen drift is reconciled.
+- The goldens' barrier JSON records the old column and note.
+- The barrier direction is a second list beside the lookup; encoding it on
+  =ores_trading_barrier_types_tbl= is the next step, not this one's.
+
 The three findings are settled and the tree enforces each one.
 
 The duplicated vocabularies are gone. Ten =in (...)= checks named a set the
@@ -166,8 +186,5 @@ serves four products and one generator writes a synthetic row for all four, so
 a check that refused the others would refuse the only row the generator can
 write.
 
-* Decisions
-
-The decisions are in the parent story's =* Decisions=, distilled under the
-vocabulary and barrier headings.
+The decisions are in the parent story's =* Decisions=.
 #+environment: solid_dirac

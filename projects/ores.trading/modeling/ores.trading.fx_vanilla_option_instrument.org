@@ -11,7 +11,7 @@
 #+entity_singular: fx_vanilla_option_instrument
 #+entity_plural: fx_vanilla_option_instruments
 #+entity_title: FX Vanilla Option Instrument
-#+brief: FX Vanilla Option instrument (European and American).
+#+brief: FX Vanilla Option instrument (European, Bermudan and American).
 #+created: 2026-08-05
 #+updated: 2026-08-05
 
@@ -40,7 +40,7 @@ amounts; there is no separate strike field in ORE's FxOptionData.
 
 Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
-Routes ORE product type: FxOption (European and American vanilla
+Routes ORE product type: FxOption (European, Bermudan and American vanilla
 options).
 
 #+begin_src cpp :name generator

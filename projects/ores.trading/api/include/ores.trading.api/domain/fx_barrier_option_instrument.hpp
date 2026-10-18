@@ -42,7 +42,7 @@ namespace ores::trading::domain {
  *
  * Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
  * FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
- * upper_barrier is optional (single-barrier products leave it NULL).
+ * the level sits in lower_barrier or upper_barrier by the style's direction.
  */
 struct fx_barrier_option_instrument final {
     instrument_identity identity;

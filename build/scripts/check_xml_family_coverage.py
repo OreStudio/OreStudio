@@ -53,9 +53,9 @@ FAMILIES = {
         "harness proves every corpus document",
     ),
     "StressTesting": (
-        "migrating",
-        "the analytics stress test store is modelled on stresstest.xml and "
-        "stress_test_mapper is its only importer",
+        "supported",
+        "the value harness proves every corpus document; stress_test_mapper "
+        "is still the importer until the projection lands",
     ),
     # Unused: nothing in the product reads the family. Its generated types
     # leave when xsdcpp does, and no XML family suite may name it.

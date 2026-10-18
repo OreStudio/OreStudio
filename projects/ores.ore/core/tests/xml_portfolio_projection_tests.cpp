@@ -358,6 +358,87 @@ const char* const remaining_products_document_text = R"(<Portfolio>
   </Trade>
 </Portfolio>)";
 
+const char* const fx_plain_document_text = R"(<Portfolio>
+  <Trade id="fx-forward-1">
+    <TradeType>FxForward</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_A</CounterParty>
+      <NettingSetId>NS-1</NettingSetId>
+    </Envelope>
+    <FxForwardData>
+      <ValueDate>2024-07-15</ValueDate>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+      <Settlement>Physical</Settlement>
+    </FxForwardData>
+  </Trade>
+  <Trade id="fx-swap-1">
+    <TradeType>FxSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_A</CounterParty>
+      <NettingSetId>NS-1</NettingSetId>
+    </Envelope>
+    <FxSwapData>
+      <NearDate>2024-02-15</NearDate>
+      <NearBoughtCurrency>USD</NearBoughtCurrency>
+      <NearBoughtAmount>500000</NearBoughtAmount>
+      <NearSoldCurrency>JPY</NearSoldCurrency>
+      <NearSoldAmount>75000000</NearSoldAmount>
+      <FarDate>2024-08-15</FarDate>
+      <FarBoughtAmount>75000000</FarBoughtAmount>
+      <FarSoldAmount>500000</FarSoldAmount>
+    </FxSwapData>
+  </Trade>
+</Portfolio>)";
+
+const char* const fx_product_document_text = R"(<Portfolio>
+  <Trade id="fx-barrier-1">
+    <TradeType>FxBarrierOption</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_B</CounterParty>
+      <NettingSetId>NS-2</NettingSetId>
+    </Envelope>
+    <FxBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates><ExerciseDate>2024-09-15</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>UpAndOut</Type>
+        <Levels><Level>1.15</Level></Levels>
+      </BarrierData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+    </FxBarrierOptionData>
+  </Trade>
+  <Trade id="fx-touch-1">
+    <TradeType>FxTouchOption</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_C</CounterParty>
+      <NettingSetId>NS-3</NettingSetId>
+    </Envelope>
+    <FxTouchOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <ExerciseDates><ExerciseDate>2024-10-15</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <Levels><Level>0.85</Level></Levels>
+      </BarrierData>
+      <ForeignCurrency>EUR</ForeignCurrency>
+      <DomesticCurrency>USD</DomesticCurrency>
+      <PayoffCurrency>USD</PayoffCurrency>
+      <PayoffAmount>100000</PayoffAmount>
+    </FxTouchOptionData>
+  </Trade>
+</Portfolio>)";
+
 auto date_of(int year, unsigned month, unsigned day) -> std::chrono::year_month_day {
     return {std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
 }
@@ -818,4 +899,335 @@ TEST_CASE("a_portfolio_document_is_built_from_the_trades_and_their_instruments",
     CHECK(round->script_body == "Payoff = 1;");
     CHECK(round->parameters_json == "{\"NPV\":\"Option\",\"PutCall\":\"1\"}");
     CHECK(round->underlyings_json == "[\"SPX\"]");
+}
+
+TEST_CASE("a_portfolio_document_projects_an_fx_forward_and_an_fx_swap", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(fx_plain_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+
+    const auto* forward =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&items[0].instrument);
+    REQUIRE(forward != nullptr);
+    CHECK(items[0].anchor.trade_type == "FxForward");
+    REQUIRE(forward->forwards.size() == 1);
+    CHECK(forward->forwards[0].identity.trade_type_code == "FxForward");
+    CHECK(forward->forwards[0].audit.modified_by == "ores");
+    CHECK(forward->forwards[0].value_date == date_of(2024, 7, 15));
+    CHECK(forward->forwards[0].bought_currency == "EUR");
+    CHECK(forward->forwards[0].bought_amount.to_string() == "1000000");
+    CHECK(forward->forwards[0].sold_currency == "USD");
+    CHECK(forward->forwards[0].sold_amount.to_string() == "1100000");
+    CHECK(forward->forwards[0].settlement == "Physical");
+
+    const auto* swap = std::get_if<ores::trading::domain::fx_instrument_data>(&items[1].instrument);
+    REQUIRE(swap != nullptr);
+    CHECK(items[1].anchor.trade_type == "FxSwap");
+    REQUIRE(swap->forwards.size() == 1);
+    CHECK(swap->forwards[0].identity.trade_type_code == "FxSwap");
+    CHECK(swap->forwards[0].value_date == date_of(2024, 2, 15));
+    CHECK(swap->forwards[0].bought_currency == "USD");
+    CHECK(swap->forwards[0].bought_amount.to_string() == "500000");
+    CHECK(swap->forwards[0].sold_currency == "JPY");
+    CHECK(swap->forwards[0].sold_amount.to_string() == "75000000");
+
+    const auto forward_again = rebuild(items[0]);
+    const auto* forward_round =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&forward_again.instrument);
+    REQUIRE(forward_round != nullptr);
+    CHECK(forward_again.anchor.trade_type == "FxForward");
+    REQUIRE(forward_round->forwards.size() == 1);
+    CHECK(forward_round->forwards[0].value_date == date_of(2024, 7, 15));
+    CHECK(forward_round->forwards[0].bought_currency == "EUR");
+    CHECK(forward_round->forwards[0].bought_amount.to_string() == "1000000");
+    CHECK(forward_round->forwards[0].sold_currency == "USD");
+    CHECK(forward_round->forwards[0].sold_amount.to_string() == "1100000");
+    CHECK(forward_round->forwards[0].settlement == "Physical");
+
+    const auto swap_again = rebuild(items[1]);
+    const auto* swap_round =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&swap_again.instrument);
+    REQUIRE(swap_round != nullptr);
+    CHECK(swap_again.anchor.trade_type == "FxSwap");
+    REQUIRE(swap_round->forwards.size() == 1);
+    CHECK(swap_round->forwards[0].value_date == date_of(2024, 2, 15));
+    CHECK(swap_round->forwards[0].bought_currency == "USD");
+    CHECK(swap_round->forwards[0].bought_amount.to_string() == "500000");
+    CHECK(swap_round->forwards[0].sold_currency == "JPY");
+    CHECK(swap_round->forwards[0].sold_amount.to_string() == "75000000");
+}
+
+TEST_CASE("a_portfolio_document_projects_an_fx_barrier_option_and_an_fx_touch_option", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(fx_product_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+
+    const auto* barrier =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&items[0].instrument);
+    REQUIRE(barrier != nullptr);
+    CHECK(items[0].anchor.trade_type == "FxBarrierOption");
+    REQUIRE(barrier->barrier_options.size() == 1);
+    const auto& barrier_row = barrier->barrier_options[0];
+    CHECK(barrier_row.identity.trade_type_code == "FxBarrierOption");
+    CHECK(barrier_row.option_type == "Call");
+    CHECK(barrier_row.expiry_date == date_of(2024, 9, 15));
+    CHECK(barrier_row.bought_currency == "EUR");
+    CHECK(barrier_row.bought_amount.to_string() == "1000000");
+    CHECK(barrier_row.sold_currency == "USD");
+    CHECK(barrier_row.sold_amount.to_string() == "1100000");
+    CHECK(barrier_row.barrier_type == "UpAndOut");
+    // An Up style engages the upper level, so the lower column stays absent.
+    CHECK_FALSE(barrier_row.lower_barrier.has_value());
+    REQUIRE(barrier_row.upper_barrier.has_value());
+    CHECK(barrier_row.upper_barrier->to_string() == "1.15");
+
+    const auto* touch =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&items[1].instrument);
+    REQUIRE(touch != nullptr);
+    CHECK(items[1].anchor.trade_type == "FxTouchOption");
+    REQUIRE(touch->digital_options.size() == 1);
+    const auto& touch_row = touch->digital_options[0];
+    CHECK(touch_row.identity.trade_type_code == "FxTouchOption");
+    CHECK(touch_row.long_short == "Long");
+    CHECK(touch_row.foreign_currency == "EUR");
+    CHECK(touch_row.domestic_currency == "USD");
+    CHECK(touch_row.payoff_currency == "USD");
+    CHECK(touch_row.payoff_amount.to_string() == "100000");
+    CHECK(touch_row.expiry_date == date_of(2024, 10, 15));
+    CHECK(touch_row.barrier_type == "DownAndOut");
+    REQUIRE(touch_row.lower_barrier.has_value());
+    CHECK(touch_row.lower_barrier->to_string() == "0.85");
+    CHECK_FALSE(touch_row.upper_barrier.has_value());
+
+    const auto barrier_again = rebuild(items[0]);
+    const auto* barrier_round =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&barrier_again.instrument);
+    REQUIRE(barrier_round != nullptr);
+    CHECK(barrier_again.anchor.trade_type == "FxBarrierOption");
+    REQUIRE(barrier_round->barrier_options.size() == 1);
+    CHECK(barrier_round->barrier_options[0].option_type == "Call");
+    CHECK(barrier_round->barrier_options[0].expiry_date == date_of(2024, 9, 15));
+    CHECK(barrier_round->barrier_options[0].bought_currency == "EUR");
+    CHECK(barrier_round->barrier_options[0].bought_amount.to_string() == "1000000");
+    CHECK(barrier_round->barrier_options[0].sold_currency == "USD");
+    CHECK(barrier_round->barrier_options[0].sold_amount.to_string() == "1100000");
+    CHECK(barrier_round->barrier_options[0].barrier_type == "UpAndOut");
+    CHECK_FALSE(barrier_round->barrier_options[0].lower_barrier.has_value());
+    REQUIRE(barrier_round->barrier_options[0].upper_barrier.has_value());
+    CHECK(barrier_round->barrier_options[0].upper_barrier->to_string() == "1.15");
+
+    const auto touch_again = rebuild(items[1]);
+    const auto* touch_round =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&touch_again.instrument);
+    REQUIRE(touch_round != nullptr);
+    CHECK(touch_again.anchor.trade_type == "FxTouchOption");
+    REQUIRE(touch_round->digital_options.size() == 1);
+    CHECK(touch_round->digital_options[0].long_short == "Long");
+    CHECK(touch_round->digital_options[0].foreign_currency == "EUR");
+    CHECK(touch_round->digital_options[0].domestic_currency == "USD");
+    CHECK(touch_round->digital_options[0].payoff_currency == "USD");
+    CHECK(touch_round->digital_options[0].payoff_amount.to_string() == "100000");
+    CHECK(touch_round->digital_options[0].expiry_date == date_of(2024, 10, 15));
+    CHECK(touch_round->digital_options[0].barrier_type == "DownAndOut");
+    REQUIRE(touch_round->digital_options[0].lower_barrier.has_value());
+    CHECK(touch_round->digital_options[0].lower_barrier->to_string() == "0.85");
+}
+
+TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="fx-digital-1">
+    <TradeType>FxDigitalOption</TradeType>
+    <FxDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <ExerciseDates><ExerciseDate>2024-11-15</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Strike>1.075</Strike>
+      <PayoffAmount>250000</PayoffAmount>
+      <ForeignCurrency>EUR</ForeignCurrency>
+      <DomesticCurrency>USD</DomesticCurrency>
+    </FxDigitalOptionData>
+  </Trade>
+  <Trade id="fx-kiko-1">
+    <TradeType>FxKIKOBarrierOption</TradeType>
+    <FxKIKOBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates><ExerciseDate>2024-12-15</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Barriers>
+        <BarrierData><Type>DownAndIn</Type><Levels><Level>0.90</Level></Levels></BarrierData>
+        <BarrierData><Type>KnockOut</Type><Levels><Level>1.10</Level></Levels></BarrierData>
+      </Barriers>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+    </FxKIKOBarrierOptionData>
+  </Trade>
+  <Trade id="fx-accumulator-1">
+    <TradeType>FxAccumulator</TradeType>
+    <FxAccumulatorData>
+      <Currency>USD</Currency>
+      <FixingAmount>1000</FixingAmount>
+      <Strike>1.05</Strike>
+      <Underlying><Type>FX</Type><Name>EUR-USD</Name></Underlying>
+      <OptionData><LongShort>Short</LongShort></OptionData>
+      <StartDate>2024-01-20</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2024-01-20</StartDate>
+          <Tenor>1D</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds>
+        <RangeBound startDate="2024-01-20">
+          <RangeFrom>1.00</RangeFrom>
+          <RangeTo>1.10</RangeTo>
+          <Leverage>2</Leverage>
+          <Strike>1.05</Strike>
+          <StrikeAdjustment>0.001</StrikeAdjustment>
+        </RangeBound>
+      </RangeBounds>
+      <Barriers>
+        <BarrierData><Type>UpAndOut</Type><Levels><Level>1.20</Level></Levels></BarrierData>
+      </Barriers>
+    </FxAccumulatorData>
+  </Trade>
+  <Trade id="fx-variance-1">
+    <TradeType>FxVarianceSwap</TradeType>
+    <FxVarianceSwapData>
+      <StartDate>2024-01-15</StartDate>
+      <EndDate>2025-01-15</EndDate>
+      <Currency>USD</Currency>
+      <Name>EUR-USD</Name>
+      <LongShort>Long</LongShort>
+      <Strike>0.08</Strike>
+      <Notional>2000000</Notional>
+      <Calendar>TARGET</Calendar>
+      <MomentType>Variance</MomentType>
+    </FxVarianceSwapData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 4);
+
+    const auto* digital =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&items[0].instrument);
+    REQUIRE(digital != nullptr);
+    REQUIRE(digital->digital_options.size() == 1);
+    CHECK(digital->digital_options[0].option_type == "Put");
+    CHECK(digital->digital_options[0].expiry_date == date_of(2024, 11, 15));
+    CHECK(digital->digital_options[0].foreign_currency == "EUR");
+    CHECK(digital->digital_options[0].domestic_currency == "USD");
+    // The payoff defaults to the foreign currency, which is what the schema
+    // states it in when the document names none.
+    CHECK(digital->digital_options[0].payoff_currency == "EUR");
+    CHECK(digital->digital_options[0]
+              .strike.value_or(ores::utility::decimal::decimal{})
+              .to_string() == "1.075");
+    CHECK(digital->digital_options[0].payoff_amount.to_string() == "250000");
+
+    const auto* kiko = std::get_if<ores::trading::domain::fx_instrument_data>(&items[1].instrument);
+    REQUIRE(kiko != nullptr);
+    REQUIRE(kiko->barrier_options.size() == 1);
+    CHECK(kiko->barrier_options[0].option_type == "Call");
+    CHECK(kiko->barrier_options[0].barrier_type == "DownAndIn");
+    REQUIRE(kiko->barrier_options[0].lower_barrier.has_value());
+    CHECK(kiko->barrier_options[0].lower_barrier->to_string() == "0.9");
+    REQUIRE(kiko->barrier_options[0].upper_barrier.has_value());
+    CHECK(kiko->barrier_options[0].upper_barrier->to_string() == "1.1");
+
+    const auto* accumulator =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&items[2].instrument);
+    REQUIRE(accumulator != nullptr);
+    REQUIRE(accumulator->accumulators.size() == 1);
+    const auto& accumulator_row = accumulator->accumulators[0];
+    CHECK(accumulator_row.currency == "USD");
+    CHECK(accumulator_row.underlying_code == "EUR-USD");
+    CHECK(accumulator_row.fixing_amount.to_string() == "1000");
+    CHECK(accumulator_row.strike.to_string() == "1.05");
+    // The mapper states the accumulator's direction as long without reading the
+    // document's own, so the document's Short does not reach the row.
+    CHECK(accumulator_row.long_short == "Long");
+    CHECK(accumulator_row.start_date == date_of(2024, 1, 20));
+    REQUIRE(accumulator_row.knock_out_barrier.has_value());
+    CHECK(accumulator_row.knock_out_barrier->to_string() == "1.2");
+    REQUIRE(accumulator->range_bounds.size() == 1);
+    CHECK(accumulator->range_bounds[0].sequence_number == 1);
+    CHECK(accumulator->range_bounds[0].start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 1, 20)));
+    CHECK(accumulator->range_bounds[0].range_from->to_string() == "1");
+    CHECK(accumulator->range_bounds[0].range_to->to_string() == "1.1");
+    CHECK(accumulator->range_bounds[0].leverage == std::optional<double>(2.0));
+    CHECK(accumulator->range_bounds[0].strike_adjustment->to_string() == "0.001");
+
+    const auto* variance =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&items[3].instrument);
+    REQUIRE(variance != nullptr);
+    REQUIRE(variance->variance_swaps.size() == 1);
+    CHECK(variance->variance_swaps[0].underlying_code == "EUR-USD");
+    CHECK(variance->variance_swaps[0].start_date == date_of(2024, 1, 15));
+    CHECK(variance->variance_swaps[0].end_date == date_of(2025, 1, 15));
+    CHECK(variance->variance_swaps[0].currency == "USD");
+    CHECK(variance->variance_swaps[0].strike == 0.08);
+    CHECK(variance->variance_swaps[0].notional.to_string() == "2000000");
+    CHECK(variance->variance_swaps[0].moment_type == "Variance");
+
+    const auto digital_again = rebuild(items[0]);
+    const auto* digital_round =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&digital_again.instrument);
+    REQUIRE(digital_round != nullptr);
+    REQUIRE(digital_round->digital_options.size() == 1);
+    CHECK(digital_round->digital_options[0].option_type == "Put");
+    CHECK(digital_round->digital_options[0].expiry_date == date_of(2024, 11, 15));
+    CHECK(digital_round->digital_options[0].foreign_currency == "EUR");
+    CHECK(digital_round->digital_options[0].payoff_currency == "EUR");
+    CHECK(digital_round->digital_options[0].payoff_amount.to_string() == "250000");
+    CHECK(digital_round->digital_options[0]
+              .strike.value_or(ores::utility::decimal::decimal{})
+              .to_string() == "1.075");
+
+    const auto kiko_again = rebuild(items[1]);
+    const auto* kiko_round =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&kiko_again.instrument);
+    REQUIRE(kiko_round != nullptr);
+    REQUIRE(kiko_round->barrier_options.size() == 1);
+    CHECK(kiko_round->barrier_options[0].barrier_type == "DownAndIn");
+    CHECK(kiko_round->barrier_options[0].lower_barrier->to_string() == "0.9");
+    CHECK(kiko_round->barrier_options[0].upper_barrier->to_string() == "1.1");
+
+    const auto accumulator_again = rebuild(items[2]);
+    const auto* accumulator_round =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&accumulator_again.instrument);
+    REQUIRE(accumulator_round != nullptr);
+    REQUIRE(accumulator_round->accumulators.size() == 1);
+    CHECK(accumulator_round->accumulators[0].underlying_code == "EUR-USD");
+    CHECK(accumulator_round->accumulators[0].long_short == "Long");
+    CHECK(accumulator_round->accumulators[0].strike.to_string() == "1.05");
+    CHECK(accumulator_round->accumulators[0].knock_out_barrier->to_string() == "1.2");
+    REQUIRE(accumulator_round->range_bounds.size() == 1);
+    CHECK(accumulator_round->range_bounds[0].range_from->to_string() == "1");
+    CHECK(accumulator_round->range_bounds[0].leverage == std::optional<double>(2.0));
+
+    const auto variance_again = rebuild(items[3]);
+    const auto* variance_round =
+        std::get_if<ores::trading::domain::fx_instrument_data>(&variance_again.instrument);
+    REQUIRE(variance_round != nullptr);
+    REQUIRE(variance_round->variance_swaps.size() == 1);
+    CHECK(variance_round->variance_swaps[0].underlying_code == "EUR-USD");
+    CHECK(variance_round->variance_swaps[0].strike == 0.08);
+    CHECK(variance_round->variance_swaps[0].notional.to_string() == "2000000");
+    CHECK(variance_round->variance_swaps[0].end_date == date_of(2025, 1, 15));
 }

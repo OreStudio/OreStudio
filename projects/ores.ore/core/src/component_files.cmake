@@ -31,6 +31,7 @@ set(files
     "domain/domain.cpp"
     "domain/equity_instrument_mapper.cpp"
     "domain/fx_instrument_mapper.cpp"
+    "domain/fx_instrument_projection.cpp"
     "domain/portfolio_projection.cpp"
     "domain/pricing_engine_projection.cpp"
     "domain/rate_instrument_projection.cpp"

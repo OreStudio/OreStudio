@@ -116,6 +116,23 @@ write_rate_instrument(xml::record_writer& trade,
                       const trading::domain::trade_instrument& instrument,
                       const portfolio_reference_curves& reference_curves) -> bool;
 
+/**
+ * @brief The FX family: one carrier holding a row per product, and no header.
+ *
+ * The carrier states a product by the array its row sits in, so the reading
+ * pushes the row the trade type names and the writing takes the row the carrier
+ * holds and asks the trade type which element carries it. An accumulator states
+ * its range bounds beside its own row; no other product states a child.
+ */
+ORES_ORE_CORE_EXPORT auto read_fx_instrument(xml::record_reader trade, std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument>;
+
+ORES_ORE_CORE_EXPORT auto write_fx_instrument(xml::record_writer& trade,
+                                              std::string_view trade_type,
+                                              const trading::domain::trade_instrument& instrument,
+                                              const portfolio_reference_curves& reference_curves)
+    -> bool;
+
 }
 
 #endif

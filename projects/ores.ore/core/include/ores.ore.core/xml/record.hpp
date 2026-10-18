@@ -51,6 +51,16 @@ public:
     /// Whether the document states this element or attribute at all.
     auto has(std::string_view name) const -> bool;
 
+    /**
+     * @brief Whether the table declares this element or attribute.
+     *
+     * A record read from a document may state nothing for a member the schema
+     * allows it to omit, and a projection asks this before it asks `has`: a
+     * holder type that has no slot for an element at all is a different
+     * question from one that has the slot and did not fill it.
+     */
+    auto declares(std::string_view name) const -> bool;
+
     /// The text of a string element or attribute.
     auto text(std::string_view name) const -> std::optional<std::string>;
 
@@ -83,6 +93,9 @@ public:
     /// Every iteration of a repeated child, in the order the document wrote them.
     auto children(std::string_view name) const -> std::vector<record_reader>;
 
+    /// Every iteration of a repeated leaf, in the order the document wrote them.
+    auto values(std::string_view name) const -> std::vector<std::string>;
+
 private:
     const record_type* type_;
     const void* record_;
@@ -107,6 +120,9 @@ public:
 
     auto type() const -> const record_type&;
 
+    /// Whether the table declares this element or attribute.
+    auto declares(std::string_view name) const -> bool;
+
     /// States that this row holds a value. Needed before a nested row is filled.
     void state(std::string_view name);
 
@@ -125,9 +141,8 @@ public:
     void set_optional_real(std::string_view name, const std::optional<double>& value);
 
     /// States the row only when the caller holds a value.
-    void
-    set_optional_decimal(std::string_view name,
-                         const std::optional<ores::utility::decimal::decimal>& value);
+    void set_optional_decimal(std::string_view name,
+                              const std::optional<ores::utility::decimal::decimal>& value);
 
     /**
      * @brief States an enumerated element from the spelling the caller holds.
@@ -135,9 +150,7 @@ public:
      * @param what Names the enumeration in the refusal, because the field alone
      * says where the value goes and not what it means.
      */
-    void set_spelling(std::string_view name,
-                      std::string_view value,
-                      std::string_view what);
+    void set_spelling(std::string_view name, std::string_view value, std::string_view what);
 
     /// States an enumerated element only when the caller holds a spelling.
     void set_optional_spelling(std::string_view name,
@@ -157,6 +170,9 @@ public:
 
     /// States a repeated child, appends one iteration and returns its writer.
     auto append(std::string_view name) -> record_writer;
+
+    /// States a repeated leaf and appends one value to it.
+    void append_value(std::string_view name, std::string_view value);
 
 private:
     const field& field_of(std::string_view name) const;

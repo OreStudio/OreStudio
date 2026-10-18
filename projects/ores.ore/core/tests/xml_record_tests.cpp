@@ -385,15 +385,12 @@ TEST_CASE("a_reader_and_a_writer_refuse_a_name_the_table_lacks", tags) {
 
     root record{};
     const auto read = record_reader(root_record, &record);
-    CHECK_THROWS_WITH(read.children("Entries"),
-                      "the root table has no 'Entries' field");
+    CHECK_THROWS_WITH(read.children("Entries"), "the root table has no 'Entries' field");
 
     auto write = record_writer(root_record, &record);
-    CHECK_THROWS_WITH(write.append("Entries"),
-                      "the root table has no 'Entries' field");
+    CHECK_THROWS_WITH(write.append("Entries"), "the root table has no 'Entries' field");
 
     root other{};
     auto write_entry = record_writer(entry_record, &other.entry.emplace_back());
-    CHECK_THROWS_WITH(write_entry.set_spelling("Kind", "C", "kind"),
-                      "'C' is not a valid kind");
+    CHECK_THROWS_WITH(write_entry.set_spelling("Kind", "C", "kind"), "'C' is not a valid kind");
 }

@@ -56,8 +56,7 @@ const field& require_field(const record_type& type, std::string_view name) {
     if (found == nullptr)
         found = find_field(type, name, true);
     if (found == nullptr)
-        throw std::runtime_error(
-            std::format("the {} table has no '{}' field", type.name, name));
+        throw std::runtime_error(std::format("the {} table has no '{}' field", type.name, name));
     return *found;
 }
 
@@ -94,7 +93,13 @@ record_reader::record_reader(const record_type& type, const void* record)
     : type_(&type)
     , record_(record) {}
 
-auto record_reader::type() const -> const record_type& { return *type_; }
+auto record_reader::type() const -> const record_type& {
+    return *type_;
+}
+
+auto record_reader::declares(std::string_view name) const -> bool {
+    return find_field(*type_, name, false) != nullptr || find_field(*type_, name, true) != nullptr;
+}
 
 auto record_reader::has(std::string_view name) const -> bool {
     return present(record_, require_field(*type_, name));
@@ -171,11 +176,32 @@ auto record_reader::children(std::string_view name) const -> std::vector<record_
     return out;
 }
 
+auto record_reader::values(std::string_view name) const -> std::vector<std::string> {
+    const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
+    if (f.scalar != scalar_kind::text)
+        throw std::runtime_error(
+            std::format("'{}' of the {} table does not hold text values", name, type_->name));
+    std::vector<std::string> out;
+    if (!present(record_, f) || f.repeated == nullptr)
+        return out;
+    const auto count = f.repeated->count(slot_of(record_, f));
+    out.reserve(count);
+    for (std::size_t i = 0; i < count; ++i)
+        out.push_back(*static_cast<const std::string*>(f.repeated->at(slot_of(record_, f), i)));
+    return out;
+}
+
 record_writer::record_writer(const record_type& type, void* record)
     : type_(&type)
     , record_(record) {}
 
-auto record_writer::type() const -> const record_type& { return *type_; }
+auto record_writer::type() const -> const record_type& {
+    return *type_;
+}
+
+auto record_writer::declares(std::string_view name) const -> bool {
+    return find_field(*type_, name, false) != nullptr || find_field(*type_, name, true) != nullptr;
+}
 
 auto record_writer::field_of(std::string_view name) const -> const field& {
     return require_field(*type_, name);
@@ -221,8 +247,7 @@ void record_writer::set_real(std::string_view name, double value) {
     mark(record_, field_of(name));
 }
 
-void record_writer::set_optional_real(std::string_view name,
-                                      const std::optional<double>& value) {
+void record_writer::set_optional_real(std::string_view name, const std::optional<double>& value) {
     require_kind(*type_, name, field_kind::real, "a real number");
     if (value)
         set_real(name, *value);
@@ -242,7 +267,9 @@ void record_writer::set_optional_decimal(
         set_decimal(name, *value);
 }
 
-void record_writer::set_spelling(std::string_view name, std::string_view value, std::string_view what) {
+void record_writer::set_spelling(std::string_view name,
+                                 std::string_view value,
+                                 std::string_view what) {
     require_kind(*type_, name, field_kind::enumeration, "an enumeration");
     if (!set_enumeration(*type_, record_, name, value))
         throw std::runtime_error(std::format("'{}' is not a valid {}", value, what));
@@ -260,8 +287,7 @@ void record_writer::set_flag(std::string_view name, bool value) {
     set_spelling(name, value ? "Y" : "N", "ORE boolean");
 }
 
-void record_writer::set_optional_flag(std::string_view name,
-                                      const std::optional<bool>& value) {
+void record_writer::set_optional_flag(std::string_view name, const std::optional<bool>& value) {
     require_kind(*type_, name, field_kind::enumeration, "an enumeration");
     if (value)
         set_flag(name, *value);
@@ -269,8 +295,7 @@ void record_writer::set_optional_flag(std::string_view name,
 
 void record_writer::set_own_text(std::string_view value) {
     if (type_->text_field == no_text)
-        throw std::runtime_error(
-            std::format("the {} table holds no text of its own", type_->name));
+        throw std::runtime_error(std::format("the {} table holds no text of its own", type_->name));
     const auto& f = type_->fields[type_->text_field];
     *static_cast<std::string*>(slot_of(f)) = std::string(value);
     mark(record_, f);
@@ -282,9 +307,19 @@ auto record_writer::child(std::string_view name) -> record_writer {
     return record_writer(*f.type, slot_of(f));
 }
 
+void record_writer::append_value(std::string_view name, std::string_view value) {
+    const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
+    if (f.scalar != scalar_kind::text)
+        throw std::runtime_error(
+            std::format("'{}' of the {} table does not hold text values", name, type_->name));
+    mark(record_, f);
+    void* slot = nullptr;
+    f.repeated->append(slot_of(f), &slot);
+    *static_cast<std::string*>(slot) = std::string(value);
+}
+
 auto record_writer::append(std::string_view name) -> record_writer {
-    const auto& f =
-        require_kind(*type_, name, field_kind::repeated_nested, "a repeated child");
+    const auto& f = require_kind(*type_, name, field_kind::repeated_nested, "a repeated child");
     mark(record_, f);
     void* slot = nullptr;
     f.repeated->append(slot_of(f), &slot);

@@ -50,17 +50,21 @@ store holds when the series quotes the pair the other way round.
 
 ** What the data holds
 
-=refdata.currency_pairs= holds 179 rows and
-=refdata.currency_pair_conventions= holds 179 rows under the same codes, with no
-reverse twin in either table. The seed derives one convention per pair row
-(=refdata_currency_pair_conventions_seed_populate.sql=), taking the places from
-the quote currency, and the pair screen composes one =pair_code= from the two
-legs on create and saves the pair's convention under that code
+=public.ores_refdata_currency_pairs_tbl= holds 179 rows and
+=public.ores_refdata_currency_pair_conventions_tbl= holds 179 rows under the same
+codes, with no reverse twin in either table. The seed derives one convention per
+pair row (=refdata_currency_pair_conventions_seed_populate.sql=), taking the
+places from the quote currency, and the pair screen composes one =pair_code= from
+the two legs on create and saves the pair's convention under that code
 (=currencyPairs.tsx=). The pair record page reads the convention by the exact
 code and already says =This pair has no convention= when it finds none. The C++
 formatter states the market reason: a real convention quotes one direction only,
 so the reciprocal direction is derived, never stored
 (=currency_pair_rate_formatter.hpp=).
+
+Two units answer to "how many pairs" and they differ: one pair code can be
+quoted by many series, one per tenant. The numbers below say which unit they
+count.
 
 So the store answers for one direction. Its figures describe that direction's
 magnitude: =USD/JPY= has 2 places, and =JPY/USD= is a number near 0.0067 that 2
@@ -85,9 +89,17 @@ not to start deriving.
 
 =lacksConvention= sits beside =placesOf= in =seriesView.ts= and answers whether a
 spot rate's pair has no convention to format by. The page renders one sentence
-when it is true, with the strings in English, French and Portuguese. The lookup
+when it is true, once the conventions have been read and once the series has
+values to show, with the strings in English, French and Portuguese. The lookup
 is unchanged in behaviour and pinned by a test that a pair stored the other way
 round gets no places, and by tests of the sentence's condition.
+
+** A correction to the counts
+
+The first draft of this record called 98 series counts. They are distinct pair
+codes, and the two units differ because one code is quoted once per tenant. The
+measurement table now names the unit on every row, and the filter that keeps a
+code well formed is in the command column.
 
 * Measurements
 
@@ -101,21 +113,23 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| currency pairs stored | 179 rows, 0 reverse twins | =compass db sql -- -A -c "select count(*) from ores_refdata_currency_pairs_tbl"= and the self-join on the reversed code | =907a308a07= |
-| pair conventions stored | 179 rows, 0 reverse twins | the same queries over =ores_refdata_currency_pair_conventions_tbl= | =907a308a07= |
-| live FX spot series pairs | 57 own direction, 5 reverse only, 36 with no pair at all | =compass db sql= over the series and identity tables, joined to the conventions | =907a308a07= |
-| web tests | 1656 tests in 146 files, all passed | =npm test --workspace @ores/web= | =907a308a07= |
-| web typecheck | no errors | =npm run typecheck= | =907a308a07= |
+| currency pair rows stored | 179 rows in =public.ores_refdata_currency_pairs_tbl=, 0 reverse twins | =compass db sql -- -c "set row_security = off;" -c "select count(*) from public.ores_refdata_currency_pairs_tbl;"= then the self-join where the reversed pair code is built with =concat(split_part(pair_code,'/',2), '/', split_part(pair_code,'/',1))= | =91a873a8e2= |
+| pair convention rows stored | 179 rows in =public.ores_refdata_currency_pair_conventions_tbl=, 0 reverse twins | the same two queries over that table | =91a873a8e2= |
+| distinct well-formed FX spot pair codes | 98: 57 own direction, 5 reverse only, 36 with no pair row. 107 without the well-formed filter. | =compass db sql= over =public.ores_marketdata_market_series_tbl= joined to =public.ores_marketdata_market_series_identity_tbl=, counting distinct pair codes with =split_part(split_part(oresmd_uri,'/',4),'?',1) ~ '^[A-Z]{3}$'= and =ccy ~ '^[A-Z]{3}$'= | =91a873a8e2= |
+| FX spot rate series | 598 across 25 tenants: 390 own direction, 32 reverse only, 164 with no pair row, 12 whose code is not well formed | the same query counting series ids rather than distinct pair codes | =91a873a8e2= |
+| web tests | 1656 tests in 146 files, all passed | =npm test --workspace @ores/web= | =91a873a8e2= |
+| web typecheck | no errors | =npm run typecheck= | =91a873a8e2= |
 
 * Notes
 
 ** 2026-10-18 — the pair a series names, and the pair the store keeps
 
 =AUD?type=series&instrument=fx_spot&quote=rate&ccy=CAD= is the pair the market
-call AUD/CAD, and the conventions table holds =AUD/CAD=. The five series that
-quote the reverse of a stored pair are =USD/EUR=, =USD/GBP=, =CHF/USD=,
-=GBP/EUR= and =NZD/AUD=. The other 36 pairs the series data quotes, such as
-=EUR/SGD= and =USD/NOK=, are not in the curated pair seed at all.
+call AUD/CAD, and the conventions table holds =AUD/CAD=. Five distinct pair codes
+quote only the reverse of a stored pair: =USD/EUR=, =USD/GBP=, =CHF/USD=,
+=GBP/EUR= and =NZD/AUD=. Thirty-two series quote those five codes. The other 36
+pair codes the series data quotes, such as =EUR/SGD= and =USD/NOK=, are not in
+the curated pair seed at all.
 
 ** 2026-10-18 — why the sentence names the direction
 
@@ -150,17 +164,23 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The counts called series counts are distinct well-formed pair codes, and 32 series quote the five reverse-only codes | this task's Measurements and Notes | Fixed | The table names the unit on every row, the command column holds the =^[A-Z]{3}$= filter on both legs, and the Note says five pair codes and 32 series. The series counts are 598 in total, 390 own, 32 reverse only, 164 with no pair row and 12 with a code that is not well formed, which is the 176 the review saw without the filter. |
+| 2 | The record names =refdata.currency_pairs= and =refdata.currency_pair_conventions= as if they were relations | this task's Plan and Result | Fixed | Both now name =public.ores_refdata_currency_pairs_tbl= and =public.ores_refdata_currency_pair_conventions_tbl=; the dataset names stay where they name a dataset. |
+| 3 | The no-convention sentence renders under the empty-series message, so a series with no values is told the values use the plain format | =SeriesPage.tsx= | Fixed | The sentence now needs a value to describe, so a series with no observations says only that it holds none. The pure condition is unchanged and its tests still pin the decision. |
+| 4 | The task reads DONE while the PR is open, where =definition_of_done.org= wants the PR merged first | this task's Status | Accepted, recorded | The repository's close-before-raise rule puts the state flip in the PR that is being reviewed, and every task on this story closed that way. Reverting it would churn the story table for a state the merge settles. |
+| 5 | =placesOf= reads a convention whose =decimal_places= is outside 0 to 10, or a spot series with no =ccy= field, as no convention | =seriesView.ts= | Accepted, recorded | The seed writes 4 for every pair and 2 for a JPY quote, and the pair form takes any integer, so a person can store 99. The page then refuses the number and keeps the plain format, which is safe but says the pair has no convention when it has an unusable one. A third answer would need a new sentence for a row no seed writes, and a spot series without =ccy= cannot be built, since =ccy= is the field its title fills. |
 
 * Result
 
 The pair store keeps one direction per pair, and the series page now follows it.
-=refdata.currency_pairs= and =refdata.currency_pair_conventions= each hold 179
-rows, one per pair code, with no reverse twin, and the pair screens compose and
-read the convention under that single code. A spot rate whose pair is not stored
-in the direction it quotes has no convention to format by, so the page says so
-in English, French and Portuguese and keeps the plain format instead of
-borrowing the reverse pair's places.
+=public.ores_refdata_currency_pairs_tbl= and
+=public.ores_refdata_currency_pair_conventions_tbl= each hold 179 rows, one per
+pair code, with no reverse twin, and the pair screens compose and read the
+convention under that single code. Five distinct pair codes are quoted only the
+other way round, by 32 series. A spot rate whose pair is not stored in the
+direction it quotes has no convention to format by, so the page says so in
+English, French and Portuguese, once there are values to describe, and keeps the
+plain format instead of borrowing the reverse pair's places.
 
 Acceptance is met. The way the data stores a pair is written above and in the
 task's Plan. The lookup follows it, with tests: a pair stored the other way round

@@ -65,7 +65,7 @@ A person lists bindings, says what each source writes and when it last ticked, b
 - The sources a party may bind are joined to its bindings in the BFF, not in the database. No service user reads the other service's tables, and this screen is not the reason to start. Which running feed holds a series stays a server read, because only the synthetic service's feed controller knows it.
 - A binding's source is chosen from a record picker over a read-only store, not a choice. A choice renders every option through a translation key, and the sources are the party's own rather than a fixed enumeration the words can name.
 - The title cases in the marketdata core tests get no CI job of their own. The Continuous Linux run already executes the binary, and its log names both cases, so a second way to run them would be a job to keep green for no new evidence.
-- The pair store keeps one direction per pair, and the series page does not look up the reverse pair. The stored places describe the stored direction's magnitude, so the page says that the pair has no convention in the direction the series quotes, and keeps the plain format. Decided on 2026-10-18 from 179 pairs and 179 conventions with no reverse twin.
+- The pair store keeps one direction per pair, and the series page does not look up the reverse pair. The stored places describe the stored direction's magnitude, so the page says that the pair has no convention in the direction the series quotes, and keeps the plain format. Decided on 2026-10-18 from 179 pair rows and 179 convention rows with no reverse twin.
 
 * Out of scope
 

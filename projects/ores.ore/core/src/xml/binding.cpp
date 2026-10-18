@@ -98,17 +98,13 @@ auto mark_present(void* record, const field& f) -> void {
  * text states.
  */
 auto store(void* record, const field& f, std::string_view text, std::string& error) -> bool {
-    // A document may write a number on its own line, so its text arrives with
-    // the indentation around it. A number's lexical space allows that space and
-    // the parser does not.
-    const auto number_text = &trim_space;
     auto* slot = static_cast<std::byte*>(record) + f.offset;
     switch (f.kind) {
         case field_kind::text:
             *reinterpret_cast<std::string*>(slot) = text;
             break;
         case field_kind::integer: {
-            const auto digits = number_text(text);
+            const auto digits = trim_space(text);
             std::int64_t value = 0;
             const auto [stop, ec] =
                 std::from_chars(digits.data(), digits.data() + digits.size(), value);
@@ -120,7 +116,7 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
             break;
         }
         case field_kind::decimal: {
-            const auto parsed = utility::decimal::decimal::from_string(number_text(text));
+            const auto parsed = utility::decimal::decimal::from_string(trim_space(text));
             if (!parsed) {
                 error = parsed.error();
                 return false;
@@ -129,7 +125,7 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
             break;
         }
         case field_kind::real: {
-            const auto digits = number_text(text);
+            const auto digits = trim_space(text);
             double value = 0;
             const auto [stop, ec] =
                 std::from_chars(digits.data(), digits.data() + digits.size(), value);
@@ -164,7 +160,7 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
                     reinterpret_cast<std::vector<std::string>*>(slot)->emplace_back(text);
                     break;
                 case scalar_kind::integer: {
-                    const auto digits = number_text(text);
+                    const auto digits = trim_space(text);
                     std::int64_t value = 0;
                     const auto [stop, ec] =
                         std::from_chars(digits.data(), digits.data() + digits.size(), value);
@@ -176,7 +172,7 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
                     break;
                 }
                 case scalar_kind::decimal: {
-                    const auto parsed = utility::decimal::decimal::from_string(number_text(text));
+                    const auto parsed = utility::decimal::decimal::from_string(trim_space(text));
                     if (!parsed) {
                         error = parsed.error();
                         return false;
@@ -186,7 +182,7 @@ auto store(void* record, const field& f, std::string_view text, std::string& err
                     break;
                 }
                 case scalar_kind::real: {
-                    const auto digits = number_text(text);
+                    const auto digits = trim_space(text);
                     double value = 0;
                     const auto [stop, ec] =
                         std::from_chars(digits.data(), digits.data() + digits.size(), value);

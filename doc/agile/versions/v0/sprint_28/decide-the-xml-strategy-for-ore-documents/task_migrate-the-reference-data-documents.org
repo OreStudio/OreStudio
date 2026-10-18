@@ -272,6 +272,13 @@ Three rules the corpus found, each a codec rule now:
 
 The census now reports 13 supported families, 0 migrating and 7 unused.
 
+*What the table does not check yet.* An =xs:choice= group is flattened, and each
+alternative is marked optional because the record has no way to state that one
+of them must appear. =instruments.xsd= makes =DeliveryStart= with =DeliveryEnd=,
+or =PowerLoadProfileData=, mandatory, and a portfolio document that states none
+of them binds. The values are not lost; the reading is looser than the schema.
+Teaching the table a required group is its own change.
+
 * Where the work stands
 
 Verified at the head of the portfolio table branch, with the commands that prove

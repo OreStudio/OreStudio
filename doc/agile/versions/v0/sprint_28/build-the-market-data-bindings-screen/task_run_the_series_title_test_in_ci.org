@@ -28,9 +28,9 @@ A standalone program checked the rule, and the Catch2 case in the describer test
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Completed 2026-10-18. |
+| Now          | Nothing. |
 | Waiting on   | None.                               |
-| Next         | None. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance

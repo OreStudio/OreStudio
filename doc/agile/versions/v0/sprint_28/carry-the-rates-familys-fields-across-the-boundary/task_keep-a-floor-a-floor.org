@@ -8,7 +8,7 @@
 #+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
 #+owner: marco
 #+branch: feature/keep-a-floor-a-floor
-#+pr:
+#+pr: 3553
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -100,7 +100,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3553][#3553]] | [ore,trading,sql] Give a strike its arm and its ordinal |
 
 * Review
 

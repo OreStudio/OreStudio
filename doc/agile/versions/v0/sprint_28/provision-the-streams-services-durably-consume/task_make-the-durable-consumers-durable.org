@@ -8,7 +8,7 @@
 #+filetags: :provision-the-streams-services-durably-consume:sprint_28:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 3539
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3539][#3539]] | [nats] Make the durable step consumers durable |
 
 * Review
 

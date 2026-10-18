@@ -1,0 +1,2 @@
+command: grep -oE "No active [a-z ]+ found with this code" projects/ores.sql/create/trading/trading_fx_*_instruments_create.sql | grep -v "trade activity" | wc -l
+14

@@ -51,17 +51,29 @@ struct fx_digital_option_instrument final {
     instrument_identity identity;
 
     /**
-     * @brief ForeignCurrency from ORE XML (source / underlying currency).
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string foreign_currency;
 
     /**
-     * @brief DomesticCurrency from ORE XML (quote / settlement currency).
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string domestic_currency;
 
     /**
-     * @brief Currency in which the payoff is denominated.
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string payoff_currency;
 
@@ -73,8 +85,8 @@ struct fx_digital_option_instrument final {
     /**
      * @brief Option type: Call or Put. Empty for touch options.
      *
-     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
-     * Put). PR 4 tightens the soft reference into a real foreign key.
+     * the values are the option types this store accepts (Call, Put), which ORE also states as a
+     * closed set.
      */
     std::string option_type;
 
@@ -86,9 +98,8 @@ struct fx_digital_option_instrument final {
     /**
      * @brief Position direction: Long or Short.
      *
-     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
-     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
-     * reference into a real foreign key.
+     * the values are the closed ORE longShort set (Long, Short), which the SQL schema already
+     * states as a check.
      */
     std::string long_short;
 
@@ -101,8 +112,8 @@ struct fx_digital_option_instrument final {
      * @brief Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent for plain digital
      * options.
      *
-     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
-     * 4 tightens the soft reference into a real foreign key.
+     * the values are the barrier styles ORE Studio supports. ORE states the leaf as free text, so
+     * the lookup is the set this store accepts rather than a closed schema enumeration.
      */
     std::string barrier_type;
 

@@ -98,5 +98,5 @@ documents now state.
 The measurements do not cover a full day of downtime; the fleet probe waits
 330 s. They do not cover a change of =MaxDeliver= on a live consumer either.
 The =ores.nats= suite covers the in-place reconciliation of the stored consumer
-with a second test: the creation time and the acknowledged position survive an
+with a further test: the creation time and the acknowledged position survive an
 update of the delivery bound and the ack wait.

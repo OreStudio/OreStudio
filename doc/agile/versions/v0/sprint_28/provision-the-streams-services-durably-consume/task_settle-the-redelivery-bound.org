@@ -62,12 +62,12 @@ bound a service that is up and failing. The two are not the same window.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Step consumer =AckWait= / =MaxDeliver= on the fleet | 30 s / 10 | =nats consumer info <step stream> <stream>_consumer= | this branch |
-| Workflow engine consumers =AckWait= / =MaxDeliver= | 30 s / 10 | =nats consumer info ores_dev_festive_dijkstra_workflow workflow-engine-start= | this branch |
-| Server default =AckWait= / =MaxDeliver= when not set | 30 s / -1 (unlimited) | scratch =nats-server= 2.14.6, =nats consumer add= without the flags | this branch |
-| Deliveries spent while no subscriber is bound | 0 | scratch push consumer, =MaxDeliver= 3, =AckWait= 2 s, wait 7 s | this branch |
-| Fleet command after 330 s unbound | =NumPending= 1, =NumAckPending= 0, =NumRedelivered= 0 | live fleet probe, =MaxDeliver= 10, =AckWait= 30 s | this branch |
-| Consumer after its bound is spent | =NumAckPending= 0, stream message still present, rebind delivers nothing | scratch probe, =MaxDeliver= 3, =AckWait= 2 s | this branch |
+| Step consumer =AckWait= / =MaxDeliver= on the fleet | 30 s / 10 | =nats consumer info <step stream> <stream>_consumer= | ad5ccd8b9b |
+| Workflow engine consumers =AckWait= / =MaxDeliver= | 30 s / 10 | =nats consumer info ores_dev_festive_dijkstra_workflow workflow-engine-start= | ad5ccd8b9b |
+| Server default =AckWait= / =MaxDeliver= when not set | 30 s / -1 (unlimited) | scratch =nats-server= 2.14.6, =nats consumer add= without the flags | ad5ccd8b9b |
+| Deliveries spent while no subscriber is bound | 0 | scratch push consumer, =MaxDeliver= 3, =AckWait= 2 s, wait 7 s | ad5ccd8b9b |
+| Fleet command after 330 s unbound | =NumPending= 1, =NumAckPending= 0, =NumRedelivered= 0 | live fleet probe, =MaxDeliver= 10, =AckWait= 30 s | ad5ccd8b9b |
+| Consumer after its bound is spent | =NumAckPending= 0, stream message still present, rebind delivers nothing | scratch probe, =MaxDeliver= 3, =AckWait= 2 s | ad5ccd8b9b |
 
 The raw command output is in
 [[file:evidence/redelivery_bound_live_broker.org][redelivery_bound_live_broker.org]].

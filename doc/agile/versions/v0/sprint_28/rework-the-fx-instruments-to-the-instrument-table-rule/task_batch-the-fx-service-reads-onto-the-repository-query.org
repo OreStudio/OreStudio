@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/batch-the-fx-service-reads-onto-the-repository-query
-#+pr:
+#+pr: 3519
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3519][#3519]] | [agile] Scope the batched service reads onto the service template |
 
 * Review
 

@@ -35,6 +35,7 @@ export const PATHS = {
     bookStructure: '/refdata/books/structure',
     conventions: '/refdata/conventions',
     tenors: '/refdata/tenors',
+    tenorAuthoring: '/refdata/tenors/author',
     organisation: '/organisation',
     people: '/organisation/people',
     hierarchy: '/organisation/hierarchy',

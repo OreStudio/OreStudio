@@ -34,7 +34,7 @@ import {
     type TenorAction,
     type TenorDraft,
 } from './tenorsState.js';
-import type { TenorResolutionPreview } from './tenorsServer.js';
+import type { TenorResolution } from './tenorsServer.js';
 
 const STAMP = {
     tenant_id: 'tenant-1',
@@ -375,7 +375,7 @@ describe('the write plan', () => {
 });
 
 describe('the test step', () => {
-    const preview: TenorResolutionPreview = {
+    const preview: TenorResolution = {
         result: { outcome: 'ok', code: 'ok', message: '', fields: [] },
         anchorDate: '2026-01-31',
         dateBeforeRoll: '2026-02-28',

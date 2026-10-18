@@ -74,7 +74,7 @@ Run these before the PR. Record the results in the PR's testing evidence.
 
 - [ ] Build the touched targets, then run their suites with =.env= loaded.
 - [ ] After a schema change, run =compass db recreate -y -k=. Do not write a migration.
-- [ ] Run the codegen drift check on the committed tree: =check_component_drift.py --component trade=.
+- [ ] Run both codegen drift gates on the committed tree: =check_component_drift.py --all= and =check_component_drift.py --sweep=. Do not use =--component <name>= alone. It regenerates the SQL, the C++ and the batch TypeScript for that component, but not =ores.ts.domain=, so a new entity's domain TypeScript is never rendered and the gate stays green while the twin is missing. That happened on this family's header, cliquet, outperformance and TaRF units, and another component's regeneration committed the files.
 - [ ] Run the codegen tests, the cmake sources check, =check_handler_permissions.py= and =check_sql_hygiene.py=.
 - [ ] Run =projects/ores.codegen/validate_docs.sh= and the misspell check.
 - [ ] Rebase onto =origin/main= before the PR. After a rebase, regenerate and run the drift check again, because the templates may have changed. Recreate the database if the schema moved.

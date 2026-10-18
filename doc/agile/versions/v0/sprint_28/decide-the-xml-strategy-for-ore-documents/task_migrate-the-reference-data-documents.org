@@ -29,10 +29,10 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Calendar adjustments, currency config and pricing engines read and write through the codec; the netting set XML mapper is deleted. |
+| Now          | Calendar adjustments, currency config, pricing engines and credit simulation read and write through the codec; curve configuration has a table the harness proves; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Credit simulation, whose XML mapper turns a document into five analytics tables, then curve configuration. |
-| Last touched | 2026-10-17                               |
+| Next         | The curve configuration projection, which reads the table into the reference data entities and deletes the 3,310-line mapper. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -143,6 +143,28 @@ Fourteen mappers remain under =domain/=: the twelve instrument mappers plus
 falls with its family. When the last one does, the generated domain, the
 sibling-checkout wiring and the two regeneration patches go in one change.
 
+* The curve configuration table came before its projection
+
+The family is the largest in the corpus: 89 documents and a mapper of 3,310
+lines. Its table is generated and proved over every one of those documents
+before any of the mapping moves, because the table is the part a schema
+decides, and proving it first separates "the schema reads differently than we
+thought" from "the mapping was transcribed wrongly".
+
+It read differently in three places, and each was silent. A choice nested in a
+sequence, or whose alternatives are sequences, offered no members at all, so a
+document writing an equity volatility's =VolatilityConfig= or a commodity
+curve's =SpotQuote= did not bind. Two alternatives of one choice named the same
+element, which is one member in a flat record. And a member named after a type
+declared earlier in the same struct hid that type. The first two are generator
+work a test now covers. The third is a =struct= keyword on the one member that
+needs it, rather than a rename of a type whose name is fine everywhere else.
+
+The census calls the family supported while its mapper is still the reader.
+That is the honest state of a two-step migration, and the evidence line in the
+census says so: the table reads and writes the document, and the projection
+replaces the mapper next.
+
 * Where the work stands
 
 Verified on main at the time of writing, with the commands that prove each
@@ -150,17 +172,19 @@ line.
 
 | Claim | Evidence |
 |-------+----------|
-| Nine families read and write through the codec | =python3 build/scripts/check_xml_family_coverage.py= |
-| Four still read through xsdcpp: ORE, Portfolio, CurveConfiguration, StressTesting | same |
+| Ten families are supported, each with a generated table | =python3 build/scripts/check_xml_family_coverage.py= |
+| Eight families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
+| Three still read through xsdcpp: ORE, Portfolio, StressTesting | same |
+| Curve configuration documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 89 of 89 |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =[ore][xml]@, 497 cases and 82,016 assertions |
+| The XML suites pass | =[ore][xml]@, 497 cases and 82,020 assertions |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 
-*What each remaining family needs.* Curve configuration is 3,310 lines and
-its mapper already has the projection's shape; it is the largest single
-change left. Stress testing is 830 lines and its table generates once
+*What each remaining family needs.* Curve configuration has its table and its
+harness; what is left is the projection, which is 3,310 lines of mapping whose
+input changes shape. Stress testing is 830 lines and its table generates once
 =sensitivity.xsd= is read with =stress.xsd=. The run document's table
 generates now that a derivation is read, and its mapper is the last one
 written against the generated types. Portfolio is the largest group, the
@@ -188,6 +212,9 @@ task and name that file in the Command column.
 | Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3260f93169 |
 | Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | 3260f93169 |
 | XML suites | 509 cases, 79,240 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
+| Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 4e8b75caec |
+| XML suites after the curve configuration table | 497 cases, 82,020 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 4e8b75caec |
+| Corpus documents the value harness sweeps | 335 | same | 4e8b75caec |
 
 * Notes
 
@@ -228,6 +255,7 @@ via its "Verifies task" field.
 | [[https://github.com/OreStudio/OreStudio/pull/3456][#3456]] | [ore] Read and write calendar adjustments through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3470][#3470]] | [ore] Read and write currency config through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3486][#3486]] | [ore] Delete the netting set XML mapper nothing reads |
+| [[https://github.com/OreStudio/OreStudio/pull/3532][#3532]] | [ore] Generate the curve configuration table |
 
 * Review
 

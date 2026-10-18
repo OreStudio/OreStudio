@@ -21,7 +21,7 @@
 
 import { z } from 'zod';
 import type { BusinessDayConventionType } from '@ores/wire-protocol/generated/refdata/domain/business_day_convention_type';
-import type { CalendarName } from '@ores/wire-protocol/generated/refdata/domain/calendar_name';
+import type { Calendar } from '@ores/wire-protocol/generated/refdata/domain/calendar';
 import type { Tenor } from '@ores/wire-protocol/generated/refdata/domain/tenor';
 import type { TenorAnchor } from '@ores/wire-protocol/generated/refdata/domain/tenor_anchor';
 import type { TenorConvention } from '@ores/wire-protocol/generated/refdata/domain/tenor_convention';
@@ -84,7 +84,7 @@ export interface TenorPickLists {
     readonly anchors: readonly TenorAnchor[];
     readonly algorithms: readonly TenorResolutionAlgorithm[];
     readonly rollRules: readonly BusinessDayConventionType[];
-    readonly calendars: readonly CalendarName[];
+    readonly calendars: readonly Calendar[];
 }
 
 /** A rule resolved as the form holds it, rather than as the store holds it. */
@@ -97,8 +97,8 @@ export interface TenorResolutionDraft {
     readonly spot: string | null;
 }
 
-/** The date a drafted rule resolves to, and the path it took to reach it. */
-export interface TenorResolutionPreview {
+/** The date a rule resolves to, and the path it took to reach it. */
+export interface TenorResolution {
     readonly result: TenorResult;
     readonly anchorDate: string;
     readonly dateBeforeRoll: string;
@@ -107,12 +107,42 @@ export interface TenorResolutionPreview {
     readonly calendar: string;
 }
 
+/** The rules as they are stored, asked about one tenor on one calendar. */
+export interface TenorResolveQuery {
+    readonly tenorCode: string;
+    readonly conventionCode: string;
+    readonly calendarCode: string;
+    readonly horizon: string;
+    readonly spot: string | null;
+}
+
 const resultSchema: z.ZodType<TenorResult> = z.object({
     outcome: z.enum(['ok', 'invalid', 'denied', 'missing', 'conflict', 'unavailable', 'failed']),
     code: z.string(),
     message: z.string(),
     fields: z.array(z.object({ field: z.string(), code: z.string(), message: z.string() })),
 });
+
+const resolutionSchema = z.looseObject({
+    result: resultSchema,
+    anchor_date: z.string(),
+    date_before_roll: z.string(),
+    adjusted_date: z.string(),
+    roll_rule: z.string(),
+    calendar: z.string(),
+});
+
+/** The reply in the screen's own names. */
+function resolutionOf(answer: z.infer<typeof resolutionSchema>): TenorResolution {
+    return {
+        result: answer.result,
+        anchorDate: answer.anchor_date,
+        dateBeforeRoll: answer.date_before_roll,
+        adjustedDate: answer.adjusted_date,
+        rollRule: answer.roll_rule,
+        calendar: answer.calendar,
+    };
+}
 
 function rowsOf<Row>(): z.ZodType<readonly Row[]> {
     return z.array(z.looseObject({})) as unknown as z.ZodType<readonly Row[]>;
@@ -174,7 +204,7 @@ export const tenors = {
                 anchors: rowsOf<TenorAnchor>(),
                 algorithms: rowsOf<TenorResolutionAlgorithm>(),
                 rollRules: rowsOf<BusinessDayConventionType>(),
-                calendars: rowsOf<CalendarName>(),
+                calendars: rowsOf<Calendar>(),
             })
             .parse(await request('/api/tenors/pick-lists', { method: 'GET' }));
     },
@@ -186,31 +216,40 @@ export const tenors = {
      * and a rule the server declines comes back as an answer rather than an
      * error. The reply's snake_case names are mapped to the screen's own here.
      */
-    async previewResolution(draft: TenorResolutionDraft): Promise<TenorResolutionPreview> {
-        const answer = z
-            .looseObject({
-                result: resultSchema,
-                anchor_date: z.string(),
-                date_before_roll: z.string(),
-                adjusted_date: z.string(),
-                roll_rule: z.string(),
-                calendar: z.string(),
-            })
-            .parse(
+    async previewResolution(draft: TenorResolutionDraft): Promise<TenorResolution> {
+        return resolutionOf(
+            resolutionSchema.parse(
                 await request('/api/tenors/preview-resolution', {
                     method: 'POST',
                     headers: JSON_HEADERS,
                     body: JSON.stringify(draft),
                 }),
-            );
-        return {
-            result: answer.result,
-            anchorDate: answer.anchor_date,
-            dateBeforeRoll: answer.date_before_roll,
-            adjustedDate: answer.adjusted_date,
-            rollRule: answer.roll_rule,
-            calendar: answer.calendar,
-        };
+            ),
+        );
+    },
+
+    /**
+     * The date the rules as they are stored resolve the tenor to.
+     *
+     * Nothing is written: the question names the rows that already exist. A
+     * refused resolution is an answer, so it arrives here rather than throwing.
+     */
+    async resolve(query: TenorResolveQuery): Promise<TenorResolution> {
+        return resolutionOf(
+            resolutionSchema.parse(
+                await request('/api/tenors/resolve', {
+                    method: 'POST',
+                    headers: JSON_HEADERS,
+                    body: JSON.stringify({
+                        tenor_code: query.tenorCode,
+                        convention_code: query.conventionCode,
+                        calendar_code: query.calendarCode,
+                        horizon: query.horizon,
+                        spot: query.spot,
+                    }),
+                }),
+            ),
+        );
     },
 
     /** The tenors one convention resolves. */

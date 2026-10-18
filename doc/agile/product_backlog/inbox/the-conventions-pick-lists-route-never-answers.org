@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 06B18FA3-E010-4526-8158-6F4A8516019D
+:END:
+#+title: The conventions pick-lists route answers 502 or 503 on every…
+#+description: The conventions pick-lists route answers 502 or 503 on every call and has done since before 2026-10-18. Two faults, both in packages/bff/src/conventions.ts. First, its PICK_LISTS loop passes only { filter: null } to readAll, but every one of those lookup subjects requires as_of, so the first entry is refused with bad_request; tenors.ts passes { filter: null, as_of: null } and works, which is the fix. Second, once as_of is passed the loop gets as far as refdata.v1.sub_periods_coupon_types.list and that subject answers 503, so the route still fails and something else is missing for it, either a handler or a subject name. Verified against the running fleet: /api/conventions/pick-lists returns 503 'Cannot reach the message bus' caused by a 503 from that subject, while /api/tenors/pick-lists returns 200. Related: the route's calendars entry also reads calendar_names rather than calendars, the same wrong catalogue the tenor pick list had; that defect is hidden behind the other two.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

@@ -47,7 +47,12 @@ FAMILIES = {
     # work and a table is owed.
     "ORE": ("migrating", "run_store and the run configuration service read it"),
     "Portfolio": ("migrating", "importer and exporter read trades and their instruments"),
-    "CurveConfiguration": ("migrating", "curve_configuration_mapper reads it"),
+    "CurveConfiguration": (
+        "supported",
+        "the value harness proves every corpus curve configuration; the "
+        "projection that reads it into the refdata entities replaces the "
+        "mapper next",
+    ),
     "StressTesting": (
         "migrating",
         "the analytics stress test store is modelled on stresstest.xml and "

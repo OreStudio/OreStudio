@@ -128,6 +128,9 @@ generate \
     --header "$header/pricing_engines.hpp" \
     --source "$source/pricing_engines.cpp"
 
+# The curve configuration writes the IBOR fallback spread as xs:float as well,
+# and it is the same money amount the fallback configuration document states,
+# so it is carried as an exact decimal here too.
 generate \
     --schema "$xsd/curveconfig.xsd" \
     --schema "$xsd/ore_types.xsd" \
@@ -137,7 +140,8 @@ generate \
     --namespace ores::ore::xml::generated::curve_configuration \
     --include "ores.ore.core/xml/generated/curve_configuration.hpp" \
     --header "$header/curve_configuration.hpp" \
-    --source "$source/curve_configuration.cpp"
+    --source "$source/curve_configuration.cpp" \
+    --money Spread
 
 generate \
     --schema "$xsd/creditsimulation.xsd" \

@@ -1,5 +1,6 @@
 """A derived type carries its base's fields and then its own."""
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -105,7 +106,7 @@ def test_a_restriction_is_refused(tmp_path):
     (tmp_path / "restricted.xsd").write_text(
         DERIVED.replace("<xs:extension", "<xs:restriction").replace(
             "</xs:extension>", "</xs:restriction>"
-        ).replace('name="derivedType"', 'name="derivedType"')
+        )
     )
     result = _generate(tmp_path, "restricted.xsd")
     assert result.returncode != 0
@@ -255,6 +256,166 @@ def test_two_alternatives_that_disagree_about_one_name_are_refused(tmp_path):
             '<xs:element type="xs:int" name="Shared"/>\n        <xs:element type="xs:string" name="Beta"/>',
             '<xs:element type="xs:date" name="Shared"/>\n        <xs:element type="xs:string" name="Beta"/>',
         )
+    )
+    result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
+    assert result.returncode != 0
+    assert "Shared" in result.stderr
+
+
+def _emit(tmp_path, schema_text, root_type="rootType"):
+    """The generated header and source for one schema, as text."""
+    (tmp_path / "schema.xsd").write_text(schema_text)
+    header = tmp_path / "out.hpp"
+    source = tmp_path / "out.cpp"
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "schema.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            root_type,
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(source),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return header.read_text(), source.read_text()
+
+
+def _record(emitted, name):
+    record = emitted[emitted.index(f"struct {name} {{") :]
+    return record[: record.index("};")]
+
+
+def _row(source, name):
+    """The field row one element states, as a list of its fields.
+
+    The member offset is an `offsetof(type, member)` expression, and its
+    argument list holds a comma, so it is replaced before splitting.
+    """
+    row = source[source.index('{"' + name + '"') :]
+    row = row[: row.index("}")]
+    return re.sub(r"offsetof\([^)]*\)", "offset", row).split(",")
+
+
+def test_an_annotation_inside_a_compositor_is_ignored(tmp_path):
+    """An annotation is documentation, not a member, wherever it is written."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:annotation><xs:documentation>Notes to a reader.</xs:documentation></xs:annotation>
+      <xs:element type="xs:string" name="Alpha"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "alpha" in record
+    assert "documentation" not in record
+
+
+def test_a_repeated_choice_repeats_its_members(tmp_path):
+    """A choice that repeats hands the record one vector per member."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element type="xs:string" name="Alpha"/>
+      <xs:element type="xs:string" name="Beta"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "std::vector<std::string> alpha" in record
+    assert "std::vector<std::string> beta" in record
+
+
+def test_a_member_under_an_optional_group_is_not_required(tmp_path):
+    """An optional group may be absent whole, so its members may be too."""
+    emitted, source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:sequence minOccurs="0">
+        <xs:element type="xs:string" name="Alpha"/>
+      </xs:sequence>
+      <xs:element type="xs:string" name="Beta"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    assert "alpha" in _record(emitted, "root_type")
+
+    def required(name):
+        # name, hash, kind, offset, bit, attribute, required, ...
+        return _row(source, name)[6].strip()
+
+    assert required("Alpha") == "false"
+    assert required("Beta") == "true"
+
+
+def test_a_member_named_like_an_earlier_type_is_qualified(tmp_path):
+    """A member declared earlier hides a type of the same name.
+
+    `leaf leaf; other leaf;` reads the second `leaf` as the member declared
+    first, so the type has to be spelled with the struct keyword.
+    """
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="leaf"/>
+      <xs:element type="leaf" name="first"/>
+      <xs:element type="leaf" name="second"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="leaf">
+    <xs:sequence><xs:element type="xs:string" name="Value" minOccurs="0"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "std::string leaf;" in record
+    assert "struct leaf first;" in record
+    assert "struct leaf second;" in record
+
+
+def test_two_alternatives_with_different_cardinality_are_refused(tmp_path):
+    """A scalar and a repeated form of one name are two shapes, not one."""
+    (tmp_path / "choice.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:choice>
+      <xs:element type="xs:int" name="Shared"/>
+      <xs:element type="xs:int" name="Shared" maxOccurs="unbounded"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
     )
     result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
     assert result.returncode != 0

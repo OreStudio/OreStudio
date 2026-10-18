@@ -803,7 +803,7 @@ struct ibor_fallback_type {
     std::string ibor_index;
     std::string rfr_curve;
     std::string rfr_index;
-    double spread = 0;
+    ores::utility::decimal::decimal spread;
     std::string pillar_choice;
     std::int64_t priority = 0;
     std::int64_t min_distance = 0;

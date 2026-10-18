@@ -219,25 +219,31 @@ def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
     `bases` is the chain of types this walk has already flattened, so a
     derivation that reaches itself is refused instead of recursing.
     """
-    def walk(node, repeat_max=None, in_choice=False):
+    def walk(node, repeat_max=None, in_choice=False, optional=False):
         name = local(node.tag)
+        if name == "annotation":
+            return
         if name in ("sequence", "all", "choice"):
             # A compositor that repeats repeats its members: a document may
             # carry any member of a repeated choice any number of times, and
-            # the member's own maxOccurs says nothing about that. A compositor
-            # nested in another is walked through, because a choice whose
-            # alternatives are sequences still offers each of their elements as
-            # a child of the type.
+            # the member's own maxOccurs says nothing about that. One that is
+            # optional makes its members optional, because the whole group may
+            # be absent. A compositor nested in another is walked through,
+            # because a choice whose alternatives are sequences still offers
+            # each of their elements as a child of the type.
             own = node.get("maxOccurs", "1")
             if own not in ("1",):
                 repeat_max = own
+            optional = optional or node.get("minOccurs", "1") == "0"
             alternatives = in_choice or name == "choice"
             for child in node:
-                walk(child, repeat_max, alternatives)
+                walk(child, repeat_max, alternatives, optional)
             return
         if name == "element":
             if repeat_max is not None and node.get("maxOccurs", "1") in ("1",):
                 node.set("maxOccurs", repeat_max)
+            if optional and node.get("minOccurs", "1") != "0":
+                node.set("minOccurs", "0")
             elements.append(node)
             if in_choice:
                 CHOICE_CHILDREN.add(id(node))
@@ -312,17 +318,32 @@ def children_of(complex_type, schema=None, bases=frozenset()):
     # binds to that member, so the second declaration is dropped when the two
     # agree. They are refused when they do not: one member cannot mean two
     # shapes.
-    first_by_name, kept = {}, []
+    def shape(element):
+        """What a document sees of one element: its name, type and cardinality.
+
+        A `ref` names a global element, so the name and type come from there
+        while the cardinality stays on the reference.
+        """
+        reference = element.get("ref")
+        target = element if reference is None else schema.elements.get(reference, element)
+        return (
+            reference or target.get("name"),
+            target.get("type"),
+            element.get("minOccurs"),
+            element.get("maxOccurs"),
+            len(target),
+        )
+
+    first_by_key, kept = {}, []
     for element in elements:
-        name = element.get("name")
-        first = first_by_name.get(name)
+        key = shape(element)[0]
+        first = first_by_key.get(key)
         if first is None:
-            first_by_name[name] = element
+            first_by_key[key] = element
             kept.append(element)
             continue
         both_choice = id(element) in CHOICE_CHILDREN and id(first) in CHOICE_CHILDREN
-        declared = element.get("type")
-        if both_choice and declared is not None and declared == first.get("type"):
+        if both_choice and shape(element) == shape(first):
             continue
         kept.append(element)
     elements = kept
@@ -657,12 +678,13 @@ def shadowed_types(schema, ordered, names):
 
     shadowed = set()
     for holder, held in fields.items():
-        for target in set(t for _, t in held):
-            if target not in names:
+        for index, (_member, target) in enumerate(held):
+            if target is None or target not in names:
                 continue
             name = names[target]
-            same = [other for member, other in held if member == name]
-            if same and not (len(same) == 1 and same[0] == target):
+            # A member named after its own type compiles; one declared before
+            # the use hides the type, and only that use needs the keyword.
+            if any(earlier == name for earlier, _ in held[:index]):
                 shadowed.add((holder, target))
     return shadowed
 

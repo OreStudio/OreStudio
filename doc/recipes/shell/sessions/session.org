@@ -93,7 +93,7 @@ It is addressed at =iam.v1.sessions.put=.
 
 #+name: sessions-add
 #+begin_src ores-shell :tangle sessions-add.ores :exports none
-sessions add 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 __none__ 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
+sessions add 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 - 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =set=
@@ -114,7 +114,7 @@ It is addressed at =iam.v1.sessions.put=.
 
 #+name: sessions-set
 #+begin_src ores-shell :tangle sessions-set.ores :exports none
-sessions set 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 __none__ 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
+sessions set 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 - 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =put-many=
@@ -135,7 +135,7 @@ It is addressed at =iam.v1.sessions.put_many=.
 
 #+name: sessions-put-many
 #+begin_src ores-shell :tangle sessions-put-many.ores :exports none
-sessions put-many --count 1 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 __none__ 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
+sessions put-many --count 1 00000000-0000-0000-0000-000000000000 1970-01-01T00:00:00Z 00000000-0000-0000-0000-000000000000 - 0.0.0.0 __none__ 0 0 0 0 __none__ __none__ system.new_record generated_script
 #+end_src
 
 ** =delete=

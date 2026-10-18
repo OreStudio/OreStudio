@@ -187,10 +187,6 @@
 \ir ./refdata_tenor_basis_swap_pay_receives_drop.sql
 \ir ./refdata_tenor_basis_swap_long_shorts_notify_trigger_drop.sql
 \ir ./refdata_tenor_basis_swap_long_shorts_drop.sql
-\ir ./refdata_conventions_import_items_notify_trigger_drop.sql
-\ir ./refdata_conventions_import_items_drop.sql
-\ir ./refdata_conventions_imports_notify_trigger_drop.sql
-\ir ./refdata_conventions_imports_drop.sql
 \ir ./refdata_conventions_notify_trigger_drop.sql
 \ir ./refdata_conventions_drop.sql
 \ir ./refdata_zero_conventions_notify_trigger_drop.sql

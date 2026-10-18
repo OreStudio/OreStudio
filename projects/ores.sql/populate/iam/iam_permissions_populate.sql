@@ -602,6 +602,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_configurations:read',              'View curve configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_configurations:write',             'Create and modify curve configurations');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::curve_configurations:delete',            'Delete curve configurations');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bundle_imports:read',18  'View bundle import batches');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bundle_imports:write',18  'Create and modify bundle import batches');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bundle_imports:delete',18  'Delete bundle import batches');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bundle_import_items:read',18  'View bundle import items');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bundle_import_items:write',18  'Create and modify bundle import items');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::bundle_import_items:delete',18  'Delete bundle import items');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::conventions:read',                       'View a conventions document');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::conventions:write',                      'Store a conventions document');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'refdata::conventions:delete',                     'Delete a conventions document');
@@ -1265,6 +1271,9 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_barrier_option_instruments:read',     'View equity barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_barrier_option_instruments:write',    'Create and modify equity barrier option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_barrier_option_instruments:delete',   'Delete equity barrier option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_cliquet_option_instruments:read',22  'View equity cliquet option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_cliquet_option_instruments:write',22  'Create and modify equity cliquet option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_cliquet_option_instruments:delete',22  'Delete equity cliquet option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_digital_option_instruments:read',     'View equity digital option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_digital_option_instruments:write',    'Create and modify equity digital option instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_digital_option_instruments:delete',   'Delete equity digital option instruments');
@@ -1286,6 +1295,12 @@ BEGIN
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_swap_instruments:read',               'View equity swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_swap_instruments:write',              'Create and modify equity swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_swap_instruments:delete',             'Delete equity swap instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_outperformance_option_instruments:read',22  'View equity outperformance option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_outperformance_option_instruments:write',22  'Create and modify equity outperformance option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_outperformance_option_instruments:delete',22  'Delete equity outperformance option instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_tarf_instruments:read',22  'View equity target redemption instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_tarf_instruments:write',22  'Create and modify equity target redemption instruments');
+    PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_tarf_instruments:delete',22  'Delete equity target redemption instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_variance_swap_instruments:read',      'View equity variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_variance_swap_instruments:write',     'Create and modify equity variance swap instruments');
     PERFORM ores_iam_permissions_upsert_fn(ores_utility_system_tenant_id_fn(), 'trading::equity_variance_swap_instruments:delete',    'Delete equity variance swap instruments');

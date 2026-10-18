@@ -37,6 +37,7 @@ export interface EquityBasketConstituent {
     sequence_number: number;
     trade_activity_id: string;
     underlying_name: string;
+    weight: number | null;
     modified_by: string;
     performed_by: string;
     change_reason_code: string;

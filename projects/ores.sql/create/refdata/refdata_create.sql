@@ -248,10 +248,6 @@
 \ir ./refdata_conventions_notify_trigger_create.sql
 
 -- Conventions import batches, and the items each batch states
-\ir ./refdata_conventions_imports_create.sql
-\ir ./refdata_conventions_imports_notify_trigger_create.sql
-\ir ./refdata_conventions_import_items_create.sql
-\ir ./refdata_conventions_import_items_notify_trigger_create.sql
 
 -- ORE conventions (curve-building conventions imported from conventions.xml)
 \ir ./refdata_zero_conventions_create.sql

@@ -21,6 +21,8 @@
 #include "ores.refdata.service/messaging/asset_class_event_registrar.hpp"
 #include "ores.refdata.service/messaging/asset_measure_event_registrar.hpp"
 #include "ores.refdata.service/messaging/benchmark_rate_event_registrar.hpp"
+#include "ores.refdata.service/messaging/bundle_import_event_registrar.hpp"
+#include "ores.refdata.service/messaging/bundle_import_item_event_registrar.hpp"
 #include "ores.refdata.service/messaging/business_process_event_registrar.hpp"
 #include "ores.refdata.service/messaging/cashflow_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/entity_classification_event_registrar.hpp"
@@ -201,6 +203,8 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     // event_bus subscription that republishes it to NATS; we take
     // ownership of the subscriptions here so they outlive this call.
     // ----------------------------------------------------------------
+    subs.push_back(register_bundle_import_event_mapping(event_source, event_bus, nats));
+    subs.push_back(register_bundle_import_item_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_credit_limit_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_conventions_import_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_conventions_import_item_event_mapping(event_source, event_bus, nats));

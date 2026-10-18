@@ -136,9 +136,8 @@ family or a path that has to move first. Verified with
 | =store/run_store.cpp= | the run document and curve configuration |
 | =service/messaging/run_configuration_operations.cpp= | the run document |
 
-Twelve mappers remain under =domain/=: the instrument mappers, =trade_mapper=
-(portfolio), =conventions_mapper=, =run_document_mapper= and
-=todays_market_mapper=. Each falls with its family, and the last one takes the
+Eleven mappers remain under =domain/=: the instrument mappers, =trade_mapper=
+(portfolio), =conventions_mapper= and =todays_market_mapper=. Each falls with its family, and the last one takes the
 generated domain with it. When the last one does, the generated domain, the
 sibling-checkout wiring and the two regeneration patches go in one change.
 
@@ -239,7 +238,7 @@ line.
 | Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 23 cases |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =[ore][xml]@, 499 cases and 45,200 assertions |
+| The XML suites pass | =[ore][xml]@, 499 cases and 45,200 assertions; the run document suite is 374 cases |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 

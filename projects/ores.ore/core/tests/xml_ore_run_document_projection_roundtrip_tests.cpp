@@ -24,6 +24,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <iterator>
 #include <map>
@@ -38,7 +39,7 @@
 namespace {
 
 const std::string_view test_suite("ores.ore.tests");
-const std::string tags("[ore][xml][roundtrip][ore]");
+const std::string tags("[ore][xml][roundtrip][ore][run_document]");
 
 using namespace ores::logging;
 using namespace ores::ore::domain;
@@ -146,6 +147,58 @@ TEST_CASE("every_run_document_in_the_corpus_round_trips", tags) {
     CHECK(failures.empty());
 }
 
+TEST_CASE("the_projection_states_the_positions_the_database_sorts_by", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto original = run_document_projection::read(R"(
+<ORE>
+  <Setup>
+    <Parameter name="asofDate">2026-01-02</Parameter>
+    <Parameter name="inputPath">Input</Parameter>
+    <Parameter name="nThreads">4</Parameter>
+    <Parameter name="continueOnError">false</Parameter>
+    <Parameter name="conventionsFile">conventions.xml</Parameter>
+    <Parameter name="continueOnError">true</Parameter>
+  </Setup>
+  <Markets>
+    <Parameter name="EQ">EUR</Parameter>
+    <Parameter name="FX">USD</Parameter>
+  </Markets>
+  <Analytics>
+    <Analytic type="pnl"><Parameter name="active">Y</Parameter><Parameter name="a">1</Parameter></Analytic>
+    <Analytic type="risk"><Parameter name="b">2</Parameter><Parameter name="active">N</Parameter></Analytic>
+  </Analytics>
+</ORE>)");
+
+    const auto mapped = run_document_projection::map(original);
+    // The as-of date is the one parameter with a column pair.
+    CHECK(mapped.settings.market_data_type == "date");
+    CHECK(mapped.settings.market_data_date == "2026-01-02");
+    // A choice and a file name go to different places.
+    CHECK(mapped.settings.n_threads == std::optional<int>(4));
+    CHECK(mapped.files.size() == 1);
+    CHECK(mapped.files.front().parameter == "conventionsFile");
+    // A name stated twice is read from its last occurrence.
+    CHECK(mapped.settings.continue_on_error == std::optional<std::string>("true"));
+
+    REQUIRE(mapped.analytics.size() == 2);
+    for (std::size_t i = 0; i < mapped.analytics.size(); ++i)
+        CHECK(mapped.analytics[i].analytic.display_order == static_cast<int>(i + 1));
+    CHECK(mapped.analytics[0].analytic.active == "Y");
+    CHECK(mapped.analytics[1].analytic.active == "N");
+    REQUIRE(mapped.analytics[0].parameters.size() == 1);
+    CHECK(mapped.analytics[0].parameters.front().position == 2);
+
+    REQUIRE(mapped.market_bindings.size() == 2);
+    CHECK(mapped.market_bindings[0].role == "EQ");
+    CHECK(mapped.market_bindings[0].position == 1);
+    CHECK(mapped.market_bindings[1].position == 2);
+
+    // The writing keeps the analytics in order and the active flag first.
+    const auto written = run_document_projection::write(run_document_projection::reverse(mapped));
+    CHECK(written.find("<Parameter name=\"active\">Y</Parameter>") != std::string::npos);
+}
+
 TEST_CASE("a_setup_parameter_no_column_holds_is_refused", tags) {
     auto lg(make_logger(test_suite));
 
@@ -158,4 +211,25 @@ TEST_CASE("a_setup_parameter_no_column_holds_is_refused", tags) {
 </ORE>)");
     CHECK_THROWS_WITH(run_document_projection::map(original),
                       Catch::Matchers::ContainsSubstring("no column holds Setup parameter"));
+}
+
+TEST_CASE("a_setup_parameter_that_is_not_a_number_is_refused", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = [](std::string_view parameter) {
+        return run_document_projection::read(std::format(R"(<ORE>
+  <Setup>
+    <Parameter name="inputPath">a</Parameter>
+    {}
+  </Setup>
+  <Analytics/>
+</ORE>)",
+                                                         parameter));
+    };
+    CHECK_THROWS_WITH(
+        run_document_projection::map(document("<Parameter name=\"nThreads\">many</Parameter>")),
+        Catch::Matchers::ContainsSubstring("is not an integer"));
+    CHECK_THROWS_WITH(
+        run_document_projection::map(document("<Parameter name=\"logMask\"></Parameter>")),
+        Catch::Matchers::ContainsSubstring("is not an integer"));
 }

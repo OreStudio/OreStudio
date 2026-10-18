@@ -47,8 +47,8 @@ FAMILIES = {
     # work and a table is owed.
     "ORE": (
         "supported",
-        "run_document_projection reads and writes it, and the value harness "
-        "proves every corpus document",
+        "run_document_projection reads and writes it; the value harness proves "
+        "the table and the projection suite proves the projection",
     ),
     "Portfolio": ("migrating", "importer and exporter read trades and their instruments"),
     "CurveConfiguration": (

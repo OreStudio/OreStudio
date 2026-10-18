@@ -375,14 +375,9 @@ run_configuration_import_execute_result import_run(nats_client& owners,
         throw std::invalid_argument(
             std::format("An ORE input holds its run document as {}.", run_document_file));
 
-    const auto run =
-        parse_file<ores::ore::domain::ore>(std::string(run_document_file), run_file->second);
-    rp::run_document document;
-    auto setup = ores::ore::domain::run_document_projection::map_setup(run);
-    document.settings = std::move(setup.settings);
-    document.files = std::move(setup.files);
-    document.analytics = ores::ore::domain::run_document_projection::map_analytics(run);
-    document.market_bindings = ores::ore::domain::run_document_projection::map_market_bindings(run);
+    const auto run = ores::ore::domain::run_document_projection::read(
+        run_file->second, std::string(run_document_file));
+    auto document = ores::ore::domain::run_document_projection::map(run);
 
     // Everything an import can refuse, a missing file or one that does not
     // parse, is found before its first write.

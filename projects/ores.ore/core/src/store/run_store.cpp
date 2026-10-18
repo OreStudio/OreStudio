@@ -215,25 +215,26 @@ std::string load_document(const context& ctx, const reporting::domain::report_co
 /**
  * @brief The run document out of a set of input files.
  */
-domain::ore parse_run_document(const input_files& files) {
+domain::mapped_setup parse_run_document(const input_files& files) {
     const auto run = files.find(std::string(run_document_file));
     if (run == files.end())
         throw std::invalid_argument(
             std::format("An ORE input holds its run document as {}.", run_document_file));
 
-    domain::ore document;
-    domain::load_data(run->second, document);
-    return document;
+    return domain::run_document_projection::map_setup(
+        domain::run_document_projection::read(run->second, std::string(run_document_file)));
 }
 
 /**
  * @brief What a run document sets one setup parameter to, empty when none.
  */
-std::string setup_parameter(const domain::ore& document, std::string_view name) {
-    for (const auto& p : document.Setup.Parameter)
-        if (std::string(p.name) == name)
-            return static_cast<const std::string&>(p);
-    return {};
+std::string setup_parameter(const domain::mapped_setup& setup, std::string_view name) {
+    if (name == "inputPath")
+        return setup.settings.input_path;
+    const auto file = std::find_if(setup.files.begin(), setup.files.end(), [name](const auto& f) {
+        return f.parameter == name;
+    });
+    return file == setup.files.end() ? std::string{} : file->name;
 }
 
 /**

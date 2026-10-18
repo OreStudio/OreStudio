@@ -37,11 +37,11 @@ ores.marketdata.service-...: Main process exited, code=dumped, status=11/SEGV
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Review round 1 answered; PR #3550 is open. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge PR #3550.                        |
+| Next          | Nothing. |
 | Last touched  | 2026-10-18                               |
 
 * Acceptance
@@ -59,11 +59,38 @@ ores.marketdata.service-...: Main process exited, code=dumped, status=11/SEGV
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:C09B7D64-B35D-4483-871A-C24D97AA9F11][Scaffold story: Hotfix: the services die on shutdown]] | STARTED | 2026-10-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:CFCDD541-DF78-4760-9F0B-30BCBFFBEB48][Wait for in-flight handlers when a subscription is destroyed]] | STARTED | 2026-10-18 | | Initial task for: Hotfix: the services die on shutdown |
+| [[id:C09B7D64-B35D-4483-871A-C24D97AA9F11][Scaffold story: Hotfix: the services die on shutdown]] | DONE | 2026-10-18 | 2026-10-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:CFCDD541-DF78-4760-9F0B-30BCBFFBEB48][Wait for in-flight handlers when a subscription is destroyed]] | DONE | 2026-10-18 | 2026-10-18 | Initial task for: Hotfix: the services die on shutdown |
 
 * Decisions
 
+- The wait belongs at the subscription handle, not at each service. Every
+  service that owns a subscription with a handler reaching its own state has
+  the same race, so one fix at the seam covers them instead of a per-service
+  teardown order.
+- A drain that does not finish leaks rather than frees. A leaked subscription
+  at shutdown is cheaper than a handler writing into freed memory.
+- A closed connection counts as drained, because closing it joins the dispatch
+  threads.
+
 * Out of scope
 
--
+- The heartbeat coroutine that =on_started= spawns is never cancelled and keeps
+  publishing until the process exits. This story does not join it; it is a
+  separate leak of the same shutdown order.
+- Rebuilding every dependent of =libores.nats= and running the whole suite here.
+  The change is in one shared library, its binaries are relinked by the build on
+  push, and the affected suites and a fleet cycle were run instead.
+
+* Result
+
+PR #3550. Destroying a subscription now waits for the handler it carries, so a
+service can destroy its state as soon as the handle goes out of scope. The
+recorded crash, one more tick arriving after "Shutdown complete" and reaching a
+freed rate engine, can no longer happen: the handler finishes first, or the
+subscription is leaked and the failure logged at error.
+
+Review raised fourteen findings across the two axes; all are answered in the
+implement task's Review table. The most valuable was that the first version
+still freed the closure on the timeout path, which would have reintroduced the
+same use-after-free, silently.

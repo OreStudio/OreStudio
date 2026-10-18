@@ -27,11 +27,11 @@ and PR #3550 carrying them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D858FF3F-2F55-4531-AE30-DCF734565361][Hotfix: the services die on shutdown]] |
-| Now          | PR #3550 is open and records this task. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close on merge, after the implement task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -85,3 +85,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks and the sprint row exist, lint clean, and are carried
+by PR #3550. The implement task holds the plan, the measurements and the review
+round, so the scaffolding did its job and nothing here outlived the merge.

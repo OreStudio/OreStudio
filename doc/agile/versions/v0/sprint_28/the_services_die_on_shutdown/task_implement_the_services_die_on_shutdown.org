@@ -28,11 +28,11 @@ return, the owner is free to destroy everything the handler reaches.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:D858FF3F-2F55-4531-AE30-DCF734565361][Hotfix: the services die on shutdown]] |
-| Now          | Review round 1 answered; the regression test passes. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Re-run the suite, then merge PR #3550.   |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -161,3 +161,18 @@ is answered here or in the commit that follows it.
 |   |                 |      |          |       |
 
 * Result
+
+Destroying a subscription now waits for the handler it carries, and the wait is
+bounded: 30s for the drain, twice that for the wait, and a drain that does not
+finish leaks the closure and the subscription rather than handing a running
+handler a dangling pointer. A closed connection counts as drained.
+
+=service_subscription_lifetime_tests.cpp= holds the behaviour: it keeps a
+handler inside a delivery, destroys the subscription from another thread, and
+asserts the destroyer has not returned while the handler still holds.
+
+Verified on this tree: the nats, iam-service and marketdata-service suites pass,
+and a fleet start and stop leaves 23 units stopped with none failed and no drain
+error in the marketdata journal. The full rebuild of every dependent of
+=libores.nats= was not run here; it takes about three hours in this checkout's
+shared build queue.

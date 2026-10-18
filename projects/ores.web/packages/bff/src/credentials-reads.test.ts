@@ -336,6 +336,41 @@ describe('GET /api/accounts/:username', () => {
 });
 
 describe('GET /api/login-info', () => {
+    it('refuses an empty string where a record states no last sign-in', async () => {
+        const never = { ...wireLoginInfo, last_login: '' };
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.login_info.list': { login_info: [never], total: 1 },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/login-info',
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(500);
+
+        await server.close();
+    });
+
+    it('forwards a record that never signed in as null', async () => {
+        const never = { ...wireLoginInfo, last_login: null };
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.login_info.list': { login_info: [never], total: 1 },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/login-info',
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().loginInfo[0].lastLogin).toBeNull();
+
+        await server.close();
+    });
+
     it('lists the login records and renames the wire\u2019s fields', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'iam.v1.login_info.list': { login_info: [wireLoginInfo], total: 1 },

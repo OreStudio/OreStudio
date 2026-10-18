@@ -23,7 +23,7 @@
 #include "ores.analytics.core/service/todays_market_document_service.hpp"
 #include "ores.database/repository/document_operations.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include "ores.ore.core/domain/curve_configuration_mapper.hpp"
+#include "ores.ore.core/domain/curve_configuration_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
@@ -144,8 +144,8 @@ void parse_document(std::string_view code,
         d.conventions =
             domain::conventions_mapper::map(parse_file<domain::conventions>(file, content));
     else if (code == "curve_configuration")
-        d.curves = domain::curve_configuration_mapper::map(
-            parse_file<domain::curveconfiguration>(file, content));
+        d.curves = domain::curve_configuration_projection::map(
+            domain::curve_configuration_projection::read(content, file));
     else if (code == "todays_market")
         d.market =
             domain::todays_market_mapper::map(parse_file<domain::todaysmarket>(file, content));
@@ -205,8 +205,8 @@ std::string load_document(const context& ctx, const reporting::domain::report_co
     }
     if (code == "curve_configuration") {
         refdata::service::curve_configuration_document_service s(ctx);
-        return domain::save_data(
-            domain::curve_configuration_mapper::reverse(s.get(header_of(s, b))));
+        return domain::curve_configuration_projection::write(
+            domain::curve_configuration_projection::reverse(s.get(header_of(s, b))));
     }
     return domain::save_data(domain::conventions_mapper::reverse(
         refdata::service::conventions_document_service(ctx).get()));

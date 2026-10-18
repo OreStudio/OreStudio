@@ -19,8 +19,10 @@
  */
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include "ores.ore.core/domain/curve_configuration_mapper.hpp"
+#include "ores.ore.core/domain/curve_configuration_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/xml/generated/curve_configuration.hpp"
+#include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
@@ -50,8 +52,8 @@
  * @file curve_configuration_database_roundtrip_tests.cpp
  * @brief The curve configuration through the database.
  *
- * The in-memory walk proves the mapper over the corpus; this proves the tables
- * hold what the mapper produces, and that the database refuses what the model
+ * The in-memory walk proves the projection over the corpus; this proves the
+ * tables hold what the projection produces, and that the database refuses what the model
  * says it must: a convention, a day counter or a segment type it does not hold.
  */
 
@@ -65,6 +67,36 @@ using ores::platform::filesystem::file;
 
 const std::string example = "external/ore/examples/Legacy/Example_62/Input/";
 
+using curve_document = curve_configuration_projection::document;
+
+/// The record a curve configuration document states, read through the codec.
+curve_document load_document(const std::string& path) {
+    return curve_configuration_projection::read(
+        file::read_content(ores::testing::project_root::resolve(path)));
+}
+
+/// States a section this document copies from another one.
+void keep(curve_document& d, std::string_view name) {
+    if (!ores::ore::xml::mark_present(
+            *ores::ore::xml::generated::curve_configuration::curve_configuration_document().root,
+            &d,
+            name))
+        throw std::runtime_error("the curve configuration table has no " + std::string(name));
+}
+
+/// Compares two documents as records, naming the first difference.
+std::string
+compare_documents(const curve_document& lhs, const curve_document& rhs, const std::string& path) {
+    const auto difference = ores::ore::xml::compare_records(
+        *ores::ore::xml::generated::curve_configuration::curve_configuration_document().root,
+        &lhs,
+        &rhs);
+    if (!difference)
+        return {};
+    return path + ": " + difference->path + ": " + difference->detail;
+}
+
+
 template <typename Document>
 Document load(const std::string& name) {
     Document d;
@@ -77,14 +109,14 @@ const std::string products_example = "external/ore/examples/Products/Input/curve
 
 // A corpus document without its yield and commodity curves, so only the
 // inflation swap and CDS conventions have to be written first.
-curveconfiguration equity_and_securities() {
-    curveconfiguration d;
-    load_data(file::read_content(ores::testing::project_root::resolve(equity_example)), d);
-    if (d.YieldCurves)
-        d.YieldCurves->YieldCurve.clear();
-    if (d.CommodityCurves)
-        d.CommodityCurves->CommodityCurve.clear();
-    return d;
+curve_document equity_and_securities() {
+    auto d = load_document(equity_example);
+    d.yield_curves.yield_curve.clear();
+    d.commodity_curves.commodity_curve.clear();
+    // Clearing a list leaves the element that held it stated, and a document
+    // that states an empty element is what the writing produces, so the
+    // document is read back before it is compared with the writing.
+    return curve_configuration_projection::read(curve_configuration_projection::write(d));
 }
 
 // Writes the conventions of one kind that the tenant does not hold yet. The
@@ -148,8 +180,8 @@ TEST_CASE("curve_configuration_roundtrip_through_the_database", tags) {
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
-    const auto original = load<curveconfiguration>("curveconfig.xml");
-    const auto mapped = curve_configuration_mapper::map(original);
+    const auto original = load_document(example + "curveconfig.xml");
+    const auto mapped = curve_configuration_projection::map(original);
     REQUIRE(!mapped.definitions.empty());
     REQUIRE(!mapped.segments.empty());
     REQUIRE(!mapped.quotes.empty());
@@ -163,9 +195,9 @@ TEST_CASE("curve_configuration_roundtrip_through_the_database", tags) {
     CHECK(back.segments.size() == mapped.segments.size());
     CHECK(back.quotes.size() == mapped.quotes.size());
 
-    curveconfiguration exported;
-    load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
-    const auto difference = ores::ore::xml::parsed_text_difference(original, exported, example);
+    const auto exported = curve_configuration_projection::read(
+        curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
+    const auto difference = compare_documents(original, exported, example);
     INFO(difference);
     CHECK(difference.empty());
 }
@@ -174,7 +206,7 @@ TEST_CASE("a segment naming a convention the tenant does not hold is refused", t
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
-    auto mapped = curve_configuration_mapper::map(load<curveconfiguration>("curveconfig.xml"));
+    auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
     REQUIRE(!mapped.segments.empty());
     mapped.segments.front().conventions = "NO-SUCH-CONVENTION";
 
@@ -186,7 +218,7 @@ TEST_CASE("a segment naming a convention the tenant does not hold is refused", t
 TEST_CASE("a yield curve naming a day counter ORE does not spell is refused", tags) {
     ores::testing::scoped_database_helper h;
 
-    auto mapped = curve_configuration_mapper::map(load<curveconfiguration>("curveconfig.xml"));
+    auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
     REQUIRE(!mapped.yield_curves.empty());
     mapped.yield_curves.front().day_counter = "Actual/365 Fixed";
 
@@ -199,7 +231,7 @@ TEST_CASE("a segment of a type the vocabulary does not hold is refused", tags) {
     ores::testing::scoped_database_helper h;
     write_conventions(h.context());
 
-    auto mapped = curve_configuration_mapper::map(load<curveconfiguration>("curveconfig.xml"));
+    auto mapped = curve_configuration_projection::map(load_document(example + "curveconfig.xml"));
     REQUIRE(!mapped.segments.empty());
     mapped.segments.front().segment_type = "Nonexistent";
 
@@ -214,7 +246,7 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     write_input_conventions(h.context());
 
     const auto original = equity_and_securities();
-    const auto mapped = curve_configuration_mapper::map(original);
+    const auto mapped = curve_configuration_projection::map(original);
     REQUIRE(!mapped.equity_curves.empty());
     REQUIRE(!mapped.securities.empty());
     REQUIRE(!mapped.inflation_curves.empty());
@@ -248,10 +280,9 @@ TEST_CASE("default, equity and inflation curves and securities round trip throug
     CHECK(back.volatility_configs.size() == mapped.volatility_configs.size());
     CHECK(back.quotes.size() == mapped.quotes.size());
 
-    curveconfiguration exported;
-    load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
-    const auto difference =
-        ores::ore::xml::parsed_text_difference(original, exported, equity_example);
+    const auto exported = curve_configuration_projection::read(
+        curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
+    const auto difference = compare_documents(original, exported, equity_example);
     INFO(difference);
     CHECK(difference.empty());
 }
@@ -269,13 +300,15 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
                   commodity_future_convention_repository(),
                   conventions_mapper::map(c).commodity_future);
 
-    curveconfiguration full;
-    load_data(file::read_content(ores::testing::project_root::resolve(products_example)), full);
-    curveconfiguration original;
-    original.EquityVolatilities = full.EquityVolatilities;
-    original.CommodityVolatilities = full.CommodityVolatilities;
-    original.ReportConfiguration = full.ReportConfiguration;
-    const auto mapped = curve_configuration_mapper::map(original);
+    const auto full = load_document(products_example);
+    curve_document original;
+    original.equity_volatilities = full.equity_volatilities;
+    keep(original, "EquityVolatilities");
+    original.commodity_volatilities = full.commodity_volatilities;
+    keep(original, "CommodityVolatilities");
+    original.report_configuration = full.report_configuration;
+    keep(original, "ReportConfiguration");
+    const auto mapped = curve_configuration_projection::map(original);
     REQUIRE(
         std::ranges::any_of(mapped.volatility_configs, [](const auto& v) { return v.is_wrapped; }));
     REQUIRE(!mapped.global_reports.empty());
@@ -286,10 +319,9 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
     CHECK(back.quotes.size() == mapped.quotes.size());
     CHECK(back.global_reports.size() == mapped.global_reports.size());
 
-    curveconfiguration exported;
-    load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
-    const auto difference =
-        ores::ore::xml::parsed_text_difference(original, exported, products_example);
+    const auto exported = curve_configuration_projection::read(
+        curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
+    const auto difference = compare_documents(original, exported, products_example);
     INFO(difference);
     CHECK(difference.empty());
 }
@@ -301,12 +333,13 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         INFO(path);
         ores::testing::scoped_database_helper h;
 
-        curveconfiguration full;
-        load_data(file::read_content(ores::testing::project_root::resolve(path)), full);
-        curveconfiguration original;
-        original.SwaptionVolatilities = full.SwaptionVolatilities;
-        original.CapFloorVolatilities = full.CapFloorVolatilities;
-        const auto mapped = curve_configuration_mapper::map(original);
+        const auto full = load_document(path);
+        curve_document original;
+        original.swaption_volatilities = full.swaption_volatilities;
+        keep(original, "SwaptionVolatilities");
+        original.cap_floor_volatilities = full.cap_floor_volatilities;
+        keep(original, "CapFloorVolatilities");
+        const auto mapped = curve_configuration_projection::map(original);
         const bool proxies = std::ranges::any_of(mapped.cap_floor_volatilities,
                                                  [](const auto& c) { return c.has_proxy_config; });
         CHECK((proxies || !mapped.parametric_smiles.empty()));
@@ -316,9 +349,9 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
         CHECK(back.parametric_smiles.size() == mapped.parametric_smiles.size());
         CHECK(back.parametric_smile_parameters.size() == mapped.parametric_smile_parameters.size());
 
-        curveconfiguration exported;
-        load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
-        const auto difference = ores::ore::xml::parsed_text_difference(original, exported, path);
+        const auto exported = curve_configuration_projection::read(
+            curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
+        const auto difference = compare_documents(original, exported, path);
         INFO(difference);
         CHECK(difference.empty());
     }
@@ -327,12 +360,11 @@ TEST_CASE("swaption and cap and floor proxies and smiles round trip through the 
 TEST_CASE("a CDS volatility's terms and strike surface round trip through the database", tags) {
     ores::testing::scoped_database_helper h;
 
-    curveconfiguration full;
-    load_data(file::read_content(ores::testing::project_root::resolve(products_example)), full);
-    REQUIRE(full.CDSVolatilities);
-    curveconfiguration original;
-    original.CDSVolatilities = full.CDSVolatilities;
-    const auto mapped = curve_configuration_mapper::map(original);
+    const auto full = load_document(products_example);
+    curve_document original;
+    original.cds_volatilities = full.cds_volatilities;
+    keep(original, "CDSVolatilities");
+    const auto mapped = curve_configuration_projection::map(original);
     REQUIRE(!mapped.cds_volatility_terms.empty());
     REQUIRE(mapped.volatility_configs.size() == 1);
 
@@ -341,10 +373,9 @@ TEST_CASE("a CDS volatility's terms and strike surface round trip through the da
     CHECK(back.cds_volatility_terms.size() == mapped.cds_volatility_terms.size());
     CHECK(back.volatility_configs.size() == 1);
 
-    curveconfiguration exported;
-    load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
-    const auto difference =
-        ores::ore::xml::parsed_text_difference(original, exported, products_example);
+    const auto exported = curve_configuration_projection::read(
+        curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
+    const auto difference = compare_documents(original, exported, products_example);
     INFO(difference);
     CHECK(difference.empty());
 }
@@ -353,17 +384,23 @@ TEST_CASE("an FX volatility's report configuration round trips through the datab
     ores::testing::scoped_database_helper h;
     write_input_conventions(h.context());
 
-    auto original = equity_and_securities();
-    REQUIRE(original.FXVolatilities);
-    REQUIRE(!original.FXVolatilities->FXVolatility.empty());
-    reportConfiguration report;
-    report.ReportOnDeltaGrid = bool_::true_;
-    report.Deltas = reportConfiguration_Deltas_t{};
-    static_cast<std::string&>(*report.Deltas) = "10P, ATM, 10C";
-    report.Expiries = reportConfiguration_Expiries_t{};
-    static_cast<std::string&>(*report.Expiries) = "1M, 1Y";
-    original.FXVolatilities->FXVolatility.front().Report = report;
-    const auto mapped = curve_configuration_mapper::map(original);
+    // A volatility entry's report states its own columns, which the document
+    // writes under the entry.
+    const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>
+  <FXVolatilities>
+    <FXVolatility>
+      <CurveId>EURUSD</CurveId>
+      <CurveDescription>A report</CurveDescription>
+      <Dimension>Smile</Dimension>
+      <Report>
+        <ReportOnDeltaGrid>Y</ReportOnDeltaGrid>
+        <Deltas>10P, ATM, 10C</Deltas>
+        <Expiries>1M, 1Y</Expiries>
+      </Report>
+    </FXVolatility>
+  </FXVolatilities>
+</CurveConfiguration>)");
+    const auto mapped = curve_configuration_projection::map(original);
     REQUIRE(mapped.report_configurations.size() == 1);
 
     write(h.context(), mapped);
@@ -371,10 +408,9 @@ TEST_CASE("an FX volatility's report configuration round trips through the datab
     REQUIRE(back.report_configurations.size() == 1);
     CHECK(back.report_configurations.front().deltas == "10P, ATM, 10C");
 
-    curveconfiguration exported;
-    load_data(save_data(curve_configuration_mapper::reverse(back)), exported);
-    const auto difference =
-        ores::ore::xml::parsed_text_difference(original, exported, equity_example);
+    const auto exported = curve_configuration_projection::read(
+        curve_configuration_projection::write(curve_configuration_projection::reverse(back)));
+    const auto difference = compare_documents(original, exported, equity_example);
     INFO(difference);
     CHECK(difference.empty());
 }
@@ -382,7 +418,7 @@ TEST_CASE("an FX volatility's report configuration round trips through the datab
 TEST_CASE("an equity curve naming a calendar ORE does not accept is refused", tags) {
     ores::testing::scoped_database_helper h;
 
-    auto mapped = curve_configuration_mapper::map(equity_and_securities());
+    auto mapped = curve_configuration_projection::map(equity_and_securities());
     REQUIRE(!mapped.equity_curves.empty());
     mapped.equity_curves.front().calendar = "JoinHolidays(TARGET, Atlantis)";
 
@@ -394,7 +430,7 @@ TEST_CASE("an equity curve naming a calendar ORE does not accept is refused", ta
 TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored", tags) {
     ores::testing::scoped_database_helper h;
 
-    auto mapped = curve_configuration_mapper::map(equity_and_securities());
+    auto mapped = curve_configuration_projection::map(equity_and_securities());
     REQUIRE(!mapped.equity_curves.empty());
     mapped.equity_curves.front().calendar =
         "JoinHolidays(TARGET, US settlement, XNYS, CUSTOM_DESK)";
@@ -408,7 +444,7 @@ TEST_CASE("an equity curve naming a joined calendar ORE accepts is stored", tags
 TEST_CASE("a party sees only its own curve configuration", tags) {
     ores::testing::scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
-    auto mapped = curve_configuration_mapper::map(equity_and_securities());
+    auto mapped = curve_configuration_projection::map(equity_and_securities());
     ores::database::domain::assign_party(mapped, parties.a);
 
     curve_configuration_repository repo;

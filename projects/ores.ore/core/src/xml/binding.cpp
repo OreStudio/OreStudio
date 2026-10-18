@@ -31,8 +31,6 @@ namespace ores::ore::xml {
 namespace {
 
 /// The value record_type::text_field holds when a type has no text of its own.
-constexpr std::uint8_t no_text = 0xFF;
-
 constexpr auto hash_name(std::string_view name) -> std::uint32_t {
     std::uint32_t h = 2166136261u;
     for (const char c : name) {
@@ -83,11 +81,11 @@ auto find_by_name(const record_type& type, std::string_view name) -> const field
 }
 
 auto present(const void* record, const field& f) -> bool {
-    return (*static_cast<const std::uint64_t*>(record) & (1ull << f.bit)) != 0;
+    return bit_is_set(record, f);
 }
 
 auto mark_present(void* record, const field& f) -> void {
-    *static_cast<std::uint64_t*>(record) |= (1ull << f.bit);
+    set_bit(record, f);
 }
 
 /**
@@ -232,9 +230,8 @@ auto find_field(const record_type& type, std::string_view name, bool attribute) 
     return find(type, name, attribute);
 }
 
-auto enumeration_spelling(const record_type& type,
-                          const void* record,
-                          std::string_view name) -> std::optional<std::string> {
+auto enumeration_spelling(const record_type& type, const void* record, std::string_view name)
+    -> std::optional<std::string> {
     const auto* f = find_by_name(type, name);
     if (f == nullptr || f->kind != field_kind::enumeration || !present(record, *f) ||
         f->tokens == nullptr)
@@ -291,9 +288,8 @@ auto mark_present(const record_type& type, void* record, std::string_view name) 
     return true;
 }
 
-auto binder::bind(const document_type& doc,
-                  std::string_view text,
-                  void* root) -> std::expected<void, bind_error> {
+auto binder::bind(const document_type& doc, std::string_view text, void* root)
+    -> std::expected<void, bind_error> {
     // A frame is either a record being filled or a leaf awaiting its text. A
     // leaf is a frame rather than a flag so a leaf with children is refused
     // instead of quietly popping its parent, and so a leaf's own attributes

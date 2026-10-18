@@ -26,11 +26,11 @@ A person arrives with the trader's question -- what date does this tenor give on
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:335C4014-C3EF-4EA3-B704-8C30926D4D00][A trader screen that resolves a tenor to a date, before any editing]] |
-| Now          | Built, verified and reviewed; the PR carries it. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then the two captures this raised. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance

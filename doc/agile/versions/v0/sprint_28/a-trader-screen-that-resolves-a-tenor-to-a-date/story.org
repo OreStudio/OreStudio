@@ -47,11 +47,11 @@ about the rule they are typing. This story builds the first screen only.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The resolve screen is built; the PR carries it. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge, then the two captures the work raised. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-18                               |
 
 * Acceptance
@@ -75,7 +75,7 @@ about the rule they are typing. This story builds the first screen only.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BD5DDBDB-5FA4-4116-9B58-A484D396CEF9][Resolve a tenor to a date from the tenors area]] | STARTED | 2026-10-18 | | Task for: A trader screen that resolves a tenor to a date, before any editing |
+| [[id:BD5DDBDB-5FA4-4116-9B58-A484D396CEF9][Resolve a tenor to a date from the tenors area]] | DONE | 2026-10-18 | 2026-10-18 | Task for: A trader screen that resolves a tenor to a date, before any editing |
 
 * Decisions
 

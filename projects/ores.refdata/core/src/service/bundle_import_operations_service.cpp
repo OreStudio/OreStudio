@@ -20,9 +20,9 @@
 #include "ores.refdata.core/service/bundle_import_operations_service.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/domain/bundle_import.hpp"
 #include "ores.refdata.api/domain/bundle_import_item.hpp"
+#include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -85,8 +85,8 @@ bool known_family(const std::string& family) {
 bundle_import_operations_service::bundle_import_operations_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-messaging::begin_bundle_import_response bundle_import_operations_service::begin(
-    const messaging::begin_bundle_import_request& request) {
+messaging::begin_bundle_import_response
+bundle_import_operations_service::begin(const messaging::begin_bundle_import_request& request) {
     messaging::begin_bundle_import_response response;
     if (request.id.is_nil()) {
         response.message = "A bundle import needs the caller's id.";
@@ -130,8 +130,8 @@ messaging::begin_bundle_import_response bundle_import_operations_service::begin(
     return response;
 }
 
-messaging::stage_bundle_family_response bundle_import_operations_service::stage(
-    const messaging::stage_bundle_family_request& request) {
+messaging::stage_bundle_family_response
+bundle_import_operations_service::stage(const messaging::stage_bundle_family_request& request) {
     messaging::stage_bundle_family_response response;
     if (request.import_id.is_nil()) {
         response.message = "A staged family needs an import id.";
@@ -195,8 +195,8 @@ messaging::stage_bundle_family_response bundle_import_operations_service::stage(
     return response;
 }
 
-messaging::commit_bundle_import_response bundle_import_operations_service::commit(
-    const messaging::commit_bundle_import_request& request) {
+messaging::commit_bundle_import_response
+bundle_import_operations_service::commit(const messaging::commit_bundle_import_request& request) {
     messaging::commit_bundle_import_response response;
     if (request.import_id.is_nil()) {
         response.message = "A commit needs an import id.";
@@ -220,8 +220,7 @@ messaging::commit_bundle_import_response bundle_import_operations_service::commi
         }
         auto import = found.front();
         if (import.state != "staging") {
-            response.message =
-                "Bundle import '" + key + "' is " + import.state + ", not staging.";
+            response.message = "Bundle import '" + key + "' is " + import.state + ", not staging.";
             return response;
         }
 

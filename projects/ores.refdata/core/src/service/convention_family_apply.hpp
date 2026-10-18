@@ -34,20 +34,15 @@ struct conventions_save_result;
 // are owned by convention_family_apply.cpp. The generator emits the bodies; if
 // a signature here stops matching, the link fails, which is the point.
 
-void apply_party_families(const ores::database::context& ctx,
-                          messaging::conventions_document& v);
-void apply_families_by_id(const ores::database::context& ctx,
-                          messaging::conventions_document& v);
+void apply_party_families(const ores::database::context& ctx, messaging::conventions_document& v);
+void apply_families_by_id(const ores::database::context& ctx, messaging::conventions_document& v);
 void apply_world_families(const ores::database::context& ctx,
                           messaging::conventions_document& v,
                           conventions_save_result& result);
 
-void read_party_families(const ores::database::context& ctx,
-                         messaging::conventions_document& v);
-void read_families_by_id(const ores::database::context& ctx,
-                         messaging::conventions_document& v);
-void read_world_families(const ores::database::context& ctx,
-                         messaging::conventions_document& v);
+void read_party_families(const ores::database::context& ctx, messaging::conventions_document& v);
+void read_families_by_id(const ores::database::context& ctx, messaging::conventions_document& v);
+void read_world_families(const ores::database::context& ctx, messaging::conventions_document& v);
 
 bool apply_staged_family(const ores::database::context& ctx,
                          const std::string& family,

@@ -232,8 +232,9 @@ auto find_field(const record_type& type, std::string_view name, bool attribute) 
     return find(type, name, attribute);
 }
 
-auto enumeration_spelling(const record_type& type, const void* record, std::string_view name)
-    -> std::optional<std::string> {
+auto enumeration_spelling(const record_type& type,
+                          const void* record,
+                          std::string_view name) -> std::optional<std::string> {
     const auto* f = find_by_name(type, name);
     if (f == nullptr || f->kind != field_kind::enumeration || !present(record, *f) ||
         f->tokens == nullptr)
@@ -290,8 +291,9 @@ auto mark_present(const record_type& type, void* record, std::string_view name) 
     return true;
 }
 
-auto binder::bind(const document_type& doc, std::string_view text, void* root)
-    -> std::expected<void, bind_error> {
+auto binder::bind(const document_type& doc,
+                  std::string_view text,
+                  void* root) -> std::expected<void, bind_error> {
     // A frame is either a record being filled or a leaf awaiting its text. A
     // leaf is a frame rather than a flag so a leaf with children is refused
     // instead of quietly popping its parent, and so a leaf's own attributes

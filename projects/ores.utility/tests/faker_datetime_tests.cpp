@@ -70,8 +70,7 @@ TEST_CASE("past_string_is_a_database_timestamp_between_1970_and_2038", tags) {
 
     // to_db_string keeps the six-digit fraction, because the database column
     // keeps it too.
-    const std::regex shape(
-        R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6})");
+    const std::regex shape(R"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6})");
 
     for (int i = 0; i < 20; ++i) {
         const auto s = datetime::past_string();

@@ -201,8 +201,7 @@ TEST_CASE("create_multiple_random_sessions", tags) {
             std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
 
         if (faker::datatype::boolean()) {
-            sut.end_time =
-                sut.start_time + std::chrono::minutes(faker::number::integer(1, 480));
+            sut.end_time = sut.start_time + std::chrono::minutes(faker::number::integer(1, 480));
         }
 
         sut.client_ip = boost::asio::ip::make_address(faker::internet::ipv4());

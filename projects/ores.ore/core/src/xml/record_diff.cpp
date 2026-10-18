@@ -46,8 +46,10 @@ auto describe_number(const T& value) -> std::string {
 /**
  * @brief Compares one leaf value, which the row names the type of.
  */
-auto compare_value(std::string& path, const field& f, const void* left, const void* right)
-    -> std::optional<record_difference> {
+auto compare_value(std::string& path,
+                   const field& f,
+                   const void* left,
+                   const void* right) -> std::optional<record_difference> {
     switch (f.kind) {
         case field_kind::text: {
             const auto& lhs = *static_cast<const std::string*>(left);
@@ -105,14 +107,18 @@ auto compare_value(std::string& path, const field& f, const void* left, const vo
     return record_difference{path, "a row of an unknown kind reached the walk"};
 }
 
-auto compare_record(std::string& path, const record_type& type, const void* left, const void* right)
-    -> std::optional<record_difference>;
+auto compare_record(std::string& path,
+                    const record_type& type,
+                    const void* left,
+                    const void* right) -> std::optional<record_difference>;
 
 /**
  * @brief Compares one repeated member, element by element.
  */
-auto compare_repeated(std::string& path, const field& f, const void* left, const void* right)
-    -> std::optional<record_difference> {
+auto compare_repeated(std::string& path,
+                      const field& f,
+                      const void* left,
+                      const void* right) -> std::optional<record_difference> {
     const auto count_left = f.repeated->count(left);
     const auto count_right = f.repeated->count(right);
     if (count_left != count_right)
@@ -144,8 +150,10 @@ auto compare_repeated(std::string& path, const field& f, const void* left, const
     return {};
 }
 
-auto compare_record(std::string& path, const record_type& type, const void* left, const void* right)
-    -> std::optional<record_difference> {
+auto compare_record(std::string& path,
+                    const record_type& type,
+                    const void* left,
+                    const void* right) -> std::optional<record_difference> {
     for (std::uint8_t i = 0; i < type.field_count; ++i) {
         const auto& f = type.fields[i];
         const bool here = present(left, f);
@@ -205,8 +213,9 @@ auto compare_record(std::string& path, const record_type& type, const void* left
 
 }
 
-auto compare_records(const record_type& type, const void* left, const void* right)
-    -> std::optional<record_difference> {
+auto compare_records(const record_type& type,
+                     const void* left,
+                     const void* right) -> std::optional<record_difference> {
     std::string path(type.name);
     return compare_record(path, type, left, right);
 }

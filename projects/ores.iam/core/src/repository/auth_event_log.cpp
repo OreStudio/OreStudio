@@ -196,12 +196,10 @@ auth_event_log::read_events(const context& ctx,
         "order by event_time desc "
         "limit $6::bigint offset $7::bigint";
 
-    const auto from_bound = from_time.has_value() ?
-                                std::optional(datetime::to_iso8601_utc(*from_time)) :
-                                std::nullopt;
-    const auto to_bound = to_time.has_value() ?
-                              std::optional(datetime::to_iso8601_utc(*to_time)) :
-                              std::nullopt;
+    const auto from_bound =
+        from_time.has_value() ? std::optional(datetime::to_iso8601_utc(*from_time)) : std::nullopt;
+    const auto to_bound =
+        to_time.has_value() ? std::optional(datetime::to_iso8601_utc(*to_time)) : std::nullopt;
 
     const auto rows = execute_parameterized_multi_column_query(
         ctx,

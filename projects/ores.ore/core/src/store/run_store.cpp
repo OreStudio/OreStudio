@@ -22,13 +22,13 @@
 #include "ores.analytics.core/service/pricing_engines_document_service.hpp"
 #include "ores.analytics.core/service/todays_market_document_service.hpp"
 #include "ores.database/repository/document_operations.hpp"
-#include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/domain/todays_market_projection.hpp"
-#include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "ores.reporting.core/repository/file_type_repository.hpp"
@@ -130,7 +130,7 @@ Document parse_file(const std::string& file, const std::string& content) {
  * @brief The configuration documents a run names, parsed and mapped.
  */
 struct parsed_documents {
-    std::optional<refdata::messaging::conventions_document> conventions;
+    std::optional<domain::conventions_package> conventions;
     std::optional<refdata::messaging::curve_configuration_document> curves;
     std::optional<analytics::messaging::todays_market_document> market;
     std::optional<analytics::messaging::pricing_engines_document> engines;
@@ -141,8 +141,7 @@ void parse_document(std::string_view code,
                     const std::string& content,
                     parsed_documents& d) {
     if (code == "conventions")
-        d.conventions =
-            domain::conventions_mapper::map(parse_file<domain::conventions>(file, content));
+        d.conventions = domain::split_conventions(parse_file<domain::conventions>(file, content));
     else if (code == "curve_configuration")
         d.curves = domain::curve_configuration_projection::map(
             domain::curve_configuration_projection::read(content, file));
@@ -174,9 +173,12 @@ void store_document(const context& ctx,
     } else if (code == "curve_configuration") {
         refdata::service::curve_configuration_document_service(ctx).save(with_header(*d.curves));
     } else if (code == "conventions") {
-        const auto saved = refdata::service::conventions_document_service(ctx).save(*d.conventions);
-        r.world_conventions_kept = saved.world_kept;
-        r.fx_conventions_skipped = saved.fx_skipped;
+        const auto applied =
+            refdata::service::conventions_bundle_service(ctx).apply(d.conventions->bundle);
+        r.world_conventions_kept = applied.world_kept;
+        for (const auto& fx : d.conventions->fx)
+            r.fx_conventions_skipped.push_back(fx.pair.base_currency + "-" +
+                                               fx.pair.quote_currency + "-FX-CONVENTIONS");
     }
 }
 
@@ -209,8 +211,10 @@ std::string load_document(const context& ctx, const reporting::domain::report_co
         return domain::curve_configuration_projection::write(
             domain::curve_configuration_projection::reverse(s.get(header_of(s, b))));
     }
-    return domain::save_data(domain::conventions_mapper::reverse(
-        refdata::service::conventions_document_service(ctx).get()));
+    // A package is read from the session's rows alone, so it carries no FX
+    // convention, exactly as the store holds none.
+    return domain::save_data(domain::join_conventions(
+        domain::conventions_package{refdata::service::conventions_bundle_service(ctx).read(), {}}));
 }
 
 /**

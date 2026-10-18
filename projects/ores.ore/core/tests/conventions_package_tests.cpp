@@ -1,0 +1,168 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
+#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include "ores.testing/project_root.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+/**
+ * @file conventions_package_tests.cpp
+ * @brief The ORE document split at the family boundary, and put back together.
+ *
+ * The package replaces the aggregate as the mapper's intermediate shape, so it
+ * has to agree with that aggregate before any caller moves onto it. The whole
+ * corpus is the comparison: every file the export can round trip has to leave
+ * the package as the same bytes the document leaves it as.
+ */
+
+namespace {
+
+const std::string tags("[ore][conventions][package]");
+
+using namespace ores::ore::domain;
+
+std::filesystem::path corpus_root() {
+    return ores::testing::project_root::resolve("external/ore/examples");
+}
+
+std::string read(const std::filesystem::path& path) {
+    std::ifstream in(path, std::ios::binary);
+    std::ostringstream buffer;
+    buffer << in.rdbuf();
+    return buffer.str();
+}
+
+conventions load(const std::filesystem::path& path) {
+    conventions document;
+    load_data(read(path), document);
+    return document;
+}
+
+/**
+ * @brief What the export writes today, through the aggregate.
+ */
+std::string document_bytes(const conventions& document) {
+    return save_data(conventions_mapper::reverse(conventions_mapper::map(document)));
+}
+
+}
+
+TEST_CASE("a_corpus_file_leaves_the_package_as_the_document_leaves_it", tags) {
+    int walked = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+
+        // A file carrying a category no entity models cannot round trip either
+        // way, and which those are is the round trip suite's measurement.
+        if (!conventions_mapper::unmodelled(document).empty())
+            continue;
+
+        ++walked;
+        const std::string via_package = save_data(join_conventions(split_conventions(document)));
+
+        INFO(path.string());
+        CHECK(via_package == document_bytes(document));
+    }
+
+    CHECK(walked == 72);
+}
+
+TEST_CASE("the_package_carries_one_row_for_every_document_element", tags) {
+    int checked = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        const auto package = split_conventions(document);
+
+        const auto rows_of = [&package](std::string_view family) {
+            std::size_t count = 0;
+            for (const auto& row : package.bundle.rows)
+                if (row.family == family)
+                    ++count;
+            return count;
+        };
+
+        INFO(path.string());
+        CHECK(rows_of("deposit") == document.Deposit.size());
+        CHECK(rows_of("ois") == document.OIS.size());
+        CHECK(rows_of("ibor_index") == document.IborIndex.size());
+        CHECK(rows_of("zero_inflation_index") == document.ZeroInflationIndex.size());
+        CHECK(rows_of("tenor_basis_two_swap") == document.TenorBasisTwoSwap.size());
+
+        // The one document element that is three families.
+        CHECK(rows_of("convention") == document.TenorBasisSwap.size());
+        ++checked;
+    }
+
+    CHECK(checked == 72);
+}
+
+TEST_CASE("the_package_keeps_the_fx_convention_out_of_the_bundle", tags) {
+    int files_with_fx = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (document.FX.empty())
+            continue;
+
+        ++files_with_fx;
+        const auto package = split_conventions(document);
+
+        INFO(path.string());
+        CHECK(package.fx.size() == document.FX.size());
+        for (const auto& row : package.bundle.rows)
+            CHECK(row.family != "fx");
+
+        // An FX convention is a projection of the pair, its convention and its
+        // calendars, so it comes back unchanged and was never stored.
+        const auto joined = join_conventions(package);
+        REQUIRE(joined.FX.size() == document.FX.size());
+        for (std::size_t i = 0; i < document.FX.size(); ++i) {
+            CHECK(to_string(joined.FX[i].SourceCurrency) ==
+                  to_string(document.FX[i].SourceCurrency));
+            CHECK(to_string(joined.FX[i].TargetCurrency) ==
+                  to_string(document.FX[i].TargetCurrency));
+        }
+    }
+
+    CHECK(files_with_fx > 0);
+}
+
+TEST_CASE("a_payload_no_family_can_decode_is_refused", tags) {
+    conventions_package package;
+    package.bundle.rows.push_back({"zero", 0, "not a payload"});
+
+    CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
+}
+
+TEST_CASE("a_payload_from_a_family_no_element_carries_is_refused", tags) {
+    conventions_package package;
+    package.bundle.rows.push_back({"no_such_family", 0, "{}"});
+
+    CHECK_THROWS_AS(join_conventions(package), std::runtime_error);
+}

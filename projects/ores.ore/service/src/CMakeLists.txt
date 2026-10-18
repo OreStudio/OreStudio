@@ -66,6 +66,7 @@ target_link_libraries(${lib_target_name}
         ores.workflow.api.lib
         ores.iam.client.lib
         ores.refdata.api.lib
+        ores.refdata.core.lib
         ores.trading.api.lib
         ores.reporting.api.lib
         Boost::boost)

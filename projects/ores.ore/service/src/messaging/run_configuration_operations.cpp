@@ -20,7 +20,7 @@
 #include "ores.ore.service/messaging/run_configuration_operations.hpp"
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
@@ -207,67 +207,44 @@ std::vector<rfl::Generic> read_family(nats_client& owners,
 // Stages one message per row, because a stage carries one family value.
 void stage_conventions(nats_client& owners,
                        const boost::uuids::uuid& import_id,
-                       const rd::conventions_document& document) {
-    const auto parsed = rfl::json::read<rfl::Generic>(rfl::json::write(document));
-    if (!parsed)
-        throw std::runtime_error(
-            std::format("The conventions document does not serialise: {}", parsed.error().what()));
-    const auto* object = std::get_if<rfl::Generic::Object>(&parsed->get());
-    if (object == nullptr)
-        throw std::runtime_error("The conventions document is not an object.");
-
-    for (const auto& family : ores::refdata::domain::convention_families) {
-        const auto* member = member_of(*object, family.key);
-        if (member == nullptr)
-            continue;
-        const auto* rows = array_of(*member);
-        if (rows == nullptr)
-            continue;
-        int sequence = 0;
-        for (const auto& row : *rows) {
-            const auto staged =
-                call(owners,
-                     rd::stage_bundle_family_request{.import_id = import_id,
-                                                     .family = std::string(family.key),
-                                                     .sequence = sequence++,
-                                                     .payload = rfl::json::write(row)});
-            if (!staged.success)
-                throw std::runtime_error(staged.message);
-        }
+                       const domain::conventions_package& package) {
+    for (const auto& row : package.bundle.rows) {
+        const auto staged = call(owners,
+                                 rd::stage_bundle_family_request{.import_id = import_id,
+                                                                 .family = row.family,
+                                                                 .sequence = row.sequence,
+                                                                 .payload = row.payload});
+        if (!staged.success)
+            throw std::runtime_error(staged.message);
     }
 }
 
 // Begins an import, stages every family, then commits them in one transaction.
 rd::commit_bundle_import_response save_conventions(nats_client& owners,
-                                                   const rd::conventions_document& document) {
+                                                   const domain::conventions_package& package) {
     const auto import_id = boost::uuids::random_generator()();
     const auto begun = call(owners, rd::begin_bundle_import_request{.id = import_id});
     if (!begun.success)
         throw std::runtime_error(begun.message);
-    stage_conventions(owners, import_id, document);
+    stage_conventions(owners, import_id, package);
     auto committed = call(owners, rd::commit_bundle_import_request{.import_id = import_id});
     if (!committed.success)
         throw std::runtime_error(committed.message);
     return committed;
 }
 
-// Reassembles the document from one paged read per family. No family carries
-// the whole document, and no read spans the others.
-rd::conventions_document read_conventions(nats_client& owners, const std::string& party_id) {
-    rfl::Generic::Object document;
-    for (const auto& family : ores::refdata::domain::convention_families)
-        document.insert(std::string(family.key),
-                        rfl::Generic{read_family(owners, family, party_id)});
+// Reads one page group per family, and the payloads are the bundle. No family
+// carries the whole document, and no read spans the others.
+domain::conventions_package read_conventions(nats_client& owners, const std::string& party_id) {
+    domain::conventions_package package;
+    for (const auto& family : ores::refdata::domain::convention_families) {
+        int sequence = 0;
+        for (const auto& row : read_family(owners, family, party_id))
+            package.bundle.rows.push_back(
+                {std::string(family.key), sequence++, rfl::json::write(row)});
+    }
     // FX conventions have no store, as they have none on the write path.
-    document.insert(std::string{"fx"}, rfl::Generic{std::vector<rfl::Generic>{}});
-
-    const auto parsed = rfl::json::read<rd::conventions_document>(
-        rfl::json::write(rfl::Generic{std::move(document)}));
-    if (!parsed)
-        throw std::runtime_error(
-            std::format("The per-family reads do not assemble a conventions document: {}",
-                        parsed.error().what()));
-    return *parsed;
+    return package;
 }
 
 // The documents a run names, each with the Setup parameter the file types table gives it.
@@ -308,7 +285,7 @@ boost::uuids::uuid parse_id(const std::string& text) {
  * @brief The configuration documents a run names, parsed and mapped.
  */
 struct parsed_documents {
-    std::optional<rd::conventions_document> conventions;
+    std::optional<domain::conventions_package> conventions;
     std::optional<rd::curve_configuration_document> curves;
     std::optional<an::todays_market_document> market;
     std::optional<an::pricing_engines_document> engines;
@@ -320,7 +297,7 @@ void parse_document(std::string_view code,
                     parsed_documents& d) {
     using namespace ores::ore::domain;
     if (code == "conventions")
-        d.conventions = conventions_mapper::map(parse_file<conventions>(file, content));
+        d.conventions = split_conventions(parse_file<conventions>(file, content));
     else if (code == "curve_configuration")
         d.curves = curve_configuration_projection::map(
             curve_configuration_projection::read(content, file));
@@ -490,8 +467,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
         const auto configuration = boost::uuids::to_string(b.configuration_id);
         const auto& code = b.configuration_type_code;
         if (code == "conventions")
-            files[*file] =
-                save_data(conventions_mapper::reverse(read_conventions(owners, run.party_id)));
+            files[*file] = save_data(join_conventions(read_conventions(owners, run.party_id)));
         else if (code == "curve_configuration")
             files[*file] =
                 curve_configuration_projection::write(curve_configuration_projection::reverse(

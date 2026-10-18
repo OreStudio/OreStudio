@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 5D8B19E3-3EB2-4F31-8879-90FB4530EB07
+:END:
+#+title: Story: Hotfix: the site stops on a link it cannot resolve
+#+description: A full site build aborts on an org id that no page defines, because two links spell it in upper case.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:docs:hotfix:site:sprint_28:v0:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The documentation site builds. A full export stops when org cannot resolve an
+=id:= link, and this page's id disagreed with the links that name it. The page
+defined it in lower case while two of the five links spelled it in upper case,
+and org resolves ids by exact string:
+
+#+begin_example
+Build failed: Org export aborted.  Unable to resolve link:
+"465CA244-C488-4C69-ACA3-C694D104A42A"
+#+end_example
+
+=doc/meta/document_types.org= settles which spelling is right: every =:ID:= and
+every =[[id:UUID]]= link is uppercase hex, and a hand-edited or copy-pasted
+UUID follows the same rule. So the definition was the deviant one, and the fix
+uppercases it and the five links, not the other way round.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-10-18                               |
+
+* Acceptance
+
+- The page's =:ID:= is uppercase, and every link that names it matches exactly.
+- The six pages that carry the id publish without a resolution failure.
+- A full site build succeeds.
+- =site-page=, =lint=, =org-links= and =backlog-indexes= pass.
+
+* Decisions
+
+- Uppercase the definition rather than lowercase the links. The rule is
+  documented; conforming to the deviant side would have made the tree agree with
+  its own exception.
+- Leave the rest of the tree's lowercase ids alone. About 7,956 documents carry
+  a lower-case =:ID:=, so widening this hotfix would turn it into a migration.
+
+* Out of scope
+
+- The 7,956 lower-case =:ID:= properties elsewhere in =doc/= and
+  =projects/*/modeling/=. They violate the same rule and are a migration, not a
+  hotfix.
+- The regenerated backlog index. Another environment added a capture without
+  regenerating the indexes, which reds =backlog-indexes= on every branch cut
+  after it; the row is carried here because it was in the way, and it is
+  generator output rather than part of this story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:65659BF3-D75B-4A5C-B63C-665763A4DC35][Scaffold story: Hotfix: the site stops on a link it cannot resolve]] | DONE | 2026-10-18 | 2026-10-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A88E6072-B6F3-4A3E-AE60-5ABC720C3F8E][Point the look-back links at the page that defines them]] | DONE | 2026-10-18 | 2026-10-18 | Initial task for: Hotfix: the site stops on a link it cannot resolve |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+PR #3551. The page's id and the five links that name it are uppercase, which is
+the form =doc/meta/document_types.org= requires, and the full site export
+succeeds: 12,585 nodes and 52,094 links.
+
+The reviews were right about the direction: the first version lowered the
+conforming links to the deviant id, and the rule says the definition was the
+outlier. They were also right that the task's gate claims were wrong. =site-page=
+would have caught the broken link, because the links landed in commits that
+changed their own pages; the gap that let it through is that the full build is
+=deploy_site=, which =compass check= never runs, and that =lint= uppercases both
+sides before comparing ids, so a case disagreement cannot reach it.

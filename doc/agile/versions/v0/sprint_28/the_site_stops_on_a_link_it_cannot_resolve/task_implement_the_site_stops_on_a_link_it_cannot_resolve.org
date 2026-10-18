@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: A88E6072-B6F3-4A3E-AE60-5ABC720C3F8E
+:END:
+#+title: Task: Point the look-back links at the page that defines them
+#+description: Initial task for: Hotfix: the site stops on a link it cannot resolve
+#+type: task
+#+level: s1
+#+filetags: :the_site_stops_on_a_link_it_cannot_resolve:sprint_28:v0:
+#+owner: marco
+#+branch: hotfix/the-site-stops-on-a-link-it-cannot-resolve
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5D8B19E3-3EB2-4F31-8879-90FB4530EB07][Hotfix: the site stops on a link it cannot resolve]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The full site export runs to the end, with the page's =:ID:= and the five links
+that name it spelled one way, in the form the project requires.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5D8B19E3-3EB2-4F31-8879-90FB4530EB07][Hotfix: the site stops on a link it cannot resolve]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The definition and every link that names it are uppercase and equal.
+- The six pages publish with no resolution failure.
+- =site-page=, =lint=, =org-links= and =backlog-indexes= pass.
+
+* Plan
+
+The id belongs to =doc/knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org=.
+It was defined in lower case, and two of its five links were upper case, so the
+export could not resolve them:
+
+#+begin_example
+doc/knowledge/journeys/conventions/journey_change_the_convention_for_one_kind.org:313
+doc/knowledge/journeys/reporting/journey_change_what_a_report_runs.org:436
+#+end_example
+
+=doc/meta/document_types.org= requires uppercase hex for the =:ID:= and for
+every =[[id:UUID]]= link, so the definition moves up to match the other three
+links rather than the links moving down.
+
+Review round 1 corrected two claims this task first carried:
+
+- "=site-page= publishes only the pages a change touches, so a broken link in an
+  untouched page never gets exported by it" was true but irrelevant: the two
+  links landed in commits that changed their own pages, and publishing either
+  page with the upper-case link fails the same way. =site-page= would have
+  caught it.
+- "=org-links= checks links, but not whether an =id:= link matches by case"
+  overstated it: =org-links= only follows colon-prefixed targets and never
+  resolves an =id:= at all. =lint= does compare ids, but uppercases both sides
+  first, so it is blind to case. That is the real gap, and it is why the tree
+  reached a state where a definition and its links disagreed.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| six pages publish | 6 file(s), 0 failure(s) | =./compass.sh site page <the six pages>= | fe801932a6 |
+| full site export after the fix | succeeds: 12,585 nodes and 52,094 links | =./compass.sh build --direct site= | 1c5968a9eb |
+| full site export before the fix | aborts: Unable to resolve link "465CA244-..." | =./compass.sh build --direct site= | 39796470a0 |
+| site gate set | 4 of 4 pass | =./compass.sh check --only lint --only org-links --only site-page --only backlog-indexes= | fe801932a6 |
+
+* Notes
+
+The failure only appears in a full build. That build is the =deploy_site=
+target, which =compass check= does not run, so a gate sweep never sees this
+class of break; the page-level gate only sees the pages a change touches.
+
+* Review
+
+Round 1 ran the two axes. Every finding is answered here or in the commit that
+follows it.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The fix lowered the conforming links to the deviant id; the rule is uppercase | document_types.org | fixed | The definition and its five links are now uppercase |
+| 2 | "The page gates could not have caught it" is false | story.org | fixed | Rewritten: site-page catches it, and the gap is deploy_site not being in compass check |
+| 3 | org-links does not resolve ids at all; lint compares uppercased and is blind to case | task Plan | fixed | The task now states what each gate actually does |
+| 4 | The measurement commit was an orphan after an amend | task Measurements | fixed | Re-measured at the commit that carries the fix |
+| 5 | "referenced six times, the other four" counted the definition as a reference | story.org | fixed | Five links and one definition, stated plainly |
+| 6 | The scaffold task was boilerplate | task_scaffold_*.org | fixed | Filled |
+| 7 | The backlog index row is a second concern on a docs hotfix | Out of scope | kept | Recorded as out of scope with the reason it was in the way |
+
+* Test Scenarios
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| Publish the six pages that name the id | MANUAL | compass site page <the six pages> must report 0 failures |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 3551 | [docs] Resolve the two look-back links the site build aborts on |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The page's id and the five links that name it are uppercase and equal, and a
+full site export succeeds: 12,585 nodes and 52,094 links. The six pages that
+carry the id publish with 0 failures.
+
+Review moved this from the wrong fix to the right one. The first version
+lowered the links to the deviant definition; the rule says uppercase, so the
+definition moved up instead. It also removed two claims the task could not
+support about which gates would have caught it.

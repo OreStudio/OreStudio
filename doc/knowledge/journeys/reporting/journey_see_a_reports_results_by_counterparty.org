@@ -337,7 +337,7 @@ handler authenticates the caller's token and checks the read codes above.
 - [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — the errors against a counterparty's trades, read as a set of their own rather than as a footnote to one name
 - [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door that leads to the run this view belongs to
 - [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run that produced these figures, and the terminal panel it lands on
-- [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] — the earlier runs of the same report, when the question is how a counterparty's share moved
+- [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] — the earlier runs of the same report, when the question is how a counterparty's share moved
 
 * Related knowledge
 

@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: 465ca244-c488-4c69-aca3-c694d104a42a
+:ID: 465CA244-C488-4C69-ACA3-C694D104A42A
 :END:
 #+title: User Journey: Look back over a report's history
 #+description: A person opens one report definition's run history, reads the runs newest first with each run's started and completed time, sees the last five fire times, opens any earlier run, and learns without losing their place that a newer run has arrived.

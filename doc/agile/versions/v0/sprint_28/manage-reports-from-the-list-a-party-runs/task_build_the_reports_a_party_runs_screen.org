@@ -8,7 +8,7 @@
 #+filetags: :reporting:web:bff:sprint_28:v0:manage-reports-from-the-list-a-party-runs:
 #+owner: marco
 #+branch: feature/the-reports-a-party-runs
-#+pr:
+#+pr: 3558
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -158,7 +158,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3558][#3558]] | [reporting] Draw the reports a party runs and edit one |
 
 * Review
 

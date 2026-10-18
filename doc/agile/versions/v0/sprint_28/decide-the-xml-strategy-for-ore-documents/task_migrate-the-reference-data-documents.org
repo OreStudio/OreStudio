@@ -223,6 +223,24 @@ written first because that is where ORE writes it. The suite compares Setup by
 name and value and each analytic by name and value, and it compares the analytics
 in order and the markets as a subtree.
 
+* The portfolio table is blocked on the type ordering
+
+The portfolio schema reaches five shapes the generator did not read, and four are
+done: a model group, a substitution member that writes its inline type, a
+reference to a global element of an earlier schema file, and an element with no
+type at all. The fifth is a recursive type, =cbodata=.
+
+A record has a fixed layout and cannot hold itself, so the member that closes the
+cycle has to be left out. The first attempt did that while the reachable-type set
+had already been computed without the cut, so the emission named a type that was
+never generated (=powerLoadProfileDataType=) and the run stopped. The fix is to
+derive the emitted types from the table after the cut, and to state in the
+generated file which member was left out and why, so a document that uses it is
+refused by the reading rather than half stored.
+
+Until that lands, the family has no table, no PR, and the census keeps it as the
+one migrating family.
+
 * Where the work stands
 
 Verified on main at the time of writing, with the commands that prove each

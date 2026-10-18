@@ -199,16 +199,23 @@ std::vector<rangeBound> parse_json_range_bounds(const std::string& json) {
                                            value_end == std::string::npos ? std::string::npos :
                                                                             value_end - colon - 1);
             const auto number = std::stof(value);
+            // The levels are lexical money leaves, so the text the JSON states
+            // travels with the float and the digits survive the mapping.
+            const auto money = [&]() {
+                moneyFloat leaf;
+                static_cast<float&>(leaf) = number;
+                return leaf;
+            };
             if (key == "RangeFrom")
-                rb.RangeFrom = number;
+                rb.RangeFrom = money();
             else if (key == "RangeTo")
-                rb.RangeTo = number;
+                rb.RangeTo = money();
             else if (key == "Leverage")
                 rb.Leverage = number;
             else if (key == "Strike")
-                rb.Strike = number;
+                rb.Strike = money();
             else if (key == "StrikeAdjustment")
-                rb.StrikeAdjustment = number;
+                rb.StrikeAdjustment = money();
             p = value_end == std::string::npos ? body.size() : value_end + 1;
         }
         result.push_back(std::move(rb));

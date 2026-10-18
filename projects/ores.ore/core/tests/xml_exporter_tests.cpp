@@ -28,6 +28,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -349,6 +350,14 @@ TEST_CASE("export_portfolio_roundtrips_every_fx_product", tags) {
 
         CHECK(xml.contains(product.element));
         CHECK(xml.contains(imported.front().ore_id));
+
+        // The accumulator's levels are a child table, so a document that comes
+        // back with its entries is the whole join working.
+        if (std::string_view(product.element) == "<FxAccumulatorData>") {
+            CHECK(xml.contains("<RangeBounds>"));
+            CHECK(xml.contains("<RangeTo>122</RangeTo>"));
+            CHECK(xml.contains("<RangeFrom>122</RangeFrom>"));
+        }
     }
 }
 

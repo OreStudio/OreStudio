@@ -24,6 +24,7 @@
 #include "ores.trading.core/messaging/fx_forward_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_vanilla_option_instrument_registrar.hpp"
 #include "ores.trading.core/messaging/fx_variance_swap_instrument_registrar.hpp"
+#include "ores.trading.core/messaging/range_bound_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 
 namespace ores::trading::messaging::detail {
@@ -74,6 +75,13 @@ register_fx_handlers(ores::nats::service::client& nats,
     subs.insert(subs.end(),
                 std::make_move_iterator(fx_variance_swap_instrument_subs.begin()),
                 std::make_move_iterator(fx_variance_swap_instrument_subs.end()));
+
+    // The accumulator's range bounds are the family's only child table, so the
+    // family that writes them registers their handlers.
+    auto range_bound_subs = register_range_bound_handlers(nats, ctx, verifier);
+    subs.insert(subs.end(),
+                std::make_move_iterator(range_bound_subs.begin()),
+                std::make_move_iterator(range_bound_subs.end()));
 
     return subs;
 }

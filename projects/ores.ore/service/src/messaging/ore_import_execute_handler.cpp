@@ -101,6 +101,7 @@
 #include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/range_bound_protocol.hpp"
 #include "ores.trading.api/messaging/rate_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/risk_participation_agreement_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/scripted_instrument_protocol.hpp"
@@ -2783,8 +2784,29 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                 req.change.write.knock_out_barrier = instr.knock_out_barrier;
                                 req.change.write.description = instr.description;
                                 auto resp = nats_call(delegated_nats, req, instr_error);
-                                return resp &&
-                                       resp->result.outcome == ores::utility::domain::outcome::ok;
+                                if (!resp ||
+                                    resp->result.outcome != ores::utility::domain::outcome::ok)
+                                    return false;
+                                for (const auto& bound : r.range_bounds) {
+                                    put_range_bound_request bound_req;
+                                    bound_req.change.write.trade_id = bound.trade_id;
+                                    bound_req.change.write.trade_activity_id =
+                                        bound.trade_activity_id;
+                                    bound_req.change.write.sequence_number = bound.sequence_number;
+                                    bound_req.change.write.start_date = bound.start_date;
+                                    bound_req.change.write.range_from = bound.range_from;
+                                    bound_req.change.write.range_to = bound.range_to;
+                                    bound_req.change.write.leverage = bound.leverage;
+                                    bound_req.change.write.strike = bound.strike;
+                                    bound_req.change.write.strike_adjustment =
+                                        bound.strike_adjustment;
+                                    auto bound_resp =
+                                        nats_call(delegated_nats, bound_req, instr_error);
+                                    if (!bound_resp || bound_resp->result.outcome !=
+                                                           ores::utility::domain::outcome::ok)
+                                        return false;
+                                }
+                                return true;
                             } else if constexpr (std::is_same_v<InstrT,
                                                                 fx_variance_swap_instrument>) {
                                 put_fx_variance_swap_instrument_request req;

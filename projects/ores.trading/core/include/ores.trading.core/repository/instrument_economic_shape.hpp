@@ -183,6 +183,7 @@ void read_shared_components(ores::database::context ctx,
     append(read_leg_amortizations_by_trade_ids(ctx, ids));
     append(read_forwards_by_trade_ids(ctx, ids));
     append(read_strikes_by_trade_ids(ctx, ids));
+    append(read_range_bounds_by_trade_ids(ctx, ids));
     append(read_options_by_trade_ids(ctx, ids));
     append(read_option_exercise_fees_by_trade_ids(ctx, ids));
     append(read_option_payment_dates_by_trade_ids(ctx, ids));

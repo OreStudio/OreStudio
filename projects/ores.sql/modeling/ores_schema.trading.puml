@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 111
+Tables: 112
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -2279,7 +2279,6 @@ package "trading" #E8F5E9 {
         * long_short : text
         * start_date : date
           knock_out_barrier : numeric(38, 12)
-          range_bounds_json : text
           description : text
         * modified_by : text
         * performed_by : text
@@ -2297,6 +2296,11 @@ package "trading" #E8F5E9 {
     Routes ORE product type: FxAccumulator. knock_out_barrier captures
     the primary UpAndOut barrier. Multiple barriers and complex fixing
     schedules are a Phase 2 coverage gap.
+    The document's RangeBounds list is a child table, not a column:
+    [[id:2FEA1F01-B63A-412A-BECB-8E20AE4DC911][ores.trading.range_bound]] holds one
+    row per entry, keyed by the trade and the entry's ordinal. The list is what
+    makes the exported accumulator readable, because the ORE schema requires at
+    least one RangeBound.
     end note
 
     entity ores_trading_fx_asian_forward_instruments_tbl <<temporal>> #C6F0D8 {
@@ -3217,6 +3221,53 @@ package "trading" #E8F5E9 {
     type under external/ore/xsd/ore_types.xsd.
     The values are the ORE XSD spellings, so a stored value round-trips through the
     ORE XML unchanged. No conversion is introduced here.
+    end note
+
+    entity ores_trading_range_bounds_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+          start_date : date
+          range_from : numeric(38, 12)
+          range_to : numeric(38, 12)
+          leverage : double
+          strike : numeric(38, 12)
+          strike_adjustment : numeric(38, 12)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_range_bounds_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Range Bound Table
+    One row per entry in the RangeBounds list an accumulator document
+    states, keyed to the trade and the entry's ordinal. The list holds the
+    levels an accumulator accrues against, so the entry is the unit the
+    document writes and the unit the table stores.
+    The ORE schema states the list as unbounded RangeBound entries and
+    requires at least one; each entry carries an optional start date as an
+    attribute and the optional levels RangeFrom, RangeTo, Leverage,
+    Strike and StrikeAdjustment. The order is the document's order, and
+    the ordinal preserves it, so export re-emits the entries as the document
+    held them.
+    A level is money unless it is a ratio. RangeFrom, RangeTo, Strike
+    and StrikeAdjustment are price levels, so each column is exact decimal.
+    Leverage is a multiplier, so the column is a binary double, the same
+    way a basket weight is. A document that states no level leaves the
+    column null rather than a zero it never wrote.
+    The rows are keyed by the trade alone, so any instrument whose document
+    states a RangeBounds list can own them. The FX accumulator is the first
+    to write them. The equity accumulator still carries the list as JSON text
+    and moves onto this table in its own unit.
     end note
 
     entity ores_trading_rate_instruments_tbl <<temporal>> #C6F0D8 {
@@ -4294,6 +4345,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_instrument_strikes_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_instrument_strikes_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_knock_out_swap_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_range_bounds_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_range_bounds_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_rate_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_risk_participation_instruments_tbl : "has"

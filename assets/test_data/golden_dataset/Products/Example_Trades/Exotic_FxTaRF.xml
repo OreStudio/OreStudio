@@ -33,12 +33,12 @@
       </OptionData>
       <RangeBounds>
         <RangeBound>
-          <RangeFrom>0</RangeFrom>
-          <RangeTo>1.04999995</RangeTo>
+          <RangeFrom>0.0</RangeFrom>
+          <RangeTo>1.05</RangeTo>
           <Leverage>2</Leverage>
         </RangeBound>
         <RangeBound>
-          <RangeFrom>1.10000002</RangeFrom>
+          <RangeFrom>1.1</RangeFrom>
           <RangeTo>10000</RangeTo>
           <Leverage>1</Leverage>
         </RangeBound>

@@ -154,6 +154,8 @@
 -- Shared instrument-keyed tables and the trade envelope (task B753AD00)
 \ir ./trading_instrument_strikes_notify_trigger_drop.sql
 \ir ./trading_instrument_strikes_drop.sql
+\ir ./trading_range_bounds_notify_trigger_drop.sql
+\ir ./trading_range_bounds_drop.sql
 \ir ./trading_instrument_option_payment_dates_notify_trigger_drop.sql
 \ir ./trading_instrument_option_payment_dates_drop.sql
 \ir ./trading_instrument_option_exercise_fees_notify_trigger_drop.sql

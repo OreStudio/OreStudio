@@ -1669,3 +1669,7 @@ tangled into the runnable script library
 * Report Error Events
 
 - [[id:DBF8B476-9D33-51E7-9CE4-C6DD2DD70D18][How do I run the report_error_events commands from the shell?]]
+
+* Range Bounds
+
+- [[id:BB74231F-E210-57FF-96DC-8D2A53FD528A][How do I run the range_bounds commands from the shell?]]

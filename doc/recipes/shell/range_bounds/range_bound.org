@@ -1,0 +1,245 @@
+:PROPERTIES:
+:ID: BB74231F-E210-57FF-96DC-8D2A53FD528A
+:END:
+#+generated: AUTO-GENERATED FILE - DO NOT EDIT MANUALLY. Template: shell_recipe.org.mustache. To modify, update the template and regenerate.
+#+title: How do I run the range_bounds commands from the shell?
+#+description: Every command the range_bounds submenu answers, with the script each one exports into the shell's script library.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:range_bounds:
+
+This file documents the range_bounds resource at the shell, one section per command. Every command is a subcommand of =range_bounds=, and every section exports its own script into =projects/ores.shell/scripts/library/=. Loading a script runs that one command, so a failure names the command it came from.
+
+* Commands
+
+** =list=
+:PROPERTIES:
+:ID: 0A62B0C2-3FB6-5C0A-B85C-9CC54FDAC6A9
+:END:
+
+Reads one page of the collection. Nothing addresses it but the caller's tenant, so it is the read that shows what exists.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds list [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.list=.
+
+#+name: range_bounds-list
+#+begin_src ores-shell :tangle range_bounds-list.ores :exports none
+range_bounds list --limit 1
+#+end_src
+
+** =get=
+:PROPERTIES:
+:ID: 39A7040B-BC87-5303-9031-A7308F833ACD
+:END:
+
+Reads the one row its key addresses. A key states every identifying column, so a partial key is refused rather than answered with an arbitrary row.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds get <trade_id> <sequence_number>
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.get=.
+
+#+name: range_bounds-get
+#+begin_src ores-shell :tangle range_bounds-get.ores :exports none
+range_bounds get 00000000-0000-0000-0000-000000000000 0
+#+end_src
+
+** =get-many=
+:PROPERTIES:
+:ID: E19E67E5-A5B7-589A-9E23-314B75309812
+:END:
+
+Reads several rows in one request, one key group per row.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds get-many <trade_id> <sequence_number>
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.get_many=.
+
+#+name: range_bounds-get-many
+#+begin_src ores-shell :tangle range_bounds-get-many.ores :exports none
+range_bounds get-many 00000000-0000-0000-0000-000000000000 0
+#+end_src
+
+** =add=
+:PROPERTIES:
+:ID: CDF4F7ED-165C-54DE-A6E9-DEB9D2942A05
+:END:
+
+Writes a row. The change states that the row must not exist, so a create that collides with an existing row is refused rather than replacing it. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds add <trade_id> <sequence_number> <trade_activity_id> <start_date> <range_from> <range_to> <leverage> <strike> <strike_adjustment> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.put=.
+
+#+name: range_bounds-add
+#+begin_src ores-shell :tangle range_bounds-add.ores :exports none
+range_bounds add 00000000-0000-0000-0000-000000000000 0 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =set=
+:PROPERTIES:
+:ID: AB71208D-C793-563A-8B2D-D49BACABD859
+:END:
+
+Writes a row. The change states no precondition, so it replaces whatever row the key already addresses. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds set <trade_id> <sequence_number> <trade_activity_id> <start_date> <range_from> <range_to> <leverage> <strike> <strike_adjustment> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.put=.
+
+#+name: range_bounds-set
+#+begin_src ores-shell :tangle range_bounds-set.ores :exports none
+range_bounds set 00000000-0000-0000-0000-000000000000 0 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =put-many=
+:PROPERTIES:
+:ID: 7DB8233B-6698-5D8B-A666-5739AAA6E30E
+:END:
+
+Writes several rows in one request. The count states how many field groups follow. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds put-many --count <n> <trade_id> <sequence_number> <trade_activity_id> <start_date> <range_from> <range_to> <leverage> <strike> <strike_adjustment> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.put_many=.
+
+#+name: range_bounds-put-many
+#+begin_src ores-shell :tangle range_bounds-put-many.ores :exports none
+range_bounds put-many --count 1 00000000-0000-0000-0000-000000000000 0 00000000-0000-0000-0000-000000000000 - - - - - - system.new_record generated_script
+#+end_src
+
+** =delete=
+:PROPERTIES:
+:ID: 6E067B86-C0FB-5E5D-8523-FC68EE196C4A
+:END:
+
+Removes a row. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved. Passing --version makes the write conditional on the version the caller last read.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds delete <trade_id> <sequence_number> <reason> <commentary> [--version <n>]
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.delete=.
+
+#+name: range_bounds-delete
+#+begin_src ores-shell :tangle range_bounds-delete.ores :exports none
+range_bounds delete 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =delete-many=
+:PROPERTIES:
+:ID: 5EA4E769-C57A-5453-B636-F7133BE8C13C
+:END:
+
+Removes several rows in one request. The change carries a reason and a commentary, which the server records on it so the row's history says why it moved.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds delete-many <trade_id> <sequence_number> <reason> <commentary>
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.delete_many=.
+
+#+name: range_bounds-delete-many
+#+begin_src ores-shell :tangle range_bounds-delete-many.ores :exports none
+range_bounds delete-many 00000000-0000-0000-0000-000000000000 0 system.new_record generated_script
+#+end_src
+
+** =by-trade-id=
+:PROPERTIES:
+:ID: 27C13205-30DB-55C4-B115-61D04F3642E9
+:END:
+
+Reads one page of the rows that share a relation value. The relation is part of the address rather than a filter applied after the read.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds by-trade-id <trade_id> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.range_bounds.list_by_trade_id=.
+
+#+name: range_bounds-by-trade-id
+#+begin_src ores-shell :tangle range_bounds-by-trade-id.ores :exports none
+range_bounds by-trade-id 00000000-0000-0000-0000-000000000000 --limit 1
+#+end_src
+
+** =versions=
+:PROPERTIES:
+:ID: A616F576-4F1F-5CB1-A90F-C3978B9C680B
+:END:
+
+Reads the row's recorded history, newest first.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds versions <trade_id> <sequence_number> [--offset <n>] [--limit <n>] [--order <field>] [--desc]
+#+end_example
+
+It is addressed at =trading.v1.range_bounds_versions.list=.
+
+#+name: range_bounds-versions
+#+begin_src ores-shell :tangle range_bounds-versions.ores :exports none
+range_bounds versions 00000000-0000-0000-0000-000000000000 0 --limit 1
+#+end_src
+
+** =version=
+:PROPERTIES:
+:ID: F68C4CE4-6C2E-54E7-A166-6462729E9D03
+:END:
+
+Reads one recorded version of the row.
+
+
+The command is shaped like this:
+
+#+begin_example
+range_bounds version <trade_id> <sequence_number> --version <n>
+#+end_example
+
+It is addressed at =trading.v1.range_bounds_versions.get=.
+
+#+name: range_bounds-version
+#+begin_src ores-shell :tangle range_bounds-version.ores :exports none
+range_bounds version 00000000-0000-0000-0000-000000000000 0 --version 1
+#+end_src
+

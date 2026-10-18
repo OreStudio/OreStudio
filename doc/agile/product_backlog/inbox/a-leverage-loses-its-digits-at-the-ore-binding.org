@@ -1,0 +1,43 @@
+:PROPERTIES:
+:ID: 23A830C9-770C-4D5C-8F67-4BB169397228
+:END:
+#+title: A leverage loses its digits at the ORE binding
+#+description: A range bound's levels keep the document's text except the leverage, which is a plain float leaf: a document stating 1.05 exports as 1.04999995 while its sibling levels keep their digits. Fixing it needs a lexical double leaf in the ORE binding, which is work on the reapply script and the binding's double writer, not an entity unit.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give the ORE binding a lexical double leaf, the double counterpart of
+=moneyFloat=, and make =rangeBound.Leverage= use it. The leaf keeps the
+document's text beside the parsed value, and the writer prints the text when it
+has one, exactly as =_serialize_moneyFloat= does for the money leaves.
+
+* Why
+
+=RangeFrom=, =RangeTo=, =Strike= and =StrikeAdjustment= keep the digits the
+document states, because they are =moneyFloat= leaves. =Leverage= is a plain
+=xsd::optional<float>=: it is a multiplier stored in a =double precision=
+column, and its text is lost at the binding. A document that states
+=<Leverage>1.05</Leverage>= exports as =1.04999995=, so a round trip changes
+the document it read.
+
+The fix is the same shape the money leaves already have, and the lever is
+[[file:../../../../../../scripts/reapply_ore_lexical_form.py][reapply_ore_lexical_form.py]]: a member table entry, a setter that stashes the
+text, and a writer that prints it. It is filed separately because it touches
+the binding for every family that states a double, not only this one.
+
+* References
+
+- =projects/ores.trading/modeling/ores.trading.range_bound.org= — the leverage column and the levels beside it.
+- =scripts/reapply_ore_lexical_form.py= — where the money leaves are patched in, and where a double leaf would join them.
+- =doc/knowledge/architecture/exact_numbers_and_economic_change.org= — why a continuous quantity may stay a binary double.
+
+* See also
+
+- [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] — the story that found it.

@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/give-the-fx-accumulator-range-bounds-their-own-table
-#+pr: 3458
+#+pr: 3478
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -31,9 +31,9 @@ rows, and the Regime 3 check forbids an encoded string field.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Scoped and unblocked. The carrier landed as [[https://github.com/OreStudio/OreStudio/pull/3410][#3410]], so a child array has a place on it. |
-| Waiting on   | Nothing. |
-| Next         | Add the child model, its table and its array on the carrier, then delete =range_bounds_json=. |
+| Now          | Implementation complete and the suites pass. Waiting on review and merge. |
+| Waiting on   | The review of its PR. |
+| Next         | Address the review, then merge. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -41,7 +41,7 @@ rows, and the Regime 3 check forbids an encoded string field.
 - A child model holds a range bound: an optional start date and the optional levels =RangeFrom=, =RangeTo=, =Leverage=, =Strike= and =StrikeAdjustment=. Each level is exact decimal where it is money.
 - The child table is keyed by the trade and ordered, so the list order survives the round trip.
 - A mapper test holds the digits of a range-bound strike through the round trip.
-- The ORE schema requires at least one =RangeBound=, so an accumulator with no bounds is refused at the boundary with a stated error, not silently exported.
+- An accumulator with no bounds is refused at the boundary with a stated error, not silently exported: the =RangeBounds= wrapper is optional in the schema, but the binding writes it unconditionally and the schema requires an entry inside it, so a trade with no bound has no valid document.
 - =range_bounds_json= is gone from the model, the SQL, the domain type, the entity, the protocol and the mapper.
 
 * Plan
@@ -81,6 +81,12 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Files that name the FX carrier | 10 production, 9 test | =grep -rl -e fx_instrument_variant -e map_fx_instrument projects/ --include=*.cpp --include=*.hpp= | the branch base |
+| Columns named =range_bounds_json= | 0 on the FX path | =grep -rn range_bounds_json projects/ores.trading/modeling/ores.trading.fx_accumulator_instrument.org projects/ores.ore/core/src/domain/fx_instrument_mapper.cpp= | the PR head |
+| Range bound rows the example document states | 2 | =fx_exotic_mapper_roundtrip_accumulator= | the PR head |
+| Goldens the digit change rewrote | 2 | =Exotic_FxTaRF.xml= and =Exotic_EquityTaRF.xml= in =assets/test_data/golden_dataset= | the PR head |
+| ORE core suite | 721 cases, all pass | =compass test run --preset linux-clang-release-ninja -- -R ores.ore.core.tests= | the PR head |
+| Trading core suite | pass | the same command with =ores.trading.core.tests= | the PR head |
+| XML benchmark rows recorded | 96 | =./benchmarks/xml/run.sh= | the PR head |
 
 * Notes
 
@@ -102,12 +108,80 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3478][#3478]] | [trading] Give the accumulator's range bounds their own table |
 | [[https://github.com/OreStudio/OreStudio/pull/3458][#3458]] | [agile] Record where the FX rework stands |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The range-bound handlers, history provider and change-event mapping are registered nowhere, so the importer's NATS write has no subscriber and every accumulator import fails after the instrument row is written | =registrar_fx.cpp=, =registrar.cpp=, =application.cpp= | Fixed | The child registers with the family that writes it, beside the seven product registrars; the history provider sits with the other shared children and the change event with the FX mappings. |
+| 2 | The digest never reads the child, so the five =:economic:= columns are inert and an accumulator loses the coverage =range_bounds_json= gave it | =ores.trading.trade_type_catalogue.org=, =parent_scoped_queries.hpp/.cpp= | Fixed | =range_bound= joins the digest's shared components with =read_range_bounds_by_trade_ids=, and the shape regenerates. |
+| 3 | Nothing can create a range bound, because the shell command lost its only argument, so an accumulator written through the API is permanently unexportable and the refusal surfaces at package time | =ores.trading.range_bound.org= | Fixed | The entity carries the shell command the family's other children carry, so the rows are written and edited like the rest of the family's children. |
+| 4 | The unit's own acceptance is untested: no refusal test, no absent-level test, no test that the ordinal survives the write, no assertion on the exported child block | =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =xml_exporter_tests.cpp=, =repository_range_bound_repository_tests.cpp= | Fixed | The refusal, the absent levels, the exported =RangeBounds= block and a repository test that writes the entries out of order and reads them back in the document's order are all asserted. |
+| 5 | The leverage still loses its digits at the binding, and a fractional leverage exports as its nearest float | =domain.hpp= | Rejected | Keeping its text needs a lexical double leaf, which is a change to the reapply script and the binding's double writer for every family, not to this entity. Filed as [[id:23A830C9-770C-4D5C-8F67-4BB169397228][a capture]] with the mechanism and the lever. |
+| 6 | =stamp_ids= and the batch append each walk two lists with the same lambda | =instrument.hpp=, =instrument_batch_mapper.cpp= | Fixed | One walk over the concatenated list, so a second child is still one entry per list. |
+| 7 | The import loop writes an entry the document states empty, where the sibling children skip an empty row | =ore_import_execute_handler.cpp= | Rejected | The schema allows an empty =RangeBound= and the round trip has to keep it. Skipping it would drop an entry the document stated, which the story's lossless round trip forbids. |
+| 8 | The twelve-decimal bound of =numeric(38, 12)= is unstated, so the digit-preservation claim is unbounded | =ores.trading.range_bound.org=, =trading_range_bounds_create.sql= | Fixed | The model states the bound and why the component uses it, and the SQL regenerates with it. |
+| 9 | The refusal message names the internal trade uuid rather than the ORE trade id | =fx_instrument_mapper.cpp= | Rejected | The mapper has the domain row only; the ORE id lives on the export item. The package workflow reports the message against the run, which names the trade the user sees. |
+| 10 | Ninety-six parser benchmark rows churn the diff | =benchmarks/xml/history.tsv= | Rejected | The =xml-benchmark-recorded= gate demands a measurement after a binding change, and the rows are that measurement. The Measurements table names it. |
+
+A second review checked the fixes on the new head. It confirmed every fixed
+finding with a call site or a test, and raised four more:
+
+- *The refusal escaped the manual export path.* =ore_commands=::process_export
+  called the exporter bare, so one boundless accumulator ended the shell
+  session instead of reporting the failure. Fixed: the command catches the
+  refusal and reports it, as the package workflow already did.
+- *The twelve-decimal text had not reached the SQL.* Fixed: the SQL regenerated
+  and is committed.
+- *The refusal stated the schema more strongly than it says.* The =RangeBounds=
+  wrapper is optional; what makes the refusal necessary is that this binding
+  writes the wrapper unconditionally and the schema requires an entry inside
+  it. Fixed in the model, the header, the test and the acceptance line.
+- *No test asserts the digest reads the child, and the repository test called
+  the digest reader the export reader.* The second is fixed: the test now
+  asserts both readers. The first stays open: the digest is asserted through
+  the generated shape, and a per-entity digest test belongs to the digest's own
+  unit.
 
 * Result
+
+The accumulator's =RangeBounds= list is a child table. =range_bound= is keyed by
+the trade and the entry's ordinal, holds the optional start date, the four money
+levels as exact decimal and the leverage as a continuous double, and carries the
+two foreign keys the other instrument children carry. =range_bounds_json= is gone
+from the model, the SQL, the domain type, the entity, the protocol, the shell
+command and both mappers, and the hand-written JSON serializer and parser are
+deleted.
+
+The four money levels cross the ORE boundary through =moneyFloat=, so the digits
+the document states reach the decimal column. Two goldens recorded the old
+float spelling and now record the document's own: =1.04999995= became =1.05=,
+=1.10000002= became =1.1=, and a stated =0.0= stays =0.0=.
+
+An accumulator that holds no range bound is refused on export with a stated
+error, because the ORE schema requires at least one and a document without it
+cannot be read back.
+
+The child is keyed by the trade alone, so the equity accumulator can move onto
+the same table in its own unit; it still writes JSON text today.
+
+* Decisions
+
+- *The child is trade-keyed, not FX-keyed.* A =RangeBounds= list belongs to the
+  trade its document states, and the equity accumulator states the same list, so
+  one table serves both. Keying it to the family would duplicate the shape.
+- *Leverage stays a double.* It is a multiplier, not a money amount, so the
+  continuous rule applies and the column is a binary double. The four price
+  levels are money and are exact decimals.
+- *The levels are money leaves in the binding.* =rangeBound='s five levels were
+  plain floats, so the document's digits were lost before the mapper ran. They
+  are =moneyFloat= now, added to the reapply script with the rest of the family.
+- *A stated level the binding never carried is null, not zero.* Every level is
+  optional in the schema, so an absent level is a null column and the reverse
+  mapper writes no element back.
+- *The trailing zero is the one spelling the round trip normalises.* A stated
+  =0.0= reaches a decimal column as zero, so the golden records =0.0= only where
+  the binding carried the text; a value that passes through the decimal writes
+  its canonical spelling.

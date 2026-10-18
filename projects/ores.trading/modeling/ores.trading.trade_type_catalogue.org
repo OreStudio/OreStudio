@@ -251,6 +251,7 @@ shape whichever family states the rows.
 | instrument_schedule_date                    |
 | instrument_strike                           |
 | knock_out_swap_instrument                   |
+| range_bound                                 |
 | risk_participation_agreement_instrument     |
 | swap_leg                                    |
 | swap_leg_amount                             |
@@ -339,6 +340,7 @@ shape.
 | bond_leg_amortization           | read_leg_amortizations_by_trade_ids   |
 | bond_forward                    | read_forwards_by_trade_ids            |
 | instrument_strike               | read_strikes_by_trade_ids             |
+| range_bound                     | read_range_bounds_by_trade_ids        |
 | instrument_option               | read_options_by_trade_ids             |
 | instrument_option_exercise_fee  | read_option_exercise_fees_by_trade_ids |
 | instrument_option_payment_date  | read_option_payment_dates_by_trade_ids |

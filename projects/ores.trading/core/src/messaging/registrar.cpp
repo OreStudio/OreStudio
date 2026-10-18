@@ -88,6 +88,7 @@
 #include "ores.trading.core/messaging/payoff_type_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/price_type_registrar.hpp"
+#include "ores.trading.core/messaging/range_bound_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
 #include "ores.trading.core/messaging/return_type_history_provider_registrar.hpp"
@@ -248,6 +249,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_instrument_schedule_date_history_provider(hist_registry);
     register_instrument_schedule_history_provider(hist_registry);
     register_instrument_strike_history_provider(hist_registry);
+    register_range_bound_history_provider(hist_registry);
     register_lifecycle_event_history_provider(hist_registry);
     register_long_short_type_history_provider(hist_registry);
     register_moment_type_history_provider(hist_registry);

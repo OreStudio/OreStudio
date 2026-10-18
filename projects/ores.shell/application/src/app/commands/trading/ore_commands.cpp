@@ -685,7 +685,16 @@ void ore_commands::process_export(std::ostream& out,
         return;
     }
 
-    const auto xml = ores::ore::xml::exporter::export_portfolio(result->items, result->instruments);
+    // A trade whose instrument cannot be written back refuses the whole
+    // document, so the failure is reported here rather than escaping the
+    // command and ending the session.
+    std::string xml;
+    try {
+        xml = ores::ore::xml::exporter::export_portfolio(result->items, result->instruments);
+    } catch (const std::exception& e) {
+        fail(out) << "Export failed: " << e.what() << std::endl;
+        return;
+    }
 
     std::ofstream out_file(output_file, std::ios::binary | std::ios::trunc);
     if (!out_file) {

@@ -53225,29 +53225,34 @@ xsdcpp::ChildElementInfo _tarfData2_RangeBoundSet_t_Children[] = {
      4294967295},
     {nullptr}};
 void* _get_rangeBound_RangeFrom(domain::rangeBound* parent) {
-    return &*(parent->RangeFrom = float());
+    return &*(parent->RangeFrom = domain::moneyFloat());
 }
 void* _get_rangeBound_RangeTo(domain::rangeBound* parent) {
-    return &*(parent->RangeTo = float());
+    return &*(parent->RangeTo = domain::moneyFloat());
 }
 void* _get_rangeBound_Leverage(domain::rangeBound* parent) {
     return &*(parent->Leverage = float());
 }
 void* _get_rangeBound_Strike(domain::rangeBound* parent) {
-    return &*(parent->Strike = float());
+    return &*(parent->Strike = domain::moneyFloat());
 }
 void* _get_rangeBound_StrikeAdjustment(domain::rangeBound* parent) {
-    return &*(parent->StrikeAdjustment = float());
+    return &*(parent->StrikeAdjustment = domain::moneyFloat());
 }
 xsdcpp::ChildElementInfo _rangeBound_Children[] = {
-    {"RangeFrom", 0, (xsdcpp::get_field_t)&_get_rangeBound_RangeFrom, &domain::_float_Info, 0, 1},
-    {"RangeTo", 1, (xsdcpp::get_field_t)&_get_rangeBound_RangeTo, &domain::_float_Info, 0, 1},
+    {"RangeFrom",
+     0,
+     (xsdcpp::get_field_t)&_get_rangeBound_RangeFrom,
+     &domain::_moneyFloat_Info,
+     0,
+     1},
+    {"RangeTo", 1, (xsdcpp::get_field_t)&_get_rangeBound_RangeTo, &domain::_moneyFloat_Info, 0, 1},
     {"Leverage", 2, (xsdcpp::get_field_t)&_get_rangeBound_Leverage, &domain::_float_Info, 0, 1},
-    {"Strike", 3, (xsdcpp::get_field_t)&_get_rangeBound_Strike, &domain::_float_Info, 0, 1},
+    {"Strike", 3, (xsdcpp::get_field_t)&_get_rangeBound_Strike, &domain::_moneyFloat_Info, 0, 1},
     {"StrikeAdjustment",
      4,
      (xsdcpp::get_field_t)&_get_rangeBound_StrikeAdjustment,
-     &domain::_float_Info,
+     &domain::_moneyFloat_Info,
      0,
      1},
     {nullptr}};
@@ -74533,15 +74538,15 @@ _serialize_rangeBound(xsdcpp::XmlWriter& w, const char* name, const domain::rang
     if ((&v)->startDate)
         w.writeAttribute("startDate", *(&v)->startDate);
     if (v.RangeFrom)
-        _serialize_float(w, "RangeFrom", *v.RangeFrom);
+        _serialize_moneyFloat(w, "RangeFrom", *v.RangeFrom);
     if (v.RangeTo)
-        _serialize_float(w, "RangeTo", *v.RangeTo);
+        _serialize_moneyFloat(w, "RangeTo", *v.RangeTo);
     if (v.Leverage)
         _serialize_float(w, "Leverage", *v.Leverage);
     if (v.Strike)
-        _serialize_float(w, "Strike", *v.Strike);
+        _serialize_moneyFloat(w, "Strike", *v.Strike);
     if (v.StrikeAdjustment)
-        _serialize_float(w, "StrikeAdjustment", *v.StrikeAdjustment);
+        _serialize_moneyFloat(w, "StrikeAdjustment", *v.StrikeAdjustment);
     w.endElement(name);
 }
 

@@ -551,7 +551,7 @@ equity_instrument_mapper::forward_equity_variance_swap(const trade& t) {
     inst.underlying_name = extract_underlying_name(d.underlyingTypes);
     inst.currency = to_string(d.Currency);
     inst.notional = exact_decimal(d.Notional);
-    inst.variance_strike = exact_decimal(static_cast<double>(d.Strike));
+    inst.variance_strike = static_cast<double>(d.Strike);
     inst.start_date = to_domain_date(std::string(d.StartDate));
     inst.maturity_date = to_domain_date(std::string(d.EndDate));
     return result;
@@ -961,7 +961,7 @@ trade equity_instrument_mapper::reverse_equity_variance_swap(
     d.Currency = parse_currency_code(instr.currency);
     d.underlyingTypes = make_underlying_type(instr.underlying_name);
     static_cast<std::string&>(d.LongShort) = "Long";
-    d.Strike = static_cast<float>(instr.variance_strike.to_double());
+    d.Strike = static_cast<float>(instr.variance_strike);
     set_exact(d.Notional, instr.notional);
     static_cast<std::string&>(d.Calendar) = "USD";
     t.EquityVarianceSwapData = std::move(d);

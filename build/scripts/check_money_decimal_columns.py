@@ -72,14 +72,22 @@ HEAD_QUALIFIERS = frozenset({"value", "level", "pay", "receive", "held"})
 # rather than the file, because excluding the file would hide every later
 # column added to it.
 EXCLUDED_COLUMNS = frozenset({
-    "ores.trading.fx_variance_swap_instrument::strike",
-    "ores.trading.equity_variance_swap_instrument::strike",
     "ores.refdata.bond_future_volatility_config::strike_factor",
     "ores.refdata.cds_volatility_config::strike_factor",
     "ores.dq.synthetic_fx_spot_config::gmm_initial_price",
     "ores.synthetic.fx_spot_generation_config::gmm_initial_price",
     "ores.synthetic.ir_curve_generation_config::initial_rate",
 })
+
+# A column whose name reads as money but whose quantity is continuous, keyed on
+# the column rather than the file so a money column added to the same entity is
+# still checked. `variance_strike` needs no entry because the continuous token
+# already wins; `strike` on a variance swap is the same quantity under the name
+# the FX model chose, so the entity is what makes it continuous.
+CONTINUOUS_COLUMNS = {
+    "ores.trading.fx_variance_swap_instrument::strike":
+        "a variance strike is volatility, not a money amount",
+}
 
 # A token here wins over a money token, so a rate that is really a fraction is
 # not misread. recovery_rate and participation_rate carry "rate"; a variance
@@ -190,10 +198,17 @@ def base_type(sql_type: str) -> str:
     return sql_type.split("(")[0].strip().lower()
 
 
+def quantity_kind(path: Path, name: str) -> str:
+    """Returns 'money', 'continuous' or 'other' for a column in its model."""
+    if f"{path.stem}::{name}" in CONTINUOUS_COLUMNS:
+        return "continuous"
+    return classify(name)
+
+
 def money_offenders(root: Path):
     """A money quantity that is not exact in both places."""
     for path, line_no, name, sql_type, cpp_type in columns(root):
-        if classify(name) != "money":
+        if quantity_kind(path, name) != "money":
             continue
         if f"{path.stem}::{name}" in EXCLUDED_COLUMNS:
             continue
@@ -213,7 +228,7 @@ def money_offenders(root: Path):
 def continuous_offenders(root: Path):
     """A continuous quantity stated with an exact type it does not have."""
     for path, line_no, name, sql_type, cpp_type in columns(root):
-        if classify(name) != "continuous":
+        if quantity_kind(path, name) != "continuous":
             continue
         cpp = cpp_type or ""
         if sql_type is None:

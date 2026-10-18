@@ -37,7 +37,7 @@ create table if not exists "ores_trading_equity_variance_swap_instruments_tbl" (
     "underlying_name" text not null,
     "currency" text not null,
     "notional" numeric(38, 12) not null,
-    "variance_strike" numeric(38, 12) not null,
+    "variance_strike" double precision not null,
     "start_date" date not null,
     "maturity_date" date not null,
     "long_short" text not null,
@@ -60,7 +60,9 @@ create table if not exists "ores_trading_equity_variance_swap_instruments_tbl" (
     check ("notional" > 0),
     check ("underlying_name" <> ''),
     check ("currency" <> ''),
-    check ("variance_strike" >= 0)
+    check ("variance_strike" >= 0),
+    check ("variance_strike" <> 'Infinity'::float8),
+    check ("variance_strike" <> 'NaN'::float8)
 );
 
 -- Version uniqueness for optimistic concurrency

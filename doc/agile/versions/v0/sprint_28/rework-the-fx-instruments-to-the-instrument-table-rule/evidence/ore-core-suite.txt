@@ -1,0 +1,5 @@
+ores.ore.core.tests
+cases: 686
+passed: 686
+failed: 0
+source: build/output/linux-clang-release-ninja/publish/bin/test-results-ores.ore.core.tests.xml

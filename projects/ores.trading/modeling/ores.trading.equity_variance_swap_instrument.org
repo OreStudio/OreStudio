@@ -129,16 +129,21 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 
 ** variance_strike
 :PROPERTIES:
-:type:          numeric(38, 12)
-:cpp_type:      ores::utility::decimal::decimal
+:type:          double precision
+:cpp_type:      double
 :nullable:      false
 :economic:      true
 :END:
 
 Strike variance.
 
+A variance strike is a volatility rather than a money amount, so the column is
+a binary double for the same reason a basket weight is. The check refuses the
+values a double admits and a numeric does not: an infinite or not-a-number
+strike has no meaning and would poison every comparison downstream.
+
 #+begin_src cpp :name generator
-ores::utility::decimal::decimal::from_string("0.04").value()
+ 0.04
 #+end_src
 
 ** start_date
@@ -262,6 +267,8 @@ is immutable.
 | "underlying_name" <> '' |
 | "currency" <> '' |
 | "variance_strike" >= 0 |
+| "variance_strike" <> 'Infinity'::float8 |
+| "variance_strike" <> 'NaN'::float8 |
 
 ** Indexes
 

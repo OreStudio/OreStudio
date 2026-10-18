@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/run-the-series-title-test-in-ci
-#+pr:
+#+pr: 3510
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3510][#3510]] | [ci] Record that CI runs the series title cases |
 
 * Review
 

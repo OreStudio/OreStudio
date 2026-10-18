@@ -259,4 +259,17 @@ void report_error_event_service::delete_errors(const std::vector<std::string>& i
 }
 
 
+messaging::get_report_error_counts_response report_error_event_service::get_report_error_counts(
+    const messaging::get_report_error_counts_request& request) {
+    messaging::get_report_error_counts_response response;
+    // The cap is the same one the generated filters state, so one caller cannot
+    // ask the store for more runs than the list reads allow.
+    if (request.report_instance_ids.size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "report_instance_ids", .limit = "1000"});
+        return response;
+    }
+    response.counts = repo_.read_counts_by_report_instance_ids(ctx_, request.report_instance_ids);
+    return response;
+}
 }

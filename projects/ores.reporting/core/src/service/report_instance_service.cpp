@@ -43,6 +43,7 @@
 #include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
+#include "ores.reporting.core/service/report_health.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <boost/uuid/uuid_io.hpp> // IWYU pragma: keep.
@@ -552,6 +553,27 @@ report_instance_service::get_latest_report_instances_by_definition(
         return response;
     }
     response.instances = repo_.read_latest_by_definition_ids(ctx_, request.definition_ids);
+    return response;
+}
+
+messaging::get_report_instance_health_response report_instance_service::get_report_instance_health(
+    const messaging::get_report_instance_health_request& request) {
+    messaging::get_report_instance_health_response response;
+    // The cap is the same one the generated filters state, so one caller cannot
+    // ask the store for more runs than the list reads allow.
+    if (request.instance_ids.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "instance_ids", .limit = "1000"});
+        return response;
+    }
+
+    for (const auto& facts : repo_.read_health_facts_by_instance_ids(ctx_, request.instance_ids)) {
+        messaging::report_instance_health row;
+        row.report_instance_id = facts.report_instance_id;
+        row.state_name = facts.state_name;
+        row.health = health_word(facts.state_name, facts.error_count);
+        response.health.push_back(std::move(row));
+    }
     return response;
 }
 }

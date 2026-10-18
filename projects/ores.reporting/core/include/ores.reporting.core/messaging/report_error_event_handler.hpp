@@ -260,6 +260,49 @@ public:
         }
     }
 
+    /**
+     * @brief Serves reporting.v1.ops.get_report_error_counts.
+     *
+     * A read of the errors of the party's runs, so it is gated by the same code
+     * the generated error reads are gated by.
+     */
+    void get_report_error_counts(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            report_error_event_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "reporting::report_error_events:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<get_report_error_counts_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(report_error_event_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::report_error_event_service svc(req_ctx);
+        try {
+            auto response = svc.get_report_error_counts(*req);
+            BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_error_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_report_error_counts_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

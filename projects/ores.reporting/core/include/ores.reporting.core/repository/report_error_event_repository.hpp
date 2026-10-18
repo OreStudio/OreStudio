@@ -215,6 +215,16 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    /**
+     * @brief Counts the errors and the warnings of each run named.
+     *
+     * A run that recorded no problem has no entry. The rows of other parties
+     * are not the caller's to read: the policy on the table decides that, not
+     * this method.
+     */
+    std::vector<messaging::report_error_count>
+    read_counts_by_report_instance_ids(context ctx,
+                                       const std::vector<boost::uuids::uuid>& report_instance_ids);
 
 private:
     /**

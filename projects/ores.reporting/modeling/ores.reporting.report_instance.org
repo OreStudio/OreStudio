@@ -276,7 +276,7 @@ the instance rather than minted beside it.
 
 * Messages
 
-The =get_latest_report_instance_by_definition= operation, declared here so both the C++ header and its
+The =get_latest_report_instances_by_definition= operation, declared here so both the C++ header and its
 TypeScript twin render it. It answers the question the reports-a-party-runs
 screen asks of a list of runs: which of each definition's runs started last. The
 answer is one row per definition asked for, so the cost grows with the
@@ -284,7 +284,7 @@ definitions a party owns rather than with the runs it has made.
 
 ** get_latest_report_instances_by_definition_request
 :PROPERTIES:
-:subject: reporting.v1.ops.get_latest_report_instance_by_definition
+:subject: reporting.v1.ops.get_latest_report_instances_by_definition
 :response: get_latest_report_instances_by_definition_response
 :END:
 
@@ -323,6 +323,99 @@ definitions a party owns rather than with the runs it has made.
     /**
      * @brief At most one run per definition asked for, and no entry for a
      * definition that has never run.
+     */
+#+end_src
+
+The =get_health= pair, declared here so both the C++ header and its TypeScript
+twin render it. It answers the health word the reports-a-party-runs screen draws
+beside each run, so no client derives the word from a state id and its own
+private mapping. The pair carries the word as a word and not as a code, because
+the five words are a closed set the server decides.
+
+** report_instance_health
+
+The health of one run, and the lifecycle state it was derived from.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief The run the word is of. */
+#+end_src
+
+*** state_name
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief The name of the run's lifecycle state, as the store holds it.
+     *
+     * Absent when the run has no state, or when the session cannot read the
+     * state: the word is then absent too, and the screen is told what the word
+     * was derived from rather than left guessing.
+     */
+#+end_src
+
+*** health
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief One of =failed=, =completed with errors=, =running= or
+     * =completed clean=, or empty when the state has no word.
+     *
+     * =never run= is not a word here: a definition that never ran has no run,
+     * so it has no entry in the reply.
+     */
+#+end_src
+
+** get_report_instance_health_request
+:PROPERTIES:
+:subject:  reporting.v1.ops.get_report_instance_health
+:response: get_report_instance_health_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Reads the health word of each named run.
+ *
+ * The caller asks once with the runs a read of the latest runs returned, so it
+ * pays for one row per run. The request names no party: the session scopes the
+ * answer through the row-level security on the tables.
+ */
+#+end_src
+
+*** instance_ids
+:PROPERTIES:
+:cpp_type: std::vector<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief The runs to state the health of, in any order. */
+#+end_src
+
+** get_report_instance_health_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** health
+:PROPERTIES:
+:cpp_type: std::vector<report_instance_health>
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief One entry per run the session can read, and no entry for a run
+     * that does not exist or is not the caller's to read.
      */
 #+end_src
 
@@ -493,6 +586,141 @@ report_instance_repository::read_latest_by_definition_ids(
 }
 #+end_src
 
+*** read_health_facts_by_instance_ids
+
+Reads what a run's health is derived from: the name of its lifecycle state and
+the number of errors it recorded. The health word itself is the service's to
+state, because the mapping from a state to a word is a decision about the
+screen's vocabulary and not a fact the store holds.
+
+Two reads, not one, because the lifecycle states and the runs live on opposite
+sides of the tenant boundary. The states are the system tenant's reference data
+and the row-level policy on their table admits them only to a session that
+states the system tenant; the runs are the caller's and are read under the
+caller's tenant. A single join would therefore find no state for every tenant
+but the system one, which is why the states are resolved by id in their own
+read, under the tenant that owns them. The reporting service holds a SELECT
+grant on =ores_dq_fsm_= for exactly this read, and reading system reference data
+under the system tenant is what the service's own state lookups already do.
+
+#+begin_src cpp :name declaration :implements E4B7A1C3-9D25-4F68-B0A7-3C6E8D1F5A92
+/**
+ * @brief What a run's health word is derived from: its state and its errors.
+ */
+struct report_instance_health_facts {
+    boost::uuids::uuid report_instance_id;
+    std::string state_name;
+    std::int64_t error_count = 0;
+};
+#+end_src
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads the state name and the error count of each run named.
+     *
+     * A run this session cannot read has no entry. The state name is empty when
+     * the run holds no state or holds one no machine declares, and the service
+     * states no word for it rather than inventing one.
+     */
+    std::vector<report_instance_health_facts>
+    read_health_facts_by_instance_ids(context ctx,
+                                      const std::vector<boost::uuids::uuid>& instance_ids);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <boost/lexical_cast.hpp>
+#include <map>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<report_instance_health_facts>
+report_instance_repository::read_health_facts_by_instance_ids(
+    context ctx, const std::vector<boost::uuids::uuid>& instance_ids) {
+    if (instance_ids.empty())
+        return {};
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading the health facts of " << instance_ids.size()
+                               << " run(s).";
+
+    std::string id_array("{");
+    for (std::size_t i = 0; i < instance_ids.size(); ++i) {
+        if (i > 0)
+            id_array += ',';
+        id_array += boost::uuids::to_string(instance_ids[i]);
+    }
+    id_array += '}';
+
+    // The runs and their errors are the caller's, so they are read under the
+    // caller's tenant and the policy on each table decides what the session
+    // may see. No party is stated here.
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx,
+        "SELECT ri.id::text, coalesce(ri.fsm_state_id::text, ''), count(e.id)::text"
+        " FROM ores_reporting_report_instances_tbl ri"
+        " LEFT JOIN ores_reporting_report_error_events_tbl e"
+        "   ON e.tenant_id = ri.tenant_id"
+        "  AND e.report_instance_id = ri.id"
+        "  AND e.severity = 'error'"
+        " WHERE ri.tenant_id = $1::uuid"
+        "   AND ri.valid_to = ores_utility_infinity_timestamp_fn()"
+        "   AND ri.id = ANY($2::uuid[])"
+        " GROUP BY ri.id, ri.fsm_state_id",
+        {ctx.tenant_id().to_string(), id_array},
+        lg(),
+        "Reading the health facts of each run");
+
+    std::vector<report_instance_health_facts> facts;
+    std::vector<std::string> state_id_of;
+    state_id_of.reserve(rows.size());
+    std::string state_id_array("{");
+    for (const auto& row : rows) {
+        if (row.size() < 3 || !row[0] || !row[1] || !row[2])
+            continue;
+        report_instance_health_facts entry;
+        entry.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+        entry.error_count = std::stoll(*row[2]);
+        facts.push_back(std::move(entry));
+        state_id_of.push_back(*row[1]);
+        if (row[1]->empty())
+            continue;
+        if (state_id_array.size() > 1)
+            state_id_array += ',';
+        state_id_array += *row[1];
+    }
+    state_id_array += '}';
+
+    if (facts.empty() || state_id_array == "{}")
+        return facts;
+
+    // The states are the system tenant's reference data, so they are read under
+    // that tenant. The caller's tenant cannot see them at all, which is why
+    // this read exists rather than the screen resolving a state id itself.
+    const auto state_names = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx.with_tenant(ores::utility::uuid::tenant_id::system(), ctx.actor()),
+        "SELECT id::text, name"
+        " FROM ores_dq_fsm_states_tbl"
+        " WHERE id = ANY($1::uuid[])"
+        "   AND valid_to = ores_utility_infinity_timestamp_fn()",
+        {state_id_array},
+        lg(),
+        "Reading the lifecycle states of each run");
+
+    std::map<std::string, std::string> name_of;
+    for (const auto& row : state_names) {
+        if (row.size() >= 2 && row[0] && row[1])
+            name_of.emplace(*row[0], *row[1]);
+    }
+
+    for (std::size_t i = 0; i < facts.size(); ++i) {
+        if (state_id_of[i].empty())
+            continue;
+        if (const auto it = name_of.find(state_id_of[i]); it != name_of.end())
+            facts[i].state_name = it->second;
+    }
+    return facts;
+}
+#+end_src
+
 ** Custom service methods
 
 #+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
@@ -524,11 +752,57 @@ report_instance_service::get_latest_report_instances_by_definition(
 }
 #+end_src
 
+*** get_report_instance_health
+
+The health word is derived here, in the service, and not in a client: the five
+words are the server's vocabulary, the mapping is one decision about two states
+that have no word yet (G12 of the reporting gaps task), and a client that wrote
+its own mapping would have to be found and changed when that decision is made.
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief The health word of each named run.
+     *
+     * A run whose state has no word yet, or whose state the session cannot
+     * read, answers an empty word beside the state name it was read from.
+     */
+    messaging::get_report_instance_health_response
+    get_report_instance_health(const messaging::get_report_instance_health_request& request);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements A7D3F1E2-8C5B-4A2F-B9E0-3D6C1A8F4B2E
+#include "ores.reporting.core/service/report_health.hpp"
+#+end_src
+
+#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+messaging::get_report_instance_health_response
+report_instance_service::get_report_instance_health(
+    const messaging::get_report_instance_health_request& request) {
+    messaging::get_report_instance_health_response response;
+    // The cap is the same one the generated filters state, so one caller cannot
+    // ask the store for more runs than the list reads allow.
+    if (request.instance_ids.size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "instance_ids", .limit = "1000"});
+        return response;
+    }
+
+    for (const auto& facts : repo_.read_health_facts_by_instance_ids(ctx_, request.instance_ids)) {
+        messaging::report_instance_health row;
+        row.report_instance_id = facts.report_instance_id;
+        row.state_name = facts.state_name;
+        row.health = health_word(facts.state_name, facts.error_count);
+        response.health.push_back(std::move(row));
+    }
+    return response;
+}
+#+end_src
+
 ** Custom NATS handler methods
 
 #+begin_src cpp :name declaration :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
     /**
-     * @brief Serves reporting.v1.ops.get_latest_report_instance_by_definition.
+     * @brief Serves reporting.v1.ops.get_latest_report_instances_by_definition.
      *
      * A read of the party's runs, so it is gated by the same code the generated
      * run reads are gated by.
@@ -571,6 +845,53 @@ report_instance_service::get_latest_report_instances_by_definition(
     }
 #+end_src
 
+*** get_report_instance_health
+
+#+begin_src cpp :name declaration :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    /**
+     * @brief Serves reporting.v1.ops.get_report_instance_health.
+     *
+     * A read of the party's runs, so it is gated by the same code the generated
+     * run reads are gated by.
+     */
+    void get_report_instance_health(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            report_instance_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "reporting::report_instances:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<get_report_instance_health_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(report_instance_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::report_instance_service svc(req_ctx);
+        try {
+            auto response = svc.get_report_instance_health(*req);
+            BOOST_LOG_SEV(report_instance_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_instance_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_report_instance_health_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+#+end_src
+
 ** Custom NATS subscriptions
 
 #+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
@@ -580,6 +901,10 @@ report_instance_service::get_latest_report_instances_by_definition(
         [h](ores::nats::message msg) {
             h->get_latest_report_instances_by_definition(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        get_report_instance_health_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_report_instance_health(std::move(msg)); }));
 #+end_src
 
 * See also

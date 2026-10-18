@@ -144,6 +144,48 @@ struct list_by_report_instance_id_report_error_events_response {
     std::uint64_t total;
 };
 
+struct report_error_count {
+    /** @brief The run the counts are of. */
+    boost::uuids::uuid report_instance_id;
+    /** @brief How many of the run's problems are errors. */
+    std::int64_t errors = 0;
+    /** @brief How many are warnings. */
+    std::int64_t warnings = 0;
+};
+
+/**
+ * @brief Counts the problems of each named run in one call.
+ *
+ * The caller asks once with the runs a read of the latest runs returned, so a
+ * list of forty definitions pays one row per run rather than every error of
+ * every run. The request names no party: the session scopes the answer through
+ * the row-level security on the table.
+ */
+struct get_report_error_counts_request {
+    using response_type = struct get_report_error_counts_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.get_report_error_counts";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The runs to count the problems of, in any order. */
+    std::vector<boost::uuids::uuid> report_instance_ids;
+};
+
+struct get_report_error_counts_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief One entry per run that recorded a problem, and no entry for a run
+     * that recorded none.
+     *
+     * The absence is the screen's zero: nothing was found against that run.
+     */
+    std::vector<report_error_count> counts;
+};
+
 /**
  * @brief The subjects this resource's changes are announced on.
  *

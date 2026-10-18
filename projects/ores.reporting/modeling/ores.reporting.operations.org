@@ -839,6 +839,70 @@ It answers with =collect_compute_results_result= for the same reason
 
 The batch whose results are left unread, so the run's record names them.
 
+** definition_next_fire
+
+One definition's schedule as the screen reads it: the definition, and the
+instant the scheduler says its job fires next.
+
+*** definition_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+The definition the time is of.
+
+*** next_fire_at
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+When the definition's job fires next, in ISO-8601 UTC. Absent when the
+definition holds no scheduler job, because it is run on demand, and absent when
+the scheduler states no time for the job it holds, which it does for a paused
+job and for an expression it cannot advance.
+
+** get_next_fire_request
+:PROPERTIES:
+:subject: reporting.v1.ops.get_next_fire
+:response: get_next_fire_response
+:END:
+
+Reads when each named definition's schedule fires next.
+
+The answer comes from the scheduler, which is the only thing that states it: the
+reporting tables record firings made, not firings due. The reporting service
+relays the caller's own session to scheduler.v1.ops.get_scheduler_status, so a
+caller needs =reporting::report_definitions:read= to make this read and
+=scheduler::job_instances:read= for the scheduler to answer it. =Member= holds
+both.
+
+*** definition_ids
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+The definitions to answer for, in any order, in the text form of their ids, as
+the schedule and unschedule requests beside this one state them. The party that
+scopes the answer is the session's, and never a field of this request.
+
+** get_next_fire_response
+:PROPERTIES:
+:END:
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** schedules
+:PROPERTIES:
+:cpp_type: std::vector<definition_next_fire>
+:END:
+
+One entry per definition this session can read, and no entry for a definition it
+cannot.
+
+
 * See also
 
 - [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the operation rules this model follows.

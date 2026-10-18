@@ -272,6 +272,93 @@ No table. A real foreign key is what the run's own delete reaches, and the
 errors are not children the run must close itself: the store holds the
 constraint, and the delete rule that closes a row already runs.
 
+* Messages
+
+The count of a run's problems, so a screen that draws a run pays one row for
+its problems rather than one row per error. The aggregation happens in the
+store, and the error rows themselves never leave it.
+
+** report_error_count
+
+One run's problems, counted apart by severity. The severity is a closed text
+column, so the split needs no vocabulary read.
+
+*** report_instance_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief The run the counts are of. */
+#+end_src
+
+*** errors
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief How many of the run's problems are errors. */
+#+end_src
+
+*** warnings
+:PROPERTIES:
+:cpp_type: std::int64_t
+:default:  0
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief How many are warnings. */
+#+end_src
+
+** get_report_error_counts_request
+:PROPERTIES:
+:subject:  reporting.v1.ops.get_report_error_counts
+:response: get_report_error_counts_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Counts the problems of each named run in one call.
+ *
+ * The caller asks once with the runs a read of the latest runs returned, so a
+ * list of forty definitions pays one row per run rather than every error of
+ * every run. The request names no party: the session scopes the answer through
+ * the row-level security on the table.
+ */
+#+end_src
+
+*** report_instance_ids
+:PROPERTIES:
+:cpp_type: std::vector<boost::uuids::uuid>
+:END:
+
+#+begin_src cpp :name comment
+    /** @brief The runs to count the problems of, in any order. */
+#+end_src
+
+** get_report_error_counts_response
+
+*** result
+:PROPERTIES:
+:cpp_type: ores::utility::domain::result
+:END:
+
+*** counts
+:PROPERTIES:
+:cpp_type: std::vector<report_error_count>
+:END:
+
+#+begin_src cpp :name comment
+    /**
+     * @brief One entry per run that recorded a problem, and no entry for a run
+     * that recorded none.
+     *
+     * The absence is the screen's zero: nothing was found against that run.
+     */
+#+end_src
+
 * C++
 
 ** Flags
@@ -361,6 +448,168 @@ constraint, and the delete rule that closes a row already runs.
 | EventTime        | event_time       | Event Time      | timestamp | 160 |
 
 ** Custom repository methods
+
+*** read_counts_by_report_instance_ids
+
+Counts a run's problems by severity, one row per run that recorded any. The
+generated list answers rows, so a caller that wanted a count would read every
+error of every run and count them in C++; the store answers the question in one
+statement instead, and the rows never leave it.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Counts the errors and the warnings of each run named.
+     *
+     * A run that recorded no problem has no entry. The rows of other parties
+     * are not the caller's to read: the policy on the table decides that, not
+     * this method.
+     */
+    std::vector<messaging::report_error_count>
+    read_counts_by_report_instance_ids(context ctx,
+                                       const std::vector<boost::uuids::uuid>& report_instance_ids);
+#+end_src
+
+#+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
+#include <boost/lexical_cast.hpp>
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<messaging::report_error_count>
+report_error_event_repository::read_counts_by_report_instance_ids(
+    context ctx, const std::vector<boost::uuids::uuid>& report_instance_ids) {
+    if (report_instance_ids.empty())
+        return {};
+
+    BOOST_LOG_SEV(lg(), debug) << "Counting the problems of "
+                               << report_instance_ids.size() << " run(s).";
+
+    // One bound array rather than one parameter per id, so a list of forty
+    // runs is still one statement.
+    std::string id_array("{");
+    for (std::size_t i = 0; i < report_instance_ids.size(); ++i) {
+        if (i > 0)
+            id_array += ',';
+        id_array += boost::uuids::to_string(report_instance_ids[i]);
+    }
+    id_array += '}';
+
+    // The tenant and the policy on the table narrow the rows exactly as they do
+    // for the generated reads; no party is stated here.
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx,
+        "SELECT report_instance_id::text,"
+        "       count(*) FILTER (WHERE severity = 'error')::text,"
+        "       count(*) FILTER (WHERE severity = 'warning')::text"
+        " FROM ores_reporting_report_error_events_tbl"
+        " WHERE tenant_id = $1::uuid"
+        "   AND report_instance_id = ANY($2::uuid[])"
+        " GROUP BY report_instance_id",
+        {ctx.tenant_id().to_string(), id_array},
+        lg(),
+        "Counting the problems of each run");
+
+    std::vector<messaging::report_error_count> counts;
+    counts.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 3 || !row[0] || !row[1] || !row[2])
+            continue;
+        messaging::report_error_count count;
+        count.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+        count.errors = std::stoll(*row[1]);
+        count.warnings = std::stoll(*row[2]);
+        counts.push_back(std::move(count));
+    }
+    return counts;
+}
+#+end_src
+
+** Custom service methods
+
+*** get_report_error_counts
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief The problems of each named run, counted apart by severity.
+     *
+     * A run that recorded no problem has no entry, which is what the screen
+     * draws as no problems rather than as a row of zeroes.
+     */
+    messaging::get_report_error_counts_response
+    get_report_error_counts(const messaging::get_report_error_counts_request& request);
+#+end_src
+
+#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+messaging::get_report_error_counts_response
+report_error_event_service::get_report_error_counts(
+    const messaging::get_report_error_counts_request& request) {
+    messaging::get_report_error_counts_response response;
+    // The cap is the same one the generated filters state, so one caller cannot
+    // ask the store for more runs than the list reads allow.
+    if (request.report_instance_ids.size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "report_instance_ids", .limit = "1000"});
+        return response;
+    }
+    response.counts = repo_.read_counts_by_report_instance_ids(ctx_, request.report_instance_ids);
+    return response;
+}
+#+end_src
+
+** Custom NATS handler methods
+
+#+begin_src cpp :name declaration :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
+    /**
+     * @brief Serves reporting.v1.ops.get_report_error_counts.
+     *
+     * A read of the errors of the party's runs, so it is gated by the same code
+     * the generated error reads are gated by.
+     */
+    void get_report_error_counts(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        [[maybe_unused]] const auto correlation_id = ores::service::messaging::log_handler_entry(
+            report_error_event_handler_lg(), msg, req_ctx.tenant_id().to_string());
+        if (!has_permission(req_ctx, "reporting::report_error_events:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<get_report_error_counts_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(report_error_event_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        service::report_error_event_service svc(req_ctx);
+        try {
+            auto response = svc.get_report_error_counts(*req);
+            BOOST_LOG_SEV(report_error_event_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, response);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_error_event_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            get_report_error_counts_response failure;
+            failure.result.outcome = ores::utility::domain::outcome::failed;
+            failure.result.code = "internal_error";
+            failure.result.message = e.what();
+            reply(nats_, msg, failure);
+        }
+    }
+#+end_src
+
+** Custom NATS subscriptions
+
+#+begin_src cpp :name custom_subscriptions :implements FB267332-79AB-4873-AFDA-CEEE68A0F398
+    subs.push_back(nats.queue_subscribe(
+        get_report_error_counts_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_report_error_counts(std::move(msg)); }));
+#+end_src
 
 * See also
 

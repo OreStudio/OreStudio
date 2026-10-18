@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-18
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ Close each gap the reports-a-party-runs specification records, in the three phas
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
-| Now          | Phase 1 is closed and on a branch: the five grants, the filter and the latest-run read. |
-| Waiting on   | Nothing.                               |
-| Next         | Phase 2, in a task of its own.         |
-| Last touched | 2026-10-17                               |
+| Now          | Phases 1 and 2 are closed on their branches: the grants, the filter, the latest-run read, the problem count, the health word and the next fire time. |
+| Waiting on   | The owner decision (G10), which no code can make. |
+| Next         | Phase 3, in a task of its own.         |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -73,20 +73,18 @@ read back from one.
 
 ** Phase 2 — the row's meaning
 
-- [ ] *G3.* Add a per-run error count split into errors and warnings, so a run
-      with twenty errors costs one row. Today the count comes from
-      =reporting.v1.report_error_events.list= narrowed by
-      =report_instance_id_one_of=, and needs =reporting::report_error_events:read=.
-- [ ] *G4.* Add the health word, derived from the run's state and its error
-      count. Today it comes from =dq.v1.fsm_states.list= and needs
-      =dq::fsm_states:read=.
+- [X] *G3.* Add a per-run error count split into errors and warnings, so a run
+      with twenty errors costs one row. Read =reporting.v1.ops.get_report_error_counts=.
+- [X] *G4.* Add the health word, derived from the run's state and its error
+      count. Read =reporting.v1.ops.get_report_instance_health=.
 - [ ] *G10.* Record an owner for a definition, so the Owner cell is drawn.
-      This needs a column that does not exist, so it is a schema change, and
-      the read that follows it is =reporting.v1.report_definitions.list= with
-      =reporting::report_definitions:read=.
-- [ ] *G5.* Add the next fire time of a definition's schedule. Today the only
-      source is =scheduler.v1.ops.get_scheduler_status=, and it needs
-      =scheduler::job_instances:read=.
+      Decided and not implemented: the owner is a team. See
+      [[id:312E7600-482B-4656-970B-63DE8C5C3CCA][A report is owned by a team, not by a person]]. Re-scope this gap to a
+      team when it is picked up. What a team is stays an open question, and the
+      decision, the options and the recommendation are in * Notes, below.
+- [X] *G5.* Add the next fire time of a definition's schedule. Read
+      =reporting.v1.ops.get_next_fire=, which relays the caller's session to
+      =scheduler.v1.ops.get_scheduler_status= with =scheduler::job_instances:read=.
 
 ** Phase 3 — correctness and identity
 
@@ -130,6 +128,16 @@ a custom repository method, and a custom handler method and subscription. The
 generated files carry the paste points for all three, so nothing under
 =projects/ores.reporting= is hand-edited.
 
+Phase 2 follows the same rule as phase 1: each read is declared in the model and
+carried through the paste points, so the subject, the C++ types and the
+TypeScript twin come from one source. The problem count is a store aggregate and
+not a page of rows. The health word is derived in the service, because the
+mapping is the server's vocabulary and the states it maps are reference data a
+tenant cannot read. The next fire time is the scheduler's answer, relayed on the
+caller's own session, because the reporting tables record firings made and not
+firings due. The owner is left open: it is a decision about what an owner is,
+not a read.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it
@@ -148,6 +156,10 @@ task and name that file in the Command column.
 | =ores.reporting.core.tests= | 103 test cases, 496 assertions, all pass | =compass build test_ores.reporting.core.tests= | e96b8a2580 |
 | =ores.reporting.api.tests=, =ores.reporting.service.tests=, =ores.shell.reporting.tests= | 63 / 10 / 377 test cases, all pass | =compass build test_ores.reporting.api.tests test_ores.reporting.service.tests test_ores.shell.reporting.tests= | e96b8a2580 |
 | Local checks | =org-links= and =lint= pass, 2 of 2 | =compass check --only org-links --only lint --exclude-heavy= | e96b8a2580 |
+| =ores.reporting.core.tests=, phase 2 | 106 test cases, 544 assertions, all pass | =compass build test_ores.reporting.core.tests= | 894b967c9c |
+| =ores.reporting.api.tests=, =ores.reporting.service.tests=, =ores.shell.reporting.tests=, phase 2 | 63 / 10 / 380 test cases, all pass | =compass build test_ores.reporting.api.tests test_ores.reporting.service.tests test_ores.shell.reporting.tests= | 894b967c9c |
+| Subjects outside the entity protocol, after phase 2 | 0; the three new reads and phase 1's latest-run read are in the =ops= namespace | =compass check --only subject-conformance --exclude-heavy= | 894b967c9c |
+| Local checks, phase 2 | =org-links= and =lint= pass, 2 of 2 | =compass check --only org-links --only lint --exclude-heavy= | 894b967c9c |
 
 * Notes
 
@@ -178,7 +190,7 @@ and call the read through the service, which is the entry its NATS users reach.
   no write code is granted. The classification is stated in
   [[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]].
 - *G1.* One read answers for every definition named:
-  =reporting.v1.report_instances.get_latest_by_definition=, declared in
+  =reporting.v1.ops.get_latest_report_instances_by_definition=, declared in
   =ores.reporting.report_instance.org= under =* Messages= and carried through
   the custom paste points of the repository, the service, the handler and the
   sub-registrar. The store reduces, so the cost is one row per definition.
@@ -194,6 +206,160 @@ one latest-run read keyed by the ids that read returned. Neither the definition
 nor the run has to grow a composite message, and each read stays the codegen's
 own artefact. The screen is one call per table, not the three reads and the BFF
 reduction the specification records.
+
+** Phase 2, gap by gap
+
+- *G3.* =reporting.v1.ops.get_report_error_counts= answers one row per run that
+  recorded a problem, carrying how many are errors and how many are warnings. A
+  run with no problem has no entry, which the screen draws as no problems. The
+  count is one =GROUP BY= in the store, so a run with twenty errors costs one
+  row and the error rows never leave the database. The read follows the codegen
+  route phase 1 used for the latest run: two declared messages in
+  =ores.reporting.report_error_event.org=, a custom repository method (where the
+  codebase already puts a custom read), a custom service method, a custom handler
+  method and a custom subscription. The model is the file that changed; the
+  generated files carry the paste points.
+  The verb is =ops= because the subject gate admits eight verbs on a resource and
+  a count is none of them: the count is a domain read of the run's problems, not
+  a page of them.
+- *G4.* =reporting.v1.ops.get_report_instance_health= answers the health word of
+  each run asked for, and the state name the word came from. The word is derived
+  in the reporting service, in
+  =projects/ores.reporting/core/include/ores.reporting.core/service/report_health.hpp=,
+  and not in a client. The mapping is stated once:
+
+  | state                       | health word            |
+  |-----------------------------+------------------------|
+  | =pending=, =queued=, =running= | =running=           |
+  | =completed=, no errors      | =completed clean=      |
+  | =completed=, one error or more | =completed with errors= |
+  | =failed=                    | =failed=               |
+  | =cancelled=, =skipped=      | none yet (G12)         |
+
+  A run that has not started has no word of its own in the screen's five, so it
+  reads as =running=, the one word for in flight. =cancelled= and =skipped= map
+  to no word, on purpose: G12 is the decision, it belongs to phase 3, and the
+  function says so in its comment rather than borrowing a nearby word.
+  The read returns the word rather than the state names for two reasons. The
+  word is the server's vocabulary, and a client that mapped state names itself
+  would be a second place to change when G12 is decided. And the state names are
+  not the screen's to read at all: the lifecycle states are the system tenant's
+  reference data, and the row-level policy on =ores_dq_fsm_states_tbl= admits
+  them only to a session that states the system tenant, so a tenant session
+  asking =dq.v1.fsm_states.list= for them sees nothing. The reporting service
+  reads them under the system tenant, which is what its own state lookups
+  already do, and answers the word. The =dq::fsm_states:read= grant G9 added
+  stays, but this read no longer needs it.
+- *G5.* =reporting.v1.ops.get_next_fire= answers, per definition, when the
+  scheduler says the definition's job fires next, or no time when it states
+  none. The read is on the definitions whose ids the caller names; the party
+  scope is the session's, never a field. The reporting service reads the
+  definitions to learn their =scheduler_job_id=, then relays the caller's own
+  session to =scheduler.v1.ops.get_scheduler_status= once for the whole page and
+  joins the status to the definitions in C++. A paused job states no next fire,
+  and a definition with no job is run on demand; both answer no time, and the
+  screen learns which from =scheduler_job_id= in the definition it already read.
+  The join is a named unit, =plan_next_fire= in =next_fire_plan.hpp=, so it is
+  tested against the same function the service calls.
+
+** G5, the verification the gap asked for
+
+The three facts the scheduler read rests on, each read in the tree at this
+branch:
+
+- =scheduler::job_instances:read= is granted to =Member= at
+  =projects/ores.sql/populate/iam/iam_roles_populate.sql:213=, beside the four
+  reporting reads phase 1 added, and the populated database answers the same
+  code for =Member=.
+- =scheduler.v1.ops.get_scheduler_status= is gated by that code and no other,
+  at =projects/ores.scheduler/core/include/ores.scheduler.core/messaging/scheduler_status_handler.hpp:71=.
+- Its reply carries =next_fire_at= per job
+  (=scheduling_operations_protocol.hpp=, =job_schedule_status=), filled from the
+  job's cron expression when the job is active and left absent when it is paused
+  or cannot be advanced (=scheduler_status_handler.hpp:123-126=).
+
+So the read is callable by =Member= and it carries the time. It is wired through
+the reporting read above, and the caller's grant is what answers the scheduler
+underneath it: the reporting service adds no authority of its own and forwards
+nothing it does not hold.
+
+** G10, the owner, and the decision this task does not make
+
+Nothing in the tree records who owns a definition. =report_definition= has no
+owner column, and its nearest relation, =run_grant_id=, names a consent whose
+=grantor_account_id= is nullable and is a grantor rather than an owner. The
+prototype's Owner column is a fixture. No column was added, because what an
+owner is has not been decided and a column on a guess would have to be migrated
+away.
+
+The question is two questions: who an owner is, and where the ownership is
+recorded. The options:
+
+1. *An owner is a person account.* A nullable =owner_account_id= on the
+   definition, resolved to the account's name by the read. One person owns a
+   report; the cell answers "who to ask". Cost: an account that leaves must hand
+   the definitions on, and the reporting service has to read IAM to name the
+   person, which it already does for tenants and run grants.
+2. *An owner is a party.* The definition already carries =party_id=, so the cell
+   would repeat the Party cell. It only means something if the intent is a desk
+   or a team inside the party, and no table holds that today.
+3. *An owner is a role.* An =owner_role_id= pointing at an IAM role. The cell
+   then names a team rather than a person and changes hands without a write to
+   the definition, which is cheap to keep current and weaker as an answer to
+   "who do I ask".
+4. *Ownership is an assignment.* A separate table of (definition, account,
+   effective window), so ownership has history and more than one person can hold
+   it. The most general and the most expensive: a new table, its own reads, and a
+   rule for which holder the cell draws.
+
+*Recommendation.* Option 1: a nullable =owner_account_id= on the definition.
+The prototype's own words for the cell are "the person the report belongs to",
+one column keeps the definition read one row, and a nullable column lets the
+definitions that exist today read as "unassigned" rather than as someone else's.
+The read that follows is =reporting.v1.report_definitions.list=, which already
+returns the definition, with the account name resolved beside it and
+=reporting::report_definitions:read= as its gate.
+
+*The decision, recorded elsewhere.* The recommendation above is superseded. A
+capture now records that ownership belongs to a *team* and not to a person —
+[[id:312E7600-482B-4656-970B-63DE8C5C3CCA][A report is owned by a team, not by a person]], filed in
+=doc/agile/product_backlog/inbox/=. The reason is that an individual owner
+answers "who last touched this" and not "who answers for this", breaks when the
+person moves, and in practice reports are run and repaired by a rota. The capture
+also records what a team is as an open question, so no column can be designed
+yet. *G10 must be re-scoped to a team when it is picked up:* the column names a
+team, and the reads and the cell follow that answer rather than
+=owner_account_id=.
+
+Until that is settled, G10 stays open and the Owner cell has no source.
+
+** What the phase 2 tests call, and what they assert
+
+Three tests, one per gap, and each calls the read through the service or the
+function the service calls. All three run against a populated database.
+
+- =the problems of a run read as one row split into errors and warnings=, in
+  =projects/ores.reporting/core/tests/service_report_error_counts_tests.cpp=.
+  It writes two runs of one party, records three errors and two warnings against
+  the first, and asks the count read for both. It asserts one reply row, for the
+  first run, with =errors= 3 and =warnings= 2, and no row for the second, which
+  recorded nothing.
+- =each lifecycle state reads as the health word the screen draws=, in
+  =service_report_instance_health_tests.cpp=. It writes one run in each of the
+  seven lifecycle states, records one error against the second completed run,
+  and asks the health read for all eight runs. It asserts each word against a
+  literal: =running= for pending, queued and running; =completed clean= and
+  =completed with errors= for the two completed runs; =failed= for failed; and
+  an empty word for cancelled and skipped, whose state names the reply still
+  states.
+- =a definition's schedule reads the next fire the scheduler states for its
+  job=, in =service_next_fire_tests.cpp=. It writes one scheduled definition and
+  one unscheduled, reads both back to prove the =scheduler_job_id= survives the
+  store, and calls =plan_next_fire= with a scheduler status that states a time
+  for the scheduled job and none for the unscheduled one. It asserts the literal
+  time =2026-10-18T09:00:00Z= for the scheduled definition, no time for the
+  unscheduled one, no time from a job the definitions do not hold, and no time
+  from the same job once the scheduler states none for it.
 
 * Test Scenarios
 
@@ -211,6 +377,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/3484][#3484]] | [reporting,sql] Close the first phase of the reporting gaps |
+| [[https://github.com/OreStudio/OreStudio/pull/3501][#3501]] | [reporting] Close the second phase of the reporting gaps |
 
 * Review
 
@@ -222,10 +389,21 @@ via its "Verifies task" field.
 
 Phase 1 is closed. Five reads are granted to =Member= and read back from a
 populated database; =definition_id= is a filter member on the runs list; and
-=reporting.v1.report_instances.get_latest_by_definition= answers one run per
+=reporting.v1.ops.get_latest_report_instances_by_definition= answers one run per
 definition asked for, reduced in the store and scoped by the session.
 
-Phases 2 and 3 are not started: per-run error count, health word, owner,
-next-fire, the event's definition id, cancelled and skipped health, the
-on-demand word, the prototype's kinds and the party code in the session are
+Phase 2 is closed. =reporting.v1.ops.get_report_error_counts= answers a run's
+problems as one row split into errors and warnings; the store aggregates, so the
+error rows never leave it. =reporting.v1.ops.get_report_instance_health= states
+the health word of each run and the state it was derived from, with the mapping
+in =report_health.hpp= and the states read where they live, in the system tenant.
+=reporting.v1.ops.get_next_fire= relays the caller's own session to the
+scheduler and answers one next fire per definition, or none.
+
+G10 stays open. No owner is recorded anywhere in the tree, so the column, the
+read and the cell all wait on a decision no code can make; the options and the
+recommendation are in * Notes.
+
+Phase 3 is not started: the event's definition id, cancelled and skipped health,
+the on-demand word, the prototype's kinds and the party code in the session are
 still open, exactly as the checkboxes say.

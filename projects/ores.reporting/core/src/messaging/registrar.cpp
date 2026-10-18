@@ -169,6 +169,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
             unschedule_report_definitions_request::nats_subject,
             group,
             [rsh](ores::nats::message msg) { rsh->unschedule(std::move(msg)); }));
+        subs.push_back(nats.queue_subscribe(
+            get_next_fire_request::nats_subject, group, [rsh](ores::nats::message msg) {
+                rsh->get_next_fire(std::move(msg));
+            }));
     }
 
     // ----------------------------------------------------------------

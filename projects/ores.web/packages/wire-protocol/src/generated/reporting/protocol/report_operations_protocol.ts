@@ -239,6 +239,20 @@ export interface IgnoreComputeResultsRequest {
     batch_id: string;
 }
 
+export interface DefinitionNextFire {
+    definition_id: string;
+    next_fire_at: string | null;
+}
+
+export interface GetNextFireRequest {
+    definition_ids: string[];
+}
+
+export interface GetNextFireResponse {
+    result: Result;
+    schedules: DefinitionNextFire[];
+}
+
 export const subjects = {
     trigger_report_instance_request: 'reporting.v1.ops.trigger_report_instance',
     schedule_report_definitions_request: 'reporting.v1.ops.schedule_report_definitions',
@@ -257,6 +271,7 @@ export const subjects = {
     fail_report_request: 'reporting.v1.ops.fail_report',
     resolve_prepared_input_request: 'reporting.v1.ops.resolve_prepared_input',
     ignore_compute_results_request: 'reporting.v1.ops.ignore_compute_results',
+    get_next_fire_request: 'reporting.v1.ops.get_next_fire',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -279,4 +294,5 @@ export const requiresSession = {
     fail_report_request: true,
     resolve_prepared_input_request: true,
     ignore_compute_results_request: true,
+    get_next_fire_request: true,
 } as const;

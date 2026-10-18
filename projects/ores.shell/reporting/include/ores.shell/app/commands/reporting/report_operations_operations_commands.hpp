@@ -159,6 +159,13 @@ public:
     static void process_ignore_compute_results(std::ostream& out,
                                                ores::nats::service::nats_client& session,
                                                const std::vector<std::string>& args);
+
+    /**
+     * @brief get-next-fire <definition_ids>
+     */
+    static void process_get_next_fire(std::ostream& out,
+                                      ores::nats::service::nats_client& session,
+                                      const std::vector<std::string>& args);
 };
 
 }

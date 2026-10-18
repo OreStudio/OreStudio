@@ -279,7 +279,7 @@ struct get_report_instance_version_response {
 struct get_latest_report_instances_by_definition_request {
     using response_type = struct get_latest_report_instances_by_definition_response;
     static constexpr std::string_view nats_subject =
-        "reporting.v1.ops.get_latest_report_instance_by_definition";
+        "reporting.v1.ops.get_latest_report_instances_by_definition";
     /**
      * @brief Whether the caller must have established a session first.
      *
@@ -298,6 +298,57 @@ struct get_latest_report_instances_by_definition_response {
      * definition that has never run.
      */
     std::vector<ores::reporting::domain::report_instance> instances;
+};
+
+struct report_instance_health {
+    /** @brief The run the word is of. */
+    boost::uuids::uuid report_instance_id;
+    /**
+     * @brief The name of the run's lifecycle state, as the store holds it.
+     *
+     * Absent when the run has no state, or when the session cannot read the
+     * state: the word is then absent too, and the screen is told what the word
+     * was derived from rather than left guessing.
+     */
+    std::string state_name;
+    /**
+     * @brief One of =failed=, =completed with errors=, =running= or
+     * =completed clean=, or empty when the state has no word.
+     *
+     * =never run= is not a word here: a definition that never ran has no run,
+     * so it has no entry in the reply.
+     */
+    std::string health;
+};
+
+/**
+ * @brief Reads the health word of each named run.
+ *
+ * The caller asks once with the runs a read of the latest runs returned, so it
+ * pays for one row per run. The request names no party: the session scopes the
+ * answer through the row-level security on the tables.
+ */
+struct get_report_instance_health_request {
+    using response_type = struct get_report_instance_health_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.get_report_instance_health";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    /** @brief The runs to state the health of, in any order. */
+    std::vector<boost::uuids::uuid> instance_ids;
+};
+
+struct get_report_instance_health_response {
+    ores::utility::domain::result result;
+    /**
+     * @brief One entry per run the session can read, and no entry for a run
+     * that does not exist or is not the caller's to read.
+     */
+    std::vector<report_instance_health> health;
 };
 
 /**

@@ -99,12 +99,46 @@ export interface ListByReportInstanceIdReportErrorEventsResponse {
     total: number;
 }
 
+export interface ReportErrorCount {
+    /** @brief The run the counts are of. */
+    report_instance_id: string;
+    /** @brief How many of the run's problems are errors. */
+    errors: number;
+    /** @brief How many are warnings. */
+    warnings: number;
+}
+
+/**
+ * @brief Counts the problems of each named run in one call.
+ *
+ * The caller asks once with the runs a read of the latest runs returned, so a
+ * list of forty definitions pays one row per run rather than every error of
+ * every run. The request names no party: the session scopes the answer through
+ * the row-level security on the table.
+ */
+export interface GetReportErrorCountsRequest {
+    /** @brief The runs to count the problems of, in any order. */
+    report_instance_ids: string[];
+}
+
+export interface GetReportErrorCountsResponse {
+    result: Result;
+    /**
+     * @brief One entry per run that recorded a problem, and no entry for a run
+     * that recorded none.
+     *
+     * The absence is the screen's zero: nothing was found against that run.
+     */
+    counts: ReportErrorCount[];
+}
+
 export const subjects = {
     list_report_error_events_request: 'reporting.v1.report_error_events.list',
     get_report_error_event_request: 'reporting.v1.report_error_events.get',
     get_many_report_error_events_request: 'reporting.v1.report_error_events.get_many',
     list_by_report_instance_id_report_error_events_request:
         'reporting.v1.report_error_events.list_by_report_instance_id',
+    get_report_error_counts_request: 'reporting.v1.ops.get_report_error_counts',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -116,6 +150,7 @@ export const requiresSession = {
     get_report_error_event_request: true,
     get_many_report_error_events_request: true,
     list_by_report_instance_id_report_error_events_request: true,
+    get_report_error_counts_request: true,
 } as const;
 
 /**

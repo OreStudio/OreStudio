@@ -256,8 +256,8 @@ task and name that file in the Command column.
 | XML suites | 509 cases, 79,240 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
 | Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 4e8b75caec |
 | XML suites after the curve configuration table | 497 cases, 82,020 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 4e8b75caec |
-| Corpus documents the value harness sweeps | 776 | same | HEAD_OF_THIS_BRANCH |
-| Run documents that bind, write and keep every value | 422 of 422 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | HEAD_OF_THIS_BRANCH |
+| Corpus documents the value harness sweeps | 776 | same | c19354f6b9 |
+| Run documents that bind, write and keep every value | 422 of 422 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | c19354f6b9 |
 | Stress testing documents that bind, write and keep every value | 19 of 19 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 488e82f0b8 |
 | Stress mapper .cpp lines deleted, with the 76-line header and the 748 lines of suites | 2,054 | =git show origin/main:projects/ores.ore/core/src/domain/stress_test_mapper.cpp \| wc -l= | 488e82f0b8 |
 | Curve configurations that project and project back | 89 of 89 | =publish/bin/ores.ore.core.tests "[curveconfig]"= | 97015dc883 |

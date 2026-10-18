@@ -23,11 +23,37 @@
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 #include <boost/program_options.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <optional>
+#include <string>
+#include <utility>
 
 namespace {
 
 const std::string_view test_suite("ores.nats.tests");
 const std::string tags("[config]");
+
+/**
+ * @brief Put a real environment variable back when the case leaves.
+ *
+ * A case that changes the process environment would otherwise leave the
+ * change behind for every case that runs after it, which is how a NATS
+ * connection later in this suite can find no CA certificate.
+ */
+struct restore_environment {
+    std::string name;
+    std::optional<std::string> value;
+
+    explicit restore_environment(std::string n)
+        : name(std::move(n))
+        , value(ores::platform::environment::environment::get_value(name)) {}
+
+    ~restore_environment() {
+        if (value)
+            ores::platform::environment::environment::set_value(name, *value);
+        else
+            ores::platform::environment::environment::unset_value(name);
+    }
+};
 
 ores::nats::config::nats_options parse(const std::vector<std::string>& args) {
     using namespace boost::program_options;
@@ -117,6 +143,8 @@ TEST_CASE("register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_
     nats_configuration::register_shared_domain();
 
     using ores::platform::environment::environment;
+    const restore_environment restore_url("ORES_NATS_URL");
+    const restore_environment restore_listen_port("ORES_NATS_LISTEN_PORT");
     environment::set_value("ORES_NATS_URL", "nats://regression-check:4222");
     environment::set_value("ORES_NATS_LISTEN_PORT", "4222");
 
@@ -129,9 +157,6 @@ TEST_CASE("register_shared_domain_makes_unprefixed_nats_vars_reach_an_unrelated_
 
     const auto result = nats_configuration::read_options(vm);
     CHECK(result.url == "nats://regression-check:4222");
-
-    environment::unset_value("ORES_NATS_URL");
-    environment::unset_value("ORES_NATS_LISTEN_PORT");
 }
 
 TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", tags) {
@@ -149,6 +174,7 @@ TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", tags) {
 
     nats_configuration::register_shared_domain();
     using ores::platform::environment::environment;
+    const restore_environment restore_tls_ca("ORES_NATS_TLS_CA");
     environment::set_value("ORES_NATS_TLS_CA", "/tmp/ca.crt");
 
     const auto od = nats_configuration::make_options_description();
@@ -160,6 +186,4 @@ TEST_CASE("register_shared_domain_does_not_resolve_tls_ca", tags) {
 
     const auto result = nats_configuration::read_options(vm);
     CHECK(result.tls_ca_cert.empty());
-
-    environment::unset_value("ORES_NATS_TLS_CA");
 }

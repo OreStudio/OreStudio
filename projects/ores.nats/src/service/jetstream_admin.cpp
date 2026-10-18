@@ -21,6 +21,7 @@
 #include "ores.logging/make_logger.hpp"
 #include <cstdint>
 #include <nats/nats.h>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -212,6 +213,55 @@ void jetstream_admin::prune_consumers(std::string_view name, std::string_view ke
     if (pruned > 0)
         BOOST_LOG_SEV(lg(), info) << "Pruned " << pruned << " consumer(s) on '" << name_str
                                   << "' that the service no longer declares";
+}
+
+std::optional<consumer_status> jetstream_admin::consumer_state(std::string_view stream,
+                                                               std::string_view consumer) {
+    auto* js = static_cast<jsCtx*>(js_ctx_);
+    const std::string stream_str(stream);
+    const std::string consumer_str(consumer);
+
+    jsOptions opts;
+    jsOptions_Init(&opts);
+    auto jerr = jsErrCode(0);
+
+    jsConsumerInfo* info = nullptr;
+    const natsStatus s =
+        js_GetConsumerInfo(&info, js, stream_str.c_str(), consumer_str.c_str(), &opts, &jerr);
+    if (s != NATS_OK || info == nullptr) {
+        if (info != nullptr)
+            jsConsumerInfo_Destroy(info);
+        if (s == NATS_NOT_FOUND || jerr == JSConsumerNotFoundErr)
+            return std::nullopt;
+        throw std::runtime_error("Could not read consumer '" + consumer_str + "' on '" +
+                                 stream_str + "': " + natsStatus_GetText(s));
+    }
+
+    consumer_status status;
+    status.created_ns = info->Created;
+    status.delivered = info->Delivered.Stream;
+    status.ack_floor_stream = info->AckFloor.Stream;
+    status.num_ack_pending = info->NumAckPending;
+    status.num_redelivered = info->NumRedelivered;
+    status.num_pending = info->NumPending;
+    status.push_bound = info->PushBound;
+    jsConsumerInfo_Destroy(info);
+    return status;
+}
+
+void jetstream_admin::delete_stream(std::string_view name) {
+    auto* js = static_cast<jsCtx*>(js_ctx_);
+    const std::string name_str(name);
+
+    jsOptions opts;
+    jsOptions_Init(&opts);
+    auto jerr = jsErrCode(0);
+
+    const natsStatus s = js_DeleteStream(js, name_str.c_str(), &opts, &jerr);
+    if (s == NATS_OK || s == NATS_NOT_FOUND || jerr == JSStreamNotFoundErr)
+        return;
+    throw std::runtime_error("Could not delete stream '" + name_str +
+                             "': " + natsStatus_GetText(s));
 }
 
 }

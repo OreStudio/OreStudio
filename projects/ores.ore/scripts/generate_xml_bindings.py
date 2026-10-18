@@ -210,55 +210,116 @@ def simple_content_base(complex_type):
     return None
 
 
-UNSUPPORTED = ("complexContent", "group", "annotation")
+UNSUPPORTED = ("group",)
 
 
-def children_of(complex_type):
-    """Elements and attributes of a complexType, in schema order."""
-    elements, attributes = [], []
-    for node in complex_type:
+def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
+    """Walks the nodes of one content model into the two lists.
+
+    `bases` is the chain of types this walk has already flattened, so a
+    derivation that reaches itself is refused instead of recursing.
+    """
+    def walk(node):
         name = local(node.tag)
-        if name in UNSUPPORTED:
-            # complexContent, xs:group ref and nested model groups are shapes
-            # this generator does not read. Emitting nothing for them would
-            # produce a table that silently disagrees with the schema, so they
-            # stop the run instead.
-            raise SystemExit(
-                f"they type {complex_type.get('name')} uses xs:{name}, which is not supported"
-            )
-    for node in complex_type:
-        if local(node.tag) in ("sequence", "all", "choice"):
+        if name in ("sequence", "all", "choice"):
             # A compositor that repeats repeats its members: a document may
             # carry any member of a repeated choice any number of times, and
             # the member's own maxOccurs says nothing about that.
             repeated_compositor = node.get("maxOccurs", "1") not in ("1",)
             for element in node:
-                if local(element.tag) == "element":
-                    if repeated_compositor and element.get("maxOccurs", "1") in ("1",):
-                        element.set("maxOccurs", node.get("maxOccurs"))
-                    elements.append(element)
-                    if local(node.tag) == "choice":
-                        CHOICE_CHILDREN.add(id(element))
-        elif local(node.tag) == "attribute":
+                if local(element.tag) != "element":
+                    continue
+                if repeated_compositor and element.get("maxOccurs", "1") in ("1",):
+                    element.set("maxOccurs", node.get("maxOccurs"))
+                elements.append(element)
+                if name == "choice":
+                    CHOICE_CHILDREN.add(id(element))
+            return
+        if name == "attribute":
             attributes.append(node)
-        elif local(node.tag) == "simpleContent":
+            return
+        if name == "simpleContent":
             for extension in node:
                 if local(extension.tag) != "extension":
                     continue
-                for attribute in extension:
-                    if local(attribute.tag) == "attribute":
-                        attributes.append(attribute)
+                for child in extension:
+                    walk(child)
+            return
+        if name == "complexContent":
+            if schema is None:
+                raise SystemExit(
+                    f"they type {complex_type.get('name')} uses xs:complexContent, which needs"
+                    " the schema to resolve"
+                )
+            for derivation in node:
+                kind_name = local(derivation.tag)
+                if kind_name == "restriction":
+                    raise SystemExit(
+                        f"they type {complex_type.get('name')} restricts a base type, which is"
+                        " not supported"
+                    )
+                if kind_name != "extension":
+                    continue
+                base = derivation.get("base")
+                base_type = schema.complex_types.get(base)
+                if base_type is None:
+                    raise SystemExit(
+                        f"they type {complex_type.get('name')} extends {base}, which is not a"
+                        " complexType this generator read"
+                    )
+                if base in bases:
+                    raise SystemExit(
+                        f"they type {complex_type.get('name')} derives from {base} in a cycle"
+                    )
+                base_elements, base_attributes = children_of(base_type, schema, bases | {base})
+                elements.extend(base_elements)
+                attributes.extend(base_attributes)
+                for child in derivation:
+                    walk(child)
+            return
+        if name in UNSUPPORTED or name == "annotation":
+            # xs:group ref and nested model groups are shapes this generator
+            # does not read. Emitting nothing for them would produce a table
+            # that silently disagrees with the schema, so they stop the run
+            # instead.
+            raise SystemExit(
+                f"they type {complex_type.get('name')} uses xs:{name}, which is not supported"
+            )
+
+    for node in nodes:
+        walk(node)
+
+
+def children_of(complex_type, schema=None, bases=frozenset()):
+    """Elements and attributes of a complexType, in schema order.
+
+    A type written as xs:complexContent extension is the base type's children
+    followed by its own: the derived record holds both, in the order the
+    document writes them, and the base keeps its own record as well.
+    """
+    elements, attributes = [], []
+    _collect_children(complex_type, schema, complex_type, elements, attributes, bases)
+
     # A projection looks a member up by the name the document writes, and the
     # document does not say whether it is an element or an attribute. A type
     # that spelled both the same would make that lookup ambiguous, so it is
     # refused here rather than resolved silently later.
-    element_names = {element.get("name") for element in elements}
-    for attribute in attributes:
-        if attribute.get("name") in element_names:
+    element_names = [element.get("name") for element in elements]
+    attribute_names = [attribute.get("name") for attribute in attributes]
+    # A name the base already holds, or the same name as both an element and an
+    # attribute, would give the record two members at different offsets and the
+    # projection one name for two rows. Both are refused here.
+    for name in element_names:
+        if element_names.count(name) > 1:
+            raise SystemExit(f"{complex_type.get('name')} holds two elements named {name!r}")
+        if name in attribute_names:
             raise SystemExit(
                 f"{complex_type.get('name')} declares both an element and an attribute "
-                f"named {attribute.get('name')!r}"
+                f"named {name!r}"
             )
+    for name in attribute_names:
+        if attribute_names.count(name) > 1:
+            raise SystemExit(f"{complex_type.get('name')} holds two attributes named {name!r}")
     return elements, attributes
 
 
@@ -378,7 +439,14 @@ def collect(schema, type_name, seen):
     complex_type = schema.complex_types.get(type_name)
     if complex_type is None:
         return seen
-    elements, _ = children_of(complex_type)
+    for node in complex_type:
+        if local(node.tag) != "complexContent":
+            continue
+        for derivation in node:
+            base = derivation.get("base")
+            if base is not None:
+                collect(schema, base, seen)
+    elements, _ = children_of(complex_type, schema)
     for element in elements:
         for field in expand(schema, element):
             kind, nested = field_shape(schema, field)
@@ -398,7 +466,7 @@ def order_types(schema, root_type):
             raise SystemExit(f"recursive type {name} is not supported")
         stack.add(name)
         complex_type = schema.complex_types[name]
-        elements, _ = children_of(complex_type)
+        elements, _ = children_of(complex_type, schema)
         for element in elements:
             for field in expand(schema, element):
                 kind, nested = field_shape(schema, field)
@@ -543,7 +611,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
     declares = []
     for type_name in ordered:
         complex_type = schema.complex_types[type_name]
-        elements, attributes = children_of(complex_type)
+        elements, attributes = children_of(complex_type, schema)
         declares.append(f"struct {names[type_name]};")
         body = [f"struct {names[type_name]} {{", "    std::uint64_t present = 0;"]
         own_kind = content_kind(schema, complex_type)
@@ -570,7 +638,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
     repeated_members = []
     for type_name in ordered:
         complex_type = schema.complex_types[type_name]
-        elements, attributes = children_of(complex_type)
+        elements, attributes = children_of(complex_type, schema)
         rows = []
         bit = 0
         own_kind = content_kind(schema, complex_type)
@@ -662,7 +730,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
     spellings = []
     emitted = set()
     for type_name in ordered:
-        for element in children_of(schema.complex_types[type_name])[0]:
+        for element in children_of(schema.complex_types[type_name], schema)[0]:
             for field in expand(schema, element):
                 declared = field.get("type")
                 if id(field) in schema.inline_enum:

@@ -60,7 +60,7 @@ set(files
     "xml_credit_mapper_roundtrip_tests.cpp"
     "xml_creditsimulation_projection_tests.cpp"
     "xml_currency_config_tests.cpp"
-    "xml_curve_configuration_mapper_roundtrip_tests.cpp"
+    "xml_curve_configuration_projection_roundtrip_tests.cpp"
     "xml_curveconfig_roundtrip_tests.cpp"
     "xml_document_tests.cpp"
     "xml_emitter_tests.cpp"

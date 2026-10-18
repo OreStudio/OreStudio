@@ -21,7 +21,7 @@
 #include "ores.analytics.api/messaging/configuration_document_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include "ores.ore.core/domain/curve_configuration_mapper.hpp"
+#include "ores.ore.core/domain/curve_configuration_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
@@ -322,7 +322,8 @@ void parse_document(std::string_view code,
     if (code == "conventions")
         d.conventions = conventions_mapper::map(parse_file<conventions>(file, content));
     else if (code == "curve_configuration")
-        d.curves = curve_configuration_mapper::map(parse_file<curveconfiguration>(file, content));
+        d.curves = curve_configuration_projection::map(
+            curve_configuration_projection::read(content, file));
     else if (code == "todays_market")
         d.market = todays_market_mapper::map(parse_file<todaysmarket>(file, content));
     else if (code == "pricing_engines")
@@ -503,11 +504,12 @@ input_files export_run(nats_client& owners, const std::string& report_definition
             files[*file] =
                 save_data(conventions_mapper::reverse(read_conventions(owners, run.party_id)));
         else if (code == "curve_configuration")
-            files[*file] = save_data(curve_configuration_mapper::reverse(
-                call(owners,
-                     rd::get_curve_configuration_document_request{.configuration_id = configuration,
-                                                                  .party_id = run.party_id})
-                    .document));
+            files[*file] =
+                curve_configuration_projection::write(curve_configuration_projection::reverse(
+                    call(owners,
+                         rd::get_curve_configuration_document_request{
+                             .configuration_id = configuration, .party_id = run.party_id})
+                        .document));
         else if (code == "todays_market")
             files[*file] = save_data(todays_market_mapper::reverse(
                 call(owners,

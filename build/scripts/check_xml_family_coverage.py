@@ -49,9 +49,8 @@ FAMILIES = {
     "Portfolio": ("migrating", "importer and exporter read trades and their instruments"),
     "CurveConfiguration": (
         "supported",
-        "the value harness proves every corpus curve configuration; the "
-        "projection that reads it into the refdata entities replaces the "
-        "mapper next",
+        "curve_configuration_projection reads and writes it, and the value "
+        "harness proves every corpus document",
     ),
     "StressTesting": (
         "migrating",

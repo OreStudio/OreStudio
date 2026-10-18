@@ -286,6 +286,7 @@ repository profiles regenerate correctly.
 :domain_identity_group: ores.trading.instrument_identity
 :domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true
+:service_batch_reads: true
 :generator_facet_name: generators
 :END:
 

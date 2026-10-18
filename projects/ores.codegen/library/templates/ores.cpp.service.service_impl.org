@@ -401,6 +401,28 @@ messaging::{{response}}
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
+{{#service_batch_reads}}
+    // One read for the whole key set. The store returns every row the keys
+    // name, and the reply joins them back to the order asked for, so a caller
+    // sees the same positional answer without a round trip per key.
+    std::vector<std::string> keys;
+    keys.reserve(request.keys.size());
+    for (const auto& k : request.keys)
+        keys.push_back(boost::uuids::to_string(k.trade_id));
+    const auto rows = repo_.read_latest(ctx_, keys);
+    for (const auto& k : request.keys) {
+        messaging::{{entity_singular}}_lookup entry;
+        entry.key = k;
+        for (const auto& row : rows) {
+            if (row.identity.trade_id == k.trade_id) {
+                entry.{{entity_singular}} = row;
+                break;
+            }
+        }
+        response.entries.push_back(std::move(entry));
+    }
+{{/service_batch_reads}}
+{{^service_batch_reads}}
     for (const auto& k : request.keys) {
         messaging::{{entity_singular}}_lookup entry;
         entry.key = k;
@@ -409,6 +431,7 @@ messaging::{{response}}
             entry.{{entity_singular}} = std::move(found.front());
         response.entries.push_back(std::move(entry));
     }
+{{/service_batch_reads}}
     return response;
 }
 
@@ -455,11 +478,30 @@ messaging::{{response}}
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.{{entity_plural_short}}.reserve(batch.size());
+{{#service_batch_reads}}
+    // One read for the whole written set, for the same reason as the batch
+    // get: the store already holds every row the write just landed.
+    std::vector<std::string> written_keys;
+    written_keys.reserve(batch.size());
+    for (const auto& value : batch)
+        written_keys.push_back(boost::uuids::to_string(value.identity.trade_id));
+    const auto written_rows = repo_.read_latest(ctx_, written_keys);
+    for (const auto& value : batch) {
+        const auto row = std::find_if(written_rows.begin(), written_rows.end(),
+                                      [&](const auto& candidate) {
+                                          return candidate.identity.trade_id ==
+                                                 value.identity.trade_id;
+                                      });
+        response.{{entity_plural_short}}.push_back(row == written_rows.end() ? value : *row);
+    }
+{{/service_batch_reads}}
+{{^service_batch_reads}}
     for (const auto& value : batch) {
         auto written = read_one(repo_, ctx_, key_from(value));
         response.{{entity_plural_short}}.push_back(
             written.empty() ? value : std::move(written.front()));
     }
+{{/service_batch_reads}}
     return response;
 }
 

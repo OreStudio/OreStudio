@@ -35,9 +35,9 @@ an FX one. The family is where it lands first.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Scoped, not started. The seven services are generated from =cpp_service.cpp.mustache=, so the per-key loops cannot be edited in place. |
-| Waiting on   | Nothing. |
-| Next         | Add a per-entity flag that renders the batch path in the service template, set it on the seven FX models, and regenerate. |
+| Now          | Implementation complete and the suites pass. Waiting on review and merge. |
+| Waiting on   | The review of its PR. |
+| Next         | Address the review, then merge. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -83,6 +83,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Services that read their key set in one statement | 7 | =grep -l "One read for the whole key set" projects/ores.trading/core/src/service/*.cpp=, in =evidence/fx-batch-reads.txt= | the PR head |
+| Services the template changed | 7 of 38 trading services | =git diff --stat= on the service files | the PR head |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -114,3 +117,28 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The seven FX services answer a key set in one database read. Each =get_many=
+calls =repo_.read_latest(ctx, keys)= once and joins the rows back to the order
+asked for, and each =put_many= reads the batch it just wrote in one statement
+rather than one per row. A caller sees the same positional reply, so an absent
+key still answers an empty entry in its place.
+
+The fix is in the service template, because the services are generated. A new
+per-entity flag, =:service_batch_reads:=, renders the one-read path; the rest of
+the template is unchanged, so the other thirty-one trading services regenerate
+byte for byte and no other component changes. The flag is set on the seven FX
+models only, because the batch path reads the row's =identity.trade_id=, which
+is the key those entities declare.
+
+* Decisions
+
+- *The lever is the template plus a per-entity flag, not a shared service base.*
+  The batch path needs the entity's key expression, which the template already
+  holds per entity. A base class would have to be told the key, and the
+  repository read is already generic.
+- *The flag is named for what it turns on, not for the family.* Any entity keyed
+  by its trade id can set it; the FX family is the first because that is where
+  the audit found the reads.
+- *The reply stays positional.* The obvious alternative, dropping absent keys,
+  would make a caller match entries to keys by position on the wrong list.

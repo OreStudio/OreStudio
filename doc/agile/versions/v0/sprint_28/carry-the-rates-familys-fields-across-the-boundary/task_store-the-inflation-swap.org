@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: 4046D3ED-9F07-48AC-B2C2-C2B52A54ABF3
+:END:
+#+title: Task: Store the inflation swap and return its index
+#+description: An inflation swap cannot be stored: the import builds a default-constructed fact row and writes it, and the table refuses an empty index code. The document states the index, its base level and the observation lag on the CPI leg. Read them on import, write them on export, and prove the trade survives by its own values.
+#+type: task
+#+level: s1
+#+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
+#+owner: marco
+#+branch: feature/store-the-inflation-swap
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An inflation swap imports, stores and exports with the index, base level and lag the document states.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The import reads the CPI leg's index, base level and observation lag into the product's fact row.
+- The export writes them back into the CPI leg, which currently leaves the leg with no payload at all.
+- A test states the document's own values as its expectations and proves both directions.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

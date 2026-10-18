@@ -483,6 +483,40 @@ TEST_CASE("mapper_roundtrip_knock_out_swap_reverse", tags) {
 // InflationSwap mapper tests
 // =============================================================================
 
+TEST_CASE("mapper_inflation_swap_keeps_its_index_base_level_and_lag", tags) {
+    auto lg(make_logger(test_suite));
+    const auto t = load_first_trade("Inflation_CPI_Swap.xml");
+
+    const auto result = swap_instrument_mapper::forward_inflation_swap(t);
+    const auto& instr = std::get<ores::trading::domain::inflation_swap_instrument>(result.facts);
+
+    // The document states these three on its CPI leg.
+    CHECK(instr.inflation_index_code == "UKRPI");
+    REQUIRE(instr.base_cpi.has_value());
+    CHECK(*instr.base_cpi == Approx(210.0));
+    CHECK(instr.lag_convention == "2M");
+
+    const auto reconstructed = swap_instrument_mapper::reverse_inflation_swap(
+        result.header, instr, result.legs, result.leg_amounts, result.leg_rates);
+
+    REQUIRE(reconstructed.InflationSwapData.operator bool());
+    const auto cpi =
+        std::find_if(reconstructed.InflationSwapData->LegData.begin(),
+                     reconstructed.InflationSwapData->LegData.end(),
+                     [](const auto& ld) { return ld.LegType == ores::ore::domain::legType::CPI; });
+    REQUIRE(cpi != reconstructed.InflationSwapData->LegData.end());
+    REQUIRE(cpi->legDataType.operator bool());
+    REQUIRE(cpi->legDataType->CPILegData.operator bool());
+    const auto& data = *cpi->legDataType->CPILegData;
+    REQUIRE(!data.Index.empty());
+    CHECK(std::string(data.Index.front()) == "UKRPI");
+    REQUIRE(!data.BaseCPI.empty());
+    CHECK(data.BaseCPI.front() == Approx(210.0f));
+    REQUIRE(!data.ObservationLag.empty());
+    CHECK(std::string(data.ObservationLag.front()) == "2M");
+    BOOST_LOG_SEV(lg, info) << "Inflation swap field test passed";
+}
+
 TEST_CASE("mapper_roundtrip_inflation_swap_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("Inflation_CPI_Swap.xml");

@@ -90,6 +90,7 @@ import { ClassificationsPage } from './refdata/ClassificationsPage.js';
 import { RefdataPage } from './refdata/RefdataPage.js';
 import { CurrenciesPage, CurrencyPage } from './refdata/currencies.js';
 import { CalendarPage, CalendarsPage } from './refdata/calendars.js';
+import { TenorResolutionPage } from './refdata/TenorResolutionPage.js';
 import { CurrencyPairPage, CurrencyPairsPage } from './refdata/currencyPairs.js';
 import { DeskGroupPage, DeskGroupsPage } from './refdata/deskGroups.js';
 import { MarketDataPage } from './marketdata/MarketDataPage.js';
@@ -1070,7 +1071,15 @@ export function AppRoutes({
             <Route
                 path={PATHS.tenors}
                 element={signedIn(gate.version, session, shell, () => (
-                    <CardScreen card="tenors">{tenorJourney}</CardScreen>
+                    <CardScreen card="tenors">
+                        <TenorResolutionPage />
+                    </CardScreen>
+                ))}
+            />
+            <Route
+                path={PATHS.tenorAuthoring}
+                element={signedIn(gate.version, session, shell, () => (
+                    <CardScreen card="tenorAuthoring">{tenorJourney}</CardScreen>
                 ))}
             />
             {MOVED.map(([from, to]) => (
@@ -1267,7 +1276,10 @@ export function ConnectedApp(): ReactNode {
                         />
                     }
                     tenorJourney={
-                        <TenorJourney server={tenorsServer} onFinished={() => navigate('/')} />
+                        <TenorJourney
+                            server={tenorsServer}
+                            onFinished={() => navigate(PATHS.tenors)}
+                        />
                     }
                     journeyInProgress={journeyInProgress}
                     onSignIn={signIn}

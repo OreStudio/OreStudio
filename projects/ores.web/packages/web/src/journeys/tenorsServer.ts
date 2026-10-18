@@ -35,7 +35,7 @@ import type {
     TenorIntent,
     TenorPickLists,
     TenorResolutionDraft,
-    TenorResolutionPreview,
+    TenorResolution,
     TenorWriteOutcome,
 } from '../api/tenors.js';
 import type { Tenor } from '@ores/wire-protocol/generated/refdata/domain/tenor';
@@ -47,7 +47,7 @@ export type {
     TenorIntent,
     TenorPickLists,
     TenorResolutionDraft,
-    TenorResolutionPreview,
+    TenorResolution,
     TenorWriteOutcome,
 };
 
@@ -59,7 +59,7 @@ export interface TenorsServer {
     /** The tenors one convention resolves. */
     readonly resolutions: (convention: string) => Promise<readonly TenorConventionResolution[]>;
     /** The date a drafted rule resolves to, whether or not the rule is accepted. */
-    readonly previewResolution: (draft: TenorResolutionDraft) => Promise<TenorResolutionPreview>;
+    readonly previewResolution: (draft: TenorResolutionDraft) => Promise<TenorResolution>;
     /** The reasons a record may be amended for. */
     readonly amendReasons: () => Promise<
         readonly {

@@ -34,7 +34,7 @@ import { useReducer } from 'react';
 import type { Tenor } from '@ores/wire-protocol/generated/refdata/domain/tenor';
 import type { TenorConvention } from '@ores/wire-protocol/generated/refdata/domain/tenor_convention';
 import type { TenorConventionResolution } from '@ores/wire-protocol/generated/refdata/domain/tenor_convention_resolution';
-import type { TenorIntent, TenorResolutionDraft, TenorResolutionPreview } from './tenorsServer.js';
+import type { TenorIntent, TenorResolutionDraft, TenorResolution } from './tenorsServer.js';
 
 /** The reason a correction is filed under until the person states another. */
 export const TENOR_REASON = 'common.non_material_update';
@@ -108,7 +108,7 @@ export interface TenorDraft {
     readonly testSpot: string;
     readonly testCalendar: string;
     /** The rule's answer as the server gave it, or the reason the call did not arrive. */
-    readonly testPreview: TenorResolutionPreview | undefined;
+    readonly testPreview: TenorResolution | undefined;
     readonly testFailure: string | undefined;
     readonly reasonCode: string;
     readonly commentary: string;
@@ -204,7 +204,7 @@ export type TenorAction =
     | { readonly kind: 'set-test-horizon'; readonly value: string }
     | { readonly kind: 'set-test-spot'; readonly value: string }
     | { readonly kind: 'set-test-calendar'; readonly value: string }
-    | { readonly kind: 'record-test-preview'; readonly preview: TenorResolutionPreview }
+    | { readonly kind: 'record-test-preview'; readonly preview: TenorResolution }
     | { readonly kind: 'record-test-failure'; readonly failure: string }
     | { readonly kind: 'set-reason'; readonly reasonCode: string }
     | { readonly kind: 'set-commentary'; readonly commentary: string }
@@ -719,7 +719,7 @@ export interface TenorDetails extends TenorDraft {
     readonly setTestHorizon: (value: string) => void;
     readonly setTestSpot: (value: string) => void;
     readonly setTestCalendar: (value: string) => void;
-    readonly recordTestPreview: (preview: TenorResolutionPreview) => void;
+    readonly recordTestPreview: (preview: TenorResolution) => void;
     readonly recordTestFailure: (failure: string) => void;
     readonly setReason: (reasonCode: string) => void;
     readonly setCommentary: (commentary: string) => void;

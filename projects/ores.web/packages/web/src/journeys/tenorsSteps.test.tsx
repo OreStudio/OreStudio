@@ -36,7 +36,7 @@ import {
 import type {
     TenorCatalogue,
     TenorPickLists,
-    TenorResolutionPreview,
+    TenorResolution,
     TenorWriteOutcome,
     TenorsServer,
 } from './tenorsServer.js';
@@ -376,7 +376,7 @@ describe('the tenor steps', () => {
     });
 
     it('shows the resolved dates when the server answers ok', () => {
-        const preview: TenorResolutionPreview = {
+        const preview: TenorResolution = {
             result: { outcome: 'ok', code: 'ok', message: '', fields: [] },
             anchorDate: '2026-01-31',
             dateBeforeRoll: '2026-02-28',
@@ -408,7 +408,7 @@ describe('the tenor steps', () => {
     });
 
     it('shows a refusal beside the dates it reached, without losing the draft', () => {
-        const preview: TenorResolutionPreview = {
+        const preview: TenorResolution = {
             result: {
                 outcome: 'invalid',
                 code: 'missing_spot_date',

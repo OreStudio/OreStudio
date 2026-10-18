@@ -145,7 +145,7 @@ describe('tenor routes', () => {
             'refdata.v1.tenor_anchors.list': rows('anchors'),
             'refdata.v1.tenor_resolution_algorithms.list': rows('algorithms'),
             'refdata.v1.business_day_convention_types.list': rows('types'),
-            'refdata.v1.calendar_names.list': rows('calendar_names'),
+            'refdata.v1.calendars.list': rows('calendars'),
         });
         const response = await send(server, sessionId, 'GET', '/api/tenors/pick-lists');
         expect(Object.keys(response.json()).sort()).toEqual([
@@ -156,6 +156,7 @@ describe('tenor routes', () => {
             'rollRules',
             'units',
         ]);
+        expect(response.json().calendars[0].code).toBe('A');
     });
 
     it("reads one convention's set by its code", async () => {
@@ -310,5 +311,85 @@ describe('tenor routes', () => {
         expect(response.statusCode).toBe(200);
         expect(response.json().result.code).toBe('missing_spot_date');
         expect(response.json().result.fields[0].field).toBe('spot');
+    });
+
+    it('resolves the rules as they are stored, without drafting them', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.ops.resolve_tenor': {
+                result: ok,
+                anchor_date: '2026-03-16',
+                date_before_roll: '2026-06-16',
+                adjusted_date: '2026-06-16',
+                roll_rule: 'ModifiedFollowing',
+                calendar: 'Argentina',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/tenors/resolve', {
+            tenor_code: '3M',
+            convention_code: 'RATES_SPOT_FORWARD',
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().adjusted_date).toBe('2026-06-16');
+        expect(response.json().calendar).toBe('Argentina');
+        expect(calls[0]?.subject).toBe('refdata.v1.ops.resolve_tenor');
+        expect(calls[0]?.body).toMatchObject({
+            tenor_code: '3M',
+            convention_code: 'RATES_SPOT_FORWARD',
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+            spot: null,
+        });
+    });
+
+    it('refuses a question that names no tenor, before it reaches the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+
+        const response = await send(server, sessionId, 'POST', '/api/tenors/resolve', {
+            convention_code: 'RATES_SPOT_FORWARD',
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
+    it('hands a refusal of the stored rules back as an answer', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            'refdata.v1.ops.resolve_tenor': {
+                result: {
+                    outcome: 'invalid',
+                    code: 'tenor_not_in_convention',
+                    message: 'The convention does not resolve this tenor.',
+                    fields: [
+                        {
+                            field: 'tenor_code',
+                            code: 'tenor_not_in_convention',
+                            message: 'No rule resolves 3M.',
+                        },
+                    ],
+                },
+                anchor_date: '',
+                date_before_roll: '',
+                adjusted_date: '',
+                roll_rule: 'ModifiedFollowing',
+                calendar: 'Argentina',
+            },
+        });
+        const response = await send(server, sessionId, 'POST', '/api/tenors/resolve', {
+            tenor_code: '3M',
+            convention_code: 'RATES_SPOT_FORWARD',
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().adjusted_date).toBe('');
+        expect(response.json().result.code).toBe('tenor_not_in_convention');
+        expect(response.json().result.fields[0].field).toBe('tenor_code');
+        expect(calls[0]?.subject).toBe('refdata.v1.ops.resolve_tenor');
     });
 });

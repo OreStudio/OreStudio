@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: A9B711F9-E71C-4354-85B2-C0C7A09D4C16
+:END:
+#+title: The timeline page formats a date with date.getMonth() where …
+#+description: The timeline page formats a date with date.getMonth() where it needs getMonth() + 1, and pads neither the month nor the day, so it writes the wrong month and an unpadded day. src/timeline/Timeline.tsx:444 returns String(getFullYear()) + '-' + String(getMonth()) + '-' + String(getDate()), which for 2026-10-18 gives 2026-9-18. The correct local-date helper already exists as loadedIso in src/ui/loadedLabel.ts, which reads the local clock and pads both fields; the resolve screen uses it. Outside that page the repo has no other caller of the broken form. Fix is to reuse loadedIso and delete the local formatter.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

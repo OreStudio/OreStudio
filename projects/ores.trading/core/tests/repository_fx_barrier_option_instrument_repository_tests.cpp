@@ -67,6 +67,24 @@ fx_barrier_option_instrument make_instrument(database_helper& h) {
     return r;
 }
 
+
+TEST_CASE("an_up_style_refuses_a_lower_level", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party_id = boost::uuids::random_generator()();
+    auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
+
+    // An Up style engages the upper level, so a row that also fills the lower
+    // level states a shape the product cannot hold.
+    auto instr = make_instrument(h);
+    instr.lower_barrier = ores::utility::decimal::decimal::from_string("1.1").value();
+
+    fx_barrier_option_instrument_repository repo;
+    REQUIRE_THROWS(repo.write(ctx, instr));
+    BOOST_LOG_SEV(lg, debug) << "Refused an Up style with a lower level.";
+}
+
 } // namespace
 
 TEST_CASE("fx_barrier_option_instrument_write_and_read_latest", tags) {

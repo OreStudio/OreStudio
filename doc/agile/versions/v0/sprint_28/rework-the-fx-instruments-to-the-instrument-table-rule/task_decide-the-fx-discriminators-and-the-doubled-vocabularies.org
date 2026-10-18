@@ -109,7 +109,8 @@ task and name that file in the Command column.
 | Digital checks keyed on the trade type | 4 | =grep -c 'check (("trade_type_code"' projects/ores.sql/create/trading/trading_fx_digital_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
 | Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
 | ORE core suite | pass | the same command with =ores.ore.core.tests= | the PR head |
-| Economic-digest suite | not in the build | =compass build ores.trading.core.digest.tests= reports an unknown target, and no CMakeLists adds =projects/ores.trading/core/digest_tests= | the PR head |
+| Refusing case for the barrier direction | 1 | =an_up_style_refuses_a_lower_level= in =projects/ores.trading/core/tests/repository_fx_barrier_option_instrument_repository_tests.cpp= | the PR head |
+| Economic-digest suite | rotted, not wired | four cases fail on an empty digest, including =ScriptedTrade=, which this unit does not touch | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -149,17 +150,21 @@ validates. The vanilla option's exercise style is the lookup's set, and the
 model states it once. A single barrier holds its level in the column its
 direction names, and the mapper places it by direction.
 
-* Outstanding
+* Findings
 
-- The economic-digest suite cannot run: no CMakeLists adds
-  =projects/ores.trading/core/digest_tests=, so the suite that writes a
-  generated barrier row is not in the build. The generated row is a valid
-  Up-style row now, but the suite must be wired before it can prove it.
-- The wire-protocol twins still type =lower_barrier= as a string; they need a
-  regeneration once the codegen drift is reconciled.
-- The goldens' barrier JSON records the old column and note.
-- The barrier direction is a second list beside the lookup; encoding it on
-  =ores_trading_barrier_types_tbl= is the next step, not this one's.
+- *The economic-digest suite is rotted, and not by this unit.* No CMakeLists
+  adds =projects/ores.trading/core/digest_tests=, so the suite is outside the
+  build. Wiring it in and running it fails four cases, one of them for
+  =ScriptedTrade=, a family this unit never touches, because the digest column
+  is empty before and after the write. The suite was therefore left unwired and
+  is recorded as its own defect.
+- *The wire twins and the goldens are corrected here.* Both TS files now type
+  the lower level as =string | null=, and the barrier golden records the level
+  in =upper_barrier= with a note that says so.
+- *The direction is a second list.* The check names the Up and Down styles
+  beside the lookup that holds them. Encoding the direction on
+  =ores_trading_barrier_types_tbl= is the right shape and is captured as its
+  own work.
 
 The three findings are settled and the tree enforces each one.
 

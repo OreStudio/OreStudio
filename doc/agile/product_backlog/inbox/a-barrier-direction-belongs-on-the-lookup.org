@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 2BDB5385-3A9E-48A7-BD4C-765183AA1BE4
+:END:
+#+title: The barrier direction belongs on the lookup table
+#+description: The FX barrier check names the Up and Down styles beside the lookup that holds them. A style added to ores_trading_barrier_types_tbl falls into the no-direction branch, so the check and the table can disagree with no signal. Encode the direction on the lookup row and let the check read it.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

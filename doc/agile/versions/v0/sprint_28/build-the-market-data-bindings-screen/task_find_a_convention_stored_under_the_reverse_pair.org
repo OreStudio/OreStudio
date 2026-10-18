@@ -63,8 +63,8 @@ so the reciprocal direction is derived, never stored
 (=currency_pair_rate_formatter.hpp=).
 
 Two units answer to "how many pairs" and they differ: one pair code can be
-quoted by many series, one per tenant. The numbers below say which unit they
-count.
+quoted by many series, one per tenant per party, five at most. The numbers
+below say which unit they count.
 
 So the store answers for one direction. Its figures describe that direction's
 magnitude: =USD/JPY= has 2 places, and =JPY/USD= is a number near 0.0067 that 2
@@ -116,7 +116,7 @@ task and name that file in the Command column.
 | currency pair rows stored | 179 rows in =public.ores_refdata_currency_pairs_tbl=, 0 reverse twins | =compass db sql -- -c "set row_security = off;" -c "select count(*) from public.ores_refdata_currency_pairs_tbl;"= then the self-join where the reversed pair code is built with =concat(split_part(pair_code,'/',2), '/', split_part(pair_code,'/',1))= | =91a873a8e2= |
 | pair convention rows stored | 179 rows in =public.ores_refdata_currency_pair_conventions_tbl=, 0 reverse twins | the same two queries over that table | =91a873a8e2= |
 | distinct well-formed FX spot pair codes | 98: 57 own direction, 5 reverse only, 36 with no pair row. 107 without the well-formed filter. | =compass db sql= over =public.ores_marketdata_market_series_tbl= joined to =public.ores_marketdata_market_series_identity_tbl=, counting distinct pair codes with =split_part(split_part(oresmd_uri,'/',4),'?',1) ~ '^[A-Z]{3}$'= and =ccy ~ '^[A-Z]{3}$'= | =91a873a8e2= |
-| FX spot rate series | 598 across 25 tenants: 390 own direction, 32 reverse only, 164 with no pair row, 12 whose code is not well formed | the same query counting series ids rather than distinct pair codes | =91a873a8e2= |
+| FX spot rate series | 598 across 29 tenants: 390 own direction, 32 reverse only, 164 with no pair row, 12 whose code is not well formed. The 25 tenants holding well-formed codes carry 586 of them. | the same query counting series ids rather than distinct pair codes | =91a873a8e2= |
 | web tests | 1656 tests in 146 files, all passed | =npm test --workspace @ores/web= | =91a873a8e2= |
 | web typecheck | no errors | =npm run typecheck= | =91a873a8e2= |
 

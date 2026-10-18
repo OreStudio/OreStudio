@@ -23,11 +23,11 @@ The web's convention must be the server's convention, not a second one written t
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-10-17                               |
 
 * Acceptance
@@ -47,8 +47,8 @@ The web's convention must be the server's convention, not a second one written t
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:E2549348-F4EB-4A86-AE92-3D866F039EEA][Scaffold story: Give the web one way to handle time and timestamps]] | STARTED | 2026-10-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B59F7206-31DB-4597-ACE5-7442BFC59AD3][Build one timestamp module and make every field use it]] | BACKLOG | | | Initial task for: Give the web one way to handle time and timestamps |
+| [[id:E2549348-F4EB-4A86-AE92-3D866F039EEA][Scaffold story: Give the web one way to handle time and timestamps]] | DONE | 2026-10-17 | 2026-10-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B59F7206-31DB-4597-ACE5-7442BFC59AD3][Build one timestamp module and make every field use it]] | DONE | | 2026-10-18 | Initial task for: Give the web one way to handle time and timestamps |
 
 * Decisions
 
@@ -63,3 +63,16 @@ The web's convention must be the server's convention, not a second one written t
 * Out of scope
 
 -
+
+* Result
+
+Landed on main as PR #3473 (merge =89db22a6=), with #3508 and #3511 for the
+post-merge gate fixes. One wire shape, owned by =to_iso8601_utc= and stated
+once in =time_architecture.org=, mirrored by =wire-protocol/src/time.ts= as
+the only web owner. Every deferred workaround is gone: =last_tick_at=,
+=from_time=/=to_time= and =last_login= are optional instants, absent is =null=,
+and a malformed instant logs and throws.
+
+Named and left: session-statistics =day= still crosses as the database's own
+rendering because typing it changes what the audit screen draws, and blank
+identifiers still mean "filter off" across the product.

@@ -21,7 +21,11 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
-import { wireTimestamp, type HistoryVersion, type TimelineEvent } from '@ores/wire-protocol/browser';
+import {
+    wireTimestamp,
+    type HistoryVersion,
+    type TimelineEvent,
+} from '@ores/wire-protocol/browser';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { RecordRow } from '../api/client.js';
 import { api } from '../api/client.js';

@@ -378,7 +378,11 @@ describe('GET /api/history for a record', () => {
             'refdata.v1.history.get': {
                 success: true,
                 versions: [
-                    { version: 1, modified_by: 'system', recorded_at: '2026-10-04 10:00:00.000000Z' },
+                    {
+                        version: 1,
+                        modified_by: 'system',
+                        recorded_at: '2026-10-04 10:00:00.000000Z',
+                    },
                 ],
             },
         });

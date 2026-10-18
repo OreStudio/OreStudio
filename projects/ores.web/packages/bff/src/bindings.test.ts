@@ -402,7 +402,9 @@ describe('the history of a binding', () => {
             [LIST]: { result: ok, feed_bindings: [binding()], total: 1 },
             [HISTORY]: {
                 success: true,
-                versions: [{ version: 1, modified_by: 'op', recorded_at: '2026-10-13 08:15:00.000000Z' }],
+                versions: [
+                    { version: 1, modified_by: 'op', recorded_at: '2026-10-13 08:15:00.000000Z' },
+                ],
             },
         });
         const response = await send(server, sessionId, 'GET', url);
@@ -458,7 +460,11 @@ describe('what each binding has written', () => {
                         series_id: SERIES,
                         last_tick_at: '2026-10-12 23:50:26Z',
                     },
-                    { source_name: 'synthetic.bloomberg.nzdusd', series_id: null, last_tick_at: null },
+                    {
+                        source_name: 'synthetic.bloomberg.nzdusd',
+                        series_id: null,
+                        last_tick_at: null,
+                    },
                 ],
             },
         });

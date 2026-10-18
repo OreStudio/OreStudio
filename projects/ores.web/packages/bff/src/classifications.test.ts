@@ -165,8 +165,20 @@ describe('the labels', () => {
             'refdata.v1.rounding_types.list': {
                 result: ok,
                 types: [
-                    { version: 1, code: 'Up', name: 'Up', display_order: 1, recorded_at: '2026-10-01 10:00:00.000000Z' },
-                    { version: 1, code: 'Odd', name: 'Odd', display_order: 2, recorded_at: '2026-10-01 10:00:00.000000Z' },
+                    {
+                        version: 1,
+                        code: 'Up',
+                        name: 'Up',
+                        display_order: 1,
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
+                    {
+                        version: 1,
+                        code: 'Odd',
+                        name: 'Odd',
+                        display_order: 2,
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
                 ],
             },
             'dq.v1.badge_mappings.list_by_code_domain_code': {
@@ -538,7 +550,13 @@ describe('GET /api/history', () => {
         const { server, sessionId, calls } = buildTestServer({
             'refdata.v1.history.get': {
                 success: true,
-                versions: [{ version: 1, modified_by: 'system', recorded_at: '2026-10-01 10:00:00.000000Z' }],
+                versions: [
+                    {
+                        version: 1,
+                        modified_by: 'system',
+                        recorded_at: '2026-10-01 10:00:00.000000Z',
+                    },
+                ],
             },
         });
         const response = await send(
@@ -556,7 +574,13 @@ describe('GET /api/history', () => {
         const { server, sessionId, calls } = buildTestServer({
             'iam.v1.history.get': {
                 success: true,
-                versions: [{ version: 2, modified_by: 'admin', recorded_at: '2026-10-02 10:00:00.000000Z' }],
+                versions: [
+                    {
+                        version: 2,
+                        modified_by: 'admin',
+                        recorded_at: '2026-10-02 10:00:00.000000Z',
+                    },
+                ],
             },
         });
         const response = await send(

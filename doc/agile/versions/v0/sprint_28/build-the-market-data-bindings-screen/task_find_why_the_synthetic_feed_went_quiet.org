@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/find-why-the-synthetic-feed-went-quiet
-#+pr:
+#+pr: 3541
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -223,7 +223,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3541][#3541]] | [doc] Say why the synthetic feed went quiet |
 
 * Review
 

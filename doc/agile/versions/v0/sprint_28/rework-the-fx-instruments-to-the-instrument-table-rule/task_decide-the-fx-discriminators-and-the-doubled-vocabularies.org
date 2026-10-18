@@ -28,11 +28,11 @@ unit decides each and makes the tree enforce the decision.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Implemented and the suites pass. Waiting on review and merge. |
+| Now          | Nothing. |
 | Waiting on   | The review of its PR. |
-| Next         | Address the review, then merge. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance

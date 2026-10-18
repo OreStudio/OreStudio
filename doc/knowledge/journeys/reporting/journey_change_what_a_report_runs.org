@@ -433,7 +433,7 @@ which calls =configuration_analytics.put_many= and the parameter write behind it
 - [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door this journey starts from, and the row whose next run carries the change
 - [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run that produces the new measures, and the manual way to see them
 - [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] — the results screen whose comparison this change invalidates
-- [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] — the sequence of runs the person reads to see what the change did
+- [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] — the sequence of runs the person reads to see what the change did
 - [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — where a person goes when =pfe= was turned on without =simulation= and the run failed
 - [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] — the schedule of the definition, which this journey does not touch
 

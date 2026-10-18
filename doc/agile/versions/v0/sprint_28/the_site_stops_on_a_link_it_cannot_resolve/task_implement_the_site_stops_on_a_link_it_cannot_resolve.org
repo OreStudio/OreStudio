@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: A88E6072-B6F3-4A3E-AE60-5ABC720C3F8E
+:END:
+#+title: Task: Point the look-back links at the page that defines them
+#+description: Initial task for: Hotfix: the site stops on a link it cannot resolve
+#+type: task
+#+level: s1
+#+filetags: :the_site_stops_on_a_link_it_cannot_resolve:sprint_28:v0:
+#+owner: marco
+#+branch: hotfix/the-site-stops-on-a-link-it-cannot-resolve
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5D8B19E3-3EB2-4F31-8879-90FB4530EB07][Hotfix: the site stops on a link it cannot resolve]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The full site export runs to the end. Two journey pages name the report history
+page with the org id in upper case; the page defines it in lower case, and org
+resolves ids by exact string.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:5D8B19E3-3EB2-4F31-8879-90FB4530EB07][Hotfix: the site stops on a link it cannot resolve]] |
+| Now          | Fixed; the full site builds.           |
+| Waiting on   | Nothing.                               |
+| Next         | Commit.                                |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- Both links use the id the page defines.
+- A full =./compass.sh build --direct site= succeeds.
+- =site-page=, =lint= and =org-links= pass.
+
+* Plan
+
+The id belongs to =doc/knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org=
+and is written there in lower case. Two of the six references typed it in upper
+case:
+
+#+begin_example
+doc/knowledge/journeys/conventions/journey_change_the_convention_for_one_kind.org:313
+doc/knowledge/journeys/reporting/journey_change_what_a_report_runs.org:436
+#+end_example
+
+Change both to the lower-case spelling. Nothing else refers to the upper-case
+form, so no alias is needed.
+
+The page gates could not have caught it, which is why it reached main:
+
+- =site-page= publishes only the pages a change touches, so a broken link in an
+  untouched page never gets exported by it. The full build is a different
+  target, =deploy_site=, and it sits outside =compass check=.
+- =org-links= checks links, but not whether an =id:= link matches a defined id
+  by case.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| full site export | succeeds: 12,578 nodes, 52,058 links | =./compass.sh build --direct site= | 26321e3c1c |
+| full site export before the fix | aborts: Unable to resolve link "465CA244-..." | =./compass.sh build --direct site= | 39796470a0 |
+| site-build gate set | 3 of 3 pass | =./compass.sh check --only lint --only org-links --only site-page= | 26321e3c1c |
+
+* Notes
+
+The failure only appears in a full build, and it aborted after 8,993 exported
+pages, so it looks like a late failure rather than the one-line link defect it
+is.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 5D8B19E3-3EB2-4F31-8879-90FB4530EB07
+:END:
+#+title: Story: Hotfix: the site stops on a link it cannot resolve
+#+description: A full site build aborts on an org id that no page defines, because two links spell it in upper case.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:docs:hotfix:site:sprint_28:v0:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The documentation site builds. A full build stops when org cannot resolve an
+=id:= link, and two journey pages pointed at the report history page with an
+upper-case id while the page defines it in lower case. org resolves ids by
+exact string, so the link did not resolve and the export aborted:
+
+#+begin_example
+Build failed: Org export aborted.  Unable to resolve link:
+"465CA244-C488-4C69-ACA3-C694D104A42A"
+#+end_example
+
+The same page is referenced six times in the tree and the other four
+references already use the lower-case id.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Fixed; the full site builds.           |
+| Waiting on    | Nothing.                               |
+| Next          | Commit, then a PR.                     |
+| Last touched  | 2026-10-18                               |
+
+* Acceptance
+
+- A full site build succeeds: every page exports and the graph is written.
+- The two links resolve to the page that defines the id.
+- =site-page=, =lint= and =org-links= pass.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:65659BF3-D75B-4A5C-B63C-665763A4DC35][Scaffold story: Hotfix: the site stops on a link it cannot resolve]] | STARTED | 2026-10-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A88E6072-B6F3-4A3E-AE60-5ABC720C3F8E][Point the look-back links at the page that defines them]] | STARTED | 2026-10-18 | | Initial task for: Hotfix: the site stops on a link it cannot resolve |
+
+* Decisions
+
+* Out of scope
+
+-

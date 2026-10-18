@@ -310,7 +310,7 @@ version.
 - [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] — a cross-currency or an FX convention names the currencies whose pair it serves
 - [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] — the currency-pair convention is 1:1 with its pair and edited from either side
 - [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run whose next firing carries the change
-- [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] — the runs the change makes incomparable
+- [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] — the runs the change makes incomparable
 
 * Related knowledge
 

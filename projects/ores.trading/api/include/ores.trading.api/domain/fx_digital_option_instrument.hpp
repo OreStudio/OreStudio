@@ -74,7 +74,7 @@ struct fx_digital_option_instrument final {
      * @brief Option type: Call or Put. Empty for touch options.
      *
      * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
-     * Put). PR 4 tightens the soft reference into a real foreign key.
+     * Put).
      */
     std::string option_type;
 
@@ -87,8 +87,7 @@ struct fx_digital_option_instrument final {
      * @brief Position direction: Long or Short.
      *
      * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
-     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
-     * reference into a real foreign key.
+     * (Long, Short), which the SQL schema already states as a check.
      */
     std::string long_short;
 
@@ -101,8 +100,7 @@ struct fx_digital_option_instrument final {
      * @brief Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent for plain digital
      * options.
      *
-     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
-     * 4 tightens the soft reference into a real foreign key.
+     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set.
      */
     std::string barrier_type;
 

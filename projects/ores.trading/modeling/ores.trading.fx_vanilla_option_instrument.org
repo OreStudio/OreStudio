@@ -38,7 +38,7 @@ amounts; there is no separate strike field in ORE's FxOptionData.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's own check pins the one code the table serves, and the trade-type catalogue routes the row to this table by that code, so a foreign key would duplicate the router.
 
 Routes ORE product type: FxOption (European and American vanilla
 options).
@@ -151,7 +151,7 @@ ores::utility::decimal::decimal::from_string("1100000").value()
 
 Option type: Call or Put.
 
-Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put).
 
 #+begin_src cpp :name generator
 std::string("Call")
@@ -181,7 +181,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 
 Exercise style: European or American.
 
-Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
+Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American).
 
 #+begin_src cpp :name generator
 std::string("European")
@@ -257,6 +257,30 @@ is immutable.
         v.identity.trade_activity_id = activity.id;
     }
 #+end_src
+
+** option_type
+:PROPERTIES:
+:table:             ores_trading_option_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid option_type: %. No active option type found with this code.
+:END:
+
+A foreign key to =ores_trading_option_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** exercise_style
+:PROPERTIES:
+:table:             ores_trading_exercise_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid exercise_style: %. No active exercise type found with this code.
+:END:
+
+A foreign key to =ores_trading_exercise_types_tbl=: a value the store cannot resolve is
+refused on write.
 
 * SQL
 

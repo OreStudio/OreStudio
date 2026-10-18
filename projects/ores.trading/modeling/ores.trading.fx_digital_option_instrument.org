@@ -42,7 +42,7 @@ capture single or double barrier levels.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's own check pins the one code the table serves, and the trade-type catalogue routes the row to this table by that code, so a foreign key would duplicate the router.
 
 Routes ORE product types: FxDigitalOption, FxDigitalBarrierOption,
 FxTouchOption, FxDoubleTouchOption.
@@ -155,7 +155,7 @@ ores::utility::decimal::decimal::from_string("100").value()
 
 Option type: Call or Put. Empty for touch options.
 
-Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put).
 
 #+begin_src cpp :name generator
 std::string("Call")
@@ -185,7 +185,7 @@ std::chrono::year_month_day{std::chrono::year{2033}/2/20}
 
 Position direction: Long or Short.
 
-Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
 
 #+begin_src cpp :name generator
 std::string("Long")
@@ -216,7 +216,7 @@ Strike level. Absent for touch options.
 Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent
 for plain digital options.
 
-Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
+Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set.
 
 ** lower_barrier
 :PROPERTIES:
@@ -298,6 +298,42 @@ is immutable.
         v.identity.trade_activity_id = activity.id;
     }
 #+end_src
+
+** option_type
+:PROPERTIES:
+:table:             ores_trading_option_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid option_type: %. No active option type found with this code.
+:END:
+
+A foreign key to =ores_trading_option_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** long_short
+:PROPERTIES:
+:table:             ores_trading_long_short_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid long_short: %. No active long short type found with this code.
+:END:
+
+A foreign key to =ores_trading_long_short_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** barrier_type
+:PROPERTIES:
+:table:             ores_trading_barrier_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid barrier_type: %. No active barrier type found with this code.
+:END:
+
+A foreign key to =ores_trading_barrier_types_tbl=: a value the store cannot resolve is
+refused on write.
 
 * SQL
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/turn-the-fx-soft-references-into-foreign-keys
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ a key, not a text code that only a non-empty check defends.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Decide which references become keys and which stay soft. |
-| Last touched | 2026-10-16                               |
+| Now          | Implementation complete and the suites pass. Waiting on review and merge. |
+| Waiting on   | The review of its PR. |
+| Next         | Address the review, then merge. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -62,6 +62,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Columns tightened into trigger-checked keys | 10 | =grep -c "No active .* found" projects/ores.sql/create/trading/trading_fx_*_create.sql= | the PR head |
+| Columns that stay soft with a recorded reason | 21 | the currency and trade-type references, in the models' prose | the PR head |
+| SQL files that gained a validation | 5 | the created tables under =projects/ores.sql/create/trading= | the PR head |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
+| ORE core suite | pass | the same command with =ores.ore.core.tests= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -93,3 +98,43 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Ten references became real keys and twenty-one stay soft with a recorded reason.
+
+The ten are the family's closed vocabularies: =long_short= on the accumulator,
+the digital option and the variance swap; =option_type= on the barrier, digital
+and vanilla options; =barrier_type= on the barrier and digital options;
+=exercise_style= on the vanilla option; and =moment_type= on the variance swap.
+Each now carries a foreign key block to its lookup table, so the generated
+insert trigger refuses a code the lookup does not hold. The nullable columns
+validate only when they state a value.
+
+Twenty-one references stay soft, in two groups:
+
+- *The currency columns, fourteen of them.* A currency is =ores.refdata='s row,
+  seeded per environment rather than by this component, and a trading database
+  may hold only the codes its own imports loaded. A trigger check would refuse
+  a document the store is meant to accept, so each column states the reason and
+  the code is validated where the currency set is known.
+- *The seven trade-type codes.* The column's own check pins the one code the
+  table serves, and the trade-type catalogue routes the row to this table by
+  that code, so a foreign key would duplicate the router.
+
+The remaining text columns (=settlement=, =underlying_code=, =description= and
+the settlement codes) name no table, so there is nothing to key them to.
+
+* Decisions
+
+- *A key is the trigger check, not a SQL constraint.* The tables are temporal,
+  so a =REFERENCES= constraint would accept a closed version as current. The
+  generated check reads the current row, which is what the rest of the family
+  already does for its trade and activity keys.
+- *A currency reference stays soft because its rows are not this component's.*
+  The unit's acceptance allows a recorded reason, and the alternative would be
+  a foreign key that fails in every database whose currency set is loaded after
+  the documents.
+- *The trade-type code stays soft because the check is stronger.* It pins the
+  single code the table serves, where a key would accept any catalogue code.
+- *The lookup's closed set is now stated twice.* The SQL check and the lookup
+  table both hold it. Removing the checks is the discriminators unit's
+  decision, not this one's, so they stay.

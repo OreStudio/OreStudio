@@ -39,7 +39,7 @@ coverage gap.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's own check pins the one code the table serves, and the trade-type catalogue routes the row to this table by that code, so a foreign key would duplicate the router.
 
 Routes ORE product types: FxForward, FxSwap (near leg only).
 

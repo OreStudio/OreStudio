@@ -90,9 +90,10 @@ struct fx_asian_forward_instrument final {
     /**
      * @brief Domestic currency (FxTaRF-specific). Empty for FxAverageForward.
      *
-     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
-     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
-     * foreign key.
+     * The currency reference stays soft. A currency is ores.refdata's row, seeded per environment
+     * rather than by this component, and a trading database may hold only the codes its own imports
+     * loaded, so a trigger check would refuse a document the store is meant to accept. The code is
+     * validated where the currency set is known.
      */
     std::string currency;
 

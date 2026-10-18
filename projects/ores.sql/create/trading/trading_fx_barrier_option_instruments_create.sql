@@ -122,6 +122,30 @@ begin
             using errcode = '23503';
     end if;
 
+    -- Validate option_type (optional soft FK to ores_trading_option_types_tbl)
+    if NEW.option_type is not null then
+        if not exists (
+            select 1 from ores_trading_option_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.option_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid option_type: %. No active option type found with this code.', NEW.option_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate barrier_type (soft FK to ores_trading_barrier_types_tbl)
+    if not exists (
+        select 1 from ores_trading_barrier_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.barrier_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid barrier_type: %. No active barrier type found with this code.', NEW.barrier_type
+            using errcode = '23503';
+    end if;
+
     -- Validate change_reason_code
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 

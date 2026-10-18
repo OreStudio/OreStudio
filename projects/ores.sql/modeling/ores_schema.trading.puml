@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: trading
-Tables: 112
+Tables: 117
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -1843,6 +1843,89 @@ package "trading" #E8F5E9 {
     string.
     end note
 
+    entity ores_trading_equity_basket_constituents_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        * sequence_number : integer <<PK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * underlying_name : text
+          weight : double
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_basket_constituents_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Basket Constituent Table
+    One row per constituent of an equity worst-of basket, keyed to the trade
+    and the constituent's ordinal within the document.
+    The basket is a list. A list is rows of a child table rather than an
+    encoded string, so the constituents live here and not in the
+    basket_json column that used to hold them. The column is retired with
+    this table.
+    The ORE document states the basket as an unbounded list of Underlying
+    elements carrying a Name, and the list order is the document's order.
+    The ordinal is what identifies a row and preserves that order, so a
+    round trip re-emits the constituents as the document held them.
+    The trade is the key. A constituent is reached through the trade that
+    owns it and by nothing else, so the pair of trade_id and
+    sequence_number is the primary key.
+    end note
+
+    entity ores_trading_equity_cliquet_option_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * underlying_name : text
+        * currency : text
+        * notional : numeric(38, 12)
+        * long_short : text
+        * option_type : text
+          moneyness : double
+          local_cap : numeric(38, 12)
+          local_floor : numeric(38, 12)
+          global_cap : numeric(38, 12)
+          global_floor : numeric(38, 12)
+          settlement_days : integer
+          premium : numeric(38, 12)
+          premium_currency : text
+          premium_payment_date : date
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_cliquet_option_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Cliquet Option Instrument Table
+    One row per equity cliquet option, keyed by the trade. The cliquet's own
+    terms live here rather than in equity_option_instruments, whose vanilla
+    shape has no moneyness, no periodic caps and floors and no premium.
+    The cap and floor pair is the option's own subject matter: the local pair
+    applies to one period's return and the global pair to the accumulated
+    return. Every one is money, so every one is an exact numeric.
+    The moneyness is a ratio and not an amount, so it is a continuous quantity and
+    stays a binary float.
+    The schedule and the settlement days state when the option is observed and
+    settled. The schedule's dates belong to the shared schedule children; this
+    table keeps the settlement days the document states.
+    end note
+
     entity ores_trading_equity_digital_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -1915,6 +1998,47 @@ package "trading" #E8F5E9 {
     Represents EquityForward trades.
     end note
 
+    entity ores_trading_equity_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_type_code : text
+        * party_id : uuid <<FK>>
+        * trade_activity_id : uuid <<FK>>
+          start_date : date
+          maturity_date : date
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Instrument Table
+    One row per equity trade, the family's own header. It holds only what every
+    equity product states the same way: the trade it belongs to, the trade type
+    code, the party, the activity that wrote the version, the instrument's start
+    and maturity dates and its free text. It holds no product economics.
+    No economic field is common to all the routed codes. The underlying is one
+    name for most products and a basket for the worst-of swap, so it stays on the
+    facts and in equity_basket_constituents rather than on the header. A header
+    column has to hold for every code, and the underlying does not.
+    The products' own fields stay in their fact tables, keyed by the same trade
+    and joined to this row by the trade id. A fact table carries no party_id and
+    no trade_type_code: the header is the family's party boundary and its
+    routing boundary.
+    The dates are the family's common dates, the one set of names for the start
+    and the maturity of every equity product, so the blotter reads one column for
+    each across the whole family.
+    end note
+
     entity ores_trading_equity_option_instruments_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
@@ -1953,6 +2077,53 @@ package "trading" #E8F5E9 {
     cliquet_frequency is EquityCliquetOption-only (e.g. Annual,
     Quarterly) and must be null for a plain EquityOption -- enforced by a
     cross-column check. expiry_date is an ISO 8601 date string.
+    end note
+
+    entity ores_trading_equity_outperformance_options_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * underlying1_name : text
+        * underlying2_name : text
+        * currency : text
+        * notional : numeric(38, 12)
+        * long_short : text
+        * initial_price1 : numeric(38, 12)
+        * initial_price2 : numeric(38, 12)
+        * strike_return : numeric(38, 12)
+          knock_in_price : numeric(38, 12)
+          knock_out_price : numeric(38, 12)
+          initial_price_currency1 : text
+          initial_price_currency2 : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_outperformance_options_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Outperformance Option Instrument Table
+    One row per equity outperformance option, keyed by the trade.
+    The option is on the relative performance of two equities, so the pair is the
+    subject matter and both names have a column. That is why this product cannot
+    live in equity_option_instruments, whose single underlying_name states one.
+    The two initial prices are the levels the payoff measures the return from, and
+    the strike return is the threshold the relative return must beat. Both are
+    amounts and rates that settle cash, so both are exact decimals. The return in
+    particular is a proportion that multiplies money, and this family holds a rate
+    as an exact decimal for that reason.
+    The knock prices are levels the document may omit, so both are nullable.
+    The table is named equity_outperformance_options rather than
+    equity_outperformance_option_instruments. The derived name is one character
+    over the limit the generator allows once the trigger and policy suffixes are
+    counted, and PostgreSQL would truncate it mid-word.
     end note
 
     entity ores_trading_equity_position_instruments_tbl <<temporal>> #C6F0D8 {
@@ -2079,6 +2250,45 @@ package "trading" #E8F5E9 {
     Routes ORE product types: EquitySwap, EquityWorstOfBasketSwap. For
     basket swaps, underlying_name is NULL and basket_json holds the basket
     definition; for single-name swaps, basket_json is NULL.
+    end note
+
+    entity ores_trading_equity_tarf_instruments_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * trade_id : uuid <<PK, FK>>
+        --
+        * version : integer
+        * trade_activity_id : uuid <<FK>>
+        * underlying_name : text
+        * currency : text
+        * fixing_amount : numeric(38, 12)
+          target_amount : numeric(38, 12)
+          target_points : double
+          strike : numeric(38, 12)
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_trading_equity_tarf_instruments_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Equity Tarf Instrument Table
+    One row per equity target redemption forward, keyed by the trade.
+    The product's own subject matter is the target: the amount the holder aims to
+    redeem and the points that measure progress towards it. An accumulator has
+    neither, which is why the code cannot keep routing to
+    equity_accumulator_instruments.
+    The fixing amount and the target amount are money and so exact decimals. The
+    strike is money too and is optional, because the document may state its
+    strikes in a list instead, and the barrier that ends the product belongs with
+    the shared strike child rather than here. Target points are a count of
+    observations rather than an amount, so they stay a continuous quantity.
+    The observation and settlement schedule belongs to the shared schedule
+    children, so this table keeps only what is particular to the product.
     end note
 
     entity ores_trading_equity_variance_swap_instruments_tbl <<temporal>> #C6F0D8 {
@@ -2276,7 +2486,7 @@ package "trading" #E8F5E9 {
         * fixing_amount : numeric(38, 12)
         * strike : numeric(38, 12)
         * underlying_code : text
-        * long_short : text
+        * long_short : text <<FK>>
         * start_date : date
           knock_out_barrier : numeric(38, 12)
           description : text
@@ -2358,10 +2568,10 @@ package "trading" #E8F5E9 {
         * bought_amount : numeric(38, 12)
         * sold_currency : text
         * sold_amount : numeric(38, 12)
-          option_type : text
+          option_type : text <<FK>>
         * expiry_date : date
           settlement : text
-        * barrier_type : text
+        * barrier_type : text <<FK>>
         * lower_barrier : numeric(38, 12)
           upper_barrier : numeric(38, 12)
           underlying_code : text
@@ -2396,11 +2606,11 @@ package "trading" #E8F5E9 {
         * domestic_currency : text
         * payoff_currency : text
         * payoff_amount : numeric(38, 12)
-          option_type : text
+          option_type : text <<FK>>
         * expiry_date : date
-        * long_short : text
+        * long_short : text <<FK>>
           strike : numeric(38, 12)
-          barrier_type : text
+          barrier_type : text <<FK>>
           lower_barrier : numeric(38, 12)
           upper_barrier : numeric(38, 12)
           description : text
@@ -2470,9 +2680,9 @@ package "trading" #E8F5E9 {
         * bought_amount : numeric(38, 12)
         * sold_currency : text
         * sold_amount : numeric(38, 12)
-        * option_type : text
+        * option_type : text <<FK>>
         * expiry_date : date
-        * exercise_style : text
+        * exercise_style : text <<FK>>
           settlement : text
           description : text
         * modified_by : text
@@ -2504,10 +2714,10 @@ package "trading" #E8F5E9 {
         * end_date : date
         * currency : text
         * underlying_code : text
-        * long_short : text
-        * strike : numeric(38, 12)
+        * long_short : text <<FK>>
+        * strike : double
         * notional : numeric(38, 12)
-        * moment_type : text
+        * moment_type : text <<FK>>
           description : text
         * modified_by : text
         * performed_by : text
@@ -3253,17 +3463,21 @@ package "trading" #E8F5E9 {
     states, keyed to the trade and the entry's ordinal. The list holds the
     levels an accumulator accrues against, so the entry is the unit the
     document writes and the unit the table stores.
-    The ORE schema states the list as unbounded RangeBound entries and
-    requires at least one; each entry carries an optional start date as an
-    attribute and the optional levels RangeFrom, RangeTo, Leverage,
-    Strike and StrikeAdjustment. The order is the document's order, and
-    the ordinal preserves it, so export re-emits the entries as the document
-    held them.
+    The ORE schema states the list as unbounded RangeBound entries. The
+    RangeBounds wrapper is optional, but the schema requires at least one entry
+    when a document states it, and this binding writes the wrapper
+    unconditionally, so a trade that holds no bound cannot be written back. Each
+    entry carries an optional start date as an attribute and the optional levels
+    RangeFrom, RangeTo, Leverage, Strike and StrikeAdjustment. The order
+    is the document's order, and the ordinal preserves it, so export re-emits the
+    entries as the document held them.
     A level is money unless it is a ratio. RangeFrom, RangeTo, Strike
-    and StrikeAdjustment are price levels, so each column is exact decimal.
-    Leverage is a multiplier, so the column is a binary double, the same
-    way a basket weight is. A document that states no level leaves the
-    column null rather than a zero it never wrote.
+    and StrikeAdjustment are price levels, so each column is exact decimal, at
+    the family's twelve decimal places: a document that states a level with more
+    digits than that has its value rounded, which is the precision every money
+    column in the component states. Leverage is a multiplier, so the column is a
+    binary double, the same way a basket weight is. A document that states no level
+    leaves the column null rather than a zero it never wrote.
     The rows are keyed by the trade alone, so any instrument whose document
     states a RangeBounds list can own them. The FX accumulator is the first
     to write them. The equity accumulator still carries the list as JSON text
@@ -4291,6 +4505,8 @@ ores_trading_trades_tbl ||--o{ ores_trading_equity_digital_option_instruments_tb
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_digital_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_forward_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_forward_instruments_tbl : "has"
+ores_trading_trades_tbl ||--o{ ores_trading_equity_instruments_tbl : "has"
+ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_equity_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_equity_position_instruments_tbl : "has"
@@ -4309,18 +4525,28 @@ ores_trading_trades_tbl ||--o{ ores_trading_fra_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fra_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_accumulator_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_accumulator_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_accumulator_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_asian_forward_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_asian_forward_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
+ores_trading_barrier_types_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
+ores_trading_barrier_types_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_forward_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_forward_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
+ores_trading_exercise_types_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
+ores_trading_moment_types_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_index_cds_option_instruments_tbl : "has"

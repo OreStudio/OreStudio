@@ -60,9 +60,10 @@ struct fx_variance_swap_instrument final {
     /**
      * @brief Settlement currency.
      *
-     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
-     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
-     * foreign key.
+     * The currency reference stays soft. A currency is ores.refdata's row, seeded per environment
+     * rather than by this component, and a trading database may hold only the codes its own imports
+     * loaded, so a trigger check would refuse a document the store is meant to accept. The code is
+     * validated where the currency set is known.
      */
     std::string currency;
 
@@ -75,8 +76,7 @@ struct fx_variance_swap_instrument final {
      * @brief Position direction: Long or Short.
      *
      * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
-     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
-     * reference into a real foreign key.
+     * (Long, Short), which the SQL schema already states as a check.
      */
     std::string long_short;
 
@@ -99,8 +99,7 @@ struct fx_variance_swap_instrument final {
      * @brief Whether the product is a Variance or Volatility swap.
      *
      * Soft FK to ores_trading_moment_types_tbl: the values are the closed ORE momentType set
-     * (Variance, Volatility), which the SQL schema already states as a check. PR 4 tightens the
-     * soft reference into a real foreign key.
+     * (Variance, Volatility), which the SQL schema already states as a check.
      */
     std::string moment_type;
 

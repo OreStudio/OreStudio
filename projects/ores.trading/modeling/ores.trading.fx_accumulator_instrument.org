@@ -45,7 +45,7 @@ least one =RangeBound=.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's own check pins the one code the table serves, and the trade-type catalogue routes the row to this table by that code, so a foreign key would duplicate the router.
 
 Routes ORE product type: FxAccumulator.
 
@@ -101,7 +101,7 @@ The activity that wrote this version.
 
 Settlement currency (domestic side).
 
-Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+The currency reference stays soft. A currency is =ores.refdata='s row, seeded per environment rather than by this component, and a trading database may hold only the codes its own imports loaded, so a trigger check would refuse a document the store is meant to accept. The code is validated where the currency set is known.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -160,7 +160,7 @@ std::string("TR20H-EUR-JPY")
 
 Position direction: Long or Short.
 
-Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
 
 #+begin_src cpp :name generator
 std::string("Long")
@@ -250,6 +250,18 @@ is immutable.
         v.identity.trade_activity_id = activity.id;
     }
 #+end_src
+
+** long_short
+:PROPERTIES:
+:table:             ores_trading_long_short_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid long_short: %. No active long short type found with this code.
+:END:
+
+A foreign key to =ores_trading_long_short_types_tbl=: a value the store cannot resolve is
+refused on write.
 
 * SQL
 

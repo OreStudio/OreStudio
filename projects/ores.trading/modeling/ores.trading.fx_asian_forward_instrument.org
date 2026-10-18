@@ -44,7 +44,7 @@ Phase 2.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's own check pins the one code the table serves, and the trade-type catalogue routes the row to this table by that code, so a foreign key would duplicate the router.
 
 Routes ORE product types: FxAverageForward, FxTaRF.
 
@@ -198,7 +198,7 @@ std::string("Long")
 
 Domestic currency (FxTaRF-specific). Empty for FxAverageForward.
 
-Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+The currency reference stays soft. A currency is =ores.refdata='s row, seeded per environment rather than by this component, and a trading database may hold only the codes its own imports loaded, so a trigger check would refuse a document the store is meant to accept. The code is validated where the currency set is known.
 
 ** fixing_amount
 :PROPERTIES:

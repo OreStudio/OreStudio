@@ -24,7 +24,7 @@
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
-#include "ores.ore.core/domain/run_document_mapper.hpp"
+#include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
@@ -378,11 +378,11 @@ run_configuration_import_execute_result import_run(nats_client& owners,
     const auto run =
         parse_file<ores::ore::domain::ore>(std::string(run_document_file), run_file->second);
     rp::run_document document;
-    auto setup = ores::ore::domain::run_document_mapper::map_setup(run);
+    auto setup = ores::ore::domain::run_document_projection::map_setup(run);
     document.settings = std::move(setup.settings);
     document.files = std::move(setup.files);
-    document.analytics = ores::ore::domain::run_document_mapper::map_analytics(run);
-    document.market_bindings = ores::ore::domain::run_document_mapper::map_market_bindings(run);
+    document.analytics = ores::ore::domain::run_document_projection::map_analytics(run);
+    document.market_bindings = ores::ore::domain::run_document_projection::map_market_bindings(run);
 
     // Everything an import can refuse, a missing file or one that does not
     // parse, is found before its first write.
@@ -472,16 +472,10 @@ input_files export_run(nats_client& owners, const std::string& report_definition
         call(owners, rp::get_run_document_request{.report_definition_id = report_definition_id});
 
     const auto kinds = document_kinds_of(owners);
-    ore document;
-    document.Setup =
-        run_document_mapper::reverse_setup({run.document.settings, run.document.files});
-    document.Analytics = run_document_mapper::reverse_analytics(run.document.analytics);
-    if (!run.document.market_bindings.empty())
-        document.Markets =
-            run_document_mapper::reverse_market_bindings(run.document.market_bindings);
+    const auto document = run_document_projection::reverse(run.document);
 
     input_files files;
-    files[std::string(run_document_file)] = save_data(document);
+    files[std::string(run_document_file)] = run_document_projection::write(document);
     for (const auto& b : run.bindings) {
         if (b.configuration_type_code == run_settings_type)
             continue;

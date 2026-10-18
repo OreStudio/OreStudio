@@ -82,7 +82,7 @@ set(files
     "xml_ir_mapper_roundtrip_tests.cpp"
     "xml_lexical_form_export_tests.cpp"
     "xml_ore_roundtrip_tests.cpp"
-    "xml_ore_run_document_mapper_roundtrip_tests.cpp"
+    "xml_ore_run_document_projection_roundtrip_tests.cpp"
     "xml_portfolio_roundtrip_tests.cpp"
     "xml_pricing_engine_projection_tests.cpp"
     "xml_pricingengines_roundtrip_tests.cpp"

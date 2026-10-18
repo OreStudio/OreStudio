@@ -19,7 +19,7 @@
  */
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/run_document_mapper.hpp"
+#include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"
 #include "ores.reporting.core/repository/risk_report_config_repository.hpp"
@@ -42,7 +42,7 @@ std::filesystem::path corpus_file(const std::string& relative) {
 
 }
 
-using ores::ore::domain::run_document_mapper;
+using ores::ore::domain::run_document_projection;
 using ores::platform::filesystem::file;
 using ores::reporting::repository::configuration_repository;
 using ores::reporting::repository::risk_report_config_repository;
@@ -52,9 +52,8 @@ TEST_CASE("a party sees only its own run settings", tags) {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
 
-    ores::ore::domain::ore original;
-    ores::ore::domain::load_data(
-        file::read_content(corpus_file("ORE-Python/Notebooks/Example_1/Input/ore.xml")), original);
+    const auto original = run_document_projection::read(
+        file::read_content(corpus_file("ORE-Python/Notebooks/Example_1/Input/ore.xml")));
     auto next_id = boost::uuids::random_generator();
 
     ores::reporting::domain::configuration header;
@@ -65,7 +64,7 @@ TEST_CASE("a party sees only its own run settings", tags) {
     ores::database::domain::assign_party(header, parties.a);
     configuration_repository().write(parties.a_context, header);
 
-    auto settings = run_document_mapper::map_setup(original).settings;
+    auto settings = run_document_projection::map_setup(original).settings;
     settings.id = next_id();
     settings.name = "Example_1";
     settings.description = "Example_1";

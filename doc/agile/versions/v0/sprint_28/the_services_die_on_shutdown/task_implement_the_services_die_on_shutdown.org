@@ -85,7 +85,8 @@ subscriber churn, not the request path.
 |------+-------+---------+--------|
 | ctest cases | 96 of 96 pass | =./compass.sh check --only ctest= | e6eeec37b5 + this task's diff |
 | gate sweep on untouched main | 61 of 61 pass | =./compass.sh check --all --json= | e6eeec37b5 |
-| fleet after start, 120s, stop | 23 stopped, 0 failed, 24 units active before the stop | =./compass.sh services start= then =stop= | e6eeec37b5 + this task's diff |
+| fleet after start, 45s, stop | 23 stopped, 0 failed | =./compass.sh services start= then =stop= | b47e63fe7a + the closed-connection change |
+| marketdata journal on that stop | no core dump and no drain error | =./compass.sh services logs ores.marketdata -n 25= | b47e63fe7a + the closed-connection change |
 | marketdata journal after that stop | no core dump; "Shutdown complete" then the event bus unsubscribes | =./compass.sh services logs ores.marketdata -n 25= | e6eeec37b5 + this task's diff |
 | regression test | passes in 0.30s: the destroyer has not returned after 200ms of the handler holding | =./compass.sh test run -- -R ores.nats.tests= | c331e22f76 + the review changes |
 
@@ -102,6 +103,12 @@ about the code: =format= wants clang-format on the edited files, and
 =component-drift= fails on any =git diff= at all, because it regenerates the
 components and reads the working tree's diff as drift. Both pass on a committed
 tree.
+
+A closed connection counts as drained. The first version of the wait treated
+the =NATS_CONNECTION_CLOSED= that a teardown drain returns as a failure, so the
+marketdata service leaked every subscription and logged an error at each stop,
+and the fleet run showed it. Closing a connection joins its dispatch threads,
+so nothing can be running once it answers that way.
 
 The regression test is =service_subscription_lifetime_tests.cpp=. It holds a
 handler inside a delivery and destroys the subscription from another thread, so
@@ -146,7 +153,7 @@ is answered here or in the commit that follows it.
 | 10 | The comment narrated the incident rather than the invariant | client.cpp | fixed | Trimmed to the invariant; the incident lives in the story |
 | 11 | The client::impl banner headed an unrelated namespace | client.cpp | fixed | Namespace moved above the banner |
 | 12 | subscription::drain() did not say it blocks | subscription.hpp | fixed | Documented, with the self-drain constraint |
-| 13 | "Shutdown complete" is logged before the subscriptions are destroyed | service_lifecycle.hpp | fixed | subs.clear() runs before the line |
+| 13 | "Shutdown complete" is logged before the subscriptions are destroyed | service_lifecycle.hpp | fixed | subs.clear() runs before nats.drain(), so the NATS handlers are done before the line; the app's own event-bus subscribers still tear down after it, and the ingest loop's own subscription belongs to the app, not to subs |
 | 14 | Scaffold task is boilerplate | task_scaffold_*.org | fixed | Filled |
 
 | # | Comment summary | File | Decision | Notes |

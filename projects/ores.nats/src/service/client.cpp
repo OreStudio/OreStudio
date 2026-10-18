@@ -441,10 +441,15 @@ constexpr int64_t drain_budget_ms = 30'000;
  * let the owner destroy that state while a handler is inside it.
  */
 natsStatus drain_and_wait(natsSubscription* sub) noexcept {
+    // A closed connection cannot deliver, and closing it joined its dispatch
+    // threads, so there is nothing left to wait for when it answers this way.
     const natsStatus drained = natsSubscription_DrainTimeout(sub, drain_budget_ms);
+    if (drained == NATS_CONNECTION_CLOSED)
+        return NATS_OK;
     if (drained != NATS_OK)
         return drained;
-    return natsSubscription_WaitForDrainCompletion(sub, 2 * drain_budget_ms);
+    const natsStatus waited = natsSubscription_WaitForDrainCompletion(sub, 2 * drain_budget_ms);
+    return waited == NATS_CONNECTION_CLOSED ? NATS_OK : waited;
 }
 
 }
@@ -1252,14 +1257,15 @@ void client::drain() {
     // closed callback is what says every delivery has finished, so waiting on
     // it is what makes this method's promise true.
     const natsStatus drained = natsConnection_DrainTimeout(impl_->conn, drain_budget_ms);
-    bool closed = false;
+    // Already closed means already drained, and its dispatch threads are gone.
+    bool closed = drained == NATS_CONNECTION_CLOSED;
     if (drained == NATS_OK) {
         std::unique_lock lock(impl_->closed_latch.mu);
         closed = impl_->closed_latch.cv.wait_for(lock,
                                                  std::chrono::milliseconds(2 * drain_budget_ms),
                                                  [this] { return impl_->closed_latch.closed; });
     }
-    if (drained != NATS_OK || !closed)
+    if (!closed)
         BOOST_LOG_SEV(lg(), error)
             << "NATS connection drain did not complete (" << natsStatus_GetText(drained)
             << "); shutting down with deliveries possibly still in flight.";

@@ -32,7 +32,7 @@ skinparam ranksep 20
 
 note as GroupNote
 Group: refdata
-Tables: 161
+Tables: 164
 Index and the other groups: ores_schema.puml
 Table naming: <component>_<entity>_tbl
 end note
@@ -499,6 +499,74 @@ package "refdata" #FFF3E0 {
     Operational ledger leaves. The only entity that holds trades.
     Serves as the basis for accounting, ownership, and regulatory
     capital treatment. Must belong to exactly one portfolio.
+    end note
+
+    entity ores_refdata_bundle_import_items_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * import_id : uuid <<FK>>
+        * family : text
+        * sequence : integer
+        * party_id : uuid <<FK>>
+        * payload : jsonb
+          checksum : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_bundle_import_items_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bundle Import Item Table
+    One row per family a staging message delivers. The payload is that family's
+    own generated value type, already serialised, so a stage of one family never
+    builds a message that carries every family.
+    The identity is the import, the family and the sequence together. A repeated
+    stage of the same three is refused rather than duplicated, so a retried stage
+    is safe. Each stage is its own local transaction, and nothing reaches the
+    live tables until a commit applies the rows.
+    end note
+
+    entity ores_refdata_bundle_imports_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+          source : text
+        * state : text
+          families_expected : integer
+        * expires_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_bundle_imports_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bundle Import Table
+    A bundle is applied in one unit_of_work, and the messages that
+    carry it cannot hold the whole bundle: a message carrying every family is the
+    aggregate that fails on MSVC. The import is the row the staging messages hang
+    off instead. It records that a bundle is being staged, who owns it, how many
+    families were promised, and when an abandoned session stops waiting.
+    The caller mints id, so a repeated begin with a known id returns the import
+    that already exists rather than opening a second one. The service stamps
+    party_id, state and expires_at from the session it runs in.
+    Nothing in this table is visible to a reader of the live tables
+    until a commit applies the staged rows.
     end note
 
     entity ores_refdata_business_centres_tbl <<temporal>> #C6F0D8 {
@@ -1710,6 +1778,42 @@ package "refdata" #FFF3E0 {
     Country Table
     ISO 3166-1 country definitions used for reference data.
     Countries use alpha-2, alpha-3, and numeric codes per the ISO standard.
+    end note
+
+    entity ores_refdata_credit_limits_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * code : text
+        * party_id : uuid <<FK>>
+        * counterparty_id : uuid <<FK>>
+          limit_amount : numeric(38, 12)
+          description : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_credit_limits_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Credit Limit Table
+    A credit limit is the amount of credit the firm allows one counterparty,
+    set by one legal entity of the firm. It is the dimension that splits a
+    [[id:6AADB1A7-1229-4D10-8951-58446788957F][netting agreement]]'s trades into separate
+    [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][netting sets]]: where one agreement covers trades under several limits,
+    netting is restricted to the trades within one limit (see
+    [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]]).
+    The limit is a credit fact, not a legal one, so it stands apart from the
+    agreement: one agreement may cover several limits, and one limit may
+    cover trades under several agreements. A netting set names both, and a
+    pinned key holds the set's counterparty and party to the limit's, as it
+    does for the agreement.
     end note
 
     entity ores_refdata_crm_driver_pairs_tbl <<temporal>> #C6F0D8 {
@@ -4081,6 +4185,7 @@ package "refdata" #FFF3E0 {
         * code : text
         * party_id : uuid <<FK>>
           netting_agreement_id : uuid <<FK>>
+          credit_limit_id : uuid <<FK>>
           counterparty_id : uuid <<FK>>
           call_type : text
           initial_margin_type : text
@@ -4110,6 +4215,15 @@ package "refdata" #FFF3E0 {
     counterparty may be unknown, as it is for a set read from an ORE document,
     which names none. Every set belongs to a legal entity of the firm, and the
     entity that imports the document is the one it belongs to.
+    The limit is the other half of a nettable set's identity: where one
+    agreement covers trades under several limits, netting is restricted to
+    the trades within one limit, so a set names a
+    [[id:DBE59E31-57CE-4F56-8526-007E219FB95A][credit limit]] as it names an agreement. A
+    separate pinned key holds the set's counterparty and party to the limit's,
+    for the same reason the agreement pin exists. The two pins are separate
+    because the limit is a credit fact and the agreement a legal one: one
+    agreement covers several limits, so no single limit column can sit on the
+    agreement.
     The code is the netting set id ORE uses. The call type and initial margin
     type are the remaining parts of ORE's netting set details, and the risk
     weight is ORE's.
@@ -5725,6 +5839,7 @@ ores_refdata_parties_tbl ||--o{ ores_refdata_books_tbl : "has"
 ores_refdata_portfolios_tbl ||--o{ ores_refdata_books_tbl : "has"
 ores_refdata_business_units_tbl ||--o{ ores_refdata_books_tbl : "has"
 ores_refdata_sandboxes_tbl ||--o{ ores_refdata_books_tbl : "has"
+ores_refdata_bundle_imports_tbl ||--o{ ores_refdata_bundle_import_items_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_business_units_tbl : "has"
 ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_events_tbl : "has"
 ores_refdata_diary_entry_types_tbl ||--o{ ores_refdata_calendar_events_tbl : "has"
@@ -5744,6 +5859,8 @@ ores_refdata_parties_tbl ||--o{ ores_refdata_conventions_tbl : "has"
 ores_refdata_convention_kinds_tbl ||--o{ ores_refdata_conventions_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_contact_informations_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifiers_tbl : "has"
+ores_refdata_parties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
+ores_refdata_counterparties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_driver_pairs_tbl : "has"
 ores_refdata_crm_topology_configs_tbl ||--o{ ores_refdata_crm_enabled_derived_pairs_tbl : "has"
 ores_refdata_csas_tbl ||--o{ ores_refdata_csa_eligible_currencies_tbl : "has"
@@ -5792,6 +5909,7 @@ ores_refdata_counterparties_tbl ||--o{ ores_refdata_netting_agreements_tbl : "ha
 ores_refdata_parties_tbl ||--o{ ores_refdata_netting_set_identifiers_tbl : "has"
 ores_refdata_netting_sets_tbl ||--o{ ores_refdata_netting_set_identifiers_tbl : "has"
 ores_refdata_netting_agreements_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"
+ores_refdata_credit_limits_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_netting_sets_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_party_contact_informations_tbl : "has"

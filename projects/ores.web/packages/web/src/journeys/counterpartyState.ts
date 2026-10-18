@@ -868,6 +868,7 @@ export function compositeRequest(
             id: set.id,
             code: set.code.trim(),
             netting_agreement_id: agreement.id,
+            credit_limit_id: null,
             counterparty_id: draft.id,
             party_id: partyId,
             call_type: textOrNull(set.callType),

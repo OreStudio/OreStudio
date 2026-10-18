@@ -44,6 +44,7 @@ struct netting_set_write {
     std::string code;
     boost::uuids::uuid party_id;
     std::optional<boost::uuids::uuid> netting_agreement_id;
+    std::optional<boost::uuids::uuid> credit_limit_id;
     std::optional<boost::uuids::uuid> counterparty_id;
     std::optional<std::string> call_type;
     std::optional<std::string> initial_margin_type;
@@ -68,8 +69,10 @@ struct netting_set_lookup {
 
 struct netting_sets_filter {
     std::optional<std::optional<boost::uuids::uuid>> netting_agreement_id;
+    std::optional<std::optional<boost::uuids::uuid>> credit_limit_id;
     std::optional<std::vector<boost::uuids::uuid>> id_one_of;
     std::optional<std::vector<boost::uuids::uuid>> netting_agreement_id_one_of;
+    std::optional<std::vector<boost::uuids::uuid>> credit_limit_id_one_of;
 };
 
 struct netting_set_event {
@@ -245,6 +248,31 @@ struct list_by_netting_agreement_id_netting_sets_request {
 };
 
 struct list_by_netting_agreement_id_netting_sets_response {
+    ores::utility::domain::result result;
+    std::vector<ores::refdata::domain::netting_set> netting_sets;
+    std::uint64_t total;
+};
+
+struct list_by_credit_limit_id_netting_sets_request {
+    using response_type = struct list_by_credit_limit_id_netting_sets_response;
+    static constexpr std::string_view nats_subject =
+        "refdata.v1.netting_sets.list_by_credit_limit_id";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::optional<boost::uuids::uuid> credit_limit_id;
+    ores::utility::domain::scope scope = ores::utility::domain::scope::direct;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+    ores::utility::domain::order order;
+    std::optional<netting_sets_filter> filter;
+};
+
+struct list_by_credit_limit_id_netting_sets_response {
     ores::utility::domain::result result;
     std::vector<ores::refdata::domain::netting_set> netting_sets;
     std::uint64_t total;

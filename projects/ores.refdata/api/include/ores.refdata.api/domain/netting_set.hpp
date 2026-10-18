@@ -50,6 +50,16 @@ namespace ores::refdata::domain {
  * which names none. Every set belongs to a legal entity of the firm, and the
  * entity that imports the document is the one it belongs to.
  *
+ * The limit is the other half of a nettable set's identity: where one
+ * agreement covers trades under several limits, netting is restricted to
+ * the trades within one limit, so a set names a
+ * [[id:DBE59E31-57CE-4F56-8526-007E219FB95A][credit limit]] as it names an agreement. A
+ * separate pinned key holds the set's counterparty and party to the limit's,
+ * for the same reason the agreement pin exists. The two pins are separate
+ * because the limit is a credit fact and the agreement a legal one: one
+ * agreement covers several limits, so no single limit column can sit on the
+ * agreement.
+ *
  * The code is the netting set id ORE uses. The call type and initial margin
  * type are the remaining parts of ORE's netting set details, and the risk
  * weight is ORE's.
@@ -95,6 +105,14 @@ struct netting_set final {
      * Absent when the trades in the set do not net.
      */
     std::optional<boost::uuids::uuid> netting_agreement_id;
+
+    /**
+     * @brief The credit limit the set's trades net within.
+     *
+     * Absent when the set names no limit. Required when the set has one, and then its counterparty
+     * and party are the limit's.
+     */
+    std::optional<boost::uuids::uuid> credit_limit_id;
 
     /**
      * @brief The counterparty whose trades the set holds.

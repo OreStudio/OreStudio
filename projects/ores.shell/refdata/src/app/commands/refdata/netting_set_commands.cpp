@@ -141,24 +141,26 @@ void netting_set_commands::register_commands(cli::Menu& root_menu, nats_client& 
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_add(std::ref(out), std::ref(session), std::move(args));
         },
-        "add <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type> "
-        "<initial_margin_type> <risk_weight> <description> <reason> <commentary>");
+        "add <code> <party_id> <netting_agreement_id> <credit_limit_id> <counterparty_id> "
+        "<call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>");
 
     menu->Insert(
         "set",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_set(std::ref(out), std::ref(session), std::move(args));
         },
-        "set <id> <code> <party_id> <netting_agreement_id> <counterparty_id> <call_type> "
-        "<initial_margin_type> <risk_weight> <description> <reason> <commentary> [--version <n>]");
+        "set <id> <code> <party_id> <netting_agreement_id> <credit_limit_id> <counterparty_id> "
+        "<call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary> "
+        "[--version <n>]");
 
     menu->Insert(
         "put-many",
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_put_many(std::ref(out), std::ref(session), std::move(args));
         },
-        "put-many --count <n> <id> <code> <party_id> <netting_agreement_id> <counterparty_id> "
-        "<call_type> <initial_margin_type> <risk_weight> <description> <reason> <commentary>");
+        "put-many --count <n> <id> <code> <party_id> <netting_agreement_id> <credit_limit_id> "
+        "<counterparty_id> <call_type> <initial_margin_type> <risk_weight> <description> <reason> "
+        "<commentary>");
 
     menu->Insert(
         "delete",
@@ -181,6 +183,14 @@ void netting_set_commands::register_commands(cli::Menu& root_menu, nats_client& 
         },
         "by-netting-agreement-id <netting_agreement_id> [--offset <n>] [--limit <n>] [--order "
         "<field>] [--desc]");
+
+    menu->Insert(
+        "by-credit-limit-id",
+        [&session](std::ostream& out, std::vector<std::string> args) {
+            process_by_credit_limit_id(std::ref(out), std::ref(session), std::move(args));
+        },
+        "by-credit-limit-id <credit_limit_id> [--offset <n>] [--limit <n>] [--order <field>] "
+        "[--desc]");
 
     menu->Insert(
         "versions",
@@ -361,8 +371,8 @@ void netting_set_commands::process_add(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 8 + 2) {
-            fail(out) << "Expected " << (8 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 9 + 2) {
+            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -372,6 +382,8 @@ void netting_set_commands::process_add(std::ostream& out,
         read_token(req.change.write.netting_agreement_id,
                    parsed->positionals[next++],
                    "netting_agreement_id");
+        read_token(
+            req.change.write.credit_limit_id, parsed->positionals[next++], "credit_limit_id");
         read_token(
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.call_type, parsed->positionals[next++], "call_type");
@@ -422,8 +434,8 @@ void netting_set_commands::process_set(std::ostream& out,
     [[maybe_unused]] std::size_t next = 0;
     try {
 
-        if (parsed->positionals.size() != 9 + 2) {
-            fail(out) << "Expected " << (9 + 2) << " arguments, got " << parsed->positionals.size()
+        if (parsed->positionals.size() != 10 + 2) {
+            fail(out) << "Expected " << (10 + 2) << " arguments, got " << parsed->positionals.size()
                       << "." << std::endl;
             return;
         }
@@ -433,6 +445,8 @@ void netting_set_commands::process_set(std::ostream& out,
         read_token(req.change.write.netting_agreement_id,
                    parsed->positionals[next++],
                    "netting_agreement_id");
+        read_token(
+            req.change.write.credit_limit_id, parsed->positionals[next++], "credit_limit_id");
         read_token(
             req.change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
         read_token(req.change.write.call_type, parsed->positionals[next++], "call_type");
@@ -495,8 +509,8 @@ void netting_set_commands::process_put_many(std::ostream& out,
             return;
         }
         const auto change_count = ores::shell::app::from_token<std::uint32_t>(count_raw, "count");
-        if (parsed->positionals.size() != change_count * 9 + 2) {
-            fail(out) << "Expected " << (change_count * 9 + 2) << " arguments, got "
+        if (parsed->positionals.size() != change_count * 10 + 2) {
+            fail(out) << "Expected " << (change_count * 10 + 2) << " arguments, got "
                       << parsed->positionals.size() << "." << std::endl;
             return;
         }
@@ -508,6 +522,8 @@ void netting_set_commands::process_put_many(std::ostream& out,
             read_token(change.write.netting_agreement_id,
                        parsed->positionals[next++],
                        "netting_agreement_id");
+            read_token(
+                change.write.credit_limit_id, parsed->positionals[next++], "credit_limit_id");
             read_token(
                 change.write.counterparty_id, parsed->positionals[next++], "counterparty_id");
             read_token(change.write.call_type, parsed->positionals[next++], "call_type");
@@ -685,6 +701,61 @@ void netting_set_commands::process_by_netting_agreement_id(std::ostream& out,
     }
 
     auto result = do_auth_request<messaging::list_by_netting_agreement_id_netting_sets_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return;
+
+    out << rfl::json::write(*result) << std::endl;
+}
+
+void netting_set_commands::process_by_credit_limit_id(std::ostream& out,
+                                                      nats_client& session,
+                                                      const std::vector<std::string>& args) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating by-credit-limit-id request.";
+
+    using request_type = messaging::list_by_credit_limit_id_netting_sets_request;
+    if constexpr (request_type::requires_session) {
+        if (!session.is_logged_in()) {
+            fail(out) << "You must be logged in to run by-credit-limit-id." << std::endl;
+            return;
+        }
+    }
+
+    const std::vector<flag_spec> specs{
+        {.name = "offset", .requires_value = true, .default_value = ""},
+        {.name = "limit", .requires_value = true, .default_value = ""},
+        {.name = "order", .requires_value = true, .default_value = ""},
+        {.name = "scope", .requires_value = true, .default_value = ""},
+        {.name = "desc", .requires_value = false, .default_value = "false"},
+    };
+    const auto parsed = parse_args(args, specs);
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+
+    request_type req;
+    [[maybe_unused]] std::size_t next = 0;
+    try {
+
+        if (parsed->positionals.size() != 1) {
+            fail(out) << "Expected 1 argument, got " << parsed->positionals.size() << "."
+                      << std::endl;
+            return;
+        }
+        req.credit_limit_id = ores::shell::app::from_token<std::optional<boost::uuids::uuid>>(
+            parsed->positionals[next++], "credit_limit_id");
+        if (const auto& raw = parsed->flag("scope"); !raw.empty()) {
+            req.scope = raw == "subtree" ? ores::utility::domain::scope::subtree :
+                                           ores::utility::domain::scope::direct;
+        }
+        apply_page(req, *parsed);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
+
+    auto result = do_auth_request<messaging::list_by_credit_limit_id_netting_sets_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return;

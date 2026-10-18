@@ -37,6 +37,16 @@
  * which names none. Every set belongs to a legal entity of the firm, and the
  * entity that imports the document is the one it belongs to.
  *
+ * The limit is the other half of a nettable set's identity: where one
+ * agreement covers trades under several limits, netting is restricted to
+ * the trades within one limit, so a set names a
+ * [[id:DBE59E31-57CE-4F56-8526-007E219FB95A][credit limit]] as it names an agreement. A
+ * separate pinned key holds the set's counterparty and party to the limit's,
+ * for the same reason the agreement pin exists. The two pins are separate
+ * because the limit is a credit fact and the agreement a legal one: one
+ * agreement covers several limits, so no single limit column can sit on the
+ * agreement.
+ *
  * The code is the netting set id ORE uses. The call type and initial margin
  * type are the remaining parts of ORE's netting set details, and the risk
  * weight is ORE's.
@@ -49,6 +59,7 @@ create table if not exists "ores_refdata_netting_sets_tbl" (
     "code" text not null,
     "party_id" uuid not null,
     "netting_agreement_id" uuid null,
+    "credit_limit_id" uuid null,
     "counterparty_id" uuid null,
     "call_type" text null,
     "initial_margin_type" text null,
@@ -69,6 +80,7 @@ create table if not exists "ores_refdata_netting_sets_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("netting_agreement_id" is null or "counterparty_id" is not null),
+    check ("credit_limit_id" is null or "counterparty_id" is not null),
     check ("risk_weight" is null or "risk_weight" >= 0)
 );
 
@@ -111,6 +123,19 @@ begin
         end if;
     end if;
 
+    -- Validate credit_limit_id (optional soft FK to ores_refdata_credit_limits_tbl)
+    if NEW.credit_limit_id is not null then
+        if not exists (
+            select 1 from ores_refdata_credit_limits_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.credit_limit_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid credit_limit_id: %. No active credit limit found with this id.', NEW.credit_limit_id
+                using errcode = '23503';
+        end if;
+    end if;
+
     -- Validate counterparty_id (optional soft FK to ores_refdata_counterparties_tbl)
     if NEW.counterparty_id is not null then
         if not exists (
@@ -145,6 +170,19 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid netting_agreement_id: %. The set''s parties must be the agreement''s.', NEW.netting_agreement_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate the credit_limit pin to ores_refdata_credit_limits_tbl
+    if NEW.credit_limit_id is not null and NEW.counterparty_id is not null and NEW.party_id is not null and not exists (
+        select 1 from ores_refdata_credit_limits_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.credit_limit_id
+          and counterparty_id = NEW.counterparty_id
+          and party_id = NEW.party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid credit_limit_id: %. The set''s parties must be the limit''s.', NEW.credit_limit_id
             using errcode = '23503';
     end if;
 

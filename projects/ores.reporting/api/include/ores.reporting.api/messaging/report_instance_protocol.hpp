@@ -279,7 +279,7 @@ struct get_report_instance_version_response {
 struct get_latest_report_instances_by_definition_request {
     using response_type = struct get_latest_report_instances_by_definition_response;
     static constexpr std::string_view nats_subject =
-        "reporting.v1.report_instances.get_latest_by_definition";
+        "reporting.v1.ops.get_latest_report_instance_by_definition";
     /**
      * @brief Whether the caller must have established a session first.
      *

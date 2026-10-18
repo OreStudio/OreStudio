@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/key-netting-sets-by-credit-limit
+#+pr: 3499
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment:
+#+environment: jolly_knuth
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,7 +31,7 @@ set to its agreement.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:78265FE0-5B33-4285-B7CB-03081CF07A06][Close the credit loose ends]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -40,7 +40,12 @@ set to its agreement.
 
 * Acceptance
 
--
+- A =credit_limit= entity exists in =ores.refdata=, carrying a code, a party, a counterparty, the limit amount and a description, and it is bound to the same variability profile as its sibling reference entities.
+- A netting set names a nullable =credit_limit_id=. When it states one, the set's party and counterparty are the limit's, and a pinned key enforces that on write.
+- The import refuses a netting set whose credit limit names a different party or counterparty, and accepts one that agrees.
+- A netting set that states no limit still imports and stores, because the column is nullable and ORE documents name none.
+- The generated SQL, TypeScript carriers and records, and the shell commands come from the model by regeneration, not by hand.
+- The local gate passes on =linux-clang-release-ninja=.
 
 * Plan
 
@@ -79,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3499][#3499]] | [refdata] Key netting sets by their credit limit |
 
 * Review
 
@@ -88,6 +93,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The credit limit is now part of a netting set's identity, so netting can be
+restricted to the trades that sit within one limit.
+
+- =credit_limit= is a new =ores.refdata= entity with a code, a party, a counterparty, a limit amount and a description. It is bound to the =uuid-identified-lookup= profile, as its siblings are.
+- =netting_set= carries a nullable =credit_limit_id=, a check that states the limit's parties are the set's, and a second pinned key that holds the set's party and counterparty to the limit's on write.
+- The generated SQL, TypeScript, repositories, services, event registrars and shell commands come from the model. Regenerating the component reports no drift, so the checked-in tree is exactly what the models produce.
+- The old branch's generated output was discarded rather than merged. The model changes alone were re-applied to current trunk, which is why this lands as one commit instead of a several-hundred-commit replay.
+
+Evidence is recorded in the PR.
+
 
 * Promoted from capture
 

@@ -607,7 +607,7 @@ and checks a report-definition write code, which does not exist yet.
 - [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run a person starts once the definition exists, and the place a missing input surfaces
 - [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — where a report created with a pair that cannot work surfaces its failure
 - [[file:../../prototypes/reporting/manage-the-analytics.org][Manage the analytics]] — the shared screen that owns the analytic interaction this journey reads and links
-- [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] — the runs a definition produces once it is used
+- [[id:465CA244-C488-4C69-ACA3-C694D104A42A][Look back over a report's history]] — the runs a definition produces once it is used
 
 * Related knowledge
 

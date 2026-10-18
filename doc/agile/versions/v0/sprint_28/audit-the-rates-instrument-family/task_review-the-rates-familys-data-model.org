@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 272BBB33-ED72-401F-ADAD-6A69CEEBC4CE
+:END:
+#+title: Task: Review the rates family's data model
+#+description: Walk the Regime 2 and Regime 3 checklists over the rates family header, its product fact tables, its shared children, the generated C++ and the ORE import and export seam, and record the findings as an investigation.
+#+type: task
+#+level: s1
+#+filetags: :audit-the-rates-instrument-family:sprint_28:v0:
+#+owner: marco
+#+branch: feature/review-the-rates-familys-data-model
+#+pr: 3533
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E2EA8426-B9DF-4C93-9843-C34CC803B26D][Audit the rates instrument family against the data-oriented design guidelines]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Produce the evidence the parent story needs: walk the checklists over the rates instrument family and record what holds, what does not, and which findings are recorded decisions. The review is read-only. It changes no model, no generated artefact and no mapper.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:E2EA8426-B9DF-4C93-9843-C34CC803B26D][Audit the rates instrument family against the data-oriented design guidelines]] |
+| Now          | Finding 3 was found last, on a second pass over the reverse mapper, and raised from Important to Critical. |
+| Waiting on   | Nothing.                               |
+| Next         | Record the remediations as tasks on the parent story.                  |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- Walk every Regime 2 decision check over the rates entity models, with the evidence for each result. Done: the *What holds* and *Findings* tables of the investigation.
+- Walk the Regime 3 checks over the family's carriers and protocols. Done: `instrument_batch`, `swap_instrument_data`, `trade_instrument`, `rates_fact_variant` and the protocols.
+- Spot-check the invariant checks once and state what was read. Done: 25 domain headers, the codecs, the repository entities and the batch.
+- Map each finding to a criterion, with file-and-line evidence. Done: thirteen findings.
+- Separate a defect from a recorded decision. Done: the soft references, the doubled vocabularies and the flat scaffolding are recorded as component-wide.
+- State what was not checked. Done: the investigation states the tree and that no build, test or database run was made.
+
+* Plan
+
+1. Scope the family: 25 entity models, their 25 tables and the generated C++.
+2. Classify the family against the three regimes.
+3. Walk the Regime 2 decision checks per model, and the invariant checks once.
+4. Read the ORE import and export seam in both directions, because the
+   *One-way numeric conversion* check is decided there and nowhere else.
+5. Walk the Regime 3 checks over the carriers, the batch and the protocols.
+6. Re-check every critical claim in the main thread before recording it.
+
+* Measurements
+
+Measured at =3a49daea81=, the merge base with =main=, on a clean checkout. The
+same table is in the investigation, which is where the findings that use it
+live.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Rates entity models | 25 | the family list in the investigation's *Methodology* | 3a49daea81 |
+| Declared columns, and columns generated | 189 and 189 | column census over the =** name= headings against each =create table= body | 3a49daea81 |
+| Money columns, and money-ish columns | 15 exact decimals and one continuous index level | =grep -c 'numeric('= over the family's create scripts, plus a name census | 3a49daea81 |
+| Business check constraints | 53 | =grep -c 'check ('= per create script | 3a49daea81 |
+| Real foreign keys | 0 | =grep -i 'references' projects/ores.sql/create/trading/trading_*_create.sql= | 3a49daea81 |
+| Soft-reference claims in the models | 19 | =grep -ic 'soft fk'= over the family's twenty-five models | 3a49daea81 |
+| Numeric conversions at import, and exact ones | 20 and 14 | =grep -c exact_decimal projects/ores.ore/core/src/domain/swap_instrument_mapper.cpp= plus the casts beside them | 3a49daea81 |
+| Lossy export casts, and required-element cases | 5 and 3 | the =reverse_*= functions | 3a49daea81 |
+| Reverse mappers ignoring their fact row | 4 of 9 | =grep -n 'maybe_unused.*_instrument& instr'= | 3a49daea81 |
+| Fact tables with no product column | 2 of 9 | =cap_floor_instruments= and =callable_swap_instruments= | 3a49daea81 |
+| Columns with no producer | 5 | =settlement_lag=, =lockout_days= and the three inflation columns | 3a49daea81 |
+| Hand-written product-array lists | 6 | the variant, the carrier, three batch-mapper sites and =stamp_ids= | 3a49daea81 |
+| =nats_call= sites in the import handler | 73 | =grep -c 'nats_call(delegated_nats' projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp= | 3a49daea81 |
+| Per-key read loops in generated services | 117 of 123 | =grep -l 'for (const auto& k : request.keys)'= | 3a49daea81 |
+| Models carrying =:domain_audit_group:= | 2 of 25 rates, 25 of 146 trading | =grep -c ':domain_audit_group:'= | 3a49daea81 |
+
+* Notes
+
+- The review's shape is the opposite of the FX one. FX had a clean structure and
+  an unmigrated boundary; rates has the best structure of the three families
+  reviewed and a boundary that disagrees with it about what a product contains.
+- Thirteen claims changed under the two re-checks and one finding was
+  withdrawn, all recorded in the investigation's *Corrections made while
+  checking*. Five were found in the main thread — the conversion seam passes at
+  the helper and fails at six sites beside it, the empty cap/floor fact table is
+  a dropped field rather than a product with no fields, the variant is not a
+  Regime 3 violation, the recorded decision that the variant was removed is
+  false, and a floor is corrupted in the reverse direction. The other eight an
+  independent verifier found by opening every citation: the soft-reference
+  count, the leg-direction finding's two citations, that finding's claim that
+  the import always supplies a direction, three =nats_call= citations, the
+  task's copy of the money count, the batch's array count, a sequence-line
+  citation, and a scored regime that contradicted its own checklist row. That is
+  the step which should not have needed a second agent.
+- A floor becoming a cap was found on a second pass, after the strike finding
+  was written. Following a lost column in both directions is what raised it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| None | — | A read-only review has nothing to exercise. The remediations carry their own scenarios. |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3533][#3533]] | [agile] Review the rates family's data model against the DOD rules |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The review is recorded as [[id:4A8B1C6E-52D4-4E7A-9F31-6C2D8E4B7A10][Investigation: Rates family data model review]].
+
+Regime 2 scores 2 of 5 with debt High, and Regime 3 scores 5 of 5 with debt
+Low. The split is the finding: the family's structure is the best of the three
+reviewed — identity is the key, the legs and their economics are typed rows, the
+variation is generated per-type tables, the money is exact at rest — and its
+boundary is where the debt sits. Thirteen findings, three of them Critical: a
+short forward rate agreement stores as a long, an inflation swap cannot be
+stored at all, and a floor returns as a cap.

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: A5C6E83B-7F23-4963-B039-EE8C74A78615
+:END:
+#+title: Story: Carry the rates family's fields across the ORE boundary
+#+description: The rates family's structure is right and its boundary disagrees with it. Fix the three findings the review graded Critical and the five it graded Important that belong to the family, and add the check that would have caught them, in units that each end in a state a reviewer can verify.
+#+type: story
+#+level: s2
+#+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring the rates family's ORE import and export into agreement with its tables, so that a trade the document states is the trade the store holds and the document gets back.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The units are written from the review; the first one is next. |
+| Waiting on    | Nothing.                               |
+| Next          | Start with the three Critical findings. |
+| Last touched  | 2026-10-18                               |
+
+* Acceptance
+
+- Each Critical and Important finding of the rates review, other than the one recorded as the component's, is closed by a unit that proves it, with the finding's evidence as the test's expected value.
+- No column in the family is left without a producer or a consumer at the boundary, or the exception is recorded with its reason.
+- A check fails when a model column has no producer or no consumer at the ORE boundary.
+
+The story exists because of
+[[id:4A8B1C6E-52D4-4E7A-9F31-6C2D8E4B7A10][Investigation: Rates family data model review]].
+Its findings are the units below, and each unit proves its own finding. The
+order is the three Criticals first, because they corrupt or block data, then the
+Important ones by the cheapest ratio to the most expensive — which is not the
+review's recommendation order, where the fact tables and the strike come before
+the carrier and the digits — and last the check that would have caught the
+family's whole class of defect.
+
+| Unit | Findings | Effort |
+|------+----------+--------|
+| The forward rate agreement keeps its direction | 1 | Medium |
+| The inflation swap can be stored | 2 | Small |
+| A floor stays a floor | 3 | Medium |
+| The two key-only fact tables reach a home | 4, 5 | Medium |
+| The leg's direction is set for every product | 9 | Small |
+| The boundary keeps the document's digits | 7 | Medium |
+| The carrier states its product arrays once | 6 | Medium |
+| A column without a producer fails the gate | recommendation 8 | Medium |
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- The soft references and the doubled vocabularies (review findings 10 and 12),
+  which are the component's recorded deferral and the FX review's finding 9.
+- The flat scaffolding spine (finding 11), which is 25 of 146 trading models.
+- The three stale statements and the stale diagram (finding 13), which are
+  documentation and belong with the files they describe.
+- The shared import handler's per-request writes (finding 8), which are the
+  component's and are recorded as such.

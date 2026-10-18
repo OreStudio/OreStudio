@@ -1,0 +1,5 @@
+ores.trading.core.tests
+cases: 179
+passed: 179
+failed: 0
+source: build/output/linux-clang-release-ninja/publish/bin/test-results-ores.trading.core.tests.xml

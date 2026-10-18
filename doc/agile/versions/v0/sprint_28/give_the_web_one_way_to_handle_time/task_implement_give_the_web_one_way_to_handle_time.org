@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:19B54929-1098-4FBD-B588-505CC7C3BBFB][Give the web one way to handle time and timestamps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A person working in ores.web should have exactly one place that knows how a time
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:19B54929-1098-4FBD-B588-505CC7C3BBFB][Give the web one way to handle time and timestamps]] |
-| Now          | Code, tests and docs are in, the C++ tree builds, and both endpoints are proven live against the rebuilt service. |
+| Now          | Nothing. |
 | Waiting on   | A build-lock slot for =./compass.sh build ores.iam.service.exe ores.platform.tests -j6=. |
-| Next         | Build, start the fleet, recapture the auth-event fixture, prove the endpoint, close the task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance

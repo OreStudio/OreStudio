@@ -19,24 +19,18 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { DEFAULT_OBSERVATIONS, type ListedSeries } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { LineChart, SERIES_COLOURS } from '../marketdata/LineChart.js';
-import { canBeShown } from './evolutionView.js';
-import {
-    evolutionIdRoute,
-    evolutionRoute,
-    seriesOfUrl,
-    seriesVerdict,
-    type SeriesVerdict,
-} from '../oresmd/identity.js';
+import { evolutionIdRoute, evolutionRoute } from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
 import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
 import { Notice, PageHeader } from '../ui/Primitives.js';
+import { seriesPageState, type SeriesPageState, type SeriesRead } from './seriesState.js';
 import {
     formatText,
     formatValue,
@@ -66,7 +60,6 @@ const LISTED = 20;
  */
 export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
-    const titled = useSeriesTitle();
     const [search] = useSearchParams();
     const uri = search.get('uri') ?? '';
     const seriesId = search.get('series') ?? '';
@@ -76,24 +69,13 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
         ...oresmdQueries.seriesList(partyId),
         enabled: uri !== '' || seriesId !== '',
     });
-
-    const named =
-        parsed.data === undefined || schema.data === undefined
-            ? undefined
-            : seriesOfUrl(schema.data, parsed.data);
-    const byId =
-        seriesId === '' ? undefined : list.data?.series.find((one) => one.series_id === seriesId);
-    const verdict: SeriesVerdict | undefined =
-        seriesId !== ''
-            ? list.data === undefined
-                ? undefined
-                : byId === undefined
-                  ? { kind: 'not-listed' }
-                  : { kind: canBeShown(byId) ? 'shown' : 'no-shape', listed: byId }
-            : named?.ok === true && list.data !== undefined
-              ? seriesVerdict(list.data, named.form)
-              : undefined;
-    const listed = verdict?.kind === 'no-shape' ? verdict.listed : undefined;
+    const state = seriesPageState({
+        uri,
+        seriesId,
+        parsed: answerOf(parsed),
+        schema: answerOf(schema),
+        list: answerOf(list),
+    });
 
     return (
         <div className="space-y-6">
@@ -104,27 +86,54 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
                     description={t('market.series.description')}
                 />
             </div>
-            {uri === '' && seriesId === '' ? (
-                <Notice>{t('market.series.noUri')}</Notice>
-            ) : parsed.isError || schema.isError || list.isError ? (
-                <Notice tone="error">
-                    {(parsed.error ?? schema.error ?? list.error)?.message ?? ''}
-                </Notice>
-            ) : list.data === undefined || (seriesId === '' && named === undefined) ? (
-                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-            ) : named !== undefined && !named.ok ? (
+            <Situation state={state} uri={uri} seriesId={seriesId} />
+        </div>
+    );
+}
+
+/** One read of the page as the state function takes it. A failed read is read first. */
+function answerOf<T>(query: UseQueryResult<T, Error>): SeriesRead<T> {
+    if (query.isError) {
+        return { kind: 'error', message: query.error.message };
+    }
+    return query.data === undefined ? { kind: 'waiting' } : { kind: 'answer', data: query.data };
+}
+
+/** The words and the drawing of the one situation the page is in. */
+function Situation({
+    state,
+    uri,
+    seriesId,
+}: {
+    readonly state: SeriesPageState;
+    readonly uri: string;
+    readonly seriesId: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const titled = useSeriesTitle();
+    switch (state.kind) {
+        case 'no-uri':
+            return <Notice>{t('market.series.noUri')}</Notice>;
+        case 'error':
+            return <Notice tone="error">{state.message}</Notice>;
+        case 'loading':
+            return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+        case 'refused':
+            return <Notice tone="warn">{state.message}</Notice>;
+        case 'fixing':
+            return <Notice tone="warn">{t('market.evolution.errors.fixing')}</Notice>;
+        case 'unknown':
+            return (
                 <Notice tone="warn">
-                    {named.reason === 'fixing'
-                        ? t('market.evolution.errors.fixing')
-                        : named.reason === 'unknown'
-                          ? t('market.evolution.errors.unknown', { name: named.message })
-                          : named.message}
+                    {t('market.evolution.errors.unknown', { name: state.name })}
                 </Notice>
-            ) : verdict?.kind === 'not-listed' ? (
-                <Notice tone="warn">{t('market.evolution.errors.notListed')}</Notice>
-            ) : verdict?.kind === 'shown' ? (
+            );
+        case 'not-listed':
+            return <Notice tone="warn">{t('market.evolution.errors.notListed')}</Notice>;
+        case 'has-shape':
+            return (
                 <Notice>
-                    {t('market.series.hasShape', { series: titled(verdict.listed.identity) })}{' '}
+                    {t('market.series.hasShape', { series: titled(state.listed.identity) })}{' '}
                     <Link
                         className="text-accent-bright hover:underline"
                         to={seriesId === '' ? evolutionRoute(uri) : evolutionIdRoute(seriesId)}
@@ -132,11 +141,10 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
                         {t('market.series.openEvolution')}
                     </Link>
                 </Notice>
-            ) : listed !== undefined ? (
-                <Observations series={listed} uri={uri} />
-            ) : null}
-        </div>
-    );
+            );
+        case 'values':
+            return <Observations series={state.listed} uri={uri} />;
+    }
 }
 
 function Observations({

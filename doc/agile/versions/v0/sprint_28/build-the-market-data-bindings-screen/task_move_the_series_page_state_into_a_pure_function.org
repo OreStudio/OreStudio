@@ -8,12 +8,12 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/move-the-series-page-state-into-a-pure-function
-#+pr:
+#+pr: 3509
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The series page says no URI, an error, loading, a fixing, an unknown type, a ser
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -40,9 +40,25 @@ The series page says no URI, an error, loading, a fixing, an unknown type, a ser
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The page reads three things: the parts of the URL in the address, the codec's
+schema, and the series the party can see. The choice among the situations is a
+function of those three answers and of the address, and of nothing else.
+
+1. =market/seriesState.ts= holds the choice beside the page, the way
+   =market/evolutionView.ts= holds the Evolution page's rules. It exports
+   =SeriesPageState=, a tagged union with one kind for each situation the page
+   draws, and =seriesPageState=, which takes the answers and returns one kind.
+2. The answers are a plain union of =answer=, =error= and =waiting=, not
+   TanStack query objects, so the rule holds no hook and no framework type.
+   =SeriesPage.tsx= maps each query to that union in one small adapter.
+3. The function keeps the order the component held: no URI, then the first
+   failed read, then waiting, then the parse verdict, then the series the
+   address names. It is a move, so the same address draws the same words.
+4. The component is a switch over the state, and the state carries the series
+   the situation needs. The Evolution link target is built from the address,
+   which is where it came from before.
+5. =seriesState.test.ts= states the reads for each situation and the whole
+   state it must return, as a literal.
 
 * Measurements
 
@@ -56,7 +72,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web typecheck | Clean, every workspace | =npm run typecheck= in =projects/ores.web= | 7e466fbbde |
+| Web test suite | 144 files, 1627 tests, all pass | =npm test --workspace @ores/web= | 7e466fbbde |
+| The state tests | 18 tests in one file | =npx vitest run packages/web/src/market/seriesState.test.ts= | 7e466fbbde |
+| Format | Every file uses the project style | =npm run format:check= | 7e466fbbde |
 
 * Notes
 
@@ -75,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3509][#3509]] | [web] Move the series page state into a pure function |
 
 * Review
 
@@ -84,3 +103,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+Merged as [[https://github.com/OreStudio/OreStudio/pull/3509][#3509]].
+
+- =market/seriesState.ts= holds =SeriesPageState=, a tagged union with a kind for
+  each situation the page draws, and =seriesPageState=, which takes the answers
+  of the reads and the address and returns one kind.
+- The reads arrive as a plain union of =answer=, =error= and =waiting=. The rule
+  holds no hook and no framework type.
+- =SeriesPage.tsx= is a switch over the state. What a person sees for a given
+  address did not change.
+- =seriesState.test.ts= states a case for each of the nine situations, each with
+  the whole expected state as a literal. 18 tests, and the file passes.
+- Limitation. No render test of the page. The workspaces hold =react-dom/server=
+  and no DOM library, so the switch is covered by the typecheck and the state
+  tests only.

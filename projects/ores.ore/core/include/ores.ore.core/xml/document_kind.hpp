@@ -34,6 +34,7 @@ enum class document_kind {
     calendar_adjustments,
     conventions,
     pricing_engines,
+    credit_simulation,
 };
 
 /**

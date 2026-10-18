@@ -175,7 +175,7 @@ TEST_CASE("equity_mapper_roundtrip_variance_swap", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityVarianceSwap");
     CHECK(!inst.underlying_name.empty());
-    CHECK(!inst.variance_strike.is_zero());
+    CHECK(inst.variance_strike > 0.0);
     CHECK(inst.start_date.ok());
     CHECK(inst.maturity_date.ok());
 
@@ -183,7 +183,7 @@ TEST_CASE("equity_mapper_roundtrip_variance_swap", tags) {
     REQUIRE(rt.EquityVarianceSwapData);
 
     BOOST_LOG_SEV(lg, info) << "EquityVarianceSwap roundtrip passed. Strike: "
-                            << inst.variance_strike.to_string();
+                            << inst.variance_strike;
 }
 
 TEST_CASE("equity_mapper_roundtrip_barrier_option", tags) {

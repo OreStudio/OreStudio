@@ -26,11 +26,11 @@ The detail view of a feed draws its oresmd URI as a link to the series with an I
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Open for review.                       |
+| Now          | Nothing. |
 | Waiting on   | The root's verification.               |
-| Next         | Merge, then close the task.             |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -103,3 +103,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+Merged as [[https://github.com/OreStudio/OreStudio/pull/3506][#3506]].
+
+- The feed tree table has the oresmd URI column, drawn as the record page draws
+  it: a link to the series with the Inspect button.
+- =oresmd/identity.ts= holds =seriesTargetOf=, the one rule that decides where a
+  URL points. The record page and the list both call it.
+- A page of rows decides its targets in one read, through the new route
+  =POST /api/oresmd/parse-many=. A grid of many feeds makes no parse request for
+  each row.

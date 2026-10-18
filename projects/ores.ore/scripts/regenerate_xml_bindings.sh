@@ -128,6 +128,17 @@ generate \
     --header "$header/pricing_engines.hpp" \
     --source "$source/pricing_engines.cpp"
 
+generate \
+    --schema "$xsd/creditsimulation.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element CreditSimulation \
+    --root-type creditsimulation \
+    --accessor credit_simulation_document \
+    --namespace ores::ore::xml::generated::credit_simulation \
+    --include "ores.ore.core/xml/generated/credit_simulation.hpp" \
+    --header "$header/credit_simulation.hpp" \
+    --source "$source/credit_simulation.cpp"
+
 # The repository formats its C++ with clang-format and a check enforces it, so
 # the generator's output has to be formatted too, not only correct.
 # The style comes from the checkout, not from the staging tree: clang-format

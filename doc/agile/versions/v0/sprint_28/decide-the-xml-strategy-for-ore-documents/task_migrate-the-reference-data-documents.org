@@ -99,13 +99,76 @@ need the generator extended first.
 | PricingEngines | generates | 241 lines, read by run_store and the run configuration service | none |
 | CurveConfiguration | generates | 3,310 lines | none, but the largest |
 | Portfolio | generates | instrument mappers, the largest group | none |
-| StressTesting | refuses | 830 lines | generator lacks the =shiftTypeEntry= shape |
-| ORE run document | refuses | run document mapper | generator lacks =xs:complexContent= |
+| StressTesting | generates once =sensitivity.xsd= is read | 830 lines | none; =shiftTypeEntry= lives in =sensitivity.xsd= |
+| ORE run document | generates | run document mapper | none; =xs:complexContent extension= is read as a flattened derivation now, and a restriction is still refused |
+
+*The generator reads a derivation.* A type written as =xs:complexContent
+extension= now produces the base type's fields followed by its own, which is
+what flattening a derivation means for a record: the base's fields keep the
+offsets the base gives them. A regression test builds a base and a derived
+type and asserts the emitted record holds both, in that order. The run
+document generates with it. It is not in the regeneration wrapper yet, so
+nothing guards that table: it joins the wrapper in the change that migrates
+the family, because a table with no projection would leave the census with a
+supported family nothing reads.
+
+*One probe result was wrong.* The table first said stress testing could not
+be generated because the generator lacked its =shiftTypeEntry= shape. It was
+the probe that was wrong: the type lives in =sensitivity.xsd=, and the family
+generates as soon as that schema is read. Only the run document still needs
+the generator extended, and that is =xs:complexContent=.
 
 *Credit simulation is not free.* Its mapper is reached only by its own suites,
 which reads as dead code, but the configuration type is seeded and stored, so
 the family is a product concept with a test-only XML path. It is migrated, not
 deleted: the projection into the five analytics tables is the work.
+
+* What still holds the generated domain
+
+Five product files include =domain/domain.hpp=, and each one belongs to a
+family or a path that has to move first. Verified with
+=grep -rl "domain/domain.hpp" projects/*/*/src --include=*.cpp=.
+
+| File | What keeps it there |
+|------+---------------------|
+| =domain/domain.cpp= | the generated serialiser itself; it goes with xsdcpp |
+| =xml/importer.cpp= | conventions, whose mapper is blocked on the registry refactor |
+| =xml/exporter.cpp= | conventions, for the same reason |
+| =store/run_store.cpp= | the run document and curve configuration |
+| =service/messaging/run_configuration_operations.cpp= | the run document |
+
+Fourteen mappers remain under =domain/=: the twelve instrument mappers plus
+=trade_mapper= (portfolio), =conventions_mapper=, =curve_configuration_mapper=,
+=run_document_mapper=, =stress_test_mapper= and =todays_market_mapper=. Each
+falls with its family. When the last one does, the generated domain, the
+sibling-checkout wiring and the two regeneration patches go in one change.
+
+* Where the work stands
+
+Verified on main at the time of writing, with the commands that prove each
+line.
+
+| Claim | Evidence |
+|-------+----------|
+| Nine families read and write through the codec | =python3 build/scripts/check_xml_family_coverage.py= |
+| Four still read through xsdcpp: ORE, Portfolio, CurveConfiguration, StressTesting | same |
+| Seven families nothing reads are gone | same |
+| Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
+| The XML suites pass | =[ore][xml]@, 497 cases and 82,016 assertions |
+| The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
+| Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
+
+*What each remaining family needs.* Curve configuration is 3,310 lines and
+its mapper already has the projection's shape; it is the largest single
+change left. Stress testing is 830 lines and its table generates once
+=sensitivity.xsd= is read with =stress.xsd=. The run document's table
+generates now that a derivation is read, and its mapper is the last one
+written against the generated types. Portfolio is the largest group, the
+instrument mappers, and it lands last.
+
+*The order the task table states does not fit the budget available.* One
+family per change, and a family of this size takes a working session of its
+own. Nothing else blocks them.
 
 * Measurements
 

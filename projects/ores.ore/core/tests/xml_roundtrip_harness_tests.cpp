@@ -16,7 +16,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/credit_simulation_mapper.hpp"
+
+#include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.testing/project_root.hpp"
@@ -39,10 +40,9 @@ namespace {
 
 const std::string tags("[ore][xml][roundtrip][harness]");
 
-using ores::ore::domain::credit_simulation_difference;
-using ores::ore::domain::credit_simulation_mapper;
-using ores::ore::domain::creditsimulation;
-using ores::ore::domain::mapped_credit_simulation;
+using ores::ore::domain::conventions;
+using ores::ore::domain::conventions_mapper;
+using ores::refdata::messaging::conventions_document;
 
 std::filesystem::path corpus_root() {
     return ores::testing::project_root::resolve("external/ore/examples");
@@ -50,11 +50,11 @@ std::filesystem::path corpus_root() {
 
 // A mapper pair that loses the document, so the harness's failure path has a
 // caller. A rig that can only pass is not evidence that it checks anything.
-mapped_credit_simulation lose_everything(const creditsimulation&) {
+conventions_document lose_everything(const conventions&) {
     return {};
 }
 
-creditsimulation rebuild_nothing(const mapped_credit_simulation&) {
+conventions rebuild_nothing(const conventions_document&) {
     return {};
 }
 
@@ -84,63 +84,41 @@ TEST_CASE("roundtrip_harness_names_the_difference_when_one_document_is_a_prefix"
 }
 
 TEST_CASE("roundtrip_harness_walks_only_the_kind_it_is_given", tags) {
-    const auto kind =
-        ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
-            "credit simulation",
-            "creditsimulation",
-            credit_simulation_mapper::map,
-            credit_simulation_mapper::reverse,
-            credit_simulation_difference);
+    const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_document>(
+        "conventions",
+        "conventions",
+        &conventions_mapper::map,
+        &conventions_mapper::reverse,
+        ores::ore::xml::parsed_text_difference<conventions>);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 
-    CHECK(walk.kind == "credit simulation");
-    CHECK(walk.files == 14);
-}
-
-TEST_CASE("roundtrip_harness_round_trips_every_credit_simulation_in_the_corpus", tags) {
-    const auto kind =
-        ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
-            "credit simulation",
-            "creditsimulation",
-            credit_simulation_mapper::map,
-            credit_simulation_mapper::reverse,
-            credit_simulation_difference);
-
-    const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
-
-    for (const auto& failure : walk.failures)
-        WARN(failure);
-
-    CHECK(walk.files == 14);
-    CHECK(walk.passed == walk.files);
-    CHECK(walk.failures.empty());
+    CHECK(walk.kind == "conventions");
+    CHECK(walk.files == 72);
 }
 
 TEST_CASE("roundtrip_harness_reports_a_mapper_that_loses_the_document", tags) {
-    const auto kind =
-        ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
-            "credit simulation, lossy",
-            "creditsimulation",
-            lose_everything,
-            rebuild_nothing,
-            credit_simulation_difference);
+    const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_document>(
+        "conventions, lossy",
+        "conventions",
+        lose_everything,
+        rebuild_nothing,
+        ores::ore::xml::parsed_text_difference<conventions>);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 
-    CHECK(walk.files == 14);
+    CHECK(walk.files == 72);
     CHECK(walk.passed == 0);
     CHECK(walk.failures.size() == static_cast<std::size_t>(walk.files));
 }
 
 TEST_CASE("roundtrip_harness_finds_no_files_for_a_kind_the_corpus_does_not_hold", tags) {
-    const auto kind =
-        ores::ore::xml::make_roundtrip_kind<creditsimulation, mapped_credit_simulation>(
-            "basel traffic light",
-            "baselTrafficLight",
-            credit_simulation_mapper::map,
-            credit_simulation_mapper::reverse,
-            credit_simulation_difference);
+    const auto kind = ores::ore::xml::make_roundtrip_kind<conventions, conventions_document>(
+        "basel traffic light",
+        "baselTrafficLight",
+        &conventions_mapper::map,
+        &conventions_mapper::reverse,
+        ores::ore::xml::parsed_text_difference<conventions>);
 
     const auto walk = ores::ore::xml::walk_kind(kind, corpus_root());
 

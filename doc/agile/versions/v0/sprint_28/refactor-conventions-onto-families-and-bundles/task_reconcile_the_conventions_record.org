@@ -57,7 +57,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Task state rows changed | 3 | =git diff origin/main -- 'doc/agile/versions/v0/sprint_28/refactor-conventions-onto-families-and-bundles/task_*.org'= piped through =grep -c '^\\+\\| State'= | 650caa39de |
+| Task State rows rewritten | 2 | =git diff origin/main 650caa39de -- 'doc/agile/versions/v0/sprint_28/refactor-conventions-onto-families-and-bundles/task_*.org'= piped through =grep -c '^-| State'= | 650caa39de |
 
 * Notes
 

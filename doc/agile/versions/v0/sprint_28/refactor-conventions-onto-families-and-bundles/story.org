@@ -60,7 +60,7 @@ A convention is declared once, in its own entity, and carries only its own field
 - The ORE FX convention is a projection, not an entity. It is a currency pair, that pair's convention, a spot lag and the pair's advance calendars, all of which are entities, so =fx= stays out of the registry and the boundary mapper derives it.
 - The tenor basis swap convention spans the shared convention row and its two part families, because that is what the document carried. Collapsing it to one registry entry is a later decision.
 - The MSVC failure is accumulated context in the handler translation unit, not one over-wide literal. The investigation in [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] measured it, and task 8 follows that finding.
-- The conventions import owns no state of its own beyond the staging rows. A retried begin names the import it already opened, and a commit on an import that is not staging is refused, so a crash mid-import leaves an import that can be read and committed, or left staging until it expires.
+- The conventions import owns no state of its own beyond the staging rows. A retried begin names the import it already opened, and a commit on an import that is not staging is refused, so a crash mid-import leaves an import that can be read and committed. Its =expires_at= is stamped at begin, 24 hours ahead by default, though nothing sweeps an expired staging import yet.
 
 * Out of scope
 

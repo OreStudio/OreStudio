@@ -42,7 +42,7 @@ The curve configuration document gets the treatment the conventions document got
 
 * Plan
 
-Follow the conventions half. Move the families off the document, then the protocol and handler, then the ORE path.
+Follow the conventions half. Agree who owns the protocol split with the tenor basis swap story, then move the families off the document, then the protocol and handler, then the ORE path.
 
 * Measurements
 

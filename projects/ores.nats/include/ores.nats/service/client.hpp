@@ -193,14 +193,24 @@ public:
      * @brief Queue-group push-subscribe to a JetStream subject.
      *
      * Combines durable consumer semantics with competing-consumer load
-     * balancing across a queue group.
+     * balancing across a queue group. The consumer is created explicitly, with
+     * a delivery subject derived from @p stream_name and @p durable_name and a
+     * delivery group equal to @p queue_group, and only then is the subscription
+     * bound to it. A
+     * consumer created by the subscribe itself would be removed by the server
+     * when the subscription drains, even when marked durable, and every
+     * service drains on shutdown; creating it explicitly keeps it, and the
+     * position it holds, across a restart.
+     *
+     * Idempotent: an existing consumer with the same configuration is reused.
+     * One whose filter, ack policy, delivery bound, delivery subject or
+     * delivery group differs is updated in place, so it keeps its position.
      *
      * @param stream_name The stream holding @p subject, as
-     *        @c make_stream_name returns it. Give it and the call reconciles
-     *        the durable first: a durable is identified by name, and the server
-     *        rejects a subscribe whose filter or ack settings differ from the
-     *        stored ones, which is what a subject rename leaves behind. Pass an
-     *        empty name to subscribe without that check.
+     *        @c make_stream_name returns it. Required: the consumer is created
+     *        on this stream. The call also reconciles a stored consumer whose
+     *        filter, ack policy, delivery bound, delivery subject or delivery
+     *        group differs from the ones asked for.
      * @param max_deliver How many times a message may be delivered before the
      *        server stops. Every delivery is explicit, so the handler must
      *        answer it -- with @c ack_guard, or by answering the message's own
@@ -208,13 +218,19 @@ public:
      *        The bound is what keeps a message that always fails from being
      *        redelivered forever; it is required, and there is no unlimited
      *        setting.
+     * @param ack_wait How long the server waits for an answer before it counts
+     *        the delivery as failed and redelivers. Required, because the
+     *        server's own default is invisible to this code while the delivery
+     *        bound is written against a known value. Times @p max_deliver, it
+     *        is the window in which a failing handler keeps retrying.
      */
     [[nodiscard]] subscription js_queue_subscribe(std::string_view subject,
                                                   std::string_view durable_name,
                                                   std::string_view queue_group,
                                                   message_handler handler,
                                                   std::string_view stream_name,
-                                                  int max_deliver);
+                                                  int max_deliver,
+                                                  std::chrono::milliseconds ack_wait);
 
     /**
      * @brief Queue-group push-subscribe to several subjects on one consumer.
@@ -229,20 +245,26 @@ public:
      * that differs is updated in place, so the consumer keeps its position:
      * widening the filter set does not replay a backlog it had already worked
      * through. The filter set is compared as a set, so reordering @p subjects
-     * does not look like a change. A stored @em singular filter counts as
-     * stale, because one consumer cannot serve a family through it.
+     * does not look like a change. A stored singular filter is read as a set of
+     * one, which is how the server stores a single filter.
      *
      * @param subjects The relative subjects, prefixed internally. A wildcard is
      *        allowed, but a list of exact subjects is preferred: a wildcard
      *        that is wider than the service's work makes the consumer receive
      *        messages it has no handler for.
+     * @param stream_name The stream holding @p subjects, as
+     *        @c make_stream_name returns it. Required, for the same reason as
+     *        @c js_queue_subscribe.
+     * @param max_deliver The delivery bound; see @c js_queue_subscribe.
+     * @param ack_wait The redelivery timer; see @c js_queue_subscribe.
      */
     [[nodiscard]] subscription js_queue_subscribe_multi(std::span<const std::string_view> subjects,
                                                         std::string_view durable_name,
                                                         std::string_view queue_group,
                                                         message_handler handler,
                                                         std::string_view stream_name,
-                                                        int max_deliver);
+                                                        int max_deliver,
+                                                        std::chrono::milliseconds ack_wait);
 
     /**
      * @brief Create a JetStream admin handle for provisioning streams.

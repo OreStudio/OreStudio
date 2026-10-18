@@ -21,6 +21,7 @@
 #include "ores.history.core/messaging/registrar.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
 #include "ores.marketdata.api/messaging/operations_protocol.hpp"
+#include "ores.marketdata.api/messaging/publish_operation_protocol.hpp"
 #include "ores.marketdata.core/messaging/curve_snapshot_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_activity_handler.hpp"
 #include "ores.marketdata.core/messaging/feed_binding_history_provider_registrar.hpp"
@@ -224,7 +225,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         ores::service::messaging::step_routes routes;
-        routes.on("marketdata.v1.ops.publish_market_data_observations_from_dq",
+        routes.on(publish_market_data_observations_from_dq_request::nats_subject,
                   [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
         subs.push_back(ores::service::messaging::serve_step_commands(nats, queue, routes));
     }

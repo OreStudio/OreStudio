@@ -89,6 +89,108 @@ struct publish_from_dq_result {
     std::uint64_t records_deleted = 0;
 };
 
+/**
+ * @brief The workflow step that publishes the DQ-cleared ip2country.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_ip2country_publish_fn.
+ */
+struct publish_ip2country_from_dq_request {
+    static constexpr std::string_view nats_subject = "dq.v1.ops.publish_ip2country_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared coding schemes.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_coding_schemes_publish_fn.
+ */
+struct publish_coding_schemes_from_dq_request {
+    static constexpr std::string_view nats_subject = "dq.v1.ops.publish_coding_schemes_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge severities.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_severities_publish_fn.
+ */
+struct publish_badge_severities_from_dq_request {
+    static constexpr std::string_view nats_subject = "dq.v1.ops.publish_badge_severities_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge definitions.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_definitions_publish_fn.
+ */
+struct publish_badge_definitions_from_dq_request {
+    static constexpr std::string_view nats_subject = "dq.v1.ops.publish_badge_definitions_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared code domains.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_code_domains_publish_fn.
+ */
+struct publish_code_domains_from_dq_request {
+    static constexpr std::string_view nats_subject = "dq.v1.ops.publish_code_domains_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge mappings.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_mappings_publish_fn.
+ */
+struct publish_badge_mappings_from_dq_request {
+    static constexpr std::string_view nats_subject = "dq.v1.ops.publish_badge_mappings_from_dq";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+};
+
 }
 
 #endif

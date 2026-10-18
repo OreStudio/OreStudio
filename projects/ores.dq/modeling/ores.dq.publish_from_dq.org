@@ -16,11 +16,17 @@
 The payloads the bundle-publish workflow puts on a target service's
 publish-from-dq subject, and the result that service hands back.
 
-Neither struct is a bus message. The workflow's step builds the command and
-serialises it onto the dataset's target subject, and the handler serialises the
-result into the workflow step's result_json — so neither declares a subject, and
-the command carries no reply. The subjects the dq service subscribes are
-registration detail and stay in registrar.cpp.
+=publish_from_dq_command= and =publish_from_dq_result= are not bus messages. The
+workflow's step builds the command and serialises it onto the dataset's target
+subject, and the handler serialises the result into the workflow step's
+result_json, so neither declares a subject and the command carries no reply.
+
+The step subjects dq itself serves are bus messages, so they do declare one. They
+are the subjects the dq service subscribes, and each is also the =target_subject=
+of the DQ artefact type that names it, in
+=projects/ores.sql/populate/dq/dq_artefact_types_populate.sql=. The handler
+derives the SQL function it calls from the subject, so a subject is declared here
+and referenced at the call site, never spelled out at either.
 
 * Includes
 
@@ -170,6 +176,90 @@ registration detail and stay in registrar.cpp.
 #+begin_src cpp :name comment
 /**
  * @brief How many rows the publication removed.
+ */
+#+end_src
+
+** publish_ip2country_from_dq_request
+:PROPERTIES:
+:subject: dq.v1.ops.publish_ip2country_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared ip2country.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_ip2country_publish_fn.
+ */
+#+end_src
+
+** publish_coding_schemes_from_dq_request
+:PROPERTIES:
+:subject: dq.v1.ops.publish_coding_schemes_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared coding schemes.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_coding_schemes_publish_fn.
+ */
+#+end_src
+
+** publish_badge_severities_from_dq_request
+:PROPERTIES:
+:subject: dq.v1.ops.publish_badge_severities_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge severities.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_severities_publish_fn.
+ */
+#+end_src
+
+** publish_badge_definitions_from_dq_request
+:PROPERTIES:
+:subject: dq.v1.ops.publish_badge_definitions_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge definitions.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_definitions_publish_fn.
+ */
+#+end_src
+
+** publish_code_domains_from_dq_request
+:PROPERTIES:
+:subject: dq.v1.ops.publish_code_domains_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared code domains.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_code_domains_publish_fn.
+ */
+#+end_src
+
+** publish_badge_mappings_from_dq_request
+:PROPERTIES:
+:subject: dq.v1.ops.publish_badge_mappings_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge mappings.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_mappings_publish_fn.
  */
 #+end_src
 

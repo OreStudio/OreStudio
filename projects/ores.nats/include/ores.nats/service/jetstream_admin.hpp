@@ -21,6 +21,8 @@
 #define ORES_NATS_SERVICE_JETSTREAM_ADMIN_HPP
 
 #include "ores.nats/export.hpp"
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -40,6 +42,35 @@ enum class stream_retention {
     /// while its consumer exists. Reach for it when the messages are commands:
     /// once a command is served there is nothing left to keep.
     interest,
+};
+
+/**
+ * @brief What the server holds for one consumer.
+ *
+ * The server's own record, read back after a subscription has drained, rather
+ * than the client's view of it. @c created_ns identifies the consumer: a
+ * consumer that was deleted and recreated carries a different creation time
+ * even when its name, filter and position look the same.
+ */
+struct consumer_status {
+    /// UTC, in nanoseconds since the epoch.
+    int64_t created_ns = 0;
+    /// How many messages this consumer has delivered since it was created.
+    uint64_t delivered = 0;
+    /// The stream sequence every message up to here has been acknowledged.
+    uint64_t ack_floor_stream = 0;
+    /// Delivered but not yet acknowledged, which is what a shutdown leaves.
+    int64_t num_ack_pending = 0;
+    /// How many times a message was redelivered after going unanswered.
+    int64_t num_redelivered = 0;
+    /// On the stream, matching this consumer, and not yet delivered.
+    uint64_t num_pending = 0;
+    /// Whether a subscription is currently bound to this consumer.
+    bool push_bound = false;
+    /// How many times a message may be delivered before the server gives up.
+    int64_t max_deliver = 0;
+    /// How long the server waits for an answer, in nanoseconds.
+    int64_t ack_wait_ns = 0;
 };
 
 /**
@@ -99,6 +130,22 @@ public:
      * not the one being deleted, so the service still works.
      */
     void prune_consumers(std::string_view name, std::string_view keep);
+
+    /**
+     * @brief Read the server's record of @p consumer on @p stream.
+     *
+     * @return nothing when the server holds no consumer of that name.
+     */
+    std::optional<consumer_status> consumer_state(std::string_view stream,
+                                                  std::string_view consumer);
+
+    /**
+     * @brief Delete @p name, and every consumer it holds.
+     *
+     * Idempotent: a stream that is already gone is not an error. For a test
+     * that owns a stream of its own, so a run leaves nothing behind.
+     */
+    void delete_stream(std::string_view name);
 
 private:
     // An opaque jsCtx*, not owned.

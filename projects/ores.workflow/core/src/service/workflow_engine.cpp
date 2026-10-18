@@ -25,6 +25,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.workflow.api/domain/workflow_plan_dependency.hpp"
 #include "ores.workflow.api/domain/workflow_plan_step.hpp"
+#include "ores.workflow.api/messaging/workflow_claim_messages.hpp"
 #include "ores.workflow.api/messaging/workflow_protocol.hpp"
 #include "ores.workflow.core/service/workflow_actor.hpp"
 #include "ores.workflow.core/service/workflow_graph.hpp"
@@ -867,9 +868,12 @@ void workflow_engine::on_step_completed(ores::nats::message msg) {
     const auto found_steps = step_repo_.read_latest(ctx_, boost::uuids::to_string(step_id));
     if (found_steps.empty()) {
         // The step row may not be visible yet, so this is worth another
-        // delivery rather than a discard; the bound ends the retrying.
+        // delivery rather than a discard. Waiting the claim hold-off rather
+        // than retrying at once is what makes the delivery bound a duration:
+        // an immediate NAK spends every attempt in a burst and the window
+        // collapses to seconds.
         BOOST_LOG_SEV(lg(), warn) << "Step not found: " << event.step_id;
-        ack.retry();
+        ack.retry_after(ores::workflow::messaging::step_claim_hold_off);
         return;
     }
     // A copy rather than a reference: the step's state is written below, and

@@ -69,6 +69,21 @@ Three rules make it correct:
   subject and its `>` wildcard, prefixed. A filter on the bare subject alone
   matches none of its children, so the stream would hold nothing.
 
+* What the age does not say
+
+The age set here says how long the stream holds a message that no consumer has
+acknowledged. It does not say how long a consumer keeps retrying. Those are two
+limits, and the consumer's `MaxDeliver` and `AckWait` set the second one. A
+consumer that is bound and keeps failing gives up after its delivery bound. The
+message then stays in the stream, unacknowledged, until this age expires, but
+that consumer never reads it again. State the age and the delivery bound
+together, or the reader will take one for the other. See
+[[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]].
+
+The age is also not a promise that the work is still wanted. A consumer that
+returns after a long absence reads the message, and the handler may then find
+that the work has expired or been superseded.
+
 * Failure handling
 
 #+ATTR_HTML: :class hug-leading
@@ -88,8 +103,9 @@ Three rules make it correct:
   and it receives nothing.
 - *Logging the failure and continuing.* The service looks healthy and drops
   every message addressed to it.
-- *Renaming a subject without the stream name passed to the subscribe.* The
-  stream is reconciled and the durable is not; see
+- *Renaming a subject without the stream name passed to the subscribe.* A
+  durable consumer is created by name on its stream, so the subscribe cannot
+  run without it and refuses the call; see
   [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]].
 
 * Resulting context
@@ -104,9 +120,19 @@ Three rules make it correct:
 `ores.iam.service` ensures `iam_steps`; `ores.workflow.service` ensures
 `workflow`; `ores.marketdata.service` and `ores.synthetic.service` share
 `synthetic_ticks` deliberately, because the ingest loop must read ticks whether
-or not the synthetic service has run. The catalogue is
+or not the synthetic service has run. A step-command stream is a queue of work,
+so it keeps a message for one day under `interest` retention; that day is the
+backstop for a command no consumer can take. The consumer on it gives up after
+ten unanswered deliveries at thirty seconds each, which is about five minutes of
+a bound, failing service, not five minutes of downtime. The catalogue is
 [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable
 consumers]].
+
+`build/scripts/check_stream_coverage.py` reads every stream and every durable
+consumer in the tree. It fails when a consumed subject has no stream that covers
+it, when two streams claim the same subject, and when a declaration it cannot
+read exists. The server refuses both defects at creation, so a running broker
+cannot show them and the check reads the declarations instead.
 
 * Related patterns
 

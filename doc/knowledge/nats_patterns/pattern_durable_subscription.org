@@ -2,7 +2,7 @@
 :ID: F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182
 :END:
 #+title: Durable Subscription
-#+description: A message that must survive the service being down is read from a named durable consumer on a stream, so the server holds it until a member reads it.
+#+description: A message that must survive the service being down is read from a named durable consumer on a stream, so the server holds it for the stream's age until a member reads it.
 #+type: nats_pattern
 #+level: cross
 #+filetags: :pattern:nats:subscription:
@@ -46,12 +46,18 @@ Publish to a subject a stream covers, and read it from a durable consumer:
 #+begin_src cpp :results verbatim
 const std::string engine_stream(nats.make_stream_name("workflow"));
 
+// The durable name is the reader's position, so it must not change between
+// runs. The stream reconciles the durable before the subscription attaches.
+// The last two arguments say how many deliveries the server makes before it
+// stops, and how long each delivery may stay unanswered.
 nats.js_queue_subscribe(
     messaging::step_completed_event::nats_subject,
-    "workflow-engine-step-completed",   // durable name: this reader's position
+    "workflow-engine-step-completed",
     queue_group,
     handler,
-    engine_stream);                     // reconciles the durable before attaching
+    engine_stream,
+    step_max_deliver,
+    step_ack_wait);
 #+end_src
 
 Three properties define the pattern:
@@ -64,8 +70,50 @@ Three properties define the pattern:
   stored filter differs from the subject asked for, which is what a renamed
   subject leaves behind; see [[id:05B6C7D8-E9F0-4A1B-8C3D-4E5F60718293][Stream Provisioning at Start]].
 
+The consumer is created explicitly, with a name, a delivery subject derived
+from the stream and that name, and a delivery group named for the service, and
+the subscription is bound to it afterwards. A consumer that the subscribe
+creates itself is removed
+by the server when that subscription drains, even when it is marked durable, and
+a service drains on shutdown; the consumer would then be gone while the service
+restarts. Creating it explicitly keeps the consumer, the delivery subject it
+publishes to, and the position it holds on the server, so a message published
+during the restart waits for the next start to read it.
+
 A durable consumer reads at-least-once. The handler must therefore be safe to
 run twice; see [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Identity]].
+
+* What bounds the wait
+
+Two different limits govern a message, and they apply to different failures.
+
+- *Stream age.* The stream keeps a message for its =max_age=. A command stream
+  in ORE Studio uses one day; the workflow stream uses seven. This is the only
+  limit while no member is bound.
+- *Delivery bound.* =MaxDeliver= and =AckWait= are set on the consumer. ORE
+  Studio sets ten deliveries and thirty seconds.
+
+The delivery bound does not measure downtime. A push consumer with no bound
+subscriber receives nothing. The server leaves the message unprocessed on the
+consumer and spends no delivery on it. So a service that is down for an hour
+still reads its command when it returns, for as long as the stream keeps it.
+The delivery bound applies only while a member is bound and keeps failing. Each
+attempt waits =AckWait= for an answer, then the server redelivers. With ten
+deliveries at thirty seconds, that is about five minutes. A handler that asks
+for an immediate retry instead of waiting spends the budget faster, so a
+delayed retry is what makes the bound a time window.
+
+When the last delivery also goes unanswered, the server stops delivering that
+message to that consumer. It does not acknowledge the message and it does not
+move it to a dead-letter queue. The message stays in the stream until
+=max_age=. The consumer that gave up never receives it again, even after a
+restart. A new consumer that reads from =DeliverAll= would still see it, but the
+service's stored durable is not new. Treat the message as lost to that
+consumer.
+
+This is why the delivery bound must be explicit. A bound inherited from a
+server default is not the bound the code is written against, and the window it
+produces cannot be stated.
 
 * Failure handling
 
@@ -74,28 +122,33 @@ run twice; see [[id:38E9F0A1-B2C3-4D4E-9F60-718293A4B5C6][Idempotent Message Ide
 |---------+-----------------------|
 | Errors | A failed delivery is redelivered after AckWait, to the same or another member. |
 | Timeouts | AckWait is the redelivery timer; a member that dies holding a message loses it back to the consumer. |
-| Retries | Redelivery is the retry. A message that fails forever must be bounded or discarded; see [[id:16C7D8E9-F0A1-4B2C-9D4E-5F60718293A4][Acknowledge What Was Handled]]. |
+| Retries | Redelivery is the retry: MaxDeliver attempts, spaced by AckWait. After the last attempt the consumer gives up, and the message is left unacknowledged in the stream until its age expires. |
 | Idempotency | Required: a redelivered message may reach a member that already started it. |
 | Observability | Redelivery is visible on the consumer; see [[id:B0671829-3A4B-4FC6-91E8-F90112233445][Observe the Connection State]] for the connection side. |
 
 * Pitfalls
 
-- *Omitting the stream name.* The durable is never reconciled, so a renamed
-  subject leaves a consumer the server refuses to attach and the service does
-  not start.
+- *Omitting the stream name.* The consumer cannot be created by name on a
+  stream, so the call refuses to run: a durable that the subscribe creates is
+  removed on drain, and the next restart would miss every message published
+  while the service was down.
 - *One durable name for two readers.* They share a position and split the work
   between them.
 - *A durable for everything.* A request whose answer is in the reply needs no
   history; durability is for messages that outlive the publisher's interest.
 - *An unbounded redelivery of a poison message.* Without an attempt bound it is
   an endless loop.
+- *Reading the stream's age as the delivery promise.* The age says how long the
+  stream holds an unacknowledged message. It does not say how long a consumer
+  keeps retrying. The delivery bound does, and it stops first.
 
 * Resulting context
 
 - Benefits :: A restart costs no work, and the reader's position is durable
   state held by the server rather than the process.
 - Liabilities :: The subscription now depends on server-side state, which a
-  subject rename can strand.
+  subject rename can strand. A message that exhausts its delivery bound stays in
+  the stream but is no longer readable by the consumer that gave up.
 
 * In ORE Studio
 
@@ -104,6 +157,16 @@ The workflow engine reads `start_workflow` and `step_completed` from the
 marketdata ingest loop reads ticks. The streams and consumers are catalogued in
 [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable
 consumers]].
+
+A step command is work, and the stream keeps it for a day. The engine may fail
+the step before that day ends, because a step has its own deadline. A command
+delivered after the deadline is answered and discarded by the claim; the stream
+kept it, but the work was no longer wanted. The day is a delivery backstop, not
+a promise that the work is still useful.
+
+The subject a durable consumer reads needs a stream that covers it.
+`build/scripts/check_stream_coverage.py` fails when that stream is missing, and
+when two streams claim one subject.
 
 * Related patterns
 

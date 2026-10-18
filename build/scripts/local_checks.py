@@ -646,6 +646,25 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_event_registrar_composition.py"),
         classes=("services", "cpp", "modeling", "codegen"),
     ),
+    # A durable subject with no stream times out at the publisher, and two
+    # streams over one subject stop the second service starting. The server
+    # refuses both, so no running broker can show them; the check reads the
+    # declarations the services send at start. It needs no broker.
+    Check(
+        id="stream-coverage",
+        title="Every durable subject has one stream, and no two streams overlap",
+        argv=("python3", "build/scripts/check_stream_coverage.py"),
+        classes=("cpp", "services"),
+        paths=(
+            "projects/*/*/src/*",
+            "projects/*/*/include/*",
+            "build/scripts/check_stream_coverage.py",
+        ),
+        fix="Ensure the stream that covers the subject, from the routes table "
+            "the service reads (serve_step_commands does both), or move the "
+            "subject to one owner. A stream's filter must cover every subject "
+            "its service consumes and must not overlap another stream's.",
+    ),
     Check(
         id="populate-refs",
         title="Every populate script names a reference something defines",

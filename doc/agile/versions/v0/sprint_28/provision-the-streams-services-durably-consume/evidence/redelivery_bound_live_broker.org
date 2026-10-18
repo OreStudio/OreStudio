@@ -1,0 +1,102 @@
+#+title: Evidence: what bounds a durable step command
+#+description: Live-broker measurements of the delivery bound, the ack wait, and the point at which a consumer gives a command up.
+
+This is the evidence for [[id:B5475503-B59E-42F8-B022-A961D7C281C0][Settle the
+redelivery bound]]. Every number below comes from a running =nats-server=, not
+from reading the client code. The server reports its own consumer state.
+
+* Settings as the server stores them
+
+The running fleet, read with =nats consumer info=:
+
+| Consumer | AckPolicy | AckWait | MaxDeliver | MaxAckPending | Backoff |
+|----------+-----------+---------+------------+---------------+---------|
+| =ores_dev_festive_dijkstra_refdata_steps_consumer= | explicit | 30 s | 10 | 1000 | none |
+| =workflow-engine-start= | explicit | 30 s | 10 | 1000 | none |
+| =workflow-engine-step-completed= | explicit | 30 s | 10 | 1000 | none |
+| a consumer created with no =AckWait= and no =MaxDeliver= | explicit | 30 s | -1 (unlimited) | 1000 | none |
+
+The last row is the control: the server's own default is a 30-second ack wait
+and an unlimited delivery count. ORE Studio passes 10 and 30 s explicitly. The
+step streams store =interest= retention and =max_age= 86400000000000 ns (one
+day); the =workflow= stream stores =limits= retention and seven days.
+
+* The delivery bound is not a downtime window
+
+Scratch =nats-server= 2.14.6, a push consumer with =MaxDeliver= 3 and
+=AckWait= 2 s, no subscriber bound. The command is published, then the
+consumer state is read after seven seconds, which is more than three ack
+waits:
+
+#+begin_example
+published with no subscriber
+after 7s:
+  delivered=0 ack_floor=0 num_ack_pending=0 num_redelivered=0 num_pending=1 push_bound=None
+  stream messages=1 retention=interest max_age_ns=86400000000000
+bind a core queue subscriber for 4s:
+  delivered=1 ack_floor=0 num_ack_pending=1 num_redelivered=1 num_pending=0 push_bound=True
+subscriber saw the command: 3 time(s)
+#+end_example
+
+No delivery was spent during the seven seconds. The command was delivered when
+a subscriber bound. The bound counts deliveries, and an unbound push consumer
+makes none.
+
+The same holds when a member dies holding an unacknowledged message. The
+message stays pending through ten seconds of no subscriber, with
+=num_redelivered= 0, and the next subscriber receives it.
+
+* When the bound is spent
+
+Scratch =nats-server= 2.14.6, a subscriber bound but never acknowledging,
+=MaxDeliver= 3 and =AckWait= 2 s. Sampled once per second:
+
+#+begin_example
+t=1s  delivered=1 ack_floor=0 num_ack_pending=1 num_redelivered=0
+t=2s  delivered=1 ack_floor=0 num_ack_pending=1 num_redelivered=1
+t=5s  delivered=1 ack_floor=0 num_ack_pending=1 num_redelivered=1
+t=6s  delivered=1 ack_floor=0 num_ack_pending=0 num_redelivered=1
+t=10s delivered=1 ack_floor=0 num_ack_pending=0 num_redelivered=1
+stream messages=1 retention=interest max_age_ns=86400000000000
+the never-acking subscriber saw the command 3 times
+rebind the same consumer: the subscriber saw the command 0 times
+a different consumer from DeliverAll: received the command
+#+end_example
+
+When the last delivery goes unanswered the server removes the message from the
+consumer's pending set (=NumAckPending= returns to 0) but does not acknowledge
+it. The message stays in the stream. That consumer never delivers it again,
+even after a rebind. A new consumer reading from =DeliverAll= still receives it.
+So the message is left outstanding in the stream, not acked and not parked.
+This matches nats-server PR #6575 and its test
+=TestJetStreamInterestMaxDeliveryReached=.
+
+* The fleet, with the production numbers
+
+A throwaway stream on the running fleet, =interest= retention, one-day age, and
+a push consumer created with the production settings =MaxDeliver= 10 and
+=AckWait= 30 s. The stream and consumer names carried a unique suffix, and the
+stream was deleted at the end.
+
+#+begin_example
+configuration: ack_policy=explicit ack_wait_ns=30000000000 max_deliver=10 max_ack_pending=1000 backoff=None
+published at 04:17:59 with no subscriber bound
+after 330s with no subscriber (longer than the old 300s bound):
+  delivered=0 ack_floor=0 num_ack_pending=0 num_redelivered=0 num_pending=1 push_bound=None
+  stream messages=1 retention=interest max_age_ns=86400000000000
+bind a core queue subscriber on the delivery subject for 10s:
+  delivered=1 ack_floor=0 num_ack_pending=1 num_redelivered=0 num_pending=0 push_bound=True
+subscriber received the command: 1 time(s)
+#+end_example
+
+The command survived a wait longer than =MaxDeliver x AckWait=, because the wait
+was downtime, not a bound and failing consumer. This is the property the
+documents now state.
+
+* What is left unsatisfied
+
+The measurements do not cover a full day of downtime; the fleet probe waits
+330 s. They do not cover a change of =MaxDeliver= on a live consumer either.
+The =ores.nats= suite covers the in-place reconciliation of the stored consumer
+with a further test: the creation time and the acknowledged position survive an
+update of the delivery bound and the ack wait.

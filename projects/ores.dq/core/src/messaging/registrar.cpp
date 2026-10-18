@@ -30,6 +30,7 @@
 #include "ores.dq.api/messaging/publication_protocol.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/publish_datasets_protocol.hpp"
+#include "ores.dq.api/messaging/publish_from_dq_protocol.hpp"
 #include "ores.dq.api/messaging/report_definition_template_protocol.hpp"
 #include "ores.dq.core/messaging/artefact_type_history_provider_registrar.hpp"
 #include "ores.dq.core/messaging/artefact_type_registrar.hpp"
@@ -454,12 +455,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, ctx);
         static constexpr std::array<std::string_view, 6> subjects = {
-            "dq.v1.ops.publish_ip2country_from_dq",
-            "dq.v1.ops.publish_coding_schemes_from_dq",
-            "dq.v1.ops.publish_badge_severities_from_dq",
-            "dq.v1.ops.publish_badge_definitions_from_dq",
-            "dq.v1.ops.publish_code_domains_from_dq",
-            "dq.v1.ops.publish_badge_mappings_from_dq"};
+            publish_ip2country_from_dq_request::nats_subject,
+            publish_coding_schemes_from_dq_request::nats_subject,
+            publish_badge_severities_from_dq_request::nats_subject,
+            publish_badge_definitions_from_dq_request::nats_subject,
+            publish_code_domains_from_dq_request::nats_subject,
+            publish_badge_mappings_from_dq_request::nats_subject};
         ores::service::messaging::step_routes routes;
         for (const auto subject : subjects)
             routes.on(subject, [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });

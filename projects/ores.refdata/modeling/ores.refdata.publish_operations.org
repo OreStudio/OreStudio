@@ -1,0 +1,745 @@
+:PROPERTIES:
+:ID: 8B1F4A52-6F0D-4C47-9A3E-2F5C7D1B8E64
+:END:
+#+title: ores.refdata.publish_operations
+#+description: Codegen operation model for the workflow steps that publish a refdata dataset from DQ.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: publish_operation
+#+namespace: ores::refdata::messaging
+#+brief: The refdata publish-from-DQ workflow steps.
+#+filetags: :model:operation:refdata:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+The workflow steps that publish the tables refdata owns from a DQ dataset. They
+are triggers, as the reporting and analytics components' publish steps are: the
+DQ publisher sends one and reads no reply, so a step states a subject and no
+response.
+
+The SQL function a step calls is derived from its subject, so the spelling of a
+subject matters twice: once as the subject the registrar subscribes and once as
+the function the handler calls. That is why each subject is declared here and
+referenced at the call site.
+
+The subject is also the =target_subject= of the DQ artefact type that names it,
+in =projects/ores.sql/populate/dq/dq_artefact_types_populate.sql=, so the two
+are one value written twice and both move together.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include <string_view>
+#+end_src
+
+* Messages
+
+** publish_trading_account_types_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_trading_account_types_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared trading account types.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_trading_account_types_from_dq_fn.
+ */
+#+end_src
+
+** publish_asset_classes_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_asset_classes_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared asset classes.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_asset_classes_from_dq_fn.
+ */
+#+end_src
+
+** publish_asset_measures_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_asset_measures_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared asset measures.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_asset_measures_from_dq_fn.
+ */
+#+end_src
+
+** publish_benchmark_rates_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_benchmark_rates_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared benchmark rates.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_benchmark_rates_from_dq_fn.
+ */
+#+end_src
+
+** publish_books_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_books_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared books.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_books_from_dq_fn.
+ */
+#+end_src
+
+** publish_business_centres_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_business_centres_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared business centres.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_business_centres_from_dq_fn.
+ */
+#+end_src
+
+** publish_business_processes_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_business_processes_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared business processes.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_business_processes_from_dq_fn.
+ */
+#+end_src
+
+** publish_business_units_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_business_units_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared business units.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_business_units_from_dq_fn.
+ */
+#+end_src
+
+** publish_calendar_events_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_calendar_events_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared calendar events.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_calendar_events_from_dq_fn.
+ */
+#+end_src
+
+** publish_calendar_types_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_calendar_types_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared calendar types.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_calendar_types_from_dq_fn.
+ */
+#+end_src
+
+** publish_calendars_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_calendars_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared calendars.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_calendars_from_dq_fn.
+ */
+#+end_src
+
+** publish_cashflow_types_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_cashflow_types_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared cashflow types.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_cashflow_types_from_dq_fn.
+ */
+#+end_src
+
+** publish_conventions_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_conventions_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared conventions.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_conventions_from_dq_fn.
+ */
+#+end_src
+
+** publish_counterparty_aliases_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_counterparty_aliases_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared counterparty aliases.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_counterparty_aliases_from_dq_fn.
+ */
+#+end_src
+
+** publish_countries_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_countries_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared countries.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_countries_from_dq_fn.
+ */
+#+end_src
+
+** publish_crm_topology_bundles_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_crm_topology_bundles_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared crm topology bundles.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_crm_topology_bundles_from_dq_fn.
+ */
+#+end_src
+
+** publish_csas_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_csas_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared csas.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_csas_from_dq_fn.
+ */
+#+end_src
+
+** publish_currencies_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_currencies_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared currencies.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_currencies_from_dq_fn.
+ */
+#+end_src
+
+** publish_curve_configuration_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_curve_configuration_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared curve configuration.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_curve_configuration_from_dq_fn.
+ */
+#+end_src
+
+** publish_currency_groups_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_currency_groups_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared currency groups.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_currency_groups_from_dq_fn.
+ */
+#+end_src
+
+** publish_currency_currency_groups_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_currency_currency_groups_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared currency currency groups.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_currency_currency_groups_from_dq_fn.
+ */
+#+end_src
+
+** publish_currency_pairs_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_currency_pairs_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared currency pairs.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_currency_pairs_from_dq_fn.
+ */
+#+end_src
+
+** publish_currency_pair_conventions_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_currency_pair_conventions_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared currency pair conventions.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_currency_pair_conventions_from_dq_fn.
+ */
+#+end_src
+
+** publish_currency_calendars_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_currency_calendars_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared currency calendars.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_currency_calendars_from_dq_fn.
+ */
+#+end_src
+
+** publish_currency_countries_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_currency_countries_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared currency countries.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_currency_countries_from_dq_fn.
+ */
+#+end_src
+
+** publish_currency_pair_convention_calendars_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_currency_pair_convention_calendars_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared currency pair convention calendars.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_currency_pair_convention_calendars_from_dq_fn.
+ */
+#+end_src
+
+** publish_entity_classifications_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_entity_classifications_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared entity classifications.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_entity_classifications_from_dq_fn.
+ */
+#+end_src
+
+** publish_lei_counterparties_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_lei_counterparties_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared lei counterparties.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_lei_counterparties_from_dq_fn.
+ */
+#+end_src
+
+** publish_lei_parties_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_lei_parties_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared lei parties.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_lei_parties_from_dq_fn.
+ */
+#+end_src
+
+** publish_local_jurisdictions_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_local_jurisdictions_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared local jurisdictions.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_local_jurisdictions_from_dq_fn.
+ */
+#+end_src
+
+** publish_sandbox_portfolios_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_sandbox_portfolios_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared sandbox portfolios.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_sandbox_portfolios_from_dq_fn.
+ */
+#+end_src
+
+** publish_netting_agreements_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_netting_agreements_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared netting agreements.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_netting_agreements_from_dq_fn.
+ */
+#+end_src
+
+** publish_netting_set_aliases_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_netting_set_aliases_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared netting set aliases.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_netting_set_aliases_from_dq_fn.
+ */
+#+end_src
+
+** publish_netting_sets_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_netting_sets_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared netting sets.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_netting_sets_from_dq_fn.
+ */
+#+end_src
+
+** publish_party_contact_informations_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_party_contact_informations_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared party contact informations.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_party_contact_informations_from_dq_fn.
+ */
+#+end_src
+
+** publish_party_counterparties_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_party_counterparties_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared party counterparties.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_party_counterparties_from_dq_fn.
+ */
+#+end_src
+
+** publish_party_countries_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_party_countries_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared party countries.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_party_countries_from_dq_fn.
+ */
+#+end_src
+
+** publish_party_currencies_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_party_currencies_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared party currencies.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_party_currencies_from_dq_fn.
+ */
+#+end_src
+
+** publish_party_relationships_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_party_relationships_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared party relationships.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_party_relationships_from_dq_fn.
+ */
+#+end_src
+
+** publish_party_roles_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_party_roles_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared party roles.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_party_roles_from_dq_fn.
+ */
+#+end_src
+
+** publish_payment_frequencies_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_payment_frequencies_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared payment frequencies.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_payment_frequencies_from_dq_fn.
+ */
+#+end_src
+
+** publish_person_roles_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_person_roles_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared person roles.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_person_roles_from_dq_fn.
+ */
+#+end_src
+
+** publish_portfolios_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_portfolios_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared portfolios.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_portfolios_from_dq_fn.
+ */
+#+end_src
+
+** publish_regulatory_corporate_sectors_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_regulatory_corporate_sectors_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared regulatory corporate sectors.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_regulatory_corporate_sectors_from_dq_fn.
+ */
+#+end_src
+
+** publish_reporting_regimes_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_reporting_regimes_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared reporting regimes.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_reporting_regimes_from_dq_fn.
+ */
+#+end_src
+
+** publish_supervisory_bodies_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_supervisory_bodies_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared supervisory bodies.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_supervisory_bodies_from_dq_fn.
+ */
+#+end_src
+
+** publish_tenor_schedules_from_dq_request
+:PROPERTIES:
+:subject: refdata.v1.ops.publish_tenor_schedules_from_dq
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief The workflow step that publishes the DQ-cleared tenor schedules.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is
+ * ores_refdata_publish_tenor_schedules_from_dq_fn.
+ */
+#+end_src
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.

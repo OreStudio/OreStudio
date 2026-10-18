@@ -8,7 +8,7 @@
 #+filetags: :sprint_28:v0:refactor-conventions-onto-families-and-bundles:
 #+owner: marco
 #+branch: feature/reconcile-the-conventions-record
-#+pr:
+#+pr: 3536
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3536][#3536]] | [agile] Reconcile the conventions story with the merged work |
 
 * Review
 

@@ -329,6 +329,8 @@
 -- Per-type equity instruments
 \ir ./trading_equity_cliquet_option_instruments_create.sql
 \ir ./trading_equity_cliquet_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_outperformance_option_instruments_create.sql
+\ir ./trading_equity_outperformance_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_option_instruments_create.sql
 \ir ./trading_equity_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_digital_option_instruments_create.sql

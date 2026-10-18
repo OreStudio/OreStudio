@@ -21,6 +21,8 @@
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
+#include "ores.refdata.api/generators/deposit_convention_generator.hpp"
+#include "ores.refdata.api/generators/ibor_index_convention_generator.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -33,6 +35,7 @@
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <optional>
 #include <rfl/json.hpp>
@@ -476,12 +479,24 @@ TEST_CASE("the bundle read carries what the document read carries", tags) {
     part.change_reason_code = "system.test";
     document.tenor_basis_swap_pay_receive.push_back(part);
 
+    // One family of each write mode, so each way a family reaches its table is
+    // compared with rows in it rather than with nothing.
+    auto gen = ores::testing::make_generation_context(h);
+    auto deposit = ores::refdata::generators::generate_synthetic_deposit_convention(gen);
+    deposit.change_reason_code = "system.test";
+    document.deposit.push_back(deposit);
+    auto index = ores::refdata::generators::generate_synthetic_ibor_index_convention(gen);
+    index.change_reason_code = "system.test";
+    document.ibor_index.push_back(index);
+
     ores::refdata::service::conventions_document_service documents(ctx);
     documents.save(document);
     const auto held = documents.get();
 
     REQUIRE_FALSE(held.convention.empty());
     REQUIRE_FALSE(held.tenor_basis_swap_pay_receive.empty());
+    REQUIRE_FALSE(held.deposit.empty());
+    REQUIRE_FALSE(held.ibor_index.empty());
 
     const auto read = ores::refdata::service::conventions_bundle_service(ctx).read();
     const auto bundle_count = [&read](const std::string& family) {
@@ -491,13 +506,18 @@ TEST_CASE("the bundle read carries what the document read carries", tags) {
             }));
     };
 
-    // Every family, not just the two this case wrote: a read that dropped a
-    // whole family would still pass a check on those two.
+    // Every family the registry names. The three the case seeded are the ones
+    // whose comparison can fail on a dropped family; the rest are checked so a
+    // read that invents a row is caught too.
     for (std::size_t i = 0; i < ores::refdata::domain::convention_family_count; ++i) {
         const auto family = std::string(ores::refdata::domain::convention_families[i].key);
         INFO("family: " << family);
         CHECK(bundle_count(family) == document_row_count(held, family));
     }
+    CHECK(bundle_count("convention") > 0);
+    CHECK(bundle_count("tenor_basis_swap_pay_receive") > 0);
+    CHECK(bundle_count("deposit") > 0);
+    CHECK(bundle_count("ibor_index") > 0);
 }
 
 TEST_CASE("the bundle read drops a part whose central row it does not carry", tags) {
@@ -527,10 +547,42 @@ TEST_CASE("the bundle read drops a part whose central row it does not carry", ta
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository parts;
     parts.write(ctx, orphan);
 
+    // A convention of the kind the bundle covers, with a part that names it.
+    // That part survives, and the orphan does not.
+    ores::refdata::domain::convention covered;
+    covered.id = uuid();
+    covered.kind_code = "TENOR_BASIS_SWAP";
+    covered.name = "AUD-3M-6M-BASIS";
+    covered.change_reason_code = "system.test";
+
+    ores::refdata::domain::tenor_basis_swap_pay_receive attached;
+    attached.id = uuid();
+    attached.convention_id = covered.id;
+    attached.pay_index = std::string("AUD-LIBOR-6M");
+    attached.receive_index = std::string("AUD-LIBOR-3M");
+    attached.change_reason_code = "system.test";
+
+    ores::refdata::service::conventions_bundle written;
+    written.rows.push_back(
+        {.family = "convention", .sequence = 0, .payload = rfl::json::write(covered)});
+    written.rows.push_back({.family = "tenor_basis_swap_pay_receive",
+                            .sequence = 0,
+                            .payload = rfl::json::write(attached)});
+    ores::refdata::service::conventions_bundle_service(ctx).apply(written);
+
     const auto read = ores::refdata::service::conventions_bundle_service(ctx).read();
+    std::size_t central_rows = 0;
+    std::size_t part_rows = 0;
     for (const auto& row : read.rows) {
         INFO("family: " << row.family);
-        CHECK(row.family != "convention");
-        CHECK(row.family != "tenor_basis_swap_pay_receive");
+        if (row.family == "convention")
+            ++central_rows;
+        if (row.family == "tenor_basis_swap_pay_receive")
+            ++part_rows;
     }
+    CHECK(central_rows == 1);
+    CHECK(part_rows == 1);
+
+    const auto held_parts = parts.read_latest(ctx);
+    REQUIRE(held_parts.size() == 2);
 }

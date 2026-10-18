@@ -51,6 +51,21 @@ constexpr std::string_view central_family = "convention";
 constexpr std::string_view pay_receive_family = "tenor_basis_swap_pay_receive";
 constexpr std::string_view long_short_family = "tenor_basis_swap_long_short";
 
+/**
+ * @brief Where the registry lists a family, or past the end when it does not.
+ */
+consteval std::size_t family_position(std::string_view key) {
+    for (std::size_t i = 0; i < domain::convention_family_count; ++i)
+        if (domain::convention_families[i].key == key)
+            return i;
+    return domain::convention_family_count;
+}
+
+// The read and the apply rely on the shared family coming before its parts,
+// because a part is only kept when the bundle already carries its central row.
+static_assert(family_position(central_family) < family_position(pay_receive_family));
+static_assert(family_position(central_family) < family_position(long_short_family));
+
 bool belongs_to_the_tenor_bundle(const std::string& family) {
     return family == central_family || family == pay_receive_family || family == long_short_family;
 }

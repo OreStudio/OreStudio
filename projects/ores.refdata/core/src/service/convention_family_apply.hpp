@@ -22,6 +22,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.core/export.hpp"
 #include <string>
+#include <vector>
 
 namespace ores::refdata::messaging {
 struct conventions_document;

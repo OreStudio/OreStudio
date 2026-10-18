@@ -219,21 +219,28 @@ def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
     `bases` is the chain of types this walk has already flattened, so a
     derivation that reaches itself is refused instead of recursing.
     """
-    def walk(node):
+    def walk(node, repeat_max=None, in_choice=False):
         name = local(node.tag)
         if name in ("sequence", "all", "choice"):
             # A compositor that repeats repeats its members: a document may
             # carry any member of a repeated choice any number of times, and
-            # the member's own maxOccurs says nothing about that.
-            repeated_compositor = node.get("maxOccurs", "1") not in ("1",)
-            for element in node:
-                if local(element.tag) != "element":
-                    continue
-                if repeated_compositor and element.get("maxOccurs", "1") in ("1",):
-                    element.set("maxOccurs", node.get("maxOccurs"))
-                elements.append(element)
-                if name == "choice":
-                    CHOICE_CHILDREN.add(id(element))
+            # the member's own maxOccurs says nothing about that. A compositor
+            # nested in another is walked through, because a choice whose
+            # alternatives are sequences still offers each of their elements as
+            # a child of the type.
+            own = node.get("maxOccurs", "1")
+            if own not in ("1",):
+                repeat_max = own
+            alternatives = in_choice or name == "choice"
+            for child in node:
+                walk(child, repeat_max, alternatives)
+            return
+        if name == "element":
+            if repeat_max is not None and node.get("maxOccurs", "1") in ("1",):
+                node.set("maxOccurs", repeat_max)
+            elements.append(node)
+            if in_choice:
+                CHOICE_CHILDREN.add(id(node))
             return
         if name == "attribute":
             attributes.append(node)
@@ -299,6 +306,26 @@ def children_of(complex_type, schema=None, bases=frozenset()):
     """
     elements, attributes = [], []
     _collect_children(complex_type, schema, complex_type, elements, attributes, bases)
+
+    # Two alternatives of one choice may name the same element. The record
+    # needs one member for it, and a document that writes either alternative
+    # binds to that member, so the second declaration is dropped when the two
+    # agree. They are refused when they do not: one member cannot mean two
+    # shapes.
+    first_by_name, kept = {}, []
+    for element in elements:
+        name = element.get("name")
+        first = first_by_name.get(name)
+        if first is None:
+            first_by_name[name] = element
+            kept.append(element)
+            continue
+        both_choice = id(element) in CHOICE_CHILDREN and id(first) in CHOICE_CHILDREN
+        declared = element.get("type")
+        if both_choice and declared is not None and declared == first.get("type"):
+            continue
+        kept.append(element)
+    elements = kept
 
     # A projection looks a member up by the name the document writes, and the
     # document does not say whether it is an element or an attribute. A type
@@ -602,9 +629,48 @@ def cpp_names(schema, ordered):
     return names
 
 
+def shadowed_types(schema, ordered, names):
+    """The (struct, type) pairs where a member hides the type it names.
+
+    A member may be named after its own type: `quote_type quote_type;` is read
+    as a declaration, because the member's name is not in scope while its type
+    is written. A different member written earlier with that name is in scope,
+    and the type must then be spelled with the `struct` keyword so it still
+    resolves. This is the only place the generator needs that spelling, so no
+    type has to be renamed for it.
+    """
+    fields = {}
+    for type_name in ordered:
+        elements, attributes = children_of(schema.complex_types[type_name], schema)
+        held = []
+        for element in elements:
+            for field in expand(schema, element):
+                if not field.get("name"):
+                    continue
+                target = field.get("type") or schema.inline_name.get(
+                    id(field), field.get("name")
+                )
+                held.append((snake(field.get("name")), target))
+        for attribute in attributes:
+            held.append((snake(attribute.get("name")), None))
+        fields[type_name] = held
+
+    shadowed = set()
+    for holder, held in fields.items():
+        for target in set(t for _, t in held):
+            if target not in names:
+                continue
+            name = names[target]
+            same = [other for member, other in held if member == name]
+            if same and not (len(same) == 1 and same[0] == target):
+                shadowed.add((holder, target))
+    return shadowed
+
+
 def render(schema, root_element, root_type, namespace, accessor, money, include):
     ordered = order_types(schema, root_type)
     names = cpp_names(schema, ordered)
+    shadowed = shadowed_types(schema, ordered, names)
     header_name = accessor.replace("_document", "")
 
     declarations = []
@@ -626,6 +692,8 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 if kind == "nested":
                     target = field.get("type") or schema.inline_name.get(id(field), field.get("name"))
                     cpp = names[target]
+                    if (type_name, target) in shadowed:
+                        cpp = f"struct {cpp}"
                     if repeated:
                         cpp = f"std::vector<{cpp}>"
                 body.append(f"    {cpp} {member}{CPP_ZERO.get(cpp, '')};")

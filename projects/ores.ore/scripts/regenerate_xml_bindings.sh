@@ -129,6 +129,17 @@ generate \
     --source "$source/pricing_engines.cpp"
 
 generate \
+    --schema "$xsd/curveconfig.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element CurveConfiguration \
+    --root-type curveconfiguration \
+    --accessor curve_configuration_document \
+    --namespace ores::ore::xml::generated::curve_configuration \
+    --include "ores.ore.core/xml/generated/curve_configuration.hpp" \
+    --header "$header/curve_configuration.hpp" \
+    --source "$source/curve_configuration.cpp"
+
+generate \
     --schema "$xsd/creditsimulation.xsd" \
     --schema "$xsd/ore_types.xsd" \
     --root-element CreditSimulation \

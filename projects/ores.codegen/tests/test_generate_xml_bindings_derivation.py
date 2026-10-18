@@ -133,3 +133,129 @@ def test_a_derivation_cycle_is_refused(tmp_path):
     result = _generate(tmp_path, "loop.xsd", root_type="aType")
     assert result.returncode != 0
     assert "cycle" in result.stderr
+
+
+NESTED_CHOICE = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Head"/>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element type="xs:string" name="Alpha"/>
+          <xs:element type="xs:string" name="Beta"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element type="xs:string" name="Gamma" minOccurs="0"/>
+          <xs:element type="xs:int" name="Delta"/>
+        </xs:sequence>
+      </xs:choice>
+      <xs:element type="xs:string" name="Tail" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_choice_of_sequences_keeps_every_member(tmp_path):
+    """A choice whose alternatives are sequences still offers all their elements.
+
+    The record is flat, so each element of each alternative is a member of it.
+    Dropping them would leave the table unable to bind a document the schema
+    allows.
+    """
+    (tmp_path / "choice.xsd").write_text(NESTED_CHOICE)
+    header = tmp_path / "out.hpp"
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "choice.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "choiceType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    emitted = header.read_text()
+    record = emitted[emitted.index("struct choice_type {") :]
+    record = record[: record.index("};")]
+    for member in ("head", "alpha", "beta", "gamma", "delta", "tail"):
+        assert member in record, member
+    assert record.index("alpha") < record.index("gamma")
+
+
+DUPLICATE_ALTERNATIVES = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:choice>
+      <xs:sequence>
+        <xs:element type="xs:int" name="Shared"/>
+        <xs:element type="xs:string" name="Alpha"/>
+      </xs:sequence>
+      <xs:sequence>
+        <xs:element type="xs:int" name="Shared"/>
+        <xs:element type="xs:string" name="Beta"/>
+      </xs:sequence>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_one_element_named_by_two_alternatives_is_one_member(tmp_path):
+    """A choice may offer the same element twice; the record holds it once."""
+    (tmp_path / "choice.xsd").write_text(DUPLICATE_ALTERNATIVES)
+    header = tmp_path / "out.hpp"
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "choice.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "choiceType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    emitted = header.read_text()
+    record = emitted[emitted.index("struct choice_type {") :]
+    record = record[: record.index("};")]
+    assert record.count("shared") == 1
+    assert "alpha" in record
+    assert "beta" in record
+
+
+def test_two_alternatives_that_disagree_about_one_name_are_refused(tmp_path):
+    """One record member cannot hold two shapes, so the run stops."""
+    (tmp_path / "choice.xsd").write_text(
+        DUPLICATE_ALTERNATIVES.replace(
+            '<xs:element type="xs:int" name="Shared"/>\n        <xs:element type="xs:string" name="Beta"/>',
+            '<xs:element type="xs:date" name="Shared"/>\n        <xs:element type="xs:string" name="Beta"/>',
+        )
+    )
+    result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
+    assert result.returncode != 0
+    assert "Shared" in result.stderr

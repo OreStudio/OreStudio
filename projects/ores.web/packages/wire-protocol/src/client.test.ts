@@ -1221,7 +1221,10 @@ describe('listening to published events', () => {
                 return () => undefined;
             },
         } as unknown as Transport;
-        new OresClient({ transport }).subscribeToEvents('iam.v1.accounts_events.>', () => undefined);
+        new OresClient({ transport }).subscribeToEvents(
+            'iam.v1.accounts_events.>',
+            () => undefined,
+        );
         const payload = new WireCodec('msgpack').encode({
             occurred_at: '2026-10-10T12:00:03Z',
             key: {},

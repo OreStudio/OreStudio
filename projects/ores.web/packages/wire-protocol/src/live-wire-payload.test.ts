@@ -38,10 +38,9 @@ import { accountPageSchema } from './operations.js';
 import { isWireTimestamp } from './time.js';
 
 function fixture(name: string): Record<string, unknown> {
-    return JSON.parse(readFileSync(resolve(import.meta.dirname, 'fixtures', name), 'utf8')) as Record<
-        string,
-        unknown
-    >;
+    return JSON.parse(
+        readFileSync(resolve(import.meta.dirname, 'fixtures', name), 'utf8'),
+    ) as Record<string, unknown>;
 }
 
 /** Every value the reply holds under a timestamp-shaped key, as it arrived. */

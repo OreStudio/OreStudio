@@ -69,8 +69,8 @@ describe('a curve snapshot', () => {
     });
 
     it('refuses a record time that is not the wire shape', () => {
-        expect(curveSnapshotSchema.safeParse(snapshot({ recorded_at: ['2026-10-10'] })).success).toBe(
-            false,
-        );
+        expect(
+            curveSnapshotSchema.safeParse(snapshot({ recorded_at: ['2026-10-10'] })).success,
+        ).toBe(false);
     });
 });

@@ -159,18 +159,31 @@ function instantIn(timezone: string): string {
     });
 }
 
-describe('timezone independence', () => {
-    it('writes identical bytes with the process in UTC and in a non-UTC zone', () => {
-        const utc = bytesIn('UTC');
-        expect(utc).toBe('2026-10-17 13:00:09.512000Z');
-        expect(bytesIn('Europe/London')).toBe(utc);
-        expect(bytesIn('America/New_York')).toBe(utc);
-    });
+// Each case starts three Node processes, so the default five seconds is the
+// wrong budget: under a loaded machine the proof timed out while it was still
+// measuring, which reads as a failure of the thing it proves.
+const SUBPROCESS_TIMEOUT_MS = 60_000;
 
-    it('reads the same instant with the process in UTC and in a non-UTC zone', () => {
-        const utc = instantIn('UTC');
-        expect(utc).toBe('2026-10-17T13:00:09.512Z');
-        expect(instantIn('Europe/London')).toBe(utc);
-        expect(instantIn('America/New_York')).toBe(utc);
-    });
+describe('timezone independence', () => {
+    it(
+        'writes identical bytes with the process in UTC and in a non-UTC zone',
+        () => {
+            const utc = bytesIn('UTC');
+            expect(utc).toBe('2026-10-17 13:00:09.512000Z');
+            expect(bytesIn('Europe/London')).toBe(utc);
+            expect(bytesIn('America/New_York')).toBe(utc);
+        },
+        SUBPROCESS_TIMEOUT_MS,
+    );
+
+    it(
+        'reads the same instant with the process in UTC and in a non-UTC zone',
+        () => {
+            const utc = instantIn('UTC');
+            expect(utc).toBe('2026-10-17T13:00:09.512Z');
+            expect(instantIn('Europe/London')).toBe(utc);
+            expect(instantIn('America/New_York')).toBe(utc);
+        },
+        SUBPROCESS_TIMEOUT_MS,
+    );
 });

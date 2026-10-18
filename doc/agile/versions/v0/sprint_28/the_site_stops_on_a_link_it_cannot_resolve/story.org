@@ -34,11 +34,11 @@ uppercases it and the five links, not the other way round.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Review round 1 answered; the pages publish. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge PR #3551.                        |
+| Next          | Nothing. |
 | Last touched  | 2026-10-18                               |
 
 * Acceptance
@@ -70,11 +70,25 @@ uppercases it and the five links, not the other way round.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:65659BF3-D75B-4A5C-B63C-665763A4DC35][Scaffold story: Hotfix: the site stops on a link it cannot resolve]] | STARTED | 2026-10-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:A88E6072-B6F3-4A3E-AE60-5ABC720C3F8E][Point the look-back links at the page that defines them]] | STARTED | 2026-10-18 | | Initial task for: Hotfix: the site stops on a link it cannot resolve |
+| [[id:65659BF3-D75B-4A5C-B63C-665763A4DC35][Scaffold story: Hotfix: the site stops on a link it cannot resolve]] | DONE | 2026-10-18 | 2026-10-18 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A88E6072-B6F3-4A3E-AE60-5ABC720C3F8E][Point the look-back links at the page that defines them]] | DONE | 2026-10-18 | 2026-10-18 | Initial task for: Hotfix: the site stops on a link it cannot resolve |
 
 * Decisions
 
 * Out of scope
 
 -
+
+* Result
+
+PR #3551. The page's id and the five links that name it are uppercase, which is
+the form =doc/meta/document_types.org= requires, and the full site export
+succeeds: 12,585 nodes and 52,094 links.
+
+The reviews were right about the direction: the first version lowered the
+conforming links to the deviant id, and the rule says the definition was the
+outlier. They were also right that the task's gate claims were wrong. =site-page=
+would have caught the broken link, because the links landed in commits that
+changed their own pages; the gap that let it through is that the full build is
+=deploy_site=, which =compass check= never runs, and that =lint= uppercases both
+sides before comparing ids, so a case disagreement cannot reach it.

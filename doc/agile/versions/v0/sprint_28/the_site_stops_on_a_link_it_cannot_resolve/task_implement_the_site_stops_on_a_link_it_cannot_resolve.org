@@ -27,11 +27,11 @@ that name it spelled one way, in the form the project requires.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5D8B19E3-3EB2-4F31-8879-90FB4530EB07][Hotfix: the site stops on a link it cannot resolve]] |
-| Now          | Review round 1 answered; the pages publish. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge PR #3551.                        |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -73,6 +73,7 @@ Review round 1 corrected two claims this task first carried:
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | six pages publish | 6 file(s), 0 failure(s) | =./compass.sh site page <the six pages>= | fe801932a6 |
+| full site export after the fix | succeeds: 12,585 nodes and 52,094 links | =./compass.sh build --direct site= | 1c5968a9eb |
 | full site export before the fix | aborts: Unable to resolve link "465CA244-..." | =./compass.sh build --direct site= | 39796470a0 |
 | site gate set | 4 of 4 pass | =./compass.sh check --only lint --only org-links --only site-page --only backlog-indexes= | fe801932a6 |
 
@@ -122,3 +123,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The page's id and the five links that name it are uppercase and equal, and a
+full site export succeeds: 12,585 nodes and 52,094 links. The six pages that
+carry the id publish with 0 failures.
+
+Review moved this from the wrong fix to the right one. The first version
+lowered the links to the deviant definition; the rule says uppercase, so the
+definition moved up instead. It also removed two claims the task could not
+support about which gates would have caught it.

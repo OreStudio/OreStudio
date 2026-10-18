@@ -27,11 +27,11 @@ and PR #3551 carrying them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:5D8B19E3-3EB2-4F31-8879-90FB4530EB07][Hotfix: the site stops on a link it cannot resolve]] |
-| Now          | PR #3551 is open and records this task. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close on merge, after the implement task. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -85,3 +85,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks and the sprint row exist, lint clean, and PR #3551
+carries them. The implement task holds the plan, the measurements and the
+review round.

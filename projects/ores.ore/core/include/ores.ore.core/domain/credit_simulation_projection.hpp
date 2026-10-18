@@ -17,17 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_ORE_CORE_DOMAIN_CREDIT_SIMULATION_MAPPER_HPP
-#define ORES_ORE_CORE_DOMAIN_CREDIT_SIMULATION_MAPPER_HPP
+#ifndef ORES_ORE_CORE_DOMAIN_CREDIT_SIMULATION_PROJECTION_HPP
+#define ORES_ORE_CORE_DOMAIN_CREDIT_SIMULATION_PROJECTION_HPP
 
 #include "ores.analytics.api/domain/credit_simulation_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_entity_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_matrix_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_netting_set_config.hpp"
-#include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.ore.core/xml/generated/credit_simulation.hpp"
 #include <array>
 #include <string>
 #include <string_view>
@@ -68,22 +67,12 @@ struct mapped_credit_simulation {
  *
  * Import turns each matrix's Data grid into a matrix row and one row per
  * source rating; an entity refers to its matrix by id, never by text. Export
- * reassembles the grid from the rows, so the document comes back cell for cell
- * and label for label.
+ * reassembles the grid from the rows, so the numbers come back cell for cell.
+ * The label comment is not written: no reader depends on it, and a document
+ * without it still validates.
  */
-class ORES_ORE_CORE_EXPORT credit_simulation_mapper {
+class ORES_ORE_CORE_EXPORT credit_simulation_projection {
 private:
-    inline static std::string_view logger_name = "ores.ore.domain.credit_simulation_mapper";
-
-    static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-    static bool parse_bool(domain::bool_ v);
-    static domain::bool_ make_bool(bool v);
-
 public:
     /**
      * @brief Maps an ORE CreditSimulation document to the analytics entities.
@@ -92,33 +81,32 @@ public:
      * every entity points at the matrix id its TransitionMatrix name resolves
      * to.
      */
-    static mapped_credit_simulation map(const creditsimulation& v);
+    using document = xml::generated::credit_simulation::creditsimulation;
+
+    static mapped_credit_simulation map(const document& v);
 
     /**
      * @brief Reconstructs an ORE CreditSimulation document from mapped entities.
      *
      * Each matrix's grid is reassembled from its rating rows.
      */
-    static creditsimulation reverse(const mapped_credit_simulation& v);
-};
+    static document reverse(const mapped_credit_simulation& v);
 
-/**
- * @brief The first difference between an imported and an exported document, or
- * empty when the two agree as parsed documents.
- *
- * The binding holds some numbers as text, and ORE writes them differently from
- * the way the mapper writes them back: ORE's =t0="0.0"= and our =t0="0"= are
- * the same bound. Only this component knows which fields may be normalised and
- * which may not, so the comparison lives beside the mappers rather than in a
- * walker that would either fail on that pair or hide a real loss behind a rule
- * that ignores text.
- *
- * @param path Prefixed to the message, so a caller walking a corpus can say
- * which file disagreed
- */
-ORES_ORE_CORE_EXPORT std::string credit_simulation_difference(const creditsimulation& original,
-                                                              const creditsimulation& exported,
-                                                              const std::string& path);
+    /**
+     * @brief Reads a CreditSimulation document into the record the table describes.
+     *
+     * @throws std::invalid_argument naming the origin and the line where the
+     * document does not bind.
+     */
+    static document read(std::string_view text, std::string_view origin = {});
+
+    /**
+     * @brief Writes a CreditSimulation record as a document.
+     *
+     * @throws std::runtime_error when the record cannot produce one.
+     */
+    static std::string write(const document& v);
+};
 
 }
 

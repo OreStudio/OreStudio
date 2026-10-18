@@ -86,6 +86,8 @@ std::optional<document_kind> detect_document_kind(const std::filesystem::path& p
         return document_kind::conventions;
     if (root == "PricingEngines")
         return document_kind::pricing_engines;
+    if (root == "CreditSimulation")
+        return document_kind::credit_simulation;
     return std::nullopt;
 }
 

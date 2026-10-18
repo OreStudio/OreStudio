@@ -28,7 +28,8 @@ namespace ores::ore::xml {
 namespace {
 
 /// The deepest a chain of indices may reach before it is taken for a cycle.
-constexpr std::size_t max_emit_depth = 64;
+/// It is the binder's limit: a document this writer emits must bind again.
+constexpr std::size_t max_emit_depth = binder::max_depth;
 
 constexpr std::string_view declaration = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 constexpr std::string_view indent_unit = "  ";
@@ -197,20 +198,31 @@ auto write_element(std::string& out,
 
 auto write_indexed(std::string& out, const field& f, const void* record, std::size_t depth)
     -> std::expected<void, emit_error> {
+    if (f.repeated == nullptr || f.type == nullptr || f.arena_offset == no_arena)
+        return std::unexpected(emit_error{"an indexed member names no arena"});
     const auto* indices = static_cast<const std::vector<std::uint32_t>*>(slot_of(record, f));
+    if (f.once && indices->size() > 1)
+        return std::unexpected(
+            emit_error{"an element the schema allows once is indexed more than once"});
     const auto* arena = static_cast<const std::byte*>(record) + f.arena_offset;
     const auto rows = f.repeated->count(arena);
-    if (depth > max_emit_depth)
-        return std::unexpected(emit_error{"the indices nest deeper than the writing follows"});
+    std::vector<bool> named(rows, false);
     for (const auto index : *indices) {
         if (index >= rows)
             return std::unexpected(
                 emit_error{"an indexed member names a row the arena does not hold"});
+        named[index] = true;
         const auto written =
             write_element(out, *f.type, f.repeated->at(arena, index), depth, f.name);
         if (!written)
             return written;
     }
+    // A row no index names has no place in a document, and writing nothing for
+    // it would lose it without a word.
+    for (const auto seen : named)
+        if (!seen)
+            return std::unexpected(
+                emit_error{"an indexed member's arena holds a row no index names"});
     return {};
 }
 
@@ -254,6 +266,10 @@ auto write_element(std::string& out,
                    const void* record,
                    std::size_t depth,
                    std::string_view name) -> std::expected<void, emit_error> {
+    // The binder holds max_depth frames, so an element this writer places at
+    // that depth would not bind again.
+    if (depth >= max_emit_depth)
+        return std::unexpected(emit_error{"the document nests deeper than the binder follows"});
     write_indent(out, depth);
     out.push_back('<');
     out.append(name);

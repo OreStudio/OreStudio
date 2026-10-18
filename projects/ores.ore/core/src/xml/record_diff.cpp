@@ -178,6 +178,9 @@ auto compare_record(std::string& path, const record_type& type, const void* left
             case field_kind::indexed_nested: {
                 // The indices and the rows they name are compared in order, so
                 // a difference inside a second-level row is named by its path.
+                if (f.repeated == nullptr || f.type == nullptr || f.arena_offset == no_arena)
+                    return record_difference{member,
+                                             "the table names no arena for an indexed member"};
                 const auto& left_indices =
                     *static_cast<const std::vector<std::uint32_t>*>(slot_of(left, f));
                 const auto& right_indices =

@@ -96,7 +96,12 @@ public:
     /// Every iteration of a repeated leaf, in the order the document wrote them.
     auto values(std::string_view name) const -> std::vector<std::string>;
 
-    /// Every row an indexed member names, in index order.
+    /**
+     * @brief Every row an indexed member names, in index order.
+     *
+     * A table whose member names no arena is refused rather than read at the
+     * offset the sentinel would produce.
+     */
     auto indexed(std::string_view name) const -> std::vector<record_reader>;
 
 private:

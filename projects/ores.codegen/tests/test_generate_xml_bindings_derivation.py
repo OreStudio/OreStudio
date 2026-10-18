@@ -743,7 +743,7 @@ def test_a_type_that_holds_itself_indexes_the_row_it_cannot_hold(tmp_path):
     node = _record(emitted, "node")
     assert "std::string value" in node
     assert "std::vector<std::uint32_t> child" in node
-    assert "std::vector<node> child_arena" in node
+    assert "std::vector<struct node> child_arena" in node
     assert "field_kind::indexed_nested" in source
     assert "&node_record" in source
     assert "std::string head" in _record(emitted, "root_type")
@@ -926,3 +926,47 @@ def test_two_schemas_that_disagree_about_one_global_element_are_refused(tmp_path
     )
     assert result.returncode != 0
     assert "Shared" in result.stderr
+
+
+MUTUAL_SCHEMA = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="alpha" name="Root"/>
+  <xs:complexType name="alpha">
+    <xs:sequence>
+      <xs:element type="beta" name="Beta" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="beta">
+    <xs:sequence>
+      <xs:element type="alpha" name="Alpha" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_mutual_cycle_hoists_the_table_it_indexes(tmp_path):
+    """The closing edge always reaches a type defined later, so its table is
+    declared before the row that names it."""
+    emitted, source = _emit(tmp_path, MUTUAL_SCHEMA, root_type="alpha")
+    beta = _record(emitted, "beta")
+    assert "std::vector<std::uint32_t> alpha" in beta
+    assert "std::vector<struct alpha> alpha_arena" in beta
+    # beta is defined first, so only alpha's table needs a declaration ahead of
+    # the row that names it.
+    assert "extern const record_type alpha_record;" in source
+    assert source.index("extern const record_type alpha_record;") < source.index(
+        "const record_type alpha_record{"
+    )
+    assert "extern const record_type beta_record;" not in source
+
+
+def test_a_recursive_member_the_schema_allows_once_states_it(tmp_path):
+    """The row carries the schema's cardinality, so a second row is refused."""
+    _emitted, source = _emit(tmp_path, RECURSIVE_SCHEMA)
+    row = source[source.index('{"Child"') :]
+    row = row[: row.index("}")]
+    row = re.sub(r"offsetof\([^)]*\)", "offset", row)
+    fields = [field.strip() for field in row.split(",")]
+    assert fields[5] == "false"  # is_attribute
+    assert fields[6] == "false"  # required, minOccurs is 0
+    assert fields[12].startswith("true")  # once

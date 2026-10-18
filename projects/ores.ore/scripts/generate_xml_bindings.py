@@ -646,8 +646,8 @@ def order_types(schema, root_type):
 
     A record is a fixed layout, so a type is defined before the type that holds
     it, and no type holds itself. An edge that closes a cycle is recorded in
-    schema.cut_members and left out of the record; the generated file names it,
-    so a document that states that member is refused by the reading.
+    schema.cut_members and emitted as an index row into an arena the holder
+    owns, so the record holds the member without holding its type.
     """
     reachable = collect(schema, root_type, dict())
     edges = {}
@@ -908,7 +908,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                         # record owns, so no row of the record moves when the
                         # arena grows.
                         body.append(f"    std::vector<std::uint32_t> {member};")
-                        body.append(f"    std::vector<{cpp}> {member}_arena;")
+                        body.append(f"    std::vector<struct {cpp}> {member}_arena;")
                         field_count += 1
                         continue
                     if (type_name, target) in shadowed:
@@ -934,6 +934,23 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             f"{holder}.{member} holds {target}, which is not a complexType this generator read"
         )
 
+    # The cut edges whose target is emitted: the only tables a row names before
+    # this file defines them.
+    indexed_targets = [
+        name
+        for name in emitted
+        if any(target == name for _holder, _member, target in schema.cut_members)
+    ]
+    indexed_declarations = ""
+    if indexed_targets:
+        tables_declared_later = "\n".join(
+            f"extern const record_type {names[name]}_record;" for name in indexed_targets
+        )
+        indexed_declarations = (
+            "// A row that indexes an arena names a record, and the edge that closes\n"
+            "// a type cycle is always a back edge, so the record is defined later in\n"
+            "// this file.\n" + tables_declared_later + "\n\n"
+        )
     tables = []
     repeated_members = []
     repeated_arena = []
@@ -976,15 +993,17 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                     continue
                 member = snake(element.get("name"))
                 if (type_name, member) in cut:
-                    ops_instance = ops_name(type_name, f"{member}_arena")
+                    ops_instance = ops_name(names[type_name], f"{member}_arena")
                     repeated_arena.append((ops_instance, names[target_name]))
                     rows.append(
                         f'    {{"{element.get("name")}", {hash_name(element.get("name"))}u, '
                         f"field_kind::indexed_nested, "
                         f"std::uint32_t(offsetof({names[type_name]}, {member})), "
-                        f"{bit}, false, false, nullptr, &{names[target_name]}_record, "
+                        f"{bit}, false, {'true' if required else 'false'}, nullptr, "
+                        f"&{names[target_name]}_record, "
                         f"scalar_kind::text, &{ops_instance}, "
-                        f"std::uint32_t(offsetof({names[type_name]}, {member}_arena))}},"
+                        f"std::uint32_t(offsetof({names[type_name]}, {member}_arena)), "
+                        f"{'true' if not repeated else 'false'}}},"
                     )
                     bit += 1
                     continue
@@ -1141,7 +1160,7 @@ auto at_of(const void* container, std::size_t index) -> const void* {{
 
 {chr(10).join(ops)}
 
-{chr(10).join(tables)}
+{indexed_declarations}{chr(10).join(tables)}
 
 }}
 

@@ -183,8 +183,11 @@ auto record_reader::values(std::string_view name) const -> std::vector<std::stri
 
 auto record_reader::indexed(std::string_view name) const -> std::vector<record_reader> {
     const auto& f = require_kind(*type_, name, field_kind::indexed_nested, "an indexed child");
+    if (f.repeated == nullptr || f.type == nullptr || f.arena_offset == no_arena)
+        throw std::runtime_error(std::format(
+            "'{}' of the {} table names an indexed member with no arena", name, type_->name));
     std::vector<record_reader> out;
-    if (!bit_is_set(record_, f) || f.repeated == nullptr || f.type == nullptr)
+    if (!bit_is_set(record_, f))
         return out;
     const auto* indices = static_cast<const std::vector<std::uint32_t>*>(slot_of(record_, f));
     const auto* arena = static_cast<const std::byte*>(record_) + f.arena_offset;
@@ -327,8 +330,16 @@ void record_writer::append_value(std::string_view name, std::string_view value) 
 
 auto record_writer::append_indexed(std::string_view name) -> record_writer {
     const auto& f = require_kind(*type_, name, field_kind::indexed_nested, "an indexed child");
-    set_bit(record_, f);
+    if (f.repeated == nullptr || f.type == nullptr || f.arena_offset == no_arena)
+        throw std::runtime_error(std::format(
+            "'{}' of the {} table names an indexed member with no arena", name, type_->name));
     auto* indices = static_cast<std::vector<std::uint32_t>*>(slot_of(f));
+    if (f.once && !indices->empty())
+        throw std::runtime_error(
+            std::format("'{}' of the {} table may appear once, and a row is already stated",
+                        name,
+                        type_->name));
+    set_bit(record_, f);
     auto* arena = static_cast<std::byte*>(record_) + f.arena_offset;
     const auto index = static_cast<std::uint32_t>(f.repeated->count(arena));
     void* slot = nullptr;

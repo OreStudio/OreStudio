@@ -498,6 +498,37 @@ const field node_fields[] = {
 };
 const record_type node_record{"node", node_fields, 2, 0xFF};
 
+// The same layout with the schema's cardinality stated: an element that may
+// appear once is refused a second time rather than appended.
+const field once_node_fields[] = {
+    {"Value",
+     3511155050u,
+     field_kind::text,
+     std::uint32_t(offsetof(node, value)),
+     0,
+     false,
+     false,
+     nullptr,
+     nullptr,
+     scalar_kind::text,
+     nullptr},
+    {"Child",
+     2379610877u,
+     field_kind::indexed_nested,
+     std::uint32_t(offsetof(node, child)),
+     1,
+     false,
+     false,
+     nullptr,
+     &node_record,
+     scalar_kind::text,
+     &node_child_arena_ops,
+     std::uint32_t(offsetof(node, child_arena)),
+     true},
+};
+const record_type once_node_record{"node", once_node_fields, 2, 0xFF};
+const document_type once_node_document{"Node", &once_node_record};
+
 const document_type node_document{"Node", &node_record};
 
 auto read_node(const std::string& text, node& record) -> bool {
@@ -552,6 +583,27 @@ TEST_CASE("a_type_that_holds_itself_indexes_its_rows", tags) {
     broken.present |= 0x2u;
     broken.child.push_back(7);
     CHECK_THROWS_AS(emitted_node(broken), std::runtime_error);
+    CHECK_THROWS_AS(record_reader(node_record, &broken).indexed("Child"), std::runtime_error);
+
+    // A row no index names has no place in a document. Dropping it would lose
+    // the value without a word, so the writing refuses the record.
+    node orphan = parsed;
+    orphan.child.clear();
+    CHECK_THROWS_AS(emitted_node(orphan), std::runtime_error);
+}
+
+TEST_CASE("a_member_the_schema_allows_once_refuses_a_second_row", tags) {
+    auto lg(make_logger(test_suite));
+
+    node twice{};
+    const auto bound = binder::bind(once_node_document, "<Node><Child/><Child/></Node>", &twice);
+    REQUIRE_FALSE(bound);
+    CHECK(bound.error().message.find("more than once") != std::string::npos);
+
+    node written{};
+    auto w = record_writer(once_node_record, &written);
+    w.append_indexed("Child");
+    CHECK_THROWS_AS(w.append_indexed("Child"), std::runtime_error);
 }
 
 TEST_CASE("a_writer_appends_indexed_rows", tags) {

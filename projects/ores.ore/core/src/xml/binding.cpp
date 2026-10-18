@@ -401,6 +401,14 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     // move a row an open frame points at: while this frame is
                     // open the binder appends only to the child's own arena.
                     auto* indices = reinterpret_cast<std::vector<std::uint32_t>*>(slot);
+                    if (f->repeated == nullptr || f->arena_offset == no_arena)
+                        return fail("an indexed member of '" + std::string(top.type->name) +
+                                    "' names no arena");
+                    if (f->once && !indices->empty())
+                        return fail("element '" + std::string(ev.name) +
+                                    "' appears more than "
+                                    "once in '" +
+                                    std::string(top.type->name) + "'");
                     auto* arena = top.record + f->arena_offset;
                     const auto index = static_cast<std::uint32_t>(f->repeated->count(arena));
                     void* child = nullptr;

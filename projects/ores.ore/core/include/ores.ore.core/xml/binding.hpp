@@ -107,6 +107,9 @@ struct residual_element {
     std::string text;
 };
 
+/// The value field::arena_offset holds when a member indexes no arena.
+inline constexpr std::uint32_t no_arena = 0xFFFFFFFFu;
+
 /**
  * @brief One element or attribute of one schema type.
  *
@@ -133,7 +136,10 @@ struct field {
     /// indexed_nested these operate on the arena.
     const vector_ops* repeated = nullptr;
     /// The offset of the arena an indexed_nested member indexes into.
-    std::uint32_t arena_offset = 0;
+    std::uint32_t arena_offset = no_arena;
+    /// True when an indexed_nested member's element may appear once, so a
+    /// second row is refused rather than appended.
+    bool once = false;
 };
 
 /**

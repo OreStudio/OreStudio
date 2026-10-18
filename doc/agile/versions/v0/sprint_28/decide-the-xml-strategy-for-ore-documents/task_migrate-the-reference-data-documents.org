@@ -223,60 +223,77 @@ written first because that is where ORE writes it. The suite compares Setup by
 name and value and each analytic by name and value, and it compares the analytics
 in order and the markets as a subtree.
 
-* The portfolio document is recursive, and a flat record cannot hold it
+* The recursive member is an index into an arena
 
-The generator now reads every shape the portfolio schema uses: a model group, a
+The generator reads every shape the portfolio schema uses: a model group, a
 substitution member that writes its own type, a reference to a global element of
 an earlier schema file, an element with no type, a presence mask over more than
-64 fields, and dependency-ordered types. Regenerating every committed table
-still produces identical files, and ten regression tests cover the shapes.
+64 fields, and dependency-ordered types.
 
-What it cannot read is the document's recursion. A composite trade holds a list
-of =subTradeGroup= entries whose =SubTrade= member is a =componentSubTrade=, and
-that type carries =oreTradeData=, which reaches the composite trade again. A
-record is a fixed layout, so the member that closes the cycle is left out and
-named in the generated file; a document that states it is refused. 18 corpus
-documents write =SubTrade= inside a composite, so the value harness cannot prove
-the family this way.
+A composite trade holds a list of =subTradeGroup= entries whose =SubTrade= member
+is a =componentSubTrade=, which carries =oreTradeData=, which reaches the
+composite trade again. A record is a fixed layout and cannot hold that cycle, so
+the edge that closes it becomes an index row: the member is a
+=std::vector<std::uint32_t>= of indices beside a =std::vector<T>= arena in the
+same record. The arena belongs to the record that holds the indices, so copying
+the record copies its rows and no second object has to agree about their
+lifetime.
 
-Two ways forward, and they are a decision rather than a fix:
+The binder appends the row to the parent's arena and pushes its index before it
+descends, so no row of the parent moves while a child frame is open. The emitter
+follows the indices in order. A row two indices share is written twice, which is
+the trade-off the database model makes. An index past the end of the arena, a row
+no index names, a second row where the schema allows one, and nesting deeper than
+the binder's 32 frames are all refused rather than dropped.
 
-1. Represent the recursion explicitly: one flat table per document, with a
-   composite's components in a document-level vector linked by parent index, the
-   way the database already models them. The codec has no such member kind
-   today, so this is new engine and generator design.
-2. Keep Portfolio on the generated binding. The family then stays =migrating=,
-   clauses (a) and (b) cannot be satisfied, and the binding removal is scoped to
-   every other family.
+* The portfolio table keeps every value of 374 documents
+
+The table is generated from =input.xsd= with the nine schemas it reaches. The
+value harness binds, writes and reads back all 374 corpus portfolio documents,
+including the 16 that nest a composite, and no value changes.
+
+Three rules the corpus found, each a codec rule now:
+
+- *A real is carried as an exact decimal.* ORE writes =0.050000000000000003= and
+  =7342.8000000000002= from a double, and no double reproduces that text, so the
+  family states that every real is exact. The value a document states is the
+  text it wrote.
+- *A number may sit on its own indented line.* The number's lexical space allows
+  the space around it and =std::from_chars= does not, so the reading trims a
+  number's text before it parses it.
+- *The runs of one text are one value.* A comment or a CDATA boundary splits an
+  element's text, so the reading joins the runs and stores them once. A number
+  split that way is the number its text states.
+- *A text element is not a number, whatever its name.* =Strike= is a script
+  variable in a scripted trade and a number in an equity digital option, so the
+  exact decimal rule names reals only and leaves every text element as text.
+  An element typed =xs:simpleContent= keeps its number as its own text, and an
+  element that states no text leaves that number absent rather than zero.
+
+The census now reports 13 supported families, 0 migrating and 7 unused.
 
 * Where the work stands
 
-Verified on main at the time of writing, with the commands that prove each
-line.
+Verified at the head of the portfolio table branch, with the commands that prove
+each line.
 
 | Claim | Evidence |
 |-------+----------|
-| Twelve families are supported, each with a generated table | =python3 build/scripts/check_xml_family_coverage.py= |
-| Ten families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
-| Stress testing documents bind, write and keep every value, and nothing reads the XML | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 19 of 19 |
-| Legacy readers the product still calls: Portfolio, conventions and today's market | =grep -rn "load_data" projects/ores.ore/*/src= |
-| Curve configuration documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 89 of 89 |
-| Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 23 cases |
-| Seven families nothing reads are gone | same |
+| Thirteen families are supported, each with a generated table, and none is migrating | =python3 build/scripts/check_xml_family_coverage.py= |
+| Portfolio documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 374 of 374 |
+| Curve configuration documents bind, write and keep every value | same, 89 of 89 |
+| Stress testing documents bind, write and keep every value, and nothing reads the XML | same, 19 of 19 |
+| Run documents bind, write and keep every value | same, 422 of 422 |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =[ore][xml]@, 502 cases and 45,237 assertions; the run document suite is 4 cases and the =[run_document]= selection 5 |
+| The XML suites pass | =publish/bin/ores.ore.core.tests "[ore][xml]"=, 508 cases and 45,275 assertions |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
+| Legacy readers the product still calls: Portfolio, conventions and today's market | =grep -rn "load_data" projects/ores.ore/*/src= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 
-*What each remaining family needs.* Portfolio is the last family read through the
-old binding in the product: the importer, the exporter, the instrument mappers
-and =trade_mapper=. It is the largest group and it lands last. Conventions and
-today's market are supported families whose legacy readers the importer still
-calls, and they leave with the binding.
-
-*The order the task table states does not fit the budget available.* One
-family per change, and a family of this size takes a working session of its
-own. Nothing else blocks them.
+*What each remaining family needs.* Portfolio's table is proved, and its
+projection replaces the importer, the exporter, the instrument mappers and
+=trade_mapper= next. Conventions and today's market are supported families whose
+legacy readers the importer still calls, and they leave with the binding.
 
 * Measurements
 
@@ -304,6 +321,10 @@ task and name that file in the Command column.
 | Stress mapper .cpp lines deleted, with the 76-line header and the 748 lines of suites | 2,054 | =git show origin/main:projects/ores.ore/core/src/domain/stress_test_mapper.cpp \| wc -l= | 488e82f0b8 |
 | Curve configurations that project and project back | 89 of 89 | =publish/bin/ores.ore.core.tests "[curveconfig]"= | 97015dc883 |
 | XML suites after the curve configuration migration | 502 cases, 82,086 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 97015dc883 |
+| Portfolio documents that bind, write and keep every value | 374 of 374 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | e39030319c |
+| Corpus documents the value harness sweeps | 1150, with each family's count asserted | same | e39030319c |
+| Families supported after the portfolio table | 13 supported, 0 migrating | =python3 build/scripts/check_xml_family_coverage.py= | e39030319c |
+| XML suites after the portfolio table | 508 cases, 45,275 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | e39030319c |
 
 * Notes
 
@@ -350,6 +371,8 @@ via its "Verifies task" field.
 | [[https://github.com/OreStudio/OreStudio/pull/3547][#3547]] | [ore] Generate the run document table |
 | [[https://github.com/OreStudio/OreStudio/pull/3548][#3548]] | [ore] Read and write the run document through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3549][#3549]] | [ore] Read the schema shapes the portfolio document needs |
+| [[https://github.com/OreStudio/OreStudio/pull/3555][#3555]] | [ore] Index the member a record cannot hold |
+| [[https://github.com/OreStudio/OreStudio/pull/3556][#3556]] | [ore] Read and write the portfolio document's numbers exactly |
 
 * Review
 

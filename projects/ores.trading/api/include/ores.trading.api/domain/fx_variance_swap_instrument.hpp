@@ -82,6 +82,11 @@ struct fx_variance_swap_instrument final {
 
     /**
      * @brief Fixed variance or volatility strike. Must be positive.
+     *
+     * A variance strike is a volatility rather than a money amount, so the column is a binary
+     * double for the same reason a basket weight is. The check refuses the values a double admits
+     * and a numeric does not: an infinite or not-a-number strike has no meaning and would poison
+     * every comparison downstream.
      */
     double strike = 0.0;
 

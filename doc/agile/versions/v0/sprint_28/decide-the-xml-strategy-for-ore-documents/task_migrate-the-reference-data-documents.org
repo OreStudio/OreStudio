@@ -229,7 +229,7 @@ The generator now reads every shape the portfolio schema uses: a model group, a
 substitution member that writes its own type, a reference to a global element of
 an earlier schema file, an element with no type, a presence mask over more than
 64 fields, and dependency-ordered types. Regenerating every committed table
-still produces identical files, and nine regression tests cover the shapes.
+still produces identical files, and ten regression tests cover the shapes.
 
 What it cannot read is the document's recursion. A composite trade holds a list
 of =subTradeGroup= entries whose =SubTrade= member is a =componentSubTrade=, and

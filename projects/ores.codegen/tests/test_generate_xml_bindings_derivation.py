@@ -872,3 +872,53 @@ def test_an_inline_enumeration_on_a_group_member_keeps_its_spellings(tmp_path):
     assert "std::int16_t colour" in _record(emitted, "root_type")
     assert "_colour_spellings[] = {" in source
     assert "Red" in source and "Blue" in source
+
+
+def test_two_schemas_that_disagree_about_one_global_element_are_refused(tmp_path):
+    """One name must mean one type, whichever file declared it."""
+    (tmp_path / "first.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Shared" type="firstType"/>
+  <xs:complexType name="firstType">
+    <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    (tmp_path / "second.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Shared" type="secondType"/>
+  <xs:complexType name="secondType">
+    <xs:sequence><xs:element type="xs:string" name="Beta"/></xs:sequence>
+  </xs:complexType>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element ref="Shared"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "first.xsd"),
+            "--schema",
+            str(tmp_path / "second.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "rootType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(tmp_path / "out.hpp"),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "Shared" in result.stderr

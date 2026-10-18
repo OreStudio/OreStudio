@@ -243,7 +243,6 @@ MASK_WORD_BITS = 64
 # A field's bit and a record's field count are std::uint8_t in the table, so 255
 # fields is the ceiling whatever the mask could say.
 MAX_MASK_BITS = 255
-MAX_MASK_WORDS = 4
 
 # Elements that are alternatives inside an xs:choice. At most one of them
 # appears per iteration, so none is individually required however the schema

@@ -1,0 +1,285 @@
+:PROPERTIES:
+:ID: 89FD8022-5CCC-4B19-ABC0-BEAD9043AE45
+:END:
+#+title: What a time series plot must do
+#+description: The owner's three requirements for a time series plot: the window's high, low and change in the header with the high and the low marked on the plot, statistics for a selected range with a crosshair readout, and overlays with a difference mode. Captured as requirements and not as a design. Neither reporting prototype meets any of the three, and no plotting work is scheduled.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:plotting:timeseries:ux:web:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A time series plot must answer three questions about one series. The window it
+draws states its high, its low and its change in the header, and the plot marks
+the high and the low on itself. A range the person selects reports the statistics
+of that range alone, and a crosshair readout states the value under the pointer as
+the pointer moves. The plot carries overlays, which are Bollinger bands and
+realised volatility, and a mode that plots the difference against history rather
+than the level.
+
+These are the owner's requirements, quoted below as given. They are requirements
+and not a design: no control, no read, no shape and no arithmetic is settled here.
+No screen in the repo does any of the three today.
+
+* Why these three belong together
+
+Each answers a different question about the same series:
+
+- The window figures and the high and low markers answer *what happened in the
+  window*. One number for the change, and two extremes a reader can point at.
+- The selected range's statistics and the crosshair answer *what happened in the
+  part I care about*. The window is the screen's choice; a range is the person's.
+- The overlays and the difference mode answer *how does this compare with what
+  the series usually does*. A level alone has no scale; a band and a difference
+  against history give one.
+
+A plot that answers only the first is a sparkline. It shows the shape and leaves
+both the detail and the comparison to a table, and a person who wants either
+leaves the plot to build it by hand.
+
+* The requirements
+
+** The window's figures in the header, and the high and the low on the plot
+
+The requirement, in the owner's words:
+
+#+begin_quote
+The plot states its window's high, low and change in the header, and marks the
+high and the low on the plot itself.
+#+end_quote
+
+No screen does this today. Both reporting prototypes state a title and a unit in
+the plot head, and the value axis range in the caption. Neither states a high, a
+low or a change there, and neither marks an extreme on the plot. The marks both
+plots draw name the run in view, the baseline, or the latest run, never a high or
+a low.
+
+** The statistics of a selected range, and a crosshair readout
+
+The requirement, in the owner's words:
+
+#+begin_quote
+Selecting a range of the series reports the statistics for just that range, and a
+crosshair readout states the value under the pointer as it moves.
+#+end_quote
+
+No screen does this today. Neither prototype selects a range of a series, and
+neither handles a pointer event. A point carries an SVG title element, so a
+browser shows its own tooltip on hover, and that is not a crosshair readout.
+There is no rule under the pointer, no value read as the pointer moves, and no
+stated precision. The nearest control either page has is the baseline picker on the run
+prototype, and it chooses another run to compare against rather than a range of
+one series.
+
+** Overlays and comparison modes
+
+The requirement, in the owner's words:
+
+#+begin_quote
+Bollinger bands, realised volatility, and a mode that plots the difference
+against history rather than the level.
+#+end_quote
+
+No screen does this today. No Bollinger band and no realised volatility is drawn
+anywhere in the repo. The nearest piece of the third item is the change plot on
+the run prototype, which draws each book's NPV change against a previous run of
+the same definition as signed horizontal bars. That is a difference against one
+previous run, across books rather than over time, so it answers a different
+question from the one the requirement asks.
+
+* What the two reporting prototypes do today
+
+Both pages were read, not assumed: their HTML, their =prototype.js= and the plot
+comments in them.
+
+** Read what a run produced
+
+- *Requirement 1, not met.* The plot head states a title, a unit and a partial
+  tag, and no figure. The value axis range is in the caption and in the
+  aria-label. No high, low or change is stated in the header, and neither extreme
+  is marked on the line; the only marks are the run in view and the baseline.
+- *Requirement 2, not met.* The page has no range selection and no pointer
+  handler; its listeners are =change=, =click= and =keydown= on controls. Nothing
+  follows the pointer and nothing reports the statistics of a range.
+- *Requirement 3, partly met, and only the comparison.* =changePlot= draws each
+  book's NPV change against a previous run of the same definition, signed and
+  drawn from a zero rule that is the point of no change. That is a difference
+  against history, but over books and against exactly one run, never against the
+  window's mean and never with a band. No Bollinger band and no realised
+  volatility is drawn.
+
+** Look back over a report's history
+
+- *Requirement 1, not met.* The plot head states a title, a unit and a partial
+  tag. The caption and the aria-label state the value axis range and the span of
+  dates the points run over, and the latest run's point is marked and named. No
+  high, low or change is stated, and neither extreme is marked.
+- *Requirement 2, not met.* No range selection and no pointer handler. Each point
+  carries an SVG title element with the run id, its start and its value, so the
+  browser shows its own tooltip. That is a tooltip and not a readout. It draws no
+  rule, reads no value as the pointer moves, and states no precision.
+- *Requirement 3, not met.* No overlay is drawn and no difference series is
+  plotted. Variant C puts the latest run beside one earlier run and states what
+  differs, which compares two runs as figures rather than as a plotted
+  difference.
+
+The one piece of the three that exists anywhere is the difference against a
+previous run in the run prototype.
+
+* What the repo states about plotting
+
+No document under =doc/knowledge/= states a plotting convention that a reporting
+plot can follow. The tree was searched by file name and by content for a plot, a
+chart, an axis, a sparkline, an overlay, a baseline and a partial mark. Most hits
+are the domain sense of the word, a curve axis or a market data overlay. Three
+documents hold a rule a plot can use:
+
+- The two reporting journeys state the plot vocabulary, the rule that chooses a
+  form, and the honesty rules. They are
+  [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] and
+  [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]].
+- [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] states one convention for a chart card: the card
+  heads with what it shows and the high and the low, and an optional EMA over
+  twenty ticks is drawn dashed over the line. That is a precedent for the header
+  figures and for an overlay, on the market data Ticks tab and not on a
+  reporting screen.
+
+So the header's high and low and an overlay both have a precedent in the
+knowledge base, under a screen that draws a price series. The change figure, the
+range selection, the crosshair, the Bollinger band, the realised volatility and
+the difference mode have none. A plot built from this capture either extends the
+feed screen's convention and the two reporting journeys, or needs a convention of
+its own.
+
+* The constraints any implementation inherits
+
+** The plots are inline SVG with no library and no network
+
+Both prototypes say why in the comments at the top of their =prototype.js=. A page
+opened from =file://= has no build, no CDN and no network, so a chart library
+cannot be loaded and none is copied in. Every plot is written by hand as SVG:
+domains, ticks, segments, point marks and the axis rule are computed in the page.
+
+The three requirements can be built the same way, and no library decision is
+needed to meet them. A high, a low, a change, a mean and a standard deviation are
+arithmetic passes over a series the page already holds. A range selection is a
+pointer hit-test against the x scale the plot already computes. A crosshair is a
+vertical rule and a label moved on =pointermove=. The two prototypes already
+handle the parts a library would otherwise supply.
+
+A library decision is needed only past these requirements, when the plot must pan,
+zoom, draw a series too dense to hit-test cheaply, or animate. That decision
+belongs to the work that needs it, not to this capture.
+
+** The honesty rules the existing plots follow
+
+Both prototypes state them, in the plot comments and in the caption each plot
+draws:
+
+- *An axis baseline is stated.* A bar is drawn from the zero rule, and a negative
+  value draws a bar on the other side of it. A line states the range of its value
+  axis and says in words that the axis does not start at zero, so the reader is
+  told rather than left to the eye.
+- *A partial result is marked and never drawn as if it were whole.* A figure that
+  excludes a trade the engine could not build is a floor. A bar or a point drawn
+  from it is dashed or hollow, carries the same partial tag the figure carries,
+  and the caption names what it leaves out.
+- *An excluded part is drawn rather than dropped.* A run that produced no figure
+  breaks the line at a drawn gap, and the caption says a failure is not a value
+  of zero. A donut draws what the errors left out as a hatched slice named
+  excluded, so the whole is never silently smaller than the run.
+- *The exact numbers stay available in text beside the plot.* A table under the
+  trend carries every plotted number, the by-book table carries every bar, and
+  every SVG carries a text alternative in its aria-label. A plot never replaces
+  the figures a reader checks.
+
+** What the new features inherit from those rules
+
+- *A Bollinger band drawn from a partial series must say so.* A band states what
+  the series usually does, and a window holding one point drawn from a floor is
+  not the whole answer. The band must carry the partial mark and the caption must
+  name the points that make it partial. Realised volatility carries the same
+  rule, because one partial point in the window changes it.
+- *A crosshair readout must not imply a precision the data does not have.* The
+  readout states a value in the precision the source carries and no more, names
+  the run or the timestamp it belongs to, and states the state of that run. It
+  never interpolates a value between two runs and prints it as measured, and it
+  never prints a figure that a failed run does not have.
+- *The statistics of a range inherit the same rule.* A mean or a high over a
+  range holding a partial point is partial, and says so in the same words the
+  existing plots use.
+
+* Open questions
+
+These are questions, not answers. The future work settles them before a control
+or a read exists.
+
+- *What is the realised volatility window, and is it stated or chosen?* The
+  window the plot draws, a fixed count of runs such as the last twenty, or a
+  period such as the last thirty days? The screen fixes it and states it in the
+  header, or the person chooses it and the header states the choice?
+- *What does the difference against history compare against?* The previous run, a
+  fixed baseline such as the first run of the window, or the window's mean each
+  answers a different question, and each draws a different difference series.
+- *Are the Bollinger bands two standard deviations, and of which series?* The
+  requirement gives the name and not the arithmetic: the standard deviation of
+  the level, of the change, or of the log return, with a sample or a population
+  divisor, and around an arithmetic or a geometric mean.
+- *Do hidden series participate in the window's high and low?* When a series is
+  toggled off, or the scope narrows, is the header's high the high of what is
+  drawn or the high of what the window holds? The two answers differ wherever the
+  hidden series holds an extreme.
+- *What does a range selection do when the range spans a partial result or a
+  gap?* Report the statistics over the points it holds and mark them partial, or
+  refuse and say why? A range holding a failed run has no value for that run, and
+  a mean over the rest is not the mean of the range.
+- *Does the crosshair snap to a point or read the line between points?* A readout
+  that snaps states a measurement the data holds. One that interpolates states a
+  value nobody recorded, which the honesty rules above cannot allow without a
+  word that says it is interpolated.
+- *What is the change of a window holding one point?* The existing plots refuse to
+  draw a trend of one point because it states a direction the data does not have.
+  The header's change has the same problem and no stated answer.
+
+* Why it is deferred
+
+This is captured for a future decision. No plotting work is scheduled. No task
+under [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party
+runs]] plans a plot or a chart, and that story's screens are the list of reports a
+party runs and the arc of one report. The requirements also need the answers above
+before a control can be designed. The deepest of them, the comparison baseline,
+decides what the band means.
+
+* References
+
+- [[id:7d062f46-83bf-4e87-89ec-22847f26a9c8][Read what a run produced prototype]] — the run's figures as bars,
+  donuts and a trend, the comparison against a previous run, the plot
+  vocabulary, and the honesty rules this capture carries forward,
+  =doc/prototypes/reporting/read-what-a-run-produced/=.
+- [[id:43729172-bbe6-491e-aba5-fbfba78a6861][Look back over a report's history prototype]] — the one trend plot across
+  the runs of a report, with the value axis range stated and the exact numbers
+  under it,
+  =doc/prototypes/reporting/look-back-over-a-reports-history/=.
+- [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Story: Manage reports from the list a party runs]] — the story whose
+  screens these plots would sit on,
+  =doc/agile/versions/v0/sprint_28/manage-reports-from-the-list-a-party-runs/story.org=.
+- [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][User Journey: Read what a run produced]] — the journey that states the plot
+  vocabulary and the rule that picks a form, =doc/knowledge/journeys/reporting/journey_read_what_a_run_produced.org=.
+- [[id:465ca244-c488-4c69-aca3-c694d104a42a][User Journey: Look back over a report's history]] — the journey that states
+  the trend, its marked latest run, the stated axis range and the table under
+  the plot, =doc/knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org=.
+- [[id:303D85B2-0039-4B1C-83BD-BB866BC0AEE1][Feed screen standard]] — the only place under =doc/knowledge/= that states a
+  plotting convention for a chart card: the card heads with what it shows and
+  the high and the low, and an optional EMA is drawn dashed over the line. That
+  is a precedent for the header figures and for an overlay, on the market data
+  Ticks tab and not on a reporting screen,
+  =doc/knowledge/ui/feed_screen_standard.org=.
+
+* See also
+
+- [[id:312E7600-482B-4656-970B-63DE8C5C3CCA][A report is owned by a team, not by a person]] — the other capture on the
+  same story, recorded as a decision this capture does not need.

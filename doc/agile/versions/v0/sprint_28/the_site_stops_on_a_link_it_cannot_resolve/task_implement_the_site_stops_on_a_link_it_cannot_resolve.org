@@ -20,9 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The full site export runs to the end. Two journey pages name the report history
-page with the org id in upper case; the page defines it in lower case, and org
-resolves ids by exact string.
+The full site export runs to the end, with the page's =:ID:= and the five links
+that name it spelled one way, in the form the project requires.
 
 * Status
 
@@ -30,53 +29,75 @@ resolves ids by exact string.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:5D8B19E3-3EB2-4F31-8879-90FB4530EB07][Hotfix: the site stops on a link it cannot resolve]] |
-| Now          | Fixed; the full site builds.           |
+| Now          | Review round 1 answered; the pages publish. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit.                                |
+| Next         | Merge PR #3551.                        |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
 
-- Both links use the id the page defines.
-- A full =./compass.sh build --direct site= succeeds.
-- =site-page=, =lint= and =org-links= pass.
+- The definition and every link that names it are uppercase and equal.
+- The six pages publish with no resolution failure.
+- =site-page=, =lint=, =org-links= and =backlog-indexes= pass.
 
 * Plan
 
-The id belongs to =doc/knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org=
-and is written there in lower case. Two of the six references typed it in upper
-case:
+The id belongs to =doc/knowledge/journeys/reporting/journey_look_back_over_a_reports_history.org=.
+It was defined in lower case, and two of its five links were upper case, so the
+export could not resolve them:
 
 #+begin_example
 doc/knowledge/journeys/conventions/journey_change_the_convention_for_one_kind.org:313
 doc/knowledge/journeys/reporting/journey_change_what_a_report_runs.org:436
 #+end_example
 
-Change both to the lower-case spelling. Nothing else refers to the upper-case
-form, so no alias is needed.
+=doc/meta/document_types.org= requires uppercase hex for the =:ID:= and for
+every =[[id:UUID]]= link, so the definition moves up to match the other three
+links rather than the links moving down.
 
-The page gates could not have caught it, which is why it reached main:
+Review round 1 corrected two claims this task first carried:
 
-- =site-page= publishes only the pages a change touches, so a broken link in an
-  untouched page never gets exported by it. The full build is a different
-  target, =deploy_site=, and it sits outside =compass check=.
-- =org-links= checks links, but not whether an =id:= link matches a defined id
-  by case.
+- "=site-page= publishes only the pages a change touches, so a broken link in an
+  untouched page never gets exported by it" was true but irrelevant: the two
+  links landed in commits that changed their own pages, and publishing either
+  page with the upper-case link fails the same way. =site-page= would have
+  caught it.
+- "=org-links= checks links, but not whether an =id:= link matches by case"
+  overstated it: =org-links= only follows colon-prefixed targets and never
+  resolves an =id:= at all. =lint= does compare ids, but uppercases both sides
+  first, so it is blind to case. That is the real gap, and it is why the tree
+  reached a state where a definition and its links disagreed.
 
 * Measurements
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| full site export | succeeds: 12,578 nodes, 52,058 links | =./compass.sh build --direct site= | 26321e3c1c |
+| six pages publish | 6 file(s), 0 failure(s) | =./compass.sh site page <the six pages>= | fe801932a6 |
 | full site export before the fix | aborts: Unable to resolve link "465CA244-..." | =./compass.sh build --direct site= | 39796470a0 |
-| site-build gate set | 3 of 3 pass | =./compass.sh check --only lint --only org-links --only site-page= | 26321e3c1c |
+| site gate set | 4 of 4 pass | =./compass.sh check --only lint --only org-links --only site-page --only backlog-indexes= | fe801932a6 |
 
 * Notes
 
-The failure only appears in a full build, and it aborted after 8,993 exported
-pages, so it looks like a late failure rather than the one-line link defect it
-is.
+The failure only appears in a full build. That build is the =deploy_site=
+target, which =compass check= does not run, so a gate sweep never sees this
+class of break; the page-level gate only sees the pages a change touches.
 
+* Review
+
+Round 1 ran the two axes. Every finding is answered here or in the commit that
+follows it.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The fix lowered the conforming links to the deviant id; the rule is uppercase | document_types.org | fixed | The definition and its five links are now uppercase |
+| 2 | "The page gates could not have caught it" is false | story.org | fixed | Rewritten: site-page catches it, and the gap is deploy_site not being in compass check |
+| 3 | org-links does not resolve ids at all; lint compares uppercased and is blind to case | task Plan | fixed | The task now states what each gate actually does |
+| 4 | The measurement commit was an orphan after an amend | task Measurements | fixed | Re-measured at the commit that carries the fix |
+| 5 | "referenced six times, the other four" counted the definition as a reference | story.org | fixed | Five links and one definition, stated plainly |
+| 6 | The scaffold task was boilerplate | task_scaffold_*.org | fixed | Filled |
+| 7 | The backlog index row is a second concern on a docs hotfix | Out of scope | kept | Recorded as out of scope with the reason it was in the way |
+
+* Test Scenarios
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -86,13 +107,13 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| Publish the six pages that name the id | MANUAL | compass site page <the six pages> must report 0 failures |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 3551 | [docs] Resolve the two look-back links the site build aborts on |
 
 * Review
 

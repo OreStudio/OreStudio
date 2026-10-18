@@ -15,18 +15,20 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-The documentation site builds. A full build stops when org cannot resolve an
-=id:= link, and two journey pages pointed at the report history page with an
-upper-case id while the page defines it in lower case. org resolves ids by
-exact string, so the link did not resolve and the export aborted:
+The documentation site builds. A full export stops when org cannot resolve an
+=id:= link, and this page's id disagreed with the links that name it. The page
+defined it in lower case while two of the five links spelled it in upper case,
+and org resolves ids by exact string:
 
 #+begin_example
 Build failed: Org export aborted.  Unable to resolve link:
 "465CA244-C488-4C69-ACA3-C694D104A42A"
 #+end_example
 
-The same page is referenced six times in the tree and the other four
-references already use the lower-case id.
+=doc/meta/document_types.org= settles which spelling is right: every =:ID:= and
+every =[[id:UUID]]= link is uppercase hex, and a hand-edited or copy-pasted
+UUID follows the same rule. So the definition was the deviant one, and the fix
+uppercases it and the five links, not the other way round.
 
 * Status
 
@@ -34,16 +36,35 @@ references already use the lower-case id.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Fixed; the full site builds.           |
+| Now           | Review round 1 answered; the pages publish. |
 | Waiting on    | Nothing.                               |
-| Next          | Commit, then a PR.                     |
+| Next          | Merge PR #3551.                        |
 | Last touched  | 2026-10-18                               |
 
 * Acceptance
 
-- A full site build succeeds: every page exports and the graph is written.
-- The two links resolve to the page that defines the id.
-- =site-page=, =lint= and =org-links= pass.
+- The page's =:ID:= is uppercase, and every link that names it matches exactly.
+- The six pages that carry the id publish without a resolution failure.
+- A full site build succeeds.
+- =site-page=, =lint=, =org-links= and =backlog-indexes= pass.
+
+* Decisions
+
+- Uppercase the definition rather than lowercase the links. The rule is
+  documented; conforming to the deviant side would have made the tree agree with
+  its own exception.
+- Leave the rest of the tree's lowercase ids alone. About 7,956 documents carry
+  a lower-case =:ID:=, so widening this hotfix would turn it into a migration.
+
+* Out of scope
+
+- The 7,956 lower-case =:ID:= properties elsewhere in =doc/= and
+  =projects/*/modeling/=. They violate the same rule and are a migration, not a
+  hotfix.
+- The regenerated backlog index. Another environment added a capture without
+  regenerating the indexes, which reds =backlog-indexes= on every branch cut
+  after it; the row is carried here because it was in the way, and it is
+  generator output rather than part of this story.
 
 * Tasks
 

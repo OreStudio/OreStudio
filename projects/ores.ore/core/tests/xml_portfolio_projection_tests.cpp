@@ -577,6 +577,107 @@ const char* const equity_barrier_and_accumulator_document_text = R"(<Portfolio>
   </Trade>
 </Portfolio>)";
 
+const char* const commodity_swap_and_forward_document_text = R"(<Portfolio>
+  <Trade id="cmd-1">
+    <TradeType>CommodityForward</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_C</CounterParty>
+      <NettingSetId>NS-COM</NettingSetId>
+    </Envelope>
+    <CommodityForwardData>
+      <Position>Long</Position>
+      <Maturity>2026-03-31</Maturity>
+      <Name>NGAS</Name>
+      <Currency>USD</Currency>
+      <Strike>3.25</Strike>
+      <Quantity>1000</Quantity>
+    </CommodityForwardData>
+  </Trade>
+  <Trade id="cmd-2">
+    <TradeType>CommoditySwap</TradeType>
+    <CommoditySwapData>
+      <LegData>
+        <LegType>CommodityFixed</LegType>
+        <Payer>false</Payer>
+        <Currency>USD</Currency>
+        <CommodityFixedLegData>
+          <Quantities><Quantity>1000</Quantity></Quantities>
+          <Prices><Price>3.5</Price></Prices>
+        </CommodityFixedLegData>
+      </LegData>
+      <LegData>
+        <LegType>CommodityFloating</LegType>
+        <Payer>true</Payer>
+        <Currency>USD</Currency>
+        <CommodityFloatingLegData>
+          <Name>NGAS</Name>
+          <PriceType>FutureSettlement</PriceType>
+          <Quantities><Quantity>1000</Quantity></Quantities>
+        </CommodityFloatingLegData>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-01-15</StartDate>
+            <EndDate>2026-01-15</EndDate>
+            <Tenor>1M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </CommoditySwapData>
+  </Trade>
+</Portfolio>)";
+
+const char* const commodity_average_price_and_basket_document_text = R"(<Portfolio>
+  <Trade id="cmd-3">
+    <TradeType>CommodityAveragePriceOption</TradeType>
+    <CommodityAveragePriceOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates><ExerciseDate>2026-06-30</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Name>WTI</Name>
+      <Currency>USD</Currency>
+      <Quantity>500</Quantity>
+      <Strike>75.5</Strike>
+      <PriceType>Spot</PriceType>
+      <StartDate>2025-03-01</StartDate>
+      <EndDate>2026-06-30</EndDate>
+      <PaymentCalendar>US-NYSE</PaymentCalendar>
+      <PaymentLag>5</PaymentLag>
+      <PaymentConvention>Following</PaymentConvention>
+      <PricingCalendar>US-NYSE</PricingCalendar>
+    </CommodityAveragePriceOptionData>
+  </Trade>
+  <Trade id="cmd-4">
+    <TradeType>CommodityBasketOption</TradeType>
+    <CommodityBasketOptionData>
+      <Currency>EUR</Currency>
+      <Notional>100</Notional>
+      <Strike>50</Strike>
+      <Underlyings>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>GOLD</Name>
+          <Weight>0.6</Weight>
+        </Underlying>
+        <Underlying>
+          <Type>Commodity</Type>
+          <Name>SILVER</Name>
+          <Weight>0.4</Weight>
+        </Underlying>
+      </Underlyings>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Put</OptionType>
+        <Style>American</Style>
+        <ExerciseDates><ExerciseDate>2026-12-31</ExerciseDate></ExerciseDates>
+      </OptionData>
+    </CommodityBasketOptionData>
+  </Trade>
+</Portfolio>)";
+
 auto date_of(int year, unsigned month, unsigned day) -> std::chrono::year_month_day {
     return {std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
 }
@@ -2546,4 +2647,172 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     CHECK(round->start_date == date_of(2025, 2, 5));
     CHECK(round->range_bounds_json ==
           R"([{"RangeTo":4000,"Leverage":1},{"RangeFrom":4000,"Leverage":2}])");
+}
+
+TEST_CASE("a_portfolio_document_projects_a_commodity_forward_and_a_commodity_swap", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(commodity_swap_and_forward_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    CHECK(items[0].anchor.trade_type == "CommodityForward");
+    CHECK(items[1].anchor.trade_type == "CommoditySwap");
+
+    const auto* forward_data =
+        std::get_if<ores::trading::domain::commodity_instrument_data>(&items[0].instrument);
+    REQUIRE(forward_data != nullptr);
+    CHECK(forward_data->constituents.empty());
+    const auto& forward = forward_data->instrument;
+    CHECK(forward.identity.trade_type_code == "CommodityForward");
+    CHECK(forward.commodity_code == "NGAS");
+    CHECK(forward.currency == "USD");
+    CHECK(forward.quantity == 1000.0);
+    REQUIRE(forward.fixed_price.has_value());
+    CHECK(forward.fixed_price->to_string() == "3.25");
+    CHECK(forward.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2026, 3, 31)));
+    CHECK_FALSE(forward.start_date.has_value());
+    CHECK(forward.audit.change_reason_code == "system.external_data_import");
+
+    const auto* swap_data =
+        std::get_if<ores::trading::domain::commodity_instrument_data>(&items[1].instrument);
+    REQUIRE(swap_data != nullptr);
+    const auto& swap = swap_data->instrument;
+    CHECK(swap.identity.trade_type_code == "CommoditySwap");
+    CHECK(swap.commodity_code == "NGAS");
+    CHECK(swap.currency == "USD");
+    CHECK(swap.quantity == 1000.0);
+    CHECK(swap.start_date == std::optional<std::chrono::year_month_day>(date_of(2025, 1, 15)));
+    CHECK(swap.maturity_date == std::optional<std::chrono::year_month_day>(date_of(2026, 1, 15)));
+    CHECK_FALSE(swap.fixed_price.has_value());
+
+    const auto forward_again = rebuild(items[0]);
+    CHECK(forward_again.anchor.trade_type == "CommodityForward");
+    CHECK(forward_again.envelope.has_value());
+    CHECK(forward_again.envelope->netting_set_id == std::optional<std::string>("NS-COM"));
+    const auto* forward_round_data =
+        std::get_if<ores::trading::domain::commodity_instrument_data>(&forward_again.instrument);
+    REQUIRE(forward_round_data != nullptr);
+    const auto& forward_round = forward_round_data->instrument;
+    CHECK(forward_round.identity.trade_type_code == "CommodityForward");
+    CHECK(forward_round.commodity_code == "NGAS");
+    CHECK(forward_round.currency == "USD");
+    CHECK(forward_round.quantity == 1000.0);
+    REQUIRE(forward_round.fixed_price.has_value());
+    CHECK(forward_round.fixed_price->to_string() == "3.25");
+    CHECK(forward_round.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2026, 3, 31)));
+
+    const auto swap_again = rebuild(items[1]);
+    const auto* swap_round_data =
+        std::get_if<ores::trading::domain::commodity_instrument_data>(&swap_again.instrument);
+    REQUIRE(swap_round_data != nullptr);
+    const auto& swap_round = swap_round_data->instrument;
+    CHECK(swap_again.anchor.trade_type == "CommoditySwap");
+    CHECK(swap_round.identity.trade_type_code == "CommoditySwap");
+    CHECK(swap_round.commodity_code == "NGAS");
+    CHECK(swap_round.currency == "USD");
+    CHECK(swap_round.quantity == 1000.0);
+    CHECK(swap_round.start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2025, 1, 15)));
+    CHECK(swap_round.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2026, 1, 15)));
+}
+
+TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_basket", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document =
+        portfolio_projection::read(commodity_average_price_and_basket_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    CHECK(items[0].anchor.trade_type == "CommodityAveragePriceOption");
+    CHECK(items[1].anchor.trade_type == "CommodityBasketOption");
+
+    const auto* apo_data =
+        std::get_if<ores::trading::domain::commodity_instrument_data>(&items[0].instrument);
+    REQUIRE(apo_data != nullptr);
+    const auto& apo = apo_data->instrument;
+    CHECK(apo.identity.trade_type_code == "CommodityAveragePriceOption");
+    CHECK(apo.commodity_code == "WTI");
+    CHECK(apo.currency == "USD");
+    CHECK(apo.quantity == 500.0);
+    REQUIRE(apo.strike_price.has_value());
+    CHECK(apo.strike_price->to_string() == "75.5");
+    CHECK(apo.option_type == "Call");
+    CHECK(apo.exercise_type == "European");
+    CHECK(apo.maturity_date == std::optional<std::chrono::year_month_day>(date_of(2026, 6, 30)));
+    CHECK(apo.averaging_start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2025, 3, 1)));
+    CHECK(apo.averaging_end_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2026, 6, 30)));
+    CHECK(apo.average_type.empty());
+
+    const auto* basket_data =
+        std::get_if<ores::trading::domain::commodity_instrument_data>(&items[1].instrument);
+    REQUIRE(basket_data != nullptr);
+    const auto& basket = basket_data->instrument;
+    CHECK(basket.identity.trade_type_code == "CommodityBasketOption");
+    CHECK(basket.commodity_code == "GOLD");
+    CHECK(basket.currency == "EUR");
+    CHECK(basket.quantity == 100.0);
+    REQUIRE(basket.strike_price.has_value());
+    CHECK(basket.strike_price->to_string() == "50");
+    CHECK(basket.option_type == "Put");
+    CHECK(basket.exercise_type == "American");
+    CHECK(basket.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2026, 12, 31)));
+    REQUIRE(basket_data->constituents.size() == 2);
+    CHECK(basket_data->constituents[0].sequence_number == 1);
+    CHECK(basket_data->constituents[0].underlying_code == "GOLD");
+    CHECK(basket_data->constituents[0].weight == std::optional<double>(0.6));
+    CHECK(basket_data->constituents[0].change_reason_code == "system.external_data_import");
+    CHECK(basket_data->constituents[1].sequence_number == 2);
+    CHECK(basket_data->constituents[1].underlying_code == "SILVER");
+    CHECK(basket_data->constituents[1].weight == std::optional<double>(0.4));
+
+    const auto apo_again = rebuild(items[0]);
+    const auto* apo_round_data =
+        std::get_if<ores::trading::domain::commodity_instrument_data>(&apo_again.instrument);
+    REQUIRE(apo_round_data != nullptr);
+    const auto& apo_round = apo_round_data->instrument;
+    CHECK(apo_again.anchor.trade_type == "CommodityAveragePriceOption");
+    CHECK(apo_round.identity.trade_type_code == "CommodityAveragePriceOption");
+    CHECK(apo_round.commodity_code == "WTI");
+    CHECK(apo_round.currency == "USD");
+    CHECK(apo_round.quantity == 500.0);
+    REQUIRE(apo_round.strike_price.has_value());
+    CHECK(apo_round.strike_price->to_string() == "75.5");
+    CHECK(apo_round.option_type == "Call");
+    CHECK(apo_round.exercise_type == "European");
+    CHECK(apo_round.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2026, 6, 30)));
+    CHECK(apo_round.averaging_start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2025, 3, 1)));
+    CHECK(apo_round.averaging_end_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2026, 6, 30)));
+
+    const auto basket_again = rebuild(items[1]);
+    const auto* basket_round_data =
+        std::get_if<ores::trading::domain::commodity_instrument_data>(&basket_again.instrument);
+    REQUIRE(basket_round_data != nullptr);
+    const auto& basket_round = basket_round_data->instrument;
+    CHECK(basket_again.anchor.trade_type == "CommodityBasketOption");
+    CHECK(basket_round.identity.trade_type_code == "CommodityBasketOption");
+    CHECK(basket_round.commodity_code == "GOLD");
+    CHECK(basket_round.currency == "EUR");
+    CHECK(basket_round.quantity == 100.0);
+    REQUIRE(basket_round.strike_price.has_value());
+    CHECK(basket_round.strike_price->to_string() == "50");
+    CHECK(basket_round.option_type == "Put");
+    CHECK(basket_round.exercise_type == "American");
+    CHECK(basket_round.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2026, 12, 31)));
+    REQUIRE(basket_round_data->constituents.size() == 2);
+    CHECK(basket_round_data->constituents[0].sequence_number == 1);
+    CHECK(basket_round_data->constituents[0].underlying_code == "GOLD");
+    CHECK(basket_round_data->constituents[0].weight == std::optional<double>(0.6));
+    CHECK(basket_round_data->constituents[1].sequence_number == 2);
+    CHECK(basket_round_data->constituents[1].underlying_code == "SILVER");
+    CHECK(basket_round_data->constituents[1].weight == std::optional<double>(0.4));
 }

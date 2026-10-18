@@ -173,6 +173,26 @@ write_equity_instrument(xml::record_writer& trade,
                         const portfolio_reference_curves& reference_curves) -> bool;
 
 /**
+ * @brief The commodity family: one product row, plus the entries a basket owns.
+ *
+ * Every commodity product is one row of its own table, and the trade type
+ * states which of them the document holds. A swap and a swaption state their
+ * legs in the document but keep only the terms the first commodity floating leg
+ * and, for a swaption, the fixed leg's first price state. A basket states its
+ * members as child rows, which travel in the carrier beside the row rather than
+ * inside it.
+ */
+ORES_ORE_CORE_EXPORT auto read_commodity_instrument(xml::record_reader trade,
+                                                    std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument>;
+
+ORES_ORE_CORE_EXPORT auto
+write_commodity_instrument(xml::record_writer& trade,
+                           std::string_view trade_type,
+                           const trading::domain::trade_instrument& instrument,
+                           const portfolio_reference_curves& reference_curves) -> bool;
+
+/**
  * @brief The FX family: one carrier holding a row per product, and no header.
  *
  * The carrier states a product by the array its row sits in, so the reading

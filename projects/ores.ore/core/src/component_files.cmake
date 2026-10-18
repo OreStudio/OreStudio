@@ -23,6 +23,7 @@ set(files
     "domain/bond_instrument_mapper.cpp"
     "domain/bond_instrument_projection.cpp"
     "domain/commodity_instrument_mapper.cpp"
+    "domain/commodity_instrument_projection.cpp"
     "domain/composite_instrument_mapper.cpp"
     "domain/conventions_diff.cpp"
     "domain/conventions_mapper.cpp"

@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
-#+updated: 2026-10-13
-#+environment:
+#+updated: 2026-10-18
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The series page formats a spot rate with the places of its pair's convention, fo
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -40,9 +40,54 @@ The series page formats a spot rate with the places of its pair's convention, fo
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The question
+
+A series of =instrument=fx_spot&quote=rate= names a pair: its scope is the unit
+currency and its =ccy= field is the quoted currency. The page formats the values
+with the =decimal_places= of that pair's convention, found under the pair code
+the unit currency and the quoted currency spell. The question is what the pair
+store holds when the series quotes the pair the other way round.
+
+** What the data holds
+
+=refdata.currency_pairs= holds 179 rows and
+=refdata.currency_pair_conventions= holds 179 rows under the same codes, with no
+reverse twin in either table. The seed derives one convention per pair row
+(=refdata_currency_pair_conventions_seed_populate.sql=), taking the places from
+the quote currency, and the pair screen composes one =pair_code= from the two
+legs on create and saves the pair's convention under that code
+(=currencyPairs.tsx=). The pair record page reads the convention by the exact
+code and already says =This pair has no convention= when it finds none. The C++
+formatter states the market reason: a real convention quotes one direction only,
+so the reciprocal direction is derived, never stored
+(=currency_pair_rate_formatter.hpp=).
+
+So the store answers for one direction. Its figures describe that direction's
+magnitude: =USD/JPY= has 2 places, and =JPY/USD= is a number near 0.0067 that 2
+places cannot show.
+
+** The decision
+
+The page looks up the pair in its own direction only. It does not borrow the
+reverse pair's places, because those belong to the other direction's magnitude.
+When a spot rate's pair has no convention in that direction, the page says so
+beside the count, and the values keep the plain format. This is the second of
+the two options the task names, chosen on the evidence above, and it matches
+what the pair screen already says about a pair with no convention.
+
+Two other routes were considered and rejected. An inverse lookup that reuses
+=decimal_places= would format =JPY/USD= at two places. Porting the C++
+reciprocal-places rule would format it sensibly, but it duplicates a rule in a
+second language with no shared test, and the task asks the page to stop guessing,
+not to start deriving.
+
+** The pieces
+
+=lacksConvention= sits beside =placesOf= in =seriesView.ts= and answers whether a
+spot rate's pair has no convention to format by. The page renders one sentence
+when it is true, with the strings in English, French and Portuguese. The lookup
+is unchanged in behaviour and pinned by a test that a pair stored the other way
+round gets no places, and by tests of the sentence's condition.
 
 * Measurements
 
@@ -56,9 +101,33 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| currency pairs stored | 179 rows, 0 reverse twins | =compass db sql -- -A -c "select count(*) from ores_refdata_currency_pairs_tbl"= and the self-join on the reversed code | =907a308a07= |
+| pair conventions stored | 179 rows, 0 reverse twins | the same queries over =ores_refdata_currency_pair_conventions_tbl= | =907a308a07= |
+| live FX spot series pairs | 57 own direction, 5 reverse only, 36 with no pair at all | =compass db sql= over the series and identity tables, joined to the conventions | =907a308a07= |
+| web tests | 1656 tests in 146 files, all passed | =npm test --workspace @ores/web= | =907a308a07= |
+| web typecheck | no errors | =npm run typecheck= | =907a308a07= |
 
 * Notes
+
+** 2026-10-18 — the pair a series names, and the pair the store keeps
+
+=AUD?type=series&instrument=fx_spot&quote=rate&ccy=CAD= is the pair the market
+call AUD/CAD, and the conventions table holds =AUD/CAD=. The five series that
+quote the reverse of a stored pair are =USD/EUR=, =USD/GBP=, =CHF/USD=,
+=GBP/EUR= and =NZD/AUD=. The other 36 pairs the series data quotes, such as
+=EUR/SGD= and =USD/NOK=, are not in the curated pair seed at all.
+
+** 2026-10-18 — why the sentence names the direction
+
+=This pair has no convention= alone would be wrong for =USD/EUR=, whose pair
+does have a convention under =EUR/USD=. The sentence says the convention is
+missing in the direction the series quotes, which is the fact.
+
+** 2026-10-18 — the condition is a function because the page has no test
+
+The workspace has no DOM library, so a sentence rendered by =SeriesPage.tsx= is
+not covered by a test. =lacksConvention= holds the condition that decides
+whether to render it, and is tested without a DOM.
 
 * Test Scenarios
 
@@ -84,3 +153,16 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The pair store keeps one direction per pair, and the series page now follows it.
+=refdata.currency_pairs= and =refdata.currency_pair_conventions= each hold 179
+rows, one per pair code, with no reverse twin, and the pair screens compose and
+read the convention under that single code. A spot rate whose pair is not stored
+in the direction it quotes has no convention to format by, so the page says so
+in English, French and Portuguese and keeps the plain format instead of
+borrowing the reverse pair's places.
+
+Acceptance is met. The way the data stores a pair is written above and in the
+task's Plan. The lookup follows it, with tests: a pair stored the other way round
+yields no places, and the condition that makes the page say so is tested at the
+layer that decides, because the page itself has no DOM test in this workspace.

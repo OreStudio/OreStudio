@@ -103,6 +103,14 @@ public:
     auto values(std::string_view name) const -> std::vector<std::string>;
 
     /**
+     * @brief Every value of a repeated exact-decimal leaf, in document order.
+     *
+     * A money list such as a barrier's levels is a repeated element whose
+     * value is a decimal rather than text, so the text accessor refuses it.
+     */
+    auto decimals(std::string_view name) const -> std::vector<ores::utility::decimal::decimal>;
+
+    /**
      * @brief Every row an indexed member names, in index order.
      *
      * A table whose member names no arena is refused rather than read at the
@@ -201,6 +209,9 @@ public:
 
     /// States a repeated leaf and appends one value to it.
     void append_value(std::string_view name, std::string_view value);
+
+    /// States a repeated exact-decimal leaf and appends one value to it.
+    void append_decimal(std::string_view name, const ores::utility::decimal::decimal& value);
 
     /// States an indexed member, appends a row to its arena and returns it.
     auto append_indexed(std::string_view name) -> record_writer;

@@ -24,6 +24,7 @@
 #include "ores.ore.core/xml/record.hpp"
 #include "ores.trading.api/domain/instrument_batch.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
+#include "ores.utility/decimal/decimal.hpp"
 #include <functional>
 #include <optional>
 #include <string>
@@ -40,6 +41,31 @@ namespace ores::ore::domain {
  * The mapping belongs to the run, not to the trade.
  */
 using portfolio_reference_curves = std::function<std::string(const std::string&)>;
+
+/**
+ * @brief An exact decimal member as the double the trading domain stores.
+ *
+ * The table keeps the digits the document wrote, and the domain column is a
+ * double. The conversion happens here, once, at the boundary.
+ */
+inline auto decimal_as_double(const xml::record_reader& r, std::string_view name)
+    -> std::optional<double> {
+    if (const auto value = r.decimal(name))
+        return value->to_double();
+    return std::nullopt;
+}
+
+/// A double as the exact decimal the table writes.
+inline auto decimal_from_double(double value) -> ores::utility::decimal::decimal {
+    if (auto parsed = ores::utility::decimal::decimal::from_double(value))
+        return *parsed;
+    return ores::utility::decimal::decimal{};
+}
+
+/// States a decimal member from a double the domain holds.
+inline void set_decimal_from_double(xml::record_writer& w, std::string_view name, double value) {
+    w.set_decimal(name, decimal_from_double(value));
+}
 
 /**
  * @brief One instrument family's two directions.
@@ -66,11 +92,29 @@ ORES_ORE_CORE_EXPORT auto read_scripted_instrument(xml::record_reader trade,
                                                    std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument>;
 
-ORES_ORE_CORE_EXPORT auto write_scripted_instrument(xml::record_writer& trade,
-                                                    std::string_view trade_type,
-                                                    const trading::domain::trade_instrument& instrument,
-                                                    const portfolio_reference_curves& reference_curves)
-    -> bool;
+ORES_ORE_CORE_EXPORT auto
+write_scripted_instrument(xml::record_writer& trade,
+                          std::string_view trade_type,
+                          const trading::domain::trade_instrument& instrument,
+                          const portfolio_reference_curves& reference_curves) -> bool;
+
+/**
+ * @brief The rates family: a swap and the products built on one.
+ *
+ * The family states one header row, the product's own fact row and the legs
+ * and shared children its product needs. Both directions dispatch on the ORE
+ * trade type, because a product the schema states as its own element is a
+ * different product rather than another spelling of one.
+ */
+ORES_ORE_CORE_EXPORT auto read_rate_instrument(xml::record_reader trade,
+                                               std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument>;
+
+ORES_ORE_CORE_EXPORT auto
+write_rate_instrument(xml::record_writer& trade,
+                      std::string_view trade_type,
+                      const trading::domain::trade_instrument& instrument,
+                      const portfolio_reference_curves& reference_curves) -> bool;
 
 }
 

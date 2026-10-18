@@ -414,11 +414,4 @@ auto write_scripted_instrument(xml::record_writer& trade,
     return false;
 }
 
-auto instrument_projections() -> const std::vector<instrument_projection>& {
-    static const std::vector<instrument_projection> all = {
-        {"scripted", &read_scripted_instrument, &write_scripted_instrument},
-    };
-    return all;
-}
-
 }

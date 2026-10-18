@@ -100,6 +100,16 @@ void write_envelope(xml::record_writer& trade, const trade_envelope_data& v) {
 
 }
 
+auto instrument_projections() -> const std::vector<instrument_projection>& {
+    // The old dispatcher tried the swap mappers before the scripted one, so
+    // the registry keeps that order.
+    static const std::vector<instrument_projection> all = {
+        {"rates", &read_rate_instrument, &write_rate_instrument},
+        {"scripted", &read_scripted_instrument, &write_scripted_instrument},
+    };
+    return all;
+}
+
 auto portfolio_projection::read(std::string_view text, std::string_view origin) -> document {
     document record;
     const auto bound = xml::binder::bind(pf::portfolio_document(), text, &record);

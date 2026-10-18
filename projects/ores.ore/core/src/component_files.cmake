@@ -33,6 +33,7 @@ set(files
     "domain/fx_instrument_mapper.cpp"
     "domain/portfolio_projection.cpp"
     "domain/pricing_engine_projection.cpp"
+    "domain/rate_instrument_projection.cpp"
     "domain/run_document_projection.cpp"
     "domain/scripted_instrument_mapper.cpp"
     "domain/scripted_instrument_projection.cpp"

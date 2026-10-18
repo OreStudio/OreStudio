@@ -40,7 +40,9 @@ COMMENT = re.compile(r"/\*.*?\*/|//[^\n]*", re.DOTALL)
 # container is not matched: only the binding matters.
 ITERATOR = re.compile(r"const\s+auto&\s+(\w+)\s*:")
 
-ACCESS = re.compile(r"\b(\w+)\.(\w+)\b")
+# A member access, not a call. `s.str()` on a stream is not a column, and
+# reading it as one reports a column the entity never declared.
+ACCESS = re.compile(r"\b(\w+)\.(\w+)\b(?!\s*\()")
 
 CREATE_TABLE = re.compile(
     r"create\s+table\s+(?:if\s+not\s+exists\s+)?\"?(ores_\w+_tbl)\"?\s*\((.*?)\n\)\s*;",

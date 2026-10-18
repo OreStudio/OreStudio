@@ -109,6 +109,12 @@ or not the synthetic service has run. The catalogue is
 [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable
 consumers]].
 
+`build/scripts/check_stream_coverage.py` reads every stream and every durable
+consumer in the tree. It fails when a consumed subject has no stream that covers
+it, when two streams claim the same subject, and when a declaration it cannot
+read exists. The server refuses both defects at creation, so a running broker
+cannot show them and the check reads the declarations instead.
+
 * Related patterns
 
 - [[id:F4A5B6C7-D8E9-4F0A-9B2C-3D4E5F607182][Durable Subscription]] — what needs the stream.

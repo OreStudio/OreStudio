@@ -116,6 +116,10 @@ marketdata ingest loop reads ticks. The streams and consumers are catalogued in
 [[id:45D4751E-5089-4C82-9B37-63EFBD4A0B18][JetStream streams and durable
 consumers]].
 
+The subject a durable consumer reads needs a stream that covers it.
+`build/scripts/check_stream_coverage.py` fails when that stream is missing, and
+when two streams claim one subject.
+
 * Related patterns
 
 - [[id:E3F4A5B6-C7D8-4E9F-8A1B-2C3D4E5F6071][Queue-Group Subscription]] — the load-sharing half.

@@ -42,7 +42,7 @@ capture single or double barrier levels.
 :nullable: false
 :END:
 
-Trade type code. The trade type reference stays soft. The column's own check pins the one code the table serves, and the trade-type catalogue routes the row to this table by that code, so a foreign key would duplicate the router.
+Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
 Routes ORE product types: FxDigitalOption, FxDigitalBarrierOption,
 FxTouchOption, FxDoubleTouchOption.
@@ -97,7 +97,7 @@ The activity that wrote this version.
 :economic: true
 :END:
 
-ForeignCurrency from ORE XML (source / underlying currency).
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("EUR")
@@ -111,7 +111,7 @@ std::string("EUR")
 :economic: true
 :END:
 
-DomesticCurrency from ORE XML (quote / settlement currency).
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -125,7 +125,7 @@ std::string("USD")
 :economic: true
 :END:
 
-Currency in which the payoff is denominated.
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("EUR")
@@ -155,7 +155,7 @@ ores::utility::decimal::decimal::from_string("100").value()
 
 Option type: Call or Put. Empty for touch options.
 
-Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put).
+the values are the option types this store accepts (Call, Put), which ORE also states as a closed set.
 
 #+begin_src cpp :name generator
 std::string("Call")
@@ -185,7 +185,7 @@ std::chrono::year_month_day{std::chrono::year{2033}/2/20}
 
 Position direction: Long or Short.
 
-Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
+the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
 
 #+begin_src cpp :name generator
 std::string("Long")
@@ -216,7 +216,7 @@ Strike level. Absent for touch options.
 Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent
 for plain digital options.
 
-Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set.
+the values are the barrier styles ORE Studio supports. ORE states the leaf as free text, so the lookup is the set this store accepts rather than a closed schema enumeration.
 
 ** lower_barrier
 :PROPERTIES:

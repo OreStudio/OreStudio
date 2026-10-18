@@ -45,7 +45,7 @@ least one =RangeBound=.
 :nullable: false
 :END:
 
-Trade type code. The trade type reference stays soft. The column's own check pins the one code the table serves, and the trade-type catalogue routes the row to this table by that code, so a foreign key would duplicate the router.
+Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
 Routes ORE product type: FxAccumulator.
 
@@ -99,9 +99,7 @@ The activity that wrote this version.
 :economic: true
 :END:
 
-Settlement currency (domestic side).
-
-The currency reference stays soft. A currency is =ores.refdata='s row, seeded per environment rather than by this component, and a trading database may hold only the codes its own imports loaded, so a trigger check would refuse a document the store is meant to accept. The code is validated where the currency set is known.
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -160,7 +158,7 @@ std::string("TR20H-EUR-JPY")
 
 Position direction: Long or Short.
 
-Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
+the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
 
 #+begin_src cpp :name generator
 std::string("Long")

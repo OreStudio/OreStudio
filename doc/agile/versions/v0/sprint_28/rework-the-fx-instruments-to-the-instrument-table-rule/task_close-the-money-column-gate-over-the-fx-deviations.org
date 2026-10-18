@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/close-the-money-column-gate-over-the-fx-deviations
-#+pr: 3520
+#+pr: 3521
 +#+blocked_on:
 +#+blocked_since:
 +#+created: 2026-10-16
@@ -30,11 +30,11 @@ line, so the gate asserts nothing for this family in either direction.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Implementation complete and the gate is green. Waiting on review and merge. |
+| Now          | Nothing. |
 | Waiting on   | The review of its PR. |
-| Next         | Address the review, then merge. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -93,6 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3521][#3521]] | [agile] Close the money gate unit |
 | [[https://github.com/OreStudio/OreStudio/pull/3520][#3520]] | [tooling] Let the money gate state an empty baseline |
 
 * Review

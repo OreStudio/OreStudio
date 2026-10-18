@@ -97,8 +97,9 @@ re-reads it from the service.
 * When a feed goes quiet
 
 A quiet binding has not ticked, whatever its feed is doing. The status is read
-from the age of the last tick before the running set is consulted, so a feed that
-runs and writes nothing reads quiet in the same way as one that stopped. The
+from the age of the last tick once the running set is known, and it does not ask
+whether the feed is running, so a feed that runs and writes nothing reads quiet
+in the same way as one that stopped. The
 running set is the first thing to read next, because it is not stored: it is the
 producer service's memory, and a restart empties it.
 
@@ -162,7 +163,7 @@ no build step and no session. It argues that a feed is a binding, a last tick an
 | =ir_curve_generation_config= | The IR producer behind a source: its folder, currency, index family, tenor, tick rate, enabled and auto-start flags | [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][ores.synthetic.ir_curve_generation_config]] |
 | =fx_spot_generation_config= | The FX producer behind a source: its pair, folder, tick rate, enabled and auto-start flags | [[id:9CCB36D2-D297-478D-8968-41FE16623FBC][ores.synthetic.fx_spot_generation_config]] |
 | =market_series= | The series a source's ticks land in; resolved per tick from the datum URI, not stored on the binding | [[id:A1B2C3D4-E5F6-7890-A1B2-C3D4E5F67890][ores.marketdata.market_series]] |
-| =market_observation= | The stored ticks, with their observation time and source; the last-tick answer would come from here or from the ingest loop | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
+| =market_observation= | The stored ticks, with their observation time and source; this is where the activity read answers the last tick from | [[id:B2C3D4E5-F6A7-8901-B2C3-D4E5F6A78901][ores.marketdata.market_observation]] |
 
 The binding and the producer configurations are versioned, so each has a
 history. The running set is not an entity: it lives in the producer factory and
@@ -275,7 +276,7 @@ missing/.
 - [[id:ED949529-0A80-4661-BBAC-E5DB7A6E5828][See the running services]] — the services a feed's producers run in, and whether they are up
 - [[id:EE26E58C-F389-4E82-BF96-EC5324F9F795][Watch the message bus]] — the bus the ticks cross, and whether it is moving
 - [[id:7B820710-161C-4926-B5AA-5EF2772A3652][Watch the compute grid]] — where the compute behind a derivation runs, when a feed feeds one
-- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — the ingest loop's status lines, the only place the last tick is written today
+- [[id:57C4B9A6-DA79-403E-984E-50D2561352B3][Read the telemetry logs]] — the ingest loop's own status lines, which report the ticks it received, not the ticks a source stored
 - [[id:C3D59907-9D6A-448C-9A61-9E750755BBFB][Check the versions and the database]] — the builds under the services a feed depends on
 - [[id:6ACE3F41-4ECD-4AE8-AC96-F557845193E0][Watch the market and clear its exceptions]] — what a running feed writes, and the quotes that fail
 

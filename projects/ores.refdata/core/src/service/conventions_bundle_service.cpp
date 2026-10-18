@@ -16,9 +16,11 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "convention_family_apply.hpp"
 #include "conventions_identity.hpp"
 #include "conventions_row_helpers.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
@@ -28,7 +30,9 @@
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -46,6 +50,30 @@ namespace {
 constexpr std::string_view central_family = "convention";
 constexpr std::string_view pay_receive_family = "tenor_basis_swap_pay_receive";
 constexpr std::string_view long_short_family = "tenor_basis_swap_long_short";
+
+/**
+ * @brief Where the registry lists a family, or past the end when it does not.
+ */
+consteval std::size_t family_position(std::string_view key) {
+    for (std::size_t i = 0; i < domain::convention_family_count; ++i)
+        if (domain::convention_families[i].key == key)
+            return i;
+    return domain::convention_family_count;
+}
+
+// The read keeps a part only when it already carries that part's central row,
+// so each of the three keys must be in the registry and the shared family must
+// come first.
+static_assert(family_position(central_family) < domain::convention_family_count,
+              "The registry has no convention family.");
+static_assert(family_position(pay_receive_family) < domain::convention_family_count,
+              "The registry has no tenor basis swap pay receive family.");
+static_assert(family_position(long_short_family) < domain::convention_family_count,
+              "The registry has no tenor basis swap long short family.");
+static_assert(family_position(central_family) < family_position(pay_receive_family),
+              "The read needs the shared family before its pay receive part.");
+static_assert(family_position(central_family) < family_position(long_short_family),
+              "The read needs the shared family before its long short part.");
 
 bool belongs_to_the_tenor_bundle(const std::string& family) {
     return family == central_family || family == pay_receive_family || family == long_short_family;
@@ -77,6 +105,44 @@ std::vector<Row> decode_family(const conventions_bundle& bundle,
 
 conventions_bundle_service::conventions_bundle_service(context ctx)
     : ctx_(std::move(ctx)) {}
+
+conventions_bundle conventions_bundle_service::read() {
+    conventions_bundle bundle;
+    // The two part families belong to a central row the bundle must also carry,
+    // and the part tables would accept one that names nothing. The central
+    // family is read first, because registry order puts it before its parts.
+    std::set<std::string> covered_central;
+    for (std::size_t i = 0; i < domain::convention_family_count; ++i) {
+        const auto family = std::string(domain::convention_families[i].key);
+        const auto payloads = read_family_payloads(ctx_, family);
+        int sequence = 0;
+        for (const auto& payload : payloads) {
+            // The shared convention table carries every kind, and this bundle
+            // covers one of them.
+            if (family == central_family) {
+                const auto decoded = rfl::json::read<domain::convention>(payload);
+                if (!decoded || decoded->kind_code != tenor_basis_swap_kind)
+                    continue;
+                covered_central.insert(boost::uuids::to_string(decoded->id));
+            }
+            if (family == pay_receive_family) {
+                const auto decoded = rfl::json::read<domain::tenor_basis_swap_pay_receive>(payload);
+                if (!decoded ||
+                    !covered_central.contains(boost::uuids::to_string(decoded->convention_id)))
+                    continue;
+            }
+            if (family == long_short_family) {
+                const auto decoded = rfl::json::read<domain::tenor_basis_swap_long_short>(payload);
+                if (!decoded ||
+                    !covered_central.contains(boost::uuids::to_string(decoded->convention_id)))
+                    continue;
+            }
+            bundle.rows.push_back(conventions_bundle_row{
+                .family = family, .sequence = sequence++, .payload = payload});
+        }
+    }
+    return bundle;
+}
 
 conventions_apply_result conventions_bundle_service::apply(const conventions_bundle& bundle) {
     conventions_apply_result result;

@@ -24,7 +24,6 @@
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <map>
 #include <rfl/json.hpp>
 #include <utility>
 #include <vector>

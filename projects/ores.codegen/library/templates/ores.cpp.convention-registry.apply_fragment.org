@@ -2,7 +2,7 @@
 :ID: 932062BD-9759-496E-B4F1-796A53DC2FF2
 :END:
 #+title: ores.cpp.convention-registry.apply_fragment
-#+description: The apply, read and staged-import bodies of the conventions service, one call per convention family, compiled inside the service.
+#+description: The apply, read, staged-import and payload-read bodies of the conventions service, one call per convention family, compiled inside the service.
 #+type: archetype
 #+output: projects/ores.refdata/core/src/service/convention_family_apply.inc
 #+facet: ores.cpp.convention-registry
@@ -13,9 +13,10 @@
 
 The bodies the conventions service compiles instead of writing one call per
 family by hand: three apply functions, one per write mode; three read
-functions, one per write mode; and the staged-import dispatcher, which decodes
-one family's payload into its own type so no instantiation sees the whole
-document.
+functions, one per write mode; the staged-import dispatcher, which decodes one
+family's payload into its own type; and the payload reader, which serialises
+one family's rows the way the wire carries them. No instantiation sees the
+whole document.
 
 The fragment is an include, not a translation unit. It is compiled where the
 row helpers (=replace_party_rows=, =replace_rows_by_id=,
@@ -127,6 +128,22 @@ ORES_REFDATA_CORE_EXPORT bool apply_staged_family(const ores::database::context&
     }
 {{/families}}
     return false;
+}
+
+// Payload reads: each branch reads one family's live rows and serialises each
+// as its own type, so an in-process caller sees the bytes the wire carries and
+// no branch touches another family's type.
+ORES_REFDATA_CORE_EXPORT std::vector<std::string>
+read_family_payloads(const ores::database::context& ctx, const std::string& family) {
+{{#families}}
+    if (family == "{{key}}") {
+        std::vector<std::string> payloads;
+        for (const auto& row : {{entity}}_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+{{/families}}
+    throw std::logic_error("The registry does not know the convention family '" + family + "'.");
 }
 {{/convention_registry}}
 #+end_src

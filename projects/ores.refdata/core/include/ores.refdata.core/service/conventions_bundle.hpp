@@ -88,6 +88,16 @@ public:
      */
     conventions_apply_result apply(const conventions_bundle& bundle);
 
+    /**
+     * @brief Every convention the session sees, one payload per row.
+     *
+     * The party's own instrument conventions and the tenant's world
+     * conventions, read one family at a time. The shared convention family is
+     * narrowed to the kind this bundle covers, because that one table carries
+     * every kind.
+     */
+    conventions_bundle read();
+
 private:
     context ctx_;
 };

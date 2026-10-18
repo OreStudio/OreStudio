@@ -20,7 +20,9 @@
 #define ORES_REFDATA_CORE_SERVICE_CONVENTION_FAMILY_APPLY_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.refdata.core/export.hpp"
 #include <string>
+#include <vector>
 
 namespace ores::refdata::messaging {
 struct conventions_document;
@@ -42,6 +44,18 @@ void apply_world_families(const ores::database::context& ctx,
 
 void read_party_families(const ores::database::context& ctx, messaging::conventions_document& v);
 void read_families_by_id(const ores::database::context& ctx, messaging::conventions_document& v);
+/**
+ * @brief Reads one family's live rows as the payloads the wire carries them in.
+ *
+ * The bytes are the bytes a stage message carries, so an in-process caller and
+ * a remote caller see a family the same way. The generated dispatch gives each
+ * family its own branch.
+ *
+ * @throws std::logic_error when the registry does not know the family.
+ */
+ORES_REFDATA_CORE_EXPORT std::vector<std::string>
+read_family_payloads(const ores::database::context& ctx, const std::string& family);
+
 void read_world_families(const ores::database::context& ctx, messaging::conventions_document& v);
 
 bool apply_staged_family(const ores::database::context& ctx,

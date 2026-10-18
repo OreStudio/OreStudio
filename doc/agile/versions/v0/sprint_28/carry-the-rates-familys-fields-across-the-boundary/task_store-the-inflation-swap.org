@@ -28,7 +28,7 @@ An inflation swap imports, stores and exports with the index, base level and lag
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] |
-| Now          | Not yet started.                       |
+| Now          | In review. The import and the export both carry the CPI leg's three fields. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-18                               |
@@ -41,9 +41,15 @@ An inflation swap imports, stores and exports with the index, base level and lag
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Write the failing case first, against the document's own values:
+   =Inflation_CPI_Swap.xml= states =UKRPI=, =210= and =2M= on its CPI leg, so
+   the case asserts those three and nothing the mapper invents.
+2. Read them on import from the CPI leg, which is where the document states
+   them. A swap states one such leg; a second would be another product.
+3. Write them back on export onto the same leg, because the shared leg reverse
+   states a cashflow, fixed or floating payload and nothing for a CPI leg.
+4. Record the money limit rather than paper over it: =BaseCPI= is an =xs:float=
+   in the schema and the generated binding has no lexical form.
 
 * Measurements
 
@@ -57,6 +63,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Product fields the CPI leg states | 3 | =Inflation_CPI_Swap.xml= lines 65, 69, 71 | HEAD |
+| Sites the import writes | 3 | =swap_instrument_mapper.cpp=, the CPI loop in =forward_inflation_swap= | HEAD |
+| Sites the export writes | 3 | =swap_instrument_mapper.cpp=, the CPI loop in =reverse_inflation_swap= | HEAD |
+| Assertions in the new case | 15, of which 6 name the document's values | the case body | HEAD |
 |      |       |         |        |
 
 * Notes
@@ -85,3 +95,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+An inflation swap is stored with the index, base level and lag its document
+states, and exports them back. The import reads them from the CPI leg; the
+export writes them onto the same leg, which the shared leg reverse leaves with
+no payload at all.
+
+Proved red first: against the merge base the case fails on an empty
+=inflation_index_code= and an absent =base_cpi=; after the change it passes with
+fifteen assertions, six of which name =UKRPI=, =210= and =2M= rather than quoting
+the mapper.
+
+Money: =BaseCPI= is an =xs:float= in the schema, and the generated binding is a
+plain =float= with no lexical form, so the digits are the schema's own limit.
+The column is =double=, which is wider than the leaf, so the store adds no loss
+of its own. Giving the leaf a lexical form would be a codegen change of the
+=moneyFloat= kind, which the FX rework already made; it is not this unit's.
+
+A row imported before this unit could not be written at all, so there is nothing
+to re-import: the affected trades failed and were left with a header and no
+fact. Re-running the import after this change is the remedy for them.

@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/move-the-series-page-state-into-a-pure-function
-#+pr:
+#+pr: 3509
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3509][#3509]] | [web] Move the series page state into a pure function |
 
 * Review
 

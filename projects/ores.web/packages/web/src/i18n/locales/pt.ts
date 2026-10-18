@@ -2103,6 +2103,8 @@ const pt: SourceCatalogue = {
             empty: 'Esta série ainda não tem observações.',
             emptyWindow: 'Esta série não tem observações nesta janela.',
             showing: 'As últimas {shown} de {total} observações.',
+            noConvention:
+                'Este par não tem convenção no sentido em que a série é cotada, por isso os valores são apresentados no formato simples.',
             at: 'Instante',
             value: 'Valor',
             source: 'Fonte',

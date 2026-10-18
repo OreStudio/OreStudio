@@ -8,7 +8,7 @@
 #+filetags: :the_site_stops_on_a_link_it_cannot_resolve:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/the-site-stops-on-a-link-it-cannot-resolve
-#+pr:
+#+pr: 3551
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3551][#3551]] | [docs] Resolve the two look-back links the site build aborts on |
 
 * Review
 

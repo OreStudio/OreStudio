@@ -21,11 +21,11 @@ Establish, with evidence, whether the rates instrument family's data model meets
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The review is written. Its findings are carried by [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]]. |
+| Now           | Nothing. The findings are carried by [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]]. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the first unit of [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]]. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-18                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ Establish, with evidence, whether the rates instrument family's data model meets
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:272BBB33-ED72-401F-ADAD-6A69CEEBC4CE][Review the rates family's data model]] | STARTED | 2026-10-18 | | Walk the Regime 2 and Regime 3 checklists over the rates family header, its product fact tables, its shared children, the generated C++ and the ORE import and export seam, and record the findings as an investigation. |
+| [[id:272BBB33-ED72-401F-ADAD-6A69CEEBC4CE][Review the rates family's data model]] | DONE | 2026-10-18 | 2026-10-18 | Walk the Regime 2 and Regime 3 checklists over the rates family header, its product fact tables, its shared children, the generated C++ and the ORE import and export seam, and record the findings as an investigation. |
 
 * Decisions
 

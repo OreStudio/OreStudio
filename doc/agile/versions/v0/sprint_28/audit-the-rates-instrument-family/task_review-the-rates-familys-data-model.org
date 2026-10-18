@@ -26,11 +26,11 @@ Produce the evidence the parent story needs: walk the checklists over the rates 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E2EA8426-B9DF-4C93-9843-C34CC803B26D][Audit the rates instrument family against the data-oriented design guidelines]] |
-| Now          | Finding 3 was found last, on a second pass over the reverse mapper, and raised from Important to Critical. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Record the remediations as tasks on the parent story.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance

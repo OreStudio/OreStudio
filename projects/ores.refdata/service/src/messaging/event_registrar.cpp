@@ -72,8 +72,6 @@
 #include "ores.refdata.service/messaging/contact_type_event_registrar.hpp"
 #include "ores.refdata.service/messaging/convention_event_registrar.hpp"
 #include "ores.refdata.service/messaging/convention_kind_event_registrar.hpp"
-#include "ores.refdata.service/messaging/conventions_import_event_registrar.hpp"
-#include "ores.refdata.service/messaging/conventions_import_item_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_business_centre_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_change_event_registrar.hpp"
 #include "ores.refdata.service/messaging/counterparty_contact_information_event_registrar.hpp"
@@ -206,8 +204,6 @@ std::vector<ores::eventing::service::subscription> event_registrar::register_eve
     subs.push_back(register_bundle_import_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_bundle_import_item_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_credit_limit_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_conventions_import_event_mapping(event_source, event_bus, nats));
-    subs.push_back(register_conventions_import_item_event_mapping(event_source, event_bus, nats));
     subs.push_back(
         register_counterparty_business_centre_event_mapping(event_source, event_bus, nats));
     subs.push_back(register_trading_account_type_event_mapping(event_source, event_bus, nats));

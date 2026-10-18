@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch: feature/batch-the-fx-service-reads-onto-the-repository-query
+#+branch: feature/batch-the-fx-service-reads
 #+pr: 3525
 #+blocked_on:
 #+blocked_since:
@@ -83,9 +83,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Services that read their key set in one statement | 7 | =grep -l "One read for the whole key set" projects/ores.trading/core/src/service/*.cpp=, in =evidence/fx-batch-reads.txt= | the PR head |
-| Services the template changed | 7 of 38 trading services | =git diff --stat= on the service files | the PR head |
-| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
+| Services that read their key set in one statement | 7 | =grep -l "One read for the whole key set" projects/ores.trading/core/src/service/*.cpp=, in =evidence/fx-batch-reads.txt= | 133943e4a2 |
+| Trading services the template rewrote | 7 of 117 generated | =git diff --name-only origin/main -- 'projects/ores.trading/core/src/service/*_service.cpp'=, against the 117 files carrying the template banner | 133943e4a2 |
+| Models declaring the flag | 7 of 38 declaring =:has_batch_read:= | =grep -rl ":service_batch_reads_by_trade_id: *true" projects/*/modeling/*.org= | 133943e4a2 |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | 133943e4a2 |
 |      |       |         |        |
 
 * Notes
@@ -115,7 +116,15 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The flag's name promises any entity keyed by its trade id, but the block hardcodes the trade id and does not work for an entity keyed by `id` | the template and the seven models | Fixed | The flag is `:service_batch_reads_by_trade_id:`, which states the requirement, and the template documents it in the model-key table. |
+| 2 | The batch path builds an unbounded `IN (…)` where the list filter refuses more than a thousand keys | the template | Fixed | The gated path refuses more than a thousand keys with the same outcome the filter uses. |
+| 3 | The new test cannot catch a cross-wired join, because every fixture row is identical | the service test | Fixed | Each row carries its own description and the test asserts the row identity, not only its presence. |
+| 4 | The `put_many` read-back is untested | the service test | Fixed | The test writes a two-row batch and asserts both returned rows by identity. |
+| 5 | "7 of 38 trading services" is the wrong denominator, and "thirty-one" repeats it | the task's Measurements and Result | Fixed | The numbers are 7 of 117 generated services, and 7 of 38 models declaring the older flag; 110 services are unchanged. |
+| 6 | Every measurement is pinned to "the PR head" rather than a commit | the task's Measurements | Fixed | The rows cite 133943e4a2. |
+| 7 | `put_many` still reads once per row when a change states the `any` claim | the generated repository | Rejected | That read is the repository's own claim check, not the service's read-back, and it belongs to the write path the unit does not change. |
+| 8 | The returned row is not guaranteed to be the version the write landed | the service | Rejected | The per-key path had the same property; the batch path reads one snapshot for the whole set, which is strictly better. |
+| 9 | The template banner names a source file that does not exist | the template | Rejected | Pre-existing and outside this unit; fixing it rewrites every generated service for a comment. |
 
 * Result
 
@@ -138,8 +147,9 @@ is the key those entities declare.
   The batch path needs the entity's key expression, which the template already
   holds per entity. A base class would have to be told the key, and the
   repository read is already generic.
-- *The flag is named for what it turns on, not for the family.* Any entity keyed
-  by its trade id can set it; the FX family is the first because that is where
-  the audit found the reads.
+- *The flag is named for the key it joins on.* The batch path reads the row's
+  =identity.trade_id=, so the name states the requirement and the template
+  documents it beside the other model keys. An entity keyed another way needs
+  its own path rather than this flag.
 - *The reply stays positional.* The obvious alternative, dropping absent keys,
   would make a caller match entries to keys by position on the wrong list.

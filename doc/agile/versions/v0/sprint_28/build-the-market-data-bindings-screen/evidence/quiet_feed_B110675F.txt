@@ -69,7 +69,11 @@ The 24 running feeds are the 14 Refinitiv FX feeds and the 10 ICE and Tradeweb
 IR feeds. No synthetic.bloomberg.* feed runs.
 
 The instance stopped at 11:52:03 had been up for "17h 2min 1.706s", so it
-started at 18:50:03 on 2026-10-17, one minute after the last AUD/USD tick.
+started at about 18:50:01 on 2026-10-17, 55 seconds after the last AUD/USD tick.
+The journal keeps only from 05:41 today, so the shutdown of the instance it
+replaced is not in it, and what stopped the ticks before that start is not
+established by these logs. What the logs do say is that the instance which took
+over started 24 feeds and none of them was AUD/USD's.
 
 5. What the product shows the tenant that holds the binding
 -----------------------------------------------------------
@@ -106,7 +110,7 @@ Party 9ef67391-... is "System Party" (acme_corporation_system) of the Acme
 tenant. Party 245c13a0-... is "Acme Corporation Plc", which is the party the
 tenant_admin session acts as.
 
-Counts: 67 enabled feed bindings over 67 distinct sources; 103 bound FX feed
+Counts: 287 enabled feed bindings over 67 distinct sources; 103 bound FX feed
 configs and 14 sandboxed FX feed configs; 150 distinct observation times for
 AUD/USD (5 parties x 150 = 750 rows), spaced 2 seconds apart, which is the
 1800 ticks per hour the config asks for.

@@ -32,11 +32,14 @@ skipped: a row that is not read is not a row that is skipped.
 Two symptoms follow, and both were measured on eager_maxwell on 2026-10-18.
 
 The feed goes quiet and stays quiet. The Acme tenant's AUD/USD synthetic feed
-ticked for five minutes and stopped at =2026-10-17 18:49:06=. The synthetic
-service restarted at =18:50:03=, logged =Auto-started 24 enabled feed(s)=, and
-every one of those 24 is a system-scope sandboxed feed. The 26 Bloomberg FX
-configs that AUD/USD needs belong to the Acme tenant's System Party and were not
-among them. The binding survived, the ticks did not.
+ticked for five minutes and stopped at =2026-10-17 18:49:06=. An instance of the
+synthetic service started at about =18:50:01=, logged =Auto-started 24 enabled
+feed(s)=, and every one of those 24 is a system-scope sandboxed feed. The 26
+Bloomberg FX configs that AUD/USD needs belong to the Acme tenant's System Party
+and were not among them. The binding survived, the ticks did not. Whether the
+restart stopped the ticks or found them already stopped is not established: the
+shutdown of the instance it replaced is not in the journal. The defect does not
+depend on it.
 
 Nothing recovers it. Restarting the marketdata service moves nothing: the newest
 AUD/USD tick reads =2026-10-17 18:49:06.55001+01= before the restart at

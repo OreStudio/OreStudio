@@ -62,8 +62,11 @@ from what has been written; see /What is missing/.
    feeds are running. The system lists the running source names, every kind.
    This is the live set the producer factory holds, not the stored bindings.
 5. *Read the last tick.* The person reads when each source last ticked. The
-   ingest loop counts the ticks and remembers the last one per binding, but only
-   in memory, and no read exposes them; see /What is missing/.
+   system answers from the newest observation of each binding's source, through
+   =marketdata.v1.ops.list_feed_binding_activity=, which returns one row per
+   binding of the caller's party with the source, the series and the last tick.
+   That is what the source has written, not what the ingest loop has received;
+   the loop's own counters are in memory only; see /What is missing/.
 6. *Start a feed.* The person chooses *Start*, on one binding or on a folder
    subtree. The system resolves the folder subtree, starts every feed under it,
    of every kind, and reports the counts: started, already running and skipped,
@@ -93,16 +96,22 @@ re-reads it from the service.
 
 * When a feed goes quiet
 
-A feed has stopped by the time its binding reads quiet. The running set is the
-first thing to read, because it is not stored: it is the producer service's
-memory, and a restart empties it.
+A quiet binding has not ticked, whatever its feed is doing. The status is read
+from the age of the last tick before the running set is consulted, so a feed that
+runs and writes nothing reads quiet in the same way as one that stopped. The
+running set is the first thing to read next, because it is not stored: it is the
+producer service's memory, and a restart empties it.
 
 The observed case, AUD/USD's synthetic feed on 2026-10-18, is the shape to
-expect. The ticks ran for five minutes and stopped at 18:49:06. The synthetic
-service restarted at 18:50:03 and did not start them again. The binding stayed
-enabled. The ingest loop stayed subscribed and reported =last_tick=never= for
-every binding it holds. The newest observation is still the one from the evening
-before.
+expect. The ticks ran for five minutes and stopped at 2026-10-17 18:49:06. The
+instance that replaced the publisher started at about 18:50:01 and did not start
+them again; its boot pass logged 24 feeds, none of them AUD/USD's. The shutdown
+of the instance it replaced is not in the journal, so what stopped the ticks
+fifty-five seconds earlier is not established, and the answer does not need it:
+the restart did not bring the feed back, and no later restart has. The binding
+stayed enabled. The ingest loop stayed subscribed and reported =last_tick=never=
+for every binding it holds. The newest observation is still the one from the
+evening before.
 
 Two facts make the quiet row hard to act on. A feed started on demand lives only
 in the producer's memory, so a restart of any service loses it, and nothing
@@ -116,9 +125,9 @@ and then finds the party that owns the producer config and starts the feed from
 that session. Nothing in the product offers that route yet; see /What is
 missing/.
 
-The restart is the trigger that matters here: a service restart is what turns a
-running feed into a quiet binding, and it is the moment to re-read the running
-set rather than the moment to trust the previous reading of it.
+A restart is the moment to re-read the running set rather than the moment to
+trust the previous reading of it, because the set is the producer's memory and
+the new instance starts with an empty one.
 
 * Screens and wireframes
 
@@ -174,7 +183,8 @@ rather than from the binding.
 | Read the feed behind the source | Read one IR generation config | =synthetic.v1.ir_curve_generation_configs.get= | exists |
 | Read the feed behind the source | List the folders | =synthetic.v1.folders.list= | exists |
 | Read whether the source is running | List the running source names | =synthetic.v1.feed_configs.list= | exists |
-| Read the last tick | Read the tick count and last tick per source | no subject | missing |
+| Read the last tick | Read the newest observation of each binding's source | =marketdata.v1.ops.list_feed_binding_activity= | exists |
+| Read the last tick | Read the ingest loop's tick count and last received tick per source | no subject | missing |
 | Start a feed | Start one feed by config | =synthetic.v1.ops.start_feed= | exists |
 | Start a feed | Start every feed under a folder | =marketdata.v1.ops.start_feeds_under_folder= | exists |
 | Stop a feed | Stop one feed by config | =synthetic.v1.ops.stop_feed= | exists |
@@ -188,19 +198,24 @@ The list of running sources is =synthetic.v1.feed_configs.list=, which returns
 the running =source_name= values of every kind. The one-feed start and stop are
 keyed by a config id, which the server resolves to the config's =source_name=;
 the folder start and stop take a folder id and resolve the whole subtree
-server-side. The last-tick read does not exist; the ingest loop keeps its
-counters in memory and writes them to the status log once a minute; see
-/What is missing/.
+server-side. The last tick comes from
+=marketdata.v1.ops.list_feed_binding_activity=, which reads the newest
+observation of each binding's source for the caller's party; what it cannot say
+is what the ingest loop itself has received, because the loop keeps its counters
+in memory and writes them to the status log once a minute; see /What is
+missing/.
 
 * What is missing
 
-1. *No last-tick read.* The ingest loop keeps a tick count and the last tick
-   time per binding in memory, and the status log writes them once a minute,
-   but no subject returns them, and nothing stores them. The candidate is a read
-   over the ingest loop's statistics, or a stored last-observation time per
-   binding. Until then the screen shows whether a source is running, and it
-   takes the newest observation of the series the source writes as the nearest
-   thing to a last tick; it cannot answer for a source directly.
+1. *No read of the ingest loop's own counters.* The loop keeps a tick count and
+   the last tick it received, per binding, in memory, and the status log writes
+   them once a minute, but no subject returns them. The activity read answers
+   from the stored observations instead, so it says what a source has written
+   and not what the loop has heard; the two agree for a live feed and separate
+   for an imported series, which has observations and no ticks. The candidate is
+   a read over the ingest loop's statistics, or a stored last-received time per
+   binding. Until then the screen reads the stored last tick and says nothing
+   about the consumer.
 2. *No stored source-to-series mapping.* A feed binding names a source, a party
    and a workspace; it does not name the series its ticks land in, because the
    series is resolved per tick from the datum's =oresmd_uri=. The row cannot say
@@ -246,8 +261,8 @@ counters in memory and writes them to the status log once a minute; see
    tenant's configs, or a stored running set that a restart restores. Until then
    the operator starts the feed again by hand, from a session that acts as the
    party that owns the config, and a person acting as another party cannot: the
-   feed list is scoped to the caller's party. See the capture filed for this,
-   =a-restart-does-not-restore-a-tenant-feed=.
+   feed list is scoped to the caller's party. See
+   [[id:83FF505F-F58B-4AA6-9FA6-98F4EE29A9B7][Boot auto-start never starts a tenant's feeds]].
 9. *The screen says quiet but not why.* =statusOf= calls a binding quiet when its
    last tick is older than 600 seconds or it has none, and it never looks at the
    running set to say which of the two it is, so a stopped feed and a feed that

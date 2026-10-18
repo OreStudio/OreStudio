@@ -103,7 +103,7 @@ The raw output of every command below is in =evidence/quiet_feed_B110675F.txt=.
 | enabled feed bindings | 287 rows over 67 distinct sources | =compass db sql= over =public.ores_marketdata_feed_bindings_tbl= where =valid_to = ores_utility_infinity_timestamp_fn() and enabled= | =6e461205af= |
 | FX feed configs by binding mode | 103 =bound=, 14 =sandboxed= | =compass db sql= over =public.ores_synthetic_fx_spot_generation_configs_tbl= joined to =public.ores_synthetic_market_data_generation_configs_tbl= | =6e461205af= |
 | AUD/USD observation time span and rate | 150 distinct times from =18:44:07.971592+01= to =18:49:06.55001+01=, 2 seconds apart, which is the 1800 ticks per hour the config names; 750 rows is 5 parties times 150 | =compass db sql= over =public.ores_marketdata_market_observations_tbl=, distinct =observation_datetime= for =source='synthetic.bloomberg.audusd'= | =6e461205af= |
-| uptime of the synthetic service instance the restart replaced | 17h 2min 1.706s, so it started at =2026-10-17 18:50:03=, one minute after the last AUD/USD tick | =journalctl=, the systemd line that stops the unit | =6e461205af= |
+| uptime of the synthetic service instance the restart replaced | 17h 2min 1.706s, so it started at about =2026-10-17 18:50:01=, 55 seconds after the last AUD/USD tick | =journalctl=, the systemd line that stops the unit | =6e461205af= |
 
 * Notes
 
@@ -120,15 +120,22 @@ it changes nothing: the tick is at the same second before and after.
 
 The feed does not restart with the service. That is the cause, and it is one
 step worse than the report says: the feed does not restart with the synthetic
-service either, and the restart that killed it was the synthetic service's own.
+service either.
 
 ** 2026-10-18 — the timeline the logs give
 
 The last AUD/USD tick is at 18:49:06 on 2026-10-17. The synthetic service
-instance that was running until 11:52 today had been up for 17h 2min, so it
-started at 18:50:03. The tick stops one minute before that start. In other
-words the feed died when the synthetic service was last restarted, and it has
-been dead since, through every later restart of marketdata.
+instance that was running until 11:52 today had been up for 17h 2min 1.706s, so
+it started at about 18:50:01. The tick stops 55 seconds before that start, and
+the shutdown of the instance it replaced is not in the journal, which keeps only
+from 05:41 today. So what stopped the ticks is not established, and this record
+does not claim it: the restart may have stopped them, and it may have found them
+already stopped.
+
+What the logs do establish is the part the answer needs. The instance that took
+over at 18:50:01 logged =Auto-started 24 enabled feed(s)= and none of them was
+AUD/USD's, so the restart did not bring the feed back. Neither did any of the
+later restarts of marketdata, and the tick has not moved since.
 
 The binding behind that source records its own creation at
 =2026-10-17 17:44:03Z=, which is 18:44:03 local, and its commentary says what
@@ -234,6 +241,11 @@ via its "Verifies task" field.
 | 3 | The claim that the bindings screen reads quiet was made without opening the screen | this task's Notes | Accepted, recorded | The note says the screen was read from =statusOf= and from the two reads it joins: the activity read and the running set. The running set was read through =synthetic list feeds=. A browser check of the row is left to the task that checks the screen on the running server. |
 | 4 | The Goal repeats the report's premise that the marketdata restart stopped the feed, which the measurements contradict | this task's Goal | Accepted, recorded | The Goal is the report as it came in and is not rewritten; the Result answers it, and says the service that matters is the synthetic one. |
 | 5 | The identity of the session that started the feed at 18:44 is inferred, not read from an audit row | this task's Notes, "the timeline the logs give" | Accepted, recorded | The inference rests on the binding's =change_commentary= (=Created by ACME provisioning=) and on the ticks that follow it three seconds later. No row says which session called the start. The conclusion does not depend on it: the boot walk cannot start the feed after any restart, whoever started it. |
+| 6 | The journey cites a capture named =a-restart-does-not-restore-a-tenant-feed=, which does not exist | the journey's item 8 of /What is missing/ | Fixed | That was the duplicate this task first filed and then removed. The item now links [[id:83FF505F-F58B-4AA6-9FA6-98F4EE29A9B7][Boot auto-start never starts a tenant's feeds]]. |
+| 7 | The evidence says 67 enabled feed bindings over 67 distinct sources; the database says 287 over 67 | =evidence/quiet_feed_B110675F.txt= | Fixed | The counts are now 287 bindings over 67 sources, which is what the measurements table already said. |
+| 8 | The record says the 18:50:03 restart dropped the feed, but the last tick precedes the replaced instance's inferred start and its shutdown is not in the journal | this task's Notes and Result, the journey and the capture | Fixed | The inferred start is about 18:50:01, 55 seconds after the last tick. The record now says what stopped the ticks is not established, and that the restart did not bring the feed back, which the boot log does establish. The cause does not depend on the trigger. |
+| 9 | The journey says a feed has stopped by the time its binding reads quiet, which is false | the journey, /When a feed goes quiet/ | Fixed | =statusOf= reads quiet from the age of the last tick before it consults the running set, so a feed that runs and writes nothing reads quiet too. The section now says a quiet binding has not ticked, whatever its feed is doing. |
+| 10 | The journey says no read exposes the last tick, while the quiet-screen claim depends on a read that does | the journey's step 5, operations table, and item 1 of /What is missing/ | Fixed | =marketdata.v1.ops.list_feed_binding_activity= returns =last_tick_at= from the newest observation of each binding's source. The journey now names it, and /What is missing/ now asks only for the ingest loop's own counters, which no subject returns. |
 
 * Result
 
@@ -245,7 +257,10 @@ its own database context can read, and that context is the installation's system
 tenant. The 26 Bloomberg FX configs behind AUD/USD belong to the Acme tenant's
 System Party, so the walk never reads them and never starts them. A feed started
 on demand lives only in the producer's memory, so the restart of the synthetic
-service at 2026-10-17 18:50:03 dropped it, and nothing has started it since.
+service did not restore it, and nothing has started it since. What stopped the
+ticks 55 seconds before that restart is not established, because the shutdown of
+the instance that published them is not in the journal. The cause below does not
+depend on it.
 
 The ingest loop is not the cause. It subscribes at start, holds its 67 bound
 sources, and reports =last_tick=never= for all 287 bindings because no tick

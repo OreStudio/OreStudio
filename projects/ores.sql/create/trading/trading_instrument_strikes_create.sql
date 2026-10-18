@@ -37,6 +37,8 @@
 
 create table if not exists "ores_trading_instrument_strikes_tbl" (
     "trade_id" uuid not null,
+    "strike_role" text not null,
+    "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "trade_activity_id" uuid not null,
@@ -52,23 +54,28 @@ create table if not exists "ores_trading_instrument_strikes_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, trade_id, valid_from, valid_to),
+    primary key (tenant_id, trade_id, strike_role, sequence_number, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
         trade_id WITH =,
+        strike_role WITH =,
+        sequence_number WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("trade_id" <> ores_utility_nil_uuid_fn())
+    check ("trade_id" <> ores_utility_nil_uuid_fn()),
+    check ("strike_role" <> ''),
+    check ("strike_role" in ('cap', 'floor', 'single')),
+    check ("sequence_number" >= 1)
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists instrument_strikes_version_uniq_idx
-on "ores_trading_instrument_strikes_tbl" (tenant_id, trade_id, version)
+on "ores_trading_instrument_strikes_tbl" (tenant_id, trade_id, strike_role, sequence_number, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists instrument_strikes_id_uniq_idx
-on "ores_trading_instrument_strikes_tbl" (tenant_id, trade_id)
+on "ores_trading_instrument_strikes_tbl" (tenant_id, trade_id, strike_role, sequence_number)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists instrument_strikes_tenant_idx
@@ -117,7 +124,7 @@ begin
     select version into current_version
     from "ores_trading_instrument_strikes_tbl"
     where tenant_id = NEW.tenant_id
-      and trade_id = NEW.trade_id
+      and trade_id = NEW.trade_id and strike_role = NEW.strike_role and sequence_number = NEW.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -150,7 +157,7 @@ begin
         update "ores_trading_instrument_strikes_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and trade_id = NEW.trade_id
+          and trade_id = NEW.trade_id and strike_role = NEW.strike_role and sequence_number = NEW.sequence_number
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -174,7 +181,7 @@ on delete to "ores_trading_instrument_strikes_tbl" do instead (
     update "ores_trading_instrument_strikes_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and trade_id = OLD.trade_id
+      and trade_id = OLD.trade_id and strike_role = OLD.strike_role and sequence_number = OLD.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
 

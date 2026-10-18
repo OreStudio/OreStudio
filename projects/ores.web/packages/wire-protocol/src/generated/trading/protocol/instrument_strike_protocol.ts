@@ -30,10 +30,14 @@ import type { Result } from '../../../utility/protocol.js';
 
 export interface InstrumentStrikeKey {
     trade_id: string;
+    strike_role: string;
+    sequence_number: number;
 }
 
 export interface InstrumentStrikeWrite {
     trade_id: string;
+    strike_role: string;
+    sequence_number: number;
     trade_activity_id: string;
     price_value: string | null;
     price_currency: string | null;
@@ -56,10 +60,6 @@ export interface InstrumentStrikeRemoval {
 export interface InstrumentStrikeLookup {
     key: InstrumentStrikeKey;
     instrument_strike: InstrumentStrike | null;
-}
-
-export interface InstrumentStrikesFilter {
-    trade_id_one_of: string[] | null;
 }
 
 export interface InstrumentStrikeEvent {
@@ -86,7 +86,6 @@ export interface ListInstrumentStrikesRequest {
     offset: number;
     limit: number;
     order: Order;
-    filter: InstrumentStrikesFilter | null;
     as_of: string | null;
 }
 

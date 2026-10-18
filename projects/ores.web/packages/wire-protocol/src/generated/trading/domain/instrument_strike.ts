@@ -34,6 +34,8 @@ export interface InstrumentStrike {
     version: number;
     tenant_id: string;
     trade_id: string;
+    strike_role: string;
+    sequence_number: number;
     trade_activity_id: string;
     price_value: string | null;
     price_currency: string | null;

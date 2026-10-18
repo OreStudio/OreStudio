@@ -44,6 +44,44 @@ row and the other four are null.
 
 The trade whose document stated this strike.
 
+** strike_role
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         text
+:cpp_type:     std::string
+:nullable:     false
+:economic:     false
+:END:
+
+Which arm of the document stated this strike: =cap= or =floor= for a cap/floor,
+=single= for the one strike a bond, a swaption or an index option states.
+
+=strike_role= is data, not a table: the closed set is fixed, and a collar
+states both arms in one document, so the arm belongs to the strike rather than
+to the product.
+
+#+begin_src cpp :name generator
+std::string("single")
+#+end_src
+
+** sequence_number
+:PROPERTIES:
+:group:        identity
+:primary_key:  true
+:type:         integer
+:cpp_type:     int
+:nullable:     false
+:economic:     false
+:END:
+
+1-based ordinal of this strike within its role, in the order the document
+states it.
+
+#+begin_src cpp :name generator
+faker::number::integer(1, 2)
+#+end_src
+
 ** trade_activity_id
 :PROPERTIES:
 :type:     uuid
@@ -174,6 +212,13 @@ is immutable.
 :tablename: ores_trading_instrument_strikes_tbl
 :rls_tenant_isolation: true
 :END:
+
+** Checks
+
+| expression |
+|------------|
+| "strike_role" in ('cap', 'floor', 'single') |
+| "sequence_number" >= 1 |
 
 * C++
 

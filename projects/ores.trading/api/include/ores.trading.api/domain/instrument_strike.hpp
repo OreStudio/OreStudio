@@ -67,6 +67,20 @@ struct instrument_strike final {
     boost::uuids::uuid trade_id;
 
     /**
+     * @brief Which arm of the document stated this strike: cap or floor for a cap/floor, single for
+     * the one strike a bond, a swaption or an index option states.
+     *
+     * strike_role is data, not a table: the closed set is fixed, and a collar states both arms in
+     * one document, so the arm belongs to the strike rather than to the product.
+     */
+    std::string strike_role;
+
+    /**
+     * @brief 1-based ordinal of this strike within its role, in the order the document states it.
+     */
+    int sequence_number;
+
+    /**
      * @brief The activity that wrote this version.
      */
     boost::uuids::uuid trade_activity_id;

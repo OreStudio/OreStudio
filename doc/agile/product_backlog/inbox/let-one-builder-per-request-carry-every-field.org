@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 88ECFA85-6865-42B8-83A7-CDF1B28F953E
+:END:
+#+title: Let one builder per request carry every field
+#+description: The ORE import handler builds 26 put_*_request messages and several copy fewer fields than their write struct declares. The strike one cost a PR: a CapFloor and an index option strike went out with an empty role and an indeterminate ordinal, so neither product could be imported, and every test passed because none of them crosses the handler. A census over the handler and the generated *_write structs names the rest.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Give every =put_*_request= the handler builds one constructor that takes the
+domain row, as the strike write now does, and make a check fail when a request
+leaves a field of its =*_write= struct unset.
+
+* Why
+
+The strike write cost a PR. The handler built =put_instrument_strike_request= in
+three places and copied eight of its ten fields in two of them, so a CapFloor or
+an index option strike went out with an empty =strike_role= and an indeterminate
+=sequence_number=: the service throws on the role, the table refuses it, and
+neither product could be imported. Every test passed, because no test crosses
+the handler — =ores.ore.service.tests= has no sources.
+
+The same census over the handler and the generated =*_write= structs names the
+rest. Distinct partial builders, as of this capture:
+
+| Request | Fields it never sets |
+|---------+----------------------|
+| =equity_swap_instrument= | =fixed_trigger_levels_json=, =initial_prices_json=, =knock_out_levels_json= |
+| =equity_accumulator_instrument= | =range_bounds_json= |
+| =trade_identifier= | =issuing_party_id= |
+| =swap_leg= | =leg_group= |
+| =bond_leg_rate= and =bond_issue_leg_rate= | =fixing_calendar=, =fixing_days=, =index=, =is_in_arrears=, and the stub and rounding fields |
+| =instrument_schedule= | =include_duplicate_dates=, and in one builder the dates, the rule and the calendar |
+
+Some are deliberate: a builder may write a header whose dates live in another
+table. The rest are silent drops, and the class is the review's finding 5 one
+layer up — a field with no producer on the wire rather than in the store.
+
+The equity two belong to the equity rework's owner and should be handed there
+rather than fixed here.
+
+* References
+
+- [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] — where the strike instance was found.
+- =projects/ores.ore/service/src/messaging/ore_import_execute_handler.cpp=.
+- The census is a scan of that file against every =*_write= struct the generated protocols declare; it found 26 request sites and 14 distinct partial builders.
+
+* See also
+
+-

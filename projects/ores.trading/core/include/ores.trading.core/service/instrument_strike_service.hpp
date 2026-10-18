@@ -121,24 +121,28 @@ public:
      * @return The instrument strike at that version if found, std::nullopt otherwise.
      */
     std::optional<domain::instrument_strike>
-    get_instrument_strike_at_version(const boost::uuids::uuid& trade_id, std::uint32_t version);
+    get_instrument_strike_at_version(const std::string& trade_id,
+                                     const std::string& strike_role,
+                                     const std::string& sequence_number,
+                                     std::uint32_t version);
 
     /**
      * @brief Retrieves a single instrument strike by its primary key.
      *
-     * The storage key is a uuid, so the signature says which key is meant and
-     * the human-readable key cannot be passed here by mistake.
-     *
      * @return The instrument strike if found, std::nullopt otherwise.
      */
     std::optional<domain::instrument_strike>
-    get_instrument_strike(const boost::uuids::uuid& trade_id);
+    get_instrument_strike(const std::string& trade_id,
+                          const std::string& strike_role,
+                          const std::string& sequence_number);
 
     /**
      * @brief Retrieves a batch of instrument strikes by primary key.
      */
     std::vector<domain::instrument_strike>
-    get_instrument_strikes(const std::vector<std::string>& trade_ids);
+    get_instrument_strikes(const std::vector<std::string>& trade_ids,
+                           const std::vector<std::string>& strike_roles,
+                           const std::vector<std::string>& sequence_numbers);
 
     /**
      * @brief Saves a instrument strike (creates or updates).
@@ -161,12 +165,16 @@ public:
      *
      * @throws std::exception on failure.
      */
-    void delete_instrument_strike(const boost::uuids::uuid& trade_id);
+    void delete_instrument_strike(const std::string& trade_id,
+                                  const std::string& strike_role,
+                                  const std::string& sequence_number);
 
     /**
      * @brief Deletes instrument strikes by their primary keys.
      */
-    void delete_instrument_strikes(const std::vector<std::string>& trade_ids);
+    void delete_instrument_strikes(const std::vector<std::string>& trade_ids,
+                                   const std::vector<std::string>& strike_roles,
+                                   const std::vector<std::string>& sequence_numbers);
 
     /**
      * @brief Retrieves all historical versions of a instrument strike.
@@ -174,7 +182,9 @@ public:
      * Addressed by the entity's key, which is its storage key.
      */
     std::vector<domain::instrument_strike>
-    get_instrument_strike_history(const std::string& trade_id);
+    get_instrument_strike_history(const std::string& trade_id,
+                                  const std::string& strike_role,
+                                  const std::string& sequence_number);
 
 private:
     context ctx_;

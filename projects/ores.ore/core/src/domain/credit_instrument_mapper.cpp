@@ -486,6 +486,8 @@ credit_instrument_data credit_instrument_mapper::forward_index_cds_option(const 
         // The strike is the option's one shared strike row.
         if (od.Strike) {
             instrument_strike row;
+            row.strike_role = "single";
+            row.sequence_number = 1;
             row.bare_value = exact_decimal(*od.Strike);
             stamp_audit(row);
             result.strikes.push_back(std::move(row));
@@ -681,8 +683,13 @@ trade credit_instrument_mapper::reverse_index_cds_option(const credit_instrument
         d.IndexCreditDefaultSwapData.LegData = legs.front();
     if (!data.constituents.empty())
         d.IndexCreditDefaultSwapData.BasketData = reverse_basket(data.constituents);
-    if (!data.strikes.empty() && data.strikes.front().bare_value)
-        set_money(d.Strike, data.strikes.front().bare_value);
+    // An index option states one strike with no arm, so the row it reads is the
+    // one whose role says so rather than whichever row came first.
+    const auto strike = std::find_if(data.strikes.begin(), data.strikes.end(), [](const auto& row) {
+        return row.strike_role == "single";
+    });
+    if (strike != data.strikes.end() && strike->bare_value)
+        set_money(d.Strike, strike->bare_value);
 
     d.OptionData = swap_instrument_mapper::rebuild_option_block(option_rows_of(data));
     t.IndexCreditDefaultSwapOptionData = std::move(d);

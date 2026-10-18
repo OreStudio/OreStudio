@@ -290,6 +290,49 @@ TEST_CASE("mapper_roundtrip_capfloor_forward", tags) {
     BOOST_LOG_SEV(lg, info) << "CapFloor forward-mapper test passed";
 }
 
+TEST_CASE("mapper_capfloor_keeps_both_arms_of_a_collar", tags) {
+    auto lg(make_logger(test_suite));
+    const auto t = load_first_trade("IR_CapFloor_on_FedFunds_amortising.xml");
+
+    const auto result = swap_instrument_mapper::forward_capfloor(t);
+
+    // The document states a cap of 0.03 and a floor of 0.0121 in one trade.
+    REQUIRE(result.strikes.size() == 2);
+    const auto by_role = [&result](const char* role) {
+        return std::find_if(result.strikes.begin(), result.strikes.end(), [role](const auto& row) {
+            return row.strike_role == role;
+        });
+    };
+    const auto cap = by_role("cap");
+    REQUIRE(cap != result.strikes.end());
+    CHECK(cap->sequence_number == 1);
+    CHECK(cap->bare_value == ores::utility::decimal::decimal::from_string("0.03").value());
+    const auto floor = by_role("floor");
+    REQUIRE(floor != result.strikes.end());
+    CHECK(floor->sequence_number == 1);
+    CHECK(floor->bare_value == ores::utility::decimal::decimal::from_string("0.0121").value());
+
+    const auto reconstructed = swap_instrument_mapper::reverse_capfloor(
+        result.header,
+        std::get<ores::trading::domain::cap_floor_instrument>(result.facts),
+        result.legs,
+        result.leg_amounts,
+        result.leg_rates,
+        result.strikes,
+        result.schedules,
+        result.schedule_dates);
+
+    REQUIRE(reconstructed.CapFloorData.operator bool());
+    const auto& cf = *reconstructed.CapFloorData;
+    REQUIRE(cf.Caps.operator bool());
+    REQUIRE(cf.Caps->Cap.size() == 1);
+    CHECK(cf.Caps->Cap.front().lexical() == "0.03");
+    REQUIRE(cf.Floors.operator bool());
+    REQUIRE(cf.Floors->Floor.size() == 1);
+    CHECK(cf.Floors->Floor.front().lexical() == "0.0121");
+    BOOST_LOG_SEV(lg, info) << "Collar case passed";
+}
+
 TEST_CASE("mapper_roundtrip_capfloor_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_first_trade("IR_Cap_on_IBOR.xml");

@@ -23,25 +23,17 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.trading.core/messaging/instrument_strike_history_provider_registrar.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.history.api/service/version_builder.hpp"
 #include "ores.history.core/service/dispatch_registry.hpp"
-#include "ores.trading.core/presentation/instrument_strike_history_field_mapper.hpp"
-#include "ores.trading.core/service/instrument_strike_service.hpp"
 
 namespace ores::trading::messaging {
 
 void register_instrument_strike_history_provider(
     ores::history::service::dispatch_registry& registry) {
-    registry.register_history_provider(
-        "ores.trading.instrument_strike",
-        "trading::instrument_strikes:read",
-        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
-            service::instrument_strike_service svc(scoped_ctx);
-            auto versions = svc.get_instrument_strike_history(entity_id);
-            return ores::history::service::build_entity_history_versions(
-                versions, presentation::render_instrument_strike_fields);
-        });
+    // A compound-key row has no single-string id on the history_provider
+    // interface, so nothing is registered for it yet. The direct service
+    // call carries the full key; a provider shape is a composite-key
+    // representation decision that stays open until a consumer exists.
+    (void)registry;
 }
 
 }

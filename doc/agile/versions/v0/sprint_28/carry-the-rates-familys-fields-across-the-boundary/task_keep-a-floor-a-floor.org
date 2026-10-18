@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: BE146EDF-D407-4C0C-916B-A69380533961
+:END:
+#+title: Task: Keep a floor a floor and hold the whole collar
+#+description: The document states a cap/floor's strikes as two lists, Caps and Floors, and a real corpus document states both. The shared strike child holds one row per trade with no column saying which list it came from, so the mapper keeps the first cap and the reverse writes everything back as a cap: a floor returns as a cap, and a collar loses its floor. Give the child a role and an ordinal, keyed like the leg rates beside it.
+#+type: task
+#+level: s1
+#+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
+#+owner: marco
+#+branch: feature/keep-a-floor-a-floor
+#+pr: 3553
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A cap/floor document round-trips as the lists it stated, cap and floor alike, including a collar that states both.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] |
+| Now          | In review. Every cap and floor is a row with its arm and its ordinal. |
+| Waiting on   | Nothing.                               |
+| Next         | The importer's three strike writes now share one builder. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The strike child records which list its row came from, and its key admits more than one strike per trade.
+- Every cap and floor the document states is written, not just the first.
+- The corpus collar document proves both lists come back, with the document's own values as the expectation.
+
+* Plan
+
+1. Give =instrument_strikes= a =strike_role= and a =sequence_number=, both in
+   the key, mirroring =swap_leg_rates= beside it: that table already carries a
+   =rate_role= in its key for exactly this shape, a two-arm closed set that is
+   data rather than a table.
+2. Write every cap and every floor the document states, each with its role and
+   its ordinal, rather than the first of whichever list is filled.
+3. Read the role back on export and write the row into the list it names.
+4. Prove it on the corpus collar, =IR_CapFloor_on_FedFunds_amortising.xml=,
+   which states a cap of 0.03 and a floor of 0.0121 in one trade.
+
+* Decisions
+
+- *The role goes on the strike row, not on the product fact.* A collar states
+  both lists in one document, so the arm is a property of the strike, not of the
+  product. A =cap_floor_type= column on =cap_floor_instruments= would have been
+  cheaper and would have made a collar unrepresentable.
+- *The vocabulary is =cap=, =floor= and =single=.* =single= is the one strike a
+  bond, a swaption or an index option states, with no arm to name; the column is
+  not nullable, so every writer must say what it means rather than leave a hole.
+- *Both columns join the key.* One strike per trade is the defect; an ordinal
+  alone would let a second cap overwrite the first.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Strike rows a collar states | 2 (cap 0.03, floor 0.0121) | =IR_CapFloor_on_FedFunds_amortising.xml:120,123= | 63bdfaeef2 |
+| Writers of a strike row | 2 constructors and 3 transport sites | =grep -rn 'instrument_strike row;' projects/ --include=*.cpp= gives the two constructors; =grep -c 'put_instrument_strike_request'= gives the three sites that send one | 63bdfaeef2 |
+| Assertions in the collar case | 15 | the case body | 63bdfaeef2 |
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- A key change on a shared table has four writers, and the first pass fixed one
+  of them. The importer built =put_instrument_strike_request= in three places
+  and copied eight of its ten fields in two of them, so a CapFloor or an index
+  option strike would have been sent with an empty role and an indeterminate
+  ordinal: the service throws and the table refuses it. The three sites now call
+  one builder that takes the row, so a new key column cannot be forgotten by two
+  of three callers.
+- =sequence_number= is generated as a bare =int= with no initialiser, and the
+  model has no way to say otherwise: =:default_value:= changes the database
+  default, not the C++ member. A missed assignment is therefore undefined rather
+  than loud. The single builder is the answer for these three sites, and the
+  same pattern is in =swap_leg_rate=, so it is a codegen-wide gap worth its own
+  capture if it bites.
+- Strike history is now a no-op for this entity. A compound key has no
+  single-string id on the =history_provider= interface, so the registrar
+  registers nothing, exactly as =swap_leg_rate='s registrar has since it became
+  compound; the generated comment states the reason. It is a change for this
+  entity, and it is not covered by a test.
+- The =trade_id_one_of= filter on the strike protocol is gone, because the
+  generator emits it only for a single-key entity. All the sibling protocols
+  still declare theirs; the batch read that replaces it takes three parallel key
+  vectors.
+- Two readers consume strikes without filtering by role: the credit reverse took
+  =front()= and now asks for the =single= row; the bond reader assigns into a map
+  keyed by trade and keeps the last row, which is safe only while a bond states
+  one strike.
+- The ordinal now orders the reverse's output. Nothing else reads it, and
+  =read_strikes_by_trade_ids= still orders by trade alone.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3553][#3553]] | [ore,trading,sql] Give a strike its arm and its ordinal |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A cap/floor's strikes round-trip as the lists the document stated. Every cap and
+every floor is its own row, carrying the list it came from and its ordinal, and
+the export returns each row to the list its role names.
+
+Proved red first: with the mapper reverted to the merge base the case fails on
+=result.strikes.size() == 2= with =1 == 2=, which is the floor being dropped;
+with the fix it passes fifteen assertions, on the corpus collar's own values
+(=0.03= and =0.0121=).
+
+The arm is data on the row rather than a column on the product, because a collar
+states both lists in one document: a =cap_floor_type= on the fact table would
+have made a collar unrepresentable. The shape mirrors =swap_leg_rates=, which
+already carries a =rate_role= in its key for the same reason.
+
+The role is not nullable, so every writer says what it means: the rates mapper
+writes =cap= or =floor=, the credit mapper writes =single= for the one strike an
+index option states, and the generator writes =single= rather than a word
+outside the set.
+
+Order within a role is preserved on the way out because the reverse sorts by
+the ordinal, and a role the product does not state is skipped rather than
+rendered as a cap.
+
+The gate: build, db, ctest, ore-xml-roundtrip, pgtap and the static checks with
+the fleet down, then =step-consumers= with it up.

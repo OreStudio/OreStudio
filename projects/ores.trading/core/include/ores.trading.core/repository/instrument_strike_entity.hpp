@@ -43,6 +43,8 @@ struct instrument_strike_entity {
     constexpr static const char* tablename = "ores_trading_instrument_strikes_tbl";
 
     sqlgen::PrimaryKey<std::string> trade_id;
+    sqlgen::PrimaryKey<std::string> strike_role;
+    sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;
     std::string trade_activity_id;

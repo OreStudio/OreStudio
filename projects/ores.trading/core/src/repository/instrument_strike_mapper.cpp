@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <optional>
+#include <string>
 #include <vector>
 
 namespace ores::trading::repository {
@@ -48,6 +49,8 @@ domain::instrument_strike instrument_strike_mapper::map(const instrument_strike_
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.trade_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_id.value());
+    r.strike_role = v.strike_role.value();
+    r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.trade_activity_id = boost::lexical_cast<boost::uuids::uuid>(v.trade_activity_id);
     r.price_value =
         v.price_value.has_value() ?
@@ -79,6 +82,8 @@ instrument_strike_entity instrument_strike_mapper::map(const domain::instrument_
 
     instrument_strike_entity r;
     r.trade_id = boost::uuids::to_string(v.trade_id);
+    r.strike_role = v.strike_role;
+    r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.trade_activity_id = boost::uuids::to_string(v.trade_activity_id);

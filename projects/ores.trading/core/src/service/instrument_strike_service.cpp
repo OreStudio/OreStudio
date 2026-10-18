@@ -27,7 +27,6 @@
 #include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
 #include <boost/log/sources/severity_feature.hpp>
-#include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -76,7 +75,10 @@ namespace {
 std::vector<domain::instrument_strike> read_one(repository::instrument_strike_repository& repo,
                                                 const ores::database::context& ctx,
                                                 const messaging::instrument_strike_key& key) {
-    return repo.read_latest(ctx, boost::uuids::to_string(key.trade_id));
+    return repo.read_latest(ctx,
+                            boost::uuids::to_string(key.trade_id),
+                            key.strike_role,
+                            std::to_string(key.sequence_number));
 }
 
 /**
@@ -88,6 +90,8 @@ std::vector<domain::instrument_strike> read_one(repository::instrument_strike_re
 messaging::instrument_strike_key key_from(const domain::instrument_strike& v) {
     messaging::instrument_strike_key key;
     key.trade_id = v.trade_id;
+    key.strike_role = v.strike_role;
+    key.sequence_number = v.sequence_number;
     return key;
 }
 
@@ -101,6 +105,8 @@ messaging::instrument_strike_key key_from(const domain::instrument_strike& v) {
 domain::instrument_strike to_domain(const messaging::instrument_strike_write& write) {
     domain::instrument_strike v;
     v.trade_id = write.trade_id;
+    v.strike_role = write.strike_role;
+    v.sequence_number = write.sequence_number;
     v.trade_activity_id = write.trade_activity_id;
     v.price_value = write.price_value;
     v.price_currency = write.price_currency;
@@ -123,12 +129,6 @@ messaging::list_instrument_strikes_response instrument_strike_service::list_inst
                                  {.entity = "instrument strikes", .field = request.order.field});
         return response;
     }
-    if (request.filter && request.filter->trade_id_one_of &&
-        request.filter->trade_id_one_of->size() > 1000) {
-        response.result =
-            refuse(outcome_code::filter_too_large, {.field = "trade_id_one_of", .limit = "1000"});
-        return response;
-    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -140,9 +140,9 @@ messaging::list_instrument_strikes_response instrument_strike_service::list_inst
             return response;
         }
     }
-    response.instrument_strikes = repo_.read_latest(
-        ctx_, request.offset, request.limit, request.order, request.filter, as_of);
-    response.total = repo_.get_total_instrument_strike_count(ctx_, request.filter, as_of);
+    response.instrument_strikes =
+        repo_.read_latest(ctx_, request.offset, request.limit, request.order, as_of);
+    response.total = repo_.get_total_instrument_strike_count(ctx_, as_of);
     return response;
 }
 
@@ -241,7 +241,11 @@ messaging::delete_instrument_strike_response instrument_strike_service::delete_i
         }
         expected = request.removal.precondition.version;
     }
-    switch (repo_.remove(ctx_, boost::uuids::to_string(request.removal.key.trade_id), expected)) {
+    switch (repo_.remove(ctx_,
+                         boost::uuids::to_string(request.removal.key.trade_id),
+                         request.removal.key.strike_role,
+                         std::to_string(request.removal.key.sequence_number),
+                         expected)) {
         case repository::instrument_strike_repository::remove_status::removed:
             break;
         case repository::instrument_strike_repository::remove_status::missing:
@@ -289,7 +293,15 @@ instrument_strike_service::delete_many_instrument_strikes(
     trade_id_keys.reserve(request.removals.size());
     for (const auto& removal : request.removals)
         trade_id_keys.push_back(boost::uuids::to_string(removal.key.trade_id));
-    repo_.remove(ctx_, trade_id_keys);
+    std::vector<std::string> strike_role_keys;
+    strike_role_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        strike_role_keys.push_back(removal.key.strike_role);
+    std::vector<std::string> sequence_number_keys;
+    sequence_number_keys.reserve(request.removals.size());
+    for (const auto& removal : request.removals)
+        sequence_number_keys.push_back(std::to_string(removal.key.sequence_number));
+    repo_.remove(ctx_, trade_id_keys, strike_role_keys, sequence_number_keys);
     return response;
 }
 
@@ -307,7 +319,10 @@ instrument_strike_service::list_instrument_strike_versions(
             refuse(outcome_code::filter_not_supported, {.entity = "instrument strikes"});
         return response;
     }
-    auto all = repo_.read_all(ctx_, boost::uuids::to_string(request.key.trade_id));
+    auto all = repo_.read_all(ctx_,
+                              boost::uuids::to_string(request.key.trade_id),
+                              request.key.strike_role,
+                              std::to_string(request.key.sequence_number));
     // The store reads versions newest first, and the order a caller gets when
     // it states none is key order, which for a version key is oldest first.
     std::reverse(all.begin(), all.end());
@@ -323,8 +338,12 @@ messaging::get_instrument_strike_version_response
 instrument_strike_service::get_instrument_strike_version(
     const messaging::get_instrument_strike_version_request& request) {
     messaging::get_instrument_strike_version_response response;
-    auto found = repo_.read_at_version(
-        ctx_, boost::uuids::to_string(request.key.instrument_strike.trade_id), request.key.version);
+    auto found =
+        repo_.read_at_version(ctx_,
+                              boost::uuids::to_string(request.key.instrument_strike.trade_id),
+                              request.key.instrument_strike.strike_role,
+                              std::to_string(request.key.instrument_strike.sequence_number),
+                              request.key.version);
     if (!found) {
         response.result = refuse(outcome_code::not_found, {.entity = "instrument_strike"});
         return response;
@@ -394,35 +413,51 @@ std::uint32_t instrument_strike_service::count_instrument_strikes() {
 
 
 std::optional<domain::instrument_strike>
-instrument_strike_service::get_instrument_strike_at_version(const boost::uuids::uuid& trade_id,
+instrument_strike_service::get_instrument_strike_at_version(const std::string& trade_id,
+                                                            const std::string& strike_role,
+                                                            const std::string& sequence_number,
                                                             std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting instrument strike at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
-    return repo_.read_at_version(ctx_, boost::uuids::to_string(trade_id), version);
+                               << "trade_id: " << trade_id << " strike_role: " << strike_role
+                               << " sequence_number: " << sequence_number
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, trade_id, strike_role, sequence_number, version);
 }
 
 std::optional<domain::instrument_strike>
-instrument_strike_service::get_instrument_strike(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting instrument strike. " << "trade_id: " << trade_id;
-    auto results = repo_.read_latest(ctx_, boost::uuids::to_string(trade_id));
+instrument_strike_service::get_instrument_strike(const std::string& trade_id,
+                                                 const std::string& strike_role,
+                                                 const std::string& sequence_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting instrument strike. " << "trade_id: " << trade_id
+                               << " strike_role: " << strike_role
+                               << " sequence_number: " << sequence_number;
+    auto results = repo_.read_latest(ctx_, trade_id, strike_role, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-std::vector<domain::instrument_strike>
-instrument_strike_service::get_instrument_strikes(const std::vector<std::string>& trade_ids) {
-    return repo_.read_latest(ctx_, trade_ids);
+std::vector<domain::instrument_strike> instrument_strike_service::get_instrument_strikes(
+    const std::vector<std::string>& trade_ids,
+    const std::vector<std::string>& strike_roles,
+    const std::vector<std::string>& sequence_numbers) {
+    return repo_.read_latest(ctx_, trade_ids, strike_roles, sequence_numbers);
 }
 
 void instrument_strike_service::save_instrument_strike(const domain::instrument_strike& v) {
     if (v.trade_id.is_nil())
         throw std::invalid_argument("Instrument Strike trade_id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving instrument strike. " << "trade_id: " << v.trade_id;
+    if (v.strike_role.empty())
+        throw std::invalid_argument("Instrument Strike strike_role cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving instrument strike. " << "trade_id: " << v.trade_id
+                               << " strike_role: " << v.strike_role
+                               << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved instrument strike. " << "trade_id: " << v.trade_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved instrument strike. " << "trade_id: " << v.trade_id
+                              << " strike_role: " << v.strike_role
+                              << " sequence_number: " << v.sequence_number;
 }
 
 void instrument_strike_service::save_instrument_strikes(
@@ -430,6 +465,8 @@ void instrument_strike_service::save_instrument_strikes(
     for (const auto& e : instrument_strikes) {
         if (e.trade_id.is_nil())
             throw std::invalid_argument("Instrument Strike trade_id cannot be empty.");
+        if (e.strike_role.empty())
+            throw std::invalid_argument("Instrument Strike strike_role cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << instrument_strikes.size() << " instrument strikes";
     auto ts = instrument_strikes;
@@ -439,22 +476,33 @@ void instrument_strike_service::save_instrument_strikes(
     repo_.write(ctx_, ts);
 }
 
-void instrument_strike_service::delete_instrument_strike(const boost::uuids::uuid& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument strike. " << "trade_id: " << trade_id;
-    repo_.remove(ctx_, boost::uuids::to_string(trade_id));
-    BOOST_LOG_SEV(lg(), info) << "Removed instrument strike. " << "trade_id: " << trade_id;
+void instrument_strike_service::delete_instrument_strike(const std::string& trade_id,
+                                                         const std::string& strike_role,
+                                                         const std::string& sequence_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing instrument strike. " << "trade_id: " << trade_id
+                               << " strike_role: " << strike_role
+                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, trade_id, strike_role, sequence_number);
+    BOOST_LOG_SEV(lg(), info) << "Removed instrument strike. " << "trade_id: " << trade_id
+                              << " strike_role: " << strike_role
+                              << " sequence_number: " << sequence_number;
 }
 
 void instrument_strike_service::delete_instrument_strikes(
-    const std::vector<std::string>& trade_ids) {
-    repo_.remove(ctx_, trade_ids);
+    const std::vector<std::string>& trade_ids,
+    const std::vector<std::string>& strike_roles,
+    const std::vector<std::string>& sequence_numbers) {
+    repo_.remove(ctx_, trade_ids, strike_roles, sequence_numbers);
 }
 
 std::vector<domain::instrument_strike>
-instrument_strike_service::get_instrument_strike_history(const std::string& trade_id) {
+instrument_strike_service::get_instrument_strike_history(const std::string& trade_id,
+                                                         const std::string& strike_role,
+                                                         const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument strike. "
-                               << "trade_id: " << trade_id;
-    return repo_.read_all(ctx_, trade_id);
+                               << "trade_id: " << trade_id << " strike_role: " << strike_role
+                               << " sequence_number: " << sequence_number;
+    return repo_.read_all(ctx_, trade_id, strike_role, sequence_number);
 }
 
 }

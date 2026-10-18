@@ -37,10 +37,14 @@ namespace ores::trading::messaging {
 
 struct instrument_strike_key {
     boost::uuids::uuid trade_id;
+    std::string strike_role;
+    int sequence_number;
 };
 
 struct instrument_strike_write {
     boost::uuids::uuid trade_id;
+    std::string strike_role;
+    int sequence_number;
     boost::uuids::uuid trade_activity_id;
     std::optional<ores::utility::decimal::decimal> price_value;
     std::optional<std::string> price_currency;
@@ -63,10 +67,6 @@ struct instrument_strike_removal {
 struct instrument_strike_lookup {
     instrument_strike_key key;
     std::optional<ores::trading::domain::instrument_strike> instrument_strike;
-};
-
-struct instrument_strikes_filter {
-    std::optional<std::vector<boost::uuids::uuid>> trade_id_one_of;
 };
 
 struct instrument_strike_event {
@@ -102,7 +102,6 @@ struct list_instrument_strikes_request {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
     ores::utility::domain::order order;
-    std::optional<instrument_strikes_filter> filter;
     std::optional<std::string> as_of;
 };
 

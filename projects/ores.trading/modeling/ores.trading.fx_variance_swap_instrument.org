@@ -162,7 +162,7 @@ std::string("Long")
 
 ** strike
 :PROPERTIES:
-:type:          numeric(38, 12)
+:type:          double precision
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0

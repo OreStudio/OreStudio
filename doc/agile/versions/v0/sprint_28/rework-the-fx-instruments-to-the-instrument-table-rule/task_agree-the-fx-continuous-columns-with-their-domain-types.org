@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/agree-the-fx-continuous-columns-with-their-domain-types
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ the domain is the shape the exact-numbers rule exists to end.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Move the variance strike, then sweep the family. |
-| Last touched | 2026-10-16                               |
+| Now          | Implementation complete and the suites pass. Waiting on review and merge. |
+| Waiting on   | The review of its PR. |
+| Next         | Address the review, then merge. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -62,6 +62,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| FX numeric columns swept | 22 | the sweep loop recorded under Result | the PR head |
+| FX continuous columns | 2 | =fx_variance_swap_instrument.strike= and =range_bound.leverage= | the PR head |
+| Columns that disagreed with their domain type | 1 | the variance strike, before the change | the PR head |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
+| ORE core suite | pass | the same command with =ores.ore.core.tests= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -93,3 +98,41 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=fx_variance_swap_instrument.strike= is =double precision= at rest, matching the
+=double= the domain and the entity already carried. A variance strike is a
+volatility, so rounding it to twelve decimal places stated a precision the
+quantity does not have.
+
+The sweep found one other FX continuous column and no other disagreement. It
+walked every column of the seven FX models whose SQL type or C++ type is
+numeric, which is the population that can disagree:
+
+#+begin_src python
+import re, pathlib
+for path in sorted(pathlib.Path("projects/ores.trading/modeling").glob("ores.trading.fx_*.org")):
+    text = path.read_text()
+    for m in re.finditer(r"^\*\* (\w+)\n:PROPERTIES:\n(.*?):END:", text, re.S | re.M):
+        name, block = m.group(1), m.group(2)
+        t = re.search(r"^:type:\s*(\S+)", block, re.M)
+        c = re.search(r"^:cpp_type:\s*(.+)$", block, re.M)
+        if t and c and ("double" in c.group(1) or "decimal" in c.group(1)):
+            print(path.stem, name, t.group(1), c.group(1).strip())
+#+end_src
+
+The sweep found twenty-two numeric columns. Twenty-one are money: an amount, a
+notional, a level or a price, each =numeric(38, 12)= in the column and exact
+decimal in the domain, so each already agreed. The twenty-second was the
+variance strike. =range_bound.leverage= is the family's other continuous
+quantity, and it agreed when it landed: =double precision= with a =double=.
+
+Nothing that is money moved to a float. The SQL regenerated from the model, the
+generated C++ did not change because the entity and the mapper already read a
+=double=, and =check_model_sql_types.py= passes.
+
+* Decisions
+
+- *A variance strike is continuous, not money.* It is a volatility, the same
+  kind of quantity as a basket weight, so the exact-numbers rule puts it in the
+  binary double direction. The money direction is for amounts, notionals and
+  price levels, which is what the other twenty-one columns hold.

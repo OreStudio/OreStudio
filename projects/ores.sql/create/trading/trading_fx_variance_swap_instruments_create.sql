@@ -40,7 +40,7 @@ create table if not exists "ores_trading_fx_variance_swap_instruments_tbl" (
     "currency" text not null,
     "underlying_code" text not null,
     "long_short" text not null,
-    "strike" numeric(38, 12) not null,
+    "strike" double precision not null,
     "notional" numeric(38, 12) not null,
     "moment_type" text not null,
     "description" text null,

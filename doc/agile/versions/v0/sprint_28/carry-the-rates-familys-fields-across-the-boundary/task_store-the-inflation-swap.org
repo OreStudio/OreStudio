@@ -66,7 +66,7 @@ task and name that file in the Command column.
 | Product fields the CPI leg states | 3 | =Inflation_CPI_Swap.xml= lines 65, 69, 71 | 1dbadf5fba |
 | Sites the import writes | 3 | =swap_instrument_mapper.cpp=, the CPI loop in =forward_inflation_swap= | 1dbadf5fba |
 | Sites the export writes | 3 | =swap_instrument_mapper.cpp=, the CPI loop in =reverse_inflation_swap= | 1dbadf5fba |
-| Assertions in the new case | 15, of which 6 name the document's values | the case body | 1dbadf5fba |
+| Assertions in the new case | 14, of which 3 name the document's values and 3 name values it never states | the case body | 1dbadf5fba |
 |      |       |         |        |
 
 * Notes
@@ -133,16 +133,17 @@ export writes them onto the same leg, which the shared leg reverse leaves with
 no payload at all.
 
 Proved red first: against the merge base the case fails on an empty
-=inflation_index_code= and an absent =base_cpi=; after the change it passes with
-fifteen assertions, six of which name =UKRPI=, =210= and =2M= rather than quoting
-the mapper.
+=inflation_index_code= and an absent =base_cpi=; after the change it passes
+fourteen assertions, three of which name =UKRPI=, =210= and =2M= and three of
+which name values the document never states, so the two halves cannot carry each
+other.
 
 Money: =BaseCPI= is an =xs:float= in the schema, and the generated binding is a
 plain =float= with no lexical form, so the digits are the schema's own limit and
 a value from the document round-trips float to double to float unchanged. Two
 consequences worth naming. The leaf re-spells a document's =114.4= as
 =114.400002=, because the serialiser prints a float at nine significant digits.
-And the export adds one decimal-to-float conversion, which is not one of
+And the export adds one double-to-float conversion, which is not one of
 finding 7's sites: those are casts that discard a lexical form the leaf could
 have carried, and this leaf cannot. Giving it one would be a codegen change of
 the =moneyFloat= kind the FX rework made, and it is not this unit's.
@@ -152,4 +153,6 @@ A trade imported before this unit was left half-written: its trade row and its
 the instrument save is non-fatal and the leg writes come after it. Nothing needs
 migrating, but re-running the import is not the remedy: the planner mints a
 fresh trade id per trade, so a second run adds a duplicate and leaves the broken
-header in place. Delete the half-written trades first.
+header in place. Delete the =rate_instruments= header first, which cascades the
+family, and then the trade: a trade delete does not reach the header, and the
+import's own cleanup closes bookings only.

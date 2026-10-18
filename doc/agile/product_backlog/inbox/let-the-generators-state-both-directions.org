@@ -13,15 +13,26 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Let each synthetic generator that writes a closed either-or vary it across its
+rows: the forward rate agreement generator writes =Long= unconditionally today.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The forward rate agreement's mapper ignored the direction its document stated for
+as long as the family existed, and every witness agreed with the constant: the
+ORE example corpus states Long, and so does the generator. No test, dataset or
+screenshot could have shown the difference, which is why the defect survived
+review after review.
+
+A fixture that varies a closed set is cheap, and it is the only witness that can
+fail. The same habit probably reaches the other either-ors the generators write
+— an option's long or short, a leg's payer, a call or a put. Count them before
+changing one, so the change lands as a rule rather than as one generator's patch.
 
 * References
 
--
+- [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] — the unit whose verifier found this.
+- =fra_instrument_generator.cpp=, the constant.
 
 * See also
 

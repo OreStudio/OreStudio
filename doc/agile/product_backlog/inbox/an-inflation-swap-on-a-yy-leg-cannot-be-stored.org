@@ -13,15 +13,31 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Give the inflation swap's year-on-year leg the treatment the CPI leg just got:
+read =Index=, =BaseCPI= and =ObservationLag= from =YYLegData= on import, and
+write that group back on export. The alternative is a named refusal, so a YY
+document reads as a product the family does not model rather than as a raw check
+violation.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The rates review's finding 2 was that an inflation swap cannot be stored, and
+that is fixed for a CPI leg. A year-on-year swap states the same three values on
+a YY leg, and neither direction of the mapper has a YY branch, so the fact row's
+=inflation_index_code= stays empty and the table's non-empty check refuses the
+insert. The trade is then left half-written exactly as before: a trade row and a
+=rate_instruments= header, no fact, no legs.
+
+No document in the corpus uses a YY leg, which is why nothing noticed, and the
+same absence of a witness is the reason the CPI half survived so long. ORE's
+schema makes YY a first-class alternative to CPI, so this is a product the
+family routes and cannot store.
 
 * References
 
--
+- [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] — the story that closed the CPI half.
+- =external/ore/xsd/instruments.xsd=, the =YYLegData= member and its required =Index=.
+- =swap_instrument_mapper.cpp=, =forward_inflation_swap= and =reverse_inflation_swap=.
 
 * See also
 

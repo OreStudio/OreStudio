@@ -84,6 +84,7 @@
 #include "ores.trading.service/messaging/fx_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/range_bound_event_registrar.hpp"
 #include "ores.trading.service/messaging/index_credit_default_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/index_credit_default_swap_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"

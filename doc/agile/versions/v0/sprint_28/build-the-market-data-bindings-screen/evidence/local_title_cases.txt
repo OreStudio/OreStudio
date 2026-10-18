@@ -1,0 +1,34 @@
+Raw output: the title cases run locally against this environment
+==================================================================
+
+Command: python3 evidence/run_from_ctest_env.py \
+           build/output/linux-clang-release-ninja/projects/ores.marketdata/core/tests/CTestTestfile.cmake \
+           ores.marketdata.core.tests \
+           build/output/linux-clang-release-ninja/publish/bin/ores.marketdata.core.tests \
+           "*title*" -r compact
+
+Preset: linux-clang-release-ninja, environment eager_maxwell.
+Binary commit: 3a99d376d206a506dda9ce8b8a4bc437af903892, from publish/bin/version.manifest.
+The binary was built from fix/seed-the-bloomberg-provider-in-tests, and main has
+moved since, so the CI logs above are the authority for the current tree.
+
+The ENVIRONMENT property of the CTest entry is applied to the process; the
+title cases need no database, but the rest of the binary does.
+
+----------------------------------------------------------------------
+
+$ ... "*title*" --list-tests
+Matching test cases:
+  the answer gives one title for each quote type, empty only for none
+      [marketdata][oresmd_schema_describer][service]
+  every title names only the subject and the fields of its row
+      [marketdata][oresmd_schema_describer][service]
+2 matching test cases
+
+
+$ ... "*title*" -r compact
+Filters: "*title*"
+RNG seed: 3603909125
+All tests passed (223 assertions in 2 test cases)
+
+

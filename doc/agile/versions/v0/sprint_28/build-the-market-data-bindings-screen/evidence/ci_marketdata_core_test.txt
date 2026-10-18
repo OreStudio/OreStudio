@@ -1,0 +1,39 @@
+Raw output: the CI runs of ores.marketdata.core.tests
+=====================================================
+
+The title cases the task names are cases in this binary, so whether CI runs
+them is whether CI runs this binary and the binary reports them.
+
+Commands: gh run view --job <job> --log > <log>
+          grep -F -e 'Start 89: ores.marketdata.core.tests' \
+          -e '89: Test command:' -e 'title names only the subject' \
+          -e 'one title for each quote type' -e '89: All tests passed' \
+          -e 'Test #89: ores.marketdata.core.tests' \
+          -e 'tests passed, 0 tests failed' -e 'The following tests FAILED' \
+          -e ' - ores.synthetic.service.tests' <log>
+
+Each line below is as the Actions log wrote it, with the log's job-name and
+timestamp prefix stripped. Nothing else is changed.
+
+
+Run 39033061931, job 117397450911, head e336bd0ffb36b1d85344faf057151853aa9fe687, 2026-10-17 15:57-16:03 UTC
+----------------------------------------------------------------------
+      Start 89: ores.marketdata.core.tests
+89: Test command: /home/runner/work/OreStudio/OreStudio/build/output/linux-clang-release-ninja/publish/bin/ores.marketdata.core.tests "--allow-running-no-tests" "--durations" "yes" "--filenames-as-tags" "-r" "compact" "-r" "xml::out=/home/runner/work/OreStudio/OreStudio/build/output/linux-clang-release-ninja/publish/bin/test-results-ores.marketdata.core.tests.xml"
+89: 0.000 s: the answer gives one title for each quote type, empty only for none
+89: 0.000 s: every title names only the subject and the fields of its row
+89: All tests passed (8299 assertions in 226 test cases)
+96/96 Test #89: ores.marketdata.core.tests .......   Passed  393.68 sec
+
+
+Run 39054569414, job 117459968034, head 132b3de2e635c9f065ca8c03cece1088e1702b86, 2026-10-17 19:51-19:58 UTC
+----------------------------------------------------------------------
+      Start 89: ores.marketdata.core.tests
+89: Test command: /home/runner/work/OreStudio/OreStudio/build/output/linux-clang-release-ninja/publish/bin/ores.marketdata.core.tests "--allow-running-no-tests" "--durations" "yes" "--filenames-as-tags" "-r" "compact" "-r" "xml::out=/home/runner/work/OreStudio/OreStudio/build/output/linux-clang-release-ninja/publish/bin/test-results-ores.marketdata.core.tests.xml"
+89: 0.000 s: the answer gives one title for each quote type, empty only for none
+89: 0.000 s: every title names only the subject and the fields of its row
+89: All tests passed (8275 assertions in 226 test cases)
+96/96 Test #89: ores.marketdata.core.tests .......   Passed  379.18 sec
+The following tests FAILED:
+	 27 - ores.synthetic.service.tests (Failed)
+

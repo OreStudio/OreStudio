@@ -115,9 +115,9 @@ const DETAIL: ReportDetail = {
 
 function list(seed: (client: QueryClient) => void = () => undefined): string {
     return renderRecords(
-        '/reporting',
+        '/reporting/reports',
         [],
-        <Route path="/reporting" element={<ReportsScreen />} />,
+        <Route path="/reporting/reports" element={<ReportsScreen />} />,
         (client) => {
             client.setQueryData(REPORTS_QUERY_KEY, PAGE);
             seed(client);
@@ -128,23 +128,35 @@ function list(seed: (client: QueryClient) => void = () => undefined): string {
 /** The list drawn from a page that states its own rows and unread reads. */
 function listPage(page: ReportsPage): string {
     return renderRecords(
-        '/reporting',
+        '/reporting/reports',
         [],
-        <Route path="/reporting" element={<ReportsScreen />} />,
+        <Route path="/reporting/reports" element={<ReportsScreen />} />,
         (client) => client.setQueryData(REPORTS_QUERY_KEY, page),
     );
 }
 
 function detail(codes: string[] = ['reporting::report_definitions:write']): string {
     return renderRecords(
-        `/reporting/${encodeURIComponent(NAME)}`,
+        `/reporting/reports/${encodeURIComponent(NAME)}`,
         [],
-        <Route path="/reporting/:name" element={<ReportPage />} />,
+        <Route path="/reporting/reports/:name" element={<ReportPage />} />,
         (client) => {
             client.setQueryData(['my-access'], accessOf(codes));
             client.setQueryData(reportKey(NAME), DETAIL);
         },
     );
+}
+
+/** The words of the trail, so a test reads the path a person took to the page. */
+function trailOf(html: string): string {
+    const nav = html.match(/<nav aria-label="[^"]*"[^>]*>(.*?)<\/nav>/s);
+    if (nav === null) {
+        return '(no breadcrumb)';
+    }
+    return textOf(nav[1] ?? '')
+        .replace(/›/g, ' › ')
+        .replace(/\s+/g, ' ')
+        .trim();
 }
 
 /** The text of the table row that names one definition, and no other row. */
@@ -154,6 +166,10 @@ function rowText(html: string, name: string): string {
 }
 
 describe('the list of reports a party runs', () => {
+    it('renders the trail Home, Reporting, Reports', () => {
+        expect(trailOf(list())).toBe('Home › Reporting › Reports');
+    });
+
     it('draws one row per definition, with the cells the server composed', () => {
         const row = rowText(list(), NAME);
 
@@ -213,9 +229,9 @@ describe('the list of reports a party runs', () => {
     it('states a party that owns no definition in words', () => {
         const page = textOf(
             renderRecords(
-                '/reporting',
+                '/reporting/reports',
                 [],
-                <Route path="/reporting" element={<ReportsScreen />} />,
+                <Route path="/reporting/reports" element={<ReportsScreen />} />,
                 (client) => {
                     client.setQueryData(REPORTS_QUERY_KEY, {
                         rows: [],
@@ -232,9 +248,9 @@ describe('the list of reports a party runs', () => {
     it('states which read failed when a cell is empty for want of it', () => {
         const page = textOf(
             renderRecords(
-                '/reporting',
+                '/reporting/reports',
                 [],
-                <Route path="/reporting" element={<ReportsScreen />} />,
+                <Route path="/reporting/reports" element={<ReportsScreen />} />,
                 (client) => {
                     client.setQueryData(REPORTS_QUERY_KEY, {
                         rows: PAGE.rows,
@@ -250,6 +266,10 @@ describe('the list of reports a party runs', () => {
 });
 
 describe('one report definition', () => {
+    it('renders the trail Home, Reporting, Reports, then the definition', () => {
+        expect(trailOf(detail())).toBe(`Home › Reporting › Reports › ${NAME}`);
+    });
+
     it('fills the edit form from the record it read', () => {
         const html = detail();
 
@@ -265,9 +285,9 @@ describe('one report definition', () => {
     it('says a run it could not read was not checked, not that it never ran', () => {
         const page = textOf(
             renderRecords(
-                `/reporting/${encodeURIComponent(MONTH_END)}`,
+                `/reporting/reports/${encodeURIComponent(MONTH_END)}`,
                 [],
-                <Route path="/reporting/:name" element={<ReportPage />} />,
+                <Route path="/reporting/reports/:name" element={<ReportPage />} />,
                 (client) => {
                     client.setQueryData(['my-access'], accessOf([]));
                     client.setQueryData(reportKey(MONTH_END), {

@@ -41,6 +41,7 @@ import type { ReportRowView, ReportTallyView, ReportUnread } from '@ores/wire-pr
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { reportPath } from '../shell/paths.js';
 import { Metric } from '../ui/Metric.js';
@@ -261,11 +262,7 @@ function Rows({
 export function ReportsPage(): ReactNode {
     const { t, language } = useTranslation();
     const reports = useQuery({ queryKey: REPORTS_QUERY_KEY, queryFn: api.reports });
-    const trail = (
-        <Crumbs
-            parts={[{ label: t('shell.menu.home'), to: '/' }, { label: t('reporting.title') }]}
-        />
-    );
+    const trail = <Crumbs parts={[...useAreaRoot('reporting'), { label: t('reporting.title') }]} />;
 
     if (reports.isPending) {
         return (

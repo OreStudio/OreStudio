@@ -102,6 +102,7 @@ import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
 import { ReportPage } from './reporting/ReportPage.js';
+import { ReportingPage } from './reporting/ReportingPage.js';
 import { ReportsPage } from './reporting/ReportsPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { TenantPage } from './pages/TenantPage.js';
@@ -680,13 +681,26 @@ export function AppRoutes({
                 )}
             />
             {/*
-             * Reporting: the reports the session's party runs, and one
-             * definition's page. The list is the area's front door, so it is
-             * the area's own address and not a child of it. Both are tables,
-             * so they take the width.
+             * Reporting, the area and its screens: the area page draws the
+             * cards of the area, the list is the reports the session's party
+             * runs, and the third route is one definition's page. Each screen
+             * sits under the address of its area. The list and the page are
+             * tables, so they take the width.
              */}
             <Route
                 path={PATHS.reporting}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ReportingPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={PATHS.reports}
                 element={signedIn(
                     gate.version,
                     session,
@@ -698,7 +712,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path={`${PATHS.reporting}/:name`}
+                path={`${PATHS.reports}/:name`}
                 element={signedIn(
                     gate.version,
                     session,

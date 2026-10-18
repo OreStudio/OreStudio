@@ -79,6 +79,7 @@ const pt: SourceCatalogue = {
             accounts: 'Contas',
             tenants: 'Inquilinos',
             operations: 'Operações',
+            reporting: 'Relatórios',
             development: 'Desenvolvimento',
             parties: 'Partes',
             rescue: 'Recuperação de acesso',
@@ -4425,6 +4426,15 @@ const pt: SourceCatalogue = {
     },
 
     reporting: {
+        area: {
+            title: 'Relatórios',
+            lead: 'Os relatórios que uma parte executa, e como correu a última execução de cada um.',
+            screens: {
+                reports: 'Relatórios',
+                reportsBody:
+                    'As definições que esta parte executa, e o estado da última execução de cada uma.',
+            },
+        },
         title: 'Relatórios',
         description:
             'As definições de relatório que esta parte executa, com o estado da última execução de cada uma.',

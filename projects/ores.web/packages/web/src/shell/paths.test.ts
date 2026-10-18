@@ -39,13 +39,14 @@ describe('the addresses of the screens', () => {
         expect(PATHS.rescue).toBe('/organisation/rescue');
         expect(PATHS.signIns).toBe('/operations/sign-ins');
         expect(PATHS.reporting).toBe('/reporting');
+        expect(PATHS.reports).toBe('/reporting/reports');
     });
 
     it('are named by one helper when they take a name', () => {
         expect(personPath('ada lovelace')).toBe('/organisation/people/ada%20lovelace');
         expect(rolePath('r1')).toBe('/organisation/roles/r1');
         expect(rescuePath('ada')).toBe('/organisation/rescue?username=ada');
-        expect(reportPath('ACME daily PnL')).toBe('/reporting/ACME%20daily%20PnL');
+        expect(reportPath('ACME daily PnL')).toBe('/reporting/reports/ACME%20daily%20PnL');
     });
 
     it('leave no earlier address that is also a current one', () => {

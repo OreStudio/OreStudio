@@ -80,6 +80,7 @@ export const en: SourceCatalogue = {
             accounts: 'Accounts',
             tenants: 'Tenants',
             operations: 'Operations',
+            reporting: 'Reporting',
             development: 'Development',
             parties: 'Parties',
             rescue: 'Rescue access',
@@ -4390,6 +4391,14 @@ export const en: SourceCatalogue = {
     },
 
     reporting: {
+        area: {
+            title: 'Reporting',
+            lead: 'The reports a party runs, and how the latest run of each one went.',
+            screens: {
+                reports: 'Reports',
+                reportsBody: 'The definitions this party runs, and the health of each latest run.',
+            },
+        },
         title: 'Reports',
         description:
             "The report definitions this party runs, with the health of each one's latest run.",

@@ -74,6 +74,7 @@ const fr: SourceCatalogue = {
             accounts: 'Comptes',
             tenants: 'Locataires',
             operations: 'Opérations',
+            reporting: 'Rapports',
             development: 'Développement',
             parties: 'Parties',
             rescue: "Récupération d'accès",
@@ -4455,6 +4456,15 @@ const fr: SourceCatalogue = {
     },
 
     reporting: {
+        area: {
+            title: 'Rapports',
+            lead: "Les rapports qu'une partie exécute, et comment s'est déroulée la dernière exécution de chacun.",
+            screens: {
+                reports: 'Rapports',
+                reportsBody:
+                    "Les définitions que cette partie exécute, et l'état de leur dernière exécution.",
+            },
+        },
         title: 'Rapports',
         description:
             "Les définitions de rapport que cette partie exécute, avec l'état de la dernière exécution de chacune.",

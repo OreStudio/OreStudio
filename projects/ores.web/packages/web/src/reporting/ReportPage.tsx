@@ -40,6 +40,7 @@ import { useHolds } from '../access/holds.js';
 import { PERMISSION } from '../access/permissions.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Crumbs } from '../refdata/shared.js';
+import { useAreaRoot } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { PATHS } from '../shell/paths.js';
 import {
@@ -323,8 +324,8 @@ export function ReportPage(): ReactNode {
     const trail = (
         <Crumbs
             parts={[
-                { label: t('shell.menu.home'), to: '/' },
-                { label: t('reporting.title'), to: PATHS.reporting },
+                ...useAreaRoot('reporting'),
+                { label: t('reporting.title'), to: PATHS.reports },
                 { label: name },
             ]}
         />

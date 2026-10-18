@@ -48,6 +48,7 @@ export const PATHS = {
     irFeed: '/market-data/synthetic/ir',
     bindings: '/market-data/bindings',
     reporting: '/reporting',
+    reports: '/reporting/reports',
 } as const;
 
 /** The address of one person's page. */
@@ -77,7 +78,7 @@ export function gridNodePath(hostId: string): string {
  * is needed to resolve it.
  */
 export function reportPath(name: string): string {
-    return `${PATHS.reporting}/${encodeURIComponent(name)}`;
+    return `${PATHS.reports}/${encodeURIComponent(name)}`;
 }
 
 /** The address of the rescue screen for one account. */
@@ -106,4 +107,5 @@ export const MOVED: readonly (readonly [from: string, to: string])[] = [
     ['/roles/:roleId', `${PATHS.roles}/:roleId`],
     ['/rescue', PATHS.rescue],
     ['/audit', PATHS.signIns],
+    ['/reporting/:name', `${PATHS.reports}/:name`],
 ];

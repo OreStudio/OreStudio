@@ -8,7 +8,7 @@
 #+filetags: :a-trader-screen-that-resolves-a-tenor-to-a-date:sprint_28:v0:
 #+owner: marco
 #+branch: feature/resolve-a-tenor-to-a-date
-#+pr:
+#+pr: 3537
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3537][#3537]] | [web] Resolve a tenor to a date from the tenors area |
 
 * Review
 

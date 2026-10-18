@@ -194,9 +194,13 @@ TEST_CASE("the_projection_states_the_positions_the_database_sorts_by", tags) {
     CHECK(mapped.market_bindings[0].position == 1);
     CHECK(mapped.market_bindings[1].position == 2);
 
-    // The writing keeps the analytics in order and the active flag first.
+    // The writing puts each analytic's active flag before its other parameters.
     const auto written = run_document_projection::write(run_document_projection::reverse(mapped));
-    CHECK(written.find("<Parameter name=\"active\">Y</Parameter>") != std::string::npos);
+    const auto active_at = written.find("<Parameter name=\"active\">");
+    const auto next_at = written.find("<Parameter name=\"a\">");
+    REQUIRE(active_at != std::string::npos);
+    REQUIRE(next_at != std::string::npos);
+    CHECK(active_at < next_at);
 }
 
 TEST_CASE("a_setup_parameter_no_column_holds_is_refused", tags) {

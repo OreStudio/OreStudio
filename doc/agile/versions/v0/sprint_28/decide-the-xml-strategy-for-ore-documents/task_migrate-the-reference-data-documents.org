@@ -133,8 +133,8 @@ family or a path that has to move first. Verified with
 | =domain/domain.cpp= | the generated serialiser itself; it goes with xsdcpp |
 | =xml/importer.cpp= | conventions, whose mapper is blocked on the registry refactor |
 | =xml/exporter.cpp= | conventions, for the same reason |
-| =store/run_store.cpp= | the run document and curve configuration |
-| =service/messaging/run_configuration_operations.cpp= | the run document |
+| =store/run_store.cpp= | conventions and today's market |
+| =service/messaging/run_configuration_operations.cpp= | conventions and today's market |
 
 Eleven mappers remain under =domain/=: the instrument mappers, =trade_mapper=
 (portfolio), =conventions_mapper= and =todays_market_mapper=. Each falls with its family, and the last one takes the
@@ -238,7 +238,7 @@ line.
 | Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 23 cases |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =[ore][xml]@, 499 cases and 45,200 assertions; the run document suite is 374 cases |
+| The XML suites pass | =[ore][xml]@, 501 cases and 45,220 assertions; the run document suite is 4 cases and the =[run_document]= selection 5 |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 

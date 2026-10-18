@@ -155,6 +155,11 @@ announce_ready_and_drain(boost::asio::io_context& io_ctx,
     if (on_shutdown)
         on_shutdown();
     nats.drain();
+    // Destroying a subscription waits for the handler it is running, so
+    // dropping them here is what makes "Shutdown complete" true: the line
+    // would otherwise be written while a handler still runs, and a service has
+    // died that way with one more delivery arriving after the line.
+    subs.clear();
     BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
     co_return;
 }

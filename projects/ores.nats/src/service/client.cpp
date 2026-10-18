@@ -125,10 +125,6 @@ struct buffered_subscription::impl {
     std::shared_ptr<message_buffer> buffer;
 };
 
-// ---------------------------------------------------------------------------
-// client::impl
-// ---------------------------------------------------------------------------
-
 namespace {
 
 /**
@@ -143,6 +139,10 @@ struct connection_closed_latch {
 };
 
 }
+
+// ---------------------------------------------------------------------------
+// client::impl
+// ---------------------------------------------------------------------------
 
 struct client::impl {
     config::nats_options opts;
@@ -423,31 +423,56 @@ subscription::subscription(std::unique_ptr<impl> i)
     : impl_(std::move(i)) {}
 
 // ---------------------------------------------------------------------------
-// Drain helpers — shared by ~subscription and operator=(subscription&&)
+// Drain helpers — shared by ~subscription, move assignment and drain()
 // ---------------------------------------------------------------------------
 
 namespace {
-/// The longest a drain may take before shutdown carries on regardless. cnats
-/// drains a subscription with the same budget, so waiting past it buys nothing.
-constexpr int64_t drain_timeout_ms = 30'000;
+
+/// The budget cnats gives a drain of its own. The wait that follows gets twice
+/// this, so a wait cannot expire while the drain it is waiting for still runs.
+constexpr int64_t drain_budget_ms = 30'000;
+
+/**
+ * @brief Drains @p sub and waits for its handler to return.
+ *
+ * The wait is what matters. A handler runs through the closure this handle
+ * owns, and that closure calls into the state of whatever owns the
+ * subscription, so a handle that returned after only asking for a drain would
+ * let the owner destroy that state while a handler is inside it.
+ */
+natsStatus drain_and_wait(natsSubscription* sub) noexcept {
+    const natsStatus drained = natsSubscription_DrainTimeout(sub, drain_budget_ms);
+    if (drained != NATS_OK)
+        return drained;
+    return natsSubscription_WaitForDrainCompletion(sub, 2 * drain_budget_ms);
 }
 
-// A handler runs through the closure this handle owns, and that closure calls
-// into the state of whatever owns the subscription. cnats drains a subscription
-// asynchronously, so a destructor that only asks for a drain returns while the
-// dispatch thread is still inside a handler, and the owner is free to destroy
-// the state the handler is about to write to. That is a use-after-free, and it
-// took a service down on shutdown: marketdata's ingest loop was destroyed, a
-// tick that was already in flight reached the freed rate engine, and the
-// process died on a core dump while the client was closing the connection.
-// Waiting here is what makes the handle's lifetime mean what it says.
+}
+
+/**
+ * @brief Ends a subscription, waiting first for any handler it is running.
+ *
+ * A drain that does not finish in time leaks the closure and the subscription
+ * on purpose. Freeing them while a handler may still run is exactly the
+ * use-after-free this function exists to prevent, and a leaked subscription at
+ * shutdown is the cheaper failure.
+ */
 static void drain_and_release(subscription::impl* impl) noexcept {
     if (!impl || !impl->sub)
         return;
     natsSubscription* sub = impl->sub;
     impl->sub = nullptr;
-    natsSubscription_Drain(sub);
-    natsSubscription_WaitForDrainCompletion(sub, drain_timeout_ms);
+    const natsStatus status = drain_and_wait(sub);
+    if (status != NATS_OK) {
+        try {
+            BOOST_LOG_SEV(lg(), error)
+                << "NATS subscription drain did not complete (" << natsStatus_GetText(status)
+                << "); leaking it rather than freeing memory a handler may still be using.";
+        } catch (...) {
+            // Boost.Log may already be torn down on a NATS internal thread.
+        }
+        return;
+    }
     impl->closure.reset();
     natsSubscription_Destroy(sub);
 }
@@ -456,13 +481,13 @@ subscription::~subscription() {
     drain_and_release(impl_.get());
 }
 
-
 subscription::subscription(subscription&&) noexcept = default;
 
 subscription& subscription::operator=(subscription&& other) noexcept {
     if (this == &other)
         return *this;
-    drain_and_release(impl_.get()); // drain old before taking ownership of new
+    // The old subscription goes before the new one arrives.
+    drain_and_release(impl_.get());
     impl_ = std::move(other.impl_);
     return *this;
 }
@@ -477,8 +502,15 @@ std::string subscription::subject() const {
 void subscription::drain() {
     if (!impl_ || !impl_->sub)
         return;
-    natsSubscription_Drain(impl_->sub);
-    natsSubscription_WaitForDrainCompletion(impl_->sub, drain_timeout_ms);
+    const natsStatus status = drain_and_wait(impl_->sub);
+    if (status == NATS_OK)
+        return;
+    try {
+        BOOST_LOG_SEV(lg(), error)
+            << "NATS subscription drain did not complete (" << natsStatus_GetText(status) << ").";
+    } catch (...) {
+        // Boost.Log may already be torn down on a NATS internal thread.
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1207,19 +1239,30 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
 void client::drain() {
     if (!impl_->conn)
         return;
+
+    // A close that happened before this call must not be mistaken for this
+    // drain finishing, so the latch starts clear.
+    {
+        std::lock_guard lock(impl_->closed_latch.mu);
+        impl_->closed_latch.closed = false;
+    }
+
     // natsConnection_Drain only asks the connection to drain: it returns while
     // the dispatch threads are still handing messages to their handlers. The
     // closed callback is what says every delivery has finished, so waiting on
     // it is what makes this method's promise true.
-    natsConnection_Drain(impl_->conn);
-    std::unique_lock lock(impl_->closed_latch.mu);
-    const bool closed =
-        impl_->closed_latch.cv.wait_for(lock, std::chrono::milliseconds(drain_timeout_ms), [this] {
-            return impl_->closed_latch.closed;
-        });
-    if (!closed)
-        BOOST_LOG_SEV(lg(), warn) << "NATS drain did not complete within " << drain_timeout_ms
-                                  << "ms; shutting down with deliveries possibly still in flight.";
+    const natsStatus drained = natsConnection_DrainTimeout(impl_->conn, drain_budget_ms);
+    bool closed = false;
+    if (drained == NATS_OK) {
+        std::unique_lock lock(impl_->closed_latch.mu);
+        closed = impl_->closed_latch.cv.wait_for(lock,
+                                                 std::chrono::milliseconds(2 * drain_budget_ms),
+                                                 [this] { return impl_->closed_latch.closed; });
+    }
+    if (drained != NATS_OK || !closed)
+        BOOST_LOG_SEV(lg(), error)
+            << "NATS connection drain did not complete (" << natsStatus_GetText(drained)
+            << "); shutting down with deliveries possibly still in flight.";
 }
 
 jetstream_admin client::make_admin() {

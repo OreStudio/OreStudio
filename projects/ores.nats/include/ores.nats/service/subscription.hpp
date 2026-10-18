@@ -63,8 +63,14 @@ public:
     /**
      * @brief Drain the subscription.
      *
-     * Stops new message delivery and waits for all in-flight messages
-     * to be processed before unsubscribing.
+     * Stops new message delivery and waits for all in-flight messages to be
+     * processed before unsubscribing. Blocks the caller for as long as that
+     * takes, up to a bounded budget, and logs an error when the budget runs
+     * out. The subscription stays usable afterwards only in the sense that it
+     * receives nothing more; destroying it then performs no further drain.
+     *
+     * Do not call this, and do not destroy the handle, from inside the
+     * subscription's own handler: the wait would be waiting on itself.
      */
     void drain();
 

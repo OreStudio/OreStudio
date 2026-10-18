@@ -147,6 +147,7 @@ def clone_with_identity(schema, node):
     element identity.
     """
     duplicate = copy.deepcopy(node)
+    schema.clones.append(duplicate)
 
     def transfer(original, cloned):
         if id(original) in schema.inline_name:
@@ -204,6 +205,9 @@ class Schema:
         self.cut_members = set()
         # The types a document can reach after the cut edges are left out.
         self.used_types = set()
+        # The node copies a group or a reference makes, held so their ids stay
+        # unique for the whole run: the inline tables are keyed by identity.
+        self.clones = []
         # An inline simpleType is an enumeration with no name of its own. Its
         # spellings are emitted under the type that holds it.
         self.inline_enum = {}
@@ -236,8 +240,9 @@ class Schema:
 # word holds states its mask as an array, and the engine indexes the word a
 # field's bit falls in. The bound below is only a sanity limit.
 MASK_WORD_BITS = 64
-# A field's bit is a std::uint8_t in the table, so 256 fields is the ceiling
-# whatever the mask could say.
+# A field's bit and a record's field count are std::uint8_t in the table, so 255
+# fields is the ceiling whatever the mask could say.
+MAX_MASK_BITS = 255
 MAX_MASK_WORDS = 4
 
 # Elements that are alternatives inside an xs:choice. At most one of them
@@ -1018,10 +1023,9 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 f"{bit}, false, false, nullptr, nullptr, scalar_kind::text, nullptr}},"
             )
             bit += 1
-        if bit > MASK_WORD_BITS * MAX_MASK_WORDS:
+        if bit > MAX_MASK_BITS:
             raise SystemExit(
-                f"{type_name} has {bit} fields; a table holds "
-                f"{MASK_WORD_BITS * MAX_MASK_WORDS} at most"
+                f"{type_name} has {bit} fields; a table holds {MAX_MASK_BITS} at most"
             )
         text_field = "0" if own_kind is not None else "no_text"
         tables.append(
@@ -1051,6 +1055,9 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
     for type_name in ordered:
         for element in children_of(schema.complex_types[type_name], schema)[0]:
             for field in expand(schema, element):
+                # The spellings of an inline enumeration are registered when its
+                # shape is read, and a member reached here may not have been.
+                field_shape(schema, field)
                 declared = field.get("type")
                 if id(field) in schema.inline_enum:
                     name = spellings_of(schema, type_name, field)

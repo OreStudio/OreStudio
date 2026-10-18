@@ -293,7 +293,7 @@ def _emit(tmp_path, schema_text, root_type="rootType"):
 
 def _record(emitted, name):
     record = emitted[emitted.index(f"struct {name} {{") :]
-    return record[: record.index("};")]
+    return record[: record.index("\n};")]
 
 
 def _row(source, name):
@@ -639,7 +639,7 @@ GROUP = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:complexType name="rootType">
     <xs:sequence>
       <xs:element type="xs:string" name="Head"/>
-      <xs:group ref="common" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:group ref="common" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 </xs:schema>
@@ -757,7 +757,7 @@ def test_a_required_member_of_a_sequence_group_stays_required(tmp_path):
     """A group is not a choice: its required members are required."""
     emitted, source = _emit(tmp_path, GROUP)
     assert _required(source, "Head") == "true"
-    assert _required(source, "Alpha") == "false"  # the group is minOccurs=0 here
+    assert _required(source, "Alpha") == "true"
 
 
 GROUP_REUSED = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -843,3 +843,32 @@ def test_a_cut_member_is_named_in_the_generated_header(tmp_path):
     emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
     assert "Child (node reaches itself)" in emitted
     assert "A document that states it is refused" in emitted
+
+
+GROUP_ENUM = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:group name="colourGroup">
+    <xs:sequence>
+      <xs:element name="Colour">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="Red"/>
+            <xs:enumeration value="Blue"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:group ref="colourGroup"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_an_inline_enumeration_on_a_group_member_keeps_its_spellings(tmp_path):
+    """A group member is copied, and the copy carries its inline spellings."""
+    emitted, source = _emit(tmp_path, GROUP_ENUM)
+    assert "std::int16_t colour" in _record(emitted, "root_type")
+    assert "_colour_spellings[] = {" in source
+    assert "Red" in source and "Blue" in source

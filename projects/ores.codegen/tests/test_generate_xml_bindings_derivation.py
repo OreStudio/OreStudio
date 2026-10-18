@@ -737,12 +737,15 @@ RECURSIVE_SCHEMA = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 """
 
 
-def test_a_type_that_holds_itself_loses_only_the_edge_that_closes_it(tmp_path):
-    """A record cannot hold itself, so the recursive member is left out."""
-    emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
+def test_a_type_that_holds_itself_indexes_the_row_it_cannot_hold(tmp_path):
+    """A record cannot hold itself, so the recursive member is an arena index."""
+    emitted, source = _emit(tmp_path, RECURSIVE_SCHEMA)
     node = _record(emitted, "node")
     assert "std::string value" in node
-    assert "child" not in node
+    assert "std::vector<std::uint32_t> child" in node
+    assert "std::vector<node> child_arena" in node
+    assert "field_kind::indexed_nested" in source
+    assert "&node_record" in source
     assert "std::string head" in _record(emitted, "root_type")
 
 
@@ -838,11 +841,12 @@ def test_a_reference_to_a_global_element_of_an_earlier_schema(tmp_path):
     assert "shared_type shared" in _record(header.read_text(), "root_type")
 
 
-def test_a_cut_member_is_named_in_the_generated_header(tmp_path):
-    """The file says which member a record cannot hold, and why."""
-    emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
-    assert "Child (node reaches itself)" in emitted
-    assert "A document that states it is refused" in emitted
+def test_a_cut_member_becomes_an_index_and_its_arena(tmp_path):
+    """The edge stays in the table as an index, and the rows live beside it."""
+    emitted, source = _emit(tmp_path, RECURSIVE_SCHEMA)
+    assert "std::vector<std::uint32_t> child" in _record(emitted, "node")
+    assert "child_arena_ops" in source
+    assert "&node_record" in source
 
 
 GROUP_ENUM = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">

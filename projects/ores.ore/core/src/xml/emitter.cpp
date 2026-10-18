@@ -27,6 +27,9 @@ namespace ores::ore::xml {
 
 namespace {
 
+/// The deepest a chain of indices may reach before it is taken for a cycle.
+constexpr std::size_t max_emit_depth = 64;
+
 constexpr std::string_view declaration = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 constexpr std::string_view indent_unit = "  ";
 
@@ -178,11 +181,37 @@ auto append_value(std::string& out, const field& f, const void* slot)
         case field_kind::nested:
         case field_kind::repeated_leaf:
         case field_kind::repeated_nested:
+        case field_kind::indexed_nested:
         case field_kind::residual:
             return std::unexpected(emit_error{"a row that names no single value reached the "
                                               "value writer"});
     }
     return std::unexpected(emit_error{"a row of an unknown kind reached the value writer"});
+}
+
+auto write_element(std::string& out,
+                   const record_type& type,
+                   const void* record,
+                   std::size_t depth,
+                   std::string_view name) -> std::expected<void, emit_error>;
+
+auto write_indexed(std::string& out, const field& f, const void* record, std::size_t depth)
+    -> std::expected<void, emit_error> {
+    const auto* indices = static_cast<const std::vector<std::uint32_t>*>(slot_of(record, f));
+    const auto* arena = static_cast<const std::byte*>(record) + f.arena_offset;
+    const auto rows = f.repeated->count(arena);
+    if (depth > max_emit_depth)
+        return std::unexpected(emit_error{"the indices nest deeper than the writing follows"});
+    for (const auto index : *indices) {
+        if (index >= rows)
+            return std::unexpected(
+                emit_error{"an indexed member names a row the arena does not hold"});
+        const auto written =
+            write_element(out, *f.type, f.repeated->at(arena, index), depth, f.name);
+        if (!written)
+            return written;
+    }
+    return {};
 }
 
 auto write_element(std::string& out,
@@ -263,6 +292,11 @@ auto write_element(std::string& out,
                     has_children ||
                     !static_cast<const std::vector<residual_element>*>(slot_of(record, f))->empty();
                 break;
+            case field_kind::indexed_nested:
+                has_children =
+                    has_children ||
+                    !static_cast<const std::vector<std::uint32_t>*>(slot_of(record, f))->empty();
+                break;
             case field_kind::repeated_leaf:
             case field_kind::repeated_nested:
                 has_children = has_children || f.repeated->count(slot_of(record, f)) != 0;
@@ -302,6 +336,12 @@ auto write_element(std::string& out,
             case field_kind::nested: {
                 const auto written =
                     write_element(out, *f.type, slot_of(record, f), depth + 1, f.name);
+                if (!written)
+                    return written;
+                break;
+            }
+            case field_kind::indexed_nested: {
+                const auto written = write_indexed(out, f, record, depth + 1);
                 if (!written)
                     return written;
                 break;

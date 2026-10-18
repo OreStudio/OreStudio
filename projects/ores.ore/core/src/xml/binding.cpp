@@ -214,6 +214,7 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
         }
         case field_kind::nested:
         case field_kind::repeated_nested:
+        case field_kind::indexed_nested:
             error = "a row describing a nested element reached the value writer";
             return false;
         case field_kind::residual:
@@ -391,6 +392,26 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     if (f->type->text_field != no_text) {
                         auto* target = &f->type->fields[f->type->text_field];
                         mark_present(slot, *target);
+                    }
+                    continue;
+                }
+                if (f->kind == field_kind::indexed_nested) {
+                    // A recursive member is an index into the arena its parent
+                    // owns. The row is appended first, so a reallocation cannot
+                    // move a row an open frame points at: while this frame is
+                    // open the binder appends only to the child's own arena.
+                    auto* indices = reinterpret_cast<std::vector<std::uint32_t>*>(slot);
+                    auto* arena = top.record + f->arena_offset;
+                    const auto index = static_cast<std::uint32_t>(f->repeated->count(arena));
+                    void* child = nullptr;
+                    f->repeated->append(arena, &child);
+                    indices->push_back(index);
+                    mark_present(top.record, *f);
+                    auto* record = static_cast<std::byte*>(child);
+                    stack[depth++] = {f->type, record, nullptr, false};
+                    if (f->type->text_field != no_text) {
+                        auto* target = &f->type->fields[f->type->text_field];
+                        mark_present(record, *target);
                     }
                     continue;
                 }

@@ -44,6 +44,8 @@ constexpr std::string_view field_kind_name(field_kind kind) {
             return "unnamed content";
         case field_kind::repeated_nested:
             return "a repeated child element";
+        case field_kind::indexed_nested:
+            return "an indexed child element";
     }
     return "an unknown shape";
 }
@@ -179,6 +181,23 @@ auto record_reader::values(std::string_view name) const -> std::vector<std::stri
     return out;
 }
 
+auto record_reader::indexed(std::string_view name) const -> std::vector<record_reader> {
+    const auto& f = require_kind(*type_, name, field_kind::indexed_nested, "an indexed child");
+    std::vector<record_reader> out;
+    if (!bit_is_set(record_, f) || f.repeated == nullptr || f.type == nullptr)
+        return out;
+    const auto* indices = static_cast<const std::vector<std::uint32_t>*>(slot_of(record_, f));
+    const auto* arena = static_cast<const std::byte*>(record_) + f.arena_offset;
+    const auto rows = f.repeated->count(arena);
+    for (const auto index : *indices) {
+        if (index >= rows)
+            throw std::runtime_error(std::format(
+                "'{}' of the {} table names a row the arena does not hold", name, type_->name));
+        out.emplace_back(*f.type, f.repeated->at(arena, index));
+    }
+    return out;
+}
+
 record_writer::record_writer(const record_type& type, void* record)
     : type_(&type)
     , record_(record) {}
@@ -304,6 +323,18 @@ void record_writer::append_value(std::string_view name, std::string_view value) 
     void* slot = nullptr;
     f.repeated->append(slot_of(f), &slot);
     *static_cast<std::string*>(slot) = std::string(value);
+}
+
+auto record_writer::append_indexed(std::string_view name) -> record_writer {
+    const auto& f = require_kind(*type_, name, field_kind::indexed_nested, "an indexed child");
+    set_bit(record_, f);
+    auto* indices = static_cast<std::vector<std::uint32_t>*>(slot_of(f));
+    auto* arena = static_cast<std::byte*>(record_) + f.arena_offset;
+    const auto index = static_cast<std::uint32_t>(f.repeated->count(arena));
+    void* slot = nullptr;
+    f.repeated->append(arena, &slot);
+    indices->push_back(index);
+    return record_writer(*f.type, slot);
 }
 
 auto record_writer::append(std::string_view name) -> record_writer {

@@ -96,6 +96,9 @@ public:
     /// Every iteration of a repeated leaf, in the order the document wrote them.
     auto values(std::string_view name) const -> std::vector<std::string>;
 
+    /// Every row an indexed member names, in index order.
+    auto indexed(std::string_view name) const -> std::vector<record_reader>;
+
 private:
     const record_type* type_;
     const void* record_;
@@ -173,6 +176,9 @@ public:
 
     /// States a repeated leaf and appends one value to it.
     void append_value(std::string_view name, std::string_view value);
+
+    /// States an indexed member, appends a row to its arena and returns it.
+    auto append_indexed(std::string_view name) -> record_writer;
 
 private:
     const field& field_of(std::string_view name) const;

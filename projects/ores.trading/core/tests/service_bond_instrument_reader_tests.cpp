@@ -261,6 +261,9 @@ instrument_strike make_strike(const stamps& s, const boost::uuids::uuid& trade_i
     stamp(r, s);
     r.trade_id = trade_id;
     r.trade_activity_id = s.activity_id;
+    // A bond states one strike with no arm to name.
+    r.strike_role = "single";
+    r.sequence_number = 1;
     r.price_value = ores::utility::decimal::decimal::from_string("101.5").value();
     r.price_currency = "EUR";
     return r;

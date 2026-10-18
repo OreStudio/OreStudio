@@ -1484,8 +1484,10 @@ std::string save_strike(Nats& nats,
     put_instrument_strike_request req;
     req.change.write.trade_id = trade_id;
     req.change.write.trade_activity_id = trade_activity_id;
-    req.change.write.strike_role = strike.strike_role;
-    req.change.write.sequence_number = strike.sequence_number;
+    // A bond states one strike with no arm to name, and bond_strike_data is a
+    // hand-written carrier that predates the role column.
+    req.change.write.strike_role = "single";
+    req.change.write.sequence_number = 1;
     req.change.write.price_value = strike.price_value;
     req.change.write.price_currency = strike.price_currency;
     req.change.write.yield_value = strike.yield_value;

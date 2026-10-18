@@ -28,7 +28,7 @@ A cap/floor document round-trips as the lists it stated, cap and floor alike, in
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] |
-| Now          | Not yet started.                       |
+| Now          | In review. Every cap and floor is a row with its arm and its ordinal. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-18                               |
@@ -67,8 +67,9 @@ A cap/floor document round-trips as the lists it stated, cap and floor alike, in
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Strike rows a collar states | 2 (cap 0.03, floor 0.0121) | =IR_CapFloor_on_FedFunds_amortising.xml= | PLACEHOLDER |
-| Writers of a strike row | 2 | =grep -rn 'instrument_strike row;' projects/ --include=*.cpp= | PLACEHOLDER |
+| Strike rows a collar states | 2 (cap 0.03, floor 0.0121) | =IR_CapFloor_on_FedFunds_amortising.xml:120,123= | 63bdfaeef2 |
+| Writers of a strike row | 2, the rates mapper and the credit mapper | =grep -rn 'instrument_strike row;' projects/ --include=*.cpp= | 63bdfaeef2 |
+| Assertions in the collar case | 15 | the case body | 63bdfaeef2 |
 
 Every number this task claims about a tree, with the command that produced it
 and the commit it was measured at. A number without both is not a measurement,
@@ -108,3 +109,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A cap/floor's strikes round-trip as the lists the document stated. Every cap and
+every floor is its own row, carrying the list it came from and its ordinal, and
+the export returns each row to the list its role names.
+
+Proved red first: with the mapper reverted to the merge base the case fails on
+=result.strikes.size() == 2= with =1 == 2=, which is the floor being dropped;
+with the fix it passes fifteen assertions, on the corpus collar's own values
+(=0.03= and =0.0121=).
+
+The arm is data on the row rather than a column on the product, because a collar
+states both lists in one document: a =cap_floor_type= on the fact table would
+have made a collar unrepresentable. The shape mirrors =swap_leg_rates=, which
+already carries a =rate_role= in its key for the same reason.
+
+The role is not nullable, so every writer says what it means: the rates mapper
+writes =cap= or =floor=, the credit mapper writes =single= for the one strike an
+index option states, and the generator writes =single= rather than a word
+outside the set.
+
+The gate: build, db, ctest, ore-xml-roundtrip and the static checks with the
+fleet down, then =step-consumers= with it up.

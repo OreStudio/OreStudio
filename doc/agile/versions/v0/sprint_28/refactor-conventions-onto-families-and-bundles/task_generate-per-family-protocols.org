@@ -8,11 +8,11 @@
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
 #+branch: feature/generate-per-family-protocols
-#+pr:
+#+pr: 3464
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-18
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A convention family is reachable over the message bus by its own subjects, through its own handler and its own registrar, so a caller that wants one family never touches a type that carries all of them.
 
 * Status
 
@@ -35,7 +35,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- Every convention entity has a protocol header carrying its own list, get, put and delete subjects, and a handler and registrar to serve them.
+- No protocol or handler translation unit reflects a type that holds more than one family.
+- The subjects a family answers are derived from the same registry the apply uses, so the two cannot disagree about a family's name.
 
 * Plan
 
@@ -89,7 +91,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3463][#3463]] | [agile] Close the per-family protocols task as already delivered |
+| [[https://github.com/OreStudio/OreStudio/pull/3464][#3464]] | [agile] Stamp the per-family protocols task DONE |
 
 * Review
 

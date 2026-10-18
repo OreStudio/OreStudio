@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 6D9C9C2F-7C45-4811-95BE-B9FC1AF63687
+:END:
+#+title: Task: Reconcile the record with the merged work
+#+description: Correct the story and its tasks so the record states what merged and what remains. Stamp the delivered tasks DONE, record their PRs, write the acceptance criteria and results the scaffold left blank, and name the decisions the tasks settled.
+#+type: task
+#+level: s1
+#+filetags: :sprint_28:v0:refactor-conventions-onto-families-and-bundles:
+#+owner: marco
+#+branch: feature/reconcile-the-conventions-record
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story and its tasks say what happened. A reader can tell which work merged, which PR carried it, what each task was for, and what is left, without reading git history or the code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The story's Goal, Status, Decisions and Out of scope sections state the work rather than a placeholder.
+- Every task has acceptance criteria a reader can check and a Result that says whether it is met.
+- Every merged PR that belongs to the story appears against the task it served, and closed PRs are marked closed.
+- A task's state in its own file, in the story table, and in the sprint table agree.
+- The tasks that merged are DONE, and the tasks that merged only in part are STARTED with the remaining work named.
+
+* Plan
+
+Read the merged code rather than the record, then write what the code does. For each task, decide its state from the code and the merged PRs, not from the previous record, and write the acceptance criteria it should have had when it started.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The states were read from the code, not from the previous record. Where the two disagreed, the code won.
+- Bringing the tasks that merged into line was not enough on its own. Two tasks had been marked STARTED while the story table said BACKLOG and the sprint said BACKLOG for the story. All three now agree.
+- Two tasks turned out to be part delivered rather than done. Task 1 still carries the aggregate, and task 4 still has the run store on the whole-document service. Both are marked STARTED with the remainder named, which is what the record should have said when the earlier work merged.
+- The story's Decisions section had never been written, so the seven decisions the tasks settled now live there and the task notes keep the local reasoning.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story and its eight tasks now describe the merged work.
+
+| task | before | after |
+|------+--------+-------|
+| Model each family on its own | STARTED, two PRs, empty acceptance | STARTED, six PRs, remaining work named |
+| Generate a protocol and handler per family | DONE, no PRs, empty acceptance | DONE with its two PRs and its result |
+| Declare the conventions bundle | STARTED, no PRs | DONE with its four PRs and its result |
+| Rewire the ORE path | BACKLOG | STARTED, with the run store named as the gap |
+| Replace the web family list | BACKLOG, stale notes | BACKLOG, closed PR recorded, retry path named |
+| Prove the Windows build | BACKLOG, empty acceptance | BACKLOG, acceptance written, finding recorded |
+| Use as_of consistently | BACKLOG, empty acceptance | BACKLOG, acceptance written, starting point named |
+| Apply the same shape to the curve document | BACKLOG, empty acceptance | BACKLOG, acceptance written, overlap named |
+
+The story gained a Goal, a Status that states the position, seven Decisions, and two entries under Out of scope. The sprint table now says STARTED for the story, as the story file already did.

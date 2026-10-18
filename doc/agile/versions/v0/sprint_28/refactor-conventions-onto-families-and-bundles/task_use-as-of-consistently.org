@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+An export describes one moment. Every family it reads is read at the same bitemporal instant, and the file it writes records that instant, so two exports of an unchanged environment are identical and an export taken during an import cannot mix two states.
 
 * Status
 
@@ -28,14 +28,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-17                               |
+| Now          | Not started. The export currently asks with a null =as_of=. |
+| Waiting on   | Task 4, which is where the export reads live. |
+| Next         | Take one instant at the start of an export and pass it to every read. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
--
+- An export takes one bitemporal instant before its first read and passes that instant to every family it reads.
+- Paged reads go through the generated =as_of= path rather than each service choosing its own.
+- The file an export writes records the instant it was taken at, so a reader can say what moment the export describes.
+- A regression test takes an export, changes one family, and takes a second export. The first export is unchanged.
 
 * Plan
 
@@ -58,6 +61,9 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+- The instant belongs to the export, not to the family. A read per family that each takes its own instant describes a different moment per family, which is the defect this task exists to remove.
+- =projects/ores.ore/service/src/messaging/run_configuration_operations.cpp= sets =as_of= to null when it asks for a family. That is the place to start.
 
 * Test Scenarios
 

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The web layer stops keeping its own list of convention families. It reads the list the codegen renders, so adding a family needs no edit in the BFF and the browser cannot disagree with the server about which families exist.
 
 * Status
 
@@ -28,14 +28,17 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | Not yet started.                       |
+| Now          | The first attempt was built, verified and then closed. Nothing is merged. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-17                               |
+| Next         | Rebuild it on the template pipeline #3500 merged, so the twin is rendered by the facet instead of a script. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
--
+- The BFF builds its family list from the generated registry, and no hand-written table of families remains in =conventions.ts=.
+- The C++ header and the TypeScript module come from the same facet and are rendered together, so one regeneration updates both.
+- The generated TypeScript lives under source control, so a regeneration cannot delete the file the BFF imports.
+- =npm run typecheck= and the BFF suite pass with the generated list in place.
 
 * Plan
 
@@ -58,7 +61,11 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
-* Notes
+
+- The first attempt was PR #3479. It built the family tables from a generated TypeScript twin and passed on that branch. It was closed unmerged because it was raised outside the process, with no environment tag and no task trailer.
+- That attempt also conflicted with #3474 in the generator both changed. The generator has since been retired for a facet, so the conflict is gone and the retry extends the facet rather than a script.
+- The TypeScript twin must be committed. The staging branch generated the C++ and SQL addresses only, and the web build then failed to resolve the domain modules it imports.
+- A stale twin survives in =projects/ores.web/packages/wire-protocol/dist/generated/refdata/domain/convention_family_registry.js= on this checkout. =dist= is ignored and untracked, so the file is a leftover compile artefact and not a second copy of the registry. Nothing reads it once the source module exists.
 
 - The work is done on PR #3479 and verified there: the BFF builds its family
   tables from a generated TypeScript twin of the registry, and the staging
@@ -91,7 +98,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3479][#3479]] | [web,refdata] Read the conventions families from the registry (closed) |
+| [[https://github.com/OreStudio/OreStudio/pull/3480][#3480]] | [agile] Record where the BFF registry work stands |
 
 * Review
 

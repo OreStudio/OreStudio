@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-18
 #+updated: 2026-10-18
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -83,3 +83,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The down-window delivery is covered by a test that needs no service restart. It
+creates a consumer through the production path, leaves the subscription to drain
+as a shutdown would, and asserts against the server that the consumer still
+exists with its creation time unchanged. A command published with no subscriber
+is then retained and shows as unprocessed on that consumer, and re-subscribing
+delivers and acks it, with the queue drained and nothing redelivered.
+
+The creation time is the assertion that matters: it proves the consumer was
+reused rather than recreated, which is the whole property.
+
+A negative case pins the old behaviour. A raw subscribe that creates its own
+durable consumer, the exact call the helper used to make, has its consumer
+removed by the server on drain. That is the control which shows the survival
+assertion discriminates between the old behaviour and the new.
+
+Proven rather than assumed: with the production helper temporarily reverted to
+implicit creation, the test fails with "the consumer did not survive the drain".
+The revert was undone and the tree matches the commit.
+
+Two production seams were added to observe the server rather than the client,
+since the client had no way to assert server side consumer state. Two
+pre-existing cases that broke the environment for later tests in the same binary,
+by unsetting NATS variables instead of restoring them, were fixed with a guard.

@@ -38,6 +38,7 @@ export interface NettingSetWrite {
     code: string;
     party_id: string;
     netting_agreement_id: string | null;
+    credit_limit_id: string | null;
     counterparty_id: string | null;
     call_type: string | null;
     initial_margin_type: string | null;
@@ -62,8 +63,10 @@ export interface NettingSetLookup {
 
 export interface NettingSetsFilter {
     netting_agreement_id: string | null | null;
+    credit_limit_id: string | null | null;
     id_one_of: string[] | null;
     netting_agreement_id_one_of: string[] | null;
+    credit_limit_id_one_of: string[] | null;
 }
 
 export interface NettingSetEvent {
@@ -171,6 +174,21 @@ export interface ListByNettingAgreementIdNettingSetsResponse {
     total: number;
 }
 
+export interface ListByCreditLimitIdNettingSetsRequest {
+    credit_limit_id: string | null;
+    scope: Scope;
+    offset: number;
+    limit: number;
+    order: Order;
+    filter: NettingSetsFilter | null;
+}
+
+export interface ListByCreditLimitIdNettingSetsResponse {
+    result: Result;
+    netting_sets: NettingSet[];
+    total: number;
+}
+
 export interface ListNettingSetVersionsRequest {
     key: NettingSetKey;
     offset: number;
@@ -204,6 +222,7 @@ export const subjects = {
     delete_many_netting_sets_request: 'refdata.v1.netting_sets.delete_many',
     list_by_netting_agreement_id_netting_sets_request:
         'refdata.v1.netting_sets.list_by_netting_agreement_id',
+    list_by_credit_limit_id_netting_sets_request: 'refdata.v1.netting_sets.list_by_credit_limit_id',
     list_netting_set_versions_request: 'refdata.v1.netting_sets_versions.list',
     get_netting_set_version_request: 'refdata.v1.netting_sets_versions.get',
 } as const;
@@ -221,6 +240,7 @@ export const requiresSession = {
     delete_netting_set_request: true,
     delete_many_netting_sets_request: true,
     list_by_netting_agreement_id_netting_sets_request: true,
+    list_by_credit_limit_id_netting_sets_request: true,
     list_netting_set_versions_request: true,
     get_netting_set_version_request: true,
 } as const;

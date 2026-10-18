@@ -213,7 +213,7 @@ export const subjects = {
     list_report_instance_versions_request: 'reporting.v1.report_instances_versions.list',
     get_report_instance_version_request: 'reporting.v1.report_instances_versions.get',
     get_latest_report_instances_by_definition_request:
-        'reporting.v1.report_instances.get_latest_by_definition',
+        'reporting.v1.ops.get_latest_report_instance_by_definition',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that

@@ -50,6 +50,7 @@ domain::netting_set generate_synthetic_netting_set(utility::generation::generati
              std::to_string(idx);
     r.party_id = ctx.generate_uuid();
     r.netting_agreement_id = std::nullopt;
+    r.credit_limit_id = std::nullopt;
     r.counterparty_id = std::nullopt;
     r.call_type = std::nullopt;
     r.initial_margin_type = std::nullopt;

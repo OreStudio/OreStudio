@@ -35,6 +35,17 @@ begin;
 
 select plan(8);
 
+-- The configs below name the ORE provider, so the catalogue must hold it
+-- before the first insert reaches the validator that reads it.
+insert into ores_synthetic_market_data_providers_tbl (
+    code, tenant_id, version, name, kind, description, display_order,
+    modified_by, performed_by, change_reason_code, change_commentary
+) values (
+    'ore', ores_utility_system_tenant_id_fn(), 0, 'ORE', 'reference',
+    'The market data that ships with the ORE examples.', 1,
+    current_user, current_user, 'system.test', 'synthetic provider setup'
+);
+
 create temporary table t_ids on commit drop as
 select
     '7a000000-0000-4000-8000-000000000001'::uuid as system_collection,

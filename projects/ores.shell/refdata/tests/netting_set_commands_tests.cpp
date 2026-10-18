@@ -83,12 +83,13 @@ TEST_CASE("netting_set_commands_registers_every_derived_verb", tags) {
              std::string{"netting_sets delete"},
              std::string{"netting_sets delete-many"},
              std::string{"netting_sets by-netting-agreement-id"},
+             std::string{"netting_sets by-credit-limit-id"},
              std::string{"netting_sets versions"},
              std::string{"netting_sets version"},
          })
         CHECK(std::find(completions.begin(), completions.end(), verb) != completions.end());
 
-    BOOST_LOG_SEV(lg, debug) << "Registered 11 command(s).";
+    BOOST_LOG_SEV(lg, debug) << "Registered 12 command(s).";
 }
 
 TEST_CASE("netting_set_commands_process_list_requires_a_session", tags) {
@@ -160,7 +161,7 @@ TEST_CASE("netting_set_commands_process_add_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    netting_set_commands::process_add(out, session, tokens(9));
+    netting_set_commands::process_add(out, session, tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -194,7 +195,7 @@ TEST_CASE("netting_set_commands_process_set_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    netting_set_commands::process_set(out, session, tokens(9));
+    netting_set_commands::process_set(out, session, tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -228,7 +229,7 @@ TEST_CASE("netting_set_commands_process_put_many_requires_a_session", tags) {
     std::ostringstream out;
 
     command_feedback::reset();
-    netting_set_commands::process_put_many(out, session, tokens(9));
+    netting_set_commands::process_put_many(out, session, tokens(10));
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
     CHECK(out.str().find("You must be logged in") != std::string::npos);
@@ -306,6 +307,40 @@ TEST_CASE("netting_set_commands_process_by_netting_agreement_id_reports_the_expe
 
     command_feedback::reset();
     netting_set_commands::process_by_netting_agreement_id(out, session, {});
+
+    BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
+    // The arity guard names both the count it expects and the count it
+    // received. The expected count is shape-specific in the command (a write
+    // also reads its intent), so the case pins the wording and the received
+    // count rather than restating that arithmetic.
+    CHECK(out.str().find("Expected ") != std::string::npos);
+    CHECK(out.str().find("got 0.") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("netting_set_commands_process_by_credit_limit_id_requires_a_session", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    std::ostringstream out;
+
+    command_feedback::reset();
+    netting_set_commands::process_by_credit_limit_id(out, session, tokens(1));
+
+    BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
+    CHECK(out.str().find("You must be logged in") != std::string::npos);
+    CHECK(command_feedback::failed());
+}
+
+TEST_CASE("netting_set_commands_process_by_credit_limit_id_reports_the_expected_count", tags) {
+    auto lg(make_logger(test_suite));
+
+    nats_client session;
+    log_in(session);
+    std::ostringstream out;
+
+    command_feedback::reset();
+    netting_set_commands::process_by_credit_limit_id(out, session, {});
 
     BOOST_LOG_SEV(lg, debug) << "Output for an empty argument list: " << out.str();
     // The arity guard names both the count it expects and the count it

@@ -506,7 +506,7 @@ public:
     }
 
     /**
-     * @brief Serves reporting.v1.report_instances.get_latest_by_definition.
+     * @brief Serves reporting.v1.ops.get_latest_report_instance_by_definition.
      *
      * A read of the party's runs, so it is gated by the same code the generated
      * run reads are gated by.

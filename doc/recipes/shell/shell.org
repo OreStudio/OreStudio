@@ -1677,3 +1677,7 @@ tangled into the runnable script library
 * Equity Instruments
 
 - [[id:0B3558F6-7E79-5660-AAFE-0F10D254C48E][How do I run the equity_instruments commands from the shell?]]
+
+* Credit Limits
+
+- [[id:CA3C35D6-2C87-59F1-9B41-08C9BC66AD40][How do I run the credit_limits commands from the shell?]]

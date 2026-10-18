@@ -56,6 +56,10 @@ domain::netting_set netting_set_mapper::map(const netting_set_entity& v) {
         v.netting_agreement_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.netting_agreement_id)) :
             std::nullopt;
+    r.credit_limit_id =
+        v.credit_limit_id.has_value() ?
+            std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.credit_limit_id)) :
+            std::nullopt;
     r.counterparty_id =
         v.counterparty_id.has_value() ?
             std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) :
@@ -89,6 +93,9 @@ netting_set_entity netting_set_mapper::map(const domain::netting_set& v) {
     r.netting_agreement_id = v.netting_agreement_id.has_value() ?
                                  std::optional(boost::uuids::to_string(*v.netting_agreement_id)) :
                                  std::nullopt;
+    r.credit_limit_id = v.credit_limit_id.has_value() ?
+                            std::optional(boost::uuids::to_string(*v.credit_limit_id)) :
+                            std::nullopt;
     r.counterparty_id = v.counterparty_id.has_value() ?
                             std::optional(boost::uuids::to_string(*v.counterparty_id)) :
                             std::nullopt;

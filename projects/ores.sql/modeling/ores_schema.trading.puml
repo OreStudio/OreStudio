@@ -2302,7 +2302,7 @@ package "trading" #E8F5E9 {
         * underlying_name : text
         * currency : text
         * notional : numeric(38, 12)
-        * variance_strike : numeric(38, 12)
+        * variance_strike : double
         * start_date : date
         * maturity_date : date
         * long_short : text
@@ -2715,7 +2715,7 @@ package "trading" #E8F5E9 {
         * currency : text
         * underlying_code : text
         * long_short : text
-        * strike : numeric(38, 12)
+        * strike : double
         * notional : numeric(38, 12)
         * moment_type : text
           description : text

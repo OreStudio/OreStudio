@@ -80,23 +80,24 @@ struct bundle_import final {
     std::optional<std::string> source;
 
     /**
-     * @brief Where the import stands. A begun import is staging, a commit that applied every family
-     * marks it applied, a commit that could not apply the bundle marks it failed, and a sweep marks
-     * an abandoned session past expires_at as expired. The default is staging, so a row written
-     * without a state is still an open session.
+     * @brief Where the import stands. A begun import is staging and a commit that applied every
+     * family marks it applied. Those are the two states the service writes. The column permits
+     * failed and expired, and nothing sets either yet, so a failed commit leaves its import staging
+     * for a retry.
      */
     std::string state;
 
     /**
      * @brief How many families the caller promised in the begin. Nullable, because a caller that
-     * does not know the count states none. A commit reads it to refuse a bundle whose families did
-     * not all arrive.
+     * does not know the count states none. Nothing reads it yet, so a commit accepts a bundle that
+     * carries fewer families than were promised.
      */
     std::optional<int> families_expected;
 
     /**
-     * @brief When an uncommitted import stops waiting. A sweep marks the row expired and releases
-     * its staged items after this instant.
+     * @brief When an uncommitted import stops waiting. A sweep would mark the row expired and
+     * release its staged items after this instant, and no sweep exists yet, so a staging import
+     * waits indefinitely.
      */
     std::chrono::system_clock::time_point expires_at;
 

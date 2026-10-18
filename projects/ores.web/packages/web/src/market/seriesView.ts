@@ -19,7 +19,12 @@
  *
  */
 
-import type { Observation } from '@ores/contracts';
+import {
+    DEFAULT_SERIES_WINDOW,
+    SERIES_WINDOWS,
+    type Observation,
+    type SeriesWindow,
+} from '@ores/contracts';
 import { fromWireTimestamp } from '@ores/wire-protocol/browser';
 import type { RecordRow } from '../api/client.js';
 import type { TitledIdentity } from '../oresmd/title.js';
@@ -61,6 +66,15 @@ export function latestFirst(
     count: number,
 ): readonly Observation[] {
     return observations.slice(-count).reverse();
+}
+
+/**
+ * The window an address names, or the default one when it names none the page
+ * offers. An address is a person's text, so a window this page does not offer
+ * draws the page as it opens rather than an empty chart.
+ */
+export function windowOf(requested: string | null): SeriesWindow {
+    return SERIES_WINDOWS.find((window) => window === requested) ?? DEFAULT_SERIES_WINDOW;
 }
 
 /**

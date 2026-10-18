@@ -24,16 +24,22 @@
 #include "ores.marketdata.api/generators/market_observation_generator.hpp"
 #include "ores.marketdata.api/generators/market_series_generator.hpp"
 #include "ores.marketdata.api/generators/observation_lineage_generator.hpp"
+#include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.core/repository/curve_snapshot_staleness.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
 #include "ores.marketdata.core/repository/market_series_repository.hpp"
 #include "ores.marketdata.core/repository/observation_lineage_repository.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace {
 
@@ -48,6 +54,7 @@ using namespace ores::marketdata::generators;
 using ores::testing::database_helper;
 using ores::marketdata::repository::market_series_repository;
 using ores::marketdata::repository::market_observation_repository;
+using ores::marketdata::messaging::market_observations_filter;
 
 TEST_CASE("insert_single_market_observation", tags) {
     auto lg(make_logger(test_suite));
@@ -738,4 +745,61 @@ TEST_CASE("read_as_of_is_the_observations_of_read_as_of_records", tags) {
         CHECK(observations[i].value == records[i].observation.value);
         CHECK(observations[i].observation_datetime == records[i].observation.observation_datetime);
     }
+}
+
+TEST_CASE("read_latest_by_series_id_takes_an_observed_since_filter", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    // Three observations an hour apart, so a bound half an hour past the first
+    // drops that one and keeps the other two, whichever way the rows are ordered.
+    const auto t0 = std::chrono::system_clock::now();
+    market_observation_repository obs_repo;
+    for (int i = 0; i < 3; ++i) {
+        const auto at = t0 + std::chrono::hours(i);
+        const auto maturity = "SINCE-" + std::to_string(i) + "M";
+        obs_repo.insert(h.context(), make_observation(ctx, s.id, maturity, at, 1.0 + i));
+    }
+
+    const auto sid = boost::uuids::to_string(s.id);
+    market_observations_filter filter;
+    filter.observation_datetime_from =
+        ores::platform::time::datetime::to_iso8601_utc(t0 + std::chrono::minutes(30));
+
+    const auto read = obs_repo.read_latest_by_series_id(h.context(), sid, 0, 500, {}, filter);
+    BOOST_LOG_SEV(lg, debug) << "Observations since the bound: " << read;
+
+    // The values the read keeps, in no particular order: the two rows at or
+    // after the bound, and not the one before it.
+    std::vector<std::string> kept;
+    for (const auto& observation : read)
+        kept.push_back(observation.value);
+    std::ranges::sort(kept);
+    CHECK(kept == std::vector<std::string>{"2.000000", "3.000000"});
+    CHECK(obs_repo.get_total_market_observation_count_by_series_id(h.context(), sid, filter) == 2);
+}
+
+TEST_CASE("read_latest_by_series_id_refuses_a_bound_it_cannot_read", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    auto ctx = ores::testing::make_generation_context(h);
+
+    market_series_repository series_repo;
+    auto s = generate_synthetic_market_series(ctx);
+    series_repo.write(h.context(), s);
+
+    market_observations_filter filter;
+    filter.observation_datetime_from = "yesterday";
+
+    market_observation_repository obs_repo;
+    const auto sid = boost::uuids::to_string(s.id);
+    CHECK_THROWS_AS(obs_repo.read_latest_by_series_id(h.context(), sid, 0, 500, {}, filter),
+                    std::invalid_argument);
 }

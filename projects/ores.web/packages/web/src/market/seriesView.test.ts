@@ -30,6 +30,7 @@ import {
     MAX_PLACES,
     placesOf,
     pointsOf,
+    windowOf,
 } from './seriesView.js';
 
 const obs = (at: string, value: string) => ({
@@ -77,6 +78,20 @@ describe('latestFirst', () => {
 describe('instantLabel', () => {
     it('shows the day and the minute', () => {
         expect(instantLabel(Date.parse('2026-01-02T03:04:05Z'))).toBe('2026-01-02 03:04');
+    });
+});
+
+describe('windowOf', () => {
+    it('reads the window an address names', () => {
+        expect(windowOf('hour')).toBe('hour');
+        expect(windowOf('year')).toBe('year');
+        expect(windowOf('all')).toBe('all');
+    });
+
+    it('draws the page as it opens when the address names no window or one it does not offer', () => {
+        expect(windowOf(null)).toBe('all');
+        expect(windowOf('')).toBe('all');
+        expect(windowOf('fortnight')).toBe('all');
     });
 });
 

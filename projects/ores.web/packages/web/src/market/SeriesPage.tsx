@@ -22,14 +22,19 @@
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { DEFAULT_OBSERVATIONS, type ListedSeries } from '@ores/contracts';
+import {
+    DEFAULT_OBSERVATIONS,
+    SERIES_WINDOWS,
+    type ListedSeries,
+    type SeriesWindow,
+} from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { LineChart, SERIES_COLOURS } from '../marketdata/LineChart.js';
 import { evolutionIdRoute, evolutionRoute } from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
 import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { Notice, PageHeader } from '../ui/Primitives.js';
+import { Notice, PageHeader, cx } from '../ui/Primitives.js';
 import { seriesPageState, type SeriesPageState, type SeriesRead } from './seriesState.js';
 import {
     formatText,
@@ -39,6 +44,7 @@ import {
     latestFirst,
     placesOf,
     pointsOf,
+    windowOf,
 } from './seriesView.js';
 
 /** How many observations the page reads, and how many rows of them it lists. */
@@ -47,7 +53,8 @@ const LISTED = 20;
 
 /**
  * The page of a series that has one value at each instant, such as an FX spot
- * rate: the values over time as a line, and the latest of them in a table.
+ * rate: the values over a window of time as a line, and the latest of them in a
+ * table.
  *
  * An oresmd URL in the address, as `uri`, names the series. The page reads it
  * through the server's parse and finds the series among the ones the party can
@@ -57,6 +64,10 @@ const LISTED = 20;
  *
  * A series id in the address, as `series`, names a series the party already holds, so
  * a screen that knows the id links to it without composing a URL.
+ *
+ * The window the page reads, as `window`, is held in the address so a link
+ * reopens the same view. The count of observations stays the cap on the size,
+ * so a window wider than the cap draws its newest observations.
  */
 export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
@@ -156,7 +167,9 @@ function Observations({
 }): ReactNode {
     const { t } = useTranslation();
     const titled = useSeriesTitle();
-    const read = useQuery(oresmdQueries.observations(series.series_id, READ));
+    const [search, setSearch] = useSearchParams();
+    const window = windowOf(search.get('window'));
+    const read = useQuery(oresmdQueries.observations(series.series_id, READ, window));
     const conventions = useQuery(oresmdQueries.pairConventions());
     const places = placesOf(series.identity, conventions.data ?? []);
     if (read.isError) return <Notice tone="error">{read.error.message}</Notice>;
@@ -170,9 +183,24 @@ function Observations({
             <div>
                 <h2 className="text-lg font-medium">{titled(series.identity)}</h2>
                 {uri !== '' && <p className="break-all font-mono text-xs text-ink-faint">{uri}</p>}
+                <div className="flex flex-wrap items-center gap-3">
+                    <WindowBar
+                        window={window}
+                        onChange={(next) => {
+                            const asked = new URLSearchParams(search);
+                            asked.set('window', next);
+                            setSearch(asked, { replace: true });
+                        }}
+                    />
+                    <p className="text-sm text-ink-muted">
+                        {t('market.series.windowShown', {
+                            window: t(`market.series.windows.${window}`),
+                        })}
+                    </p>
+                </div>
                 <p className="text-sm text-ink-muted">
                     {observations.length === 0
-                        ? t('market.series.empty')
+                        ? t(window === 'all' ? 'market.series.empty' : 'market.series.emptyWindow')
                         : t('market.series.showing', { shown: observations.length, total })}
                 </p>
             </div>
@@ -221,5 +249,42 @@ function Observations({
                 </table>
             )}
         </section>
+    );
+}
+
+/**
+ * The window the page reads, as one pressed choice per window the contract
+ * offers. The button of the window in force is pressed, so the page says which
+ * window it draws as well as naming it in words.
+ */
+function WindowBar({
+    window,
+    onChange,
+}: {
+    readonly window: SeriesWindow;
+    readonly onChange: (window: SeriesWindow) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div
+            role="group"
+            aria-label={t('market.series.windowLabel')}
+            className="inline-flex overflow-hidden rounded-md border border-line"
+        >
+            {SERIES_WINDOWS.map((candidate) => (
+                <button
+                    key={candidate}
+                    type="button"
+                    aria-pressed={window === candidate}
+                    className={cx(
+                        'px-3 py-1 text-sm',
+                        window === candidate ? 'bg-accent text-ink-inverse' : 'text-ink-muted',
+                    )}
+                    onClick={() => onChange(candidate)}
+                >
+                    {t(`market.series.windows.${candidate}`)}
+                </button>
+            ))}
+        </div>
     );
 }

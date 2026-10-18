@@ -23,26 +23,34 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
     DEFAULT_OBSERVATIONS,
+    DEFAULT_SERIES_WINDOW,
     MAX_OBSERVATIONS,
     seriesObservationsSchema,
+    seriesWindowSchema,
     type SeriesObservations,
 } from '@ores/contracts';
 import { subjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_observation_protocol';
 import { NO_ORDER, idSchema, input, refusal, resultSchema } from './refdata-calls.js';
+import { observedSince } from './series-window.js';
 import type { LiveSession } from './sessions.js';
 
 /**
- * The values of one series over time, for the series page: the latest
- * observations of the series, oldest first.
+ * The values of one series over time, for the series page: the observations of
+ * the window asked for, oldest first.
  *
  * The route forwards to the server's list of a series' observations, which
- * orders them newest first and checks the permission and the party. A request
- * for more than the cap is clamped, not refused, because the page asks for what
- * it can draw and the answer says how many the series holds.
+ * orders them newest first and checks the permission and the party. The window
+ * is turned into the earliest observation the read takes here rather than in
+ * the browser, because the deployment's clock is the one the observations were
+ * stamped against. The count stays the cap on the answer, so a window wider
+ * than the cap returns its newest observations. A request for more than the cap
+ * is clamped, not refused, because the page asks for what it can draw and the
+ * answer says how many the window holds.
  */
 
 const querySchema = z.object({
     limit: z.coerce.number().pipe(z.int().min(1)).default(DEFAULT_OBSERVATIONS),
+    window: seriesWindowSchema.default(DEFAULT_SERIES_WINDOW),
 });
 
 const replySchema = z.looseObject({
@@ -66,7 +74,8 @@ export function registerSeriesRoutes(
     server.get('/api/series/:id/observations', async (request): Promise<SeriesObservations> => {
         const session = requireSession(request);
         const id = input(idSchema, (request.params as { id: string }).id);
-        const { limit } = input(querySchema, request.query);
+        const { limit, window } = input(querySchema, request.query);
+        const since = observedSince(window, Date.now());
         const reply = await session.client.callAuthenticated(
             subjects.list_by_series_id_market_observations_request,
             {
@@ -75,7 +84,15 @@ export function registerSeriesRoutes(
                 offset: 0,
                 limit: Math.min(limit, MAX_OBSERVATIONS),
                 order: NO_ORDER,
-                filter: null,
+                filter: {
+                    series_id: null,
+                    observation_datetime: null,
+                    id_one_of: null,
+                    series_id_one_of: null,
+                    observation_datetime_one_of: null,
+                    observation_datetime_from: since,
+                    observation_datetime_to: null,
+                },
             },
             replySchema,
         );

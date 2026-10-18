@@ -38,6 +38,7 @@
 // does not count as a use.
 #include "ores.database/domain/context.hpp"
 #include "ores.database/domain/outcome_code.hpp"
+#include "ores.database/repository/range_bound.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
@@ -130,6 +131,30 @@ messaging::list_market_observations_response market_observation_service::list_ma
             refuse(outcome_code::filter_too_large, {.field = "series_id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->observation_datetime_one_of &&
+        request.filter->observation_datetime_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "observation_datetime_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->observation_datetime_from &&
+        !ores::database::repository::range_bound(*request.filter->observation_datetime_from,
+                                                 ores::database::repository::range_end::from,
+                                                 true)) {
+        response.result = refuse(outcome_code::filter_range_invalid,
+                                 {.field = "observation_datetime_from",
+                                  .value = *request.filter->observation_datetime_from});
+        return response;
+    }
+    if (request.filter && request.filter->observation_datetime_to &&
+        !ores::database::repository::range_bound(*request.filter->observation_datetime_to,
+                                                 ores::database::repository::range_end::to,
+                                                 true)) {
+        response.result = refuse(outcome_code::filter_range_invalid,
+                                 {.field = "observation_datetime_to",
+                                  .value = *request.filter->observation_datetime_to});
+        return response;
+    }
     // A stated instant is checked here, so a malformed one is the caller's
     // mistake rather than a database error. The caller's text is what the
     // store reads, so a fraction of a second is kept.
@@ -166,6 +191,30 @@ market_observation_service::list_by_series_id_market_observations(
         request.filter->series_id_one_of->size() > 1000) {
         response.result =
             refuse(outcome_code::filter_too_large, {.field = "series_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->observation_datetime_one_of &&
+        request.filter->observation_datetime_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "observation_datetime_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->observation_datetime_from &&
+        !ores::database::repository::range_bound(*request.filter->observation_datetime_from,
+                                                 ores::database::repository::range_end::from,
+                                                 true)) {
+        response.result = refuse(outcome_code::filter_range_invalid,
+                                 {.field = "observation_datetime_from",
+                                  .value = *request.filter->observation_datetime_from});
+        return response;
+    }
+    if (request.filter && request.filter->observation_datetime_to &&
+        !ores::database::repository::range_bound(*request.filter->observation_datetime_to,
+                                                 ores::database::repository::range_end::to,
+                                                 true)) {
+        response.result = refuse(outcome_code::filter_range_invalid,
+                                 {.field = "observation_datetime_to",
+                                  .value = *request.filter->observation_datetime_to});
         return response;
     }
     if (request.scope == ores::utility::domain::scope::subtree) {

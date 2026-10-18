@@ -33,6 +33,17 @@ export const MAX_OBSERVATIONS = 1000;
 /** The number of observations a read returns when it names none. */
 export const DEFAULT_OBSERVATIONS = 500;
 
+/**
+ * The windows of time the series page offers, and the one a read takes when it
+ * names none. A window names how far back the read looks; the count above caps
+ * how many observations of that window it returns. `all` looks back to the
+ * first observation the series holds.
+ */
+export const SERIES_WINDOWS = ['hour', 'day', 'month', 'year', 'all'] as const;
+export type SeriesWindow = (typeof SERIES_WINDOWS)[number];
+export const DEFAULT_SERIES_WINDOW: SeriesWindow = 'all';
+export const seriesWindowSchema = z.enum(SERIES_WINDOWS);
+
 export const observationSchema = z.object({
     /** When the observation was made, in the one wire spelling. */
     at: wireTimestampSchema,

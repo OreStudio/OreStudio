@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/turn-the-fx-soft-references-into-foreign-keys
-#+pr:
+#+pr: 3523
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3523][#3523]] | [trading] Key the FX closed vocabularies to their lookup tables |
 
 * Review
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/batch-the-fx-service-reads-onto-the-repository-query
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -35,10 +35,10 @@ an FX one. The family is where it lands first.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Decide whether the loop lives in a shared service base. |
-| Last touched | 2026-10-16                               |
+| Now          | Scoped, not started. The seven services are generated from =cpp_service.cpp.mustache=, so the per-key loops cannot be edited in place. |
+| Waiting on   | Nothing. |
+| Next         | Add a per-entity flag that renders the batch path in the service template, set it on the seven FX models, and regenerate. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -48,6 +48,23 @@ an FX one. The family is where it lands first.
 - The same defect is reported on the other components the base or the template reaches, so it is fixed once, not seven times.
 
 * Plan
+
+The service implementation is generated from =cpp_service.cpp.mustache= and
+=tangle= reproduces it from =ores.cpp.service.service_impl.org=, so a hand edit
+to the seven services is overwritten on the next regeneration and the drift
+gate refuses it. The unit is therefore a template change, gated per entity so
+the other components' services stay byte-identical until their own unit:
+
+1. Add a section to the service template's anonymous namespace, rendered only
+   when the entity opts in, that indexes a batch read's rows by the trade id
+   they carry.
+2. Render =get_many= and =put_many= through one =repo_.read_latest(ctx, keys)=
+   call when the entity opts in, and keep the per-key loop otherwise.
+3. Set the opt-in flag on the seven FX models, regenerate the trading
+   component, and confirm no other component's service changed.
+4. Assert the positional reply: a request whose middle key is absent still
+   answers one entry per key, in the order asked. A service-level test needs
+   the database harness the repository tests already use.
 
 1. Read the generated service template and count the loops the whole component carries, not just the FX ones.
 2. Decide the seam. A shared base or the template is preferred, because the defect is in the generated shape.

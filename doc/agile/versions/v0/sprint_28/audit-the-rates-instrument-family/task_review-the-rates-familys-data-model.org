@@ -86,13 +86,14 @@ live.
   checking*. Five were found in the main thread — the conversion seam passes at
   the helper and fails at six sites beside it, the empty cap/floor fact table is
   a dropped field rather than a product with no fields, the variant is not a
-  Regime 3 violation, a floor is corrupted in the reverse direction, and the
-  leg's direction is never set for two products. The other eight an independent
-  verifier found by opening every citation: a soft-reference count, three
-  =nats_call= citations, the leg-direction finding's evidence, the task's copy
-  of the money count, a batch-array count, a line number, and a scored regime
-  that contradicted its own checklist row. That is the step which should not
-  have needed a second agent.
+  Regime 3 violation, the recorded decision that the variant was removed is
+  false, and a floor is corrupted in the reverse direction. The other eight an
+  independent verifier found by opening every citation: the soft-reference
+  count, the leg-direction finding's two citations, that finding's claim that
+  the import always supplies a direction, three =nats_call= citations, the
+  task's copy of the money count, the batch's array count, a sequence-line
+  citation, and a scored regime that contradicted its own checklist row. That is
+  the step which should not have needed a second agent.
 - A floor becoming a cap was found on a second pass, after the strike finding
   was written. Following a lost column in both directions is what raised it.
 

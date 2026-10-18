@@ -143,11 +143,11 @@ generate \
     --source "$source/curve_configuration.cpp" \
     --money Spread
 
-# The run document is the smallest table in the set, and the corpus names its
-# files in a dozen ways, so the harness finds it by its root element.
+# The corpus names the run document 235 ways, six of them without the "ore"
+# prefix, so the harness finds the family by its root element. The family keeps
+# the schema's name; the product calls it the run document.
 generate \
     --schema "$xsd/ore.xsd" \
-    --schema "$xsd/ore_types.xsd" \
     --root-element ORE \
     --root-type ore \
     --accessor ore_document \

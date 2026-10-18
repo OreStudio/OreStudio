@@ -31,7 +31,7 @@ completely in one change: reader, writer, and the deletion of its mapper.
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | Calendar adjustments, currency config, pricing engines, credit simulation and curve configuration read and write through the codec; stress testing and the run document have tables the harness proves; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | The run document projection, then Portfolio: two legacy readers remain in product code. |
+| Next         | The run document projection, then Portfolio: two families still read through the binding. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -199,11 +199,17 @@ Shift, and it is not =shift_type_entry=.
 
 * The run document table came before its projection
 
-The run document has the widest corpus of any family: 422 files, named a dozen
-ways, so the value harness finds it by its root element. All of them bind, write
-and keep every value. The table is 158 lines; the mapper it will replace is the
-one the run store and the run configuration service call, and that projection is
-the next change.
+The run document has the widest corpus of any family: 422 files under 235 names,
+six of which carry no =ore= prefix, so the value harness finds it by its root
+element. All of them bind, write and keep every value. The table is 269 lines
+across the two generated files; the mapper it will replace is the one the run
+store and the run configuration service call, and that projection is the next
+change.
+
+What the corpus does not state is worth knowing: every document writes =Setup=
+and =Analytics=, most write =Markets=, and none writes =Logging= or =Restore=.
+Those two members are proved by the schema and the table, not by a document, and
+the projection that follows has no corpus fixture for them.
 
 * Where the work stands
 
@@ -220,7 +226,7 @@ line.
 | Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 23 cases |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =[ore][xml]@, 502 cases and 80,114 assertions |
+| The XML suites pass | =[ore][xml]@, 502 cases and 80,115 assertions |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 

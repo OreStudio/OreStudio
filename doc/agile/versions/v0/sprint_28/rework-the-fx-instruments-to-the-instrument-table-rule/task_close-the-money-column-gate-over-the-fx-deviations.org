@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/close-the-money-column-gate-over-the-fx-deviations
-#+pr:
+#+pr: 3520
 +#+blocked_on:
 +#+blocked_since:
 +#+created: 2026-10-16
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3520][#3520]] | [tooling] Let the money gate state an empty baseline |
 
 * Review
 

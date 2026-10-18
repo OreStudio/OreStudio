@@ -62,6 +62,17 @@ enum class field_kind : std::uint8_t {
     residual,
     /// A repeated child of a complex type, appended to a vector.
     repeated_nested,
+    /**
+     * A child of a complex type that holds the type again.
+     *
+     * A record is a fixed layout and cannot hold itself, so a recursive member
+     * is an index into an arena the parent owns: `offset` is a
+     * `std::vector<std::uint32_t>` of indices and `arena_offset` a
+     * `std::vector<T>` of the rows they name, `T` being the type the row points
+     * at. The builder appends to the arena and pushes the index, and the writer
+     * follows the indices in order.
+     */
+    indexed_nested,
 };
 
 struct record_type;
@@ -96,6 +107,9 @@ struct residual_element {
     std::string text;
 };
 
+/// The value field::arena_offset holds when a member indexes no arena.
+inline constexpr std::uint32_t no_arena = 0xFFFFFFFFu;
+
 /**
  * @brief One element or attribute of one schema type.
  *
@@ -118,8 +132,14 @@ struct field {
     const record_type* type;
     /// The element type of a repeated_leaf, ignored otherwise.
     scalar_kind scalar;
-    /// Operations for a repeated member, null for every other kind.
+    /// Operations for a repeated member, null for every other kind. For
+    /// indexed_nested these operate on the arena.
     const vector_ops* repeated = nullptr;
+    /// The offset of the arena an indexed_nested member indexes into.
+    std::uint32_t arena_offset = no_arena;
+    /// True when an indexed_nested member's element may appear once, so a
+    /// second row is refused rather than appended.
+    bool once = false;
 };
 
 /**

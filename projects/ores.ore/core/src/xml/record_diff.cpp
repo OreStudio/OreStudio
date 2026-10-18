@@ -99,6 +99,7 @@ auto compare_value(std::string& path, const field& f, const void* left, const vo
         case field_kind::nested:
         case field_kind::repeated_leaf:
         case field_kind::repeated_nested:
+        case field_kind::indexed_nested:
         case field_kind::residual:
             return record_difference{path, "a row that names no single value reached the walk"};
     }
@@ -174,6 +175,39 @@ auto compare_record(std::string& path, const record_type& type, const void* left
                         compare_repeated(member, f, slot_of(left, f), slot_of(right, f)))
                     return found;
                 break;
+            case field_kind::indexed_nested: {
+                // The indices and the rows they name are compared in order, so
+                // a difference inside a second-level row is named by its path.
+                if (f.repeated == nullptr || f.type == nullptr || f.arena_offset == no_arena)
+                    return record_difference{member,
+                                             "the table names no arena for an indexed member"};
+                const auto& left_indices =
+                    *static_cast<const std::vector<std::uint32_t>*>(slot_of(left, f));
+                const auto& right_indices =
+                    *static_cast<const std::vector<std::uint32_t>*>(slot_of(right, f));
+                if (left_indices.size() != right_indices.size())
+                    return record_difference{member,
+                                             std::to_string(left_indices.size()) + " rows became " +
+                                                 std::to_string(right_indices.size())};
+                const auto* left_arena = static_cast<const std::byte*>(left) + f.arena_offset;
+                const auto* right_arena = static_cast<const std::byte*>(right) + f.arena_offset;
+                const auto left_rows = f.repeated->count(left_arena);
+                const auto right_rows = f.repeated->count(right_arena);
+                for (std::size_t at = 0; at < left_indices.size(); ++at) {
+                    const auto lhs_index = left_indices[at];
+                    const auto rhs_index = right_indices[at];
+                    if (lhs_index >= left_rows || rhs_index >= right_rows)
+                        return record_difference{member + "[" + std::to_string(at) + "]",
+                                                 "an index names a row the arena does not hold"};
+                    auto nested = member + "[" + std::to_string(at) + "]";
+                    if (const auto found = compare_record(nested,
+                                                          *f.type,
+                                                          f.repeated->at(left_arena, lhs_index),
+                                                          f.repeated->at(right_arena, rhs_index)))
+                        return found;
+                }
+                break;
+            }
             case field_kind::residual: {
                 const auto& lhs =
                     *static_cast<const std::vector<residual_element>*>(slot_of(left, f));

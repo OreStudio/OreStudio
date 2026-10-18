@@ -737,12 +737,15 @@ RECURSIVE_SCHEMA = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 """
 
 
-def test_a_type_that_holds_itself_loses_only_the_edge_that_closes_it(tmp_path):
-    """A record cannot hold itself, so the recursive member is left out."""
-    emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
+def test_a_type_that_holds_itself_indexes_the_row_it_cannot_hold(tmp_path):
+    """A record cannot hold itself, so the recursive member is an arena index."""
+    emitted, source = _emit(tmp_path, RECURSIVE_SCHEMA)
     node = _record(emitted, "node")
     assert "std::string value" in node
-    assert "child" not in node
+    assert "std::vector<std::uint32_t> child" in node
+    assert "std::vector<struct node> child_arena" in node
+    assert "field_kind::indexed_nested" in source
+    assert "&node_record" in source
     assert "std::string head" in _record(emitted, "root_type")
 
 
@@ -838,11 +841,12 @@ def test_a_reference_to_a_global_element_of_an_earlier_schema(tmp_path):
     assert "shared_type shared" in _record(header.read_text(), "root_type")
 
 
-def test_a_cut_member_is_named_in_the_generated_header(tmp_path):
-    """The file says which member a record cannot hold, and why."""
-    emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
-    assert "Child (node reaches itself)" in emitted
-    assert "A document that states it is refused" in emitted
+def test_a_cut_member_becomes_an_index_and_its_arena(tmp_path):
+    """The edge stays in the table as an index, and the rows live beside it."""
+    emitted, source = _emit(tmp_path, RECURSIVE_SCHEMA)
+    assert "std::vector<std::uint32_t> child" in _record(emitted, "node")
+    assert "child_arena_ops" in source
+    assert "&node_record" in source
 
 
 GROUP_ENUM = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -922,3 +926,47 @@ def test_two_schemas_that_disagree_about_one_global_element_are_refused(tmp_path
     )
     assert result.returncode != 0
     assert "Shared" in result.stderr
+
+
+MUTUAL_SCHEMA = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="alpha" name="Root"/>
+  <xs:complexType name="alpha">
+    <xs:sequence>
+      <xs:element type="beta" name="Beta" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="beta">
+    <xs:sequence>
+      <xs:element type="alpha" name="Alpha" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_mutual_cycle_hoists_the_table_it_indexes(tmp_path):
+    """The closing edge always reaches a type defined later, so its table is
+    declared before the row that names it."""
+    emitted, source = _emit(tmp_path, MUTUAL_SCHEMA, root_type="alpha")
+    beta = _record(emitted, "beta")
+    assert "std::vector<std::uint32_t> alpha" in beta
+    assert "std::vector<struct alpha> alpha_arena" in beta
+    # beta is defined first, so only alpha's table needs a declaration ahead of
+    # the row that names it.
+    assert "extern const record_type alpha_record;" in source
+    assert source.index("extern const record_type alpha_record;") < source.index(
+        "const record_type alpha_record{"
+    )
+    assert "extern const record_type beta_record;" not in source
+
+
+def test_a_recursive_member_the_schema_allows_once_states_it(tmp_path):
+    """The row carries the schema's cardinality, so a second row is refused."""
+    _emitted, source = _emit(tmp_path, RECURSIVE_SCHEMA)
+    row = source[source.index('{"Child"') :]
+    row = row[: row.index("}")]
+    row = re.sub(r"offsetof\([^)]*\)", "offset", row)
+    fields = [field.strip() for field in row.split(",")]
+    assert fields[5] == "false"  # is_attribute
+    assert fields[6] == "false"  # required, minOccurs is 0
+    assert fields[12].startswith("true")  # once

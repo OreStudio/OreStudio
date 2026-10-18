@@ -646,8 +646,8 @@ def order_types(schema, root_type):
 
     A record is a fixed layout, so a type is defined before the type that holds
     it, and no type holds itself. An edge that closes a cycle is recorded in
-    schema.cut_members and left out of the record; the generated file names it,
-    so a document that states that member is refused by the reading.
+    schema.cut_members and emitted as an index row into an arena the holder
+    owns, so the record holds the member without holding its type.
     """
     reachable = collect(schema, root_type, dict())
     edges = {}
@@ -690,9 +690,7 @@ def order_types(schema, root_type):
         if name in used or name not in schema.complex_types:
             return
         used.add(name)
-        for member, target in edges.get(name, ()):
-            if (name, member, target) in cut:
-                continue
+        for _member, target in edges.get(name, ()):
             mark(target)
 
     mark(root_type)
@@ -880,7 +878,6 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
     header_name = accessor.replace("_document", "")
 
     unresolved = []
-    cut_by_type = {}
     declarations = []
     declares = []
     for type_name in emitted:
@@ -905,12 +902,15 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                     if target not in names:
                         unresolved.append((type_name, member, target))
                         continue
-                    if (type_name, member) in cut:
-                        cut_by_type.setdefault(type_name, []).append(
-                            (field.get("name"), target)
-                        )
-                        continue
                     cpp = names[target]
+                    if (type_name, member) in cut:
+                        # A recursive member is an index into an arena this
+                        # record owns, so no row of the record moves when the
+                        # arena grows.
+                        body.append(f"    std::vector<std::uint32_t> {member};")
+                        body.append(f"    std::vector<struct {cpp}> {member}_arena;")
+                        field_count += 1
+                        continue
                     if (type_name, target) in shadowed:
                         cpp = f"struct {cpp}"
                     if repeated:
@@ -926,13 +926,6 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             body.insert(1, "    std::uint64_t present = 0;")
         else:
             body.insert(1, f"    std::uint64_t present[{words}] = {{0}};")
-        if type_name in cut_by_type:
-            held = ", ".join(
-                f"{member} ({target} reaches itself)" for member, target in cut_by_type[type_name]
-            )
-            declarations.append(
-                f"// Not a member of this record: {held}. A document that states it is refused."
-            )
         declarations.append("\n".join(body))
 
     if unresolved:
@@ -941,8 +934,26 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             f"{holder}.{member} holds {target}, which is not a complexType this generator read"
         )
 
+    # The cut edges whose target is emitted: the only tables a row names before
+    # this file defines them.
+    indexed_targets = [
+        name
+        for name in emitted
+        if any(target == name for _holder, _member, target in schema.cut_members)
+    ]
+    indexed_declarations = ""
+    if indexed_targets:
+        tables_declared_later = "\n".join(
+            f"extern const record_type {names[name]}_record;" for name in indexed_targets
+        )
+        indexed_declarations = (
+            "// A row that indexes an arena names a record, and the edge that closes\n"
+            "// a type cycle is always a back edge, so the record is defined later in\n"
+            "// this file.\n" + tables_declared_later + "\n\n"
+        )
     tables = []
     repeated_members = []
+    repeated_arena = []
     for type_name in emitted:
         complex_type = schema.complex_types[type_name]
         elements, attributes = children_of(complex_type, schema)
@@ -978,7 +989,23 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 target_name = element.get("type") or schema.inline_name.get(
                     id(element), element.get("name")
                 )
-                if target_name not in names or (type_name, snake(element.get("name"))) in cut:
+                if target_name not in names:
+                    continue
+                member = snake(element.get("name"))
+                if (type_name, member) in cut:
+                    ops_instance = ops_name(names[type_name], f"{member}_arena")
+                    repeated_arena.append((ops_instance, names[target_name]))
+                    rows.append(
+                        f'    {{"{element.get("name")}", {hash_name(element.get("name"))}u, '
+                        f"field_kind::indexed_nested, "
+                        f"std::uint32_t(offsetof({names[type_name]}, {member})), "
+                        f"{bit}, false, {'true' if required else 'false'}, nullptr, "
+                        f"&{names[target_name]}_record, "
+                        f"scalar_kind::text, &{ops_instance}, "
+                        f"std::uint32_t(offsetof({names[type_name]}, {member}_arena)), "
+                        f"{'true' if not repeated else 'false'}}},"
+                    )
+                    bit += 1
                     continue
                 field_kind = "repeated_nested" if repeated else "nested"
                 nested = names[
@@ -1035,6 +1062,11 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         )
 
     ops = []
+    for instance, element_type in repeated_arena:
+        ops.append(
+            f"constexpr vector_ops {instance}{{&append_to<{element_type}>, "
+            f"&count_of<{element_type}>, &at_of<{element_type}>}};"
+        )
     for ops_instance, element_type in repeated_members:
         ops.append(
             f"constexpr vector_ops {ops_instance}{{&append_to<{element_type}>, "
@@ -1128,7 +1160,7 @@ auto at_of(const void* container, std::size_t index) -> const void* {{
 
 {chr(10).join(ops)}
 
-{chr(10).join(tables)}
+{indexed_declarations}{chr(10).join(tables)}
 
 }}
 

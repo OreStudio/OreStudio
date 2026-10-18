@@ -295,10 +295,17 @@ mapping cannot hold rather than dropping it.
 
 The scripted family came first because it is the smallest. The script's =NPV= is
 a name the schema requires and the instrument's flat table has no column for, so
-it rides in the parameters JSON the table does carry. The remaining families are
-rates, FX, bonds, credit, equity, commodities and composites. The old mappers,
+it rides in the parameters JSON the table does carry. Rates, FX and bonds
+followed. Credit, equity, commodities and composites remain. The old mappers,
 the importer and the exporter go in the change that lands the last one, so the
 product never runs both paths.
+
+Three things the port changes on purpose. A quantity the old binding read as
+=float= is now the document's exact decimal, so a stored amount no longer
+carries float noise. An FX forward or swap settlement is written back, which the
+old mapper read and dropped. A callable bond's required call lists are stated
+with one row each where the table has no row to carry them, because the old
+mapper wrote the lists empty and the document it produced did not bind.
 
 * Where the work stands
 

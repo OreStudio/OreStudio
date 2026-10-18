@@ -99,8 +99,14 @@ need the generator extended first.
 | PricingEngines | generates | 241 lines, read by run_store and the run configuration service | none |
 | CurveConfiguration | generates | 3,310 lines | none, but the largest |
 | Portfolio | generates | instrument mappers, the largest group | none |
-| StressTesting | refuses | 830 lines | generator lacks the =shiftTypeEntry= shape |
-| ORE run document | refuses | run document mapper | generator lacks =xs:complexContent= |
+| StressTesting | generates once =sensitivity.xsd= is read | 830 lines | none; =shiftTypeEntry= lives in =sensitivity.xsd= |
+| ORE run document | refuses | run document mapper | generator lacks =xs:complexContent=, the only family that still needs it |
+
+*One probe result was wrong.* The table first said stress testing could not
+be generated because the generator lacked its =shiftTypeEntry= shape. It was
+the probe that was wrong: the type lives in =sensitivity.xsd=, and the family
+generates as soon as that schema is read. Only the run document still needs
+the generator extended, and that is =xs:complexContent=.
 
 *Credit simulation is not free.* Its mapper is reached only by its own suites,
 which reads as dead code, but the configuration type is seeded and stored, so

@@ -229,7 +229,7 @@ Each card is drawn for a person who holds the read of its screen.
 |-------+----------|
 | Parties, with the workflows Onboard a party and Onboard a counterparty | [[id:86CB724A-66E3-4FB3-A943-3CE22D41213A][Parties]], and new party in [[id:F1C4E8A2-9D3B-4F6E-8A17-2C5B9E4D7A30][Setup]] |
 | Currencies, Currency pairs, Desk groups | [[id:9D60A92B-A65F-4474-896C-1C1E751FDEA3][Currencies and FX]] |
-| Holiday calendars | [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]], [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors]] |
+| Holiday calendars, Resolve a tenor | [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]], [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors]] |
 | Classifications | [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] |
 | The workflows Shape the book structure and Define instrument conventions | [[id:A08424B7-E6D7-4993-955C-53AEC241ABA5][Books and portfolios]], [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions]] |
 
@@ -281,6 +281,7 @@ the first step of every trail.
 | Parties, and its workflows Onboard a party and Onboard a counterparty | Reference data | A party is reference data. The journeys group it with the countries, currencies and business centres it connects to |
 | Shape the book structure, Define instrument conventions | Reference data | They are workflows on shared lists |
 | Currencies, Currency pairs, Desk groups, Holiday calendars, Classifications | Reference data | They are the shared lists |
+| Resolve a tenor, with the workflow Define how tenors resolve | Reference data | A trader reads one date out of the shared tenor rules. Authoring those rules is a workflow on the screen, so reading is not the price of arriving |
 | Staff, Hierarchy | Organisation | They are about the people of the tenant |
 | Roles | Organisation | A role is held by a person |
 | Rescue access | Organisation | It acts on one person's account: it unlocks it. Sign-ins only reads sessions, so the two are not the same kind of screen and do not share an area |

@@ -49,9 +49,9 @@ about the rule they are typing. This story builds the first screen only.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | The resolve screen is built; the PR carries it. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Merge, then the two captures the work raised. |
 | Last touched  | 2026-10-18                               |
 
 * Acceptance
@@ -78,6 +78,29 @@ about the rule they are typing. This story builds the first screen only.
 | [[id:BD5DDBDB-5FA4-4116-9B58-A484D396CEF9][Resolve a tenor to a date from the tenors area]] | STARTED | 2026-10-18 | | Task for: A trader screen that resolves a tenor to a date, before any editing |
 
 * Decisions
+
+** Resolve is the screen, authoring is a workflow on it
+
+The capture says the resolve screen is read constantly and written never, and
+that one rail serving both is what made the previous screen confusing. The
+area now opens on the read-only screen, and the journey that authors the rules
+is a workflow card on it. A trader arrives and reads a date; an administrator
+takes one deliberate step to change a rule.
+
+** A spot-anchored rule asks for a spot date
+
+The capture describes spot as derived, "horizon plus the currency pair's spot
+days". This page has no currency pair, and the engine will not assume a lag, so
+it refuses instead. Deriving one here would invent a number and print a date
+that is quietly wrong. The page asks for the spot date and requires it only
+when the chosen row measures from spot.
+
+** The reply reports three dates and the page draws three
+
+The server walks the rule and knows each schedule step. The page does not
+repeat that walk: a second implementation of the arithmetic would be a second
+source of truth for the same date. The page draws the anchor, the date before
+the roll and the adjusted date, which is what the operation reports.
 
 * Out of scope
 

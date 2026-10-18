@@ -54,12 +54,17 @@ and the commit it was measured at. A number without both is not a measurement,
 because a clean-up record describes a tree and trunk moves under a branch: a
 consumer count, a gate's component count and a suite's size all change with no
 code changing, and the reader of a bare number cannot tell which tree it came
-from. Where the raw output matters, put it in an =evidence/= file beside the
-task and name that file in the Command column.
+from.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web suite | 146 files, 1649 tests | =npm test --workspace @ores/web=, after =npm run typecheck= | 5f47032a6d |
+| BFF suite | 66 files, 787 tests | =npm test --workspace @ores/bff= | 5f47032a6d |
+| Resolution, spot given | anchor 2026-03-18, before roll 2026-06-18, adjusted 2026-06-18, ModifiedFollowing | =POST /api/tenors/resolve= against the running fleet: 3M, RATES_SPOT_FORWARD, Argentina, horizon 2026-03-16, spot 2026-03-18 | 5f47032a6d |
+| Resolution, no spot | outcome invalid, code missing_spot_date, HTTP 200, empty dates | the same call with =spot: null= | 5f47032a6d |
+| Resolution, unknown tenor | outcome missing, code tenor_not_found, HTTP 200 | the same call with =tenor_code: NOPE= | 5f47032a6d |
+| Calendar pick list | 61 calendars, first three Argentina, Australia, Austria, and no AE or GBLO | =GET /api/tenors/pick-lists= | 5f47032a6d |
+| Served bundle | carries =/refdata/tenors/author= | =curl= the SPA bundle the service serves | 2b28dd3e81 |
 
 * Notes
 
@@ -89,6 +94,18 @@ via its "Verifies task" field.
 | 3 | A failed read of the convention's tenor set was silent | TenorResolutionPage.tsx | Accepted | Fixed. The tenor picker stayed empty with no notice; the error is now surfaced with the other read failures. |
 | 4 | The calendar pick list named a catalogue resolution cannot use | bff/src/tenors.ts | Accepted | Found while proving the page. Fixed at source, and the journey's test step is fixed with it. |
 | 5 | The readiness rule was buried in the component | TenorResolutionPage.tsx | Accepted | Extracted to `canResolve` so the spot gate is tested directly rather than through markup that cannot be rendered interactively. |
+| 6 | The screen drew a disabled Resolve button | TenorResolutionPage.tsx | Accepted | Fixed. The record screen standard says an action that cannot run is not drawn. The button is gone and the date is asked for as soon as the picks can answer it, which is also what the story called immediate. |
+| 7 | No loading state, and neither notice offered Retry | TenorResolutionPage.tsx | Accepted | Fixed. The entity specification requires "Loading…" on first load and an error in place, in the server's words, with Retry. |
+| 8 | A refusal printed its wire code and the wire field name | TenorResolutionPage.tsx | Accepted | Fixed. The field is drawn in the page's own words, and a field the page does not draw shows only the server's message. |
+| 9 | The spot gate read the convention's anchor, not the member row's override | TenorResolutionPage.tsx | Accepted | Fixed. The server reads the override first, so a rule overriding to spot was refused with no spot field offered. |
+| 10 | A refusal discarded the dates it did reach | tenorResolution.ts | Accepted | Fixed. The server fills the anchor before it tests the status, so what it reached is kept and drawn. |
+| 11 | The conventions pick-lists route reads the same wrong calendar catalogue | bff/src/conventions.ts | Reverted, captured | The whole route has never answered: it omits `as_of` for as-of lists, and `sub_periods_coupon_types.list` answers 503 on top of that. Half-fixing it inside this PR would leave the route as broken as it was, so the finding is captured with both faults diagnosed. |
+| 12 | The resolution reply schema is declared on both sides of the HTTP call | bff + web api | Declined | True, and `@ores/contracts` is the right home. The repo already declares `resultSchema` three times, so moving it is a cross-package refactor of its own; the diff follows the convention it found. |
+| 13 | The page asks a fifth question, the spot date | story.org | Declined, recorded | The capture says spot is derived from the horizon and the pair's spot days. This page has no currency pair and the engine will not assume a lag, so deriving one would print a quietly wrong date. The story's decisions say so. |
+| 14 | `ResolutionAnswer` is exported for its test | TenorResolutionPage.tsx | Accepted | The doc comment now names the page as the consumer and says the tests render it because the package has no DOM. |
+| 15 | No rejected-body test for the new route | bff/src/tenors.test.ts | Accepted | Added: a question with no tenor is refused with 400 before it reaches the server. |
+| 16 | `menu_structure.org` never records the new screen | doc/knowledge/ui/menu_structure.org | Accepted | Fixed. The card table and the area table now name the screen and its workflow. |
+| 17 | The sprint table row was left without its closing pipe | sprint.org | Accepted | Fixed. My own defect; the org table was broken. |
 
 * Result
 

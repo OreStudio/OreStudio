@@ -150,13 +150,10 @@ task and name that file in the Command column.
   behaviour are =conventions_document_service_tests= and the conventions half of
   =run_store_database_tests=.
 
-- Three code comments still repeat claims this task's record no longer makes,
-  and all belong to the next code change. =bundle_import_operations_service=
-  says the staged rows are applied in the order the stages landed, which the
-  code does not state as an invariant; it holds today only because the item ids
-  are UUIDv7 and time-ordered. =bundle_import.hpp= and =ores.refdata.bundle_import.org=
-  describe a sweep that marks stale imports expired, and a failed commit that
-  marks an import failed, and nothing performs either.
+- Two modelling comments still repeat claims this task's record no longer makes.
+  =bundle_import.hpp= and =ores.refdata.bundle_import.org= describe a sweep
+  that marks stale imports expired, and a failed commit that marks an import
+  failed, and nothing performs either.
 
 * Test Scenarios
 

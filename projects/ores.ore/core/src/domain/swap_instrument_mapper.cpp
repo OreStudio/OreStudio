@@ -1740,6 +1740,10 @@ trade swap_instrument_mapper::reverse_fra(
     fra.EndDate = to_ore_date(header.maturity_date);
     fra.Currency = parse_currency_code(instr.currency);
     set_exact(fra.Notional, instr.notional);
+    // The direction belongs to the instrument, so it is written whether or not
+    // the leg rows survived: a row stored before the children existed still
+    // states how the trade faces.
+    fra.LongShort = parse_code(instr.long_short, long_short_count, longShort::Long);
 
     if (!legs.empty()) {
         const auto& tm = legs.front();
@@ -1748,7 +1752,6 @@ trade swap_instrument_mapper::reverse_fra(
             rates.begin(), rates.end(), [](const auto& r) { return r.rate_role == "fixed"; });
         if (fixed != rates.end())
             set_exact(fra.Strike, fixed->value);
-        fra.LongShort = parse_code(instr.long_short, long_short_count, longShort::Long);
     }
     // The leg's own notional is the one the document stated on the leg; the
     // instrument's copy is the fallback for a row written before the children.

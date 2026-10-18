@@ -201,26 +201,48 @@ TEST_CASE("mapper_roundtrip_fra_reverse", tags) {
     BOOST_LOG_SEV(lg, info) << "FRA reverse-mapper test passed";
 }
 
-TEST_CASE("mapper_fra_keeps_the_document_direction", tags) {
+TEST_CASE("mapper_fra_reads_a_short_document_and_writes_it_back", tags) {
     auto lg(make_logger(test_suite));
 
-    // The corpus states Long. A Short trade is the same document with the one
-    // member changed, so this asks the mapper the question the schema asks of a
-    // Short trade rather than a question the corpus cannot pose.
-    auto t = load_first_trade("IR_FRA.xml");
-    REQUIRE(t.ForwardRateAgreementData.operator bool());
-    t.ForwardRateAgreementData->LongShort = ores::ore::domain::longShort::Short;
+    // The corpus states Long, so this is the suite's only Short witness. It is
+    // a document rather than a hand-set binding, so the codec's parse of the
+    // spelling is part of what the case proves.
+    const std::string content = "<?xml version='1.0' encoding='UTF-8'?>\n"
+                                "<Portfolio>\n"
+                                "    <Trade id=\"FRA_short\">\n"
+                                "        <TradeType>ForwardRateAgreement</TradeType>\n"
+                                "        <Envelope>\n"
+                                "            <CounterParty>CPTY</CounterParty>\n"
+                                "            <NettingSetId>NS</NettingSetId>\n"
+                                "        </Envelope>\n"
+                                "        <ForwardRateAgreementData>\n"
+                                "            <StartDate>2026-10-19</StartDate>\n"
+                                "            <EndDate>2027-04-20</EndDate>\n"
+                                "            <Currency>EUR</Currency>\n"
+                                "            <Index>EUR-EURIBOR-6M</Index>\n"
+                                "            <LongShort>Short</LongShort>\n"
+                                "            <Strike>0.005</Strike>\n"
+                                "            <Notional>100000000</Notional>\n"
+                                "        </ForwardRateAgreementData>\n"
+                                "    </Trade>\n"
+                                "</Portfolio>\n";
 
-    const auto result = swap_instrument_mapper::forward_fra(t);
+    portfolio parsed;
+    ores::ore::domain::load_data(content, parsed);
+    REQUIRE(!parsed.Trade.empty());
+
+    const auto result = swap_instrument_mapper::forward_fra(parsed.Trade.front());
     const auto& instr = std::get<ores::trading::domain::fra_instrument>(result.facts);
     CHECK(instr.long_short == "Short");
 
     const auto reconstructed = swap_instrument_mapper::reverse_fra(
         result.header, instr, result.legs, result.leg_amounts, result.leg_rates);
 
-    REQUIRE(reconstructed.ForwardRateAgreementData.operator bool());
-    CHECK(reconstructed.ForwardRateAgreementData->LongShort == ores::ore::domain::longShort::Short);
-    BOOST_LOG_SEV(lg, info) << "FRA direction test passed";
+    portfolio exported;
+    exported.Trade.push_back(reconstructed);
+    const auto text = ores::ore::domain::save_data(exported);
+    CHECK(text.find("<LongShort>Short</LongShort>") != std::string::npos);
+    BOOST_LOG_SEV(lg, info) << "FRA direction case passed";
 }
 
 TEST_CASE("mapper_fra_holds_the_digits_of_its_strike_and_notional", tags) {

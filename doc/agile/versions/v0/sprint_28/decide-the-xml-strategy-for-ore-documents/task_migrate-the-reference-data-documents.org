@@ -192,7 +192,7 @@ line.
 | Eight families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
 | Three still read through xsdcpp: ORE, Portfolio, StressTesting | same |
 | Curve configuration documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 89 of 89 |
-| Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 20 cases |
+| Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 23 cases |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
 | The XML suites pass | =[ore][xml]@, 497 cases and 82,020 assertions |
@@ -232,8 +232,8 @@ task and name that file in the Command column.
 | Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 4e8b75caec |
 | XML suites after the curve configuration table | 497 cases, 82,020 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 4e8b75caec |
 | Corpus documents the value harness sweeps | 335 | same | 4e8b75caec |
-| Curve configurations that project and project back | 89 of 89 | =publish/bin/ores.ore.core.tests "[curveconfig]"= | 98e8b5fdc1 |
-| XML suites after the curve configuration migration | 496 cases, 82,045 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 98e8b5fdc1 |
+| Curve configurations that project and project back | 89 of 89 | =publish/bin/ores.ore.core.tests "[curveconfig]"= | 97015dc883 |
+| XML suites after the curve configuration migration | 502 cases, 82,086 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 97015dc883 |
 
 * Notes
 

@@ -26,6 +26,7 @@ import {
     formatText,
     formatValue,
     instantLabel,
+    lacksConvention,
     latestFirst,
     MAX_PLACES,
     placesOf,
@@ -122,6 +123,14 @@ describe('placesOf', () => {
         expect(placesOf(spot('AUD', 'USD'), [])).toBeUndefined();
     });
 
+    it('does not borrow the places of the pair stored the other way round', () => {
+        // The pair store keeps one direction: AUD/USD and USD/JPY. The reverse
+        // codes have no row, and four places meant for AUD/USD are not USD/AUD's.
+        expect(placesOf(spot('AUD', 'USD'), conventions)).toBe(4);
+        expect(placesOf(spot('USD', 'AUD'), conventions)).toBeUndefined();
+        expect(placesOf(spot('JPY', 'USD'), conventions)).toBeUndefined();
+    });
+
     it('keeps the plain format for a series that is not an FX spot rate', () => {
         expect(placesOf(spot('AUD', 'USD', 'price'), conventions)).toBeUndefined();
         expect(placesOf(spot('AUD', 'USD', 'rate', 'fx_fwd'), conventions)).toBeUndefined();
@@ -141,6 +150,39 @@ describe('placesOf', () => {
             { version: 1, pair_code: 'AUD/USD', decimal_places: 99 },
         ] as unknown as RecordRow[];
         expect(placesOf(spot('AUD', 'USD'), odd)).toBeUndefined();
+    });
+});
+
+describe('lacksConvention', () => {
+    const conventions = [
+        { version: 1, pair_code: 'EUR/USD', decimal_places: 4 },
+    ] as unknown as RecordRow[];
+    const spot = (scope: string, ccy: string) => ({
+        scope,
+        instrument_type: 'fx_spot',
+        quote_type: 'rate',
+        fields: [{ name: 'ccy', text: ccy }],
+    });
+
+    it('says so for a pair the store holds the other way round', () => {
+        expect(lacksConvention(spot('USD', 'EUR'), conventions)).toBe(true);
+    });
+
+    it('says so for a pair the store does not hold at all', () => {
+        expect(lacksConvention(spot('EUR', 'SGD'), conventions)).toBe(true);
+    });
+
+    it('says nothing for a pair whose convention the store holds', () => {
+        expect(lacksConvention(spot('EUR', 'USD'), conventions)).toBe(false);
+    });
+
+    it('says nothing for a series that is not a spot rate', () => {
+        expect(
+            lacksConvention(
+                { ...spot('EUR', 'USD'), instrument_type: 'fx_fwd', quote_type: 'rate' },
+                conventions,
+            ),
+        ).toBe(false);
     });
 });
 

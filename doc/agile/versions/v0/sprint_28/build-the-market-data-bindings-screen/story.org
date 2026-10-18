@@ -40,11 +40,11 @@ A person lists bindings, says what each source writes and when it last ticked, b
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:CC080B67-F749-493F-8B30-5C01B69D36B7][Add a time window to the series page]] | STARTED | 2026-10-18 | | The series page reads the latest observations by count. A synthetic feed ticks every two seconds, so the latest 500 cover a few minutes. Offer a window of time. |
+| [[id:CC080B67-F749-493F-8B30-5C01B69D36B7][Add a time window to the series page]] | DONE | 2026-10-18 | 2026-10-18 | The series page reads the latest observations by count. A synthetic feed ticks every two seconds, so the latest 500 cover a few minutes. Offer a window of time. |
 | [[id:4518F1B2-BD30-40C3-AD18-095E81E08AB3][Add, edit and delete a binding]] | DONE | 2026-10-17 | 2026-10-17 | Add the record dialog for add and edit, and the delete dialog, with the checks the prototype shows: the held series, the series change and the stale version. |
 | [[id:27E932EB-7079-49A6-B61B-7F2056882FBE][Build the bindings list and record page]] | DONE | | 2026-10-15 | Draw the list and the record page of the signed-off prototype from the shared record parts: Details, the oresmd links with Inspect, the status and the last tick. |
 | [[id:059F5F7F-D4B7-4861-9C77-EA4B7143C22D][Check the bindings screen on the running server]] | BACKLOG | | | Check the built screen against the signed-off prototype on the running server, in both scenarios. |
-| [[id:3AAE8BDA-9650-4722-8D96-53085DBEFA20][Find a convention stored under the reverse pair]] | BACKLOG | | | A spot rate looks up the convention of its pair as the unit currency over the quoted currency. A convention stored under the reverse pair is not found and the plain format shows. |
+| [[id:3AAE8BDA-9650-4722-8D96-53085DBEFA20][Find a convention stored under the reverse pair]] | DONE | 2026-10-18 | 2026-10-18 | A spot rate looks up the convention of its pair as the unit currency over the quoted currency. A convention stored under the reverse pair is not found and the plain format shows. |
 | [[id:B110675F-C840-46E5-91CE-A56236526D0A][Find why the synthetic feed went quiet]] | BACKLOG | | | The newest synthetic tick of AUD/USD was an hour old at the last check, after the marketdata service was restarted. Find out whether the restart stopped the feed, and what a person must do to bring it back. |
 | [[id:2A606350-56AA-4781-A7BA-06CDD68B0737][Give hints a tooltip with keyboard access]] | DONE | 2026-10-18 | 2026-10-18 | The tooltip on the oresmd URI label of a feed is a native title, which a touch screen and a keyboard do not show. Add one shared tooltip and use it for the hints. |
 | [[id:EE0D4A71-CF26-4C75-81DC-250BEFA99752][Link the oresmd URI column of the feed lists]] | DONE | 2026-10-18 | 2026-10-18 | The list column called oresmd URI on the IR and FX feed screens is plain text. Draw it as the link and button that the detail view has. |
@@ -65,6 +65,7 @@ A person lists bindings, says what each source writes and when it last ticked, b
 - The sources a party may bind are joined to its bindings in the BFF, not in the database. No service user reads the other service's tables, and this screen is not the reason to start. Which running feed holds a series stays a server read, because only the synthetic service's feed controller knows it.
 - A binding's source is chosen from a record picker over a read-only store, not a choice. A choice renders every option through a translation key, and the sources are the party's own rather than a fixed enumeration the words can name.
 - The title cases in the marketdata core tests get no CI job of their own. The Continuous Linux run already executes the binary, and its log names both cases, so a second way to run them would be a job to keep green for no new evidence.
+- The pair store keeps one direction per pair, and the series page does not look up the reverse pair. The stored places describe the stored direction's magnitude, so the page says that the pair has no convention in the direction the series quotes, and keeps the plain format. Decided on 2026-10-18 from 179 pair rows and 179 convention rows with no reverse twin.
 
 * Out of scope
 

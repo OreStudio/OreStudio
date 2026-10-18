@@ -2090,6 +2090,8 @@ export const en: SourceCatalogue = {
             empty: 'This series holds no observations yet.',
             emptyWindow: 'This series holds no observation in this window.',
             showing: 'Showing the latest {shown} of {total} observations.',
+            noConvention:
+                'This pair has no convention in the direction the series quotes, so the values are shown in the plain format.',
             at: 'Instant',
             value: 'Value',
             source: 'Source',

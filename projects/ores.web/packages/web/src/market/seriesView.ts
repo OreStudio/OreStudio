@@ -77,11 +77,7 @@ export function windowOf(requested: string | null): SeriesWindow {
     return SERIES_WINDOWS.find((window) => window === requested) ?? DEFAULT_SERIES_WINDOW;
 }
 
-/**
- * The decimal places a series' values are shown with, or nothing to keep the
- * plain format. Only an FX spot rate has them: they come from the convention of
- * its currency pair, whose code is the unit currency over the quoted currency.
- */
+/** The most decimal places a convention may ask for; more than this is a data error, not a format. */
 export const MAX_PLACES = 10;
 
 /** Whether a series is an FX spot rate, the one kind of series that has conventions to format by. */
@@ -89,6 +85,17 @@ export function isSpotRate(identity: TitledIdentity): boolean {
     return identity.instrument_type === 'fx_spot' && identity.quote_type === 'rate';
 }
 
+/**
+ * The decimal places a series' values are shown with, or nothing to keep the
+ * plain format.
+ *
+ * The pair store keeps a pair in one direction only: the seed writes one
+ * currency_pairs row per instrument, and the convention follows it under the
+ * same code. The reverse code is not a row, so the lookup answers for the
+ * direction the series quotes and nothing else. Borrowing the reverse pair's
+ * places would apply figures calibrated for one magnitude to its reciprocal,
+ * which is a different number entirely.
+ */
 export function placesOf(
     identity: TitledIdentity,
     conventions: readonly RecordRow[],
@@ -99,6 +106,19 @@ export function placesOf(
     const row = conventions.find((c) => c['pair_code'] === `${identity.scope}/${quoted}`);
     const places = Number(row?.['decimal_places']);
     return Number.isInteger(places) && places >= 0 && places <= MAX_PLACES ? places : undefined;
+}
+
+/**
+ * Whether a spot rate's pair has no convention to format by, so the page says so
+ * instead of showing the plain format in silence. A pair quoted the other way
+ * round than the pair store keeps it, and a pair the store does not hold at all,
+ * both read as no convention.
+ */
+export function lacksConvention(
+    identity: TitledIdentity,
+    conventions: readonly RecordRow[],
+): boolean {
+    return isSpotRate(identity) && placesOf(identity, conventions) === undefined;
 }
 
 /** A value with a fixed number of places, or in the plain format of up to seven digits when none is known. */

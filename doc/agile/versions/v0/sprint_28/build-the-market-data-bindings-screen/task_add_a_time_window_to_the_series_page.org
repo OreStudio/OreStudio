@@ -26,11 +26,11 @@ The series page asks for the latest 500 observations. A synthetic tick every two
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Implemented and gated on the branch, PR raised. |
+| Now          | Nothing. |
 | Waiting on   | review.                                |
-| Next         | Wait for review and for the root to merge. |
+| Next         | Nothing. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -172,3 +172,14 @@ via its "Verifies task" field.
 | 4 | The window bar, the "Window: ..." sentence and the empty-window sentence have no component test | =packages/web/src/market/SeriesPage.tsx= | Recorded, not fixed | The workspace has no DOM library, so acceptance 3 rests on markup no test reads. Manual QA task [[id:059F5F7F-D4B7-4861-9C77-EA4B7143C22D][Check the bindings screen on the running server]] covers the screen on a running server. |
 
 * Result
+
+Shipped in #3522. The observation filter carries the observed-since instant, a
+C++ test asserts that it keeps the rows at or after the bound, the BFF turns a
+window name into that instant with its own test, and the series page offers the
+window in the address with its rules tested beside the page. The count cap
+stays, and the page says which window is drawn.
+
+All three acceptance lines are met. Two review findings were fixed in the same
+PR and two are recorded, not fixed: the stale generated API diagram, which
+predates this PR, and the missing component test for the window bar, which the
+workspace cannot host without a DOM library and the manual QA task covers.

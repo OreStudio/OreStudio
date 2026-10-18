@@ -2111,6 +2111,8 @@ const fr: SourceCatalogue = {
             empty: 'Cette série ne contient pas encore d’observation.',
             emptyWindow: 'Cette série ne contient aucune observation dans cette fenêtre.',
             showing: 'Les {shown} dernières observations sur {total}.',
+            noConvention:
+                'Cette paire n’a pas de convention dans le sens où la série est cotée, donc les valeurs sont affichées au format simple.',
             at: 'Instant',
             value: 'Valeur',
             source: 'Source',

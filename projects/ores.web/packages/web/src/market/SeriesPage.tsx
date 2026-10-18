@@ -41,6 +41,7 @@ import {
     formatValue,
     instantLabel,
     isSpotRate,
+    lacksConvention,
     latestFirst,
     placesOf,
     pointsOf,
@@ -203,6 +204,11 @@ function Observations({
                         ? t(window === 'all' ? 'market.series.empty' : 'market.series.emptyWindow')
                         : t('market.series.showing', { shown: observations.length, total })}
                 </p>
+                {observations.length > 0 &&
+                    conventions.data !== undefined &&
+                    lacksConvention(series.identity, conventions.data) && (
+                        <p className="text-sm text-ink-muted">{t('market.series.noConvention')}</p>
+                    )}
             </div>
             {points.length >= 2 && (
                 <LineChart

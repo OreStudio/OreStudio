@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-18
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The curve configuration document gets the treatment the conventions document got. It stops being one value carrying every curve family, and the operations that write and read it stop reaching every family from one translation unit.
 
 * Status
 
@@ -28,20 +28,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-17                               |
+| Now          | Not started. The conventions half is the pattern this task follows. |
+| Waiting on   | Task 1, whose deletion is the precedent. |
+| Next         | Agree who holds the protocol split, then move the curve families off the document. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
--
+- The curve configuration document is split by family, and no type in refdata carries every curve family.
+- The protocol and handler are split so that each translation unit reaches one family, following the measurement in [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]].
+- The import applies the families as a bundle in one unit of work, as the conventions import does.
+- The curve configuration document the ORE path writes and reads is the same document before and after, proven by importing and exporting a sample unchanged.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow the conventions half. Agree who owns the protocol split with the tenor basis swap story, then move the families off the document, then the protocol and handler, then the ORE path.
 
 * Measurements
 
@@ -59,6 +60,9 @@ task and name that file in the Command column.
 
 * Notes
 
+- This ground is shared. The story [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] owns the task to split the configuration document protocol by family, and it covers the curve configuration half as well as the conventions half. Agree which environment holds the protocol split before either starts, or both will rewrite the same header.
+- The curve configuration document is now the only document riding in =configuration_document_handler.cpp=. The conventions operations left that unit when the conventions import moved to the bundle, so the handler is a curve handler in all but its name.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -74,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3476][#3476]] | [agile] File the curve configuration task |
 
 * Review
 

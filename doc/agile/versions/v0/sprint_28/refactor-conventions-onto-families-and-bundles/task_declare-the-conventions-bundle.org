@@ -8,11 +8,11 @@
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
 #+branch: feature/declare-the-conventions-bundle
-#+pr:
+#+pr: 3485
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-18
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,28 +20,31 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+A caller writes conventions one bundle at a time instead of one whole document. The bundle opens, stages one row per family, and commits once, so every family in the bundle lands together or none of it does. The reply names each family and what became of it.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-17                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
--
+- Three operations are the only way a caller writes conventions, and each is its own message. Begin opens an import, stage adds one family, commit applies them.
+- The commit applies every staged family inside one =unit_of_work=, so one failing family rolls the whole import back.
+- The commit reply names an outcome for each family, and separates the world rows that already existed.
+- The reply names the FX conventions the boundary skipped.
+- A retried begin names the import it already opened. A commit on an import that is not staging is refused.
+- A fresh database build creates the import and staging tables, so an empty environment can import on its first day.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The plan was one operation at a time, begin then stage then commit, with the staging tables first so the commit had somewhere to read from.
 
 * Measurements
 
@@ -59,6 +62,13 @@ task and name that file in the Command column.
 
 * Notes
 
+- The unit is a bundle, not a document. The staging rows carry the family payloads, so the commit message carries only the import id and no family data crosses the wire at commit time.
+- The staging tables are =ores_refdata_bundle_imports_tbl= and =ores_refdata_bundle_import_items_tbl=. The models were first written as conventions import tables and renamed when the unit became general.
+- A fresh database build missed the two tables because the refdata create script listed no =\ir= line for them. The tables existed only because a development database had been migrated in place.
+- The staged dispatch covers every family the registry names, which is what =the staged dispatch has a branch for every registry family= checks. The transaction behaviour has no test of its own, so the rollback claim rests on the =unit_of_work= destructor and not on a test.
+- =commit_bundle_import_response= declares =fx_skipped= and nothing assigns it. The request is served, but the FX conventions the boundary skipped are reported by the ORE caller from the package it mapped, not by the commit. Filling the field is open work.
+- An import leaves one applied row in the bundle import tables. A run import therefore writes rows the record did not have before.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -74,7 +84,11 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3465][#3465]] | [refdata] Model the conventions import staging tables |
+| [[https://github.com/OreStudio/OreStudio/pull/3467][#3467]] | [refdata] Begin, stage and commit a conventions import |
+| [[https://github.com/OreStudio/OreStudio/pull/3468][#3468]] | [agile] Stamp the bundle task started |
+| [[https://github.com/OreStudio/OreStudio/pull/3482][#3482]] | [web] Commit the generated conventions TypeScript |
+| [[https://github.com/OreStudio/OreStudio/pull/3485][#3485]] | [refdata,ore] Rename the import staging to bundle import |
 
 * Review
 
@@ -83,3 +97,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged. A caller now opens an import with =begin_bundle_import=, adds one family per =stage_bundle_family=, and applies the set with =commit_bundle_import=. The commit takes the import row's lock, reads the staged rows in ascending id order, and applies each through the generated =apply_staged_family= inside one =unit_of_work=. The order the caller staged them is carried in the item's =sequence=, which the commit does not use to sort. The commit applies in ascending id, and the service mints each id from a time-ordered UUIDv7 generator, so the apply follows the order the stages landed apart from two stages stamped in the same millisecond. A family that fails to decode throws, the unit of work rolls back, and the import stays staging. The reply carries an outcome per family and the world rows that were already there.
+
+The reply declares =fx_skipped= and never fills it. The ORE callers work out the skipped FX conventions themselves. Filling the field is open work, so the acceptance criterion is met only in part.
+
+The service is =projects/ores.refdata/core/src/service/bundle_import_operations_service.cpp= and the messages are in =ores.refdata.api/messaging/bundle_import_operations_protocol.hpp=. The tables are created by =projects/ores.sql/create/refdata/refdata_create.sql=, which includes the four files for the import and its items.
+
+Verified by reading the merged files this session. The suite under the =[bundle_import]= tag covers the dispatch only. The transaction and retry behaviour is unproven by test.

@@ -295,22 +295,28 @@ mapping cannot hold rather than dropping it.
 
 The scripted family came first because it is the smallest. The script's =NPV= is
 a name the schema requires and the instrument's flat table has no column for, so
-it rides in the parameters JSON the table does carry. Rates, FX and bonds
-followed. Credit, equity, commodities and composites remain. The old mappers,
-the importer and the exporter go in the change that lands the last one, so the
-product never runs both paths.
+it rides in the parameters JSON the table does carry. Rates, FX, bonds, credit,
+equity, commodities and composites followed, and the importer and the exporter
+now ask the projection for the document and the trades. The nine mappers and
+their thirteen suites are gone, so the product never runs both paths.
 
 Three things the port changes on purpose. A quantity the old binding read as
 =float= is now the document's exact decimal, so a stored amount no longer
 carries float noise. An FX forward or swap settlement is written back, which the
-old mapper read and dropped. A callable bond's required call lists are stated
-with one row each where the table has no row to carry them, because the old
-mapper wrote the lists empty and the document it produced did not bind.
+old mapper read and dropped. A required element the trading domain holds no
+value for is stated at its structural minimum (one unit of quantity, an absent
+date, a zero initial price) rather than left out: the old binding tolerated the
+absence, and the document it produced did not bind.
+
+The export is the part the old boundary never proved. Thirty-one of the 132
+corpus documents used to export a document the reading refused, because a
+writer left a required element unstated. Every corpus document now exports and
+reads back, and the directory round trip asserts it.
 
 * Where the work stands
 
-Verified at the head of the portfolio table branch, with the commands that prove
-each line.
+Verified at the head of the portfolio projection branch, with the commands that
+prove each line.
 
 | Claim | Evidence |
 |-------+----------|
@@ -320,9 +326,10 @@ each line.
 | Stress testing documents bind, write and keep every value, and nothing reads the XML | same, 19 of 19 |
 | Run documents bind, write and keep every value | same, 422 of 422 |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =publish/bin/ores.ore.core.tests "[ore][xml]"=, 508 cases and 45,275 assertions |
+| The XML suites pass | =publish/bin/ores.ore.core.tests "[ore][xml]"=, 369 cases and 44,338 assertions |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
-| Legacy readers the product still calls: Portfolio, conventions and today's market | =grep -rn "load_data" projects/ores.ore/*/src= |
+| Legacy readers the product still calls: conventions and today's market | =grep -rn "load_data" projects/ores.ore/*/src= |
+| Every corpus portfolio exports a document that binds | =publish/bin/ores.ore.core.tests "roundtrip mirrors every portfolio in the ORE example corpus"=, 132 of 132 |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 
 *What each remaining family needs.* Portfolio's table is proved, and its
@@ -360,6 +367,10 @@ task and name that file in the Command column.
 | Corpus documents the value harness sweeps | 1150, with each family's count asserted | same | e39030319c |
 | Families supported after the portfolio table | 13 supported, 0 migrating | =python3 build/scripts/check_xml_family_coverage.py= | e39030319c |
 | XML suites after the portfolio table | 508 cases, 45,275 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | e39030319c |
+| Portfolio projection suites | 1146 assertions in 25 cases | =publish/bin/ores.ore.core.tests "[portfolio][projection]"= | ae975f5d6d |
+| XML suites after the portfolio projection | 369 cases, 44,338 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | ae975f5d6d |
+| Corpus portfolios that export and read back | 132 of 132 | =publish/bin/ores.ore.core.tests "roundtrip mirrors every portfolio in the ORE example corpus"= | ae975f5d6d |
+| Mapper files and suites deleted with the portfolio path | 9 mappers, 13 suites | =git show --stat ae975f5d6d= | ae975f5d6d |
 
 * Notes
 

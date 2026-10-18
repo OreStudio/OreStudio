@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/decide-the-fx-discriminators-and-the-doubled-vocabularies
-#+pr:
+#+pr: 3527
 #+blocked_on:
 +#+blocked_since:
 +#+created: 2026-10-16
@@ -125,7 +125,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3527][#3527]] | [agile] Scope the FX discriminator decisions |
 
 * Review
 

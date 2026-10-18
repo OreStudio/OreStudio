@@ -21,6 +21,7 @@
 # To modify, update the template and regenerate.
 set(files
     "domain/bond_instrument_mapper.cpp"
+    "domain/bond_instrument_projection.cpp"
     "domain/commodity_instrument_mapper.cpp"
     "domain/composite_instrument_mapper.cpp"
     "domain/conventions_diff.cpp"

@@ -101,11 +101,12 @@ void write_envelope(xml::record_writer& trade, const trade_envelope_data& v) {
 }
 
 auto instrument_projections() -> const std::vector<instrument_projection>& {
-    // The old dispatcher tried the swap mappers before the FX one and the
-    // scripted one after both, so the registry keeps that order.
+    // The old dispatcher tried the swap mappers before the FX one, the bond
+    // one, and the scripted one last, so the registry keeps that order.
     static const std::vector<instrument_projection> all = {
         {"rates", &read_rate_instrument, &write_rate_instrument},
         {"fx", &read_fx_instrument, &write_fx_instrument},
+        {"bond", &read_bond_instrument, &write_bond_instrument},
         {"scripted", &read_scripted_instrument, &write_scripted_instrument},
     };
     return all;

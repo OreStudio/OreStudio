@@ -444,12 +444,12 @@ auto date_of(int year, unsigned month, unsigned day) -> std::chrono::year_month_
 }
 
 /**
- * @brief The trade the batch rebuilds from its instrument, read back again.
+ * @brief The document the batch rebuilds from one trade's instrument.
  *
  * The rows a family stores are what the export reads, so the instrument is
  * stamped with one trade id and handed to the batch the way an import does.
  */
-auto rebuild(const ores::ore::xml::trade_import_item& item) -> ores::ore::xml::trade_import_item {
+auto exported(const ores::ore::xml::trade_import_item& item) -> portfolio_projection::document {
     const auto trade_id = boost::uuids::string_generator{}("01234567-89ab-cdef-0123-456789abcdef");
 
     auto instrument = item.instrument;
@@ -464,8 +464,12 @@ auto rebuild(const ores::ore::xml::trade_import_item& item) -> ores::ore::xml::t
     export_item.anchor.trade_type = item.anchor.trade_type;
     export_item.envelope = item.envelope;
 
-    const auto built = portfolio_projection::reverse({export_item}, batch);
-    const auto back = portfolio_projection::map(built);
+    return portfolio_projection::reverse({export_item}, batch);
+}
+
+/// The trade the batch rebuilds from its instrument, read back again.
+auto rebuild(const ores::ore::xml::trade_import_item& item) -> ores::ore::xml::trade_import_item {
+    const auto back = portfolio_projection::map(exported(item));
     if (back.empty())
         return {};
     return back.front();
@@ -1230,4 +1234,272 @@ TEST_CASE("a_portfolio_document_projects_the_rest_of_the_fx_products", tags) {
     CHECK(variance_round->variance_swaps[0].strike == 0.08);
     CHECK(variance_round->variance_swaps[0].notional.to_string() == "2000000");
     CHECK(variance_round->variance_swaps[0].end_date == date_of(2025, 1, 15));
+}
+
+TEST_CASE("a_portfolio_document_projects_a_bond_and_its_fixed_leg", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="bond-1">
+    <TradeType>Bond</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_C</CounterParty>
+      <NettingSetId>NS-B</NettingSetId>
+    </Envelope>
+    <BondData>
+      <IssuerId>CPTY_C</IssuerId>
+      <CreditCurveId>CPTY_C</CreditCurveId>
+      <SecurityId>SECURITY_1</SecurityId>
+      <ReferenceCurveId>EUR-EURIBOR-6M</ReferenceCurveId>
+      <SettlementDays>2</SettlementDays>
+      <Calendar>TARGET</Calendar>
+      <IssueDate>2025-02-03</IssueDate>
+      <BondNotional>10000000</BondNotional>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Notionals><Notional>10000000</Notional></Notionals>
+        <DayCounter>ACT/ACT</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <FixedLegData><Rates><Rate>0.05</Rate></Rates></FixedLegData>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-02-03</StartDate>
+            <EndDate>2035-02-03</EndDate>
+            <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>F</Convention>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].anchor.trade_type == "Bond");
+
+    const auto* instrument =
+        std::get_if<ores::trading::domain::bond_instrument_data>(&items[0].instrument);
+    REQUIRE(instrument != nullptr);
+    CHECK(instrument->instrument.identity.trade_type_code == "Bond");
+    CHECK(instrument->instrument.audit.modified_by == "ores");
+    CHECK(instrument->issue.security_id == "SECURITY_1");
+    CHECK(instrument->issue.issuer == "CPTY_C");
+    CHECK(instrument->issue.credit_curve_id == std::optional<std::string>("CPTY_C"));
+    CHECK(instrument->issue.reference_curve_id == std::optional<std::string>("EUR-EURIBOR-6M"));
+    CHECK(instrument->issue.settlement_days == 2);
+    CHECK(instrument->issue.calendar == std::optional<std::string>("TARGET"));
+    CHECK(instrument->issue.issue_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2025, 2, 3)));
+    REQUIRE(instrument->instrument.notional.has_value());
+    CHECK(instrument->instrument.notional->to_string() == "10000000");
+    // The issue row repeats the first leg's notional as the face value.
+    REQUIRE(instrument->issue.face_value.has_value());
+    CHECK(instrument->issue.face_value->to_string() == "10000000");
+    CHECK(instrument->issue.issue_id == instrument->instrument.issue_id);
+
+    REQUIRE(instrument->bond_legs.size() == 1);
+    const auto& leg = instrument->bond_legs[0];
+    CHECK(leg.payer == std::optional<bool>(false));
+    CHECK(leg.leg_type == std::optional<std::string>("Fixed"));
+    CHECK(leg.currency == std::optional<std::string>("EUR"));
+    CHECK(leg.day_counter == std::optional<std::string>("ACT/ACT"));
+    CHECK(leg.payment_convention == std::optional<std::string>("F"));
+    REQUIRE(leg.notionals.size() == 1);
+    CHECK(leg.notionals[0].value.to_string() == "10000000");
+    REQUIRE(leg.schedule.rules.size() == 1);
+    CHECK(leg.schedule.rules[0].start_date == "2025-02-03");
+    CHECK(leg.schedule.rules[0].end_date == std::optional<std::string>("2035-02-03"));
+    CHECK(leg.schedule.rules[0].tenor == "1Y");
+    CHECK(leg.schedule.rules[0].calendar == std::optional<std::string>("TARGET"));
+    CHECK(leg.schedule.rules[0].convention == "F");
+    REQUIRE(leg.rate.has_value());
+    REQUIRE(leg.rate->fixed.has_value());
+    REQUIRE(leg.rate->fixed->rates.size() == 1);
+    CHECK(leg.rate->fixed->rates[0].value.to_string() == "0.05");
+
+    const auto back = rebuild(items[0]);
+    const auto* round = std::get_if<ores::trading::domain::bond_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    CHECK(back.anchor.trade_type == "Bond");
+    CHECK(round->issue.security_id == "SECURITY_1");
+    CHECK(round->issue.issuer == "CPTY_C");
+    CHECK(round->issue.reference_curve_id == std::optional<std::string>("EUR-EURIBOR-6M"));
+    CHECK(round->issue.settlement_days == 2);
+    CHECK(round->issue.issue_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2025, 2, 3)));
+    REQUIRE(round->instrument.notional.has_value());
+    CHECK(round->instrument.notional->to_string() == "10000000");
+    REQUIRE(round->bond_legs.size() == 1);
+    CHECK(round->bond_legs[0].leg_type == std::optional<std::string>("Fixed"));
+    CHECK(round->bond_legs[0].currency == std::optional<std::string>("EUR"));
+    REQUIRE(round->bond_legs[0].notionals.size() == 1);
+    CHECK(round->bond_legs[0].notionals[0].value.to_string() == "10000000");
+    REQUIRE(round->bond_legs[0].rate.has_value());
+    REQUIRE(round->bond_legs[0].rate->fixed.has_value());
+    REQUIRE(round->bond_legs[0].rate->fixed->rates.size() == 1);
+    CHECK(round->bond_legs[0].rate->fixed->rates[0].value.to_string() == "0.05");
+    REQUIRE(round->bond_legs[0].schedule.rules.size() == 1);
+    CHECK(round->bond_legs[0].schedule.rules[0].start_date == "2025-02-03");
+    CHECK(round->bond_legs[0].schedule.rules[0].tenor == "1Y");
+}
+
+TEST_CASE("a_portfolio_document_projects_a_callable_bond_and_its_call_dates", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="callable-bond-1">
+    <TradeType>CallableBond</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_C</CounterParty>
+      <NettingSetId>NS-CB</NettingSetId>
+    </Envelope>
+    <CallableBondData>
+      <BondData>
+        <SecurityId>CallableBond_CALL</SecurityId>
+        <BondNotional>100000000</BondNotional>
+      </BondData>
+      <CallData>
+        <ScheduleData>
+          <Dates>
+            <Calendar>TARGET</Calendar>
+            <Dates>
+              <Date>2024-05-01</Date>
+              <Date>2027-04-01</Date>
+            </Dates>
+          </Dates>
+        </ScheduleData>
+        <Styles><Style>American</Style></Styles>
+        <Prices><Price>1</Price></Prices>
+        <PriceTypes><PriceType>Clean</PriceType></PriceTypes>
+        <IncludeAccruals><IncludeAccrual>true</IncludeAccrual></IncludeAccruals>
+      </CallData>
+    </CallableBondData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].anchor.trade_type == "CallableBond");
+
+    const auto* instrument =
+        std::get_if<ores::trading::domain::bond_instrument_data>(&items[0].instrument);
+    REQUIRE(instrument != nullptr);
+    CHECK(instrument->instrument.identity.trade_type_code == "CallableBond");
+    CHECK(instrument->issue.security_id == "CallableBond_CALL");
+    REQUIRE(instrument->instrument.notional.has_value());
+    CHECK(instrument->instrument.notional->to_string() == "100000000");
+    REQUIRE(instrument->call_dates.size() == 2);
+    CHECK(instrument->call_dates[0].sequence_number == 1);
+    CHECK(instrument->call_dates[0].call_date == date_of(2024, 5, 1));
+    CHECK(instrument->call_dates[0].issue_id == instrument->issue.issue_id);
+    CHECK(instrument->call_dates[1].sequence_number == 2);
+    CHECK(instrument->call_dates[1].call_date == date_of(2027, 4, 1));
+
+    const auto back = rebuild(items[0]);
+    const auto* round = std::get_if<ores::trading::domain::bond_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    CHECK(back.anchor.trade_type == "CallableBond");
+    CHECK(round->issue.security_id == "CallableBond_CALL");
+    REQUIRE(round->call_dates.size() == 2);
+    CHECK(round->call_dates[0].call_date == date_of(2024, 5, 1));
+    CHECK(round->call_dates[1].call_date == date_of(2027, 4, 1));
+
+    // The written document states the call block's required lists, so it binds
+    // again and the call dates survive the document.
+    const auto text_again = portfolio_projection::write(exported(items[0]));
+    const auto again = portfolio_projection::map(portfolio_projection::read(text_again));
+    REQUIRE(again.size() == 1);
+    const auto* again_instrument =
+        std::get_if<ores::trading::domain::bond_instrument_data>(&again[0].instrument);
+    REQUIRE(again_instrument != nullptr);
+    REQUIRE(again_instrument->call_dates.size() == 2);
+    CHECK(again_instrument->call_dates[0].call_date == date_of(2024, 5, 1));
+    CHECK(again_instrument->call_dates[1].call_date == date_of(2027, 4, 1));
+}
+
+TEST_CASE("a_portfolio_document_projects_a_bond_option_and_its_redemption", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="bond-option-1">
+    <TradeType>BondOption</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Physical</Settlement>
+        <ExerciseDates><ExerciseDate>2028-02-02</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <StrikeData>
+        <StrikePrice>
+          <Value>1</Value>
+          <Currency>EUR</Currency>
+        </StrikePrice>
+      </StrikeData>
+      <Redemption>100.00</Redemption>
+      <PriceType>Dirty</PriceType>
+      <KnocksOut>false</KnocksOut>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+        <BondNotional>10000000</BondNotional>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].anchor.trade_type == "BondOption");
+
+    const auto* instrument =
+        std::get_if<ores::trading::domain::bond_instrument_data>(&items[0].instrument);
+    REQUIRE(instrument != nullptr);
+    CHECK(instrument->instrument.identity.trade_type_code == "BondOption");
+    CHECK(instrument->issue.security_id == "ISIN:IE00BH3SQ895");
+    REQUIRE(instrument->option.has_value());
+    CHECK(instrument->option->option_type == "Call");
+    REQUIRE(instrument->option_data.has_value());
+    CHECK(instrument->option_data->long_short == "Long");
+    CHECK(instrument->option_data->style == std::optional<std::string>("European"));
+    CHECK(instrument->option_data->settlement == std::optional<std::string>("Physical"));
+    REQUIRE(instrument->strike_data.has_value());
+    REQUIRE(instrument->strike_data->price_value.has_value());
+    CHECK(instrument->strike_data->price_value->to_string() == "1");
+    CHECK(instrument->strike_data->price_currency == std::optional<std::string>("EUR"));
+    CHECK(instrument->option_redemption == std::optional<std::string>("100.00"));
+    CHECK(instrument->option_price_type == std::optional<std::string>("Dirty"));
+    CHECK(instrument->option_knocks_out == std::optional<std::string>("false"));
+    REQUIRE(instrument->option_exercise_dates.size() == 1);
+    CHECK(instrument->option_exercise_dates[0] == "2028-02-02");
+
+    const auto back = rebuild(items[0]);
+    const auto* round = std::get_if<ores::trading::domain::bond_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    CHECK(back.anchor.trade_type == "BondOption");
+    CHECK(round->issue.security_id == "ISIN:IE00BH3SQ895");
+    REQUIRE(round->option.has_value());
+    CHECK(round->option->option_type == "Call");
+    REQUIRE(round->option_data.has_value());
+    CHECK(round->option_data->long_short == "Long");
+    CHECK(round->option_data->style == std::optional<std::string>("European"));
+    CHECK(round->option_data->settlement == std::optional<std::string>("Physical"));
+    REQUIRE(round->strike_data.has_value());
+    REQUIRE(round->strike_data->price_value.has_value());
+    CHECK(round->strike_data->price_value->to_string() == "1");
+    CHECK(round->option_redemption == std::optional<std::string>("100.00"));
+    CHECK(round->option_price_type == std::optional<std::string>("Dirty"));
+    REQUIRE(round->option_exercise_dates.size() == 1);
+    CHECK(round->option_exercise_dates[0] == "2028-02-02");
 }

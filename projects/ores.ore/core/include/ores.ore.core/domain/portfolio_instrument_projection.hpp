@@ -117,6 +117,24 @@ write_rate_instrument(xml::record_writer& trade,
                       const portfolio_reference_curves& reference_curves) -> bool;
 
 /**
+ * @brief The bond family: an issue row shared by the products built on it.
+ *
+ * The issue row carries the bond terms and its own children, the instrument
+ * header carries the notional, and each product adds the fact row and the legs
+ * it states. The writing names the run's curve for the issue's market series,
+ * which is the mapping the market configuration owns rather than the trade.
+ */
+ORES_ORE_CORE_EXPORT auto read_bond_instrument(xml::record_reader trade,
+                                               std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument>;
+
+ORES_ORE_CORE_EXPORT auto
+write_bond_instrument(xml::record_writer& trade,
+                      std::string_view trade_type,
+                      const trading::domain::trade_instrument& instrument,
+                      const portfolio_reference_curves& reference_curves) -> bool;
+
+/**
  * @brief The FX family: one carrier holding a row per product, and no header.
  *
  * The carrier states a product by the array its row sits in, so the reading

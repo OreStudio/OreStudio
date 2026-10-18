@@ -143,6 +143,9 @@ struct document_type {
     const record_type* root;
 };
 
+/// The value record_type::text_field holds when a type has no text of its own.
+inline constexpr std::uint8_t no_text = 0xFF;
+
 /**
  * @brief Whether a record's presence mask states the field's bit.
  *

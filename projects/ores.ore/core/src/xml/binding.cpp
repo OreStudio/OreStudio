@@ -31,8 +31,6 @@ namespace ores::ore::xml {
 namespace {
 
 /// The value record_type::text_field holds when a type has no text of its own.
-constexpr std::uint8_t no_text = 0xFF;
-
 constexpr auto hash_name(std::string_view name) -> std::uint32_t {
     std::uint32_t h = 2166136261u;
     for (const char c : name) {

@@ -31,7 +31,7 @@ completely in one change: reader, writer, and the deletion of its mapper.
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | Calendar adjustments, currency config, pricing engines, credit simulation and curve configuration read and write through the codec; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Stress testing: its mapper is the next family's, and the smallest of the two document families still read through the binding. |
+| Next         | Stress testing: its mapper is the next of the three families still read through the binding, and the smaller of the two documents left. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -199,9 +199,9 @@ line.
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 
-*What each remaining family needs.* Curve configuration has its table and its
-harness; what is left is the projection, which is 3,310 lines of mapping whose
-input changes shape. Stress testing is 830 lines and its table generates once
+*What each remaining family needs.* Curve configuration is off the binding; its
+projection was the 3,310 lines of mapping the table now feeds. Stress testing is
+830 lines and its table generates once
 =sensitivity.xsd= is read with =stress.xsd=. The run document's table
 generates now that a derivation is read, and its mapper is the last one
 written against the generated types. Portfolio is the largest group, the

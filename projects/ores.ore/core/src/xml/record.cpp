@@ -24,9 +24,6 @@ namespace ores::ore::xml {
 
 namespace {
 
-/// The record_type states no text of its own with this index.
-constexpr std::uint8_t no_text = 0xFF;
-
 constexpr std::string_view field_kind_name(field_kind kind) {
     switch (kind) {
         case field_kind::text:

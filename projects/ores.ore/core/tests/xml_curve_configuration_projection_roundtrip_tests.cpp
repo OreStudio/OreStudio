@@ -204,6 +204,9 @@ TEST_CASE("every_segment_element_round_trips", tags) {
   </YieldCurves>
 </CurveConfiguration>)";
 
+    const auto mapped = curve_configuration_projection::map(
+        curve_configuration_projection::read(text, "every segment element"));
+    CHECK(mapped.segments.size() == 12);
     CHECK(round_trip(text, "every segment element").empty());
 }
 
@@ -388,7 +391,7 @@ TEST_CASE("a_row_the_document_has_no_place_for_is_refused_on_export", tags) {
     }
 }
 
-TEST_CASE("the_segment_document_states_one_of_every_element", tags) {
+TEST_CASE("a_segment_document_states_its_optional_settings", tags) {
     auto lg(make_logger(test_suite));
 
     const auto original = curve_configuration_projection::read(R"(<CurveConfiguration>

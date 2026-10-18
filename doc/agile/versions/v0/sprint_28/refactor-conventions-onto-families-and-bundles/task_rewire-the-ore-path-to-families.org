@@ -42,9 +42,7 @@ The ORE path stops handing refdata one value that holds every family. It maps a 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Move the service path onto begin, stage and commit first. Then move the run store and the export, which is what allows the aggregate to go.
 
 * Measurements
 

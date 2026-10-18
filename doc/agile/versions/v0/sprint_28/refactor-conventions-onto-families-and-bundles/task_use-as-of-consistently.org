@@ -42,9 +42,7 @@ An export describes one moment. Every family it reads is read at the same bitemp
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Take one instant at the start of an export, thread it through every read, and record it in the file.
 
 * Measurements
 

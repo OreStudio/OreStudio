@@ -36,7 +36,7 @@ The story and its tasks say what happened. A reader can tell which work merged, 
 * Acceptance
 
 - The story's Goal, Status, Decisions and Out of scope sections state the work rather than a placeholder.
-- Every task has acceptance criteria a reader can check and a Result that says whether it is met.
+- Every task that is DONE has acceptance criteria a reader can check and a Result that says whether they are met.
 - Every merged PR that belongs to the story appears against the task it served, and closed PRs are marked closed.
 - A task's state in its own file, in the story table, and in the sprint table agree.
 - The tasks that merged are DONE, and the tasks that merged only in part are STARTED with the remaining work named.
@@ -62,7 +62,7 @@ task and name that file in the Command column.
 * Notes
 
 - The states were read from the code, not from the previous record. Where the two disagreed, the code won.
-- Bringing the tasks that merged into line was not enough on its own. Two tasks had been marked STARTED while the story table said BACKLOG and the sprint said BACKLOG for the story. All three now agree.
+- Bringing the tasks that merged into line was not enough on its own. One task was STARTED in its own file while the story table said BACKLOG. The story itself was BACKLOG in the sprint table and STARTED in its own file. They now agree.
 - Two tasks turned out to be part delivered rather than done. Task 1 still carries the aggregate, and task 4 still has the run store on the whole-document service. Both are marked STARTED with the remainder named, which is what the record should have said when the earlier work merged.
 - The story's Decisions section had never been written, so the seven decisions the tasks settled now live there and the task notes keep the local reasoning.
 - #3457 created the story and filed its tasks. It serves no single task, so no task table carries it.
@@ -97,9 +97,9 @@ The story and its eight tasks now describe the merged work.
 
 | task | before | after |
 |------+--------+-------|
-| Model each family on its own | STARTED, two PRs, empty acceptance | STARTED, six PRs, remaining work named |
+| Model each family on its own | STARTED, two PRs, empty acceptance | STARTED, seven PRs, remaining work named |
 | Generate a protocol and handler per family | DONE, no PRs, empty acceptance | DONE with its two PRs and its result |
-| Declare the conventions bundle | STARTED, no PRs | DONE with its four PRs and its result |
+| Declare the conventions bundle | STARTED, no PRs | DONE with its five PRs and its result |
 | Rewire the ORE path | BACKLOG | STARTED, with the run store named as the gap |
 | Replace the web family list | BACKLOG, stale notes | BACKLOG, closed PR recorded, retry path named |
 | Prove the Windows build | BACKLOG, empty acceptance | BACKLOG, acceptance written, finding recorded |

@@ -42,9 +42,7 @@ The tree builds on Windows with MSVC, the compiler that refused to instantiate t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Get an MSVC build onto the branch, record the preset and the command, then fix what it reports without a flag that raises the constexpr depth.
 
 * Measurements
 

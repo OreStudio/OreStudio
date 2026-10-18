@@ -42,9 +42,7 @@ The curve configuration document gets the treatment the conventions document got
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow the conventions half. Move the families off the document, then the protocol and handler, then the ORE path.
 
 * Measurements
 
@@ -80,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3476][#3476]] | [agile] File the curve configuration task |
 
 * Review
 

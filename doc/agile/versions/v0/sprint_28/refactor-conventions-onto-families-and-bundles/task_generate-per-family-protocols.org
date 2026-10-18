@@ -41,9 +41,7 @@ A convention family is reachable over the message bus by its own subjects, throu
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+No plan was needed. The protocols and handlers already existed per family, so the task closed on that finding.
 
 * Measurements
 

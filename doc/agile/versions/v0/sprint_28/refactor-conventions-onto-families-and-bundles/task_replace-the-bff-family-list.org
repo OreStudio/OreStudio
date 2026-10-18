@@ -42,9 +42,7 @@ The web layer stops keeping its own list of convention families. It reads the li
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Extend the registry facet to render the TypeScript twin, commit it, then have the BFF read it instead of its own table.
 
 * Measurements
 
@@ -66,22 +64,6 @@ task and name that file in the Command column.
 - That attempt also conflicted with #3474 in the generator both changed. The generator has since been retired for a facet, so the conflict is gone and the retry extends the facet rather than a script.
 - The TypeScript twin must be committed. The staging branch generated the C++ and SQL addresses only, and the web build then failed to resolve the domain modules it imports.
 - A stale twin survives in =projects/ores.web/packages/wire-protocol/dist/generated/refdata/domain/convention_family_registry.js= on this checkout. =dist= is ignored and untracked, so the file is a leftover compile artefact and not a second copy of the registry. Nothing reads it once the source module exists.
-
-- The work is done on PR #3479 and verified there: the BFF builds its family
-  tables from a generated TypeScript twin of the registry, and the staging
-  entities gained their missing TypeScript because that branch regenerated the
-  TypeScript facets as well as the C++ and SQL ones. Typecheck passes and the
-  BFF's 779 tests pass on that branch.
-- The PR does not merge: it conflicts with #3474 in
-  =convention_family_registry.py= and =regenerate_convention_family_registry.py=,
-  because both changed the generator. Resolving it means taking main's generator
-  as the base and re-applying the TypeScript rendering, then regenerating and
-  re-running the checks. Do not resolve it by dropping the twin, which would
-  leave the BFF reading a generated file that regeneration deletes.
-- The staging TypeScript gap was not a deliberate exclusion. The staging branch
-  generated the C++ and SQL addresses only and never ran the TypeScript facets,
-  so the fix is to regenerate every facet for a new entity, not to add files by
-  hand.
 
 * Test Scenarios
 

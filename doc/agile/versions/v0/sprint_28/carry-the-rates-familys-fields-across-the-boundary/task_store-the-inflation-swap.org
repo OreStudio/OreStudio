@@ -8,7 +8,7 @@
 #+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
 #+owner: marco
 #+branch: feature/store-the-inflation-swap
-#+pr:
+#+pr: 3546
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3546][#3546]] | [ore] Store the inflation swap and return its index |
 
 * Review
 

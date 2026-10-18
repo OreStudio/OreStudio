@@ -139,6 +139,28 @@ The twelve retired triggers were =codegen-drift=, =codegen-sweep=,
 =push= to =main= trigger, so a defect that escapes the runner still shows on
 main the moment it lands.
 
+** The compiler cache has a budget
+
+GitHub gives a repository 10 GB of cache and the Linux legs keep one sccache
+entry per variant: four variants, so about 8 GB if each is allowed 2 GB. That
+budget is what decides whether a debug leg finishes, because a cold clang-debug
+build takes long enough to hit the step's own time limit.
+
+Three rules keep it inside the budget, and all three exist because the obvious
+order fails:
+
+- Each variant is capped, =SCCACHE_CACHE_SIZE: '2G'. sccache's own default is
+  10 GB, which is the entire allowance for one variant.
+- Space is freed *before* the save, oldest entries of this variant first. The
+  older order saved first and pruned after verifying the save, so once the
+  allowance filled the save could not fit, the verification found no new entry,
+  the prune deleted nothing, and every later run restored the same stale entry
+  and timed out again. A prune that runs only after a save cannot make room for
+  that save.
+- A save that did not store is a warning, not a red job. The build it describes
+  has already passed, and reddening the job hid that it was the cache, not the
+  code, that failed.
+
 =entity-writes= is the cautionary case. It was merged with the trigger the
 same evening the other twelve lost theirs, and nothing failed: the workflow
 files are read by nothing but GitHub. A guard now fails on the plain trigger,

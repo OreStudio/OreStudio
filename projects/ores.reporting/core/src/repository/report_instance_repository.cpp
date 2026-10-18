@@ -101,6 +101,8 @@ filter_condition(const std::optional<messaging::report_instances_filter>& filter
     if (!filter)
         return std::nullopt;
     std::vector<sqlgen::dynamic::Condition> r;
+    if (filter->definition_id)
+        r.push_back(equals("definition_id", filter_value(*filter->definition_id)));
     if (filter->kind)
         r.push_back(equals("kind", filter_value(*filter->kind)));
     if (filter->id_one_of) {
@@ -108,6 +110,12 @@ filter_condition(const std::optional<messaging::report_instances_filter>& filter
         for (const auto& v : *filter->id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("id", std::move(values)));
+    }
+    if (filter->definition_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->definition_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("definition_id", std::move(values)));
     }
     if (filter->kind_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
@@ -251,14 +259,24 @@ report_instance_repository::read_any_by_name(context ctx, const std::string& nam
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<report_instance_entity>> |
                        where("tenant_id"_c == tid && "name"_c == name) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<report_instance_entity, domain::report_instance>(
+    auto found = execute_read_query<report_instance_entity, domain::report_instance>(
         ctx,
         query,
         [](const auto& entities) { return report_instance_mapper::map(entities); },
         lg(),
         "Reading any report instance by name.");
+    // A key names a row of one party, and another party of the tenant may hold
+    // the same key, so the read keeps the session's party's rows. The filter
+    // runs before the newest row is taken because the party column may be
+    // null, and a null party means the row belongs to the whole tenant and
+    // stays readable by every party, as the latest-by finder also has it.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 
@@ -407,5 +425,45 @@ void report_instance_repository::remove(context ctx, const std::vector<std::stri
     execute_delete_query(ctx, query, lg(), "Batch removing report instances.");
 }
 
+
+std::vector<domain::report_instance> report_instance_repository::read_latest_by_definition_ids(
+    context ctx, const std::vector<boost::uuids::uuid>& definition_ids) {
+    if (definition_ids.empty())
+        return {};
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading the latest instance of " << definition_ids.size()
+                               << " definition(s).";
+
+    // One bound array rather than one parameter per id, so a party with a
+    // hundred definitions is still one statement.
+    std::string id_array("{");
+    for (std::size_t i = 0; i < definition_ids.size(); ++i) {
+        if (i > 0)
+            id_array += ',';
+        id_array += boost::uuids::to_string(definition_ids[i]);
+    }
+    id_array += '}';
+
+    // The run that started last is the greatest started_at. A run cancelled or
+    // skipped before it started has no started_at, so valid_from decides
+    // between those, and NULLS LAST keeps a started run ahead of one that
+    // never started. The tenant and the policy on the table narrow the scan
+    // exactly as they do for the generated reads; no party is stated here.
+    const auto rows = ores::database::repository::execute_parameterized_string_query(
+        ctx,
+        "SELECT DISTINCT ON (definition_id) id::text"
+        " FROM ores_reporting_report_instances_tbl"
+        " WHERE tenant_id = $1::uuid"
+        "   AND valid_to = ores_utility_infinity_timestamp_fn()"
+        "   AND definition_id = ANY($2::uuid[])"
+        " ORDER BY definition_id, started_at DESC NULLS LAST, valid_from DESC",
+        {ctx.tenant_id().to_string(), id_array},
+        lg(),
+        "Reading the latest instance of each definition");
+
+    if (rows.empty())
+        return {};
+    return read_latest(ctx, rows);
+}
 
 }

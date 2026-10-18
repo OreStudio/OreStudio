@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: B1C4EB87-A3D4-42A6-94A6-73FDC56C868E
+:END:
+#+title: Task: Replace the web family list with the registry
+#+description: The web BFF stops carrying a hand-maintained family table and reads the generated registry, so adding a family needs no edit there.
+#+type: task
+#+level: s1
+#+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The web layer stops keeping its own list of convention families. It reads the list the codegen renders, so adding a family needs no edit in the BFF and the browser cannot disagree with the server about which families exist.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
+| Now          | The first attempt was built, verified and then closed. Nothing is merged. |
+| Waiting on   | Nothing.                               |
+| Next         | Rebuild it on the template pipeline #3500 merged, so the twin is rendered by the facet instead of a script. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The BFF builds its family list from the generated registry, and no hand-written table of families remains in =conventions.ts=.
+- The C++ header and the TypeScript module come from the same facet and are rendered together, so one regeneration updates both.
+- The generated TypeScript lives under source control, so a regeneration cannot delete the file the BFF imports.
+- =npm run typecheck= and the BFF suite pass with the generated list in place.
+
+* Plan
+
+Extend the registry facet to render the TypeScript twin, commit it, then have the BFF read it instead of its own table.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The first attempt was PR #3479. It built the family tables from a generated TypeScript twin and passed on that branch. It was closed unmerged because it was raised outside the process, with no environment tag and no task trailer.
+- That attempt also conflicted with #3474 in the generator both changed. The generator has since been retired for a facet, so the conflict is gone and the retry extends the facet rather than a script.
+- The TypeScript twin must be committed. The staging branch generated the C++ and SQL addresses only, and the web build then failed to resolve the domain modules it imports.
+- A stale twin survives in =projects/ores.web/packages/wire-protocol/dist/generated/refdata/domain/convention_family_registry.js= on this checkout. =dist= is ignored and untracked, so the file is a leftover compile artefact and not a second copy of the registry. Nothing reads it once the source module exists.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3479][#3479]] | [web,refdata] Read the conventions families from the registry (closed) |
+| [[https://github.com/OreStudio/OreStudio/pull/3480][#3480]] | [agile] Record where the BFF registry work stands |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

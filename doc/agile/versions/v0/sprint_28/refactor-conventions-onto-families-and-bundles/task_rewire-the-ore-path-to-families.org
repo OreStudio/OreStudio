@@ -1,0 +1,91 @@
+:PROPERTIES:
+:ID: 61D203C8-663C-408D-9940-F6100996861A
+:END:
+#+title: Task: Rewire the ORE path to families and packages
+#+description: The importer maps a conventions file into per-family messages or one bundle request. The ORE file is a package at the boundary, never a wire type. The exporter reassembles from per-family reads taken at one instant.
+#+type: task
+#+level: s1
+#+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
+#+owner: marco
+#+branch: feature/rewire-the-ore-path-to-families
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-18
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ORE path stops handing refdata one value that holds every family. It maps a conventions file into per-family payloads, stages them, and commits them as a bundle. Export goes the other way, one family at a time, and the file it writes is the same file it read.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
+| Now          | The service path imports through begin, stage and commit. The run store still saves and loads one whole document. |
+| Waiting on   | Task 1, which deletes the aggregate the run store uses. |
+| Next         | Move the run store onto the same per-family path. Then take the export reads at one instant, which is task 7. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The importer maps a conventions file into per-family payloads and stages each one. No message it sends carries every family.
+- The exporter reads each family on its own and rebuilds the ORE file from those reads.
+- The ORE conventions file is a package at the boundary. No refdata type that holds every family reaches ores.ore.
+- A conventions file imported and exported unchanged produces the file it started from.
+
+* Plan
+
+Move the service path onto begin, stage and commit first. Then move the run store and the export, which is what allows the aggregate to go.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The ORE conventions import ran as one call carrying the whole document. That call is gone from the service. =projects/ores.ore/service/src/messaging/run_configuration_operations.cpp= now opens an import, stages one message per family, and commits, and the export asks for each family in turn.
+- A second path still saves the whole document. =projects/ores.ore/core/src/store/run_store.cpp= calls =conventions_document_service= to store the conventions a run's input package carries, and calls it again to write them back out. That service is the only refdata service that builds the aggregate, and the run store is its only production caller. ores.ore still holds the type in five places, the mapper pair, the legacy importer and exporter, the diff, and the service import, so moving the run store alone does not delete it.
+- The FX convention has no family of its own. The export skips it and the boundary mapper derives it from the currency pair.
+- The export currently asks with a null =as_of=, so the families it reads are not read at one instant. Task 7 owns that.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3475][#3475]] | [ore,refdata] Move the ORE path onto the conventions import |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -190,6 +190,10 @@
 \ir ./refdata_counterparty_contact_informations_create.sql
 \ir ./refdata_counterparty_contact_informations_notify_trigger_create.sql
 
+-- Counterparty credit limits, which a netting set is bucketed by
+\ir ./refdata_credit_limits_create.sql
+\ir ./refdata_credit_limits_notify_trigger_create.sql
+
 -- Netting agreements and the netting sets opened under them
 \ir ./refdata_netting_agreements_create.sql
 \ir ./refdata_netting_agreements_notify_trigger_create.sql
@@ -420,3 +424,9 @@
 \ir ./refdata_curve_segment_curves_notify_trigger_create.sql
 \ir ./refdata_curve_quotes_create.sql
 \ir ./refdata_curve_quotes_notify_trigger_create.sql
+
+-- Bundle import staging, after every table it references
+\ir ./refdata_bundle_imports_create.sql
+\ir ./refdata_bundle_imports_notify_trigger_create.sql
+\ir ./refdata_bundle_import_items_create.sql
+\ir ./refdata_bundle_import_items_notify_trigger_create.sql

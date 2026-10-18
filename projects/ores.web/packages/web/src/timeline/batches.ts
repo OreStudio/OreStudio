@@ -69,7 +69,7 @@ function actOf(event: TimelineEvent): string {
 export function batchesOf(events: readonly TimelineEvent[]): readonly Row[] {
     const acts = new Map<string, number[]>();
     events.forEach((event, index) => {
-        if (!BATCHED_KINDS.has(event.kind) || Number.isNaN(parseTimestamp(event.at).getTime())) {
+        if (!BATCHED_KINDS.has(event.kind)) {
             return;
         }
         const key = actOf(event);

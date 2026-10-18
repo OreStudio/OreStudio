@@ -20,24 +20,31 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { wireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
 import type { RecordRow } from '../api/client.js';
 import {
     formatText,
     formatValue,
     instantLabel,
+    lacksConvention,
     latestFirst,
     MAX_PLACES,
     placesOf,
     pointsOf,
+    windowOf,
 } from './seriesView.js';
 
-const obs = (at: string, value: string) => ({ at, value, source: 'feed' });
+const obs = (at: string, value: string) => ({
+    at: wireTimestamp(at) as WireTimestamp,
+    value,
+    source: 'feed',
+});
 
 describe('pointsOf', () => {
     it('reads the instant and the value, and keeps the order', () => {
         const points = pointsOf([
-            obs('2026-01-01 10:00:00', '1.25'),
-            obs('2026-01-01 11:00:00', '1.5'),
+            obs('2026-01-01 10:00:00Z', '1.25'),
+            obs('2026-01-01 11:00:00Z', '1.5'),
         ]);
         expect(points.map((p) => p.value)).toEqual([1.25, 1.5]);
         expect(points[0]!.at).toBeLessThan(points[1]!.at);
@@ -45,26 +52,26 @@ describe('pointsOf', () => {
 
     it('leaves out a value that is not a number, rather than draw it as zero', () => {
         const points = pointsOf([
-            obs('2026-01-01 10:00:00', ''),
-            obs('2026-01-01 11:00:00', 'n/a'),
+            obs('2026-01-01 10:00:00Z', ''),
+            obs('2026-01-01 11:00:00Z', 'n/a'),
         ]);
         expect(points).toEqual([]);
     });
 
-    it('reads an instant with no zone as UTC, so the viewer zone does not shift it', () => {
-        const [zoned] = pointsOf([obs('2026-01-01 10:00:00Z', '1')]);
-        const [bare] = pointsOf([obs('2026-01-01 10:00:00', '1')]);
-        expect(bare!.at).toBe(zoned!.at);
+    it('reads the wire instant as UTC, so the viewer zone does not shift it', () => {
+        const [point] = pointsOf([obs('2026-01-01 10:00:00Z', '1')]);
+        expect(point!.at).toBe(Date.UTC(2026, 0, 1, 10, 0, 0));
     });
 
-    it('leaves out an instant that is not a date', () => {
-        expect(pointsOf([obs('yesterday', '1')])).toEqual([]);
+    it('refuses an instant that is not the wire shape rather than placing it', () => {
+        const malformed = { at: 'yesterday', value: '1', source: 'feed' } as never;
+        expect(() => pointsOf([malformed])).toThrow(TypeError);
     });
 });
 
 describe('latestFirst', () => {
     it('takes the newest rows, newest first', () => {
-        const rows = ['a', 'b', 'c'].map((value, i) => obs(`2026-01-0${i + 1} 00:00:00`, value));
+        const rows = ['a', 'b', 'c'].map((value, i) => obs(`2026-01-0${i + 1} 00:00:00Z`, value));
         expect(latestFirst(rows, 2).map((r) => r.value)).toEqual(['c', 'b']);
     });
 });
@@ -72,6 +79,20 @@ describe('latestFirst', () => {
 describe('instantLabel', () => {
     it('shows the day and the minute', () => {
         expect(instantLabel(Date.parse('2026-01-02T03:04:05Z'))).toBe('2026-01-02 03:04');
+    });
+});
+
+describe('windowOf', () => {
+    it('reads the window an address names', () => {
+        expect(windowOf('hour')).toBe('hour');
+        expect(windowOf('year')).toBe('year');
+        expect(windowOf('all')).toBe('all');
+    });
+
+    it('draws the page as it opens when the address names no window or one it does not offer', () => {
+        expect(windowOf(null)).toBe('all');
+        expect(windowOf('')).toBe('all');
+        expect(windowOf('fortnight')).toBe('all');
     });
 });
 
@@ -102,6 +123,14 @@ describe('placesOf', () => {
         expect(placesOf(spot('AUD', 'USD'), [])).toBeUndefined();
     });
 
+    it('does not borrow the places of the pair stored the other way round', () => {
+        // The pair store keeps one direction: AUD/USD and USD/JPY. The reverse
+        // codes have no row, and four places meant for AUD/USD are not USD/AUD's.
+        expect(placesOf(spot('AUD', 'USD'), conventions)).toBe(4);
+        expect(placesOf(spot('USD', 'AUD'), conventions)).toBeUndefined();
+        expect(placesOf(spot('JPY', 'USD'), conventions)).toBeUndefined();
+    });
+
     it('keeps the plain format for a series that is not an FX spot rate', () => {
         expect(placesOf(spot('AUD', 'USD', 'price'), conventions)).toBeUndefined();
         expect(placesOf(spot('AUD', 'USD', 'rate', 'fx_fwd'), conventions)).toBeUndefined();
@@ -121,6 +150,39 @@ describe('placesOf', () => {
             { version: 1, pair_code: 'AUD/USD', decimal_places: 99 },
         ] as unknown as RecordRow[];
         expect(placesOf(spot('AUD', 'USD'), odd)).toBeUndefined();
+    });
+});
+
+describe('lacksConvention', () => {
+    const conventions = [
+        { version: 1, pair_code: 'EUR/USD', decimal_places: 4 },
+    ] as unknown as RecordRow[];
+    const spot = (scope: string, ccy: string) => ({
+        scope,
+        instrument_type: 'fx_spot',
+        quote_type: 'rate',
+        fields: [{ name: 'ccy', text: ccy }],
+    });
+
+    it('says so for a pair the store holds the other way round', () => {
+        expect(lacksConvention(spot('USD', 'EUR'), conventions)).toBe(true);
+    });
+
+    it('says so for a pair the store does not hold at all', () => {
+        expect(lacksConvention(spot('EUR', 'SGD'), conventions)).toBe(true);
+    });
+
+    it('says nothing for a pair whose convention the store holds', () => {
+        expect(lacksConvention(spot('EUR', 'USD'), conventions)).toBe(false);
+    });
+
+    it('says nothing for a series that is not a spot rate', () => {
+        expect(
+            lacksConvention(
+                { ...spot('EUR', 'USD'), instrument_type: 'fx_fwd', quote_type: 'rate' },
+                conventions,
+            ),
+        ).toBe(false);
     });
 });
 

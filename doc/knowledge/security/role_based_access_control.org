@@ -66,7 +66,15 @@ A read is classified before it is granted:
 | Organisation | Names, job titles, pictures and who reports to whom, for the people in your parties and under you | Member, through =iam::organisation:read= |
 | Account | Name, email, job title, picture, status and parties, for the people who work in a party your account works in | Member, through =iam::accounts:read=. *A special case:* row-level security limits this read to those accounts. See [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]], "The accounts exception". |
 | Business fact | Parties, counterparties, books, business units, trades | The job roles that need it |
+| The reports a party runs | Report definitions and their runs, for the parties the reader works in | Member, through =reporting::report_definitions:read=, =reporting::report_instances:read= and =reporting::report_error_events:read=. *A special case:* row-level security limits these reads to the parties the reader's session may see, so the code is never a read of the tenant. |
 | Personal data | Contact information, sign-ins, sessions | The person, through a self read; administrators |
+
+The reports a party runs are read with two more codes that are not report data.
+The health word resolves a run's state to a name, and the state catalogue is
+vocabulary, so Member holds =dq::fsm_states:read=. The schedule cell names the
+job the definition runs as, so Member holds =scheduler::job_instances:read=: a
+person who may read a report's runs may read when the scheduler will run it
+again.
 
 Which reads are open to every member without any role is decided separately,
 in [[id:804C7048-DBBF-4B39-8737-BFB4949884C4][Authorised reads]]. Member is not

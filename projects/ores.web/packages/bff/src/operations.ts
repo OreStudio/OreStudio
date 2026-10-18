@@ -602,7 +602,7 @@ export function registerOperationsRoutes(
             startTime: window.start,
             endTime: window.end,
         });
-        const streams: BusView['streams'] = [];
+        const streams = [];
         for (const streamName of busStreamNames(streamPrefix)) {
             const rows = await session.client.natsStreamSamples({
                 streamName,

@@ -120,6 +120,11 @@ public:
      * after a delete, which closes the transaction-time window rather than
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
+     *
+     * A key names a row of one party, and another party of the tenant may hold
+     * the same key, so the match is kept to the session's party. A null party
+     * column means the row belongs to the whole tenant and is kept for every
+     * party.
      */
     std::vector<domain::report_instance> read_any_by_name(context ctx, const std::string& name);
 
@@ -208,6 +213,16 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
+    /**
+     * @brief Reads the run that started last, for each definition named.
+     *
+     * A definition that has never run has no entry, and the rows of other
+     * parties are not the caller's to read: the store's policy decides that,
+     * not this method.
+     */
+    std::vector<domain::report_instance>
+    read_latest_by_definition_ids(context ctx,
+                                  const std::vector<boost::uuids::uuid>& definition_ids);
 
 private:
     /**

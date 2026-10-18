@@ -195,6 +195,23 @@ BEGIN
     -- The reporting tree: names, job titles, pictures and who reports to whom.
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'iam::organisation:read');
 
+    -- The reports a party runs. Report management's front door shows one row per
+    -- definition a party owns, with the health of that definition's latest run,
+    -- and every person reads it: a trading desk checks it before the first
+    -- number is quoted, and a market risk reader signs off from the same rows.
+    --
+    -- The three reporting reads are party-scoped by row-level security rather
+    -- than by a request field (reporting_rls_policies_create.sql), so each code
+    -- is a read of the caller's own parties and never of the tenant. That is
+    -- the same exception the account read above states.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_definitions:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_instances:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'reporting::report_error_events:read');
+    -- The health word resolves a run's state id to a state name, and the
+    -- schedule cell reads the definition's job in the scheduler.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'dq::fsm_states:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Member', 'scheduler::job_instances:read');
+
     -- Assign permissions to Trading role
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'Trading', 'variability::flags:read');

@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: A51392C5-F7CE-419C-9671-7F648E83C36C
+:END:
+#+title: Task: Model each convention family on its own
+#+description: Replace the hand-listed document model with one operation model per convention family, so a family is declared once and carries its own fields. No aggregate of unrelated families survives.
+#+type: task
+#+level: s1
+#+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
+#+owner: marco
+#+branch: feature/model-each-convention-family
+#+pr: 3500
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-18
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every convention family is declared once, in its own entity, and carries only its own fields. The list of families is generated from those entities, and so is the code that writes and reads them. No type holds every family, so no translation unit has to reflect them all.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
+| Now          | The per-family entities, the generated registry and the generated per-family apply are merged. The aggregate =conventions_document= still exists and still has callers. |
+| Waiting on   | Nothing.                               |
+| Next         | Delete the aggregate, which moves the whole-document service, the six generated apply and read functions, the mapper pair, the legacy importer and exporter, the diff, the service import and the run store in one wave. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- Each convention family is its own entity with its own fields, and a family's field belongs to it alone.
+- One generated registry names every family, its scope, and its repository, and the hand-maintained list is gone.
+- The apply code that writes the families is generated from the same registry, so adding a family needs no hand edit.
+- No reflected type in refdata carries every convention family, and no translation unit instantiates one.
+- =conventions_document=, =conventions_document_service= and the whole-document protocol operations no longer exist.
+
+* Plan
+
+The work ran in two halves, and the halves are why the task is still open.
+
+The first half generated the family list and the per-family apply, and it is merged. Before the hand list was touched, the registry was compared with it. The two agreed on 26 families, on the same party and world scopes, and on every row the service wrote, which is what made the swap safe. The apply could not come from the registry alone, because a table of strings cannot call a typed repository, so the same generation emits a branch per family.
+
+The second half is the deletion, and it forces its callers to move in one wave. =conventions_document= is the payload the ORE mapper builds and reverses, and the run store is the service's only production caller. Deleting it means moving the whole-document service, the six generated apply and read functions, the mapper pair, the legacy importer and exporter, the diff, the service import and the run store onto the bundle.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Families in the generated registry | 26 | =grep -c 'convention_write_mode::' projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp= | 8d7c38449c |
+
+* Notes
+- The pin holds. Comparing the service's hand-written calls with the generated
+  registry gives 26 families against 26 entries, no disagreement about which
+  families are party-scoped and which are world-scoped, and no registry row the
+  service never writes. =fx= is skipped and unregistered, as decided. The
+  registry is therefore equivalent to the hand list before the hand list is
+  deleted.
+- The registry cannot replace the calls by itself. A table of strings cannot
+  call =replace_party_rows(ctx, zero_convention_repository(), ...)=, because
+  each family needs its own repository type. The dispatch has to be generated.
+  Codegen must emit one apply function per scope from the same registry:
+  party families through =replace_party_rows=, world families through
+  =add_missing_world_rows=, and the skipped families collected. The service
+  then calls two generated functions instead of listing 26.
+- The work splits. First the generated apply functions, which delete the
+  service's hand list with behaviour unchanged and the pin green. Then the
+  aggregate itself, which is what forces the mapper, the run store and the BFF
+  to move in one wave.
+
+- =fx= needs no entity and no registry entry. The document carries an
+  =fx_convention= that is the pair, its =currency_pair_convention=, a spot lag
+  and its advance calendars. All three of those are entities
+  (=currency_pair=, =currency_pair_convention=, =currency_pair_convention_calendar=),
+  so the ORE FX convention is a projection of existing rows, not a store of its
+  own. Drop it from the document and derive it in the boundary mapper.
+- The tenor basis swap family registers as its central row plus its two parts,
+  because that is what the document carried. Collapsing it to one family entry
+  is a later decision, not part of this task.
+- The registry started as a python renderer and is now a codegen facet with
+  three archetypes, so a template change replaces a script change. The emitted
+  bytes did not change when the renderer was retired.
+- What the deletion still has to move, as the tree stands on 2026-10-18. The
+  aggregate is declared in
+  =projects/ores.refdata/modeling/ores.refdata.configuration_document_messages.org=
+  and generated into =ores.refdata.api/messaging/configuration_document_protocol.hpp=.
+  In refdata, =conventions_document_service= is the only service that builds
+  it, and the run store is the service's only production caller. The service
+  also drives the six generated bulk functions in =convention_family_apply.inc=,
+  and those functions, not the per-family dispatch, are what reach the type.
+  ores.ore holds the type besides, in the mapper pair, the legacy importer and
+  exporter, the diff, and the service import. The tests that pin the current
+  behaviour are =conventions_document_service_tests= and the conventions half of
+  =run_store_database_tests=.
+
+- Three code comments still repeat claims this task's record no longer makes,
+  and all belong to the next code change. =bundle_import_operations_service=
+  says the staged rows are applied in the order the stages landed, which the
+  code does not state as an invariant; it holds today only because the item ids
+  are UUIDv7 and time-ordered. =bundle_import.hpp= and =ores.refdata.bundle_import.org=
+  describe a sweep that marks stale imports expired, and a failed commit that
+  marks an import failed, and nothing performs either.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3459][#3459]] | [codegen] Generate the convention family registry |
+| [[https://github.com/OreStudio/OreStudio/pull/3460][#3460]] | [agile] Record that the FX convention is a projection |
+| [[https://github.com/OreStudio/OreStudio/pull/3462][#3462]] | [codegen] Generate the convention family apply fragment |
+| [[https://github.com/OreStudio/OreStudio/pull/3469][#3469]] | [refdata] Give the generated conventions apply its own translation unit |
+| [[https://github.com/OreStudio/OreStudio/pull/3474][#3474]] | [refdata] Compile the conventions apply in its own translation unit |
+| [[https://github.com/OreStudio/OreStudio/pull/3481][#3481]] | [refdata] Apply the review of the conventions apply unit |
+| [[https://github.com/OreStudio/OreStudio/pull/3500][#3500]] | [codegen] Render the conventions registry from templates |
+
+[[https://github.com/OreStudio/OreStudio/pull/3497][#3497]] was closed rather than merged. It raised the same change as #3500 without the environment tag or the task trailers, so #3500 redid it.
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The python renderer dropped its 100 column wrap when the templates took over. | convention_family_registry facet | Accepted, no change | The generated header's longest line is 80 columns, so nothing exceeds the limit today. The fix, if a name grows, is in the template. |
+| 2 | The facet hardcodes the refdata output paths, so a second component opting in would overwrite them. | convention-registry facets | Accepted, recorded | A second component needs the address parameterised before it enables the facet. The facet page states the limit. |
+
+* Result
+
+Not yet complete. Merged so far are the per-family entities, the generated registry, the generated per-family apply in its own translation unit, and the retirement of the python renderer. The aggregate itself is still present, so the task's headline acceptance criterion is not met.
+
+The deletion is in progress. It needs the whole-document service and the six generated apply and read functions gone, the mapper pair and the run store and the diff and the legacy importer and exporter and the service import on per-family values, and the type removed from the model and its protocol.

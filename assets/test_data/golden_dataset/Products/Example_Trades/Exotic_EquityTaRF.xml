@@ -36,7 +36,7 @@
       </OptionData>
       <RangeBounds>
         <RangeBound>
-          <RangeFrom>0</RangeFrom>
+          <RangeFrom>0.0</RangeFrom>
           <RangeTo>3300</RangeTo>
           <Leverage>1</Leverage>
         </RangeBound>

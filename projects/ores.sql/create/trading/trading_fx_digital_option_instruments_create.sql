@@ -67,12 +67,13 @@ create table if not exists "ores_trading_fx_digital_option_instruments_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('FxDigitalOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption')),
     check ("payoff_amount" > 0),
+    check (("trade_type_code" <> 'FxDigitalOption') or ("strike" is not null)),
+    check (("trade_type_code" <> 'FxTouchOption') or ("lower_barrier" is not null or "upper_barrier" is not null)),
+    check (("trade_type_code" <> 'FxDoubleTouchOption') or ("lower_barrier" is not null and "upper_barrier" is not null)),
+    check (("trade_type_code" <> 'FxDigitalBarrierOption') or ("strike" is not null and ("lower_barrier" is not null or "upper_barrier" is not null))),
     check ("foreign_currency" <> ''),
     check ("domestic_currency" <> ''),
-    check ("payoff_currency" <> ''),
-    check ("long_short" in ('Long', 'Short')),
-    check ("option_type" is null or "option_type" in ('Call', 'Put')),
-    check ("barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor'))
+    check ("payoff_currency" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -123,6 +124,43 @@ begin
     ) then
         raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
             using errcode = '23503';
+    end if;
+
+    -- Validate option_type (optional soft FK to ores_trading_option_types_tbl)
+    if NEW.option_type is not null then
+        if not exists (
+            select 1 from ores_trading_option_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.option_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid option_type: %. No active option type found with this code.', NEW.option_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate long_short (soft FK to ores_trading_long_short_types_tbl)
+    if not exists (
+        select 1 from ores_trading_long_short_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.long_short
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid long_short: %. No active long short type found with this code.', NEW.long_short
+            using errcode = '23503';
+    end if;
+
+    -- Validate barrier_type (optional soft FK to ores_trading_barrier_types_tbl)
+    if NEW.barrier_type is not null then
+        if not exists (
+            select 1 from ores_trading_barrier_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.barrier_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid barrier_type: %. No active barrier type found with this code.', NEW.barrier_type
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Validate change_reason_code

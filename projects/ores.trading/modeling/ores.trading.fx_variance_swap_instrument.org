@@ -38,7 +38,7 @@ Variance swaps from Volatility swaps.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
 Routes ORE product type: FxVarianceSwap.
 
@@ -122,9 +122,7 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :economic: true
 :END:
 
-Settlement currency.
-
-Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -154,7 +152,7 @@ std::string("TR20H-EUR-USD")
 
 Position direction: Long or Short.
 
-Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
 
 #+begin_src cpp :name generator
 std::string("Long")
@@ -162,7 +160,7 @@ std::string("Long")
 
 ** strike
 :PROPERTIES:
-:type:          numeric(38, 12)
+:type:          double precision
 :cpp_type:      double
 :nullable:      false
 :default_value: 0.0
@@ -170,6 +168,11 @@ std::string("Long")
 :END:
 
 Fixed variance or volatility strike. Must be positive.
+
+A variance strike is a volatility rather than a money amount, so the column is
+a binary double for the same reason a basket weight is. The check refuses the
+values a double admits and a numeric does not: an infinite or not-a-number
+strike has no meaning and would poison every comparison downstream.
 
 #+begin_src cpp :name generator
 0.04
@@ -199,7 +202,7 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 
 Whether the product is a Variance or Volatility swap.
 
-Soft FK to ores_trading_moment_types_tbl: the values are the closed ORE momentType set (Variance, Volatility), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+the values are the closed ORE momentType set (Variance, Volatility), which the SQL schema already states as a check.
 
 #+begin_src cpp :name generator
 std::string("Variance")
@@ -266,6 +269,30 @@ is immutable.
     }
 #+end_src
 
+** long_short
+:PROPERTIES:
+:table:             ores_trading_long_short_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid long_short: %. No active long short type found with this code.
+:END:
+
+A foreign key to =ores_trading_long_short_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** moment_type
+:PROPERTIES:
+:table:             ores_trading_moment_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid moment_type: %. No active moment type found with this code.
+:END:
+
+A foreign key to =ores_trading_moment_types_tbl=: a value the store cannot resolve is
+refused on write.
+
 * SQL
 
 ** Flags
@@ -281,11 +308,11 @@ is immutable.
 |---|
 | "end_date" > "start_date" |
 | "strike" > 0 |
+| "strike" <> 'Infinity'::float8 |
+| "strike" <> 'NaN'::float8 |
 | "notional" > 0 |
 | "currency" <> '' |
 | "underlying_code" <> '' |
-| "long_short" in ('Long', 'Short') |
-| "moment_type" in ('Variance', 'Volatility') |
 
 ** Indexes
 
@@ -313,6 +340,7 @@ repository profiles regenerate correctly.
 :domain_identity_group: ores.trading.instrument_identity
 :domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true
+:service_batch_reads_by_trade_id: true
 :generator_facet_name: generators
 :END:
 

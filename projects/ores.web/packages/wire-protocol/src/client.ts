@@ -142,7 +142,8 @@ import type { Transport } from './transport.js';
 import { resolveHeaders } from './headers.js';
 import type { HeaderSource } from './headers.js';
 import { nodeIdGenerator, portableIdGenerator, tracingHeaders, type IdGenerator } from './ids.js';
-import { uuid, type Uuid, type WireTimestamp } from './primitives.js';
+import { uuid, type Uuid } from './primitives.js';
+import { nullableWireTimestampSchema, type WireTimestamp } from './time.js';
 
 /** How long the client waits for each kind of call. */
 export interface Timeouts {
@@ -995,7 +996,7 @@ export class OresClient {
     subscribeToEvents(
         relative: string,
         onEvent: (change: {
-            readonly at: string;
+            readonly at: WireTimestamp;
             readonly tenantId: string | undefined;
             readonly partyId: string | undefined;
             readonly key: RecordKey;
@@ -1008,14 +1009,29 @@ export class OresClient {
         return subscribe.call(this.#transport, relative, (payload, envelope) => {
             try {
                 const decoded = this.#codec.decodeAs(payload, changeEventSchema);
+                /*
+                 * A change with no instant cannot be aged, so the reader
+                 * would not know whether it is stale. Dropping it is the safe
+                 * direction, and it is now a null rather than an empty string.
+                 */
+                if (decoded.occurred_at === null) {
+                    return;
+                }
                 onEvent({
                     at: decoded.occurred_at,
                     tenantId: envelope.tenantId,
                     partyId: envelope.partyId,
                     key: recordKeyOf(decoded.key),
                 });
-            } catch {
-                // An event this build does not understand is one it cannot act on.
+            } catch (error) {
+                /*
+                 * A change whose instant this build cannot read is a change it
+                 * cannot place in time. It is logged with the refused bytes and
+                 * thrown, not dropped quietly: the listener hears that the
+                 * stream is not the shape it was promised.
+                 */
+                console.error('ores.wire-protocol: a change event did not parse', error);
+                throw error;
             }
         });
     }
@@ -1039,8 +1055,9 @@ export class OresClient {
         return subscribe.call(this.#transport, relative, (payload) => {
             try {
                 onMessage(this.#codec.decodeAs(payload, schema));
-            } catch {
-                // A message this build does not understand is one it cannot use.
+            } catch (error) {
+                console.error('ores.wire-protocol: a published message did not parse', error);
+                throw error;
             }
         });
     }
@@ -1475,13 +1492,13 @@ export class OresClient {
 /**
  * A change notification, as the services publish it.
  *
- * Every member has a default: an event is news rather than a contract, and a
- * notification that cannot be read is worth less than one that can be read
- * partially. A missing time means the screen cannot tell whether it is stale, so
- * it does nothing, which is the safe direction.
+ * The instant is required: an event with no time cannot be aged, and a screen
+ * that cannot tell whether it is stale must be told rather than quietly do
+ * nothing. The key keeps a default because an event about a row it cannot name
+ * is still news about the tenant.
  */
 const changeEventSchema = z.object({
-    occurred_at: z.string().default(''),
+    occurred_at: nullableWireTimestampSchema,
     key: z.record(z.string(), z.unknown()).default({}),
 });
 

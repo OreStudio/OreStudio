@@ -153,7 +153,7 @@ function Request({
                         opposite: that the request is still running. */}
                     {open && (
                         <div className="text-xs text-ink-muted">
-                            {request.expiresAt === ''
+                            {request.expiresAt === null
                                 ? t('inbox.request.noDeadline')
                                 : t('inbox.request.expires', {
                                       at: formatDateTime(request.expiresAt, language),

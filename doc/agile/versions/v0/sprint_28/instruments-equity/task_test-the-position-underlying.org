@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 1425802C-0065-4569-A2B7-322D21B3391A
+:END:
+#+title: Task: Test the equity position underlying
+#+description: E15: equity_position_option_underlying has a table, a history field mapper and an event registrar, but no eventing or repository test. Enable the generated eventing test and check what it covers.
+#+type: task
+#+level: s1
+#+filetags: :instruments-equity:sprint_28:v0:
+#+owner: marco
+#+branch: feature/test-the-position-underlying
+#+pr: 3488
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The position underlying entity carries the same generated test coverage as the family's other entities.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3488][#3488]] | [trading] Test the equity position underlying |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The position underlying carries the generated eventing integration test now,
+and enabling it exposed three defects that nothing had exercised, because this
+is the family's first child entity with a test at all.
+
+The generated test wrote its trade under the harness context, so the trade's
+party was not a party row and the insert refused it. The model documents
+:party_scoped_writes: for exactly this shape, a row whose party comes from a
+parent it does not model, and it was not set.
+
+The generator left sequence_number at zero, which the table's own check
+refuses, and filled four enumerated columns with random nouns, which their
+checks refuse. The model declares the ordinal and pins one legal value per
+enumerated column.
+
+Verification. Full build clean, and ores.trading.core.tests passes 1196
+assertions in 178 cases, the new one included. The whole suite passes 95 of 96.
+The exception is ores.iam.core.tests, which fails only after the whole suite
+has run and passes 1197 assertions in 303 cases immediately after a database
+recreate, reproduced twice. That is a cross-suite database isolation defect in
+the IAM tests and not something this change touches.
+
+Not done, and named: the credit basket constituent generator has the same zero
+and random-noun defects, and no test reaches them. It is another family's, and
+the fix belongs beside its own test.
+

@@ -20,9 +20,11 @@
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ORESMD_MAX_BATCH } from '@ores/contracts';
 import { api } from '../api/client.js';
+import { oresmd } from '../api/oresmd.js';
 import { refdataStore, syntheticStore } from '../refdata/store.js';
-import { oresmdQueries } from './queries.js';
+import { chunksOf, oresmdQueries, parseManyKey } from './queries.js';
 
 afterEach(() => {
     vi.restoreAllMocks();
@@ -51,5 +53,40 @@ describe('the suggestions of the editor', () => {
             expect(options.meta).toEqual({ quiet: true });
         }
         expect(oresmdQueries.currencies().queryKey).not.toEqual(['records', 'currencies']);
+    });
+});
+
+describe('the parts of many URLs', () => {
+    it('asks about the whole set in one call, and about no URI on its own', async () => {
+        const many = vi.spyOn(oresmd, 'parseMany').mockResolvedValue([]);
+        const one = vi.spyOn(oresmd, 'parse');
+        const options = oresmdQueries.parseMany(['a', 'b', 'a', '']);
+        await (options.queryFn as () => Promise<unknown>)();
+        expect(many).toHaveBeenCalledTimes(1);
+        expect(many).toHaveBeenCalledWith(['a', 'b']);
+        expect(one).not.toHaveBeenCalled();
+    });
+
+    it('splits a set larger than one call carries into a call a set, and keeps the order asked', async () => {
+        const many = vi.spyOn(oresmd, 'parseMany').mockResolvedValue([]);
+        const uris = Array.from(
+            { length: ORESMD_MAX_BATCH + 1 },
+            (_, index) => `u${String(index).padStart(4, '0')}`,
+        );
+        const options = oresmdQueries.parseMany(uris);
+        await (options.queryFn as () => Promise<unknown>)();
+        expect(many).toHaveBeenCalledTimes(2);
+        expect(many.mock.calls.map(([chunk]) => chunk.length)).toEqual([ORESMD_MAX_BATCH, 1]);
+        expect(many.mock.calls[1]).toEqual([['u0200']]);
+    });
+
+    it('asks nothing for a set with no URI in it, and reads a URI named twice once', () => {
+        expect(oresmdQueries.parseMany(['', '']).enabled).toBe(false);
+        expect(chunksOf(['', 'a', 'a'])).toEqual([['a']]);
+    });
+
+    it('names the read after the set, so the same set is one answer', () => {
+        expect(parseManyKey(['b', 'a', 'b'])).toEqual(parseManyKey(['a', 'b']));
+        expect(parseManyKey(['a'])).not.toEqual(parseManyKey(['b']));
     });
 });

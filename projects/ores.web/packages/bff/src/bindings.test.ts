@@ -157,7 +157,7 @@ const binding = (over: Record<string, unknown> = {}): Record<string, unknown> =>
     performed_by: 'op',
     change_reason_code: 'common.rectification',
     change_commentary: '',
-    recorded_at: '2026-10-13T08:15:00Z',
+    recorded_at: '2026-10-13 08:15:00.000000Z',
     ...over,
 });
 
@@ -402,7 +402,9 @@ describe('the history of a binding', () => {
             [LIST]: { result: ok, feed_bindings: [binding()], total: 1 },
             [HISTORY]: {
                 success: true,
-                versions: [{ version: 1, modified_by: 'op', recorded_at: 't1' }],
+                versions: [
+                    { version: 1, modified_by: 'op', recorded_at: '2026-10-13 08:15:00.000000Z' },
+                ],
             },
         });
         const response = await send(server, sessionId, 'GET', url);
@@ -447,7 +449,7 @@ describe('a write that names a binding of another party', () => {
 });
 
 describe('what each binding has written', () => {
-    it('answers the series and last tick of each binding, and empty text for a silent source', async () => {
+    it('answers the series and last tick of each binding, and null for a silent source', async () => {
         const { server, sessionId } = buildTestServer({
             [ACTIVITY]: {
                 success: true,
@@ -458,7 +460,11 @@ describe('what each binding has written', () => {
                         series_id: SERIES,
                         last_tick_at: '2026-10-12 23:50:26Z',
                     },
-                    { source_name: 'synthetic.bloomberg.nzdusd', series_id: '', last_tick_at: '' },
+                    {
+                        source_name: 'synthetic.bloomberg.nzdusd',
+                        series_id: null,
+                        last_tick_at: null,
+                    },
                 ],
             },
         });
@@ -470,7 +476,7 @@ describe('what each binding has written', () => {
                 series_id: SERIES,
                 last_tick_at: '2026-10-12 23:50:26Z',
             },
-            { source_name: 'synthetic.bloomberg.nzdusd', series_id: '', last_tick_at: '' },
+            { source_name: 'synthetic.bloomberg.nzdusd', series_id: null, last_tick_at: null },
         ]);
     });
 

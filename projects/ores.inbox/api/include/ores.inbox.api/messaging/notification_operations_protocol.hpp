@@ -55,7 +55,7 @@ struct inbox_notification {
      * @brief The username of the account that raised it.
      */
     std::string raised_by;
-    std::string raised_at;
+    std::chrono::system_clock::time_point raised_at;
     std::string link_route;
     /**
      * @brief The thing on the linked screen, or empty when the screen is the
@@ -66,7 +66,7 @@ struct inbox_notification {
     /**
      * @brief When the recipient read it, or empty while it is unread.
      */
-    std::string read_at;
+    std::optional<std::chrono::system_clock::time_point> read_at;
 };
 
 /**

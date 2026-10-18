@@ -58,11 +58,11 @@ struct fx_variance_swap_instrument final {
     std::chrono::year_month_day end_date;
 
     /**
-     * @brief Settlement currency.
-     *
-     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
-     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
-     * foreign key.
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string currency;
 
@@ -74,14 +74,18 @@ struct fx_variance_swap_instrument final {
     /**
      * @brief Position direction: Long or Short.
      *
-     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
-     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
-     * reference into a real foreign key.
+     * the values are the closed ORE longShort set (Long, Short), which the SQL schema already
+     * states as a check.
      */
     std::string long_short;
 
     /**
      * @brief Fixed variance or volatility strike. Must be positive.
+     *
+     * A variance strike is a volatility rather than a money amount, so the column is a binary
+     * double for the same reason a basket weight is. The check refuses the values a double admits
+     * and a numeric does not: an infinite or not-a-number strike has no meaning and would poison
+     * every comparison downstream.
      */
     double strike = 0.0;
 
@@ -93,9 +97,8 @@ struct fx_variance_swap_instrument final {
     /**
      * @brief Whether the product is a Variance or Volatility swap.
      *
-     * Soft FK to ores_trading_moment_types_tbl: the values are the closed ORE momentType set
-     * (Variance, Volatility), which the SQL schema already states as a check. PR 4 tightens the
-     * soft reference into a real foreign key.
+     * the values are the closed ORE momentType set (Variance, Volatility), which the SQL schema
+     * already states as a check.
      */
     std::string moment_type;
 

@@ -28,6 +28,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -313,6 +314,51 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     CHECK(!xml.empty());
     CHECK(xml.contains("<FxForwardData>"));
     CHECK(xml.contains(imported.front().ore_id));
+}
+
+TEST_CASE("export_portfolio_roundtrips_every_fx_product", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The FX carrier states one array per product, and the batch joins it by
+    // trade id in both directions: append_instrument fills the batch's column
+    // and the export refills the carrier. A product the two sides pair up
+    // wrongly loses its row here and nowhere else, so the document that states
+    // each product travels this path.
+    struct fx_product_case {
+        const char* document;
+        const char* element;
+    };
+    const std::vector<fx_product_case> products{
+        {"FX_Forward.xml", "<FxForwardData>"},
+        {"FX_Barrier_Option.xml", "<FxBarrierOptionData>"},
+        {"FX_Digital_Option.xml", "<FxDigitalOptionData>"},
+        {"FX_OneTouch_option.xml", "<FxTouchOptionData>"},
+        {"FX_Variance_Swap.xml", "<FxVarianceSwapData>"},
+        {"FX_Average_Forward.xml", "<FxAverageForwardData>"},
+        {"Exotic_FxAccumulator.xml", "<FxAccumulatorData>"},
+        {"Exotic_FxTaRF.xml", "<FxTaRFData>"}};
+
+    for (const auto& product : products) {
+        INFO("Example document: " << product.document);
+        const auto imported =
+            importer::import_portfolio_with_context(example_path(product.document));
+        REQUIRE(imported.size() == 1);
+
+        auto [items, instruments] = make_export_payload(imported);
+        const auto xml = exporter::export_portfolio(items, instruments);
+        BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+        CHECK(xml.contains(product.element));
+        CHECK(xml.contains(imported.front().ore_id));
+
+        // The accumulator's levels are a child table, so a document that comes
+        // back with its entries is the whole join working.
+        if (std::string_view(product.element) == "<FxAccumulatorData>") {
+            CHECK(xml.contains("<RangeBounds>"));
+            CHECK(xml.contains("<RangeTo>122</RangeTo>"));
+            CHECK(xml.contains("<RangeFrom>122</RangeFrom>"));
+        }
+    }
 }
 
 TEST_CASE("export_portfolio_ascot_roundtrip", tags) {

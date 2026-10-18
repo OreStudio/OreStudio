@@ -21,6 +21,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import type { ListedSeries } from '@ores/contracts';
+import type { WireTimestamp } from '@ores/wire-protocol/browser';
 import { bindings } from '../../api/bindings.js';
 import { oresmdQueries } from '../../oresmd/queries.js';
 import { useActingPartyId } from '../../session/SessionProvider.js';
@@ -40,8 +41,8 @@ export interface BindingFacts {
     }) => BindingStatus | undefined;
     /** The series of the newest observation of a binding's source, when the party holds it. */
     readonly seriesOf: (sourceName: string) => ListedSeries | undefined;
-    /** When the binding's source last wrote, or empty text. */
-    readonly lastTickOf: (sourceName: string) => string;
+    /** When the binding's source last wrote, or null when it has written nothing. */
+    readonly lastTickOf: (sourceName: string) => WireTimestamp | null;
 }
 
 /** The activity of the bindings and the party's series, read together for a list or a record. */
@@ -68,10 +69,13 @@ export function useBindingFacts(): BindingFacts {
                       kind: binding.producer_kind,
                       enabled: binding.enabled,
                       running: running?.has(binding.source_name),
-                      lastTickAt: byName.get(binding.source_name)?.last_tick_at ?? '',
+                      lastTickAt: byName.get(binding.source_name)?.last_tick_at ?? null,
                       now,
                   }),
-        seriesOf: (sourceName) => held.get(byName.get(sourceName)?.series_id ?? ''),
-        lastTickOf: (sourceName) => byName.get(sourceName)?.last_tick_at ?? '',
+        seriesOf: (sourceName) => {
+            const seriesId = byName.get(sourceName)?.series_id;
+            return seriesId === undefined || seriesId === null ? undefined : held.get(seriesId);
+        },
+        lastTickOf: (sourceName) => byName.get(sourceName)?.last_tick_at ?? null,
     };
 }

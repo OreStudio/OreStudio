@@ -30,6 +30,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -52,12 +53,13 @@ namespace ores::iam::domain {
  * timestamp; the mapper, entity and generator templates gained the
  * timestamp key-column branches they were missing.
  *
- * end_time is text not null default '', not a nullable timestamp, and
- * client_ip is text, not inet. The model mirrors each column's real
- * type; the domain projection is the column's type too, so a session's
- * end_time is an empty string while the session is active and
- * client_ip is a string. The richer readings (an instant, an IP address)
- * belong to the consumer that needs them.
+ * end_time is a nullable timestamp with time zone: a session that has not
+ * ended has no closing instant at all, so the column holds NULL and the
+ * domain and protocol types hold std::optional<time_point>. There is no
+ * empty-string spelling and no other sentinel for "still open"; absence is the
+ * representation, and the wire carries null. client_ip is text, not
+ * inet, so the richer reading of an IP address belongs to the consumer that
+ * needs it.
  *
  * The hand-written domain struct also carried party_id,
  * visible_party_ids and username. No column backs any of them; they are
@@ -97,10 +99,10 @@ struct session final {
     boost::uuids::uuid account_id;
 
     /**
-     * @brief Timestamp when the session ended (logout or disconnect), stored as an ISO 8601 string.
-     * Empty while the session is still active.
+     * @brief Timestamp when the session ended (logout or disconnect). NULL while the session is
+     * still open, because an open session has no closing instant.
      */
-    std::string end_time = "";
+    std::optional<std::chrono::system_clock::time_point> end_time;
 
     /**
      * @brief Client IP address (IPv4 or IPv6).

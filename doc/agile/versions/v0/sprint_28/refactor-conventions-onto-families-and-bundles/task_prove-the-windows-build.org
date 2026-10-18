@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 264CDF6F-0674-4951-BCEA-334EBE68114F
+:END:
+#+title: Task: Prove the Windows build
+#+description: An MSVC job compiles the new translation units. Success is the C1202 failure gone with the old aggregate, and the build green on Windows, Linux and macOS.
+#+type: task
+#+level: s1
+#+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-18
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The tree builds on Windows with MSVC, the compiler that refused to instantiate the conventions aggregate. A green MSVC build is the proof that the refactor reached its goal, because the failure that started it can no longer be reproduced.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
+| Now          | Not started. No MSVC build has run against this work. |
+| Waiting on   | Task 1 and task 8, which remove the types MSVC refused. |
+| Next         | Get an MSVC job onto the branch and record what it reports. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- An MSVC build compiles the refdata and ores translation units on Windows.
+- The build passes without a compiler flag that raises the constexpr evaluation depth.
+- The same tree is green on Linux and macOS, so the Windows result is not a divergent configuration.
+- The build the job runs is recorded, with the preset and the command, so a reader can repeat it.
+
+* Plan
+
+Get an MSVC build onto the branch, record the preset and the command, then fix what it reports without a flag that raises the constexpr depth.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The investigation in [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] found the failure is accumulated context in one handler translation unit, not one over-wide literal. That changes what this task waits for. The conventions document is already out of the handler, so the remaining pressure is the curve configuration document, which is task 8.
+- The flag =/constexpr:depth= is not an acceptable fix for these translation units. A tree that needs it there has a data model the compiler cannot reflect, and raising the limit hides that. =ores.trading.api= already sets the flag for its own sources, so the objection is scoped to the files this story moves.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

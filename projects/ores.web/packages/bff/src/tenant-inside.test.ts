@@ -181,7 +181,7 @@ function buildTestServer(
                         id: '77777777-0000-0000-0000-000000000001',
                         account_id: acmePerson.id,
                         start_time: '2026-10-04 09:00:00Z',
-                        end_time: '',
+                        end_time: null,
                         client_ip: '203.0.113.44',
                         client_identifier: 'ores.web',
                         client_version_major: 0,
@@ -431,7 +431,7 @@ describe("a tenant's data, read from system administration", () => {
         expect(response.json()).toMatchObject({
             account: { username: 'priya' },
             loginInfo: { failedLogins: 2, locked: false },
-            sessions: [{ clientIdentifier: 'ores.web', endTime: '' }],
+            sessions: [{ clientIdentifier: 'ores.web', endTime: null }],
             totalCount: 1,
         });
         expect(calls.filter((call) => call.startsWith('enter'))).toHaveLength(1);

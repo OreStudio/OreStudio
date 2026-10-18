@@ -1,0 +1,59 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-registry.registry_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_registry}}
+#ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_FAMILY_REGISTRY_HPP
+#define ORES_REFDATA_API_DOMAIN_CONVENTION_FAMILY_REGISTRY_HPP
+
+#include <cstddef>
+#include <string_view>
+
+namespace ores::refdata::domain {
+
+/**
+ * @brief How the conventions document writes a family's rows.
+ *
+ * party replaces the rows the importing party holds, by_id replaces the rows
+ * the document names by key, and world adds only rows the tenant does not
+ * already hold.
+ */
+enum class convention_write_mode { party, by_id, world };
+
+/**
+ * @brief One convention family the conventions document carries.
+ *
+ * key is the family's field name in the document, entity is the entity model
+ * that serves it, domain_type is the generated C++ value type, subject_stem is
+ * the protocol prefix every verb of that entity shares, party_scoped is true
+ * when the family's table carries a party_id column, and write_mode is how the
+ * document writes the family.
+ */
+struct convention_family_entry {
+    std::string_view key;
+    std::string_view entity;
+    std::string_view domain_type;
+    std::string_view subject_stem;
+    bool party_scoped;
+    convention_write_mode write_mode;
+};
+
+/**
+ * @brief Every convention family, ordered by family key.
+ */
+inline constexpr convention_family_entry convention_families[] = {
+{{#families}}
+    {"{{key}}",
+     "{{entity}}",
+     "{{domain_type}}",
+     "{{subject_stem}}",
+     {{#party_scoped}}true{{/party_scoped}}{{^party_scoped}}false{{/party_scoped}},
+     convention_write_mode::{{write_mode}}},
+{{/families}}
+};
+
+inline constexpr std::size_t convention_family_count =
+    sizeof(convention_families) / sizeof(convention_families[0]);
+
+}
+
+#endif
+{{/convention_registry}}

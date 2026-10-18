@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:storage:nats:target_state:
 #+created: 2026-09-26
-#+updated: 2026-09-26
+#+updated: 2026-10-17
 
 * Summary
 
@@ -286,7 +286,7 @@ so an unauthenticated read or write is a defect rather than a default.
 * What this page does not cover
 
 - Each wrapper's own design: the compute package, input and output keys, the
-  ore import bundle, and the verbs that expose them belong to those components.
+  ore import package, and the verbs that expose them belong to those components.
 - The backend's implementation, deployment and durability configuration.
 - The archive format, which is a caller-side concern.
 - The existing consumer flows, which are described where they live; the largest

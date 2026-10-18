@@ -25,6 +25,7 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 /**
  * @file xml_fx_exotic_mapper_roundtrip_tests.cpp
@@ -32,8 +33,8 @@
  *
  * For each example file:
  *   1. Parse ORE XML into ores.ore domain types.
- *   2. Forward-map to the typed fx_instrument_variant via trade_mapper.
- *   3. Extract the concrete typed struct from the variant.
+ *   2. Forward-map to the typed FX carrier via trade_mapper.
+ *   3. Read the row from the array its product travels in.
  *   4. Assert key economic fields are populated.
  *   5. Reverse-map back to ORE XSD trade.
  *   6. Assert the round-tripped XSD type is structurally populated.
@@ -46,7 +47,7 @@ const std::string tags("[ore][xml][mapper][roundtrip][fx][exotic]");
 
 using ores::ore::domain::portfolio;
 using ores::ore::domain::fx_instrument_mapper;
-using ores::trading::domain::fx_instrument_variant;
+using ores::trading::domain::fx_instrument_data;
 using ores::trading::domain::fx_barrier_option_instrument;
 using ores::trading::domain::fx_digital_option_instrument;
 using ores::trading::domain::fx_variance_swap_instrument;
@@ -59,7 +60,7 @@ std::filesystem::path example_path(const std::string& filename) {
                                                 filename);
 }
 
-fx_instrument_variant load_and_map(const std::string& filename) {
+fx_instrument_data load_and_map(const std::string& filename) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -68,6 +69,18 @@ fx_instrument_variant load_and_map(const std::string& filename) {
     auto r = ores::ore::domain::trade_mapper::map_fx_instrument(p.Trade.front());
     REQUIRE(r.has_value());
     return *r;
+}
+
+/**
+ * @brief The one row the carrier holds for the trade, checked before it is read.
+ *
+ * The mapper states a row per trade, so a count other than one is the failure
+ * this line reports, not a row the test then reads.
+ */
+template <typename Row>
+const Row& single_row(const std::vector<Row>& rows) {
+    REQUIRE(rows.size() == 1);
+    return rows.front();
 }
 
 } // namespace
@@ -89,14 +102,16 @@ namespace {
 TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Barrier_Option.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r);
+    const auto& instr = single_row(r.barrier_options);
 
     CHECK(instr.identity.trade_type_code == "FxBarrierOption");
     CHECK(!instr.bought_currency.empty());
     CHECK(!instr.sold_currency.empty());
     CHECK(instr.bought_amount.to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
-    CHECK(instr.lower_barrier.to_double() > 0.0);
+    REQUIRE(instr.upper_barrier.has_value());
+    CHECK(instr.upper_barrier->to_double() > 0.0);
+    CHECK(!instr.lower_barrier.has_value());
 
     const auto rt = fx_instrument_mapper::reverse_fx_barrier_option(instr);
     const bool has_data = rt.FxBarrierOptionData.operator bool();
@@ -108,7 +123,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Digital_Option.xml");
-    const auto& instr = std::get<fx_digital_option_instrument>(r);
+    const auto& instr = single_row(r.digital_options);
 
     CHECK(instr.identity.trade_type_code == "FxDigitalOption");
     CHECK(!instr.foreign_currency.empty());
@@ -128,7 +143,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Digital_Barrier_Option.xml");
-    const auto& instr = std::get<fx_digital_option_instrument>(r);
+    const auto& instr = single_row(r.digital_options);
 
     CHECK(instr.identity.trade_type_code == "FxDigitalBarrierOption");
     CHECK(!instr.foreign_currency.empty());
@@ -136,8 +151,10 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
     REQUIRE(instr.strike.has_value());
     CHECK(instr.strike->to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
-    REQUIRE(instr.lower_barrier.has_value());
-    CHECK(instr.lower_barrier->to_double() > 0.0);
+    // The document states an Up style, so its level lands in the upper column.
+    REQUIRE(instr.upper_barrier.has_value());
+    CHECK(instr.upper_barrier->to_double() > 0.0);
+    CHECK(!instr.lower_barrier.has_value());
 
     const auto rt = fx_instrument_mapper::reverse_fx_digital_barrier_option(instr);
     const bool has_data = rt.FxDigitalBarrierOptionData.operator bool();
@@ -150,7 +167,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_OneTouch_option.xml");
-    const auto& instr = std::get<fx_digital_option_instrument>(r);
+    const auto& instr = single_row(r.digital_options);
 
     CHECK(instr.identity.trade_type_code == "FxTouchOption");
     CHECK(!instr.foreign_currency.empty());
@@ -169,7 +186,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_touch_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_DoubleTouch_Option.xml");
-    const auto& instr = std::get<fx_digital_option_instrument>(r);
+    const auto& instr = single_row(r.digital_options);
 
     CHECK(instr.identity.trade_type_code == "FxDoubleTouchOption");
     CHECK(!instr.foreign_currency.empty());
@@ -186,7 +203,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_double_touch_option", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Variance_Swap.xml");
-    const auto& instr = std::get<fx_variance_swap_instrument>(r);
+    const auto& instr = single_row(r.variance_swaps);
 
     CHECK(instr.identity.trade_type_code == "FxVarianceSwap");
     CHECK(!instr.underlying_code.empty());
@@ -205,7 +222,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_variance_swap", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("FX_Average_Forward.xml");
-    const auto& instr = std::get<fx_asian_forward_instrument>(r);
+    const auto& instr = single_row(r.asian_forwards);
 
     CHECK(instr.identity.trade_type_code == "FxAverageForward");
     CHECK(instr.payment_date.has_value());
@@ -224,30 +241,83 @@ TEST_CASE("fx_exotic_mapper_roundtrip_average_forward", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_accumulator", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxAccumulator.xml");
-    const auto& instr = std::get<fx_accumulator_instrument>(r);
+    const auto& instr = single_row(r.accumulators);
 
     CHECK(instr.identity.trade_type_code == "FxAccumulator");
     CHECK(!instr.underlying_code.empty());
     CHECK(!instr.currency.empty());
     CHECK(instr.fixing_amount.to_double() > 0.0);
-    CHECK(!instr.range_bounds_json.empty());
 
-    const auto rt = fx_instrument_mapper::reverse_fx_accumulator(instr);
+    // The RangeBounds list is the accumulator's child, so the rows arrive
+    // beside the fact row and the reverse mapper needs them passed.
+    REQUIRE(r.range_bounds.size() == 2);
+    CHECK(r.range_bounds[0].sequence_number == 1);
+    CHECK(r.range_bounds[1].sequence_number == 2);
+    CHECK(r.range_bounds[0].range_to.has_value());
+    CHECK(r.range_bounds[0].range_to->to_string() == "122");
+    CHECK(r.range_bounds[1].range_from.has_value());
+    CHECK(r.range_bounds[1].range_from->to_string() == "122");
+
+    const auto rt = fx_instrument_mapper::reverse_fx_accumulator(instr, r.range_bounds);
     const bool has_data = rt.FxAccumulatorData.operator bool();
     REQUIRE(has_data);
     REQUIRE(rt.FxAccumulatorData->RangeBounds.RangeBound.size() == 2);
-    CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[0].RangeTo == 122.0f);
+    CHECK((*rt.FxAccumulatorData->RangeBounds.RangeBound[0].RangeTo) == 122.0f);
     CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[0].Leverage == 2.0f);
-    CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[1].RangeFrom == 122.0f);
+    CHECK((*rt.FxAccumulatorData->RangeBounds.RangeBound[1].RangeFrom) == 122.0f);
     CHECK(rt.FxAccumulatorData->RangeBounds.RangeBound[1].Leverage == 1.0f);
 
+    // The document states no strike and no start date on either entry, and an
+    // absent level is a null column rather than a zero.
+    CHECK_FALSE(r.range_bounds[0].strike.has_value());
+    CHECK_FALSE(r.range_bounds[0].strike_adjustment.has_value());
+    CHECK_FALSE(r.range_bounds[0].start_date.has_value());
+
+    // The binding writes the RangeBounds element whatever the list holds, and
+    // the schema refuses an empty one, so an accumulator without a bound is
+    // refused rather than written as a document that cannot be read back.
+    CHECK_THROWS_WITH(fx_instrument_mapper::reverse_fx_accumulator(instr, {}),
+                      Catch::Matchers::ContainsSubstring("holds no range bound"));
+
     BOOST_LOG_SEV(lg, info) << "FxAccumulator roundtrip passed. Amount: " << instr.fixing_amount;
+}
+
+TEST_CASE("fx_exotic_mapper_keeps_a_range_bound_level_digits", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A float carries at most nine significant digits, so a level the document
+    // states with more digits survives only if the binding keeps the text and
+    // the column stores the decimal. The document here states the level with
+    // twelve digits after the point.
+    using ores::platform::filesystem::file;
+    auto content = file::read_content(example_path("Exotic_FxAccumulator.xml"));
+    const std::string as_written = "<RangeTo>122</RangeTo>";
+    const std::string with_digits = "<RangeTo>122.123456789012</RangeTo>";
+    const auto at = content.find(as_written);
+    REQUIRE(at != std::string::npos);
+    content.replace(at, as_written.size(), with_digits);
+
+    portfolio p;
+    ores::ore::domain::load_data(content, p);
+    REQUIRE(!p.Trade.empty());
+    const auto mapped = ores::ore::domain::trade_mapper::map_fx_instrument(p.Trade.front());
+    REQUIRE(mapped.has_value());
+    REQUIRE(mapped->range_bounds.size() == 2);
+    REQUIRE(mapped->range_bounds[0].range_to.has_value());
+    CHECK(mapped->range_bounds[0].range_to->to_string() == "122.123456789012");
+
+    auto rt = fx_instrument_mapper::reverse_fx_accumulator(mapped->accumulators.front(),
+                                                           mapped->range_bounds);
+    portfolio out;
+    out.Trade.push_back(std::move(rt));
+    const auto written = ores::ore::domain::save_data(out);
+    CHECK(written.contains("<RangeTo>122.123456789012</RangeTo>"));
 }
 
 TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxTaRF.xml");
-    const auto& instr = std::get<fx_asian_forward_instrument>(r);
+    const auto& instr = single_row(r.asian_forwards);
 
     CHECK(instr.identity.trade_type_code == "FxTaRF");
     CHECK(!instr.fx_index.empty());
@@ -270,7 +340,7 @@ TEST_CASE("fx_exotic_mapper_roundtrip_tarf", tags) {
 TEST_CASE("fx_exotic_mapper_roundtrip_generic_barrier_option", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map("Exotic_FxGenericBarrierOption.xml");
-    const auto& instr = std::get<fx_barrier_option_instrument>(r);
+    const auto& instr = single_row(r.barrier_options);
 
     CHECK(instr.identity.trade_type_code == "FxGenericBarrierOption");
     CHECK(!instr.underlying_code.empty());

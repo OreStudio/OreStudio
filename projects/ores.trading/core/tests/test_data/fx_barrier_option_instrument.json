@@ -5,7 +5,7 @@
   "notes": [
     "settlement is not extracted by forward_fx_barrier_option \u2014 field is empty",
     "underlying_code is not extracted by forward_fx_barrier_option for FxBarrierOption \u2014 field is empty",
-    "upper_barrier is absent: XML has a single-level BarrierData block"
+    "lower_barrier is absent: the UpAndIn style states its level in upper_barrier"
   ],
   "instrument": {
     "identity": {
@@ -19,8 +19,8 @@
     "expiry_date": "2033-02-20",
     "settlement": "",
     "barrier_type": "UpAndIn",
-    "lower_barrier": 1.2,
-    "upper_barrier": null,
+    "lower_barrier": null,
+    "upper_barrier": 1.2,
     "underlying_code": "",
     "description": "",
     "audit": {

@@ -93,6 +93,8 @@ public:
     messaging::list_by_netting_agreement_id_netting_sets_response
     list_by_netting_agreement_id_netting_sets(
         const messaging::list_by_netting_agreement_id_netting_sets_request& request);
+    messaging::list_by_credit_limit_id_netting_sets_response list_by_credit_limit_id_netting_sets(
+        const messaging::list_by_credit_limit_id_netting_sets_request& request);
     messaging::list_netting_set_versions_response
     list_netting_set_versions(const messaging::list_netting_set_versions_request& request);
     messaging::get_netting_set_version_response
@@ -155,6 +157,45 @@ public:
      */
     std::uint32_t
     count_netting_sets_by_netting_agreement_id(const boost::uuids::uuid& netting_agreement_id);
+
+
+    /**
+     * @brief Lists netting sets filtered by credit_limit_id, with pagination.
+     *
+     * @param credit_limit_id The credit_limit_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching netting sets for the requested page.
+     */
+    std::vector<domain::netting_set> list_netting_sets_by_credit_limit_id(
+        const std::string& credit_limit_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active netting sets filtered by credit_limit_id.
+     *
+     * @param credit_limit_id The credit_limit_id to filter by.
+     * @return Total number of matching netting sets.
+     */
+    std::uint32_t count_netting_sets_by_credit_limit_id(const std::string& credit_limit_id);
+
+    /**
+     * @brief Lists netting sets filtered by credit_limit_id, with pagination.
+     *
+     * @param credit_limit_id The credit_limit_id to filter by.
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of matching netting sets for the requested page.
+     */
+    std::vector<domain::netting_set> list_netting_sets_by_credit_limit_id(
+        const boost::uuids::uuid& credit_limit_id, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active netting sets filtered by credit_limit_id.
+     *
+     * @param credit_limit_id The credit_limit_id to filter by.
+     * @return Total number of matching netting sets.
+     */
+    std::uint32_t count_netting_sets_by_credit_limit_id(const boost::uuids::uuid& credit_limit_id);
 
 
     /**

@@ -46,6 +46,7 @@
 #include "ores.shell/app/commands/trading/equity_barrier_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_digital_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_forward_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_position_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_position_option_underlying_commands.hpp"
@@ -74,6 +75,7 @@
 #include "ores.shell/app/commands/trading/party_role_type_commands.hpp"
 #include "ores.shell/app/commands/trading/payoff_type_commands.hpp"
 #include "ores.shell/app/commands/trading/price_type_commands.hpp"
+#include "ores.shell/app/commands/trading/range_bound_commands.hpp"
 #include "ores.shell/app/commands/trading/rate_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/return_type_commands.hpp"
 #include "ores.shell/app/commands/trading/risk_participation_agreement_instrument_commands.hpp"
@@ -127,6 +129,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     equity_barrier_option_instrument_commands::register_commands(root_menu, session);
     equity_digital_option_instrument_commands::register_commands(root_menu, session);
     equity_forward_instrument_commands::register_commands(root_menu, session);
+    equity_instrument_commands::register_commands(root_menu, session);
     equity_option_instrument_commands::register_commands(root_menu, session);
     equity_position_instrument_commands::register_commands(root_menu, session);
     equity_position_option_underlying_commands::register_commands(root_menu, session);
@@ -155,6 +158,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     party_role_type_commands::register_commands(root_menu, session);
     payoff_type_commands::register_commands(root_menu, session);
     price_type_commands::register_commands(root_menu, session);
+    range_bound_commands::register_commands(root_menu, session);
     rate_instrument_commands::register_commands(root_menu, session);
     return_type_commands::register_commands(root_menu, session);
     risk_participation_agreement_instrument_commands::register_commands(root_menu, session);

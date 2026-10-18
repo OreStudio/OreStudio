@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 239695F8-8486-404B-ADBC-85EFD1D0612F
+:END:
+#+title: User Journey: Import one dataset in isolation
+#+description: A reference-data maintainer imports only conventions, or only curves, to fix one dataset without touching the rest of the party's data.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A reference-data maintainer imports only conventions, or only curves, to fix one dataset without touching the rest of the party's data.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I have a corrected =conventions.xml= or =curveconfig.xml= and I want that one
+dataset replaced, not the party's whole configuration." The journey is done when
+the named dataset is stored, a report reads it, and nothing else in the party
+changed.
+
+* Actor and trigger
+
+The actor is a reference-data maintainer who holds =refdata::conventions:write=
+for a conventions file, or the run-document write for a curve file. The trigger
+is a wrong day count, a moved calendar, a bad curve pillar, or a vendor file that
+corrects one family. The journey starts with one file and ends when the person
+has read the affected family and confirmed the rest is untouched.
+
+* Steps
+
+1. *Choose the dataset.* The person decides whether the file carries
+   conventions, curves, today's market or pricing engines. The choice is the
+   file, because ORE's run document names each document separately.
+2. *Prepare a minimal run.* The person builds a small input directory with
+   =ore.xml= naming only that one file, or takes an exported run directory and
+   removes the documents this import must not touch.
+3. *Import the file.* The person runs =ore import-run <report_definition_id>
+   <src_dir>=. The system parses the run document and the named file, binds the
+   document under the report definition, and saves it.
+4. *Check the one family.* The person opens the conventions screen or the curve
+   screen and reads the rows the file carried.
+5. *Check that the rest held.* The person compares another family or another
+   curve configuration with what it held before.
+
+If the fix is a single convention row rather than a file, the person edits it on
+the conventions screen and saves it through =refdata.v1.<plural>.put=. That is
+the authoring journey, not this one.
+
+* On success
+
+The run import prints the stored file. The affected family or curve reads the
+new values with a new version and a change reason. The other families, curves,
+market data and trades keep their versions.
+
+* On failure
+
+A parse error refuses the import before any write. A file the run document names
+but the directory does not hold is refused. A save that fails after an earlier
+document stored leaves the earlier document stored. The run import does not undo
+conventions on a later failure. A conventions save writes each family in its own
+write, so a failure partway leaves the earlier families written. Nothing in the
+shell names the family that failed.
+
+* What must never happen
+
+- The import must never delete the datasets the file omits. The save adds and
+  replaces, and tenor basis swap leg forms are the one thing it closes when they
+  are omitted.
+- The import must never write a family the person did not choose. That is why the
+  run document carries one file.
+- The import must never leave another dataset's rows altered by a side effect of
+  the save.
+- The import must never store a curve against another party's run.
+
+* Screens and entry points
+
+There is no import screen. The entry points are =ore import-run= and
+=ore export-run=. The conventions screen can save one convention but cannot
+accept a file. There is no shell verb that stores a lone conventions or curve
+file.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =conventions_document= | The family rows the file carries | |
+| =curve_configuration_document= | The curve definitions | |
+| =report_definition=, =run_document= | The binding the import stores against | |
+| =swap_convention= or the named family | The rows the person checks | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Choose the dataset | No operation: the person chooses the file | none | n/a |
+| Prepare a minimal run | No operation: the person edits the input | none | n/a |
+| Import the file | Start the run import | =ore.v1.ops.import_run_configuration= | exists |
+| Import the file | Store conventions | =refdata.v1.conventions_documents.put= | exists |
+| Import the file | Store curves | =refdata.v1.curve_configuration_documents.put= | exists |
+| Check the one family | Read the conventions | =refdata.v1.conventions_documents.get= | exists |
+| Check the rest held | Read another configuration | the owning service's read | exists |
+
+* What is missing
+
+1. *No standalone file import.* Every dataset travels in a run directory. The
+   person builds a fake run to import one file.
+2. *No family scope.* The person cannot say "store only the swap family" and let
+   the server take the rest of the file as unchanged context.
+3. *No per-family result.* The shell reports the file, not the family or row
+   counts.
+4. *No merge preview.* The screen cannot show which rows would be replaced before
+   the save.
+
+* Related journeys
+
+- [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party with its conventions and portfolio]] - the same mechanism for a whole party.
+- [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] - when the one family refuses.
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Define the conventions for an instrument]] - the screen path for one row.
+- [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]] - when the import stops.
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

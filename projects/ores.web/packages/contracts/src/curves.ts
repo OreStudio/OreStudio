@@ -19,6 +19,7 @@
  *
  */
 
+import { wireTimestampSchema } from '@ores/wire-protocol/time';
 import { z } from 'zod';
 
 /**
@@ -28,7 +29,8 @@ import { z } from 'zod';
  * the server's answer without its success and message fields. These shapes are
  * what the browser parses, so a change on either side fails loudly on the side
  * that is stale. A value is text, as the server holds it. A node no point
- * states has an empty value.
+ * states has an empty value. Every market instant here was a `time_point` on
+ * the server, so it is an instant in the wire shape and nothing else.
  */
 
 /** A node of the declared grid, with the change its row shows over a range. */
@@ -40,7 +42,7 @@ export type CurveNode = z.infer<typeof curveNodeSchema>;
 
 /** One market instant of an evolution: a value for every node, empty where none stands. */
 export const curveInstantSchema = z.object({
-    as_of: z.string(),
+    as_of: wireTimestampSchema,
     values: z.array(z.string()),
 });
 export type CurveInstant = z.infer<typeof curveInstantSchema>;
@@ -58,19 +60,19 @@ export const pointProvenanceSchema = z.object({
     modified_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
     derivation_config_id: z.string(),
     derivation_config_version: z.number(),
-    source_as_of: z.string(),
+    source_as_of: wireTimestampSchema,
 });
 export type PointProvenance = z.infer<typeof pointProvenanceSchema>;
 
 export const curveSnapshotSchema = z.object({
-    as_of: z.string(),
+    as_of: wireTimestampSchema,
     coordinate_fields: z.array(z.string()),
     nodes: z.array(curveNodeSchema),
     values: z.array(z.string()),
-    recorded_at: z.array(z.string()),
+    recorded_at: z.array(wireTimestampSchema),
     provenance: z.array(pointProvenanceSchema),
     oldest_age_seconds: z.number(),
     spread_seconds: z.number(),

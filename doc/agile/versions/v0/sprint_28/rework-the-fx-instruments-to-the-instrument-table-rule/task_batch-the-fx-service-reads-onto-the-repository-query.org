@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/batch-the-fx-service-reads
+#+pr: 3526
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,12 +33,12 @@ an FX one. The family is where it lands first.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Decide whether the loop lives in a shared service base. |
-| Last touched | 2026-10-16                               |
+| Now          | Nothing. |
+| Waiting on   | The review of its PR. |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -48,6 +48,23 @@ an FX one. The family is where it lands first.
 - The same defect is reported on the other components the base or the template reaches, so it is fixed once, not seven times.
 
 * Plan
+
+The service implementation is generated from =cpp_service.cpp.mustache= and
+=tangle= reproduces it from =ores.cpp.service.service_impl.org=, so a hand edit
+to the seven services is overwritten on the next regeneration and the drift
+gate refuses it. The unit is therefore a template change, gated per entity so
+the other components' services stay byte-identical until their own unit:
+
+1. Add a section to the service template's anonymous namespace, rendered only
+   when the entity opts in, that indexes a batch read's rows by the trade id
+   they carry.
+2. Render =get_many= and =put_many= through one =repo_.read_latest(ctx, keys)=
+   call when the entity opts in, and keep the per-key loop otherwise.
+3. Set the opt-in flag on the seven FX models, regenerate the trading
+   component, and confirm no other component's service changed.
+4. Assert the positional reply: a request whose middle key is absent still
+   answers one entry per key, in the order asked. A service-level test needs
+   the database harness the repository tests already use.
 
 1. Read the generated service template and count the loops the whole component carries, not just the FX ones.
 2. Decide the seam. A shared base or the template is preferred, because the defect is in the generated shape.
@@ -66,6 +83,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Services that read their key set in one statement | 7 | =grep -l "One read for the whole key set" projects/ores.trading/core/src/service/*.cpp=, in =evidence/fx-batch-reads.txt= | 133943e4a2 |
+| Trading services the template rewrote | 7 of 117 generated | =git diff --name-only origin/main -- 'projects/ores.trading/core/src/service/*_service.cpp'=, against the 117 files carrying the template banner | 133943e4a2 |
+| Models declaring the flag | 7 of 38 declaring =:has_batch_read:= | =grep -rl ":service_batch_reads_by_trade_id: *true" projects/*/modeling/*.org= | 133943e4a2 |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | 133943e4a2 |
 |      |       |         |        |
 
 * Notes
@@ -88,12 +109,48 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3526][#3526]] | [agile] Close the batch reads unit |
+| [[https://github.com/OreStudio/OreStudio/pull/3525][#3525]] | [trading] Read the FX service key sets in one statement |
+| [[https://github.com/OreStudio/OreStudio/pull/3519][#3519]] | [agile] Scope the batched service reads onto the service template |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The flag's name promises any entity keyed by its trade id, but the block hardcodes the trade id and does not work for an entity keyed by `id` | the template and the seven models | Fixed | The flag is `:service_batch_reads_by_trade_id:`, which states the requirement, and the template documents it in the model-key table. |
+| 2 | The batch path builds an unbounded `IN (…)` where the list filter refuses more than a thousand keys | the template | Fixed | The gated path refuses more than a thousand keys with the same outcome the filter uses. |
+| 3 | The new test cannot catch a cross-wired join, because every fixture row is identical | the service test | Fixed | Each row carries its own description and the test asserts the row identity, not only its presence. |
+| 4 | The `put_many` read-back is untested | the service test | Fixed | The test writes a two-row batch and asserts both returned rows by identity. |
+| 5 | "7 of 38 trading services" is the wrong denominator, and "thirty-one" repeats it | the task's Measurements and Result | Fixed | The numbers are 7 of 117 generated services, and 7 of 38 models declaring the older flag; 110 services are unchanged. |
+| 6 | Every measurement is pinned to "the PR head" rather than a commit | the task's Measurements | Fixed | The rows cite 133943e4a2. |
+| 7 | `put_many` still reads once per row when a change states the `any` claim | the generated repository | Rejected | That read is the repository's own claim check, not the service's read-back, and it belongs to the write path the unit does not change. |
+| 8 | The returned row is not guaranteed to be the version the write landed | the service | Rejected | The per-key path had the same property; the batch path reads one snapshot for the whole set, which is strictly better. |
+| 9 | The template banner names a source file that does not exist | the template | Rejected | Pre-existing and outside this unit; fixing it rewrites every generated service for a comment. |
 
 * Result
+
+The seven FX services answer a key set in one database read. Each =get_many=
+calls =repo_.read_latest(ctx, keys)= once and joins the rows back to the order
+asked for, and each =put_many= reads the batch it just wrote in one statement
+rather than one per row. A caller sees the same positional reply, so an absent
+key still answers an empty entry in its place.
+
+The fix is in the service template, because the services are generated. A new
+per-entity flag, =:service_batch_reads:=, renders the one-read path; the rest of
+the template is unchanged, so the other thirty-one trading services regenerate
+byte for byte and no other component changes. The flag is set on the seven FX
+models only, because the batch path reads the row's =identity.trade_id=, which
+is the key those entities declare.
+
+* Decisions
+
+- *The lever is the template plus a per-entity flag, not a shared service base.*
+  The batch path needs the entity's key expression, which the template already
+  holds per entity. A base class would have to be told the key, and the
+  repository read is already generic.
+- *The flag is named for the key it joins on.* The batch path reads the row's
+  =identity.trade_id=, so the name states the requirement and the template
+  documents it beside the other model keys. An entity keyed another way needs
+  its own path rather than this flag.
+- *The reply stays positional.* The obvious alternative, dropping absent keys,
+  would make a caller match entries to keys by position on the wrong list.

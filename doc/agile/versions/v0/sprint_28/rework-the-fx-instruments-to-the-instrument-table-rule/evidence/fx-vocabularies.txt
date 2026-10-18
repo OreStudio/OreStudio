@@ -1,0 +1,6 @@
+command: git diff origin/main -- 'projects/ores.trading/modeling/*.org' | grep -c '^-.* in ('
+10
+barrier check count:
+13
+digital trade-type checks:
+4

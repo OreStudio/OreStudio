@@ -1,0 +1,627 @@
+:PROPERTIES:
+:ID: 7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6
+:END:
+#+title: User Journey: Create a report
+#+description: A tenant administrator or market-risk owner names a report, binds the configurations it reads, reads the analytics the bound configuration carries, saves it, reads back exactly what was written, and leaves it on demand or hands it to the schedule journey. The analytics are set on the shared screen that manages them.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator or market-risk owner names a report, binds the configurations it reads, reads the analytics the bound configuration carries, saves it, reads back exactly what was written, and leaves it on demand or hands it to the schedule journey. The analytics themselves are set on the one screen that manages them, which this journey links.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I need a new report that runs our analytics over my portfolio, and I need to be
+sure it can actually run before I schedule it."
+
+The person has a question the existing reports do not answer: another analytic
+set, another portfolio, another party. They want a report definition they can run
+and, later, schedule. The second half of the sentence is the hard one. A report
+that runs nothing, or that runs an analytic whose input nothing produces, looks
+complete on the screen and fails on the grid. The person wants the screen to say
+what the definition needs before it leaves their hands, and to say plainly where
+it cannot: nothing today answers "what does this report need in order to run"
+beyond the configuration types its report type requires.
+
+The journey is done when a definition exists that reads back as the person wrote
+it: a name, a report type, five bound configurations, the analytics the bound
+configuration carries with their settings, and a portfolio scope. It has never
+run, and the front door already draws that state.
+
+The analytics are not chosen here. They belong to the run settings configuration
+the person binds, they are set on the one screen that manages them, and this
+journey reads them and links there.
+
+* Actor and trigger
+
+A tenant administrator or a market-risk owner runs this journey. The
+administrator creates reports for the tenant's parties; the market-risk owner
+creates the report the desk or the committee asks for. Both act inside one
+party, and the party of a new definition is the party of the session, not a
+choice.
+
+The trigger is a request for a report that does not exist yet. A regulator asks
+for exposure profiles the party does not produce, a committee wants the same
+numbers over a portfolio nobody configured, or a party joins the group and needs
+the reports its siblings already run. The person opens
+[[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]], finds
+no row that answers the question, and presses Create.
+
+This journey writes a definition and the bindings it makes, and creates no run.
+The analytic rows and their settings belong to the configuration and are written
+on Manage the analytics, which this journey links. Nothing in the application
+creates a report today: no BFF route serves reporting, and the definitions that
+exist were seeded. The screen this journey describes does not exist, and the
+operations below are the ones it would send.
+
+* Steps
+
+The journey is the standard steps UI, the one the system bootstrap journey uses.
+A step carries an id, a title for the rail, a lead sentence and a body, and the
+last one is final; the rail is drawn from the same list, so the rail and the
+steps cannot disagree
+([[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]]). Going back is
+refused at the first step, and at a final step
+([[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], section *The rail*).
+
+The rail is fixed at eight steps: what it is, one step for each of the five
+configuration types it binds, the analytics the bound configuration carries, and
+the final review. The rail, the step numbering and the step foot are one list, so
+all three agree at every moment.
+
+The rail used to be computed from what the report runs: seven fixed steps, then
+one step for every analytic that was on in =display_order=, then the review. Those
+analytic steps are gone. Analytic management belongs to one screen,
+[[file:../../prototypes/reporting/manage-the-analytics/][Manage the analytics]],
+and *What it runs* reads the set and links there. A rail that renumbers itself for
+a write made on another screen told the person nothing they could act on here.
+
+The five configuration types get one step each, in the order
+=report_type_configuration_types= states and the seeder writes: =conventions=,
+=pricing_engines=, =todays_market=, =curve_configuration= and
+=risk_report_config=. One step for all five said what each slot supplied and
+left the reader to work out what the choice decides. Four of the five steps
+therefore carry the same four parts: what binding a configuration of that type
+means, where its data lives, the picker for the configuration this report binds,
+and what the binding reaches and what it does not. The conventions step is the
+exception: it reads the set the bound configuration carries, the kinds that are
+bound and the ones that are not, and it links to the shared screen that owns the
+per-kind choice.
+
+1. *What it is.* The person types a =name= and a =description=, and chooses a
+   =report_type= from a combo box. The combo box reads
+   =ores_reporting_report_types_tbl=, and the type is a category that also names
+   the workflow which runs the report. One type is registered today: =risk=, the
+   full ORE risk analytics run, which names =report_execution_workflow=. More
+   types are expected, so the control is a combo box reading the table rather
+   than a fixed set of choices: a type added as a row must appear without a code
+   change. The name is unique within the party, so the screen refuses a name the
+   party already uses and says which row holds it. The definition is created
+   official unless the person clears =is_official=, and an official report never
+   reads a sandbox: its scope cannot name a sandbox portfolio or a virtual book.
+   The screen states that rule where the flag sits, because a person who clears
+   it is widening what the report reads. The step also asks for the
+   =concurrency_policy=, which decides the state a run is born in: skip, queue,
+   or fail.
+
+2. *The conventions it binds.* A convention is the set of market terms an
+   instrument is built on: the day count, the calendars, the payment frequency,
+   the index, and the other terms its instrument family fixes before a trade
+   exists. A =conventions= configuration is a reporting row of type
+   =conventions= whose detail lives with =ores.refdata=, so binding it decides
+   what every trade in the run means. The same trade read under two convention
+   sets gives two different numbers, and neither of them is a mistake.
+
+   The reporting model does not name one document per convention kind.
+   =ores_reporting_configurations_tbl= carries a name, a configuration type and
+   an owning component and no document column. The conventions document refdata
+   owns is one document for the party, read with
+   =refdata.v1.conventions_documents.get=, which takes a party and not a
+   configuration, and it holds one vector per convention kind. There is no
+   per-kind choice in a report: conventions are named convention sets, a system
+   holds few of them, and what a set holds is decided in authoring, which is its
+   own UX and is deferred.
+
+   The convention entities live in =projects/ores.refdata/modeling/= as
+   =ores.refdata.<instrument>_convention.org=. There are 25 curated kinds: 25
+   =ores_dq_*_conventions_artefact_tbl= tables and 25 vectors in the conventions
+   document agree. The folder holds 26 models because it also holds
+   =tenor_convention=, which has no curated artefact table.
+   =ores.refdata.bond_yield_convention.org=,
+   =ores.refdata.cds_convention.org= and
+   =ores.refdata.average_ois_convention.org= are three of the 25.
+   =doc/knowledge/journeys/conventions/= states what a convention is, and which
+   reference data lists it picks from.
+
+   The person chooses one convention set the party holds, from the candidates
+   =reporting.v1.configurations.list_by_configuration_type_code= returns, and the
+   binding is written with =reporting.v1.report_configurations.put=. This step is
+   one page of sets: a row per set with its name, its purpose, the number of kinds
+   it covers and whether it is the one this report uses, and a radio that chooses
+   it. It draws no per-kind table and no alternative per kind, because what a set
+   holds is decided in authoring. One link leaves the page for that authoring UX,
+   and it is marked as not in this MR. The names, purposes and counts on the page
+   are a fixture: no table stores a set's name or purpose, nothing marks the
+   document a run reads for a kind, and the configuration carries no children.
+   [[file:../../prototypes/reporting/create-a-report/][Create a report]] draws the
+   page, and the story [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the
+   convention sets a report chooses]] holds the decision and the gaps.
+
+   The binding reaches every instrument family the set covers, on every run of
+   every definition that binds the configuration, and the day count and calendars
+   every analytic reads through it. It creates no convention and edits none, and
+   it names no market data: the reference data lists a convention picks from are
+   untouched.
+
+3. *The pricing engines it binds.* A pricing engine configuration is ORE's
+   =pricingengine.xml=. For each product it names the pricing model, the
+   numerical engine that evaluates the model, and the parameters the two take.
+   Binding it decides how a trade is priced, not what it is priced from: a
+   European swaption mapped to BlackBachelier and a Grid engine carries a
+   different number from the same swaption mapped to LGM and AMC. A product the
+   configuration carries no row for has no model in this run.
+
+   The data lives in =projects/ores.analytics/modeling/=: 
+   =ores.analytics.pricing_model_config.org= is the document,
+   =ores.analytics.pricing_model_product.org= is one row per pricing engine type
+   naming the model and the engine, and
+   =ores.analytics.pricing_model_product_parameter.org= holds the model, engine
+   and global parameters as name and value rows. The person picks one
+   configuration with =reporting.v1.configurations.list_by_configuration_type_code=
+   and writes the binding with =reporting.v1.report_configurations.put=.
+
+   *No screen holds a pricing engine configuration.* The application has no route
+   that reads or edits one, and the step states that rather than drawing a link
+   that would not resolve.
+
+   The binding reaches every analytic that prices a trade, npv first and every
+   exposure figure built on it, and the parameters of every product in the
+   document. It does not choose the market data or the curves: a model fits to
+   the curves the run builds, and those belong to the two steps after this one.
+
+4. *The market data it binds.* A today's market configuration is ORE's
+   =todaysmarket.xml=. It holds the data a run prices against as up to
+   twenty-four collections, such as =DiscountingCurves=, =FxSpots= and
+   =SwaptionVolatilities=, each with its own ordered entries. It also holds named
+   configuration blocks, and a block selects one collection of each kind by id,
+   so a report names a coherent set of curves and volatilities instead of
+   restating them. Binding it decides which block each market role reads. The
+   role is ORE's own, pricing and simulation among them, and reporting holds the
+   binding and not the data it names.
+
+   The data lives in =projects/ores.analytics/modeling/=:
+   =ores.analytics.todays_market_collection.org= is one collection with its
+   identity, its kind and its entries;
+   =ores.analytics.todays_market_configuration.org= is one configuration block,
+   and =ores.analytics.todays_market_configuration_binding.org= is one collection
+   reference the block makes. The role a run binds is a row of
+   =ores.reporting.configuration_market_binding=, and the journey's own write for
+   it is =reporting.v1.configuration_market_bindings.put=. The person picks the
+   configuration with
+   =reporting.v1.configurations.list_by_configuration_type_code=, and the binding
+   of the definition is written with =reporting.v1.report_configurations.put=.
+
+   *No screen holds a today's market configuration*, so the step states that.
+
+   The binding reaches every price the run produces, and the curves as they are
+   built, because the quotes a curve recipe names come from here. It holds
+   references by name and not prices: the recipe that turns a quote into a curve
+   is the next step's configuration. It does not fix a valuation date either; the
+   date the run reads is a setting of the run settings step.
+
+5. *The curve configuration it binds.* A curve configuration is ORE's
+   =curveconfig.xml=, which is the set of recipes a run builds its curves from. A
+   recipe names a curve, its definition, the segments it is built from, the
+   quotes that feed each segment, and how it is bootstrapped. The document also
+   writes the volatility and correlation sections that the option analytics read.
+   Binding it decides which recipes the run has: without the recipe the curve is
+   not built, whatever the market quotes.
+
+   The data lives in =projects/ores.refdata/modeling/=:
+   =ores.refdata.curve_configuration.org= is the document, its identity and the
+   sections it writes, and the curves themselves are rows of =curve_definition=,
+   with the segments and quotes hanging off those.
+   =ores.refdata.curve_configuration_section.org= is one row per section element
+   the document writes, empty or not, because =BaseCorrelations= and
+   =Correlations= appear empty in the corpus and the export writes them back. A
+   curve configuration is registered as a reporting configuration, which is how a
+   definition binds it.
+
+   *No screen holds a curve configuration*, so the step states that.
+
+   The binding reaches every analytic that discounts, projects or reads a
+   volatility, and it decides what the curves analytic writes, which is the one
+   place where a curve built the wrong way can be seen. It holds no quote, because
+   the quotes are entries of the market data configuration, and it builds nothing:
+   the run builds the curves, and this journey creates no run.
+
+6. *The run settings it binds.* A risk report configuration holds the ORE-level
+   run settings a party shares: the base currency, the observation model, the
+   number of threads, the market data type and date, and the ORE flags such as
+   =continue_on_error= and =imply_todays_fixings=. It also carries the VaR and
+   SIMM settings. Binding it decides how the run behaves rather than what it
+   reads: the currency the figures are stated in, how many threads price them,
+   and what happens to a trade that fails to price.
+
+   The data lives in =projects/ores.reporting/modeling/=:
+   =ores.reporting.risk_report_config.org= is one row per named configuration of
+   a party, and its name is also the name of the reporting configuration a
+   definition binds. =ores.reporting.configuration.org= is that named, reusable
+   configuration, whose kind comes from =configuration_type= by foreign key rather
+   than from a text code.
+
+   *No screen holds a risk report configuration*, so the step states that.
+
+   The configuration also carries the analytics the report runs and the portfolio
+   and book scope. **The scope lives here and not on the definition**, in
+   =ores_reporting_risk_report_config_portfolios_tbl= and
+   =ores_reporting_risk_report_config_books_tbl=, which is why the definition
+   chooses no portfolio: a definition binds a configuration, and the
+   configuration names the portfolio the run reads. Two definitions that bind one
+   configuration read one scope.
+
+   The binding reaches the behaviour of every run of every definition bound to
+   it, the analytics the next step changes, and the scope. It carries no market
+   data, no curve and no model. *No operation in this journey's set writes these
+   settings or the scope*: both come from the seeder, and the step reads them
+   rather than offering a choice.
+
+7. *What it runs.* These are the analytics of the run settings configuration
+   the previous step bound, not of the definition. A
+   =configuration_analytic= row hangs off that configuration, so every
+   definition bound to it runs the same set, and a set that must differ belongs
+   to a configuration of its own. The step reads the vocabulary with
+   =reporting.v1.analytic_types.list= and the set with
+   =reporting.v1.configuration_analytics.list_by_configuration_id=, and it names
+   these fourteen analytic types, which are the whole vocabulary: =npv=,
+   =sensitivity=, =cashflow=, =curves=, =simulation=, =saccr=,
+   =parametricVar=, =portfolioDetails=, =creditcurves=, =pfe=, =calibration=,
+   =pnlExplain=, =historicalSimulationVar= and =xva=.
+
+   *The step is a reading and a link, not a second implementation.* It shows the
+   set the configuration currently has: the count that is on, the list with each
+   analytic's =display_order=, a one-line statement of what each produces, and
+   the rows that are on the configuration and off, kept apart from the types that
+   carry no row at all. It also shows the incompatibility state: when =pfe= is on
+   and =simulation= is off, the rule strip states that the set cannot run, both
+   rows are marked, and the save refuses the pair.
+
+   *The analytics are set on Manage the analytics.* That screen owns the whole
+   interaction: the switchboard of every type with the on/off control, the
+   =display_order= and a one-line summary; a step for each analytic that is on,
+   titled with its name, carrying what the analytic is, how it is calculated, and
+   every parameter with a control chosen for the shape of its value, a note on
+   what the parameter means and what a normal value looks like; and a final step
+   that reads the set back. An analytic that takes no parameter says so there. The
+   step links to it, and a build that omits the link would be asking a person to
+   leave the wizard with no way to find the screen that changes the set.
+
+   Turn one off and the write is =active= false, never a deletion: the row keeps
+   its =display_order= and its =configuration_analytic_parameter= rows and reads as
+   off, so a later reader can see the report used to produce it. *No control on
+   either screen deletes a row*. The shared screen asks first before it turns one
+   off, because the parameter values leave its rail with the step.
+
+   =pfe= reads a cube that =simulation= writes, so a report that enables =pfe=
+   without =simulation= cannot work. *This stays a state, not a blocked click*:
+   the rule strip on *What it runs* marks both the =pfe= row and the
+   =simulation= row, the save refuses the pair, and the shared screen refuses the
+   toggle and refuses to read such a set back. The statement is honest about where
+   the rule lives: it is enforced by the ACME seeder, in
+   =generate_risk_config_data.py=, function
+   =check_exposure_needs_simulation=, and *nothing in the reporting service
+   validates it when a definition is written*. A caller that does not use this
+   screen can write the combination today, and the run fails later.
+
+   The analytic rows hang off the configuration, and the configuration is
+   shared, so the step states which other definitions bind the same configuration
+   and would run the changed analytic set from their next run. This is the one
+   place in the journey where a person's local choice reaches rows they did not
+   open, and the step says so rather than leaving it in a note.
+
+8. [@8] *Review and save.* The final step states every value before the write: the
+   name, the description, the report type, the official flag, the five bindings,
+   the analytics with their =active= and =display_order= as the bound
+   configuration holds them, the parameter values, and the portfolio scope. The
+   analytics and their settings are read here and written on the shared screen;
+   this journey writes neither. On confirmation the screen sends
+   =reporting.v1.report_definitions.put= for the definition, after the binding
+   writes of the steps before it. The definition is written on
+   demand: =schedule_expression= is empty and =scheduler_job_id= is null. Its
+   =fsm_state_id= is null until first activation, =run_grant_id= is null until the
+   grant is created at admission, =pre_processing= is =execute=,
+   =prepared_input_key= is empty, =post_processing= is =execute=, and
+   =concurrency_policy= is the policy the person chose. Then the screen reads the
+   definition back with =reporting.v1.report_definitions.get= and shows the stored
+   row rather than the values the person typed, so the new row reads beside the
+   party's other definitions. The definition is bitemporal, so an edit writes a new version and a
+   past run keeps the version it ran under.
+
+   It has never run. There is no =report_instance= for it, so the front door
+   draws it as never run, which is a state
+   [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]]
+   already draws for the definitions the seed writes. =run_grant_id= is empty:
+   the grant every run acts under is created at admission, by whichever act needs
+   it first, scheduling or a person asking, so a definition that has never been
+   scheduled can still run on demand.
+
+   This step is final, so *Back is refused from it*, and the rail says so: the
+   mark beside the review carries the final flag, and the step offers no Back
+   ([[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]], section *The
+   rail*). Once the review has stated every value and the definition is written,
+   there is no earlier state to return to. From here the person either stops, with
+   a definition they can run when they want, or goes on to
+   [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] and
+   gives it a recurrence. This journey writes no schedule, and nothing here makes
+   the report produce anything: it creates the definition that a run or a
+   schedule then uses.
+
+* Screens and wireframes
+
+One screen on the standard steps UI: the rail the system bootstrap journey draws,
+with the step list as its only source. The rail is fixed at eight steps, and it
+does not move while the person works: *What it is*, *The conventions it binds*,
+*The pricing engines it binds*, *The market data it binds*, *The curve
+configuration it binds*, *The run settings it binds*, *What it runs*, then
+*Review and save*. The configuration steps follow the order
+=report_type_configuration_types= states and the seeder writes. The rail marks
+each entry done, current or ahead, and it knows position only: it cannot say how
+many items a save would refuse. The step foot carries Back unless going back is
+refused, which it is at the first step and at a final step
+([[id:6A63AAC7-4869-493A-97E7-55B919874784][Journey runtime]]); the review is
+final, so it draws no Back at all.
+
+A second screen holds the analytic interaction:
+[[file:../../prototypes/reporting/manage-the-analytics/][Manage the analytics]].
+It is where the set is built, where every parameter is set, and where the pair
+=pfe= and =simulation= is refused. *What it runs* reads the set that screen
+leaves and links to it.
+
+The screen writes two kinds of row and reads each one back: the definition and
+its bindings. The analytic rows and the parameter rows are read and named, and
+written on the shared screen. Two of its answers are absences it must state
+rather than draw round. The first is the checklist: the screen can name the
+configuration types the report type requires, and it cannot name what else a run
+needs. The second is the analytic rule: the rule strip on *What it runs*, the
+marks on both rows and the refused save exist because the seeder enforces that
+pair, and no service check exists to point at. A third is where the configuration
+data lives: only conventions has a screen, and the other four are stated as
+missing. Each configuration step therefore carries its own explanation, its own
+picker, its own answer about the screen, and what the binding reaches.
+
+=?step=N= is numeric over the eight steps, and it is stable, because the rail does
+not move. =?pfe=without-simulation= opens the draft with the rule broken, so the
+rule strip on *What it runs* can be read without changing two rows by hand.
+Nothing here carries an analytic's step number, because an analytic has no step on
+this screen.
+
+#+caption: Create a report on the standard rail: what it is, one step for each of the five configurations it binds, the analytics the bound configuration carries, and review and save. The analytics step reads the set and links to the screen that manages it.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_create_a_report.png]]
+
+* Prototype
+
+The [[file:../../prototypes/reporting/create-a-report/][prototype]] draws this
+journey on the standard steps UI, and
+[[file:../../prototypes/reporting/create-a-report.org][its design note]] says what
+it follows and what is fake. It belongs at
+=doc/prototypes/reporting/create-a-report/=.
+
+The analytics are not drawn there. They are set on
+[[file:../../prototypes/reporting/manage-the-analytics/][Manage the
+analytics]], which the journey links and which owns the whole analytic
+interaction. Its [[file:../../prototypes/reporting/manage-the-analytics.org][design
+note]] says what it argues.
+
+The prototype must draw the rail the system bootstrap journey uses, with done,
+current and ahead marks and no Back on the final step, and it must be eight
+steps: what it is, one step for each of the five configuration types, the
+analytics the bound configuration carries, and the final review, all numbered from
+one list. It must draw one step for each of the five configuration types, each
+with what binding a configuration of that type means, where its data lives, the
+picker, and what the binding reaches. *What it runs* must be the read-only
+summary of the set the bound configuration carries: the count that is on, the list
+with their =display_order=, the rows kept off, the broken =pfe=/=simulation= pair
+as a visible state with the rule stated and the seeder named as where it lives,
+and the link to the shared screen. It must draw the scope read off the bound
+configuration, since no operation writes it, and a review that names the field
+values rather than counting them. It must label every drawn value a fixture,
+because no operation here creates a report and no service check exists for the
+analytic rule it refuses.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =report_definition= | The row this journey creates: =name=, =description=, =report_type=, =is_official=, =concurrency_policy=, =pre_processing=, =prepared_input_key=, =post_processing=, and the =fsm_state_id= and =run_grant_id= that stay empty until a run | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =report_configuration= | One row per configuration the definition binds, where the configuration type is the slot | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+| =configuration= | The named, reusable configuration the party holds, and the component that owns its detail | =ores.reporting.configuration= |
+| =configuration_analytic= | The analytics the configuration runs: =analytic_type_code=, =display_order= and =active= | =ores.reporting.configuration_analytic= |
+| =configuration_analytic_parameter= | One setting of one analytic: =parameter_name=, =value= and its position | =ores.reporting.configuration_analytic_parameter= |
+| =analytic_type= | The vocabulary the picker offers | =ores.reporting.analytic_type= |
+| =report_type_configuration_type= | The configuration types a report type cannot start without, which is the checklist half the screen can show | =ores.reporting.report_type_configuration_type= |
+| =risk_report_config= | The run settings a party shares, and the portfolio and book scope the definition reads | =ores.reporting.risk_report_config= |
+| =party= | The owner of the definition, fixed from the session | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+| =portfolio= | The scope the report reads | [[id:282C87C1-11E1-42F0-BEE6-D6983A5F836B][ores.refdata.portfolio]] |
+
+The definition is the row the journey creates and the other rows are what it
+reaches: a binding names a configuration, the configuration owns the analytics,
+and each analytic owns its parameters. That chain is why *What it runs* says whose
+rows the analytics are, and why it links to the screen that changes them. A person
+who changes the analytic set of a shared configuration changes what every
+definition binding it runs, and no copy stands between them. It is also why the
+set on *What it runs* is a reading of
+=configuration_analytic.display_order= on the configuration the person bound, so
+the same report set up against another configuration reads a different set.
+
+The scope is two levels down that chain: =risk_report_config= holds it in
+=ores_reporting_risk_report_config_portfolios_tbl= and
+=ores_reporting_risk_report_config_books_tbl=, keyed by that row. The definition
+carries no portfolio field at all.
+
+Every row above carries =party_id= and is party-scoped by row-level security. The
+definition is bitemporal, so an edit writes a new version and a past run keeps
+the version it ran under. The analytic rows and their parameters are temporal
+too: turning an analytic off sets =active= false and writes a version, so the
+row stays readable.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| What it is | The configuration types the report type requires | =reporting.v1.report_type_configuration_types.list= | exists |
+| Every configuration step | The configurations of one type the party holds | =reporting.v1.configurations.list_by_configuration_type_code= | exists |
+| Every configuration step | Every configuration the party holds | =reporting.v1.configurations.list= | exists |
+| Every configuration step | Bind one configuration in its slot | =reporting.v1.report_configurations.put= | exists |
+| What it runs | The analytic vocabulary the summary names | =reporting.v1.analytic_types.list= | exists |
+| What it runs | Read the analytics of the configuration | =reporting.v1.configuration_analytics.list_by_configuration_id= | exists |
+| What it runs | Read the settings of the analytics that are on | =reporting.v1.configuration_analytic_parameters.list_by_configuration_analytic_id= | exists |
+| Manage the analytics, the switchboard and each analytic step | Write the whole analytic set at once | =reporting.v1.configuration_analytics.put_many= | exists |
+| Manage the analytics, each analytic step | Write one setting of one analytic | =reporting.v1.configuration_analytic_parameters.put= | exists |
+| The market data it binds | Bind a market role to a today's market configuration | =reporting.v1.configuration_market_bindings.put= | exists |
+| Review and save | Write the definition | =reporting.v1.report_definitions.put= | exists |
+| Review and save | Read the definition back | =reporting.v1.report_definitions.get= | exists |
+| The run settings it binds | Choose the portfolio the report reads | (no operation writes the portfolio scope) | missing |
+| The run settings it binds | Read what a portfolio scope is | (no operation reads =risk_report_config='s scope) | missing |
+| What it runs, the shared screen, and the save | Refuse =pfe= without =simulation= | (no service check; the rule lives in the ACME seeder) | missing |
+| What it is | Ask what else a run requires, beyond the configuration types | (no operation answers it) | missing |
+| (no step) | Create a report from the browser | (no BFF route) | missing |
+
+This journey writes two things here: a definition and its bindings. A person
+creating the next report runs the same writes again. The definition write is the
+only one that creates the row the front door then lists; the binding writes
+attach what the definition reads. The analytic rows and their parameters are
+written on Manage the analytics, and *What it runs* reads them.
+=configuration_analytics.put_many= is the one write of the analytic set there:
+turning a type on writes its row with the default value of each parameter, and
+turning one off writes =active= false and nothing else.
+
+Nothing in this journey's set creates a configuration. The person chooses among
+the ones the party already holds, which is why a party that holds none of a
+configuration type cannot finish this journey, and why *What is missing* records
+that gap rather than the screen drawing a Create button.
+
+Two of these writes reach rows the person did not open. A binding is shared with
+every definition that binds the same configuration, and an analytic row belongs
+to the configuration rather than to the definition, so the shared screen changes
+the next run of every definition binding it. The journey states this and no
+operation warns about it. Each configuration step states how many definitions
+already bind the configuration the person picks, and *What it runs* repeats the
+count for the run settings the analytics came from.
+
+No BFF route serves this screen. The prototype adds one, for example
+=POST /api/reporting/reports= for the definition and its bindings,
+=GET /api/reporting/reports/<definition-id>= for the read-back, and
+=GET /api/reporting/report-types/<report-type>/configuration-types= for the
+checklist half the screen can show. The handler authenticates the caller's token
+and checks a report-definition write code, which does not exist yet.
+
+* What is missing
+
+1. *Nothing validates the rule between two analytics.* =pfe= reads a cube that
+   =simulation= writes. That rule lives in the ACME seeder,
+   =generate_risk_config_data.py=, function =check_exposure_needs_simulation=,
+   and it is a guard over the seed's own data, not a constraint on the database
+   and not a check in the reporting service. A definition written by any other
+   caller can enable =pfe= without =simulation=, and nothing refuses it. The run
+   then fails, later, on the grid. The two screens this journey describes can
+   refuse the pair, and they cannot make the refusal true for callers that do not
+   use them. A report also needs at least one analytic: a run with none produces
+   nothing, and nothing states that either.
+2. *No operation answers what a report needs in order to run.*
+   =reporting.v1.report_type_configuration_types.list= names the configuration
+   types a report type cannot start without, and that is all. Nothing names the
+   analytics a run must enable, the inputs each analytic reads, or the pairs that
+   cannot work together. A screen therefore cannot show the full checklist a
+   definition must satisfy, and it cannot answer the person's question "can it
+   actually run" before the run. It can only show what it bound.
+3. *No operation writes or reads the portfolio scope.* The scope lives on the
+   =risk_report_config= row, in
+   =ores_reporting_risk_report_config_portfolios_tbl= and
+   =ores_reporting_risk_report_config_books_tbl=, and no operation in this
+   journey's set touches either table. The scope a definition reads is the scope
+   of the configuration it binds, and that configuration is built by the seeder.
+   A person who needs a scope no configuration carries cannot state it here.
+4. *Nothing creates the run settings inside a =risk_report_config=.* The base
+   currency, the observation model, the VaR and SIMM settings and the threading
+   are columns of a row this journey cannot write. When the party holds no
+   configuration with the settings a new report needs, the journey stops.
+5. *The refusal to save =pfe= without =simulation= is the screen's own rule.*
+   Manage the analytics draws it as a refusal, and this journey's save refuses the
+   pair too. A build would have to keep that rule in both screens, since no service
+   check exists, and a second client would have to keep it again. Consolidating
+   the analytic interaction into one prototype removes the third copy, and it does
+   not remove the second: the save is still this journey's.
+6. *No BFF route serves reporting, and nothing in the application creates a
+   report today.* Every definition that exists was seeded. This journey's screen,
+   its review, its read-back and its refusals are new, and it has no row in any
+   build to attach to.
+7. *No write permission is named for creating a definition.* The reads in this
+   journey's set are gated by the reporting service's read codes. No code names
+   the right to create a definition or to change a shared configuration's
+   analytics, and a person who may write one and not the other cannot be told
+   apart. The tenant administrator holds =*= and reaches everything.
+8. *The analytic set has no draft behind it, and it is written from another
+    screen.* Turning an analytic on writes its =configuration_analytic= row on the
+    shared configuration at once, and a parameter typed on its step writes a
+    =configuration_analytic_parameter= row at once, because those are the
+    operations the journey's set holds. No operation stages an analytic set for
+    one definition, and no operation undoes the writes of a screen that was given
+    up. A person creating a report therefore changes rows other definitions read
+    before the definition is saved, and this journey cannot stage that change or
+    take it back.
+9. *This screen cannot tell whether the analytics were changed, or when.* The
+    link to the shared screen is a link: it carries no state and reports nothing
+    on return. A person who leaves the wizard, changes the set, and comes back sees
+    the new set on *What it runs*, and the review states it, but nothing says
+    whether that screen was opened at all, by whom, or how long ago. The same is
+    true of a set another person changed while this one was working.
+10. *No operation orders the summary, and =display_order= is not an identity.*
+    =configuration_analytic.display_order= orders the list on *What it runs* and
+    the steps on the shared screen, and turning one analytic off leaves the order
+    of the others alone. No route, link or operation in the application carries an
+    analytic's position: nothing outside the shared screen can point at "step 9"
+    and still be right after the next change. The shared screen offers
+    =?analytic=<code>= for that reason, and this journey offers nothing of the
+    kind.
+11. *The rail cannot say that the set it reads is not fit to run.* The runtime's
+    rail marks position only: done, current or ahead. A report whose bound
+    configuration cannot run looks exactly like a report whose configuration can,
+    so the state is carried by the rule strip on *What it runs*, by the marks on
+    two rows and by the refused save, and nowhere on the rail itself.
+
+* Related journeys
+
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the front door this journey starts from, and the row that reads never run
+- [[id:933649DD-1F86-4B40-99FD-1D4316D39A46][Choose when a report runs]] — where a person goes when the definition is to run on a recurrence rather than on demand
+- [[id:76431668-8656-4276-9F9B-F292FE45B2CA][Run a report and watch it finish]] — the run a person starts once the definition exists, and the place a missing input surfaces
+- [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]] — where a report created with a pair that cannot work surfaces its failure
+- [[file:../../prototypes/reporting/manage-the-analytics.org][Manage the analytics]] — the shared screen that owns the analytic interaction this journey reads and links
+- [[id:465ca244-c488-4c69-aca3-c694d104a42a][Look back over a report's history]] — the runs a definition produces once it is used
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:D4938956-1A5E-4F67-BCE8-7A951CE957E9][Report definition and schedule]] — the definition, what it carries, and what belongs to a run instead
+- [[id:4F9639E5-AA68-4D47-BB05-8FA864FF9855][Report execution pipeline]] — the run a definition then produces, and the input a preprocessing step prepares
+- [[id:F1B83A47-E029-4D78-9A56-31B7CFE49265][ores.reporting]] — the component these rows belong to
+- [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] — the row this journey creates
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how the screen composes its reads and writes
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — where the prototype that answers this journey is inventoried
+- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — the journey that owns the shared analytics screen

@@ -80,8 +80,8 @@ TEST_CASE("auth_event_operations_operations_process_list_auth_events_requires_a_
                                                                         std::vector<std::string>{
                                                                             "sample",
                                                                             "sample",
-                                                                            "sample",
-                                                                            "sample",
+                                                                            "2026-01-01T00:00:00Z",
+                                                                            "2026-01-01T00:00:00Z",
                                                                         });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
@@ -124,8 +124,8 @@ TEST_CASE("auth_event_operations_operations_process_list_auth_events_reaches_the
                                                                         std::vector<std::string>{
                                                                             "sample",
                                                                             "sample",
-                                                                            "sample",
-                                                                            "sample",
+                                                                            "2026-01-01T00:00:00Z",
+                                                                            "2026-01-01T00:00:00Z",
                                                                         });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();

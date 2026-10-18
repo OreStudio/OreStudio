@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: AC502176-69D4-483E-A80E-5CB0B7063A01
+:END:
+#+title: Take data out prototype
+#+description: One export workspace for the support package, the archive and the promotion package, with the manifest and the omissions.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:data_exchange:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                        |
+|---------------+--------------------------------------------------------------|
+| Prototype     | [[file:take-data-out/][the prototype]]                                    |
+| Gemini review | none                                                         |
+| Group         | [[id:1034E1CB-D639-4489-A16A-931549228D8A][Data exchange prototypes]] |
+| Journeys      | [[id:EBB81C0A-54C2-410A-865D-2DCDD1E8EDCE][Export to share with support]], [[id:33AF3CCA-50BE-4CAD-A4DA-4C3917E4EA9F][Export for archival]], [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment]], [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect]] |
+
+* Summary
+
+The support export and the archival export are one screen. They differ in
+scope, in what completeness means and in where the file goes — not in the act,
+which is "choose a scope, read the parts, check the manifest, take the files
+away". A promotion package is the same act with a target named. A sandbox is
+another scope: exporting one is how a defect is reproduced elsewhere. The
+receiving side is the import prototype; this is the writing side.
+
+It is throwaway. Open [[file:take-data-out/][the export]].
+
+* Detail
+
+** What it argues
+
+- The purpose changes the defaults and the completeness list, not the layout.
+  "Smallest readable set", "dated copy" and "package for a target" are answers
+  to the same questions.
+- The manifest is the artefact. Party, source installation, build, instant,
+  each part, its checksum and what was left out. No export writes one today;
+  the person types it.
+- The read is scoped by rights. Books the person cannot read are excluded and
+  named. The export refuses rather than returning an empty file, which is the
+  support journey's rule.
+- One instant or none. The toggle shows today's parts read seven minutes apart,
+  and the archive checklist fails; a set that never existed together cannot be
+  signed off as complete.
+- An archive is not a backup. The screen says so in the scope card and repeats
+  it on the checklist: no audit columns, no row versions, no history, no book
+  rights.
+- A promotion package carries the order. Currencies, portfolio, conventions,
+  curves, market, run documents — written on the manifest, not kept in a
+  person's head.
+- A sandbox is exportable, and that is how a defect travels. The scope selector
+  offers the official tree and every sandbox the session may see. A sandbox
+  export names the source sandbox and its anchor in the manifest, and reads the
+  sandbox's portfolios and virtual books as the sandbox part. The other parts
+  stay party-wide, because only books and portfolios have a =sandbox_id=. The
+  receiving import creates a new sandbox; a sandbox id is fixed for life and is
+  not reused.
+
+** Variants and states
+
+=?purpose=share|archive|promote=,
+=?state=ready|written|refused|partial=,
+=?instant=one|apart=, =?actor=reader|ops=,
+=?sandbox=official|sb-import-repro|sb-import-onboard|sb-sample-seed|sb-import-feed=.
+The bar switches the purpose, the actor, the instant and the state; the scope
+card switches between the official tree and a sandbox.
+
+** What is real and what is not
+
+The export verbs, the parts each writes, the rights filter, the no-as_of
+gap, the missing manifest, the missing ticket integration and the
+PostgreSQL-backup caveat are the journeys'. The sandbox rules are the
+model's: a sandbox is anchored at an official portfolio, a book and its
+portfolio share one sandbox, a sandbox root portfolio has no parent, and a
+virtual book has no ledger reference and is not sweepable. The counts, sizes,
+checksums, manifest id, sandbox names and snapshot id are invented. No export
+screen or route exists.
+
+** The verdict
+
+Not signed off. The screen asks the owner whether an archive should be an
+ORE-shaped set at all, or a database-level copy with the audit columns the ORE
+form loses — and therefore whether the archive and the support export really
+share a screen. The sandbox scope adds a narrower question: when a sandbox is
+exported to reproduce a defect, may the receiving import write into a new
+sandbox only, or must the receiver choose between a sandbox and the party?
+
+* See also
+
+- [[file:index.org][Data exchange prototypes]] — the group page, and the journeys each screen serves.
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] — the journeys this screen answers.

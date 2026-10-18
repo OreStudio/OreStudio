@@ -37,7 +37,7 @@ export interface LoginInfo {
     last_attempt_ip: string;
     failed_logins: number;
     locked: boolean;
-    last_login: string;
+    last_login: string | null;
     online: boolean;
     password_reset_required: boolean;
 }

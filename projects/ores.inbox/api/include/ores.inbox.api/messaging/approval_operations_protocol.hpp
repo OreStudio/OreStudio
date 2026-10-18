@@ -466,7 +466,7 @@ struct approval_part_progress {
      * @brief The account that answered the part, as a UUID string, or empty.
      */
     std::string decided_by;
-    std::string decided_at;
+    std::optional<std::chrono::system_clock::time_point> decided_at;
     std::string comment;
 };
 

@@ -40,7 +40,7 @@ create table if not exists "ores_trading_fx_variance_swap_instruments_tbl" (
     "currency" text not null,
     "underlying_code" text not null,
     "long_short" text not null,
-    "strike" numeric(38, 12) not null,
+    "strike" double precision not null,
     "notional" numeric(38, 12) not null,
     "moment_type" text not null,
     "description" text null,
@@ -61,11 +61,11 @@ create table if not exists "ores_trading_fx_variance_swap_instruments_tbl" (
     check ("trade_type_code" in ('FxVarianceSwap')),
     check ("end_date" > "start_date"),
     check ("strike" > 0),
+    check ("strike" <> 'Infinity'::float8),
+    check ("strike" <> 'NaN'::float8),
     check ("notional" > 0),
     check ("currency" <> ''),
-    check ("underlying_code" <> ''),
-    check ("long_short" in ('Long', 'Short')),
-    check ("moment_type" in ('Variance', 'Volatility'))
+    check ("underlying_code" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -115,6 +115,28 @@ begin
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate long_short (soft FK to ores_trading_long_short_types_tbl)
+    if not exists (
+        select 1 from ores_trading_long_short_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.long_short
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid long_short: %. No active long short type found with this code.', NEW.long_short
+            using errcode = '23503';
+    end if;
+
+    -- Validate moment_type (soft FK to ores_trading_moment_types_tbl)
+    if not exists (
+        select 1 from ores_trading_moment_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.moment_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid moment_type: %. No active moment type found with this code.', NEW.moment_type
             using errcode = '23503';
     end if;
 

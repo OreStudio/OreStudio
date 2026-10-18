@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: what this report runs — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  What this report runs, from
+  doc/knowledge/journeys/reporting/journey_change_what_a_report_runs.org:
+  a market-risk owner or a tenant administrator reads the analytics a report
+  configuration carries, and reads what a change to that set does and does not
+  reach.
+
+  The wizard is three panels:
+
+    1  the definition and the five configurations it binds, each with what it
+       supplies and where its data lives. A conventions configuration is a named
+       convention set, so its row shows the set chosen on the card below, and
+       that card is one page of sets: a row each with its name, its purpose, the
+       kinds it covers and whether this report uses it, a radio to choose one,
+       and one link out to the authoring UX marked as not in this MR. The other
+       four configuration types are stated as missing, never drawn as working
+       links.
+    2  the analytics of the bound run settings configuration, read only: the
+       count that is on, every row with its display_order, the rows kept off,
+       the rule strip when pfe is on without simulation, and the link to
+       Manage the analytics.
+    3  what a change reaches: the definitions bound to the configuration, the
+       runs a change strands, the version history, and where the write happens.
+
+  Analytic management is not drawn here. doc/prototypes/reporting/
+  manage-the-analytics/ owns it: the switchboard, a step per analytic that is on,
+  every parameter with a control chosen for its shape, the refused pfe and
+  simulation pair, and the read-back. This page reads the set that screen leaves
+  and links to it, and it stages nothing and writes nothing.
+
+  The switchboard and the nested list-detail-effect flow that used to live on
+  step 2 are gone, and so is the structural variant switcher that read the
+  detail screen: that layout question moved to the shared prototype, which
+  carries ?variant=A|B|C over its per-analytic step.
+
+  ?step=1|2|3 opens a panel. The buttons in the foot bar do the same.
+
+  Nothing here reads a server. An analytic is turned off by setting active to
+  false, never by deleting the row, and the page says so. pfe reads a cube that
+  simulation writes, so pfe without simulation is marked on the summary and the
+  rule is named as it is: it lives in the ACME seeder, at
+  check_exposure_needs_simulation, and no service validates it. No operation
+  says which runs were made with which configuration version, so the run
+  placement here is an inference from start times. The purpose-built editors for
+  simulation and pfe are deferred, and Manage the analytics says so on the
+  parameter.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

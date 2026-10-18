@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 884C0F77-442C-42DC-8286-5A835DCCA113
+:END:
+#+title: open-as refuses to open when SingletonLock names a pid from a dead namespace
+#+description: profile_in_use() treats any live process with the pid Chrome recorded in SingletonLock as a live holder. A Chrome launched inside a PID namespace records a namespace-local pid, so once that namespace is gone the lock can name an unrelated host process and open-as reports 'already open' forever, with --fresh silently not applied.
+#+type: capture
+#+level: cross
+#+filetags: :compass:tooling:defect:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass open-as= refuses to open a browser whenever =SingletonLock= names a
+pid that is alive, even when that pid is not the Chrome the lock belongs to.
+=profile_in_use()= (=projects/ores.compass/src/compass_open_as.py:465=) calls
+=lock_holder_alive()= (=:443=), which reads the pid out of the =SingletonLock=
+symlink — Chrome writes it as =<hostname>-<pid>= — and checks only whether that
+pid is running. A Chrome started inside a PID namespace records a
+namespace-local pid, so when the namespace ends the lock can name a completely
+unrelated host process and =open-as= reports the persona as open for ever:
+
+#+begin_example
+$ ./compass.sh open-as tenant_admin --fresh
+Tenant Administrator is already open. Close that window to open a new one. --fresh not applied.
+#+end_example
+
+Observed 2026-10-16 in =clever_dijkstra=: the lock read
+=Wiener-14= (=SingletonLock -> Wiener-14=) while =ps -ef | grep chrome= showed
+no persona Chrome at all — only the everyday browser and an unrelated headless
+profile. The persona Chrome had been launched from a confined (namespaced)
+shell, where it received pid 14.
+
+A second detection path has the same shape. =profile_in_use()= also scans every
+=/proc/<pid>/cmdline= for the profile path via =mentions_profile()=. Any
+container or sandbox wrapper that bind-mounts the workspace — =bwrap=, for
+instance — carries the profile path in its own argv, because the persona
+profiles live inside the checkout at =.cache/ores-personas/<label>/<persona>=.
+The wrapper then matches as though it were Chrome.
+
+=--fresh= cannot recover from either: =open_person()= returns at the guard
+before =prepare_profile()= is ever called, which is why the flag is reported as
+"not applied".
+
+* Why
+
+The failure is a hard stop with no way out through the tool. The message names
+the wrong cause — it says a window is open when no window exists — so the reader
+is sent looking for a Chrome that was never running, which is exactly the wrong
+place. The only recovery is to know the internal lock layout and delete
+=SingletonLock=, =SingletonCookie= and =SingletonSocket= by hand.
+
+It bit an agent session that was trying to hand a screen to a person for manual
+testing, and the resulting chase cost far more than the defect deserves: the
+symptom mimics a Chrome crash, so the search went through display sockets, GPU
+flags and crash-reporter paths before anyone read =profile_in_use()=.
+
+The root cause is treating "pid is alive" as "the holder is alive". A pid is not
+an identity: it is reused, and inside a namespace it does not even name the same
+process. A correct check asks whether the pid is a Chrome whose own argv names
+this profile — the same evidence =mentions_profile()= already knows how to read,
+applied to the recorded pid instead of to every process on the box.
+
+* References
+
+- =projects/ores.compass/src/compass_open_as.py:443= — =lock_holder_alive()=,
+  which trusts the pid alone.
+- =projects/ores.compass/src/compass_open_as.py:465= — =profile_in_use()=, the
+  two-path check.
+- =projects/ores.compass/src/compass_open_as.py:469= — the =/proc= scan that a
+  workspace-binding wrapper defeats.
+- =projects/ores.compass/src/compass_open_as.py:741= — =open_person()='s guard,
+  which returns before =--fresh= is honoured.
+- =projects/ores.compass/src/compass_open_as.py:71= — =PERSONAS_ROOT=, inside
+  the checkout, which is what puts the profile path into a wrapper's argv.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] — the inbox bucket this
+  page belongs to.

@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B
+:END:
+#+title: User Journey: Reproduce a defect from an exported environment
+#+description: A support engineer imports a whole ORE export from the reporting environment, with the compute job and its inputs, to reproduce a defect in development.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A support engineer imports a whole ORE export from the reporting environment, with the compute job and its inputs, to reproduce a defect in development.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want the failing run from the reporting environment here, with the same
+trades, conventions, market data and job inputs, so I can watch it fail and then
+fix it." The journey is done when the same job, on the same data, fails the same
+way in the development installation.
+
+* Actor and trigger
+
+The actor is a support engineer or developer who holds the permissions every
+import in this journey needs in the development installation, and who is signed
+in to the party the defect belongs to. The trigger is a reported defect, a failed
+report run, or a job whose output cannot be explained. The journey starts with
+files received from the reporting environment and ends when the job is reproduced
+or when the gap that prevents reproduction is named.
+
+The journey runs in the shell. No web screen accepts an ORE upload today.
+
+* Steps
+
+1. *Gather the export.* No single command writes a whole environment. The
+   person collects the parts: =ore export= for the trades under one book or
+   portfolio, =ore export-run= for the run document and the conventions, curves,
+   today's market and pricing engines it binds, =marketdata export= for the
+   quotes and fixings, and =compute download-input= for the job's input bundle.
+   The engine package comes from the =package_uri= of the app version the job
+   ran, checked against its =sha256=. The job itself is not exported. Its
+   definition is rebuilt in the target.
+2. *Upload the trades.* The person runs =ore upload <src_dir>=. The system packs
+   the directory as a tarball, uploads it to the =ore= bucket under
+   =ore/imports/{request_id}.tar.gz=, and prints the request id. The person may
+   mint the request id so a retry uploads over the same object.
+3. *Import the trades.* The person runs =ore import <request_id>=, naming the
+   parent portfolio and, for a defect outside the official tree, the open sample
+   sandbox the import should land in. The system starts =workflow.v1.ops.ore_import=
+   and returns a workflow instance id. The shell waits for the step and prints
+   its log.
+4. *Import the run configuration.* The person runs =ore import-run
+   <report_definition_id> <src_dir>= with the exported directory. The system
+   parses =ore.xml= and every file it names before the first write, then binds
+   and stores the documents under the report definition.
+5. *Import the market data.* The person runs =marketdata import= with the two
+   files. The system stores the series, observations and fixings and reports the
+   counts.
+6. *Reproduce.* The person runs the job again in the development installation
+   with the imported input bundle and engine package, or reruns the report
+   definition. The system produces the failing output or the failing step.
+
+* On success
+
+The shell prints the upload path and request id, the workflow instance id, the
+step log with the counts of currencies, portfolios, books and trades it saved,
+the run import's stored file count, and the market data counts. The rerun fails
+the same way as the original, and the person holds the input bundle that caused
+it.
+
+* On failure
+
+A trade that cannot be saved is reported by source file and ORE id and does not
+stop the other trades. The step then completes with warnings and the saved trades
+stay. A refusal that stops the import names the step or the file. If every trade
+fails, the step fails and the compensation deletes the currencies, portfolios,
+books and trades it created. A missing =ore.xml=, a file the run document names
+but the input does not hold, or an XML parse error is refused before the run
+import writes anything. A timeout leaves the workflow running, and the shell says
+the import did not complete.
+
+* What must never happen
+
+- The development import must never write to the reporting installation.
+- A trade must never land in a party other than the session's party.
+- A family or convention the server cannot store must never disappear without a
+  line in the result. FX conventions are skipped today, and the response lists
+  them.
+- A partial import must never be reported as complete.
+
+* Screens and entry points
+
+There is no screen. The entry points are the shell verbs =ore upload=,
+=ore import=, =ore import-run=, =ore export=, =ore export-run=,
+=marketdata import=, =compute download-input= and the workflow run log. The web
+UI shows conventions and market data but has no import or export route.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =trade= | The imported trades and their ORE identifiers | |
+| =portfolio=, =book= | The tree the import builds from the directory | |
+| =conventions_document= | The 27 convention families the run import stores | |
+| =run_document= | The run settings, files and bindings | |
+| =market_observation=, =market_fixing= | The quotes and fixings the defect needs | |
+| =workunit=, =app_version_platform= | The job input and the engine package | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Gather the export | Export the trades under a node | =trading.v1.ops.export_portfolio= | exists |
+| Gather the export | Export a run directory | =ore.v1.ops.export_run_configuration= | exists |
+| Gather the export | Export market data and fixings | =marketdata.v1.ops.export_market_data= | exists |
+| Gather the export | Download a job's input bundle | the compute storage download | exists |
+| Upload the trades | Upload the tarball | the =ore= bucket at =ore/imports/{request_id}.tar.gz= | exists |
+| Import the trades | Start the import | =workflow.v1.ops.ore_import= | exists |
+| Import the trades | Execute the import | =ore.v1.ops.ore_import_execute= | exists |
+| Import the trades | Roll the import back | =ore.v1.ops.ore_import_rollback= | exists |
+| Import the run configuration | Start the run import | =ore.v1.ops.import_run_configuration= | exists |
+| Import the run configuration | Store the conventions document | =refdata.v1.conventions_documents.put= | exists |
+| Import the market data | Store quotes and fixings | =marketdata.v1.ops.import_market_data= | exists |
+
+* What is missing
+
+1. *No whole-environment export.* The person must find and run four export verbs
+   and write down what each produced. There is no command that writes one dated
+   bundle and no manifest that names the versions of its parts.
+2. *No job export.* A compute job is dispatched and its inputs are stored, but
+   no verb writes the job definition, its batch and its app version as a file
+   that another installation can import.
+3. *No cross-component transaction.* The trades, the conventions and the market
+   data land in three services and three imports. A failure in the third leaves
+   the first two stored.
+4. *No preview.* The import reports what it saved after the fact. It cannot show
+   the plan before the writes.
+
+* Related journeys
+
+- [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] - the trade half of the same import.
+- [[id:33AF3CCA-50BE-4CAD-A4DA-4C3917E4EA9F][Export for archival]] - the export side, with the same gaps.
+- [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]] - reads the failed job before the data is moved.
+- [[id:8E23A435-96D8-4FF8-80FF-FB9894A2B68A][See what a failed family left behind]] - after an import refuses.
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.
+- =doc/knowledge/journeys/trades/journey_import_a_portfolio_from_ore.org=

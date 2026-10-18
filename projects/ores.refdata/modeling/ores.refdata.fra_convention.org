@@ -11,6 +11,7 @@
 #+entity_singular: fra_convention
 #+entity_plural: fra_conventions
 #+entity_title: FRA Convention
+#+convention_family: fra
 #+created: 2026-06-01
 #+updated: 2026-06-01
 

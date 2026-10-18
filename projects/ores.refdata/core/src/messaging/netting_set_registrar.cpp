@@ -83,6 +83,10 @@ register_netting_set_handlers(ores::nats::service::client& nats,
                                  h->list_by_netting_agreement_id_netting_sets(std::move(msg));
                              }));
     subs.push_back(nats.queue_subscribe(
+        list_by_credit_limit_id_netting_sets_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->list_by_credit_limit_id_netting_sets(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         list_netting_set_versions_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->list_netting_set_versions(std::move(msg));
         }));

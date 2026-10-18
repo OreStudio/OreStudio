@@ -26,7 +26,8 @@
  *
  * Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
  * FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
- * upper_barrier is optional (single-barrier products leave it NULL).
+ * A row states at least one level, and the level sits in lower_barrier or
+ * upper_barrier by the style's direction.
  */
 
 create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
@@ -44,7 +45,7 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     "expiry_date" date not null,
     "settlement" text null,
     "barrier_type" text not null,
-    "lower_barrier" numeric(38, 12) not null,
+    "lower_barrier" numeric(38, 12) null,
     "upper_barrier" numeric(38, 12) null,
     "underlying_code" text null,
     "description" text null,
@@ -67,9 +68,12 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     check ("sold_amount" > 0),
     check ("bought_currency" <> ''),
     check ("sold_currency" <> ''),
-    check ("barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
-    check ("lower_barrier" > 0),
-    check ("option_type" is null or "option_type" in ('Call', 'Put'))
+    check ("lower_barrier" is null or "lower_barrier" > 0),
+    check ("upper_barrier" is null or "upper_barrier" > 0),
+    check ("lower_barrier" is not null or "upper_barrier" is not null),
+    check (("trade_type_code" <> 'FxDoubleBarrierOption') or ("lower_barrier" is not null and "upper_barrier" is not null)),
+    check (("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('UpAndOut', 'UpAndIn', 'FixingCap')) or ("lower_barrier" is null and "upper_barrier" is not null)),
+    check (("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('DownAndOut', 'DownAndIn', 'FixingFloor')) or ("lower_barrier" is not null and "upper_barrier" is null))
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -120,6 +124,43 @@ begin
     ) then
         raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
             using errcode = '23503';
+    end if;
+
+    -- Validate option_type (optional soft FK to ores_trading_option_types_tbl)
+    if NEW.option_type is not null then
+        if not exists (
+            select 1 from ores_trading_option_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.option_type
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid option_type: %. No active option type found with this code.', NEW.option_type
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate barrier_type (soft FK to ores_trading_barrier_types_tbl)
+    if not exists (
+        select 1 from ores_trading_barrier_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.barrier_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid barrier_type: %. No active barrier type found with this code.', NEW.barrier_type
+            using errcode = '23503';
+    end if;
+
+    -- Validate settlement (optional soft FK to ores_trading_settlement_types_tbl)
+    if NEW.settlement is not null then
+        if not exists (
+            select 1 from ores_trading_settlement_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.settlement
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid settlement: %. No active settlement type found with this code.', NEW.settlement
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Validate change_reason_code

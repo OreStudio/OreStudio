@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 79F7D4C3-EFA7-45B8-80E7-DC6BBDCFDAC1
+:END:
+#+title: A narrow vitest run leaves the build defines unsubstituted, so the version-footer tests fail
+#+description: Running one test file or one directory fails with ReferenceError: __BUILD_RELEASE__ is not defined, while the same file passes inside the full package run. The globals come from the define block of vite.config.ts and nothing assigns them at runtime.
+#+type: capture
+#+level: cross
+#+filetags: :web:testing:vitest:defect:
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A test run scoped to one file or one directory fails, and the failure has
+nothing to do with the code under test. Inside the web package:
+
+#+begin_example
+$ npx vitest run src/operations
+ Test Files  1 failed (1)
+      Tests  18 failed | 88 passed (106)
+ReferenceError: __BUILD_RELEASE__ is not defined
+    101|                         value={__BUILD_RELEASE__}
+$ npm run test --workspace @ores/web
+ Test Files  138 passed (138)
+      Tests  1556 passed (1556)
+ ✓ src/operations/operations.test.tsx (106 tests)
+#+end_example
+
+The same file, at the same commit, with no edit between the two runs. Narrow:
+eighteen failures. Full: every test passes.
+
+The four globals are written by the =define= block of
+=projects/ores.web/packages/web/vite.config.ts= (=:105-110=):
+
+#+begin_example
+__BUILD_VERSION__, __BUILD_RELEASE__, __BUILD_COMMIT__, __BUILD_DIRTY__
+#+end_example
+
+Nothing assigns them at run time: there is no setup file, and no test or module
+writes to =globalThis=. =vite-env.d.ts= only declares them, so a module that
+reaches the browser untransformed throws the moment it reads one.
+=VersionFooter.tsx= is the reader a test meets first.
+
+Seen twice in one session, in two files: =AppRoutes.test.tsx= first (28 failing
+tests, =__BUILD_VERSION__=), then =operations.test.tsx= (=__BUILD_RELEASE__=).
+In the first case the failure survived a stash back to a pristine tree and
+cleared after a round of edits, which points at the transform cache rather than
+at any source change.
+
+*The trigger is not confirmed.* What is established is that the failure is not
+the code's: the same bytes pass in one run and fail in another. The leading
+explanation is vitest's transform cache serving a module whose define
+substitution was never applied — the cache is keyed so that a narrow run can
+reuse an entry a full run would not. That is a hypothesis, and the capture says
+so rather than asserting it.
+
+* Why
+
+A scoped run is how a person works: they are changing one screen and run its
+test. The run then reports eighteen failures in a file they did not touch, so
+they go looking for a regression that is not there. In this session it cost a
+detour through the version footer, a stash to a pristine tree, and a
+build-vs-source investigation before the pattern was clear.
+
+The damage is worse than a slow run. A test run that lies about which tests fail
+teaches a person to distrust the runner, and the next real failure is then
+explained away as "that defines thing again".
+
+* References
+
+- =projects/ores.web/packages/web/vite.config.ts:105= — the =define= block that
+  supplies all four globals.
+- =projects/ores.web/packages/web/src/vite-env.d.ts:43= — the declarations,
+  which make the names type-check while the value is absent at run time.
+- =projects/ores.web/packages/web/src/components/VersionFooter.tsx:77= — the
+  reader that fails first, and the line the stack names.
+- =projects/ores.web/packages/web/vitest.config.ts= — absent; there is no test
+  configuration of its own and no =setupFiles=.
+
+* See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] — the inbox bucket this
+  page belongs to.
+

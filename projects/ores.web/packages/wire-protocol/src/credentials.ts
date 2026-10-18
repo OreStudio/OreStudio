@@ -22,6 +22,7 @@
 import type { AuthenticatedCaller } from './account-operations.js';
 import { ACCOUNT_SUBJECTS, setAccountsLocked } from './account-operations.js';
 import { OperationFailedError } from './errors.js';
+import type { WireTimestamp } from './time.js';
 import type {
     Account,
     AccountSignIns,
@@ -103,16 +104,17 @@ export const CREDENTIAL_SUBJECTS = {
 /**
  * The window and page every audit read takes.
  *
- * An empty account or time means the filter is off rather than a value to
- * match, which is the wire's own rule: each empty field is skipped by the
- * read. The period is an instant computed by the BFF from the deployment's
+ * An empty account or event type means the filter is off rather than a value
+ * to match, which is the read's own rule. A time bound the caller has none of
+ * is left unstated, and the request sends null for it, so the read applies no
+ * bound on that side. The window is computed by the BFF from the deployment's
  * clock, so the browser never states a window the deployment did not measure.
  */
 export interface AuditWindow {
     readonly accountId?: string;
     readonly eventType?: string;
-    readonly fromTime?: string;
-    readonly toTime?: string;
+    readonly fromTime?: WireTimestamp | null;
+    readonly toTime?: WireTimestamp | null;
     readonly offset?: number;
     readonly limit?: number;
 }
@@ -252,8 +254,8 @@ export async function readAuthEvents(
     const request: GeneratedListAuthEventsRequest = {
         account_id: window.accountId ?? '',
         event_type: window.eventType ?? '',
-        from_time: window.fromTime ?? '',
-        to_time: window.toTime ?? '',
+        from_time: window.fromTime ?? null,
+        to_time: window.toTime ?? null,
         offset: window.offset ?? 0,
         limit: window.limit ?? 100,
     };
@@ -272,8 +274,8 @@ export async function readSessionStatistics(
 ): Promise<readonly SessionStatisticsRow[]> {
     const request: GeneratedGetSessionStatisticsRequest = {
         account_id: window.accountId ?? '',
-        from_time: window.fromTime ?? '',
-        to_time: window.toTime ?? '',
+        from_time: window.fromTime ?? null,
+        to_time: window.toTime ?? null,
         offset: window.offset ?? 0,
         limit: window.limit ?? 100,
     };

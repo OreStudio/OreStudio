@@ -34,9 +34,9 @@ the work that follows is broken into tasks.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The document layer is built, merged and measured. The schema tables and the projection remain. |
+| Now           | Nine families are on tables. Calendar adjustments, currency config, pricing engines and credit simulation read and write through the codec. Four families still read through xsdcpp, and the generator expresses every one of their schemas. |
 | Waiting on    | Nothing.                               |
-| Next          | The schema tables, the writer, and the round-trip harness, in the order the tasks set out. |
+| Next          | Curve configuration, stress testing, the run document and portfolio, in that order, then xsdcpp. The generator expresses every one of their schemas, a restriction aside, which none of them uses. |
 | Last touched  | 2026-10-17                               |
 
 * Acceptance
@@ -53,8 +53,9 @@ the work that follows is broken into tasks.
   writer emits a form that reads back to the same value.
 - Round trip is defined as the values surviving and the output validating
   against =input.xsd=, not as the document being reproduced.
-- All twenty root elements in the corpus are covered, the eleven with a mapper
-  first and the nine without afterwards.
+- Every corpus root element is either on a table and proved by the harness, or
+  named by the census as still migrating because product code reads it, or
+  deleted because nothing does. No family is silently left behind.
 - Every XML document in the repository parses with the new scanner, and the
   check that proves it fails the build when one does not.
 - The write direction is specified, including the one place where shortest
@@ -65,21 +66,29 @@ the work that follows is broken into tasks.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:C72A8250-F44C-41FC-9C0C-54DF98683596][Prototype the descriptor document codec and measure it]] | DONE | 2026-10-17 | 2026-10-17 | Build a throwaway codec that walks generated descriptor tables instead of a generated DOM, then measure time, allocations and fidelity against the current xsdcpp path. |
-| [[id:FAC7E870-E2C5-46E2-A1BF-1F76BA43836F][Gate the scanner on the XML corpus]] | STARTED | 2026-10-17 | | Run the scanner over every XML document in the repository on every check, and fail on any rejection. 3,971 documents and 44.8 MB today, including the FpML and FIX trees, which are far outside the ORE subset. |
-| [[id:7681078A-B911-4853-BB25-5F2607E87943][Generalise the codec for nested and repeated types]] | BACKLOG | | | The probe maps one flat record family. Extend the engine and the generator model to nested complex types, repeated children, attributes on leaf elements, and xs:any, and state the policy for content the schema does not name. |
-| [[id:2E83CCFB-025F-44F0-B97B-F377CC712BBE][Generate tables for every document family]] | BACKLOG | | | Read all twenty-eight ORE XSDs and emit a table per complex type, with a drift check that fails when a table and its schema disagree. This is the replacement for the generated domain, so it must be reproducible and reviewable. |
-| [[id:48AAB8BF-79FF-4461-B264-1C848C9EAD5C][Write the exporter from the same tables]] | BACKLOG | | | The write direction need not mirror the read direction. Emit in schema order, write only present fields, format decimals as fixed point rather than shortest round trip, escape only where needed, and build one buffer per record range. |
-| [[id:96950350-E907-4C03-87FE-1BAF7950FF3D][Migrate the reference data documents]] | BACKLOG | | | Currency config, calendar adjustments, conventions, netting set definitions and credit simulation. Each moves its importer and exporter onto the codec and deletes its mapper in the same change. |
+| [[id:FAC7E870-E2C5-46E2-A1BF-1F76BA43836F][Gate the scanner on the XML corpus]] | DONE | 2026-10-17 | 2026-10-17 | Run the scanner over every XML document in the repository on every check, and fail on any rejection. 3,971 documents and 44.8 MB today, including the FpML and FIX trees, which are far outside the ORE subset. |
+| [[id:7681078A-B911-4853-BB25-5F2607E87943][Generalise the codec for nested and repeated types]] | DONE | 2026-10-17 | 2026-10-17 | The probe maps one flat record family. Extend the engine and the generator model to nested complex types, repeated children, attributes on leaf elements, and xs:any, and state the policy for content the schema does not name. |
+| [[id:2E83CCFB-025F-44F0-B97B-F377CC712BBE][Generate tables for every document family]] | STARTED | 2026-10-17 | | Read all twenty-eight ORE XSDs and emit a table per complex type, with a drift check that fails when a table and its schema disagree. This is the replacement for the generated domain, so it must be reproducible and reviewable. |
+| [[id:48AAB8BF-79FF-4461-B264-1C848C9EAD5C][Write the exporter from the same tables]] | DONE | 2026-10-17 | 2026-10-17 | The write direction need not mirror the read direction. Emit in schema order, write only present fields, format decimals as fixed point rather than shortest round trip, escape only where needed, and build one buffer per record range. |
+| [[id:96950350-E907-4C03-87FE-1BAF7950FF3D][Migrate the reference data documents]] | STARTED | 2026-10-17 | | Currency config, calendar adjustments, conventions, netting set definitions and credit simulation. Each moves its importer and exporter onto the codec and deletes its mapper in the same change. |
 | [[id:C010861C-1F2D-4C89-8A3C-4362C0E6F435][Migrate the portfolio documents]] | BACKLOG | | | Trades, envelopes and the instrument families. The largest mapper group and the one the bond work touched, so it lands after the reference data proves the shape. |
 | [[id:A9C63FEC-D64C-438A-994D-C9F0753F0EAC][Migrate the market and configuration documents]] | BACKLOG | | | Curve configuration, today's market, pricing engines, stress testing and the ORE run document. |
 | [[id:5EBC0FAA-6541-420E-B174-E6DA738316E2][Remove xsdcpp]] | BACKLOG | | | Delete the generated domain, the sibling-checkout wiring, the two post-regeneration patches and the knowledge page. Last, because nothing may depend on the generated binding by then. |
 | [[id:5C0C929E-7D90-4954-9F46-5E28E69A1484][Stop formatting a log line per imported record]] | BACKLOG | | | The import path formats a full JSON record for every mapped entity, and it is the largest single cost in the current importer. Guard the trace lines so an off-level log costs nothing. |
-| [[id:04C460E8-3390-4844-9774-A1713A6F3726][Prove the round trip preserves the data and validates]] | BACKLOG | | | Round trip means the values survive and the output validates, not that the document is reproduced. Build the harness: read the corpus, write it, validate against input.xsd, read it back, and compare every field including the exact decimals. Fail on any element the model did not claim. |
-| [[id:8E02E7E1-AB6F-4123-B8F8-54EA4B2D24DE][Map the configuration documents that have no mapper]] | BACKLOG | | | Ibor fallback, reference data, script library, counterparty information and collateral balances. No mapper exists today, so these are new domain models on the codec rather than migrations. |
-| [[id:DBC23EE5-046F-48B8-985B-38E1726180F7][Map the analytics documents that have no mapper]] | BACKLOG | | | Simulation, sensitivity analysis, SIMM calibration and the cross asset model. The largest of the unmapped families and the one that exercises the most of the schema. |
+| [[id:04C460E8-3390-4844-9774-A1713A6F3726][Prove the round trip preserves the data and validates]] | DONE | 2026-10-17 | 2026-10-17 | Round trip means the values survive and the output validates, not that the document is reproduced. Build the harness: read the corpus, write it, validate against input.xsd, read it back, and compare every field including the exact decimals. Fail on any element the model did not claim. |
+| [[id:8E02E7E1-AB6F-4123-B8F8-54EA4B2D24DE][Map the configuration documents that have no mapper]] | ABANDONED | | | Ibor fallback, reference data, script library, counterparty information and collateral balances. No mapper exists today, so these are new domain models on the codec rather than migrations. |
+| [[id:DBC23EE5-046F-48B8-985B-38E1726180F7][Map the analytics documents that have no mapper]] | ABANDONED | | | Simulation, sensitivity analysis, SIMM calibration and the cross asset model. The largest of the unmapped families and the one that exercises the most of the schema. |
 | [[id:1ADD3134-823B-45F4-B76B-B38AB47507AC][Build the faithful document layer]] | DONE | | 2026-10-17 | Put the scanner in product code with the transient document model and the writer, and prove over the corpus that every document reads, writes back, compares equal and still validates against input.xsd. This layer needs no schema, so it lands before the schema tables. |
+| [[id:9781E5B4-012B-4012-9670-BCB39058BA3D][Delete the document families nothing reads]] | DONE | 2026-10-17 | 2026-10-17 | Seven of the twenty corpus root elements have no product consumer. Do not map them; delete their tests and their dead mapper, and record the census that says which families those are. |
 
 * Decisions
+
+- *A family nobody reads is deleted, not mapped.* Seven of the twenty corpus
+  root elements have no product consumer, so a table for them would prove a
+  capability no feature has. They are deleted with xsdcpp, and a table is added
+  if a feature needs one. The census in
+  =build/scripts/check_xml_family_coverage.py= names the state of every family
+  and fails when the tree disagrees with it.
 
 - *The document tree is transient.* The
   [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][guidelines]] place ORE

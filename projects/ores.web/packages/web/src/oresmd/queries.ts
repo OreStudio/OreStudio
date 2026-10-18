@@ -20,7 +20,7 @@
  */
 
 import { keepPreviousData, queryOptions } from '@tanstack/react-query';
-import type { OresmdComposeRequest } from '@ores/contracts';
+import { ORESMD_MAX_BATCH, type OresmdComposeRequest, type SeriesWindow } from '@ores/contracts';
 import { api } from '../api/client.js';
 import { curves } from '../api/curves.js';
 import { series } from '../api/series.js';
@@ -36,6 +36,28 @@ const QUIET = { quiet: true } as const;
 
 /** The schema is the codec's table and changes with a release, so it is kept for the session. */
 const SCHEMA_STALE_MS = 5 * 60 * 1000;
+
+/**
+ * The URIs of one read, without a repeat, in one order whatever order the rows
+ * name them in, split into the sets the codec's batch limit allows.
+ *
+ * The order is part of the read: the answer arrives in the order asked and a
+ * caller holds the URIs it asked about beside their parts. Sorting the set keeps
+ * a set of rows that the server returned in another order on the same answer.
+ */
+export function chunksOf(uris: readonly string[]): readonly (readonly string[])[] {
+    const distinct = [...new Set(uris.filter((uri) => uri !== ''))].sort();
+    const chunks: string[][] = [];
+    for (let start = 0; start < distinct.length; start += ORESMD_MAX_BATCH) {
+        chunks.push(distinct.slice(start, start + ORESMD_MAX_BATCH));
+    }
+    return chunks;
+}
+
+/** The read that answers for a set of URIs: the set itself, so a new set is a new read. */
+export function parseManyKey(uris: readonly string[]): readonly unknown[] {
+    return ['oresmd-parse-many', chunksOf(uris)];
+}
 
 export const oresmdQueries = {
     /**
@@ -79,11 +101,11 @@ export const oresmdQueries = {
             meta: QUIET,
         }),
 
-    /** The latest observations of one series, oldest first. */
-    observations: (seriesId: string, limit: number) =>
+    /** The observations of one series over a window, oldest first. */
+    observations: (seriesId: string, limit: number, window: SeriesWindow) =>
         queryOptions({
-            queryKey: ['series-observations', seriesId, limit],
-            queryFn: () => series.observations(seriesId, limit),
+            queryKey: ['series-observations', seriesId, limit, window],
+            queryFn: () => series.observations(seriesId, limit, window),
             retry: false,
             meta: QUIET,
         }),
@@ -108,6 +130,24 @@ export const oresmdQueries = {
         queryOptions({
             queryKey: ['oresmd-parse', uri],
             queryFn: () => oresmd.parse(uri),
+            meta: QUIET,
+        }),
+
+    /**
+     * The parts of each URI, in the order given, as one read for the whole set.
+     *
+     * A URI's parts are the codec's answer and change with a release, not with a
+     * tick, so the answer is kept for as long as the schema. A list that asks again
+     * every few seconds asks about the same URIs, and a fresh read each time would
+     * cost the server a call a row for an answer that cannot have changed.
+     */
+    parseMany: (uris: readonly string[]) =>
+        queryOptions({
+            queryKey: parseManyKey(uris),
+            queryFn: async () =>
+                (await Promise.all(chunksOf(uris).map((chunk) => oresmd.parseMany(chunk)))).flat(),
+            enabled: chunksOf(uris).length > 0,
+            staleTime: SCHEMA_STALE_MS,
             meta: QUIET,
         }),
 

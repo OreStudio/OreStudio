@@ -377,6 +377,21 @@ CATALOGUE: tuple[Check, ...] = (
         classes=("docs", "tooling"),
         paths=("doc/*", "build/scripts/check_pattern_uses.py"),
     ),
+    # The generated tables are the only copy of the schema's shape we keep, so
+    # a hand edit or a schema change that the tables did not follow is the same
+    # failure from here.
+    Check(
+        id="xml-bindings-drift",
+        title="The generated codec tables match the schemas",
+        argv=("python3", "build/scripts/check_xml_bindings_drift.py"),
+        classes=("cpp", "codegen"),
+        paths=("projects/ores.ore/scripts/*",
+               "projects/ores.ore/core/include/ores.ore.core/xml/generated/*",
+               "projects/ores.ore/core/src/xml/generated/*",
+               "build/scripts/check_xml_bindings_drift.py",
+               "external/ore/xsd/*"),
+        fix="Run ./projects/ores.ore/scripts/regenerate_xml_bindings.sh and commit.",
+    ),
     # The gate is narrow on purpose: it only applies when a file that changes
     # what the benchmark measures changed. A change to the XML sources, or to
     # the benchmark's own harness, owes a measurement; nothing else does.
@@ -391,6 +406,21 @@ CATALOGUE: tuple[Check, ...] = (
                "benchmarks/xml/run.sh",
                "benchmarks/xml/inputs.tsv"),
         fix="Run ./benchmarks/xml/run.sh and commit benchmarks/xml/history.tsv.",
+    ),
+    # A family is either supported by a table, migrating from a mapper, or
+    # unused and on its way out with xsdcpp. The census is a decision; this
+    # check is whether the tree still agrees with it.
+    Check(
+        id="xml-family-census",
+        title="Every ORE document family is classified and the tree agrees",
+        argv=("python3", "build/scripts/check_xml_family_coverage.py"),
+        classes=("cpp", "tooling"),
+        paths=("external/ore/examples/*",
+               "projects/ores.ore/core/src/xml/generated/*",
+               "projects/*/*/tests/xml_*_tests.cpp",
+               "build/scripts/check_xml_family_coverage.py"),
+        fix="Classify the family in build/scripts/check_xml_family_coverage.py, "
+            "or delete the test that names an unused one.",
     ),
     Check(
         id="prototypes",

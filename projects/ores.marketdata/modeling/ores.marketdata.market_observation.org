@@ -76,10 +76,13 @@ Reference to =ores_marketdata_market_series_tbl(id)= — identifies what was obs
 :type:     timestamp with time zone
 :cpp_type: std::chrono::system_clock::time_point
 :natural_key: true
+:filterable: true
 :END:
 
 Financial valid-time: when the market value was observed (UTC).
-Also the hypertable partition column.
+Also the hypertable partition column. A reader that draws a window of time
+narrows by =observation_datetime_from=, the lower bound the filterable
+column adds.
 
 #+begin_src cpp :name generator
 ctx.past_timepoint()

@@ -78,7 +78,7 @@ const wireSession = {
     id: SESSION_ID,
     account_id: ACCOUNT_ID,
     start_time: '2026-09-30 08:12:00Z',
-    end_time: '',
+    end_time: null,
     client_ip: '203.0.113.44',
     client_identifier: 'ores.web',
     client_version_major: 0,
@@ -177,7 +177,7 @@ describe('GET /api/sessions', () => {
                     id: SESSION_ID,
                     accountId: ACCOUNT_ID,
                     startTime: '2026-09-30 08:12:00Z',
-                    endTime: '',
+                    endTime: null,
                     clientIp: '203.0.113.44',
                     clientIdentifier: 'ores.web',
                     clientVersionMajor: 0,
@@ -201,6 +201,26 @@ describe('GET /api/sessions', () => {
                 },
             },
         ]);
+
+        await server.close();
+    });
+
+    it('refuses a session whose end time is not the wire shape, rather than accepting it', async () => {
+        const { server, sessionId } = buildTestServer({
+            'iam.v1.sessions.list': {
+                sessions: [{ ...wireSession, end_time: '2026-10-05T10:00:00Z' }],
+                total: 1,
+            },
+        });
+
+        const response = await server.inject({
+            method: 'GET',
+            url: '/api/sessions',
+            cookies: { [SESSION_COOKIE]: sessionId },
+        });
+
+        expect(response.statusCode).toBe(500);
+        expect(response.json()).toEqual({ code: 'internal', message: 'Something went wrong.' });
 
         await server.close();
     });
@@ -238,7 +258,7 @@ describe('GET /api/sessions/active', () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({
-            sessions: [{ id: SESSION_ID, clientIdentifier: 'ores.web', endTime: '' }],
+            sessions: [{ id: SESSION_ID, clientIdentifier: 'ores.web', endTime: null }],
         });
         expect(calls).toEqual([{ subject: 'iam.v1.ops.get_active_sessions', body: {} }]);
 

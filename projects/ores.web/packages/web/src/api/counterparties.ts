@@ -32,6 +32,7 @@ import type { PartyIdScheme } from '@ores/wire-protocol/generated/refdata/domain
 import type { PartyStatus } from '@ores/wire-protocol/generated/refdata/domain/party_status';
 import type { PartyType } from '@ores/wire-protocol/generated/refdata/domain/party_type';
 import type { PutCounterpartyCompositeRequest } from '@ores/wire-protocol/generated/refdata/protocol/counterparty_protocol';
+import { wireTimestampSchema } from '@ores/wire-protocol/browser';
 import { request } from './transport.js';
 
 /**
@@ -40,7 +41,9 @@ import { request } from './transport.js';
  * The BFF owns the session and the reference data service, so this module only
  * states the HTTP paths the screen calls and parses every answer with a schema
  * that mirrors the generated wire shapes. A field name here is the C++ member
- * name, because that is the key the server serialises.
+ * name, because that is the key the server serialises. A `recorded_at` is the
+ * row's record time, which the server holds as a `time_point`, so it is parsed
+ * as an instant in the one wire spelling and as nothing else.
  */
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' } as const;
@@ -129,7 +132,7 @@ const counterpartySchema: z.ZodType<Counterparty> = z.object({
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const counterpartyIdentifierSchema: z.ZodType<CounterpartyIdentifier> = z.object({
@@ -145,7 +148,7 @@ const counterpartyIdentifierSchema: z.ZodType<CounterpartyIdentifier> = z.object
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const counterpartyContactInformationSchema: z.ZodType<CounterpartyContactInformation> = z.object({
@@ -167,7 +170,7 @@ const counterpartyContactInformationSchema: z.ZodType<CounterpartyContactInforma
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const counterpartyBusinessCentreSchema: z.ZodType<CounterpartyBusinessCentre> = z.object({
@@ -179,7 +182,7 @@ const counterpartyBusinessCentreSchema: z.ZodType<CounterpartyBusinessCentre> = 
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const partyCounterpartySchema: z.ZodType<PartyCounterparty> = z.object({
@@ -191,7 +194,7 @@ const partyCounterpartySchema: z.ZodType<PartyCounterparty> = z.object({
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const partyTypeSchema: z.ZodType<PartyType> = z.object({
@@ -205,7 +208,7 @@ const partyTypeSchema: z.ZodType<PartyType> = z.object({
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const partyStatusSchema: z.ZodType<PartyStatus> = z.object({
@@ -219,7 +222,7 @@ const partyStatusSchema: z.ZodType<PartyStatus> = z.object({
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const businessCentreSchema: z.ZodType<BusinessCentre> = z.object({
@@ -235,7 +238,7 @@ const businessCentreSchema: z.ZodType<BusinessCentre> = z.object({
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const partyIdSchemeSchema: z.ZodType<PartyIdScheme> = z.object({
@@ -251,7 +254,7 @@ const partyIdSchemeSchema: z.ZodType<PartyIdScheme> = z.object({
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const contactTypeSchema: z.ZodType<ContactType> = z.object({
@@ -265,7 +268,7 @@ const contactTypeSchema: z.ZodType<ContactType> = z.object({
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const currencySchema: z.ZodType<Currency> = z.object({
@@ -291,7 +294,7 @@ const currencySchema: z.ZodType<Currency> = z.object({
     performed_by: z.string(),
     change_reason_code: z.string(),
     change_commentary: z.string(),
-    recorded_at: z.string(),
+    recorded_at: wireTimestampSchema,
 });
 
 const counterpartyChildrenSchema: z.ZodType<CounterpartyChildren> = z.object({

@@ -20,6 +20,7 @@
  */
 
 import type { FeedBindingActivity } from '@ores/contracts';
+import { fromWireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
 import type { BindableSource } from '../../api/bindings.js';
 
 /** The kind of a binding that names a generated producer. */
@@ -39,13 +40,12 @@ export function isSynthetic(kind: string): boolean {
     return kind === SYNTHETIC;
 }
 
-/** The seconds since a time written as YYYY-MM-DD HH:MM:SSZ, or nothing when there is no time. */
-export function secondsSince(at: string, now: number): number | undefined {
-    if (at === '') {
+/** The seconds since a wire timestamp, or nothing when the source has written no tick. */
+export function secondsSince(at: WireTimestamp | null, now: number): number | undefined {
+    if (at === null) {
         return undefined;
     }
-    const then = Date.parse(at.replace(' ', 'T'));
-    return Number.isNaN(then) ? undefined : Math.max(0, Math.round((now - then) / 1000));
+    return Math.max(0, Math.round((now - fromWireTimestamp(at).getTime()) / 1000));
 }
 
 /**
@@ -59,7 +59,7 @@ export function statusOf(input: {
     readonly kind: string;
     readonly enabled: boolean;
     readonly running: boolean | undefined;
-    readonly lastTickAt: string;
+    readonly lastTickAt: WireTimestamp | null;
     readonly now: number;
 }): BindingStatus | undefined {
     if (!isSynthetic(input.kind)) {
@@ -98,4 +98,28 @@ export function heldBy(
     sourceName: string,
 ): string | undefined {
     return sources?.find((source) => source.source_name === sourceName)?.held_by ?? undefined;
+}
+
+/**
+ * Whether Revert is offered on a version of a binding.
+ *
+ * The offering is a statement about a write, so it needs a person who may write a
+ * binding and a binding that is not a vendor's, which records a real feed the screen
+ * does not control. The newest version has nothing to revert to, and a version whose
+ * series a running feed holds cannot be written back without taking a series another
+ * feed is publishing.
+ */
+export function revertOffer(input: {
+    readonly kind: string;
+    readonly mayWrite: boolean;
+    readonly version: number;
+    readonly newest: number;
+    readonly heldBy: string | undefined;
+}): boolean {
+    return (
+        input.mayWrite &&
+        isSynthetic(input.kind) &&
+        input.version < input.newest &&
+        input.heldBy === undefined
+    );
 }

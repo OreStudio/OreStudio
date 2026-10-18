@@ -469,6 +469,12 @@ MONEY_MEMBERS = [
     # A barrier's levels are a list, and every family that states a barrier
     # reads the same list, so the leaf is shared the way barrierData is.
     ("barrierData_Levels_t", "Level", "vector"),
+    # A range bound's levels are price levels, so they are money. Its
+    # leverage is a multiplier, so it stays a continuous float.
+    ("rangeBound", "RangeFrom", "optional"),
+    ("rangeBound", "RangeTo", "optional"),
+    ("rangeBound", "Strike", "optional"),
+    ("rangeBound", "StrikeAdjustment", "optional"),
 ]
 
 

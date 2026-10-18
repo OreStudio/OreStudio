@@ -1,0 +1,254 @@
+:PROPERTIES:
+:ID: 92BEE4E9-3CD0-4B5C-BF32-E0D176DBF036
+:END:
+#+title: ores.refdata.bundle_import_operations
+#+description: Codegen operation model for the bundle import: begin a staging session, stage one family, and commit the staged families.
+#+type: ores.codegen.operation
+#+component: refdata
+#+subcomponent: api
+#+entity_singular: bundle_import_operations
+#+namespace: ores::refdata::messaging
+#+brief: Begin, stage and commit a bundle import.
+#+filetags: :model:operation:refdata:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+The operations a caller takes to import a bundle. The bundle is
+too large for one message, so the caller begins an import, stages one family
+per message, and then commits. Every staged family reaches the live
+tables only on the commit, in one transaction.
+
+A repeated begin with a known id answers the import that already exists, so a
+retried begin opens no second session. A repeated stage of the same import,
+family and sequence is refused. A commit applies only a staging import.
+
+* Includes
+
+#+begin_src cpp :name includes
+#include "ores.refdata.api/domain/bundle_import.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <optional>
+#include <string>
+#include <vector>
+#+end_src
+
+* Messages
+
+** bundle_import_family_outcome
+
+#+begin_src cpp :name comment
+/**
+ * @brief What a commit did with one staged family.
+ */
+#+end_src
+
+*** family
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** sequence
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** applied
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** begin_bundle_import_request
+:PROPERTIES:
+:subject: refdata.v1.ops.begin_bundle_import
+:response: begin_bundle_import_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Opens a staging session for a bundle.
+ *
+ * The caller supplies the id, so a retried begin names the same import. The
+ * service stamps the session's party on the row.
+ */
+#+end_src
+
+*** id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+*** source
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+*** families_expected
+:PROPERTIES:
+:cpp_type: std::optional<int>
+:END:
+
+*** expires_at
+:PROPERTIES:
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:END:
+
+*** state
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * Refused when set: the service states the state, never the caller.
+ */
+#+end_src
+
+** begin_bundle_import_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief The import that is open for staging.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** import_row
+:PROPERTIES:
+:cpp_type: ores::refdata::domain::bundle_import
+:END:
+
+** stage_bundle_family_request
+:PROPERTIES:
+:subject: refdata.v1.ops.stage_bundle_family
+:response: stage_bundle_family_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Stages one family's payload under an open import.
+ *
+ * The payload is the family's own generated value type, serialised as JSON.
+ */
+#+end_src
+
+*** import_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+*** family
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** sequence
+:PROPERTIES:
+:cpp_type: int
+:default: 0
+:END:
+
+*** payload
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** checksum
+:PROPERTIES:
+:cpp_type: std::optional<std::string>
+:END:
+
+** stage_bundle_family_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief Whether the stage wrote its row.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+** commit_bundle_import_request
+:PROPERTIES:
+:subject: refdata.v1.ops.commit_bundle_import
+:response: commit_bundle_import_response
+:END:
+
+#+begin_src cpp :name comment
+/**
+ * @brief Applies every staged family of one import in one transaction.
+ */
+#+end_src
+
+*** import_id
+:PROPERTIES:
+:cpp_type: boost::uuids::uuid
+:END:
+
+** commit_bundle_import_response
+
+#+begin_src cpp :name comment
+/**
+ * @brief What the commit stored, and what it did not.
+ *
+ * The world conventions the tenant already held are kept, as the document save
+ * keeps them. The family outcomes list one entry per applied staged family.
+ */
+#+end_src
+
+*** success
+:PROPERTIES:
+:cpp_type: bool
+:default: false
+:END:
+
+*** message
+:PROPERTIES:
+:cpp_type: std::string
+:END:
+
+*** world_kept
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** fx_skipped
+:PROPERTIES:
+:cpp_type: std::vector<std::string>
+:END:
+
+*** families
+:PROPERTIES:
+:cpp_type: std::vector<bundle_import_family_outcome>
+:END:
+
+* See also
+
+- [[id:B33A0EE2-6DFB-4EC6-860E-1B285930C979][ores.refdata.bundle_import]] — the session these operations open, stage and commit.
+- [[id:D9269C52-0741-47D0-BE72-8BEAC15D4EA0][ores.refdata.bundle_import_item]] — the staged family each stage writes.

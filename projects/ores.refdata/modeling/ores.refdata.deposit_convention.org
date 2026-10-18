@@ -11,6 +11,7 @@
 #+entity_singular: deposit_convention
 #+entity_plural: deposit_conventions
 #+entity_title: Deposit Convention
+#+convention_family: deposit
 #+created: 2026-06-01
 #+updated: 2026-06-01
 

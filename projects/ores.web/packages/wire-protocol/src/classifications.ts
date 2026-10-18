@@ -30,6 +30,7 @@ import type {
 } from './domain.js';
 import { readBadgeCatalogue } from './badges.js';
 import { OperationFailedError } from './errors.js';
+import { wireTimestampSchema } from './time.js';
 import { subjects as badgeMappingSubjects } from './generated/dq/protocol/badge_mapping_protocol.js';
 import {
     historySubjectFor,
@@ -595,7 +596,7 @@ const wireRowSchema = z.object({
     description: z.string().default(''),
     display_order: z.int().optional(),
     modified_by: z.string().default(''),
-    recorded_at: z.string().default(''),
+    recorded_at: wireTimestampSchema,
     change_reason_code: z.string().default(''),
     change_commentary: z.string().default(''),
 });
@@ -753,7 +754,7 @@ const historyReplySchema = z.object({
             z.object({
                 version: z.int().nonnegative().default(0),
                 modified_by: z.string().default(''),
-                recorded_at: z.string().default(''),
+                recorded_at: wireTimestampSchema,
                 fields: z
                     .array(z.object({ name: z.string(), value: z.string().default('') }))
                     .default([]),
@@ -859,6 +860,13 @@ export async function readClassificationLabels(
 export async function readLabelCatalogue(caller: AuthenticatedCaller): Promise<{
     readonly labels: readonly BadgePresentation[];
     readonly domains: Readonly<Record<string, readonly string[]>>;
+    /**
+     * The badge each code of each domain is painted with, by the code the row
+     * carries. A screen that holds a row's own code — a tenor's kind, a
+     * convention's anchor — reads this rather than keying on the badge code,
+     * which the row never holds.
+     */
+    readonly mapped: Readonly<Record<string, Readonly<Record<string, string>>>>;
 }> {
     const subject = badgeMappingSubjects.list_badge_mappings_request;
     const [catalogue, mappings] = await Promise.all([
@@ -878,13 +886,15 @@ export async function readLabelCatalogue(caller: AuthenticatedCaller): Promise<{
         throw new OperationFailedError(subject, mappings.result.message);
     }
     const domains: Record<string, string[]> = {};
+    const mapped: Record<string, Record<string, string>> = {};
     for (const row of mappings.badge_mappings) {
         const codes = (domains[row.code_domain_code] ??= []);
         if (!codes.includes(row.badge_code)) {
             codes.push(row.badge_code);
         }
+        (mapped[row.code_domain_code] ??= {})[row.entity_code] = row.badge_code;
     }
-    return { labels: Object.values(catalogue), domains };
+    return { labels: Object.values(catalogue), domains, mapped };
 }
 
 /**

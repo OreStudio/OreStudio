@@ -36,10 +36,12 @@ import {
 import type {
     TenorCatalogue,
     TenorPickLists,
-    TenorResolutionPreview,
+    TenorResolution,
     TenorWriteOutcome,
     TenorsServer,
 } from './tenorsServer.js';
+import type { LabelCatalogue } from '../refdata/shared.js';
+import type { BadgePresentation } from '@ores/wire-protocol/browser';
 import type { Tenor } from '@ores/wire-protocol/generated/refdata/domain/tenor';
 import type { TenorConvention } from '@ores/wire-protocol/generated/refdata/domain/tenor_convention';
 
@@ -143,11 +145,17 @@ function draftOf(...actions: readonly TenorAction[]): TenorDraft {
     return actions.reduce(reduceTenor, blankDraft());
 }
 
-function stepsFor(state: TenorDetails, server: TenorsServer, pickLists?: TenorPickLists) {
+function stepsFor(
+    state: TenorDetails,
+    server: TenorsServer,
+    labels: LabelCatalogue = { byCode: new Map(), mapped: {} },
+    pickLists?: TenorPickLists,
+) {
     return tenorSteps({
         t,
         server,
         state,
+        labels,
         catalogue,
         catalogueFailure: undefined,
         pickLists,
@@ -178,8 +186,9 @@ describe('the tenor steps', () => {
     it('draws the rail the spec names: the list, the tenor, its convention, the schedule, the test, the review, the outcome and the history', () => {
         const steps = stepsFor(asDetails(blankDraft()), fakeServer());
         expect(steps.map((step) => step.id)).toEqual([
-            'choose',
+            'choose-tenor',
             'tenor',
+            'choose-convention',
             'convention',
             'schedule',
             'test',
@@ -188,6 +197,49 @@ describe('the tenor steps', () => {
             'history',
         ]);
         expect(steps.map((step) => step.id)).toEqual([...TENOR_STEP_IDS]);
+    });
+
+    it('draws a tenor kind and unit through the badge catalogue, not as bare codes', () => {
+        const badge = (code: string, label: string): BadgePresentation => ({
+            code,
+            label,
+            description: label,
+            backgroundColour: '#123456',
+            textColour: '#ffffff',
+            severity: 'info',
+        });
+        // The row carries 'period'; the domain's mapping points at the badge
+        // code, and the catalogue paints that code.
+        const labels: LabelCatalogue = {
+            byCode: new Map([
+                ['tenor_kind_period', badge('tenor_kind_period', 'Period')],
+                ['tenor_unit_day', badge('tenor_unit_day', 'Day')],
+            ]),
+            mapped: {
+                tenor_kind: { period: 'tenor_kind_period' },
+                tenor_unit: { day: 'tenor_unit_day' },
+            },
+        };
+        const steps = stepsFor(asDetails(blankDraft()), fakeServer(), labels);
+        const choose = steps[tenorStepIndex('choose-tenor')];
+        const html = renderToStaticMarkup(<>{choose?.body}</>);
+        expect(html).toContain('Period');
+        expect(html).toContain('Day');
+        expect(html).not.toContain('>period<');
+        expect(html).not.toContain('>day<');
+    });
+
+    it('shows the code rather than an unmapped badge when the catalogue has not painted it', () => {
+        // A tenor kind the catalogue does not carry must still read as its code:
+        // the Unmapped badge belongs to a row that is expected to be labelled.
+        const steps = stepsFor(asDetails(blankDraft()), fakeServer(), {
+            byCode: new Map(),
+            mapped: {},
+        });
+        const choose = steps[tenorStepIndex('choose-tenor')];
+        const html = renderToStaticMarkup(<>{choose?.body}</>);
+        expect(html).toContain('period');
+        expect(html).not.toContain('Unmapped');
     });
 
     it('holds the confirm until something has changed', () => {
@@ -324,7 +376,7 @@ describe('the tenor steps', () => {
     });
 
     it('shows the resolved dates when the server answers ok', () => {
-        const preview: TenorResolutionPreview = {
+        const preview: TenorResolution = {
             result: { outcome: 'ok', code: 'ok', message: '', fields: [] },
             anchorDate: '2026-01-31',
             dateBeforeRoll: '2026-02-28',
@@ -356,7 +408,7 @@ describe('the tenor steps', () => {
     });
 
     it('shows a refusal beside the dates it reached, without losing the draft', () => {
-        const preview: TenorResolutionPreview = {
+        const preview: TenorResolution = {
             result: {
                 outcome: 'invalid',
                 code: 'missing_spot_date',

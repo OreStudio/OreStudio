@@ -246,14 +246,24 @@ run_grant_repository::read_any_by_resource(context ctx, const std::string& resou
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<run_grant_entity>> |
                        where("tenant_id"_c == tid && "resource"_c == resource) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<run_grant_entity, domain::run_grant>(
+    auto found = execute_read_query<run_grant_entity, domain::run_grant>(
         ctx,
         query,
         [](const auto& entities) { return run_grant_mapper::map(entities); },
         lg(),
         "Reading any run grant by resource.");
+    // A key names a row of one party, and another party of the tenant may hold
+    // the same key, so the read keeps the session's party's rows. The filter
+    // runs before the newest row is taken because the party column may be
+    // null, and a null party means the row belongs to the whole tenant and
+    // stays readable by every party, as the latest-by finder also has it.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

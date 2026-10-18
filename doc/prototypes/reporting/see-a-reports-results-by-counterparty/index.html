@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: a run's results by counterparty — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  See a report's results by counterparty, from
+  doc/knowledge/journeys/reporting/journey_see_a_reports_results_by_counterparty.org:
+  which counterparties one finished run is exposed to, how much of the run each
+  one is, the group each counterparty nests under, the trades and netting sets
+  behind one name, and the two cases a screen must not drop.
+
+  Three variants, switchable with ?variant=A|B|C. A is a ranked list: one table,
+  largest first, a group row above its members, the totals at the foot. B is a
+  tree: counterparties grouped by their parent, expanding to members, each node
+  carrying its rolled-up aggregate. C is a map: the run proportioned by
+  counterparty, sized by NPV, with the selected counterparty read beside it.
+  They disagree about structure, not colour.
+
+  ?analytics=npv draws the same run on a report whose configuration runs npv and
+  not saccr, so the exposure column and every exposure figure go away. The
+  exposure is an output of the saccr analytic, and a run that does not run it
+  has none.
+
+  ?counterparty=<short code|id> selects a counterparty on load. The bar at the
+  foot prints the live variant, the analytics, the selected counterparty and the
+  run.
+
+  Honest gaps, repeated on the page: no operation returns results grouped by
+  counterparty, nothing parses the run's archive, and npv.csv names the
+  counterparty as a name rather than identifying it by id. Every figure here is
+  drawn from this file.
+
+  The fixture is one run of Cross-Entity Counterparty Concentration for party
+  ACMCOR. Its counterparties nest: ACME FINANCIAL GROUP holds ACME BANK PLC and
+  ACME BANK INTERNATIONAL and has no trades of its own; MERIDIAN CAPITAL GROUP
+  holds MERIDIAN CAPITAL and MERIDIAN CAPITAL UK and carries trades of its own.
+  Group figures are summed from their members every time the page draws, so a
+  group cannot disagree with its parts.
+
+  Two cases are drawn as stated cases rather than dropped. BLUE RIVER PENSION is
+  a counterparty the party can see that this run has no result for: zero trades,
+  no figures, and it is not a measure of zero. The trades whose
+  counterparty_scope is intra_entity carry no counterparty_id, because the
+  schema allows that, so they are drawn under a heading of their own and the
+  totals say what they leave out.
+
+  The run's own errors are drawn against the trades that name them. The error
+  scopes are Trade, Analytics, Curve, Configuration and Report: none of them is a
+  counterparty, so a counterparty's errors are reached only through its trades.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

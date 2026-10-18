@@ -23,6 +23,10 @@
  * To modify, update the template and regenerate.
  */
 #include "ores.database/domain/context.hpp"
+// A seeded parent is system-tenant reference data (its soft FK carries
+// :use_system_tenant:), so its row is forced to the system tenant and
+// written under a system-scoped context, and the tenant_id helpers are
+// needed.
 #include "ores.eventing.api/domain/entity_event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
@@ -42,6 +46,7 @@
 #include "ores.trading.api/messaging/fx_accumulator_instrument_protocol.hpp"
 #include "ores.trading.core/repository/fx_accumulator_instrument_repository.hpp"
 #include "ores.trading.core/service/fx_accumulator_instrument_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 // Parent-seed snippet includes (ores_trading_trades_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
@@ -50,11 +55,15 @@
 // Parent-seed snippet includes (ores_trading_trade_activities_tbl): the parent table is
 // hand-authored with no modeling org, so the snippet's generator and
 // repository headers are named by the org rather than derived.
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+// Soft-FK parent seeding (ores_trading_long_short_types_tbl): the parent may live in another
+// component, so its own component names the headers. A system-tenant parent
+// is read rather than generated, so it needs no generator.
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include "ores.trading.api/generators/trade_activity_generator.hpp"
-#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#include "ores.trading.core/repository/long_short_type_repository.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/log/sources/severity_feature.hpp>
@@ -166,6 +175,18 @@ TEST_CASE("write_fx_accumulator_instrument_publishes_an_event", tags) {
         activity.party_id = *party_ctx.party_id();
         ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
         v.identity.trade_activity_id = activity.id;
+    }
+    // long_short_type is system-tenant reference data: reference a
+    // seeded catalogue row instead of creating one, so the shared system
+    // catalogue keeps exactly the rows the populate scripts put there. The
+    // referencing row's insert trigger resolves the parent under the system
+    // tenant.
+    {
+        ores::trading::repository::long_short_type_repository long_short_catalogue_repo;
+        const auto long_short_catalogue = long_short_catalogue_repo.read_latest(
+            party_ctx.with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user()));
+        REQUIRE_FALSE(long_short_catalogue.empty());
+        v.long_short = long_short_catalogue.front().code;
     }
     const auto id_str = boost::uuids::to_string(v.identity.trade_id);
     BOOST_LOG_SEV(lg, debug) << "FX Accumulator Instrument: " << v;

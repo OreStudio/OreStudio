@@ -1,0 +1,564 @@
+"""A derived type carries its base's fields and then its own."""
+
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+GENERATOR = ROOT / "projects/ores.ore/scripts/generate_xml_bindings.py"
+
+BASE = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="baseType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Alpha"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id" use="required"/>
+  </xs:complexType>
+</xs:schema>
+"""
+
+DERIVED = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:include schemaLocation="base.xsd"/>
+  <xs:element type="derivedType" name="Root"/>
+  <xs:complexType name="derivedType">
+    <xs:complexContent>
+      <xs:extension base="baseType">
+        <xs:sequence>
+          <xs:element type="xs:string" name="Beta"/>
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="kind"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_derived_type_flattens_its_base(tmp_path):
+    """The record needs the base's fields, in the base's order, then its own."""
+    (tmp_path / "base.xsd").write_text(BASE)
+    (tmp_path / "derived.xsd").write_text(DERIVED)
+    header = tmp_path / "out.hpp"
+    source = tmp_path / "out.cpp"
+
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "base.xsd"),
+            "--schema",
+            str(tmp_path / "derived.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "derivedType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(source),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    emitted = header.read_text()
+    derived = emitted[emitted.index("struct derived_type {") :]
+    derived = derived[: derived.index("};")]
+    for member in ("alpha", "beta", "id", "kind"):
+        assert member in derived, member
+    # The base's element comes before the extension's, which is the order the
+    # document writes and the order the table states.
+    assert derived.index("alpha") < derived.index("beta")
+
+
+def _generate(tmp_path, schema, root="Root", root_type="derivedType"):
+    header = tmp_path / "out.hpp"
+    return subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / schema),
+            "--root-element",
+            root,
+            "--root-type",
+            root_type,
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+
+def test_a_restriction_is_refused(tmp_path):
+    """A restriction removes fields, which needs its own decision."""
+    (tmp_path / "base.xsd").write_text(BASE)
+    (tmp_path / "restricted.xsd").write_text(
+        DERIVED.replace("<xs:extension", "<xs:restriction").replace(
+            "</xs:extension>", "</xs:restriction>"
+        )
+    )
+    result = _generate(tmp_path, "restricted.xsd")
+    assert result.returncode != 0
+    assert "restricts a base type" in result.stderr
+
+
+def test_a_derivation_cycle_is_refused(tmp_path):
+    """Two types that extend each other stop with a message, not a traceback."""
+    (tmp_path / "loop.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="aType" name="Root"/>
+  <xs:complexType name="aType">
+    <xs:complexContent><xs:extension base="bType">
+      <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+    </xs:extension></xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="bType">
+    <xs:complexContent><xs:extension base="aType">
+      <xs:sequence><xs:element type="xs:string" name="Beta"/></xs:sequence>
+    </xs:extension></xs:complexContent>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(tmp_path, "loop.xsd", root_type="aType")
+    assert result.returncode != 0
+    assert "cycle" in result.stderr
+
+
+NESTED_CHOICE = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Head"/>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element type="xs:string" name="Alpha"/>
+          <xs:element type="xs:string" name="Beta"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element type="xs:string" name="Gamma" minOccurs="0"/>
+          <xs:element type="xs:int" name="Delta"/>
+        </xs:sequence>
+      </xs:choice>
+      <xs:element type="xs:string" name="Tail" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_choice_of_sequences_keeps_every_member(tmp_path):
+    """A choice whose alternatives are sequences still offers all their elements.
+
+    The record is flat, so each element of each alternative is a member of it.
+    Dropping them would leave the table unable to bind a document the schema
+    allows.
+    """
+    (tmp_path / "choice.xsd").write_text(NESTED_CHOICE)
+    header = tmp_path / "out.hpp"
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "choice.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "choiceType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    emitted = header.read_text()
+    record = emitted[emitted.index("struct choice_type {") :]
+    record = record[: record.index("};")]
+    for member in ("head", "alpha", "beta", "gamma", "delta", "tail"):
+        assert member in record, member
+    assert record.index("alpha") < record.index("gamma")
+
+
+DUPLICATE_ALTERNATIVES = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:choice>
+      <xs:sequence>
+        <xs:element type="xs:int" name="Shared"/>
+        <xs:element type="xs:string" name="Alpha"/>
+      </xs:sequence>
+      <xs:sequence>
+        <xs:element type="xs:int" name="Shared"/>
+        <xs:element type="xs:string" name="Beta"/>
+      </xs:sequence>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_one_element_named_by_two_alternatives_is_one_member(tmp_path):
+    """A choice may offer the same element twice; the record holds it once."""
+    (tmp_path / "choice.xsd").write_text(DUPLICATE_ALTERNATIVES)
+    header = tmp_path / "out.hpp"
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "choice.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "choiceType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    emitted = header.read_text()
+    record = emitted[emitted.index("struct choice_type {") :]
+    record = record[: record.index("};")]
+    assert record.count("shared") == 1
+    assert "alpha" in record
+    assert "beta" in record
+
+
+def test_two_alternatives_that_disagree_about_one_name_are_refused(tmp_path):
+    """One record member cannot hold two shapes, so the run stops."""
+    (tmp_path / "choice.xsd").write_text(
+        DUPLICATE_ALTERNATIVES.replace(
+            '<xs:element type="xs:int" name="Shared"/>\n        <xs:element type="xs:string" name="Beta"/>',
+            '<xs:element type="xs:date" name="Shared"/>\n        <xs:element type="xs:string" name="Beta"/>',
+        )
+    )
+    result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
+    assert result.returncode != 0
+    assert "Shared" in result.stderr
+
+
+def _emit(tmp_path, schema_text, root_type="rootType"):
+    """The generated header and source for one schema, as text."""
+    (tmp_path / "schema.xsd").write_text(schema_text)
+    header = tmp_path / "out.hpp"
+    source = tmp_path / "out.cpp"
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "schema.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            root_type,
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(source),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return header.read_text(), source.read_text()
+
+
+def _record(emitted, name):
+    record = emitted[emitted.index(f"struct {name} {{") :]
+    return record[: record.index("};")]
+
+
+def _row(source, name):
+    """The field row one element states, as a list of its fields.
+
+    The member offset is an `offsetof(type, member)` expression, and its
+    argument list holds a comma, so it is replaced before splitting.
+    """
+    row = source[source.index('{"' + name + '"') :]
+    row = row[: row.index("}")]
+    return re.sub(r"offsetof\([^)]*\)", "offset", row).split(",")
+
+
+def test_an_annotation_inside_a_compositor_is_ignored(tmp_path):
+    """An annotation is documentation, not a member, wherever it is written."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:annotation><xs:documentation>Notes to a reader.</xs:documentation></xs:annotation>
+      <xs:element type="xs:string" name="Alpha"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "alpha" in record
+    assert "documentation" not in record
+
+
+def test_a_repeated_choice_repeats_its_members(tmp_path):
+    """A choice that repeats hands the record one vector per member."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element type="xs:string" name="Alpha"/>
+      <xs:element type="xs:string" name="Beta"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "std::vector<std::string> alpha" in record
+    assert "std::vector<std::string> beta" in record
+
+
+def test_a_member_under_an_optional_group_is_not_required(tmp_path):
+    """An optional group may be absent whole, so its members may be too."""
+    emitted, source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:sequence minOccurs="0">
+        <xs:element type="xs:string" name="Alpha"/>
+      </xs:sequence>
+      <xs:element type="xs:string" name="Beta"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    assert "alpha" in _record(emitted, "root_type")
+
+    def required(name):
+        # name, hash, kind, offset, bit, attribute, required, ...
+        return _row(source, name)[6].strip()
+
+    assert required("Alpha") == "false"
+    assert required("Beta") == "true"
+
+
+def test_a_member_named_like_an_earlier_type_is_qualified(tmp_path):
+    """A member declared earlier hides a type of the same name.
+
+    A string member named `leaf` is in scope when an element of type `leaf` is
+    declared after it, so the type has to be spelled with the struct keyword.
+    """
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="leaf"/>
+      <xs:element type="leaf" name="first"/>
+      <xs:element type="leaf" name="second"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="leaf">
+    <xs:sequence><xs:element type="xs:string" name="Value" minOccurs="0"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "std::string leaf;" in record
+    assert "struct leaf first;" in record
+    assert "struct leaf second;" in record
+
+
+def test_two_alternatives_with_different_cardinality_are_refused(tmp_path):
+    """A scalar and a repeated form of one name are two shapes, not one."""
+    (tmp_path / "choice.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:choice>
+      <xs:element type="xs:int" name="Shared"/>
+      <xs:element type="xs:int" name="Shared" maxOccurs="unbounded"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
+    assert result.returncode != 0
+    assert "Shared" in result.stderr
+
+
+def test_a_member_named_like_its_own_type_is_also_qualified_when_used_again(tmp_path):
+    """`leaf leaf;` compiles, but a later `leaf` of the same type does not."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="leaf" name="leaf"/>
+      <xs:element type="leaf" name="second"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="leaf">
+    <xs:sequence><xs:element type="xs:string" name="Value" minOccurs="0"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "struct leaf leaf;" in record
+    assert "struct leaf second;" in record
+
+
+def test_an_attribute_named_after_a_type_shadows_it_too(tmp_path):
+    """Attributes are declared before elements, so they shadow for every element."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="leaf" name="first"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="leaf"/>
+  </xs:complexType>
+  <xs:complexType name="leaf">
+    <xs:sequence><xs:element type="xs:string" name="Value" minOccurs="0"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "std::string leaf;" in record
+    assert "struct leaf first;" in record
+
+
+def test_two_alternatives_with_different_inline_types_are_refused(tmp_path):
+    """Two inline types of the same size are still two shapes."""
+    (tmp_path / "choice.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:choice>
+      <xs:element name="Shared">
+        <xs:complexType><xs:sequence>
+          <xs:element type="xs:string" name="Alpha"/>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="Shared">
+        <xs:complexType><xs:sequence>
+          <xs:element type="xs:int" name="Beta"/>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
+    assert result.returncode != 0
+    assert "Shared" in result.stderr
+
+
+def test_a_reference_to_a_global_element_becomes_a_member_of_its_name(tmp_path):
+    """`ref` states the name through the global element it points at."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:element type="xs:string" name="Gamma"/>
+  <xs:element type="xs:string" name="Delta"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element ref="Gamma"/>
+      <xs:element ref="Delta"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "std::string gamma;" in record
+    assert "std::string delta;" in record
+
+
+def test_one_reference_with_two_cardinalities_is_refused(tmp_path):
+    """The same element referenced twice is one member only if it means one shape."""
+    (tmp_path / "refs.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:element type="xs:string" name="Gamma"/>
+  <xs:complexType name="rootType">
+    <xs:choice>
+      <xs:element ref="Gamma"/>
+      <xs:element ref="Gamma" maxOccurs="unbounded"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(tmp_path, "refs.xsd", root_type="rootType")
+    assert result.returncode != 0
+    assert "Gamma" in result.stderr
+
+
+def test_two_alternatives_with_different_inline_enumerations_are_refused(tmp_path):
+    """Two inline enumerations are two spellings, so they are two shapes."""
+    (tmp_path / "choice.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:choice>
+      <xs:element name="Shared">
+        <xs:simpleType><xs:restriction base="xs:string">
+          <xs:enumeration value="A"/>
+        </xs:restriction></xs:simpleType>
+      </xs:element>
+      <xs:element name="Shared">
+        <xs:simpleType><xs:restriction base="xs:string">
+          <xs:enumeration value="B"/>
+        </xs:restriction></xs:simpleType>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
+    assert result.returncode != 0
+    assert "Shared" in result.stderr

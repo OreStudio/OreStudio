@@ -42,7 +42,7 @@ capture single or double barrier levels.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
 Routes ORE product types: FxDigitalOption, FxDigitalBarrierOption,
 FxTouchOption, FxDoubleTouchOption.
@@ -97,7 +97,7 @@ The activity that wrote this version.
 :economic: true
 :END:
 
-ForeignCurrency from ORE XML (source / underlying currency).
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("EUR")
@@ -111,7 +111,7 @@ std::string("EUR")
 :economic: true
 :END:
 
-DomesticCurrency from ORE XML (quote / settlement currency).
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -125,7 +125,7 @@ std::string("USD")
 :economic: true
 :END:
 
-Currency in which the payoff is denominated.
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("EUR")
@@ -155,7 +155,7 @@ ores::utility::decimal::decimal::from_string("100").value()
 
 Option type: Call or Put. Empty for touch options.
 
-Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+the values are the option types this store accepts (Call, Put), which ORE also states as a closed set.
 
 #+begin_src cpp :name generator
 std::string("Call")
@@ -185,11 +185,17 @@ std::chrono::year_month_day{std::chrono::year{2033}/2/20}
 
 Position direction: Long or Short.
 
-Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
 
 #+begin_src cpp :name generator
 std::string("Long")
 #+end_src
+
+The four product codes share this table, so each check names the fields its own
+code engages and requires them. A field another code uses is tolerated rather
+than refused: the one synthetic generator fills a strike and both barriers on
+its single row, so a check that refused a field the code does not engage would
+refuse that row.
 
 ** strike
 :PROPERTIES:
@@ -216,7 +222,7 @@ Strike level. Absent for touch options.
 Barrier type (e.g. DownAndIn, DownAndOut, KnockIn, KnockOut). Absent
 for plain digital options.
 
-Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR 4 tightens the soft reference into a real foreign key.
+the values are the barrier styles ORE Studio supports. ORE states the leaf as free text, so the lookup is the set this store accepts rather than a closed schema enumeration.
 
 ** lower_barrier
 :PROPERTIES:
@@ -299,6 +305,42 @@ is immutable.
     }
 #+end_src
 
+** option_type
+:PROPERTIES:
+:table:             ores_trading_option_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid option_type: %. No active option type found with this code.
+:END:
+
+A foreign key to =ores_trading_option_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** long_short
+:PROPERTIES:
+:table:             ores_trading_long_short_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid long_short: %. No active long short type found with this code.
+:END:
+
+A foreign key to =ores_trading_long_short_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** barrier_type
+:PROPERTIES:
+:table:             ores_trading_barrier_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid barrier_type: %. No active barrier type found with this code.
+:END:
+
+A foreign key to =ores_trading_barrier_types_tbl=: a value the store cannot resolve is
+refused on write.
+
 * SQL
 
 ** Flags
@@ -313,12 +355,13 @@ is immutable.
 | expression |
 |---|
 | "payoff_amount" > 0 |
+| ("trade_type_code" <> 'FxDigitalOption') or ("strike" is not null) |
+| ("trade_type_code" <> 'FxTouchOption') or ("lower_barrier" is not null or "upper_barrier" is not null) |
+| ("trade_type_code" <> 'FxDoubleTouchOption') or ("lower_barrier" is not null and "upper_barrier" is not null) |
+| ("trade_type_code" <> 'FxDigitalBarrierOption') or ("strike" is not null and ("lower_barrier" is not null or "upper_barrier" is not null)) |
 | "foreign_currency" <> '' |
 | "domestic_currency" <> '' |
 | "payoff_currency" <> '' |
-| "long_short" in ('Long', 'Short') |
-| "option_type" is null or "option_type" in ('Call', 'Put') |
-| "barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
 
 ** Indexes
 
@@ -346,6 +389,7 @@ repository profiles regenerate correctly.
 :domain_identity_group: ores.trading.instrument_identity
 :domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true
+:service_batch_reads_by_trade_id: true
 :generator_facet_name: generators
 :END:
 

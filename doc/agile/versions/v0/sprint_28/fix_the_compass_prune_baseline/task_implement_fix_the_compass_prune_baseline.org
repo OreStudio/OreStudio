@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: E3D8BFA2-12EE-421F-9876-40E68BF6BCCC
+:END:
+#+title: Task: Fix the baseline the prune deletes against
+#+description: Initial task for: Prune the branches that are merged into origin/main
+#+type: task
+#+level: s1
+#+filetags: :fix_the_compass_prune_baseline:sprint_28:v0:
+#+owner: marco
+#+branch:
+#+pr: 3454
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F8E0D7C4-4DFC-4111-9CBB-E20510C1F5C9][Prune the branches that are merged into origin/main]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+compass branches prune deletes every branch it reports safe to prune, whatever is checked out, and never deletes one that is not an ancestor of origin/main.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:F8E0D7C4-4DFC-4111-9CBB-E20510C1F5C9][Prune the branches that are merged into origin/main]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- A local branch merged into origin/main is deleted even when the current branch does not contain it.
+- A local branch with commits not in origin/main is never deleted, whatever the current branch holds.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3454][#3454]] | [compass] Check a branch against main before pruning it |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=compass branches prune= now deletes every branch it reports safe to prune,
+whatever is checked out, and still refuses one that main does not hold.
+
+The set is defined as "merged into =origin/main=", but the delete asked
+=git branch -d=, which answers whether a branch is merged into *HEAD* or its
+own upstream. So a branch that main holds survived whenever the checked-out
+branch was older than it -- my own case, where the message blamed unmerged
+commits that did not exist.
+
+Each name is now re-checked against =origin/main= with =merge-base
+--is-ancestor= immediately before deleting, and the delete uses =-D=. The
+re-check also closes the gap between reporting and deleting, where a fetch
+can move a branch.
+
+Six tests, and the behavioural one fails on the old code for the right
+reason: the branch survives with the warning that blamed unmerged commits.
+The test needs a branch with *no upstream*, because =-d= consults the
+upstream when there is one -- that detail is the difference between a test
+that reproduces the defect and one that passes for the wrong reason.

@@ -59,7 +59,7 @@ export interface InboxNotification {
     /**
      * @brief When the recipient read it, or empty while it is unread.
      */
-    read_at: string;
+    read_at: string | null;
 }
 
 /**

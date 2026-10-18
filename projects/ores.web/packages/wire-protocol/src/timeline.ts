@@ -38,6 +38,7 @@
  */
 
 import { z } from 'zod';
+import { wireTimestamp, wireTimestampSchema, type WireTimestamp } from './time.js';
 import type { AuthenticatedCaller } from './account-operations.js';
 import { readRoles } from './access.js';
 import { readEntityHistory } from './classifications.js';
@@ -66,7 +67,7 @@ export const timelineEventSchema = z.object({
     entityType: z.string().default(''),
     entityId: z.string().default(''),
     kind: z.string().default(''),
-    at: z.string().default(''),
+    at: wireTimestampSchema,
     actor: z.string().default(''),
     version: z.int().nonnegative().default(0),
     reasonCode: z.string().default(''),
@@ -238,7 +239,7 @@ export function recordEvents(
     versions: readonly {
         readonly version: number;
         readonly modifiedBy: string;
-        readonly recordedAt: string;
+        readonly recordedAt: WireTimestamp;
         readonly fields: readonly TimelineField[];
     }[],
 ): readonly TimelineEvent[] {
@@ -280,7 +281,7 @@ export function linkEvents(
     versions: readonly {
         readonly version: number;
         readonly modifiedBy: string;
-        readonly recordedAt: string;
+        readonly recordedAt: WireTimestamp;
         readonly fields: readonly TimelineField[];
     }[],
 ): readonly TimelineEvent[] {
@@ -304,7 +305,7 @@ export function linkEvents(
                 entityType,
                 entityId: id,
                 kind: 'closed',
-                at: fieldValue(version.fields, CLOSED_AT_FIELD),
+                at: wireTimestamp(fieldValue(version.fields, CLOSED_AT_FIELD)),
                 actor: fieldValue(version.fields, CLOSED_BY_FIELD),
                 version: version.version,
                 reasonCode: '',

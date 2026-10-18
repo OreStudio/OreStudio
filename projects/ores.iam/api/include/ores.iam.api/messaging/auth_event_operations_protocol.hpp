@@ -25,6 +25,7 @@
 #ifndef ORES_IAM_API_MESSAGING_AUTH_EVENT_OPERATIONS_PROTOCOL_HPP
 #define ORES_IAM_API_MESSAGING_AUTH_EVENT_OPERATIONS_PROTOCOL_HPP
 
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -34,12 +35,14 @@ namespace ores::iam::messaging {
 /**
  * @brief One authentication event, as the log records it.
  *
- * The timestamps are ISO 8601 strings: that is the storage form, and the
- * screen reads them as text rather than as an instant.
+ * The event time is an instant, so it crosses the wire in the project's one
+ * timestamp shape: the rfl parser writes it with `to_iso8601_utc`, and the
+ * bytes do not depend on the timezone of the session that read the row. See
+ * =doc/knowledge/architecture/time_architecture.org=.
  */
 struct auth_event {
     std::string id;
-    std::string event_time;
+    std::chrono::system_clock::time_point event_time;
     std::string account_id;
     std::string event_type;
     std::string username;
@@ -51,8 +54,9 @@ struct auth_event {
 /**
  * @brief A window over the caller's tenant authentication events.
  *
- * An empty filter does not filter. The window is newest first, so the
- * screen reads the most recent events without asking for an order.
+ * A bound the caller states no value for is null, and the read then applies no
+ * bound on that side. The window is newest first, so the screen reads the most
+ * recent events without asking for an order.
  */
 struct list_auth_events_request {
     using response_type = struct list_auth_events_response;
@@ -66,8 +70,8 @@ struct list_auth_events_request {
     static constexpr bool requires_session = true;
     std::string account_id;
     std::string event_type;
-    std::string from_time;
-    std::string to_time;
+    std::optional<std::chrono::system_clock::time_point> from_time;
+    std::optional<std::chrono::system_clock::time_point> to_time;
     std::uint32_t limit = 200;
     std::uint32_t offset = 0;
 };

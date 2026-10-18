@@ -3329,6 +3329,11 @@ def key_resolvers(entity: dict[str, Any]) -> list[dict[str, Any]]:
     closed row, so resolution needs its own read that ignores the window and
     takes the newest match.
 
+    The match is kept to the session's party when the entity owns a party
+    column: the declared key can repeat across the parties of one tenant, so a
+    read without the party can resolve history to another party's row. See
+    ``ores.cpp.repository.repository_impl.org`` for the emitted filter.
+
     Deliberately independent of ``key_finders``. That list drops a finder the
     model states itself, because emitting a second declaration of the same
     method would be a redefinition. There is no such clash here: a model that
@@ -4728,6 +4733,20 @@ _SHELL_TOKEN_TYPES = frozenset({
     "std::chrono::system_clock::time_point",
     "boost::asio::ip::address",
 })
+
+
+def _shell_fillable(cpp: str, is_list: bool) -> bool:
+    """Whether a generated command can fill a field of this type.
+
+    ``from_token`` reads a ``std::optional<T>`` as either the absent token or a
+    ``T``, so an optional field is fillable exactly when its inner type is. The
+    set above therefore names the value types only.
+    """
+    if is_list:
+        return True
+    if cpp.startswith("std::optional<") and cpp.endswith(">"):
+        return cpp[len("std::optional<"):-1].strip() in _SHELL_TOKEN_TYPES
+    return cpp in _SHELL_TOKEN_TYPES
 # The one container form the shell can fill: a comma-separated token.
 _SHELL_LIST_TYPE = "std::vector<std::string>"
 # The trailing words a message name carries that are not part of the action.
@@ -4778,8 +4797,16 @@ _SHELL_TOKEN_LITERALS = {
 
 
 def _shell_token_literal(cpp: str, is_list: bool) -> str:
+    """The token a generated test hands one field.
+
+    An optional field takes the literal of its value type, because the command
+    then parses a real value rather than the absent token: the absent case is
+    what a caller states, not what a test should cover by default.
+    """
     if is_list:
         return "sample"
+    if cpp.startswith("std::optional<") and cpp.endswith(">"):
+        return _SHELL_TOKEN_LITERALS.get(cpp[len("std::optional<"):-1].strip(), "sample")
     return _SHELL_TOKEN_LITERALS.get(cpp, "sample")
 
 
@@ -4802,7 +4829,7 @@ def _shell_field(field: dict[str, Any]) -> dict[str, Any]:
         "is_bool": cpp == "bool",
         "is_number": cpp in ("int", "std::uint32_t", "std::uint64_t"),
         "needs_from_token": not is_list and cpp not in ("std::string", "bool"),
-        "fillable": is_list or cpp in _SHELL_TOKEN_TYPES,
+        "fillable": _shell_fillable(cpp, is_list),
         # A value the command can actually parse. A test that hands every
         # positional the same string only exercises the string fields: a uuid
         # or a number throws in from_token before the command reaches the

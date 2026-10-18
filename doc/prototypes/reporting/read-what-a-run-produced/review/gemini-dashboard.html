@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Analytics Workstation - Result Dashboard with Deltas</title>
+    <!-- Tailwind CSS for utility styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#111215',
+                            card: '#1a1c23',
+                            border: '#2a2d37',
+                            hover: '#242731',
+                            muted: '#8b92a5',
+                            text: '#e1e4ed'
+                        },
+                        badge: {
+                            blueBg: '#1e293b',
+                            blueText: '#38bdf8',
+                            blueBorder: '#0284c7',
+                            amberBg: '#2e2115',
+                            amberText: '#fbbf24',
+                            amberBorder: '#d97706'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Roboto Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Enable tabular nums so monospaced numbers align perfectly */
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111215;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2d37;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f4454;
+        }
+
+        .sort-icon {
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+        .sort-asc .sort-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-dark-text font-sans antialiased min-h-screen p-4 md:p-8 selection:bg-sky-500 selection:text-white">
+<div style="background:#312e81;color:#e0e7ff;padding:.5rem 1rem;font:500 13px/1.6 Inter,system-ui,sans-serif;text-align:center">Gemini review &middot; a generated alternative to the agreed prototype &middot; mock data, nothing is stored &middot; this page loads Tailwind from a CDN, so it needs the network, unlike every other prototype here &middot; <a href="../index.html" style="color:#fff;text-decoration:underline">the agreed prototype &rarr;</a></div>
+
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- ================= HEADER SECTION ================= -->
+        <header class="bg-dark-card border border-dark-border rounded-xl p-5 shadow-lg space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <h1 class="text-2xl font-bold tracking-tight text-white">The result</h1>
+                    
+                    <!-- Pill Badges -->
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2.5 py-0.5 text-xs font-mono font-medium rounded-full bg-badge-blueBg text-badge-blueText border border-badge-blueBorder/40">
+                            npv, sensitivity
+                        </span>
+                        <span class="px-2.5 py-0.5 text-xs font-mono font-medium rounded-full bg-badge-amberBg text-badge-amberText border border-badge-amberBorder/40">
+                            fixture
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Simulation Controls & Modes -->
+                <div class="flex items-center space-x-3 bg-dark-bg/80 border border-dark-border p-2 rounded-lg">
+                    <label for="runCompareSelect" class="text-xs font-semibold text-dark-muted">Comparison Mode:</label>
+                    <select id="runCompareSelect" onchange="switchRunMode(this.value)" class="bg-dark-card border border-dark-border text-xs text-white rounded px-2.5 py-1 focus:outline-none focus:border-sky-500 font-mono">
+                        <option value="prev_run">vs Run #1042 (Previous)</option>
+                        <option value="stress_test">vs Stress Scenario -50bp</option>
+                        <option value="eod_baseline">vs EOD Baseline</option>
+                    </select>
+                    <button onclick="triggerLiveUpdate()" class="flex items-center space-x-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs px-3 py-1 rounded transition-colors font-semibold">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Simulate Live Shift</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-dark-border/60 flex flex-wrap items-center justify-between gap-2 text-sm text-dark-muted">
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-300 font-medium">Analytics this run:</span>
+                    <span class="px-2 py-0.5 text-xs font-mono bg-dark-bg text-sky-400 border border-dark-border rounded font-semibold">rannpvsensitivity</span>
+                    <span class="text-dark-muted text-xs md:text-sm">— figures compared against active baseline</span>
+                </div>
+                <div class="text-xs text-dark-muted font-mono flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Baseline: <strong id="activeBaselineLabel" class="text-gray-200">Run #1042 (2026-10-17 10:30)</strong></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ================= TOP KPI SUMMARY CARDS WITH DELTAS ================= -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            
+            <!-- Card 1: NPV -->
+            <div class="bg-dark-card border border-dark-border hover:border-dark-muted/50 transition-colors duration-200 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                <div>
+                    <span class="text-xs font-semibold text-dark-muted tracking-wider uppercase">NPV (USD)</span>
+                    <div id="kpi-npv-val" class="text-2xl lg:text-3xl font-extrabold text-white mt-1 font-mono tabular-nums tracking-tight">
+                        $88,402,114
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-dark-border/40 flex items-center justify-between">
+                    <span id="kpi-npv-badge" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
+                        ▲ +$2,410,200 (+2.8%)
+                    </span>
+                    <span class="text-[11px] text-dark-muted">vs last run</span>
+                </div>
+            </div>
+
+            <!-- Card 2: DELTA -->
+            <div class="bg-dark-card border border-dark-border hover:border-dark-muted/50 transition-colors duration-200 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                <div>
+                    <span class="text-xs font-semibold text-dark-muted tracking-wider uppercase">DELTA (USD)</span>
+                    <div id="kpi-delta-val" class="text-2xl lg:text-3xl font-extrabold text-white mt-1 font-mono tabular-nums tracking-tight">
+                        $1,846,818
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-dark-border/40 flex items-center justify-between">
+                    <span id="kpi-delta-badge" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
+                        ▲ +$42,800 (+2.4%)
+                    </span>
+                    <span class="text-[11px] text-dark-muted">vs last run</span>
+                </div>
+            </div>
+
+            <!-- Card 3: GAMMA -->
+            <div class="bg-dark-card border border-dark-border hover:border-dark-muted/50 transition-colors duration-200 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                <div>
+                    <span class="text-xs font-semibold text-dark-muted tracking-wider uppercase">GAMMA (USD)</span>
+                    <div id="kpi-gamma-val" class="text-2xl lg:text-3xl font-extrabold text-white mt-1 font-mono tabular-nums tracking-tight">
+                        $52,350
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-dark-border/40 flex items-center justify-between">
+                    <span id="kpi-gamma-badge" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-rose-950/80 text-rose-400 border border-rose-800/60">
+                        ▼ -$1,250 (-2.3%)
+                    </span>
+                    <span class="text-[11px] text-dark-muted">vs last run</span>
+                </div>
+            </div>
+
+            <!-- Card 4: POSITIONS -->
+            <div class="bg-dark-card border border-dark-border hover:border-dark-muted/50 transition-colors duration-200 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                <div>
+                    <span class="text-xs font-semibold text-dark-muted tracking-wider uppercase">POSITIONS PRICED</span>
+                    <div id="kpi-pos-val" class="text-2xl lg:text-3xl font-extrabold text-white mt-1 font-mono tabular-nums tracking-tight">
+                        18,204
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-dark-border/40 flex items-center justify-between">
+                    <span id="kpi-pos-badge" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
+                        ▲ +142 (+0.8%)
+                    </span>
+                    <span class="text-[11px] text-dark-muted">vs last run</span>
+                </div>
+            </div>
+
+            <!-- Card 5: BOOKS -->
+            <div class="bg-dark-card border border-dark-border hover:border-dark-muted/50 transition-colors duration-200 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                <div>
+                    <span class="text-xs font-semibold text-dark-muted tracking-wider uppercase">BOOKS</span>
+                    <div id="kpi-books-val" class="text-2xl lg:text-3xl font-extrabold text-white mt-1 font-mono tabular-nums tracking-tight">
+                        24
+                    </div>
+                </div>
+                <div class="mt-3 pt-2 border-t border-dark-border/40 flex items-center justify-between">
+                    <span id="kpi-books-badge" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-dark-bg text-gray-400 border border-dark-border">
+                        ■ 0 (0.0%)
+                    </span>
+                    <span class="text-[11px] text-dark-muted">vs last run</span>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= TABLE SECTION WITH DETAILED DELTAS ================= -->
+        <section class="bg-dark-card border border-dark-border rounded-xl shadow-lg overflow-hidden">
+            
+            <!-- Table Sub-Header -->
+            <div class="p-5 border-b border-dark-border flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <h2 class="text-lg font-bold text-white tracking-tight">NPV, Delta and Gamma by book</h2>
+                    <span class="px-2.5 py-0.5 text-xs font-mono font-medium rounded-full bg-badge-amberBg text-badge-amberText border border-badge-amberBorder/40">
+                        fixture
+                    </span>
+                </div>
+                <div class="text-xs text-dark-muted max-w-2xl leading-relaxed flex items-center gap-3">
+                    <span class="flex items-center gap-1 text-emerald-400 font-mono"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> ▲ Positive Shift</span>
+                    <span class="flex items-center gap-1 text-rose-400 font-mono"><span class="w-2 h-2 rounded-full bg-rose-500"></span> ▼ Negative Shift</span>
+                </div>
+            </div>
+
+            <!-- Responsive Table Container -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm" id="analyticsTable">
+                    <thead>
+                        <tr class="bg-dark-bg/60 border-b border-dark-border text-xs text-dark-muted uppercase tracking-wider font-semibold select-none">
+                            <th scope="col" class="py-3.5 px-4 cursor-pointer hover:text-white transition-colors" onclick="sortTable(0, 'string')">
+                                <div class="flex items-center space-x-1">
+                                    <span>Book</span>
+                                    <span class="sort-icon text-gray-500">▼</span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 text-right cursor-pointer hover:text-white transition-colors" onclick="sortTable(1, 'number')">
+                                <div class="flex items-center justify-end space-x-1">
+                                    <span>Positions</span>
+                                    <span class="sort-icon text-gray-500">▼</span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 text-right cursor-pointer hover:text-white transition-colors" onclick="sortTable(2, 'currency')">
+                                <div class="flex items-center justify-end space-x-1">
+                                    <span>NPV (USD) &amp; Shift</span>
+                                    <span class="sort-icon text-gray-500">▼</span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 text-right cursor-pointer hover:text-white transition-colors" onclick="sortTable(3, 'currency')">
+                                <div class="flex items-center justify-end space-x-1">
+                                    <span>Delta (USD) &amp; Shift</span>
+                                    <span class="sort-icon text-gray-500">▼</span>
+                                </div>
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 text-right cursor-pointer hover:text-white transition-colors" onclick="sortTable(4, 'currency')">
+                                <div class="flex items-center justify-end space-x-1">
+                                    <span>Gamma (USD) &amp; Shift</span>
+                                    <span class="sort-icon text-gray-500">▼</span>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-dark-border/50 text-gray-200 font-mono tabular-nums">
+                        <!-- Rows dynamically rendered via JS for clean live delta simulation -->
+                    </tbody>
+                    <!-- Pinned Total Row -->
+                    <tfoot>
+                        <tr id="tableFootRow" class="bg-dark-bg/90 border-t-2 border-dark-border font-mono font-semibold text-white">
+                            <!-- Dynamically updated total row -->
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= INFORMATION BANNER / FOOTER NOTE ================= -->
+        <footer class="bg-dark-card border border-sky-900/40 rounded-xl p-4 shadow-md flex items-start space-x-3">
+            <div class="p-1.5 bg-sky-950/60 text-sky-400 rounded-lg shrink-0 border border-sky-800/50 mt-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <p class="text-xs md:text-sm text-dark-muted leading-relaxed">
+                Delta badges reflect run-over-run variance. Positive green indicators (<code class="text-emerald-400 font-mono">▲</code>) represent portfolio value expansion or favorable risk shifts, while red indicators (<code class="text-rose-400 font-mono">▼</code>) highlight risk contractions or negative NPV changes.
+            </p>
+        </footer>
+
+    </div>
+
+    <!-- Interactive Logic & State Management -->
+    <script>
+        // Initial Dataset & Historical Baseline States
+        const initialData = [
+            { book: "GBP Rates", pos: 4218, npv: 41204118, delta: 612404, gamma: 18204 },
+            { book: "EUR Rates", pos: 3904, npv: 28118402, delta: 488120, gamma: 14118 },
+            { book: "USD Rates", pos: 5128, npv: 12884020, delta: 412884, gamma: 9204 },
+            { book: "FX Options", pos: 1820, npv: 4204880, delta: 168204, gamma: 6118 },
+            { book: "Inflation", pos: 1104, npv: 1118204, delta: 94118, gamma: 2884 },
+            { book: "Credit", pos: 1420, npv: 612402, delta: 58204, gamma: 1420 },
+            { book: "Equity", pos: 610, npv: 260088, delta: 12884, gamma: 402 }
+        ];
+
+        // Comparison Baselines for Interactive Switching
+        const baselines = {
+            prev_run: {
+                label: "Run #1042 (2026-10-17 10:30)",
+                multiplier: { npv: 0.972, delta: 0.976, gamma: 1.023, pos: 0.992 }
+            },
+            stress_test: {
+                label: "Stress Scenario -50bp Curve Shift",
+                multiplier: { npv: 0.885, delta: 1.150, gamma: 1.320, pos: 1.000 }
+            },
+            eod_baseline: {
+                label: "EOD Official Close (Yesterday)",
+                multiplier: { npv: 1.045, delta: 0.920, gamma: 0.950, pos: 0.985 }
+            }
+        };
+
+        let currentData = JSON.parse(JSON.stringify(initialData));
+        let activeBaselineKey = "prev_run";
+
+        // Format currency helper
+        function formatCurr(val) {
+            const sign = val < 0 ? "-" : "";
+            return sign + "$" + Math.abs(Math.round(val)).toLocaleString();
+        }
+
+        function formatNum(val) {
+            return Math.round(val).toLocaleString();
+        }
+
+        // Render Delta Badge HTML
+        function renderDeltaBadge(diff, pct, isCurrency = true) {
+            const isPositive = diff >= 0;
+            const bgClass = isPositive ? "bg-emerald-950/80 text-emerald-400 border-emerald-800/60" : "bg-rose-950/80 text-rose-400 border-rose-800/60";
+            const arrow = isPositive ? "▲" : "▼";
+            const sign = isPositive ? "+" : "";
+            const formattedDiff = isCurrency ? formatCurr(diff) : sign + formatNum(diff);
+            const formattedPct = (isPositive ? "+" : "") + pct.toFixed(1) + "%";
+
+            return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono font-bold border ${bgClass} ml-2 shrink-0">
+                ${arrow} ${isPositive ? '+' : ''}${formattedPct}
+            </span>`;
+        }
+
+        // Calculate and Render Dashboard
+        function renderDashboard() {
+            const baseline = baselines[activeBaselineKey].multiplier;
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+
+            let totalPos = 0, totalNpv = 0, totalDelta = 0, totalGamma = 0;
+            let prevTotalPos = 0, prevTotalNpv = 0, prevTotalDelta = 0, prevTotalGamma = 0;
+
+            currentData.forEach((row, idx) => {
+                // Compute simulated baseline values for row
+                const prevNpv = row.npv * baseline.npv;
+                const prevDelta = row.delta * baseline.delta;
+                const prevGamma = row.gamma * baseline.gamma;
+                const prevPos = row.pos * baseline.pos;
+
+                const diffNpv = row.npv - prevNpv;
+                const pctNpv = (diffNpv / Math.abs(prevNpv)) * 100;
+
+                const diffDelta = row.delta - prevDelta;
+                const pctDelta = (diffDelta / Math.abs(prevDelta)) * 100;
+
+                const diffGamma = row.gamma - prevGamma;
+                const pctGamma = (diffGamma / Math.abs(prevGamma)) * 100;
+
+                const diffPos = row.pos - prevPos;
+                const pctPos = (diffPos / Math.abs(prevPos)) * 100;
+
+                // Accumulate totals
+                totalPos += row.pos;
+                totalNpv += row.npv;
+                totalDelta += row.delta;
+                totalGamma += row.gamma;
+
+                prevTotalPos += prevPos;
+                prevTotalNpv += prevNpv;
+                prevTotalDelta += prevDelta;
+                prevTotalGamma += prevGamma;
+
+                // Build Table Row
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-dark-hover transition-colors cursor-pointer group";
+                tr.onclick = () => toggleRowHighlight(tr);
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-sans font-medium text-white group-hover:text-sky-400 transition-colors">${row.book}</td>
+                    <td class="py-3 px-4 text-right text-dark-muted group-hover:text-gray-200">
+                        ${formatNum(row.pos)}
+                        <span class="text-[10px] opacity-75 font-mono">${diffPos >= 0 ? '▲' : '▼'}${diffPos >= 0 ? '+' : ''}${Math.round(diffPos)}</span>
+                    </td>
+                    <td class="py-3 px-4 text-right font-medium text-white">
+                        <div class="flex items-center justify-end">
+                            <span>${formatCurr(row.npv)}</span>
+                            ${renderDeltaBadge(diffNpv, pctNpv)}
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-right text-gray-300">
+                        <div class="flex items-center justify-end">
+                            <span>${formatCurr(row.delta)}</span>
+                            ${renderDeltaBadge(diffDelta, pctDelta)}
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-right text-gray-300">
+                        <div class="flex items-center justify-end">
+                            <span>${formatCurr(row.gamma)}</span>
+                            ${renderDeltaBadge(diffGamma, pctGamma)}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Update Total Row
+            const diffTotNpv = totalNpv - prevTotalNpv;
+            const pctTotNpv = (diffTotNpv / Math.abs(prevTotalNpv)) * 100;
+
+            const diffTotDelta = totalDelta - prevTotalDelta;
+            const pctTotDelta = (diffTotDelta / Math.abs(prevTotalDelta)) * 100;
+
+            const diffTotGamma = totalGamma - prevTotalGamma;
+            const pctTotGamma = (diffTotGamma / Math.abs(prevTotalGamma)) * 100;
+
+            const tfootRow = document.getElementById("tableFootRow");
+            tfootRow.innerHTML = `
+                <td class="py-3.5 px-4 font-sans font-bold text-sky-400">Total</td>
+                <td class="py-3.5 px-4 text-right text-gray-200">${formatNum(totalPos)}</td>
+                <td class="py-3.5 px-4 text-right text-emerald-400 font-bold">
+                    <div class="flex items-center justify-end">
+                        <span>${formatCurr(totalNpv)}</span>
+                        ${renderDeltaBadge(diffTotNpv, pctTotNpv)}
+                    </div>
+                </td>
+                <td class="py-3.5 px-4 text-right text-emerald-400 font-bold">
+                    <div class="flex items-center justify-end">
+                        <span>${formatCurr(totalDelta)}</span>
+                        ${renderDeltaBadge(diffTotDelta, pctTotDelta)}
+                    </div>
+                </td>
+                <td class="py-3.5 px-4 text-right text-emerald-400 font-bold">
+                    <div class="flex items-center justify-end">
+                        <span>${formatCurr(totalGamma)}</span>
+                        ${renderDeltaBadge(diffTotGamma, pctTotGamma)}
+                    </div>
+                </td>
+            `;
+
+            // Update KPI Cards
+            document.getElementById("kpi-npv-val").innerText = formatCurr(totalNpv);
+            updateKpiBadge("kpi-npv-badge", diffTotNpv, pctTotNpv);
+
+            document.getElementById("kpi-delta-val").innerText = formatCurr(totalDelta);
+            updateKpiBadge("kpi-delta-badge", diffTotDelta, pctTotDelta);
+
+            document.getElementById("kpi-gamma-val").innerText = formatCurr(totalGamma);
+            updateKpiBadge("kpi-gamma-badge", diffTotGamma, pctTotGamma);
+
+            document.getElementById("kpi-pos-val").innerText = formatNum(totalPos);
+            const diffTotPos = totalPos - prevTotalPos;
+            const pctTotPos = (diffTotPos / Math.abs(prevTotalPos)) * 100;
+            updateKpiBadge("kpi-pos-badge", diffTotPos, pctTotTotPos = pctTotPos, false);
+        }
+
+        function updateKpiBadge(id, diff, pct, isCurrency = true) {
+            const badge = document.getElementById(id);
+            const isPositive = diff >= 0;
+            const arrow = isPositive ? "▲" : "▼";
+            const sign = isPositive ? "+" : "";
+            const bgClass = isPositive ? "bg-emerald-950/80 text-emerald-400 border-emerald-800/60" : "bg-rose-950/80 text-rose-400 border-rose-800/60";
+            
+            const formattedDiff = isCurrency ? formatCurr(diff) : sign + formatNum(diff);
+            badge.className = `inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold border ${bgClass}`;
+            badge.innerText = `${arrow} ${formattedDiff} (${sign}${pct.toFixed(1)}%)`;
+        }
+
+        // Switch Comparison Mode
+        function switchRunMode(modeKey) {
+            activeBaselineKey = modeKey;
+            document.getElementById("activeBaselineLabel").innerText = baselines[modeKey].label;
+            renderDashboard();
+        }
+
+        // Simulate Live Real-Time Market Movement Shift
+        function triggerLiveUpdate() {
+            currentData.forEach(row => {
+                const shift = (Math.random() - 0.48) * 0.05; // -2.4% to +2.6% shift
+                row.npv *= (1 + shift);
+                row.delta *= (1 + shift * 0.8);
+                row.gamma *= (1 + shift * 0.5);
+            });
+            renderDashboard();
+        }
+
+        // Table Sorting Logic
+        let currentSortColumn = -1;
+        let isAscending = true;
+
+        function sortTable(columnIndex, type) {
+            if (currentSortColumn === columnIndex) {
+                isAscending = !isAscending;
+            } else {
+                currentSortColumn = columnIndex;
+                isAscending = true;
+            }
+
+            const keys = ["book", "pos", "npv", "delta", "gamma"];
+            const sortKey = keys[columnIndex];
+
+            currentData.sort((a, b) => {
+                let valA = a[sortKey];
+                let valB = b[sortKey];
+
+                if (type === 'string') {
+                    return isAscending ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                } else {
+                    return isAscending ? valA - valB : valB - valA;
+                }
+            });
+
+            renderDashboard();
+        }
+
+        function toggleRowHighlight(row) {
+            row.classList.toggle('bg-sky-950/40');
+            row.classList.toggle('border-l-4');
+            row.classList.toggle('border-sky-500');
+        }
+
+        // Initial Load
+        window.onload = () => {
+            renderDashboard();
+        };
+    </script>
+</body>
+</html>

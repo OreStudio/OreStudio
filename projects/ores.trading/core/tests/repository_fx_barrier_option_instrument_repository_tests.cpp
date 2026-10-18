@@ -59,12 +59,34 @@ fx_barrier_option_instrument make_instrument(database_helper& h) {
     r.option_type = "Call";
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date("2033-02-20");
     r.barrier_type = "UpAndIn";
-    r.lower_barrier = ores::utility::decimal::decimal::from_string("1.2").value();
+    r.upper_barrier = ores::utility::decimal::decimal::from_string("1.2").value();
     r.audit.modified_by = h.db_user();
     r.audit.performed_by = "ores";
     r.audit.change_reason_code = "system.external_data_import";
     r.audit.change_commentary = "Imported from ORE XML";
     return r;
+}
+
+TEST_CASE("an_up_style_refuses_a_lower_level", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party_id = boost::uuids::random_generator()();
+    auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
+
+    // An Up style engages the upper level, so a row that also fills the lower
+    // level states a shape the product cannot hold.
+    auto instr = make_instrument(h);
+    instr.lower_barrier = ores::utility::decimal::decimal::from_string("1.1").value();
+
+    // The refusal names a check constraint, so a different failure cannot pass.
+    fx_barrier_option_instrument_repository repo;
+    try {
+        repo.write(ctx, instr);
+        FAIL("the store accepted an Up style with a lower level");
+    } catch (const std::exception& e) {
+        CHECK(std::string(e.what()).find("violates check constraint") != std::string::npos);
+    }
 }
 
 } // namespace
@@ -93,8 +115,9 @@ TEST_CASE("fx_barrier_option_instrument_write_and_read_latest", tags) {
     CHECK(read[0].option_type == "Call");
     CHECK(read[0].expiry_date == ores::platform::time::datetime::from_iso8601_date("2033-02-20"));
     CHECK(read[0].barrier_type == "UpAndIn");
-    CHECK(read[0].lower_barrier == ores::utility::decimal::decimal::from_string("1.2").value());
-    CHECK(!read[0].upper_barrier.has_value());
+    REQUIRE(read[0].upper_barrier.has_value());
+    CHECK(*read[0].upper_barrier == ores::utility::decimal::decimal::from_string("1.2").value());
+    CHECK(!read[0].lower_barrier.has_value());
     BOOST_LOG_SEV(lg, debug) << "Read FX barrier option instrument: " << read[0];
 }
 
@@ -139,4 +162,25 @@ TEST_CASE("fx_barrier_option_instrument_remove", tags) {
     const auto after = repo.read_latest(ctx, id_str);
     BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.size() == before.size() - 1);
+}
+
+TEST_CASE("a_double_barrier_refuses_a_single_level", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party_id = boost::uuids::random_generator()();
+    auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
+
+    // A double barrier states a level per side, so one level is half a row.
+    auto instr = make_instrument(h);
+    instr.identity.trade_type_code = "FxDoubleBarrierOption";
+    instr.barrier_type = "KnockOut";
+
+    fx_barrier_option_instrument_repository repo;
+    try {
+        repo.write(ctx, instr);
+        FAIL("the store accepted a double barrier with one level");
+    } catch (const std::exception& e) {
+        CHECK(std::string(e.what()).find("violates check constraint") != std::string::npos);
+    }
 }

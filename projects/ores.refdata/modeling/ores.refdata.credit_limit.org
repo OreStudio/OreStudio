@@ -1,0 +1,238 @@
+:PROPERTIES:
+:ID: DBE59E31-57CE-4F56-8526-007E219FB95A
+:END:
+#+title: ores.refdata.credit_limit
+#+description: Codegen entity model for the refdata =credit_limit= table. Drives the C++ domain class, mapper, repository, service, generator, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: refdata
+#+filetags: :model:entity:refdata:
+#+brief: A counterparty credit line that restricts which trades one netting set may offset.
+#+entity_singular: credit_limit
+#+entity_plural: credit_limits
+#+entity_title: Credit Limit
+#+created: 2026-10-16
+#+updated: 2026-10-16
+
+A credit limit is the amount of credit the firm allows one counterparty,
+set by one legal entity of the firm. It is the dimension that splits a
+[[id:6AADB1A7-1229-4D10-8951-58446788957F][netting agreement]]'s trades into separate
+[[id:83C9697A-0D6D-42A2-9917-6C68268B5404][netting sets]]: where one agreement covers trades under several limits,
+netting is restricted to the trades within one limit (see
+[[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]]).
+
+The limit is a credit fact, not a legal one, so it stands apart from the
+agreement: one agreement may cover several limits, and one limit may
+cover trades under several agreements. A netting set names both, and a
+pinned key holds the set's counterparty and party to the limit's, as it
+does for the agreement.
+
+* Flags
+:PROPERTIES:
+:schema:    public
+:product:   ores
+:component: refdata
+:profile:   uuid-identified-lookup
+:END:
+
+* Columns
+
+** id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID uniquely identifying this credit limit.
+
+Surrogate key for the credit limit record.
+
+** code
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
+:END:
+
+The reference the firm gives the limit.
+
+Unique within the legal entity that set it, as an agreement number is.
+
+#+begin_src cpp :name generator
+std::string("CL-") + std::string(faker::string::alphanumeric(10))
+#+end_src
+
+** party_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:natural_key: true
+:fixed:       true
+:END:
+
+The legal entity of the firm that set the limit.
+
+References the parties table. Fixed for the limit's life, so the netting
+sets that pin their party to it can never be left on another party.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** counterparty_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:fixed:    true
+:END:
+
+The counterparty the limit is set against.
+
+References the counterparties table. Fixed for the limit's life.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+** limit_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The credit the firm allows the counterparty under this limit.
+
+Not negative. Absent when the limit is a bucket the firm has not
+quantified.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Optional description of the limit.
+
+#+begin_src cpp :name generator
+std::optional<std::string>("Test credit limit")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_refdata_credit_limits_tbl
+:END:
+
+** Checks
+
+| expression                                     |
+|------------------------------------------------|
+| "limit_amount" is null or "limit_amount" >= 0  |
+
+* Foreign keys
+
+** party_id
+:PROPERTIES:
+:table:          ores_refdata_parties_tbl
+:parent_entity:  party
+:reuse_existing: true
+:nullable:       false
+:error_message:  Invalid party_id: %. No active party found with this id.
+:END:
+
+** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:parent_entity: counterparty
+:nullable:      false
+:error_message: Invalid counterparty_id: %. No active counterparty found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:service_find_by_uuid:  true
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: credit_limit
+:entity_plural_short:   credit_limits
+:entity_singular_words: credit limit
+:entity_plural_words:   credit limits
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cl
+:END:
+
+** Table display
+
+| column       | header      |
+|--------------+-------------|
+| code         | Code        |
+| description  | Description |
+| modified_by  | Modified By |
+| version      | Version     |
+
+** Presentation
+:PROPERTIES:
+:domain_include:          ores.refdata.api/domain/credit_limit.hpp
+:domain_class:            refdata::domain::credit_limit
+:protocol_include:        ores.refdata.api/messaging/credit_limit_protocol.hpp
+:collection_name:         credit_limits
+:key_field:               code
+:save_request_item_field: data
+:END:
+
+*** Detail fields
+
+| field       | label       | widget            | type      | is_key | is_required | placeholder             |
+|-------------+-------------+-------------------+-----------+--------+-------------+-------------------------|
+| code        | Code        | codeEdit          | line_edit | true   | true        | Credit limit reference  |
+| description | Description | descriptionEdit   | line_edit | false  | false       | Enter description       |
+
+*** Columns
+
+| enum_name  | field       | header      | type      | width |
+|------------+-------------+-------------+-----------+-------|
+| Code       | code        | Code        | string    |   140 |
+| Description | description | Description | string    |   200 |
+| Version    | version     | Version     | int       |    80 |
+| ModifiedBy | modified_by | Modified By | string    |   120 |
+| RecordedAt | recorded_at | Recorded At | timestamp |   150 |
+
+* See also
+
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+- [[id:83C9697A-0D6D-42A2-9917-6C68268B5404][ores.refdata.netting_set]] — the set whose identity names a limit.
+- [[id:5F12A37F-9F26-4B49-BAAF-1BAA7B2BB94F][Netting sets]] — the analysis this entity follows.

@@ -23,10 +23,10 @@
 #include "ores.storage.core/filesystem/archiver.hpp"
 #include <boost/json.hpp>
 #include <algorithm>
-#include <span>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <span>
 #include <stdexcept>
 
 namespace ores::reporting::service {
@@ -67,9 +67,8 @@ std::string read_field(const json::object& obj, std::string_view name) {
  *
  * @return The sub-field the subject was read from, which is no longer a detail.
  */
-std::string read_subject(const std::string& scope,
-                         const json::object& sub_fields,
-                         engine_log_error& error) {
+std::string
+read_subject(const std::string& scope, const json::object& sub_fields, engine_log_error& error) {
     const auto set = [&](std::string subject, std::string_view field) {
         error.subject = std::move(subject);
         error.subject_id = read_field(sub_fields, field);

@@ -111,14 +111,17 @@ Flag indicating whether the account is locked for security reasons.
 ** last_login
 :PROPERTIES:
 :type:     timestamp with time zone
-:cpp_type: std::chrono::system_clock::time_point
-:nullable: false
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
+:nullable: true
 :END:
 
-Timestamp of the last successful login.
+When the account last signed in successfully, or null when it never has. An
+account is created before anybody signs into it, so the column is nullable and
+the domain, entity and protocol hold an optional instant: absence is null, and
+there is no zero instant standing in for it.
 
 #+begin_src cpp :name generator
-ctx.past_timepoint()
+std::nullopt
 #+end_src
 
 ** online
@@ -194,6 +197,7 @@ Soft foreign key to the owning account.
 #include <chrono>
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #+end_src
 
 ** Entity includes

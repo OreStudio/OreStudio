@@ -39,7 +39,7 @@ coverage gap.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
 Routes ORE product types: FxForward, FxSwap (near leg only).
 
@@ -94,7 +94,7 @@ The activity that wrote this version.
 :economic: true
 :END:
 
-ISO 4217 currency code of the bought leg (e.g. EUR).
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("EUR")
@@ -122,7 +122,7 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 :economic: true
 :END:
 
-ISO 4217 currency code of the sold leg (e.g. USD).
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -229,6 +229,18 @@ is immutable.
     }
 #+end_src
 
+** settlement
+:PROPERTIES:
+:table:             ores_trading_settlement_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid settlement: %. No active settlement type found with this code.
+:END:
+
+A foreign key to =ores_trading_settlement_types_tbl=: a value the store cannot resolve is
+refused on write.
+
 * SQL
 
 ** Flags
@@ -274,6 +286,7 @@ repository profiles regenerate correctly.
 :domain_identity_group: ores.trading.instrument_identity
 :domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true
+:service_batch_reads_by_trade_id: true
 :generator_facet_name: generators
 :END:
 

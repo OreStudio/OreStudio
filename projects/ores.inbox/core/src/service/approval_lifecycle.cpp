@@ -25,6 +25,7 @@
 #include "ores.inbox.core/repository/approval_request_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -167,8 +168,7 @@ std::vector<part_progress> approval_lifecycle::progress_of(const std::string& re
     // A refusal ends the request, so a part has at most one answer that counts.
     const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
         ctx_,
-        "select part_code, decision_code, decided_by::text, "
-        "       to_char(decided_at at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"'), comment "
+        "select part_code, decision_code, decided_by::text, decided_at, comment "
         "from ores_inbox_approval_decisions_tbl "
         "where request_id = $1::uuid "
         "  and part_code is not null "
@@ -197,7 +197,7 @@ std::vector<part_progress> approval_lifecycle::progress_of(const std::string& re
                 continue;
             entry.state = text(row, 1) == "approve" ? "approved" : "refused";
             entry.decided_by = text(row, 2);
-            entry.decided_at = text(row, 3);
+            entry.decided_at = ores::platform::time::datetime::from_db_string(text(row, 3));
             entry.comment = text(row, 4);
         }
         progress.push_back(std::move(entry));

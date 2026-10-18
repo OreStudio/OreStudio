@@ -44,6 +44,8 @@ struct roundtrip_summary {
     int currency_files = 0;
     int calendar_files = 0;
     int convention_files = 0;
+    int pricing_engine_files = 0;
+    int credit_simulation_files = 0;
     std::vector<std::string> failures; ///< "<relative path>: <what failed>", in walk order
     long long import_ms = 0;           ///< wall time inside importer calls
     long long export_ms = 0;           ///< wall time inside exporter calls

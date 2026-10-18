@@ -26,7 +26,7 @@ import type {
     ListedSeries,
     PointProvenance,
 } from '@ores/contracts';
-import { fromWireTimestamp, isWireTimestamp } from '@ores/wire-protocol/browser';
+import { fromWireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
 
 /** What the person types to name an object. */
 export interface IdentityForm {
@@ -135,7 +135,7 @@ export interface MatrixRow {
 }
 
 export interface Matrix {
-    readonly columns: readonly string[];
+    readonly columns: readonly WireTimestamp[];
     readonly rows: readonly MatrixRow[];
 }
 
@@ -187,22 +187,24 @@ function detailOf(provenance: PointProvenance | undefined): string {
     return '';
 }
 
-function seconds(at: string): number | undefined {
-    return isWireTimestamp(at) ? fromWireTimestamp(at).getTime() / 1000 : undefined;
+function seconds(at: WireTimestamp): number {
+    return fromWireTimestamp(at).getTime() / 1000;
 }
 
 /**
  * The snapshot as one row per node.
  *
  * A hole has an empty value and no age. A value whose record time is the epoch
- * has no age either, because the epoch is how an absent time is written.
+ * has no age either, because the epoch is how an absent time is written. A node
+ * the server gave no record time for has none either.
  */
 export function nowRowsOf(snapshot: CurveSnapshot): readonly NowRow[] {
     const at = seconds(snapshot.as_of);
     return snapshot.nodes.map((node, index) => {
         const value = snapshot.values[index] ?? '';
-        const recorded = seconds(snapshot.recorded_at[index] ?? '');
-        const absent = value === '' || recorded === undefined || recorded <= 0 || at === undefined;
+        const recordedAt = snapshot.recorded_at[index];
+        const recorded = recordedAt === undefined ? undefined : seconds(recordedAt);
+        const absent = value === '' || recorded === undefined || recorded <= 0;
         return {
             label: nodeLabel(node.coordinates),
             value,

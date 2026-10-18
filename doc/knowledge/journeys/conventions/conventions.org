@@ -2,35 +2,106 @@
 :ID: 72375ADC-BD12-4821-AE1C-C895EB084872
 :END:
 #+title: Conventions journeys
-#+description: The market terms an instrument is built on: the convention entities, what each one fixes, and the picks from the reference data lists that a person must not edit from a convention.
+#+description: The market terms an instrument is built on: 26 convention kinds, how the curated ones arrive by a DQ publish and the one that does not, how a person reads which document a run takes, changes one, authors one, and verifies a new party's set.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:user_journey:refdata:
 #+created: 2026-10-07
-#+updated: 2026-10-07
+#+updated: 2026-10-18
 
 A convention is the set of market terms an instrument is built on: the day
 count, the calendars, the payment frequency, the index, and whatever else the
-instrument family fixes before a trade exists. There are 25 convention entities,
-one per instrument family, from the deposit convention up to the cross-currency
-basis swap.
+instrument family fixes before a trade exists. There are **26** convention
+kinds, one per instrument family, from the deposit convention up to the
+cross-currency basis swap. Each kind is its own table with its own term columns,
+and no two kinds carry the same ones.
 
-A person starts from the instrument they want to trade, never from the entity
-name. The journey walks from the instrument family to the convention that serves
-it. Most of a convention's fields are picks from the reference data lists the
-classifications journey maintains, so a convention references those lists and
-never edits them.
+ACME holds **10,991** convention rows across those 26 kinds. **2,155** belong to
+each of the five parties and **216** are held once for the tenant. The rows did
+not arrive by hand. **25 of the 26 kinds arrived from a data quality publish**:
+24 on =refdata.v1.ops.publish_conventions_from_dq= for the dataset *ORE
+Instrument Conventions*, and =currency_pair= on its own subject and its own
+dataset. The 26th, =tenor=, has no DQ route at all — there is no
+=ores_dq_tenor_conventions_artefact_tbl= — and its 4 rows are copied from the
+system tenant when the tenant is created.
+
+* The lifecycle these journeys cover
+
+Five journeys cover the life of these rows, and the order below is the order the
+life takes.
+
+1. A party is provisioned. Its conventions arrive inside that run, as the first
+   member of the =party_essentials= bundle: 2,155 rows for the party, and 33 rows
+   the tenant already held.
+2. A curated correction is published. That path exists and cannot carry a
+   correction to a tenant that already holds the row for 25 of the 26 kinds.
+3. A person asks what a run will read. Today no answer exists: there is no
+   default marker on any kind, no name column to look a document up by, and the
+   conventions configuration a report binds carries no rows.
+4. A person changes one convention of one kind. The change reaches every run of
+   the party, because the export reads the party's whole document and not the
+   bound configuration.
+5. A person authors a term set no curated document states.
+
+Only the third and the fifth are reachable today with what the server offers.
+The first two are real lifecycle steps that the tree already performs. The
+fourth cannot be finished: choosing a different document for a kind has nowhere
+to be written, because no default exists.
 
 * Journeys
 
 #+ATTR_HTML: :class hug-leading
 | Journey | Actor | Gist |
 |---------+-------+------|
-| [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Define the conventions for an instrument]] | tenant administrator | Pick an instrument family, choose or create its convention, author its terms, and save them with a versioned history |
+| [[id:AD7E6FC0-392E-46A9-8E28-23B7B4946A88][Onboard a party and verify its conventions]] | tenant administrator | Read that the conventions arrive inside provisioning and not as a manual fill, verify the party's 2,155 rows against the tenant's 216, and mark a party the bundle never reached |
+| [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data quality]] | data quality operator, tenant administrator | Publish the curated dataset into a tenant: 25 of 26 kinds covered, the tenor exception, why 33 rows are skipped on every party after the first, and that a re-publish does not carry a corrected row |
+| [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] | market risk, trading desk, tenant administrator | What terms the next run reads, kind by kind — and the three reasons it cannot be answered: no default, no name, and a configuration that holds nothing |
+| [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] | operations, tenant administrator | Correct one document, or choose a different one, and read the reach: every definition of the party, not the ones bound to the configuration |
+| [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] | market risk, tenant administrator, operations | Terms no curated document states, written as a new row with a precondition and a change reason, and the bitemporal record it leaves |
+
+The three reading journeys are cheap to build: the rows are stored, the lists
+are generated and the histories exist. The two that change something are not,
+and each says in its own /What is missing/ which server gap stops it. The
+default marker is the one gap that blocks more than one journey.
+
+* Where the 25 and the 1 come from
+
+#+ATTR_HTML: :class hug-leading
+| Route | Kinds | Subject | Bundle and scope |
+|-------+-------+---------+------------------|
+| the 24-kind array | 24 | =refdata.v1.ops.publish_conventions_from_dq= | =party_essentials=, once per party |
+| currency pair | 1 | =refdata.v1.ops.publish_currency_pair_conventions_from_dq= | =base=, once per tenant |
+| none | 1 (=tenor=) | — | copied by =ores_iam_provision_tenant_fn= |
+
+Four kinds carry no =party_id= column and are held once for the tenant:
+=currency_pair= 179 rows, =overnight_index= 23, =ibor_index= 10 and =tenor= 4.
+Two of those four are in the 24-kind array, which is why a publish reports
+=records_skipped 33= on every party after the first.
+
+* A convention is a lookup that other records point at
+
+A person starts from the instrument they want to trade, never from the entity
+name, and most of a convention's fields are picks from the reference data lists
+the classifications journey maintains, so a convention references those lists and
+never edits them. But no other record points at a convention today: a trade
+carries its scheduling terms inline, and a report binds a conventions
+configuration whose contents are empty. So a convention is referenced by the
+conventions file a run exports, which names every document the party holds, and
+by nothing finer than that.
 
 * Related
 
 - [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] — the lists a convention picks from
 - [[id:296089DE-83BF-4493-9DD1-E265A168773D][Tenors]] — how the tenors a convention names resolve
 - [[id:A38B168A-8F37-4D8D-A99D-C485E32B9DCE][Calendars]] — the calendars a convention names
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the runs that read the conventions file
 - [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]]
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist these journeys are written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections each page fills
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the staged table, the dataset, the artefact type and the publish contract
+- [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the bundle a starting point publishes per party
+- [[id:DE6C0BDA-D12A-4E31-AA86-C323F5A7E016][Name the convention sets a report chooses]] — the decision that conventions are named sets, and the gaps that block choosing one
+- [[file:../../prototypes/reporting/create-a-report/][Create a report]] and [[file:../../prototypes/reporting/change-what-a-report-runs/][Change what a report runs]] — the choosing surface: one page of named sets, and the link out to the authoring UX, which is deferred

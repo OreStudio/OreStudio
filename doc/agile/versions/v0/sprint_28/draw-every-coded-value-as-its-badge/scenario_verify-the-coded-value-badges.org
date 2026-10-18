@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 3462B8E4-6F3F-4B68-8868-2E8D4F6BFB1A
+:END:
+#+title: Test Scenario: Verify every coded value draws as its badge
+#+description: A person walks the tenor journey and reads each coded value as a badge: the same badge the code domain owns, in the same colours, and chosen the same way.
+#+type: test_scenario
+#+level: s1
+#+filetags: :draw-every-coded-value-as-its-badge:sprint_28:v0:
+#+target_dialog:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: clever_dijkstra
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page verifies [[id:D651CC6F-F3AC-4510-B484-586C2FB520A5][Land the coded-value badges and the shared control]] in [[id:98A55407-7C62-46F7-8E75-07547537CE1D][Draw every coded value as its badge]]. It reads the tenor screen, because that is the one screen the work converted.
+
+* Before you start
+
+- Build the checkout and start the fleet. Run =compass build=, then =compass services start=. Confirm 24 services run.
+- Stop, recreate and provision the database. Run =compass services stop=, =compass db recreate -y -k=, then =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+- Confirm the badge seeds reached the tenant. This query returns 14 rows, one for each of the seven codes under =acme_corporation= and again under =system=:
+
+  #+begin_src sql
+  select t.code, m.code_domain_code, m.entity_code, m.badge_code
+  from ores_dq_badge_mappings_tbl m
+  join ores_iam_tenants_tbl t on t.id = m.tenant_id
+  where m.valid_to = '9999-12-31 23:59:59+00'
+    and t.valid_to = '9999-12-31 23:59:59+00'
+    and m.code_domain_code in ('tenor_kind', 'tenor_unit');
+  #+end_src
+
+- Confirm every =badge_code= starts with the domain it belongs to (=tenor_kind_*= and =tenor_unit_*=). A borrowed code, such as =type_physical=, fails this check.
+- Confirm the API serves the mapping. Run =compass open-as acme=, or log in at =http://127.0.0.1:21602/=.
+
+* Scenario Info
+
+| Field         | Value                                                                                                |
+|---------------+------------------------------------------------------------------------------------------------------|
+| Verifies task | [[id:D651CC6F-F3AC-4510-B484-586C2FB520A5][Land the coded-value badges and the shared control]]         |
+| Parent story  | [[id:98A55407-7C62-46F7-8E75-07547537CE1D][Draw every coded value as its badge]]                        |
+| Target screen | Refdata, Tenors, the tenor journey                                                                   |
+| Clients       |                                                                                                      |
+| State         | PENDING                                                                                              |
+
+* Steps
+
+** Log in as tenant_admin
+- Open =http://127.0.0.1:21602/=.
+- Log in as =tenant_admin@acme_corporation= with =Secure-Password-123=.
+- Confirm the home screen opens and the tenant reads *Acme Corporation*.
+
+*** Result
+
+** Open the tenor journey
+- Choose *Refdata*, then *Tenors*.
+- Begin a new tenor.
+- Confirm the journey's rail reads nine steps: *Choose the tenor*, *Tenor*, *Choose the convention*, *Convention*, *The schedule*, *Test*, *Review*, *Outcome*, *History*.
+
+*** Result
+
+** Read the kind and unit as badges
+- Continue to the *Tenor* step.
+- Read the *Kind* field and the *Unit* field.
+- Confirm each draws a coloured pill with the badge's own name. A bare code, such as =PERIOD= in plain text, fails this step.
+- A new tenor starts with no kind and no unit, so both fields may be empty on this step. Choose a kind first if they are, then read them again.
+
+*** Result
+
+** Open the kind list
+- Click the *Kind* field to open its list.
+- Confirm each option draws as a badge, not as text.
+- Confirm the list covers the text underneath. Seeing the form's labels through the list fails this step.
+- Confirm *Period* is blue and *Special* is violet (=#7c3aed=).
+
+*** Result
+
+** Choose a kind and read the pill
+- Choose *Special* from the list.
+- Confirm the field now draws a violet *Special* pill, and the form stays in place.
+- Return to the list and choose *Period* again. Confirm the field draws the blue *Period* pill.
+
+*** Result
+
+** Check the unit badges
+- Open the *Unit* list on the same step.
+- Confirm *Day* is blue, *Week* teal (=#14b8a6=), *Month* violet (=#8b5cf6=), *Year* purple (=#a855f7=).
+- Choose *Month* and confirm the field draws a violet *Month* pill.
+
+*** Result
+
+** Check the convention's coded fields
+- Continue to the *Choose the convention* step, choose a convention, then continue to the *Convention* step.
+- Read the *Anchor*, *Algorithm* and *Roll rule* fields.
+- *Known and expected.* These three have no badges yet, so they draw a badge when a mapping exists and a bare code when it does not. Both are correct for this scenario. Do not record a bare code here as a failure: two tasks carry the work, and the record names them.
+
+*** Result
+
+** Confirm nothing else regressed
+- Walk to the *Review* step. Confirm the journey still reaches it and the review names the changes you made.
+- Leave the journey without saving. Confirm the list shows the new tenor only after you save it.
+
+*** Result
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

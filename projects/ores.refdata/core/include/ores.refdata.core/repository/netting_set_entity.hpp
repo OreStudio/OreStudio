@@ -51,6 +51,7 @@ struct netting_set_entity {
     std::string party_id;
 
     std::optional<std::string> netting_agreement_id;
+    std::optional<std::string> credit_limit_id;
     std::optional<std::string> counterparty_id;
     std::optional<std::string> call_type;
     std::optional<std::string> initial_margin_type;

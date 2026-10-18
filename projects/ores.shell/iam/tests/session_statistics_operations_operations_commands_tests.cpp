@@ -82,8 +82,8 @@ TEST_CASE(
         session,
         std::vector<std::string>{
             "sample",
-            "sample",
-            "sample",
+            "2026-01-01T00:00:00Z",
+            "2026-01-01T00:00:00Z",
         });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a signed-out session: " << out.str();
@@ -130,8 +130,8 @@ TEST_CASE(
         session,
         std::vector<std::string>{
             "sample",
-            "sample",
-            "sample",
+            "2026-01-01T00:00:00Z",
+            "2026-01-01T00:00:00Z",
         });
 
     BOOST_LOG_SEV(lg, debug) << "Output for a valid token vector: " << out.str();

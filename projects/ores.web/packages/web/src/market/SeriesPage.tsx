@@ -19,32 +19,33 @@
  *
  */
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { DEFAULT_OBSERVATIONS, type ListedSeries } from '@ores/contracts';
+import {
+    DEFAULT_OBSERVATIONS,
+    SERIES_WINDOWS,
+    type ListedSeries,
+    type SeriesWindow,
+} from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { LineChart, SERIES_COLOURS } from '../marketdata/LineChart.js';
-import { canBeShown } from './evolutionView.js';
-import {
-    evolutionIdRoute,
-    evolutionRoute,
-    seriesOfUrl,
-    seriesVerdict,
-    type SeriesVerdict,
-} from '../oresmd/identity.js';
+import { evolutionIdRoute, evolutionRoute } from '../oresmd/identity.js';
 import { oresmdQueries } from '../oresmd/queries.js';
 import { useSeriesTitle } from '../oresmd/useSeriesTitle.js';
 import { AreaTrail } from '../shell/AreaTrail.js';
-import { Notice, PageHeader } from '../ui/Primitives.js';
+import { Notice, PageHeader, cx } from '../ui/Primitives.js';
+import { seriesPageState, type SeriesPageState, type SeriesRead } from './seriesState.js';
 import {
     formatText,
     formatValue,
     instantLabel,
     isSpotRate,
+    lacksConvention,
     latestFirst,
     placesOf,
     pointsOf,
+    windowOf,
 } from './seriesView.js';
 
 /** How many observations the page reads, and how many rows of them it lists. */
@@ -53,7 +54,8 @@ const LISTED = 20;
 
 /**
  * The page of a series that has one value at each instant, such as an FX spot
- * rate: the values over time as a line, and the latest of them in a table.
+ * rate: the values over a window of time as a line, and the latest of them in a
+ * table.
  *
  * An oresmd URL in the address, as `uri`, names the series. The page reads it
  * through the server's parse and finds the series among the ones the party can
@@ -63,10 +65,13 @@ const LISTED = 20;
  *
  * A series id in the address, as `series`, names a series the party already holds, so
  * a screen that knows the id links to it without composing a URL.
+ *
+ * The window the page reads, as `window`, is held in the address so a link
+ * reopens the same view. The count of observations stays the cap on the size,
+ * so a window wider than the cap draws its newest observations.
  */
 export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode {
     const { t } = useTranslation();
-    const titled = useSeriesTitle();
     const [search] = useSearchParams();
     const uri = search.get('uri') ?? '';
     const seriesId = search.get('series') ?? '';
@@ -76,24 +81,13 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
         ...oresmdQueries.seriesList(partyId),
         enabled: uri !== '' || seriesId !== '',
     });
-
-    const named =
-        parsed.data === undefined || schema.data === undefined
-            ? undefined
-            : seriesOfUrl(schema.data, parsed.data);
-    const byId =
-        seriesId === '' ? undefined : list.data?.series.find((one) => one.series_id === seriesId);
-    const verdict: SeriesVerdict | undefined =
-        seriesId !== ''
-            ? list.data === undefined
-                ? undefined
-                : byId === undefined
-                  ? { kind: 'not-listed' }
-                  : { kind: canBeShown(byId) ? 'shown' : 'no-shape', listed: byId }
-            : named?.ok === true && list.data !== undefined
-              ? seriesVerdict(list.data, named.form)
-              : undefined;
-    const listed = verdict?.kind === 'no-shape' ? verdict.listed : undefined;
+    const state = seriesPageState({
+        uri,
+        seriesId,
+        parsed: answerOf(parsed),
+        schema: answerOf(schema),
+        list: answerOf(list),
+    });
 
     return (
         <div className="space-y-6">
@@ -104,27 +98,54 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
                     description={t('market.series.description')}
                 />
             </div>
-            {uri === '' && seriesId === '' ? (
-                <Notice>{t('market.series.noUri')}</Notice>
-            ) : parsed.isError || schema.isError || list.isError ? (
-                <Notice tone="error">
-                    {(parsed.error ?? schema.error ?? list.error)?.message ?? ''}
-                </Notice>
-            ) : list.data === undefined || (seriesId === '' && named === undefined) ? (
-                <p className="text-sm text-ink-muted">{t('common.loading')}</p>
-            ) : named !== undefined && !named.ok ? (
+            <Situation state={state} uri={uri} seriesId={seriesId} />
+        </div>
+    );
+}
+
+/** One read of the page as the state function takes it. A failed read is read first. */
+function answerOf<T>(query: UseQueryResult<T, Error>): SeriesRead<T> {
+    if (query.isError) {
+        return { kind: 'error', message: query.error.message };
+    }
+    return query.data === undefined ? { kind: 'waiting' } : { kind: 'answer', data: query.data };
+}
+
+/** The words and the drawing of the one situation the page is in. */
+function Situation({
+    state,
+    uri,
+    seriesId,
+}: {
+    readonly state: SeriesPageState;
+    readonly uri: string;
+    readonly seriesId: string;
+}): ReactNode {
+    const { t } = useTranslation();
+    const titled = useSeriesTitle();
+    switch (state.kind) {
+        case 'no-uri':
+            return <Notice>{t('market.series.noUri')}</Notice>;
+        case 'error':
+            return <Notice tone="error">{state.message}</Notice>;
+        case 'loading':
+            return <p className="text-sm text-ink-muted">{t('common.loading')}</p>;
+        case 'refused':
+            return <Notice tone="warn">{state.message}</Notice>;
+        case 'fixing':
+            return <Notice tone="warn">{t('market.evolution.errors.fixing')}</Notice>;
+        case 'unknown':
+            return (
                 <Notice tone="warn">
-                    {named.reason === 'fixing'
-                        ? t('market.evolution.errors.fixing')
-                        : named.reason === 'unknown'
-                          ? t('market.evolution.errors.unknown', { name: named.message })
-                          : named.message}
+                    {t('market.evolution.errors.unknown', { name: state.name })}
                 </Notice>
-            ) : verdict?.kind === 'not-listed' ? (
-                <Notice tone="warn">{t('market.evolution.errors.notListed')}</Notice>
-            ) : verdict?.kind === 'shown' ? (
+            );
+        case 'not-listed':
+            return <Notice tone="warn">{t('market.evolution.errors.notListed')}</Notice>;
+        case 'has-shape':
+            return (
                 <Notice>
-                    {t('market.series.hasShape', { series: titled(verdict.listed.identity) })}{' '}
+                    {t('market.series.hasShape', { series: titled(state.listed.identity) })}{' '}
                     <Link
                         className="text-accent-bright hover:underline"
                         to={seriesId === '' ? evolutionRoute(uri) : evolutionIdRoute(seriesId)}
@@ -132,11 +153,10 @@ export function SeriesPage({ partyId }: { readonly partyId: string }): ReactNode
                         {t('market.series.openEvolution')}
                     </Link>
                 </Notice>
-            ) : listed !== undefined ? (
-                <Observations series={listed} uri={uri} />
-            ) : null}
-        </div>
-    );
+            );
+        case 'values':
+            return <Observations series={state.listed} uri={uri} />;
+    }
 }
 
 function Observations({
@@ -148,7 +168,9 @@ function Observations({
 }): ReactNode {
     const { t } = useTranslation();
     const titled = useSeriesTitle();
-    const read = useQuery(oresmdQueries.observations(series.series_id, READ));
+    const [search, setSearch] = useSearchParams();
+    const window = windowOf(search.get('window'));
+    const read = useQuery(oresmdQueries.observations(series.series_id, READ, window));
     const conventions = useQuery(oresmdQueries.pairConventions());
     const places = placesOf(series.identity, conventions.data ?? []);
     if (read.isError) return <Notice tone="error">{read.error.message}</Notice>;
@@ -162,11 +184,31 @@ function Observations({
             <div>
                 <h2 className="text-lg font-medium">{titled(series.identity)}</h2>
                 {uri !== '' && <p className="break-all font-mono text-xs text-ink-faint">{uri}</p>}
+                <div className="flex flex-wrap items-center gap-3">
+                    <WindowBar
+                        window={window}
+                        onChange={(next) => {
+                            const asked = new URLSearchParams(search);
+                            asked.set('window', next);
+                            setSearch(asked, { replace: true });
+                        }}
+                    />
+                    <p className="text-sm text-ink-muted">
+                        {t('market.series.windowShown', {
+                            window: t(`market.series.windows.${window}`),
+                        })}
+                    </p>
+                </div>
                 <p className="text-sm text-ink-muted">
                     {observations.length === 0
-                        ? t('market.series.empty')
+                        ? t(window === 'all' ? 'market.series.empty' : 'market.series.emptyWindow')
                         : t('market.series.showing', { shown: observations.length, total })}
                 </p>
+                {observations.length > 0 &&
+                    conventions.data !== undefined &&
+                    lacksConvention(series.identity, conventions.data) && (
+                        <p className="text-sm text-ink-muted">{t('market.series.noConvention')}</p>
+                    )}
             </div>
             {points.length >= 2 && (
                 <LineChart
@@ -213,5 +255,42 @@ function Observations({
                 </table>
             )}
         </section>
+    );
+}
+
+/**
+ * The window the page reads, as one pressed choice per window the contract
+ * offers. The button of the window in force is pressed, so the page says which
+ * window it draws as well as naming it in words.
+ */
+function WindowBar({
+    window,
+    onChange,
+}: {
+    readonly window: SeriesWindow;
+    readonly onChange: (window: SeriesWindow) => void;
+}): ReactNode {
+    const { t } = useTranslation();
+    return (
+        <div
+            role="group"
+            aria-label={t('market.series.windowLabel')}
+            className="inline-flex overflow-hidden rounded-md border border-line"
+        >
+            {SERIES_WINDOWS.map((candidate) => (
+                <button
+                    key={candidate}
+                    type="button"
+                    aria-pressed={window === candidate}
+                    className={cx(
+                        'px-3 py-1 text-sm',
+                        window === candidate ? 'bg-accent text-ink-inverse' : 'text-ink-muted',
+                    )}
+                    onClick={() => onChange(candidate)}
+                >
+                    {t(`market.series.windows.${candidate}`)}
+                </button>
+            ))}
+        </div>
     );
 }

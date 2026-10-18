@@ -111,7 +111,9 @@ TEST_CASE("every_ore_example_survives_a_round_trip_and_writes_back_out", tags) {
     const auto root = examples_dir();
     REQUIRE(fs::is_directory(root));
 
-    const auto output = fs::path(ORES_XML_ROUNDTRIP_DIR);
+    // The table-driven writing keeps its own tree beside this one, so neither
+    // suite removes the other's output.
+    const auto output = fs::path(ORES_XML_ROUNDTRIP_DIR) / "written";
     std::error_code ignored;
     fs::remove_all(output, ignored);
 

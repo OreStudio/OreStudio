@@ -122,7 +122,7 @@ begin
         failed_logins, locked, last_login, online
     ) values (
         v_account_id, '0.0.0.0', '0.0.0.0',
-        0, false, '1970-01-01 00:00:00+00', false
+        0, false, null, false
     );
 
     -- =========================================================================

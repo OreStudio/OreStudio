@@ -26,6 +26,7 @@
 #include "ores.logging/make_logger.hpp"
 #include <chrono>
 #include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -215,17 +216,19 @@ public:
      *
      * The table carries no row-level security, so the read scopes on
      * =tenant_id= itself rather than relying on a policy. An empty
-     * =account_id=, =event_type=, =from_time= or =to_time= does not filter.
-     * The times are the storage form, so they compare as the column does.
+     * =account_id= or =event_type= does not filter. A window bound the caller
+     * states no value for is @c std::nullopt, which the statement binds as SQL
+     * NULL and compares with @c is\ null, so no bound applies on that side.
      */
-    std::vector<repository::auth_event_entity> read_events(const context& ctx,
-                                                           const std::string& tenant_id,
-                                                           const std::string& account_id,
-                                                           const std::string& event_type,
-                                                           const std::string& from_time,
-                                                           const std::string& to_time,
-                                                           std::uint32_t limit,
-                                                           std::uint32_t offset);
+    std::vector<repository::auth_event_entity>
+    read_events(const context& ctx,
+                const std::string& tenant_id,
+                const std::string& account_id,
+                const std::string& event_type,
+                const std::optional<std::chrono::system_clock::time_point>& from_time,
+                const std::optional<std::chrono::system_clock::time_point>& to_time,
+                std::uint32_t limit,
+                std::uint32_t offset);
 
 private:
     void insert(const std::string& event_type,

@@ -43,7 +43,7 @@ struct session_write {
     boost::uuids::uuid id;
     std::chrono::system_clock::time_point start_time;
     boost::uuids::uuid account_id;
-    std::string end_time;
+    std::optional<std::chrono::system_clock::time_point> end_time;
     boost::asio::ip::address client_ip;
     std::string client_identifier;
     std::uint16_t client_version_major;

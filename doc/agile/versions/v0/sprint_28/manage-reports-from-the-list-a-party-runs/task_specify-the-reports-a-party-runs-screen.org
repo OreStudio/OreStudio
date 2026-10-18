@@ -1,0 +1,546 @@
+:PROPERTIES:
+:ID: B15A20EA-29CD-4F01-9709-545BF9334A51
+:END:
+#+title: Task: Specify the reports a party runs screen and its server gaps
+#+description: Name the route, the BFF endpoint and the read subjects for the reports-a-party-runs screen, and carry the initial list of what the server cannot yet supply.
+#+type: task
+#+level: s1
+#+filetags: :manage-reports-from-the-list-a-party-runs:sprint_28:v0:
+#+owner: marco
+#+branch: feature/manage-reports-from-the-list-a-party-runs
+#+pr: 3483
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A specification of the reports-a-party-runs screen, and an initial gap analysis in which every field the screen shows either names a verified server read or is recorded as missing.
+
+The specification is the deliverable. No screen, no route and no endpoint is
+built here. Each gap the analysis records is the work that follows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- The web route, the BFF endpoint and each read subject the screen needs are named, and every subject and permission code is verified in the tree.
+- Every field the prototype shows has a stated source, or a gap entry saying what the screen cannot show without it.
+- The gap list is stated as tasks or notes, one line per missing read.
+- No subject, route or permission code is invented. Each one cited appears verbatim in the tree, and the file is named beside it.
+
+* The screen this task specifies
+
+The design intent is
+[[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]]
+and the page to implement is
+[[file:../../../../../prototypes/reporting/see-the-reports-a-party-runs/][the
+prototype]], variant A, *Index-first*. A person opens reporting and lands on it
+with no identifier; the session supplies the party.
+
+One screen, four parts:
+
+1. A header naming the party, so a reader who works in more than one party knows
+   which one they are reading.
+2. A summary tallying the definitions by health word, so the shape of the party
+   is readable before any row is.
+3. A health filter that ranks the rows a reader came for: =failed=, then
+   =completed with errors=, then =running=, then =never run=, then =completed
+   clean=.
+4. A table with one row per definition the party owns.
+
+The row carries eight cells, in this order, as the prototype draws them
+(=cataloguePanel= in =prototype.js=):
+
+| Cell | What it states |
+|------+----------------|
+| Report | The definition's name, and its type |
+| Party | The party's short code, for example =ACMCOR= |
+| Schedule | A readable label, the cron expression, or the words "on demand" |
+| Owner | The person the report belongs to |
+| Latest run started | The start of the definition's latest run, or a dash |
+| Duration | How long that run took, or a dash |
+| Health | One of =failed=, =completed with errors=, =running=, =never run=, =completed clean= |
+| Errors | The errors of that run, counted apart as errors and warnings |
+
+Three readings the screen exists to make:
+
+- A completed run is not necessarily clean. A row that completed carrying errors
+  is drawn apart from a clean one without opening anything.
+- A definition that has never run does not read as clean, because nothing ran
+  and nothing was checked.
+- A party that owns no definition is stated as such in words, not drawn as an
+  empty table.
+
+* The route
+
+The web application carries its areas under paths that name the area and then
+the resource, in =projects/ores.web/packages/web/src/shell/paths.ts=:
+=/refdata/conventions=, =/market-data/bindings=, =/operations/sign-ins=. The
+route this task proposes follows that shape:
+
+#+begin_src text
+PATHS.reporting = '/reporting'
+#+end_src
+
+The front door is the list, so the list is the area's own path and not a child
+of it. A single report is reached later at =/reporting/<name>=, in the shape
+=personPath= and =rolePath= already use, and that page is
+[[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] and
+[[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]], not
+this task.
+
+The route is registered in
+=projects/ores.web/packages/web/src/AppRoutes.tsx= inside =signedIn(...)=, which
+is how every signed-in area is registered, and the screen module belongs under
+=projects/ores.web/packages/web/src/reporting/= beside =refdata/=, =membership/=
+and =marketdata/=.
+
+* The BFF endpoint
+
+The BFF is =projects/ores.web/packages/bff/=. It carries one module per area
+(=conventions.ts=, =bindings.ts=, =curves.ts=), each registering its own routes
+on the Fastify instance from =server.ts=, and each route forwards over NATS on
+the caller's own token. The service checks the permission; the BFF does not
+re-gate a read the service already gates.
+
+#+begin_src text
+GET /api/reporting/reports
+#+end_src
+
+In a new module =projects/ores.web/packages/bff/src/reporting.ts=, registered
+from =server.ts=. The name does not collide with =GET /api/reporting-tree=
+(=server.ts:1262=), which serves the account reporting line of the organisation
+chart and has nothing to do with report definitions.
+
+The endpoint answers one row per definition with the health word, the durations
+and the split error count already derived, so the browser derives nothing:
+
+#+begin_src text
+{ reports: [ { name, reportType, partyCode, scheduleExpression, scheduled,
+               lastStartedAt, lastCompletedAt, health, errors, warnings } ],
+  tally: { failed, completedWithErrors, running, neverRun, completedClean } }
+#+end_src
+
+It also declares what it needs, so a screen the caller may not use says what to
+ask for. The permissions it exercises are the three below; the BFF reads them
+with =readMyAccess= and names the requestable roles, the way
+=deployment-access.ts= refuses a caller who cannot read the deployment.
+
+Live updates ride the mechanism that exists rather than a second one:
+=POST /api/events/watch= with ={component: 'reporting', entity:
+'report_instances'}=, which subscribes to
+=reporting.v1.report_instances_events.>= (=eventSubject= in =change-events.ts=).
+
+* The reads it needs
+
+Every subject below was read in the tree at the commit in * Measurements.
+
+| Read | Subject | Permission | Held by today |
+|------+---------+------------+---------------|
+| The definitions the party owns | =reporting.v1.report_definitions.list= | =reporting::report_definitions:read= | =SuperAdmin=, =TenantAdmin= (both =*=), =ReportingService=, =SyntheticService= |
+| The runs, to find each definition's latest | =reporting.v1.report_instances.list= | =reporting::report_instances:read= | the same four |
+| The errors of those runs | =reporting.v1.report_error_events.list=, narrowed by =report_instance_id_one_of= | =reporting::report_error_events:read= | the same four |
+| The names of the lifecycle states | =dq.v1.fsm_states.list= | =dq::fsm_states:read= | =SuperAdmin=, =TenantAdmin=, =DqService= |
+| The party's code and name | =iam.v1.ops.get_my_parties= | none: the request names no account, so the session is the scope | every signed-in session |
+| When a schedule fires next, if that column is added | =scheduler.v1.ops.get_scheduler_status= | =scheduler::job_instances:read= | =SuperAdmin=, =TenantAdmin=, =SchedulerService=, =SyntheticService= |
+
+Two subjects are deliberately *not* read. =reporting.v1.report_error_scopes.list=
+is not needed, because the row counts errors by severity and severity is a closed
+text column (=error= or =warning=), not a code that needs a vocabulary.
+=reporting.v1.report_instance_kinds.list= is not needed for this screen, because
+=$kind= is already a string on the run.
+
+* Where each field comes from
+
+| Cell | Field | Source | Verified |
+|------+-------+--------+----------|
+| Report | =report_definition.name=, =.report_type= | =reporting.v1.report_definitions.list= | yes |
+| Party | =party_id= to =party.short_code= | =iam.v1.ops.get_my_parties= | partly: see G11 |
+| Schedule | =schedule_expression= and =scheduler_job_id= | the definition list; the label is derived | yes |
+| Owner | -- | nothing supplies it | no: see G10 |
+| Latest run started | greatest =report_instance.started_at= for that =definition_id= | =report_instances.list=, reduced in the BFF | yes, at a cost: see G1 and G2 |
+| Duration | that run's =completed_at= less its =started_at= | the same read | yes |
+| Health | that run's =fsm_state_id= resolved to a state name, plus whether it carries errors | =dq.v1.fsm_states.list=, plus =report_error_events.list= | yes, through two further reads: see G5 |
+| Errors | that run's error rows counted by =severity= | =report_error_events.list= with =report_instance_id_one_of= | yes, at a cost: see G3 |
+
+The header and the summary are derived from the two reads above and need nothing
+further: the party from =get_my_parties=, and the tally from the rows.
+
+* The eight server-side questions
+
+** 1. Is there a read that returns the reports a party runs, scoped by the party in the JWT?
+
+*Yes for the definitions, and yes for the scoping, but the scope is row-level
+security and not a request field.*
+
+=reporting.v1.report_definitions.list= exists
+(=report_definition_protocol.hpp:102=). Its handler checks
+=reporting::report_definitions:read=
+(=report_definition_handler.hpp:86=). Its filter carries =party_id= and
+=party_id_one_of= (=report_definition_protocol.hpp:74-78=), and a caller is not
+expected to send either: the scoping is done by the store.
+
+=report_definitions_party_isolation_policy= is a restrictive policy on
+=ores_reporting_report_definitions_tbl= whose condition is
+=party_id = ANY(ores_iam_visible_party_ids_fn())=
+(=reporting_rls_policies_create.sql=, definitions section). The session variable
+it reads is set from the caller's token: =make_context_from_jwt= builds the
+context with =with_party(tenant, party, visible_party_ids, actor)=
+(=request_context.cpp=, the =claims->party_id= branch), and the pool sets
+=app.visible_party_ids= and =app.current_party_id= on every connection
+(=tenant_aware_pool.hpp:267-268=). The JWT itself carries both claims:
+=party_id= (=jwt_claims.hpp:140=) and =visible_party_ids= (=:148=), the latter
+computed at login as the party and its descendants.
+
+One caveat a reader of the screen must know: the policy passes every row when
+=visible_party_ids= is null, which is the state of a session that chose no party.
+A definition read then returns the whole tenant. Verified in the policy's own
+comment and in the =claims->party_id= absent branch, which returns a
+tenant-scoped context with no party.
+
+** 2. Is there a read that returns the latest run per definition, or must the screen fetch every instance and reduce? What does that cost?
+
+*No, and yes: every instance is fetched and reduced.*
+
+=reporting.v1.report_instances.list= exists (=report_instance_protocol.hpp:98=),
+and its filter carries =kind=, =id_one_of= and =kind_one_of= only
+(=:70-74=). There is no filter by =definition_id=, none by =party_id=, none by
+state, and no order that means "newest per definition". The response is
+=offset= and =limit= over everything the policy admits.
+
+The cost is written down in the tree by the one place that needed the same
+answer: "The generated repository offers only offset and limit, with no filter
+by definition and no filter by state, so a caller that wanted this answer
+through it would have to page the whole tenant and filter in C++"
+(=reporting_in_flight_instance_fn_create.sql=). That function exists precisely
+to avoid it, and it answers a different question: is one definition in flight,
+by id, one row.
+
+No custom method closes this either. *Custom repository methods* is empty in
+=ores.reporting.report_instance.org=, and =report_instance_repository.hpp=
+offers =read_latest= by id and by name, =read_all=, =read_at_version= and the
+paginated =read_latest=, none of them by =definition_id=.
+
+So the screen pages the party's whole run history on every load and keeps, per
+=definition_id=, the row with the greatest =started_at=. The cost grows with
+runs, not with reports: forty definitions with three years of daily runs is
+about forty thousand rows to draw forty.
+
+** 3. Is there a read for the next fire time?
+
+*Not on the reporting side, and next fire is not a trigger event anyway. It is
+reachable from the scheduler if the screen is willing to make a fourth read, and
+no person role may call it.*
+
+There is no =report_trigger_event_protocol.hpp=: the reporting component's
+messaging directory carries =report_trigger_type_protocol.hpp= and no protocol
+for the event, so no subject exists. The model does exist
+(=ores.reporting.report_trigger_event.org=), and so does a server-side
+repository with =read_latest= and a paginated form
+(=report_trigger_event_repository.hpp=), but it is generated for the service and
+nothing exposes it.
+
+That is the right shape, because the trigger event is the history of firings
+already made: =triggered_at=, =trigger_type=, =scheduler_job_id=,
+=schedule_job_run_id=. It cannot answer when the next firing is.
+
+The prototype draws no next-fire column at all. Its schedule cell is the label
+and the expression, and the word "next" does not occur in =prototype.js=. The
+column belongs to the story's arc, and this is how it could be sourced if it is
+drawn:
+
+- =scheduler.v1.ops.get_scheduler_status= exists
+  (=scheduling_operations_protocol.hpp:121-125=), is gated by
+  =scheduler::job_instances:read= (=scheduler_status_handler.hpp:71=), and
+  returns =job_schedule_status= per job with =job_definition_id=, =job_name=,
+  =schedule_expression=, =is_active=, =last_run_at=, =last_run_status=,
+  =next_fire_at= and =running_count= (=:132-165=).
+- The join exists: =report_definition.scheduler_job_id= is stated to
+  "link to ores_scheduler_job_definitions_tbl.id" (=report_definition.hpp:53=),
+  and it is present only while the definition is scheduled
+  (=ores.reporting.report_definition.org=).
+- Three costs come with it. The request carries no fields "because the caller's
+  session decides the scope and the scheduler holds the rest", and the handler
+  reads every job definition in the tenant and loops over them, so the screen
+  pays for all jobs to fill a few cells. =next_fire_at= is absent for a paused
+  job and for an expression the evaluator cannot advance. And no person role
+  holds the permission: see G8.
+
+** 4. Is there a read for health?
+
+*No. Health is not stored and not returned. The screen derives it, and the state
+ids it derives from resolve to names only through a fourth read.*
+
+The run carries =fsm_state_id= and no state name
+(=report_instance.hpp:107=). The lifecycle machine that id points into is seeded
+with seven states: =pending=, =queued=, =running=, =completed=, =failed=,
+=cancelled=, =skipped=
+(=dq_fsm_report_instance_lifecycle_populate.sql:108-132=). Their names, and
+whether each is terminal, are read over =dq.v1.fsm_states.list=, gated by
+=dq::fsm_states:read= (=fsm_state_handler.hpp:85=).
+
+The five health words are then a mapping the BFF writes, and two of the seven
+states map to none of them: see G12.
+
+Note what health does *not* depend on. It is not read from the output tarball.
+The retrieval stores that tarball and nothing parses it, and
+=ores_compute_results_tbl= holds =output_uri=, =outcome= and =error_message=
+only (=compute_results_create.sql:50-52=). Health comes from the run's state and
+the run's error rows, which is why the error read is on the list above.
+
+** 5. Is there a read for the problem count, given errors are events?
+
+*The rows are readable and the count is not. The screen reads rows and counts
+them, and the split by severity is a column on the row.*
+
+=reporting.v1.report_error_events.list= exists
+(=report_error_event_protocol.hpp:66=) and its filter carries
+=report_instance_id=, =report_instance_id_one_of=, =severity= and
+=severity_one_of= (=:45-51=). So all the latest runs' errors come back in one
+call rather than one call per run, which is better than reading them one run at
+a time: =list_by_report_instance_id= (=:124=) exists as well and is the
+single-run form.
+
+What is missing is any count. A run carrying twenty errors costs twenty rows to
+produce one number, and the response carries no grouping. The severity the row
+splits on is a closed text column, =error= or =warning=
+(=ores.reporting.report_error_event.org=), so no vocabulary read is needed to
+count.
+
+Errors are events as well as rows: =reporting.v1.report_error_events_events= has
+=created=, =updated= and =deleted= (=:156-158=), and a database notify trigger
+publishes them (=reporting_report_error_events_notify_trigger_create.sql=). The
+journey's statement that no event exists for this entity is wrong, and this task
+corrects it. It does not change the design: the screen still reads the rows.
+
+** 6. Which permissions do these reads require, and which roles hold them today?
+
+*Every one of them is held by the two administrative roles and by service
+roles, and by no person role at all. That is the largest gap in this list.*
+
+The codes are exact and are the ones the handlers check:
+=reporting::report_definitions:read=,
+=reporting::report_instances:read=,
+=reporting::report_error_events:read=, =dq::fsm_states:read= and
+=scheduler::job_instances:read=. All five are seeded
+(=iam_permissions_populate.sql=).
+
+The grants, from =iam_roles_populate.sql= at this commit:
+
+| Role | Reporting reads | Why it holds them |
+|------+-----------------+-------------------|
+| =SuperAdmin= | =*= | the wildcard, line 91 |
+| =TenantAdmin= | =*= | the wildcard, line 106 |
+| =ReportingService= | =reporting::*= | the service's own component, line 541 |
+| =SyntheticService= | =reporting::*= | it generates publications, line 626 |
+| =DqService= | =dq::*= | the lifecycle states, line 519 |
+| =SchedulerService= | =scheduler::*= | the jobs, line 534 |
+| =Member=, =Viewer=, =Trading=, =Sales=, =Operations=, =Support= | none | no =reporting::= grant exists for any of them |
+| =Operations= | no reporting read | it does hold =refdata::parties:read= |
+
+The matcher reads the token's grant set, not role names:
+=has_permission= asks =ores::security::authorization::grants(ctx.roles(),
+code)= (=handler_helpers.hpp:306-312=), which accepts an exact code, the
+component wildcard =component::*= and the whole wildcard =*= (except for
+=installation::= codes) (=ores.security/authorization/grants.hpp=). A person role therefore
+holds exactly what the seed gives its role, and the seed gives a trading desk
+nothing in reporting.
+
+Consequence, stated plainly: the screen's two primary reads and the error read
+are refused for every actor the journey names except the tenant administrator. A
+read nobody can call is a gap, not a field. See G6, G7, G8 and G9.
+
+** 7. What does the party scoping depend on, and does the JWT carry it?
+
+*It depends on row-level security fed by two JWT claims, and the JWT carries
+both. What the JWT does not carry is the party's short code.*
+
+The chain is: =visible_party_ids= claim, computed at login as the party and its
+descendants; =make_context_from_jwt= passing it into =with_party=; the pool
+setting =app.visible_party_ids= per connection; and
+=ores_iam_visible_party_ids_fn()=, which returns
+=current_setting('app.visible_party_ids', true)::uuid[]=
+(=iam_session_functions_create.sql:79-82=), read by every party-isolation policy.
+=ores_iam_set_party_context_fn= is the batch form of the same setting
+(=iam_tenant_functions_create.sql=).
+
+Definitions, runs, trigger events and error events all carry the policy. For the
+error rows it is stated in the table's own DDL as well
+(=reporting_report_error_events_create.sql:189-198=).
+
+The party's *code* is not in the token and not on the session summary. The
+session's =PartySummary= carries =id=, =name=, =partyCategory= and
+=businessCenterCode= and no code (=domain.ts:130-137=), while the party's code is
+=short_code= (=ores.refdata.party.org=). The read that carries it is
+=iam.v1.ops.get_my_parties=, whose reply states =party_id=, =name=,
+=short_code=, =party_category= and =business_center_code=, needs no permission,
+and is scoped to the caller's own account
+(=membership.ts:44-110=; =account_operations_handler.hpp:987=). It names only the
+parties the account is associated with, which is not the same set as the
+visible party set the policy uses. See G11.
+
+** 8. Does anything tell the screen that a run changed, and can the event name the row?
+
+*The run's change events exist and the BFF can subscribe to them. The event names
+the run by name and carries no definition id, so the row cannot be identified
+from it.*
+
+=reporting.v1.report_instances_events.created=, =.updated= and =.deleted= exist
+(=report_instance_protocol.hpp:279-281=). The BFF's change registry builds the
+subject from a watch: ={component, entity}= becomes
+=component.v1.entity_events.>= (=change-events.ts:160-162=), and a session
+declares watches at =POST /api/events/watch= (=server.ts:2936=). So
+=reporting= + =report_instances= is exactly the subscription the journey asks
+for, and no new mechanism is needed.
+
+The payload is the problem. The notify trigger states the key as
+=jsonb_build_object('name', changed_name)= and the header party as =party_id=
+(=reporting_report_instances_notify_trigger_create.sql=). The run's name is
+built at admission as the definition's name plus the run's start
+(=report_instance_trigger_handler.hpp=, =plan.name=). The trigger's UPDATE branch
+also announces nothing, because a versioned table's update is the close of the
+current row and the insert that follows carries the change.
+
+So a screen that hears "a run changed" learns a name it can match only by
+rebuilding the definition-name-plus-timestamp string, and it learns no
+=definition_id=, no =fsm_state_id= and no error count. Today it must re-read.
+See G13.
+
+* The gap list
+
+Each entry is one missing read and what the screen cannot show without it. They
+are stated as notes now and become tasks as they are taken.
+
+1. *G1. No read returns a definition with its latest run.*
+   Nothing joins =report_definitions.list= to =report_instances.list=, so the
+   endpoint makes three reads and reduces in the BFF, and the screen cannot page
+   one row per definition.
+2. *G2. =report_instances.list= cannot be filtered by definition.*
+   Its filter offers =kind= and ids only, so the latest-run join is a
+   page-and-reduce over the party's whole run history, and the screen's cost
+   grows with runs rather than reports.
+3. *G3. No read counts the errors of a run.*
+   The screen reads the error rows and counts them, so a run with twenty errors
+   costs twenty rows for one number, and a list of forty definitions pays for
+   every error of every latest run.
+4. *G4. No read returns a health word.*
+   The five words are derived in the BFF from =fsm_state_id=, and the row cannot
+   be drawn at all until the state names arrive from =dq.v1.fsm_states.list=.
+5. *G5. No reporting-side read states when a schedule fires next.*
+   =report_trigger_event= is unreadable over NATS and records firings made, not
+   firings due, so the row can say "scheduled" and the expression and cannot say
+   when it next runs unless it also reads the scheduler status.
+6. *G6. =reporting::report_error_events:read= is held by no role below
+   =TenantAdmin=.*
+   A trading desk or a market risk reader sees a row's health word and cannot
+   read the errors behind it, so the split error count cannot be drawn for them
+   even though the health word depends on it.
+7. *G7. =reporting::report_definitions:read= and
+   =reporting::report_instances:read= are held by no person role at all.*
+   No person role in the seed carries any =reporting::= grant, so every actor
+   the journey names except the tenant administrator is refused the screen's two
+   primary reads. This is a grant gap, not a screen design.
+8. *G8. =scheduler::job_instances:read= is held by no person role.*
+   The next-fire column can be sourced in principle and cannot be served to a
+   trading desk, a market risk reader or a viewer, even if the column is drawn.
+9. *G9. =dq::fsm_states:read= is held by no role below =TenantAdmin=.*
+   The state names that make the health word possible are behind a data-quality
+   permission no person role holds, so the derived health rests on a read the
+   reader may not make.
+10. *G10. No owner is recorded for a definition.*
+    =report_definition= has no owner column, and its nearest relation is
+    =run_grant_id= to a grant whose =grantor_account_id= is nullable and is a
+    grantor, not an owner. The prototype's Owner column is a fixture and the
+    screen cannot draw it.
+11. *G11. The session carries no party short code.*
+    =PartySummary= has a name and no code, and =iam.v1.ops.get_my_parties= names
+    only the caller's own parties, so the Party cell and the header would read
+    blank for a tenant administrator's cross-party rows unless
+    =refdata.v1.parties.list= is added and the reader holds
+    =refdata::parties:read=, which =Member= does not.
+12. *G12. Two lifecycle states have no health word.*
+    =cancelled= and =skipped= are seeded states that map to none of the five
+    words, and the screen must not call a cancelled run failed or clean. The
+    mapping is undecided.
+13. *G13. A run's change event names the run and not its definition.*
+    The payload key is the run's name, so a screen that hears a run finish
+    cannot tell which row to update and must re-read the party's runs.
+14. *G14. "On demand" is not an absent schedule expression.*
+    =schedule_expression= is not null, so every definition carries a cron
+    expression; scheduled-ness is =scheduler_job_id= being present, and the
+    prototype models the opposite with =schedule: null=. The screen must read
+    =scheduler_job_id=, and nothing on the definition states "paused", because
+    pause has no operation.
+15. *G15. The prototype's run kinds do not exist.*
+    Its detail view draws =full= and =partial=, and the seeded kinds are
+    =production= and =package=. The front door draws no kind, so this bites the
+    run list that follows from a row, not this screen.
+
+* Measurements
+
+Numbers this task claims, with the command and the commit they were measured at.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Reporting subjects with a protocol header | =report_definitions=, =report_instances=, =report_error_events=, =report_error_scopes=, =report_instance_kinds=, =report_trigger_types=, =run_documents=, =report_operations=; no =report_trigger_event= | =ls projects/ores.reporting/api/include/ores.reporting.api/messaging/= | ee44fbf7d6 |
+| Person roles holding any =reporting::= grant | 0 of =Member=, =Viewer=, =Trading=, =Sales=, =Operations=, =Support= | =grep -c "'<role>', 'reporting" projects/ores.sql/populate/iam/iam_roles_populate.sql= | ee44fbf7d6 |
+| Roles holding =reporting::*= | =ReportingService=, =SyntheticService= | =grep -n "reporting::\*" projects/ores.sql/populate/iam/iam_roles_populate.sql= | ee44fbf7d6 |
+| BFF area modules | =conventions=, =bindings=, =books=, =curves=, =tenors=, =synthetic=, =refdata-calls= and the rest of =packages/bff/src=; none for reporting | =ls projects/ores.web/packages/bff/src/ | grep -v test= | ee44fbf7d6 |
+| Reporting routes in the BFF | none; =/api/reporting-tree= is the organisation chart | =grep -rn "api/reporting" projects/ores.web/packages --include=*.ts= | ee44fbf7d6 |
+
+* Notes
+
+- *The BFF is the TypeScript one.* Two things answer to the name: the C++ HTTP
+  gateway in =projects/ores.http/=, which carries =/api/v1/refdata/...= and has
+  no reporting module, and the Node BFF in =projects/ores.web/packages/bff/=,
+  which serves the web application and is where every screen's endpoint lives.
+  This task names the second, because the web application reads only through it.
+  The gateway would need a reporting module too if a non-browser client is ever
+  given one; that is not this story.
+- *Nothing parses the run's output.* The retrieval stores a tarball and
+  =ores_compute_results_tbl= holds =outcome=, =output_uri= and =error_message=.
+  Every number this screen shows comes from the reporting tables instead, which
+  is why the health word needs no tarball. Reading what a run produced is
+  [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] and it
+  inherits that gap.
+- *Two claims in the journey need correcting, and this task corrects them rather
+  than the prototype.* The journey says the error read is the only one gated too
+  highly; in fact no person role holds any reporting read (G7). And it says no
+  event exists for =report_error_event=; the events and their notify trigger do
+  exist.
+- *No subject, route or permission code here is new.* Each one is quoted from
+  the file named beside it. The only names this task proposes are the web path
+  =/reporting= and the endpoint =GET /api/reporting/reports=, both following the
+  shape of the areas that already exist.
+
+* Plan
+
+1. Read the prototype and its note, and the journey it answers to. Done.
+2. Verify each subject, permission and field against the tree, and answer the
+   eight questions. Done.
+3. Write the gap list as notes, one line per missing read. Done.
+4. The work that follows: the screen, its endpoint and the reads it needs,
+   each gap becoming its own task as it is taken.
+
+* Result
+
+The task delivers a specification, not a screen. The route is =/reporting=, the
+endpoint is =GET /api/reporting/reports= in a new BFF module, and the screen
+needs five reads, of which the three reporting ones are held by no person role
+today. Fifteen gaps are recorded; the first is the read that would make the
+front door one answer instead of three.

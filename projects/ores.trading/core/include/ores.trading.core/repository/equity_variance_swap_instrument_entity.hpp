@@ -51,7 +51,7 @@ struct equity_variance_swap_instrument_entity {
     std::string underlying_name;
     std::string currency;
     std::string notional;
-    double variance_strike = 0.0;
+    double variance_strike;
     std::string start_date;
     std::string maturity_date;
     std::string long_short;

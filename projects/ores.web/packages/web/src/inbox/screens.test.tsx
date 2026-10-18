@@ -61,7 +61,7 @@ function mine(overrides: Partial<InboxRequestView> = {}): InboxRequestView {
         requestedBy: 'daniel',
         requestedAt: '2026-10-04 09:00:00Z',
         reason: 'I price the FX book and cannot read currencies.',
-        expiresAt: '',
+        expiresAt: null,
         roles: [],
         decision: null,
         parts: [],
@@ -92,7 +92,7 @@ function notification(overrides: Partial<InboxNotificationView> = {}): InboxNoti
             { name: 'requester', value: 'daniel' },
             { name: 'reason', value: 'I price the FX book.' },
         ],
-        readAt: '',
+        readAt: null,
         ...overrides,
     } as unknown as InboxNotificationView;
 }

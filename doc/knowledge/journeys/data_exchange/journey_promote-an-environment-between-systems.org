@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: D911D082-3759-4645-9452-00CD60B1679E
+:END:
+#+title: User Journey: Promote an environment between systems
+#+description: An operations user moves a data set from development to staging and then to production, checking each landing before the next.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations user moves a data set from development to staging and then to production, checking each landing before the next.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want what we accepted in development to be the same thing in staging and then
+in production, and I want to know it landed." The journey is done when each
+environment holds the same conventions, the same portfolio and the same run
+configuration, and the person has a written record of what was promoted and when.
+
+* Actor and trigger
+
+The actor is an operations user or release manager who can read the source
+installation and import into the target. The trigger is a change accepted in
+development, a release, or a fix that must reach production. The journey runs
+three times, once per hop, and each hop is a start and an end of its own.
+
+No environment-to-environment transfer exists. Every hop is an export to files
+and an import from files, and production never reads development's database or
+message bus.
+
+* Steps
+
+1. *Freeze the source.* The person records the source environment and the time,
+   and stops changing the data that will move. Nothing in the platform takes a
+   snapshot across the components, so the freeze is a procedure, not a control.
+2. *Export the parts.* The person runs =ore export= for the portfolio, =ore
+   export-run= for each report definition that carries conventions, curves,
+   today's market and pricing engines, and =marketdata export= for quotes and
+   fixings. The person writes a manifest that names each file, the party and the
+   time.
+3. *Import the target.* The person imports in dependency order: the portfolio
+   and its currencies, the conventions, the curves and market data, then the run
+   documents and pricing engines. Each step is its own command and its own
+   transaction.
+4. *Check the landing.* The person reads the counts and spot-checks one
+   convention family, one portfolio and one report run.
+5. *Repeat to the next environment.* The person uses the same files, or exports
+   again from the environment that just passed, and records the second hop.
+6. *Record the promotion.* The person writes the release note or the ticket.
+   Nothing in the platform records that an environment was promoted.
+
+* On success
+
+Each hop prints the upload path, the workflow instance id and the counts of
+trades and files it stored. The target's trade list and conventions screens match
+the source. The manifest and the ticket record what moved.
+
+* On failure
+
+A hop that refuses names the file and the step. The target keeps whatever earlier
+commands stored, because each command is its own transaction and nothing spans
+them. A retry of the portfolio import creates a second set of trades. A
+conventions import replaces the rows whose keys it carries and leaves the rest,
+so a partial promotion can leave a mixture of old and new families. A run import
+with a missing file is refused before it writes.
+
+* What must never happen
+
+- Production must never read from, or write to, development's database, message
+  bus or object storage. The only path is files.
+- A failed promotion must never be reported as complete.
+- A promotion must never overwrite a newer production convention with an older
+  development one without saying so. The save replaces by key today.
+- A promotion must never delete the rows it does not carry. Omission is not a
+  delete.
+- Two people must never promote the same data set at the same time without one
+  seeing the other's result. Nothing today prevents it.
+
+* Screens and entry points
+
+There is no screen, and there is no promotion command. The entry points are the
+shell export and import verbs, the object storage bucket, and the release notes
+or ticket where the person records the hop. The web UI has no promotion screen.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =conventions_document= | Every family the promotion moves | |
+| =run_document=, =report_definition= | The configuration the run binds | |
+| =portfolio=, =book=, =trade= | The trade data | |
+| =market_observation=, =market_fixing= | The market data | |
+| =curve_configuration_document= | The curves the run reads | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Freeze the source | No operation: the freeze is a procedure | none | missing |
+| Export the parts | Export the trades | =trading.v1.ops.export_portfolio= | exists |
+| Export the parts | Export the run directory | =ore.v1.ops.export_run_configuration= | exists |
+| Export the parts | Export market data | =marketdata.v1.ops.export_market_data= | exists |
+| Import the target | Import the trades | =workflow.v1.ops.ore_import= | exists |
+| Import the target | Import the run directory | =ore.v1.ops.import_run_configuration= | exists |
+| Import the target | Import market data | =marketdata.v1.ops.import_market_data= | exists |
+| Record the promotion | No operation: the person writes the ticket | none | missing |
+
+* What is missing
+
+1. *No environment bundle.* There is no export that writes one dated archive with
+   a manifest, and no import that reads one.
+2. *No promotion record.* Nothing stores which environment received what, when,
+   or by whom. The ticket is the only record.
+3. *No ordering guard.* The person must know that conventions precede curves and
+   that portfolios precede trades. A wrong order fails late.
+4. *No idempotent promotion.* Re-running the portfolio import duplicates trades,
+   so a failed hop is not safe to repeat.
+5. *No consistency across components.* Each export is its own read. A change
+   between two exports produces a file set that never existed together.
+
+* Related journeys
+
+- [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect from an exported environment]] - the same file set, moved for a different reason.
+- [[id:33AF3CCA-50BE-4CAD-A4DA-4C3917E4EA9F][Export for archival]] - the export side without a target.
+- [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party with its conventions and portfolio]] - the single-party version.
+- [[id:B74EB57C-30FB-4659-8BA4-63E7A3ED76B3][Retry a failed or interrupted import]] - after a hop stops.
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

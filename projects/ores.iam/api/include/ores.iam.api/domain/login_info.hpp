@@ -29,6 +29,7 @@
 #include <boost/asio/ip/address.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
+#include <optional>
 #include <string_view>
 
 namespace ores::iam::domain {
@@ -92,9 +93,12 @@ struct login_info final {
     bool locked = false;
 
     /**
-     * @brief Timestamp of the last successful login.
+     * @brief When the account last signed in successfully, or null when it never has. An account is
+     * created before anybody signs into it, so the column is nullable and the domain, entity and
+     * protocol hold an optional instant: absence is null, and there is no zero instant standing in
+     * for it.
      */
-    std::chrono::system_clock::time_point last_login;
+    std::optional<std::chrono::system_clock::time_point> last_login;
 
     /**
      * @brief Flag indicating whether the account is currently logged in.

@@ -27,6 +27,16 @@ counterparty may be unknown, as it is for a set read from an ORE document,
 which names none. Every set belongs to a legal entity of the firm, and the
 entity that imports the document is the one it belongs to.
 
+The limit is the other half of a nettable set's identity: where one
+agreement covers trades under several limits, netting is restricted to
+the trades within one limit, so a set names a
+[[id:DBE59E31-57CE-4F56-8526-007E219FB95A][credit limit]] as it names an agreement. A
+separate pinned key holds the set's counterparty and party to the limit's,
+for the same reason the agreement pin exists. The two pins are separate
+because the limit is a credit fact and the agreement a legal one: one
+agreement covers several limits, so no single limit column can sit on the
+agreement.
+
 The code is the netting set id ORE uses. The call type and initial margin
 type are the remaining parts of ORE's netting set details, and the risk
 weight is ORE's.
@@ -78,6 +88,22 @@ std::string("NS-") + std::string(faker::string::alphanumeric(10))
 The agreement the set is opened under.
 
 Absent when the trades in the set do not net.
+
+#+begin_src cpp :name generator
+std::nullopt
+#+end_src
+
+** credit_limit_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+The credit limit the set's trades net within.
+
+Absent when the set names no limit. Required when the set has one, and
+then its counterparty and party are the limit's.
 
 #+begin_src cpp :name generator
 std::nullopt
@@ -245,13 +271,15 @@ The import names the agreement by number and the counterparty by LEI where the s
 | expression                                                                                     |
 |------------------------------------------------------------------------------------------------|
 | "netting_agreement_id" is null or "counterparty_id" is not null                                |
+| "credit_limit_id" is null or "counterparty_id" is not null                                     |
 | "risk_weight" is null or "risk_weight" >= 0                                                    |
 
 ** Pinned keys
 
-| name      | columns                                         | table                               | target_columns                | error_message                                                                  |
-|-----------+-------------------------------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------|
-| agreement | netting_agreement_id, counterparty_id, party_id | ores_refdata_netting_agreements_tbl | id, counterparty_id, party_id | Invalid netting_agreement_id: %. The set's parties must be the agreement's.    |
+| name         | columns                                         | table                               | target_columns                | error_message                                                                  |
+|--------------+-------------------------------------------------+-------------------------------------+-------------------------------+--------------------------------------------------------------------------------|
+| agreement    | netting_agreement_id, counterparty_id, party_id | ores_refdata_netting_agreements_tbl | id, counterparty_id, party_id | Invalid netting_agreement_id: %. The set's parties must be the agreement's.    |
+| credit_limit | credit_limit_id, counterparty_id, party_id      | ores_refdata_credit_limits_tbl      | id, counterparty_id, party_id | Invalid credit_limit_id: %. The set's parties must be the limit's.             |
 
 * Foreign keys
 
@@ -261,6 +289,16 @@ The import names the agreement by number and the counterparty by LEI where the s
 :parent_entity: netting_agreement
 :nullable:      true
 :error_message: Invalid netting_agreement_id: %. No active netting agreement found with this id.
+:list_by:       true
+:list_by_uuid:  true
+:END:
+
+** credit_limit_id
+:PROPERTIES:
+:table:         ores_refdata_credit_limits_tbl
+:parent_entity: credit_limit
+:nullable:      true
+:error_message: Invalid credit_limit_id: %. No active credit limit found with this id.
 :list_by:       true
 :list_by_uuid:  true
 :END:

@@ -232,6 +232,8 @@
 \ir ./refdata_netting_set_identifiers_drop.sql
 \ir ./refdata_netting_sets_notify_trigger_drop.sql
 \ir ./refdata_netting_sets_drop.sql
+\ir ./refdata_credit_limits_notify_trigger_drop.sql
+\ir ./refdata_credit_limits_drop.sql
 \ir ./refdata_netting_agreements_notify_trigger_drop.sql
 \ir ./refdata_netting_agreements_drop.sql
 
@@ -323,6 +325,10 @@
 
 -- Currency pairs (must drop before currencies, currency_pair_classifications, currency_groups)
 \ir ./refdata_currency_pair_conventions_notify_trigger_drop.sql
+\ir ./refdata_bundle_import_items_notify_trigger_drop.sql
+\ir ./refdata_bundle_import_items_drop.sql
+\ir ./refdata_bundle_imports_notify_trigger_drop.sql
+\ir ./refdata_bundle_imports_drop.sql
 \ir ./refdata_currency_pair_conventions_drop.sql
 \ir ./refdata_currency_pairs_notify_trigger_drop.sql
 \ir ./refdata_currency_pairs_drop.sql

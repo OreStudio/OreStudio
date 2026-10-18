@@ -1669,3 +1669,15 @@ tangled into the runnable script library
 * Report Error Events
 
 - [[id:DBF8B476-9D33-51E7-9CE4-C6DD2DD70D18][How do I run the report_error_events commands from the shell?]]
+
+* Range Bounds
+
+- [[id:BB74231F-E210-57FF-96DC-8D2A53FD528A][How do I run the range_bounds commands from the shell?]]
+
+* Equity Instruments
+
+- [[id:0B3558F6-7E79-5660-AAFE-0F10D254C48E][How do I run the equity_instruments commands from the shell?]]
+
+* Credit Limits
+
+- [[id:CA3C35D6-2C87-59F1-9B41-08C9BC66AD40][How do I run the credit_limits commands from the shell?]]

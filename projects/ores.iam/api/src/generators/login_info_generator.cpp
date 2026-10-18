@@ -44,7 +44,7 @@ domain::login_info generate_synthetic_login_info(utility::generation::generation
     r.account_id = ctx.generate_uuid();
     r.last_ip = boost::asio::ip::make_address("127.0.0.1");
     r.last_attempt_ip = boost::asio::ip::make_address("127.0.0.1");
-    r.last_login = ctx.past_timepoint();
+    r.last_login = std::nullopt;
     return r;
 }
 

@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: A6E85800-137D-4CBC-BC32-AB248B0F4B78
+:END:
+#+title: Bring data in prototype
+#+description: One entry screen for every import journey: the source, the scope, the families, the sandbox target chosen on the book tree, and who may act.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:data_exchange:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+| Item          | Where                                                        |
+|---------------+--------------------------------------------------------------|
+| Prototype     | [[file:bring-data-in/][the prototype]]                                    |
+| Gemini review | none                                                         |
+| Group         | [[id:1034E1CB-D639-4489-A16A-931549228D8A][Data exchange prototypes]] |
+| Journeys      | [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party]], [[id:388355DD-6437-44CB-B48B-63B25B48CF1F][Seed a fresh environment]], [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect]], [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset]], [[id:64DCC69B-113C-4766-BC4E-DD6CC3CC912D][Import market data from a feed]], [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment]], [[id:EEACF799-D2A9-45E0-AF82-BF9168C057A4][Import as a party-scoped user]] |
+
+* Summary
+
+Every import journey begins the same way: name a source, a scope and a target.
+What differs is the trigger, the payload and who may act. This screen is the
+one entry step, with those as variants, and with the family picker that
+shows what the file carries, the workflow the
+import will start, and the book tree that names the sandbox the import
+publishes into.
+Staging writes no live row.
+
+It is throwaway. It reads no service. Open [[file:bring-data-in/][the source screen]].
+
+* Detail
+
+** What it argues
+
+- The trigger is a variant, not a screen. Onboarding, a seed, a defect
+  reproduction, a vendor feed, one corrected file and a promotion differ in
+  their source files and their scope; none differs in what the person does
+  first.
+- The scope comes from the session. The file carries no party, the shell
+  refuses a party other than the session's, and the screen shows the party as a
+  read-only field rather than a picker.
+- The scan is visible before the write. For the sample-folder trigger the table
+  lists what the scanner read and what it ignored, with the reason. The seed
+  journey says the person cannot see this today.
+- The family picker is the missing scope. The onboarding journey needs the
+  conventions and the portfolio and nothing else, so the parts the file carries
+  but the journey does not want are unchecked and named in the refusal reason.
+- Who may act is a panel, not a footnote. The operations user holds the
+  conventions write and not the trade or market writes; the screen shows the
+  permission that is missing instead of hiding the button.
+- The workflow is named before the work starts. A card gives the type, the
+  start message, the failure policy and every step the definition would
+  declare, so the person can see what the import will do and where progress
+  will appear.
+- The target is a sandbox, not a free choice. The book tree draws the official
+  tree and the sandbox subtrees anchored on it. An official node is visibly not
+  selectable for import and says why; a sandbox node is selectable and shows
+  the path and the virtual books and portfolios the import will create inside
+  it.
+
+** The target is a sandbox on the book tree
+
+An import always publishes, and it publishes inside a sandbox. A sandbox is not
+a node of the official portfolio tree: it is anchored at one official
+portfolio and owns a subtree of its own. The control draws both in one tree, so
+the person sees the anchor and the sandbox branch together.
+
+- Only a sandbox is selectable. An official portfolio and an official book are
+  drawn with a tag that says "not an import target", and a click on one is
+  refused with the reason: nothing official moves. A sandbox's own portfolio
+  and virtual book are refused too, because the target is the sandbox, not a
+  node inside it.
+- An archived sandbox is refused. The model's insert trigger makes an archived
+  sandbox read-only, so the row is drawn locked and a click explains the
+  trigger.
+- The selected sandbox is shown by its full path, its anchor, its purpose, its
+  owner and its root portfolio, which has no parent.
+- The screen states what the import creates inside it: the virtual portfolios
+  and virtual books, each written with the sandbox id; the root portfolio has
+  no parent; a virtual book has no ledger reference and is not sweepable.
+- The model gives =sandbox_id= to books and portfolios only. The convention,
+  curve, market and run families carry none, so they still publish to the
+  party, not into the sandbox. The screen names that boundary rather than
+  hiding it.
+
+** The workflow this import starts
+
+The card reads nothing. The type and the step list are the definition's, and
+=workflow.v1.definitions.list= would answer the same list; the stage subjects
+and the commit are the draft design's. The budgets are the workflow API's:
+=data_step_timeout= for a step that stages, =write_step_timeout= for a step
+that writes a record.
+
+The list follows the draft: one stage step per family the file carries, then
+one commit step and one record step. A family the server skips is declared as
+a step too, so the skip is reported by a step rather than dropped. The engine
+builds this list from the request at start and rebuilds the same list on every
+advance, so the card is a promise the run can be held to.
+
+Nothing runs until =workflow.v1.ops.start_workflow= is published. The card's
+*Follow the run* opens the [[file:one-import-run.org][Run]] screen in its staged
+state, where the progress begins at that publish.
+
+** Variants and states
+
+=?case=onboard|seed|defect|feed|one-dataset|promote|party=,
+=?actor=admin|ops|maintainer|support=,
+=?state=source|families|refused=, =?scan=0=,
+=?target=sb-import-onboard|sb-sample-seed|sb-import-repro|sb-import-feed=.
+The bar at the foot switches the trigger and the actor; the target is chosen in
+the tree and kept in the query string. The refusals are the missing permission
+and the row the validator refuses; a click on an official node or on an
+archived sandbox adds the target refusal.
+
+** What is real and what is not
+
+The subjects and the permission model are the journeys': =ore upload=,
+=ore import=, =ore import-run=, =marketdata import=, =compute download-input=,
+and the writes each import borrows. The convention family names come from the
+modelling tree; the merge policies (replace by
+key, add missing world, skip) come from the draft design. The step states,
+their names, the budgets and the failure policies are the workflow engine's.
+The workflow type, its stage subjects and the per-family stage replies are the
+draft's and are not registered. The sandbox rules are the model's: a sandbox is
+anchored at an official portfolio, a book and its portfolio share one sandbox,
+a sandbox root portfolio has no parent, and a virtual book has no ledger
+reference and is not sweepable. The tree, the sandbox ids and the counts are
+invented. The row counts, file sizes, request ids and checksums are invented.
+
+The screen itself has no server. No upload route, no scan route and no staging
+verb exists. The journey lists them as gaps, and the screen says so in its
+banner.
+
+** Screens the workflow connection touches
+
+The Entry screen names the run; it does not follow one. The
+[[file:one-import-run.org][Run]] screen follows the instance and holds the retry,
+the [[file:stage-an-import.org][Review]] screen sits between the two instances a
+decider-gated import needs, and the [[file:import-register.org][Register]] lists
+one row per instance. This screen answers the question the engine cannot: which
+workflow will this file start, and what will it do.
+
+** The verdict
+
+Not signed off. The screen asks the owner whether the trigger belongs on one
+screen at all, and whether the operations user is given a permission that
+means "may import for a party" or stays out of the trade and market imports.
+The sandbox target adds the blocking question:
+only books and portfolios have a =sandbox_id= in the model, so a conventions
+import cannot publish into the selected sandbox. Either the sandbox covers the
+book-tree families alone, or the model grows a sandbox column for every
+imported family.
+
+* See also
+
+- [[file:index.org][Data exchange prototypes]] — the group page, and the journeys each screen serves.
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] — the journeys this screen answers.

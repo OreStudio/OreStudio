@@ -20,13 +20,15 @@
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
 #include "ores.ore.core/domain/ore_boundary_decimal.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
-#include <iomanip>
 #include <limits>
 #include <map>
 #include <optional>
 #include <sstream>
 #include <stdexcept>
+#include <utility>
+#include <vector>
 
 namespace ores::ore::domain {
 
@@ -67,127 +69,6 @@ std::string to_ore_date(const std::chrono::year_month_day& d) {
 
 std::string to_ore_date(const std::optional<std::chrono::year_month_day>& d) {
     return d ? ores::platform::time::datetime::to_iso8601_date(*d) : std::string{};
-}
-
-std::string json_escape(const std::string& s) {
-    std::string out;
-    out.reserve(s.size());
-    for (char c : s) {
-        if (c == '"')
-            out += "\\\"";
-        else if (c == '\\')
-            out += "\\\\";
-        else
-            out += c;
-    }
-    return out;
-}
-
-// A level renders with every digit a float carries, so reading it back yields
-// the same float the document stated.
-std::string to_json_number(float v) {
-    std::ostringstream os;
-    os << std::setprecision(std::numeric_limits<float>::max_digits10) << v;
-    return os.str();
-}
-
-// A range bound holds only the levels the document states, so each entry is a
-// JSON object carrying exactly those fields.
-std::string range_bound_to_json(const rangeBound& rb) {
-    std::vector<std::string> fields;
-    if (rb.startDate)
-        fields.push_back("\"StartDate\":\"" + json_escape(std::string(*rb.startDate)) + "\"");
-    if (rb.RangeFrom)
-        fields.push_back("\"RangeFrom\":" + to_json_number(*rb.RangeFrom));
-    if (rb.RangeTo)
-        fields.push_back("\"RangeTo\":" + to_json_number(*rb.RangeTo));
-    if (rb.Leverage)
-        fields.push_back("\"Leverage\":" + to_json_number(*rb.Leverage));
-    if (rb.Strike)
-        fields.push_back("\"Strike\":" + to_json_number(*rb.Strike));
-    if (rb.StrikeAdjustment)
-        fields.push_back("\"StrikeAdjustment\":" + to_json_number(*rb.StrikeAdjustment));
-
-    std::string json = "{";
-    for (std::size_t i = 0; i < fields.size(); ++i) {
-        if (i != 0)
-            json += ",";
-        json += fields[i];
-    }
-    json += "}";
-    return json;
-}
-
-std::string range_bounds_to_json(const xsd::vector<rangeBound>& bounds) {
-    std::string json = "[";
-    for (std::size_t i = 0; i < bounds.size(); ++i) {
-        if (i != 0)
-            json += ",";
-        json += range_bound_to_json(bounds[i]);
-    }
-    json += "]";
-    return json;
-}
-
-std::vector<rangeBound> parse_json_range_bounds(const std::string& json) {
-    std::vector<rangeBound> result;
-    std::size_t pos = 0;
-    while (true) {
-        const auto open = json.find('{', pos);
-        if (open == std::string::npos)
-            break;
-        const auto close = json.find('}', open);
-        if (close == std::string::npos)
-            break;
-        const auto body = json.substr(open + 1, close - open - 1);
-        rangeBound rb;
-        std::size_t p = 0;
-        while (p < body.size()) {
-            const auto key_open = body.find('"', p);
-            if (key_open == std::string::npos)
-                break;
-            const auto key_close = body.find('"', key_open + 1);
-            if (key_close == std::string::npos)
-                break;
-            const auto key = body.substr(key_open + 1, key_close - key_open - 1);
-            const auto colon = body.find(':', key_close);
-            if (colon == std::string::npos)
-                break;
-            if (key == "StartDate") {
-                const auto value_open = body.find('"', colon);
-                const auto value_close = value_open == std::string::npos ?
-                                             std::string::npos :
-                                             body.find('"', value_open + 1);
-                if (value_close == std::string::npos)
-                    break;
-                xsd::string s;
-                static_cast<std::string&>(s) =
-                    body.substr(value_open + 1, value_close - value_open - 1);
-                rb.startDate = std::move(s);
-                p = value_close + 1;
-                continue;
-            }
-            const auto value_end = body.find(',', colon);
-            const auto value = body.substr(colon + 1,
-                                           value_end == std::string::npos ? std::string::npos :
-                                                                            value_end - colon - 1);
-            const auto number = std::stof(value);
-            if (key == "RangeFrom")
-                rb.RangeFrom = number;
-            else if (key == "RangeTo")
-                rb.RangeTo = number;
-            else if (key == "Leverage")
-                rb.Leverage = number;
-            else if (key == "Strike")
-                rb.Strike = number;
-            else if (key == "StrikeAdjustment")
-                rb.StrikeAdjustment = number;
-            p = value_end == std::string::npos ? body.size() : value_end + 1;
-        }
-        result.push_back(std::move(rb));
-        pos = close + 1;
-    }
-    return result;
 }
 
 constexpr const char* k_modified_by = "ores";
@@ -293,16 +174,34 @@ std::string option_type_from_single(const optionData& od) {
     return {};
 }
 
+/**
+ * @brief Whether a barrier style names the direction it engages.
+ *
+ * An Up style or a FixingCap engages the upper level, a Down style or a
+ * FixingFloor the lower one. The styles that name no direction keep the level
+ * in the lower column, which is the shape their readers expect.
+ */
+bool is_up_barrier_style(const std::string& type) {
+    return type == "UpAndOut" || type == "UpAndIn" || type == "FixingCap";
+}
+
 // BarrierData carries one level for a single barrier and two for a
 // double barrier, lower first.
 template <typename Lower, typename Upper>
 void fill_barrier(const barrierData& bd, std::string& barrier_type, Lower& lower, Upper& upper) {
     barrier_type = to_string(bd.Type);
     const auto& levels = bd.Levels.Level;
-    if (!levels.empty())
+    if (levels.size() > 1) {
         lower = exact_decimal(levels.front());
-    if (levels.size() > 1)
         upper = exact_decimal(levels[1]);
+        return;
+    }
+    if (levels.empty())
+        return;
+    if (is_up_barrier_style(barrier_type))
+        upper = exact_decimal(levels.front());
+    else
+        lower = exact_decimal(levels.front());
 }
 
 void validate_long_short(const std::string& v) {
@@ -378,14 +277,13 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type,
     return b;
 }
 
-// The reverse of fill_barrier. Barrier types with a plain double lower
-// level use zero to mean "no lower barrier", so a zero lower lets the
-// upper level start the group on its own.
+// The reverse of fill_barrier. An absent level is absent because the column is
+// nullable, so the group starts from whichever level the row states.
 barrierData fx_instrument_mapper::make_barrier_group(
     const std::string& type,
     const std::optional<ores::utility::decimal::decimal>& lower,
     const std::optional<ores::utility::decimal::decimal>& upper) {
-    const bool has_lower = lower.has_value() && *lower != ores::utility::decimal::decimal{};
+    const bool has_lower = lower.has_value();
     if (!has_lower && !upper.has_value())
         return {};
     barrierData b = make_barrier(type, has_lower ? *lower : *upper);
@@ -398,7 +296,7 @@ barrierData fx_instrument_mapper::make_barrier_group(
 // Forward: FxForward
 // ===========================================================================
 
-trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_forward(const trade& t) {
+trading::domain::fx_forward_instrument fx_instrument_mapper::forward_fx_forward(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxForward: " << std::string(t.id);
     fx_forward_instrument r;
     r.identity.trade_type_code = "FxForward";
@@ -422,7 +320,7 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_forward(
 // Forward: FxSwap
 // ===========================================================================
 
-trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_swap(const trade& t) {
+trading::domain::fx_forward_instrument fx_instrument_mapper::forward_fx_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxSwap: " << std::string(t.id);
     fx_forward_instrument r;
     r.identity.trade_type_code = "FxSwap";
@@ -447,7 +345,8 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_swap(con
 // Forward: FxOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_option(const trade& t) {
+trading::domain::fx_vanilla_option_instrument
+fx_instrument_mapper::forward_fx_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxOption: " << std::string(t.id);
     fx_vanilla_option_instrument r;
     r.identity.trade_type_code = "FxOption";
@@ -477,7 +376,7 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_option(c
 // Forward: FxBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -501,7 +400,7 @@ fx_instrument_mapper::forward_fx_barrier_option(const trade& t) {
 // Forward: FxDoubleBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_double_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDoubleBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -525,7 +424,7 @@ fx_instrument_mapper::forward_fx_double_barrier_option(const trade& t) {
 // Forward: FxEuropeanBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_european_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxEuropeanBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -549,7 +448,7 @@ fx_instrument_mapper::forward_fx_european_barrier_option(const trade& t) {
 // Forward: FxKIKOBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_kiko_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxKIKOBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -567,6 +466,8 @@ fx_instrument_mapper::forward_fx_kiko_barrier_option(const trade& t) {
         r.option_type = std::string(*d.OptionData.OptionType);
     r.expiry_date = expiry_date_from_single(d.OptionData);
 
+    // A KIKO or generic barrier states a level per side, so the pair stays
+    // positional here (see fill_barrier for the directional rule).
     if (!d.Barriers.BarrierData.empty()) {
         r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
         if (!d.Barriers.BarrierData.front().Levels.Level.empty())
@@ -581,7 +482,7 @@ fx_instrument_mapper::forward_fx_kiko_barrier_option(const trade& t) {
 // Forward: FxGenericBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_generic_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxGenericBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -601,6 +502,8 @@ fx_instrument_mapper::forward_fx_generic_barrier_option(const trade& t) {
         r.option_type = std::string(*d.OptionData.OptionType);
     r.expiry_date = expiry_date_from_single(d.OptionData);
 
+    // A two-sided product keeps the positional pair; see fill_barrier for the
+    // directional rule the single-sided products follow.
     if (!d.Barriers.BarrierData.empty()) {
         r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
         if (!d.Barriers.BarrierData.front().Levels.Level.empty())
@@ -615,7 +518,7 @@ fx_instrument_mapper::forward_fx_generic_barrier_option(const trade& t) {
 // Forward: FxDigitalOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_digital_option_instrument
 fx_instrument_mapper::forward_fx_digital_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDigitalOption: " << std::string(t.id);
     fx_digital_option_instrument r;
@@ -640,7 +543,7 @@ fx_instrument_mapper::forward_fx_digital_option(const trade& t) {
 // Forward: FxDigitalBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_digital_option_instrument
 fx_instrument_mapper::forward_fx_digital_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDigitalBarrierOption: " << std::string(t.id);
     fx_digital_option_instrument r;
@@ -661,7 +564,12 @@ fx_instrument_mapper::forward_fx_digital_barrier_option(const trade& t) {
 
     if (!d.BarrierData.Levels.Level.empty()) {
         r.barrier_type = to_string(d.BarrierData.Type);
-        r.lower_barrier = exact_decimal(d.BarrierData.Levels.Level.front());
+        // One level, placed by the style's direction, so the digital table and
+        // the barrier table state a level the same way.
+        if (is_up_barrier_style(r.barrier_type))
+            r.upper_barrier = exact_decimal(d.BarrierData.Levels.Level.front());
+        else
+            r.lower_barrier = exact_decimal(d.BarrierData.Levels.Level.front());
     }
     return r;
 }
@@ -670,7 +578,7 @@ fx_instrument_mapper::forward_fx_digital_barrier_option(const trade& t) {
 // Forward: FxTouchOption / FxDoubleTouchOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_digital_option_instrument
 fx_instrument_mapper::forward_fx_touch_option(const trade& t) {
     const std::string type_str = to_string(t.TradeType);
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping " << type_str << ": " << std::string(t.id);
@@ -701,7 +609,7 @@ fx_instrument_mapper::forward_fx_touch_option(const trade& t) {
 // Forward: FxVarianceSwap
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_variance_swap_instrument
 fx_instrument_mapper::forward_fx_variance_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxVarianceSwap: " << std::string(t.id);
     fx_variance_swap_instrument r;
@@ -730,7 +638,7 @@ fx_instrument_mapper::forward_fx_variance_swap(const trade& t) {
 // Forward: FxAverageForward
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_asian_forward_instrument
 fx_instrument_mapper::forward_fx_average_forward(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxAverageForward: " << std::string(t.id);
     fx_asian_forward_instrument r;
@@ -754,7 +662,7 @@ fx_instrument_mapper::forward_fx_average_forward(const trade& t) {
 // Forward: FxAccumulator
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_accumulator_instrument
 fx_instrument_mapper::forward_fx_accumulator(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxAccumulator: " << std::string(t.id);
     fx_accumulator_instrument r;
@@ -782,18 +690,39 @@ fx_instrument_mapper::forward_fx_accumulator(const trade& t) {
             }
         }
     }
-    // The schema requires at least one range bound, so the list is what makes
-    // the exported accumulator readable.
-    if (!d.RangeBounds.RangeBound.empty())
-        r.range_bounds_json = range_bounds_to_json(d.RangeBounds.RangeBound);
     return r;
+}
+
+std::vector<trading::domain::range_bound>
+fx_instrument_mapper::forward_range_bounds(const accumulatorData& d) {
+    std::vector<trading::domain::range_bound> rows;
+    rows.reserve(d.RangeBounds.RangeBound.size());
+    int sequence_number = 0;
+    for (const auto& rb : d.RangeBounds.RangeBound) {
+        trading::domain::range_bound row;
+        row.sequence_number = ++sequence_number;
+        if (rb.startDate)
+            row.start_date = to_optional_domain_date(std::string(*rb.startDate));
+        if (rb.RangeFrom)
+            row.range_from = exact_decimal(*rb.RangeFrom);
+        if (rb.RangeTo)
+            row.range_to = exact_decimal(*rb.RangeTo);
+        if (rb.Leverage)
+            row.leverage = static_cast<double>(*rb.Leverage);
+        if (rb.Strike)
+            row.strike = exact_decimal(*rb.Strike);
+        if (rb.StrikeAdjustment)
+            row.strike_adjustment = exact_decimal(*rb.StrikeAdjustment);
+        rows.push_back(std::move(row));
+    }
+    return rows;
 }
 
 // ===========================================================================
 // Forward: FxTaRF
 // ===========================================================================
 
-trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_tarf(const trade& t) {
+trading::domain::fx_asian_forward_instrument fx_instrument_mapper::forward_fx_tarf(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxTaRF: " << std::string(t.id);
     fx_asian_forward_instrument r;
     r.identity.trade_type_code = "FxTaRF";
@@ -977,8 +906,8 @@ trade fx_instrument_mapper::reverse_fx_kiko_barrier_option(
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
     set_exact(d.SoldAmount, instr.sold_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
-    if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (!instr.barrier_type.empty() && instr.lower_barrier.has_value())
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.lower_barrier));
     if (instr.upper_barrier.has_value())
         d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
     t.FxKIKOBarrierOptionData = std::move(d);
@@ -1001,8 +930,8 @@ trade fx_instrument_mapper::reverse_fx_generic_barrier_option(
     d.underlyingTypes = make_underlying_type_name(instr.underlying_code);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
 
-    if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (!instr.barrier_type.empty() && instr.lower_barrier.has_value())
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.lower_barrier));
     if (instr.upper_barrier.has_value())
         d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
 
@@ -1146,7 +1075,9 @@ trade fx_instrument_mapper::reverse_fx_average_forward(const fx_asian_forward_in
 // Reverse: FxAccumulator
 // ===========================================================================
 
-trade fx_instrument_mapper::reverse_fx_accumulator(const fx_accumulator_instrument& instr) {
+trade fx_instrument_mapper::reverse_fx_accumulator(
+    const fx_accumulator_instrument& instr,
+    const std::vector<trading::domain::range_bound>& range_bounds) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxAccumulator";
     trade t;
     t.TradeType = oreTradeType::FxAccumulator;
@@ -1172,8 +1103,27 @@ trade fx_instrument_mapper::reverse_fx_accumulator(const fx_accumulator_instrume
         static_cast<std::string&>(rule.StartDate) = to_ore_date(instr.start_date);
     static_cast<std::string&>(rule.Tenor) = "1D";
     d.ObservationDates.Rules.push_back(std::move(rule));
-    for (const auto& rb : parse_json_range_bounds(instr.range_bounds_json))
-        d.RangeBounds.RangeBound.push_back(rb);
+    if (range_bounds.empty())
+        throw std::runtime_error(
+            "FxAccumulator " + boost::uuids::to_string(instr.identity.trade_id) +
+            " holds no range bound, and the document this binding writes needs at least one"
+            " entry in RangeBounds.");
+    for (const auto& row : range_bounds) {
+        rangeBound rb;
+        if (row.start_date)
+            rb.startDate = xsd::string(to_ore_date(*row.start_date));
+        if (row.range_from)
+            set_money(rb.RangeFrom, *row.range_from);
+        if (row.range_to)
+            set_money(rb.RangeTo, *row.range_to);
+        if (row.leverage)
+            rb.Leverage = static_cast<float>(*row.leverage);
+        if (row.strike)
+            set_money(rb.Strike, *row.strike);
+        if (row.strike_adjustment)
+            set_money(rb.StrikeAdjustment, *row.strike_adjustment);
+        d.RangeBounds.RangeBound.push_back(std::move(rb));
+    }
 
     if (instr.knock_out_barrier.has_value())
         d.Barriers = [&]() {

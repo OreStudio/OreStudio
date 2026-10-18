@@ -52,8 +52,9 @@ struct session_statistics_row {
 /**
  * @brief A window over the caller's tenant session statistics.
  *
- * An empty filter does not filter. The window is newest first, so the screen
- * reads the most recent days without asking for an order.
+ * A bound the caller states no value for is null, and the read then applies no
+ * bound on that side. The window is newest first, so the screen reads the most
+ * recent days without asking for an order.
  */
 struct get_session_statistics_request {
     using response_type = struct get_session_statistics_response;
@@ -66,8 +67,8 @@ struct get_session_statistics_request {
      */
     static constexpr bool requires_session = true;
     std::string account_id;
-    std::string from_time;
-    std::string to_time;
+    std::optional<std::chrono::system_clock::time_point> from_time;
+    std::optional<std::chrono::system_clock::time_point> to_time;
     std::uint32_t limit = 100;
     std::uint32_t offset = 0;
 };

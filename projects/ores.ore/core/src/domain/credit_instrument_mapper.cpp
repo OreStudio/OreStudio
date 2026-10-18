@@ -23,7 +23,6 @@
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
-#include "ores.trading.api/domain/credit_fact_variant.hpp"
 #include <algorithm>
 #include <chrono>
 #include <optional>
@@ -246,8 +245,8 @@ swap_instrument_mapper::option_rows option_rows_of(const credit_instrument_data&
 template <typename Fact>
 const Fact& fact_of(const credit_instrument_data& data) {
     static const Fact empty{};
-    const auto* f = std::get_if<Fact>(&data.facts);
-    return f ? *f : empty;
+    const auto& rows = fact_rows<Fact>(data);
+    return rows.empty() ? empty : rows.front();
 }
 
 } // namespace
@@ -439,7 +438,7 @@ credit_instrument_data credit_instrument_mapper::forward_cds(const trade& t) {
         map_leg_dates(d.LegData, result.instrument);
         append_leg(result, d.LegData, "premium");
     }
-    result.facts = std::move(fact);
+    result.credit_default_swap_instruments.push_back(std::move(fact));
     return result;
 }
 
@@ -457,7 +456,7 @@ credit_instrument_data credit_instrument_mapper::forward_index_cds(const trade& 
         if (d.BasketData)
             append_basket(result, *d.BasketData);
     }
-    result.facts = std::move(fact);
+    result.index_credit_default_swap_instruments.push_back(std::move(fact));
     return result;
 }
 
@@ -493,7 +492,7 @@ credit_instrument_data credit_instrument_mapper::forward_index_cds_option(const 
         }
         append_option_rows(result, swap_instrument_mapper::map_option_block(od.OptionData));
     }
-    result.facts = std::move(fact);
+    result.index_credit_default_swap_option_instruments.push_back(std::move(fact));
     return result;
 }
 
@@ -523,7 +522,7 @@ credit_instrument_data credit_instrument_mapper::forward_credit_linked_swap(cons
         append_group(d.DefaultPayments, "default");
         append_group(d.RecoveryPayments, "recovery");
     }
-    result.facts = std::move(fact);
+    result.credit_linked_swap_instruments.push_back(std::move(fact));
     return result;
 }
 
@@ -549,7 +548,7 @@ credit_instrument_data credit_instrument_mapper::forward_synthetic_cdo(const tra
         if (d.BasketData)
             append_basket(result, *d.BasketData);
     }
-    result.facts = std::move(fact);
+    result.synthetic_cdo_instruments.push_back(std::move(fact));
     return result;
 }
 
@@ -604,7 +603,7 @@ credit_instrument_data credit_instrument_mapper::forward_rpa(const trade& t) {
             BOOST_LOG_SEV(lg(), warn)
                 << "Treasury lock of the underlying is not stored: " << std::string(t.id);
     }
-    result.facts = std::move(fact);
+    result.risk_participation_agreement_instruments.push_back(std::move(fact));
     return result;
 }
 

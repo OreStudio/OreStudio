@@ -118,6 +118,11 @@ public:
      * after a delete, which closes the transaction-time window rather than
      * removing the row. A latest read cannot resolve a closed row, so this one
      * ignores the window and takes the newest match.
+     *
+     * A key names a row of one party, and another party of the tenant may hold
+     * the same key, so the match is kept to the session's party. A null party
+     * column means the row belongs to the whole tenant and is kept for every
+     * party.
      */
     std::vector<domain::netting_set> read_any_by_code(context ctx, const std::string& code);
 
@@ -161,6 +166,31 @@ public:
     std::uint32_t get_total_netting_set_count_by_netting_agreement_id(
         context ctx,
         const std::string& netting_agreement_id,
+        const std::optional<messaging::netting_sets_filter>& filter = std::nullopt);
+
+
+    /**
+     * @brief Reads latest netting sets filtered by credit_limit_id, with pagination.
+     * @param ctx Repository context with database connection
+     * @param credit_limit_id The credit_limit_id to filter by
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     * @param order The stated order; an empty field is the default order
+     */
+    std::vector<domain::netting_set> read_latest_by_credit_limit_id(
+        context ctx,
+        const std::string& credit_limit_id,
+        std::uint32_t offset,
+        std::uint32_t limit,
+        const ores::utility::domain::order& order = {},
+        const std::optional<messaging::netting_sets_filter>& filter = std::nullopt);
+
+    /**
+     * @brief Gets the total count of active netting sets filtered by credit_limit_id.
+     */
+    std::uint32_t get_total_netting_set_count_by_credit_limit_id(
+        context ctx,
+        const std::string& credit_limit_id,
         const std::optional<messaging::netting_sets_filter>& filter = std::nullopt);
 
 

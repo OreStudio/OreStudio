@@ -1,0 +1,100 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: RUN A REPORT</b>
+  --
+  <b>DEFINITION: Group Consolidated Exposure - ACMCOR</b>
+  --
+  {#
+    Type | Schedule | Scope | Pre-processing | Post-processing
+    risk | scheduled 06:00 | portfolio (from the configuration) | execute | execute
+  }
+  --
+  {
+    [ Run now ] | Latest run: completed clean at 06:04:31
+  }
+  --
+  <b>CONFIRM RUN</b>
+  --
+  {
+    Run Group Consolidated Exposure now? Scope: portfolio (from the configuration).
+    Pre-processing: execute. Post-processing: execute.
+  }
+  {
+    [ Cancel ] | [ Run now ]
+  }
+  --
+  <b>RUN 4b7e1a02 - RUNNING</b>
+  --
+  {#
+    State | Started | Completed | Kind | Trigger
+    running | 08:12:44 | - | from report_instance_kind | on demand
+  }
+  --
+  <b>THE PIPELINE THIS RUN WILL WALK</b>
+  --
+  {#
+    Phase | Step | Status
+    Pre-processing | gather_trades | not reported
+    Pre-processing | gather_market_data | not reported
+    Pre-processing | assemble_bundle | not reported
+    Pre-processing | prepare_ore_package | not reported
+    Submission | submit_compute | not reported
+    Execution | on a worker node - no service step | not reported
+    Retrieval and Post-processing | collect_compute_results | not reported
+    Finalisation | finalise_report | not reported
+  }
+  --
+  The run's state is running. No reporting read says which step is current: the
+  steps live in ores.workflow, and the screen draws the plan rather than a
+  progress bar it cannot fill. A run whose definition substitutes pre-processing
+  starts at resolve_prepared_input; one that ignores post-processing uses
+  ignore_compute_results.
+  --
+  <b>TERMINAL: COMPLETED CLEAN</b>
+  --
+  {#
+    State | Started | Completed | Took | Output message | Archive
+    completed | 08:12:44 | 08:15:02 | 2 m 18 s | Report execution completed. | reporting/runs/<instance-id>/output.tar.gz
+  }
+  Health: (completed clean). Errors: none.
+  --
+  <b>TERMINAL: COMPLETED WHILE CARRYING ERRORS</b>
+  --
+  {#
+    State | Completed | Output message | Errors | Archive
+    completed | 08:15:02 | Report execution completed. | (11 errors) | reporting/runs/<instance-id>/output.tar.gz
+  }
+  The run succeeded and still carries errors. The panel says so and links to the
+  error screen; it does not call the run failed.
+  --
+  <b>TERMINAL: FAILED</b>
+  --
+  {#
+    State | Completed | Output message | Archive | Errors
+    failed | 08:13:10 | - | none | link to the run's errors
+  }
+  A failed run has no archive to read. Its errors are read as one group and
+  include the Report scope, the errors the model states itself when no engine saw
+  the failure.
+}
+
+@enduml

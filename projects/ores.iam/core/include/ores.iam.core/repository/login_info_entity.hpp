@@ -48,7 +48,7 @@ struct login_info_entity {
     std::string last_attempt_ip;
     int failed_logins = 0;
     bool locked = false;
-    std::string last_login;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_login;
     bool online = false;
     bool password_reset_required = false;
 };

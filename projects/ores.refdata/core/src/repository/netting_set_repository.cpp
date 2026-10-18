@@ -106,6 +106,10 @@ filter_condition(const std::optional<messaging::netting_sets_filter>& filter) {
             *filter->netting_agreement_id ?
                 equals("netting_agreement_id", filter_value(**filter->netting_agreement_id)) :
                 is_null("netting_agreement_id"));
+    if (filter->credit_limit_id)
+        r.push_back(*filter->credit_limit_id ?
+                        equals("credit_limit_id", filter_value(**filter->credit_limit_id)) :
+                        is_null("credit_limit_id"));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
@@ -117,6 +121,12 @@ filter_condition(const std::optional<messaging::netting_sets_filter>& filter) {
         for (const auto& v : *filter->netting_agreement_id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("netting_agreement_id", std::move(values)));
+    }
+    if (filter->credit_limit_id_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->credit_limit_id_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("credit_limit_id", std::move(values)));
     }
     return all_of(std::move(r));
 }
@@ -250,14 +260,24 @@ std::vector<domain::netting_set> netting_set_repository::read_any_by_code(contex
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<netting_set_entity>> |
                        where("tenant_id"_c == tid && "code"_c == code) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<netting_set_entity, domain::netting_set>(
+    auto found = execute_read_query<netting_set_entity, domain::netting_set>(
         ctx,
         query,
         [](const auto& entities) { return netting_set_mapper::map(entities); },
         lg(),
         "Reading any netting set by code.");
+    // A key names a row of one party, and another party of the tenant may hold
+    // the same key, so the read keeps the session's party's rows. The filter
+    // runs before the newest row is taken because the party column may be
+    // null, and a null party means the row belongs to the whole tenant and
+    // stays readable by every party, as the latest-by finder also has it.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 
@@ -346,6 +366,50 @@ std::uint32_t netting_set_repository::get_total_netting_set_count_by_netting_agr
                                                    filter_condition(filter),
                                                    lg(),
                                                    "Counting netting sets by netting_agreement_id");
+}
+
+
+std::vector<domain::netting_set> netting_set_repository::read_latest_by_credit_limit_id(
+    context ctx,
+    const std::string& credit_limit_id,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    const ores::utility::domain::order& order,
+    const std::optional<messaging::netting_sets_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest netting sets. credit_limit_id: "
+                               << credit_limit_id << " offset: " << offset << " limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<netting_set_entity>> |
+                       where("tenant_id"_c == tid && "credit_limit_id"_c == credit_limit_id &&
+                             "valid_to"_c == max.value()) |
+                       sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_ordered_read_query<netting_set_entity, domain::netting_set>(
+        ctx,
+        query,
+        list_order(order, {"id"}, false),
+        filter_condition(filter),
+        [](const auto& entities) { return netting_set_mapper::map(entities); },
+        lg(),
+        "Reading latest netting sets by credit_limit_id.");
+}
+
+std::uint32_t netting_set_repository::get_total_netting_set_count_by_credit_limit_id(
+    context ctx,
+    const std::string& credit_limit_id,
+    const std::optional<messaging::netting_sets_filter>& filter) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active netting sets count. credit_limit_id: "
+                               << credit_limit_id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<netting_set_entity>> |
+                       where("tenant_id"_c == tid && "credit_limit_id"_c == credit_limit_id &&
+                             "valid_to"_c == max.value());
+
+    return execute_count_query<netting_set_entity>(
+        ctx, query, filter_condition(filter), lg(), "Counting netting sets by credit_limit_id");
 }
 
 

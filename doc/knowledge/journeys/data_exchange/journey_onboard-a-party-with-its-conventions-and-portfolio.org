@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: 7057D248-6CA8-4F70-AD35-08850D5C22F6
+:END:
+#+title: User Journey: Onboard a party with its conventions and portfolio
+#+description: A tenant administrator brings a new party's conventions and portfolio in from another system, and nothing else.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A tenant administrator brings a new party's conventions and portfolio in from another system, and nothing else.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want this party working with its own conventions and its own portfolio, and I
+do not want to bring the whole source system with me." The journey is done when
+the party's conventions are stored, its portfolio tree reads, and no market
+data, curves or pricing engines were imported.
+
+* Actor and trigger
+
+The actor is a tenant administrator inside the tenant, or an operations user who
+holds both the convention write and the portfolio import permissions. The trigger
+is a new party, a merger, or a party moving from another installation. The
+journey starts after the party exists and the person has switched to it, and ends
+when the two data sets read.
+
+The party matters twice. The conventions are stored against the session's party,
+and the portfolio import books trades in the session's party. The shell refuses
+an import that names a different party.
+
+* Steps
+
+1. *Switch to the party.* The person signs in to the new party, or switches to
+   it. The session now scopes every read and write.
+2. *Prepare the smallest run.* The conventions travel only inside an ORE input
+   directory, because there is no shell verb that stores a lone
+   =conventions.xml=. The person writes an =ore.xml= whose Setup names just
+   =conventions.xml= and puts that file beside it, or exports a run directory
+   from the source and removes the files this party should not receive.
+3. *Import the conventions.* The person runs =ore import-run
+   <report_definition_id> <src_dir>=. The report definition must already exist.
+   The system creates the binding, stores the conventions document, and saves
+   every family.
+4. *Import the portfolio.* The person uploads the portfolio tree with =ore
+   upload= and imports it with =ore import=, naming the parent portfolio. The
+   system creates the tree and books the trades.
+5. *Check what did not come.* The person reads the conventions screens and the
+   trade list, and confirms that no curves, market data or pricing engines were
+   created.
+
+* On success
+
+The run import reports the stored files. The conventions screens show the
+party's families and the world families it reads. The trade list shows the
+imported trades under the portfolio. Market data and curve screens show nothing
+new.
+
+* On failure
+
+The run import refuses before writing when the run document names a file the
+directory does not hold, or when a file does not parse. If a later document
+fails, the import undoes the curves, market data, pricing engines and run
+document it stored. It does not undo conventions. A portfolio import with an
+unresolved counterparty reports the trade and leaves it out. A file with no
+portfolio root is ignored. A party that is not the session's party is refused
+with the session's party named.
+
+* What must never happen
+
+- The import must never store the source tenant's world conventions over the
+  target tenant's own. A world convention is added only when the tenant lacks
+  it.
+- The import must never bring market data, curves or pricing engines when only
+  conventions and a portfolio were asked for.
+- The import must never write a trade into the old party.
+- A convention the file omits must never be deleted. Omission is not a delete.
+- FX conventions must never vanish silently. They have no store today and the
+  response lists them.
+
+* Screens and entry points
+
+There is no screen for this journey. The conventions screen edits one family at
+a time and has no import action. The portfolio import is a shell verb. The
+person needs a report definition to exist before =ore import-run= can bind the
+conventions to it.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What contributes | Model |
+|--------+------------------+-------|
+| =conventions_document= | The 27 families, still carried as one message today | |
+| =report_definition=, =run_document= | The run the conventions are bound to | |
+| =portfolio=, =book= | The imported tree | |
+| =trade= | The imported trades | |
+| =party= | The scope that owns the conventions and the trades | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Switch to the party | Establish the session | the sign-in operation | exists |
+| Prepare the smallest run | No operation: the person edits the input directory | none | n/a |
+| Import the conventions | Start the run import | =ore.v1.ops.import_run_configuration= | exists |
+| Import the conventions | Store the conventions document | =refdata.v1.conventions_documents.put= | exists |
+| Import the conventions | Read the stored conventions | =refdata.v1.conventions_documents.get= | exists |
+| Import the portfolio | Upload the tarball | the =ore= bucket | exists |
+| Import the portfolio | Start the trade import | =workflow.v1.ops.ore_import= | exists |
+
+* What is missing
+
+1. *No standalone conventions import.* A person who has one =conventions.xml=
+   must build a run directory and a report definition to carry it. A verb that
+   takes the file and the party is the gap.
+2. *No family selector.* The run import stores every document the run names. To
+   import conventions only, the person edits the input by hand.
+3. *No per-family result.* The run import reports files, not families. The
+   response's =world_kept= and =fx_skipped= lists are not printed by the shell.
+4. *No preview.* The family counts are not visible before the save.
+
+* Related journeys
+
+- [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] - the trade half on its own.
+- [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset in isolation]] - the narrower version of this journey.
+- [[id:EEACF799-D2A9-45E0-AF82-BF9168C057A4][Import as a party-scoped user]] - who the session's party admits.
+- [[id:D911D082-3759-4645-9452-00CD60B1679E][Promote an environment between systems]] - when several parties move together.
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+- [[id:85930439-D6B2-4811-81FB-C28DD3F45F75][Classifications]] - the lists a convention picks from.
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

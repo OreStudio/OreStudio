@@ -64,7 +64,7 @@ TEST_CASE("create_session_with_valid_fields", tags) {
     CHECK(sut.country_code == "US");
 }
 
-TEST_CASE("session_is_active_when_end_time_empty", tags) {
+TEST_CASE("session_is_open_when_end_time_is_absent", tags) {
     auto lg(make_logger(test_suite));
 
     session sut;
@@ -76,24 +76,24 @@ TEST_CASE("session_is_active_when_end_time_empty", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Active session: " << sut;
 
-    CHECK(sut.end_time.empty());
+    CHECK_FALSE(sut.end_time.has_value());
     CHECK(sut.protocol == "binary");
 }
 
-TEST_CASE("session_is_inactive_when_end_time_set", tags) {
+TEST_CASE("session_is_closed_when_end_time_is_set", tags) {
     auto lg(make_logger(test_suite));
 
     session sut;
     sut.id = boost::uuids::random_generator()();
     sut.account_id = boost::uuids::random_generator()();
     sut.start_time = std::chrono::system_clock::now() - std::chrono::hours(1);
-    sut.end_time = ores::platform::time::datetime::to_iso8601_utc(std::chrono::system_clock::now());
+    sut.end_time = std::chrono::system_clock::now();
     sut.client_ip = boost::asio::ip::make_address("10.0.0.1");
     sut.client_identifier = "Test Client";
 
     BOOST_LOG_SEV(lg, info) << "Ended session: " << sut;
 
-    CHECK(!sut.end_time.empty());
+    CHECK(sut.end_time.has_value());
 }
 
 TEST_CASE("session_with_ipv6_address", tags) {
@@ -201,8 +201,7 @@ TEST_CASE("create_multiple_random_sessions", tags) {
             std::chrono::system_clock::now() - std::chrono::hours(faker::number::integer(0, 168));
 
         if (faker::datatype::boolean()) {
-            sut.end_time = ores::platform::time::datetime::to_iso8601_utc(
-                sut.start_time + std::chrono::minutes(faker::number::integer(1, 480)));
+            sut.end_time = sut.start_time + std::chrono::minutes(faker::number::integer(1, 480));
         }
 
         sut.client_ip = boost::asio::ip::make_address(faker::internet::ipv4());

@@ -44,7 +44,7 @@ export interface FxBarrierOptionInstrumentWrite {
     expiry_date: string;
     settlement: string;
     barrier_type: string;
-    lower_barrier: string;
+    lower_barrier: string | null;
     upper_barrier: string | null;
     underlying_code: string;
     description: string;

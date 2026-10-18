@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/migrate-pricing-engines-onto-the-codec
+#+pr: 3486
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,12 +27,12 @@ completely in one change: reader, writer, and the deletion of its mapper.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | Calendar adjustments, currency config, pricing engines and credit simulation read and write through the codec; curve configuration has a table the harness proves; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-17                               |
+| Next         | The curve configuration projection, which reads the table into the reference data entities and deletes the 3,310-line mapper. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -43,9 +43,156 @@ completely in one change: reader, writer, and the deletion of its mapper.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+*One family at a time, each complete.* A family moves reader, writer and
+mapper in one change, so no family ever has two live implementations. Calendar
+adjustments went first because it is the smallest and proves the shape every
+later migration reuses: its mapper is deleted, not retyped, and the projection
+that survives sits at the boundary beside the reading and the writing it
+serves. Currency config followed and needed two more codec helpers, because a
+currency's rounding type is an enumeration: the record holds an index and a
+projection speaks the schema's spelling.
+
+*The codec grew the vocabulary a projection needs.* A projection receives the
+record the generated table describes and states which of its members it fills,
+because the writer writes only the fields whose presence bit is set. Four small
+functions join the codec: =find_field=, =find_child_type=, =is_present= and
+=mark_present=. A projection names a member the way the document does, so it
+does not repeat the schema or hardcode bit numbers. Because the lookup accepts
+an element or an attribute, the generator now refuses a type that spells both
+the same, so the ambiguity cannot arise silently.
+
+*A date list is two rows.* The element that holds the dates and the =Date= row
+inside the record it points at are both rows, so a projection states both. The
+first attempt set only the outer one, and the dates vanished from the writing:
+the family's own round-trip test caught it before the change left the branch.
+
+*The importer reads text as well as files*, so an export can be imported again
+without a temporary file, which is what the family's round-trip test does.
+
+*The netting set mapper had no reader.* The ore-side mapper turned a
+netting set document into =mapped_netting_sets=, and only its own tests
+called it; the live netting set mapper is the refdata one on the database
+side. So the family needed no projection at all: its table was already
+written and proved, and the mappers and suites that duplicated it are gone.
+
+*Pricing engines moved as a projection, not a mapper.* The family maps a
+document into analytics product and parameter rows, which is work no table
+can carry, so the class survives as =pricing_engine_projection= with the
+codec record as its input. It also owns reading and writing, so its two
+callers in the run store and the run configuration service ask it for a
+document rather than binding one themselves.
+
+*Two families share one projection helper.* Currency config followed calendar
+adjustments, and its review found the table lookup copy-pasted in the importer
+and the exporter, and the writer's error message still naming the calendar
+table for a currency field. Both live in =src/xml/projection.hpp= now, beside
+the rule that a projection states every row it fills and throws when the
+schema no longer has it.
+
+*The remaining families, sized from a probe of the generator.* Running the
+generator against each remaining schema says which need codec work and which
+need the generator extended first.
+
+| Family | Table | Mapper | Blocker |
+|--------+-------+--------+---------|
+| CreditSimulation | generates | 291 lines, decomposes into five analytics tables | none |
+| PricingEngines | generates | 241 lines, read by run_store and the run configuration service | none |
+| CurveConfiguration | generates | 3,310 lines | none, but the largest |
+| Portfolio | generates | instrument mappers, the largest group | none |
+| StressTesting | generates once =sensitivity.xsd= is read | 830 lines | none; =shiftTypeEntry= lives in =sensitivity.xsd= |
+| ORE run document | generates | run document mapper | none; =xs:complexContent extension= is read as a flattened derivation now, and a restriction is still refused |
+
+*The generator reads a derivation.* A type written as =xs:complexContent
+extension= now produces the base type's fields followed by its own, which is
+what flattening a derivation means for a record: the base's fields keep the
+offsets the base gives them. A regression test builds a base and a derived
+type and asserts the emitted record holds both, in that order. The run
+document generates with it. It is not in the regeneration wrapper yet, so
+nothing guards that table: it joins the wrapper in the change that migrates
+the family, because a table with no projection would leave the census with a
+supported family nothing reads.
+
+*One probe result was wrong.* The table first said stress testing could not
+be generated because the generator lacked its =shiftTypeEntry= shape. It was
+the probe that was wrong: the type lives in =sensitivity.xsd=, and the family
+generates as soon as that schema is read. Only the run document still needs
+the generator extended, and that is =xs:complexContent=.
+
+*Credit simulation is not free.* Its mapper is reached only by its own suites,
+which reads as dead code, but the configuration type is seeded and stored, so
+the family is a product concept with a test-only XML path. It is migrated, not
+deleted: the projection into the five analytics tables is the work.
+
+* What still holds the generated domain
+
+Five product files include =domain/domain.hpp=, and each one belongs to a
+family or a path that has to move first. Verified with
+=grep -rl "domain/domain.hpp" projects/*/*/src --include=*.cpp=.
+
+| File | What keeps it there |
+|------+---------------------|
+| =domain/domain.cpp= | the generated serialiser itself; it goes with xsdcpp |
+| =xml/importer.cpp= | conventions, whose mapper is blocked on the registry refactor |
+| =xml/exporter.cpp= | conventions, for the same reason |
+| =store/run_store.cpp= | the run document and curve configuration |
+| =service/messaging/run_configuration_operations.cpp= | the run document |
+
+Fourteen mappers remain under =domain/=: the twelve instrument mappers plus
+=trade_mapper= (portfolio), =conventions_mapper=, =curve_configuration_mapper=,
+=run_document_mapper=, =stress_test_mapper= and =todays_market_mapper=. Each
+falls with its family. When the last one does, the generated domain, the
+sibling-checkout wiring and the two regeneration patches go in one change.
+
+* The curve configuration table came before its projection
+
+The family is the largest in the corpus: 89 documents and a mapper of 3,310
+lines. Its table is generated and proved over every one of those documents
+before any of the mapping moves, because the table is the part a schema
+decides, and proving it first separates "the schema reads differently than we
+thought" from "the mapping was transcribed wrongly".
+
+It read differently in three places, and each was silent. A choice nested in a
+sequence, or whose alternatives are sequences, offered no members at all, so a
+document writing an equity volatility's =VolatilityConfig= or a commodity
+curve's =SpotQuote= did not bind. Two alternatives of one choice named the same
+element, which is one member in a flat record. And a member named after a type
+declared earlier in the same struct hid that type. The first two are generator
+work a test now covers. The third is a =struct= keyword on the one member that
+needs it, rather than a rename of a type whose name is fine everywhere else.
+
+The census calls the family supported while its mapper is still the reader.
+That is the honest state of a two-step migration, and the evidence line in the
+census says so: the table reads and writes the document, and the projection
+replaces the mapper next.
+
+* Where the work stands
+
+Verified on main at the time of writing, with the commands that prove each
+line.
+
+| Claim | Evidence |
+|-------+----------|
+| Ten families are supported, each with a generated table | =python3 build/scripts/check_xml_family_coverage.py= |
+| Eight families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
+| Three still read through xsdcpp: ORE, Portfolio, StressTesting | same |
+| Curve configuration documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 89 of 89 |
+| Seven families nothing reads are gone | same |
+| Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
+| The XML suites pass | =[ore][xml]@, 497 cases and 82,020 assertions |
+| The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
+| Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
+
+*What each remaining family needs.* Curve configuration has its table and its
+harness; what is left is the projection, which is 3,310 lines of mapping whose
+input changes shape. Stress testing is 830 lines and its table generates once
+=sensitivity.xsd= is read with =stress.xsd=. The run document's table
+generates now that a derivation is read, and its mapper is the last one
+written against the generated types. Portfolio is the largest group, the
+instrument mappers, and it lands last.
+
+*The order the task table states does not fit the budget available.* One
+family per change, and a family of this size takes a working session of its
+own. Nothing else blocks them.
 
 * Measurements
 
@@ -59,9 +206,36 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Families read and written through the codec | 3 of 5 (calendar adjustments, currency config, pricing engines) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
+| Families whose XML mapper was deleted because nothing read it | 1 (netting sets) | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 674f35682b |
+| Pricing engine documents that round trip through the projection | every corpus document | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][pricingengines]"= | 35e8c17b9c |
+| Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3260f93169 |
+| Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | 3260f93169 |
+| XML suites | 509 cases, 79,240 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
+| Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 4e8b75caec |
+| XML suites after the curve configuration table | 497 cases, 82,020 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 4e8b75caec |
+| Corpus documents the value harness sweeps | 335 | same | 4e8b75caec |
 
 * Notes
+
+- *A rename now fails instead of writing nothing.* =mark_present= reports a
+  name the table does not have, and the projection throws rather than emitting
+  a document missing the field.
+- *The netting set family has a table and no reader.* Its XML mapper was
+  reached only by its own tests, so the mapper and those tests are gone and the
+  family is covered by the binding, writing and round-trip suites that walk the
+  corpus. A sprint-26 story records netting sets as reading and writing through
+  the refdata store; that store is live, but the ORE XML path into it never had
+  a caller, and this change makes that explicit.
+- *The reading is stricter than xsdcpp.* The binder refuses an element or an
+  attribute the schema does not name, and the importer throws. That is the
+  codec's policy on a family with no =xs:any=, and it is the behaviour the
+  tables were chosen for; a document ORE tolerates but the schema does not
+  describe is a document to look at, not to import quietly.
+- *The boundary still throws.* =import_calendar_adjustments_text= and the
+  exporter report a malformed document with =std::runtime_error=, like every
+  sibling in the importer and exporter. Converting the whole boundary to
+  =std::expected= is one change for all families, not one per family.
 
 * Test Scenarios
 
@@ -78,7 +252,10 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3456][#3456]] | [ore] Read and write calendar adjustments through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3470][#3470]] | [ore] Read and write currency config through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3486][#3486]] | [ore] Delete the netting set XML mapper nothing reads |
+| [[https://github.com/OreStudio/OreStudio/pull/3532][#3532]] | [ore] Generate the curve configuration table |
 
 * Review
 

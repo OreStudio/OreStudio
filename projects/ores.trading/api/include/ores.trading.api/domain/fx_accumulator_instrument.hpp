@@ -43,16 +43,22 @@ namespace ores::trading::domain {
  * Routes ORE product type: FxAccumulator. knock_out_barrier captures
  * the primary UpAndOut barrier. Multiple barriers and complex fixing
  * schedules are a Phase 2 coverage gap.
+ *
+ * The document's RangeBounds list is a child table, not a column:
+ * [[id:2FEA1F01-B63A-412A-BECB-8E20AE4DC911][ores.trading.range_bound]] holds one
+ * row per entry, keyed by the trade and the entry's ordinal. The list is what
+ * makes the exported accumulator readable, because the ORE schema requires at
+ * least one RangeBound.
  */
 struct fx_accumulator_instrument final {
     instrument_identity identity;
 
     /**
-     * @brief Settlement currency (domestic side).
-     *
-     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
-     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
-     * foreign key.
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string currency;
 
@@ -74,9 +80,8 @@ struct fx_accumulator_instrument final {
     /**
      * @brief Position direction: Long or Short.
      *
-     * Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set
-     * (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft
-     * reference into a real foreign key.
+     * the values are the closed ORE longShort set (Long, Short), which the SQL schema already
+     * states as a check.
      */
     std::string long_short;
 
@@ -89,17 +94,6 @@ struct fx_accumulator_instrument final {
      * @brief Primary UpAndOut knock-out barrier level. Absent when no barrier.
      */
     std::optional<ores::utility::decimal::decimal> knock_out_barrier;
-
-    /**
-     * @brief JSON array of the ORE RangeBounds entries; empty when the document states none.
-     *
-     * A range bound is a rangeBound: an optional startDate plus the optional levels RangeFrom,
-     * RangeTo, Leverage, Strike and StrikeAdjustment. Each entry is a JSON object holding only the
-     * fields the document states. The list has no child table, so it lives in JSON text. The ORE
-     * schema requires at least one RangeBound, so an export that drops the list cannot be read
-     * back.
-     */
-    std::string range_bounds_json;
 
     /**
      * @brief Optional free-text description.
@@ -134,7 +128,6 @@ inline constexpr std::string_view fx_accumulator_instrument_economic_fields[] = 
     "long_short",
     "start_date",
     "knock_out_barrier",
-    "range_bounds_json",
 };
 
 /**

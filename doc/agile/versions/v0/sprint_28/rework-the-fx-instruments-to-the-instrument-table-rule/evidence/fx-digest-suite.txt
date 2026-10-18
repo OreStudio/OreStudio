@@ -1,0 +1,3 @@
+command: grep -rn digest_tests --include=CMakeLists.txt projects/ | wc -l
+wired: 0
+observed when wired locally: 4 failures, all 'economic_digest' empty, one for family ScriptedTrade

@@ -34,8 +34,7 @@
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <chrono>
-#include <string_view>
+#include <optional>
 #include <vector>
 
 namespace ores::iam::repository {
@@ -53,7 +52,8 @@ domain::login_info login_info_mapper::map(const login_info_entity& v) {
     r.last_attempt_ip = boost::asio::ip::make_address(v.last_attempt_ip);
     r.failed_logins = v.failed_logins;
     r.locked = v.locked;
-    r.last_login = timestamp_to_timepoint(std::string_view{v.last_login});
+    r.last_login = v.last_login.has_value() ? std::optional(timestamp_to_timepoint(*v.last_login)) :
+                                              std::nullopt;
     r.online = v.online;
     r.password_reset_required = v.password_reset_required;
 
@@ -71,7 +71,9 @@ login_info_entity login_info_mapper::map(const domain::login_info& v) {
     r.last_attempt_ip = v.last_attempt_ip.to_string();
     r.failed_logins = v.failed_logins;
     r.locked = v.locked;
-    r.last_login = ores::platform::time::datetime::to_iso8601_utc(v.last_login);
+    r.last_login = v.last_login.has_value() ?
+                       std::optional(ores::platform::time::datetime::to_db_string(*v.last_login)) :
+                       std::nullopt;
     r.online = v.online;
     r.password_reset_required = v.password_reset_required;
 

@@ -11,6 +11,8 @@
 #+entity_singular: convention
 #+entity_plural: conventions
 #+entity_title: Convention
+#+convention_family: convention
+#+convention_write: by_id
 #+brief: The central row every convention kind shares.
 #+created: 2026-10-14
 #+updated: 2026-10-14

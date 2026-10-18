@@ -22,7 +22,12 @@
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ServerError, type OresClient } from '@ores/wire-protocol';
+import {
+    ServerError,
+    fromWireTimestamp,
+    type OresClient,
+    type WireTimestamp,
+} from '@ores/wire-protocol';
 import type { Config } from './config.js';
 import { buildServer, sessionCookieName } from './server.js';
 import { createSessionStore } from './sessions.js';
@@ -179,10 +184,51 @@ describe('the series observations route', () => {
                     offset: 0,
                     limit: 500,
                     order: { field: '', descending: false },
-                    filter: null,
+                    filter: {
+                        series_id: null,
+                        observation_datetime: null,
+                        id_one_of: null,
+                        series_id_one_of: null,
+                        observation_datetime_one_of: null,
+                        observation_datetime_from: null,
+                        observation_datetime_to: null,
+                    },
                 },
             },
         ]);
+    });
+
+    it('narrows a named window to the instant it starts at, on the deployment clock', async () => {
+        const { server, sessionId, calls } = buildTestServer({ [SUBJECT]: REPLY });
+        const before = Date.now();
+        await send(server, sessionId, 'GET', `/api/series/${SERIES}/observations?window=day`);
+        const after = Date.now();
+        const { filter } = calls[0]?.body as {
+            filter: { observation_datetime_from: string | null };
+        };
+        expect(filter.observation_datetime_from).not.toBeNull();
+        const since = fromWireTimestamp(
+            filter.observation_datetime_from as WireTimestamp,
+        ).getTime();
+        const day = 24 * 60 * 60 * 1000;
+        expect(since).toBeGreaterThanOrEqual(before - day);
+        expect(since).toBeLessThanOrEqual(after - day);
+    });
+
+    it('reads every observation for the all window and for a window it does not know', async () => {
+        const { server, sessionId, calls } = buildTestServer({ [SUBJECT]: REPLY });
+        await send(server, sessionId, 'GET', `/api/series/${SERIES}/observations?window=all`);
+        const answer = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/series/${SERIES}/observations?window=fortnight`,
+        );
+        expect(answer.statusCode).toBe(400);
+        expect(calls).toHaveLength(1);
+        expect(
+            (calls[0]?.body as { filter: { observation_datetime_from: string | null } }).filter,
+        ).toMatchObject({ observation_datetime_from: null });
     });
 
     it('asks for the number it is given and clamps a request for more than the cap', async () => {

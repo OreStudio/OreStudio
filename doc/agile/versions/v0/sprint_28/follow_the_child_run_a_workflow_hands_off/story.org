@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: F601BA2C-C879-4880-95C2-02110E5D168E
+:END:
+#+title: Story: Follow the child run a workflow hands off
+#+description: bootstrap setup and provision tenant report 'All 2 step(s) completed' and 'the tenant is ready to work in' as soon as the provision_tenant_workflow finishes, while the tenant is still being populated by the 9-step tenant_setup_workflow that start_tenant_setup creates. The child run's id is already in the final step's response as child_instance_id, so the shell can follow it; it simply never reads it. The follow loop has no notion of a child run.
+#+type: story
+#+level: s2
+#+filetags: :shell:workflow:provisioning:sprint_28:v0:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A person who provisions a tenant should not be told it is ready while its setup is still running. The provisioning run records the id of the run it creates, so the shell should follow that child run to completion before it reports success.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Implemented and proven live as both a system-tenant and a non-system-tenant administrator. PR #3442 is open; the review blockers are cleared in local commits. |
+| Waiting on    | Nothing.                               |
+| Next          | Close the task and the story once PR #3442 merges. |
+| Last touched  | 2026-10-17                               |
+
+* Acceptance
+
+- run_and_follow reads the last completed step's child_instance_id and follows that child run when this session can read the run's tenant
+- bootstrap setup, and a provision tenant run from the system tenant, print the tenant ready only after the child run completed
+- a child run in another tenant is not read: the command names its instance id, reports that the setup continues there, and exits successfully
+- a handoff that names no tenant, or names something that is not a tenant id, is treated the same way: reported and not followed
+- an unreadable step result fails the command; a readable result that names no child is no handoff
+- the wait counts every step the instance planned, so a run is never called finished while a step it owes is missing
+- a run whose own status says completed is not waited on for step rows this session may not be allowed to see
+- the transient 'Workflow instance not found' first-poll warning is not printed as a warning
+- proven by live runs as super_admin (bootstrap setup with the acme_demo starting point, child followed through nine steps) and as tenant_admin@acme_corporation (provision tenant, child reported) on a recreated database
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BCE20779-90B8-4D5A-8970-3E1223E3C71E][Scaffold story: Follow the child run a workflow hands off]] | STARTED | 2026-10-17 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:8FCC9994-9B12-433F-B142-750D07A5D070][Follow child_instance_id from the handoff step]] | STARTED | 2026-10-17 | | Initial task for: Follow the child run a workflow hands off |
+
+* Decisions
+
+- *Follow the child only in a tenant the session can read.* The child
+  run is created in the tenant being provisioned, so the steps read
+  refuses it to every caller outside that tenant except the system
+  tenant. A tenant administrator's session therefore cannot follow it,
+  and polling it aborted a healthy provisioning after five refusals.
+  The shell reads the tenant the handoff step recorded, follows a child
+  it may read, and otherwise reports that the setup continues in the
+  new tenant, names the run, and returns success. The alternative was a
+  cross-tenant read, which is a widening of tenant isolation and was
+  rejected. A handoff that names no tenant, or names something that is
+  not a tenant id, is not followed either: an unknown field must not
+  grant access, and the command reports it as continuing elsewhere.
+- *The run's own status settles completion.* A caller may be allowed to
+  read a run's status and not its step rows, and the steps read answers
+  such a caller with an empty list. Counting rows alone then waits to
+  the timeout on a run that already finished, so a status of completed
+  is enough, and failed or compensated ends the wait as a failure.
+- *The wait counts the steps the run planned, not the rows created so
+  far.* The engine creates a step row when it dispatches the step, so
+  the visible list can be one step short exactly when a step finishes.
+  A live run declared a two-step run finished after one step and
+  returned while the tenant's setup was still running.
+- *One timeout budget per command.* A caller who asks for an hour waits
+  an hour at most, including the run the first one hands work to.
+- *A step with no recorded result is no handoff.* Many steps finish
+  without recording one, so an empty result must not fail a run. A
+  result the server does not hold is a failure, because the handoff is
+  then unknown.
+
+* Out of scope
+
+-

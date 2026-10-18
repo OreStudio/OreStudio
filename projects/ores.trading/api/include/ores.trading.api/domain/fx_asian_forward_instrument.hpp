@@ -58,7 +58,11 @@ struct fx_asian_forward_instrument final {
     std::string fx_index;
 
     /**
-     * @brief Currency the average is computed on (FxAverageForward).
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string reference_currency;
 
@@ -68,7 +72,11 @@ struct fx_asian_forward_instrument final {
     std::optional<ores::utility::decimal::decimal> reference_notional;
 
     /**
-     * @brief Currency of the settlement payment (FxAverageForward).
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string settlement_currency;
 
@@ -88,11 +96,11 @@ struct fx_asian_forward_instrument final {
     std::string long_short;
 
     /**
-     * @brief Domestic currency (FxTaRF-specific). Empty for FxAverageForward.
-     *
-     * Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so
-     * the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real
-     * foreign key.
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string currency;
 

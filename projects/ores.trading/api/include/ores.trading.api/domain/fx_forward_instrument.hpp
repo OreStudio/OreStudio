@@ -47,7 +47,11 @@ struct fx_forward_instrument final {
     instrument_identity identity;
 
     /**
-     * @brief ISO 4217 currency code of the bought leg (e.g. EUR).
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string bought_currency;
 
@@ -57,7 +61,11 @@ struct fx_forward_instrument final {
     ores::utility::decimal::decimal bought_amount;
 
     /**
-     * @brief ISO 4217 currency code of the sold leg (e.g. USD).
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string sold_currency;
 

@@ -265,14 +265,25 @@ todays_market_collection_repository::read_any_by_collection(context ctx,
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<todays_market_collection_entity>> |
                        where("tenant_id"_c == tid && "collection"_c == collection) |
-                       order_by("valid_from"_c.desc()) | sqlgen::limit(1);
+                       order_by("valid_from"_c.desc());
 
-    return execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
-        ctx,
-        query,
-        [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
-        lg(),
-        "Reading any today's market collection by collection.");
+    auto found =
+        execute_read_query<todays_market_collection_entity, domain::todays_market_collection>(
+            ctx,
+            query,
+            [](const auto& entities) { return todays_market_collection_mapper::map(entities); },
+            lg(),
+            "Reading any today's market collection by collection.");
+    // A key names a row of one party, and another party of the tenant may hold
+    // the same key, so the read keeps the session's party's rows. The filter
+    // runs before the newest row is taken because the party column may be
+    // null, and a null party means the row belongs to the whole tenant and
+    // stays readable by every party, as the latest-by finder also has it.
+    if (const auto party = ctx.party_id(); party.has_value())
+        std::erase_if(found, [&](const auto& row) { return row.party_id != *party; });
+    if (found.size() > 1)
+        found.resize(1);
+    return found;
 }
 
 

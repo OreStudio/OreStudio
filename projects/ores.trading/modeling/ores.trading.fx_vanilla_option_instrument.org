@@ -11,7 +11,7 @@
 #+entity_singular: fx_vanilla_option_instrument
 #+entity_plural: fx_vanilla_option_instruments
 #+entity_title: FX Vanilla Option Instrument
-#+brief: FX Vanilla Option instrument (European and American).
+#+brief: FX Vanilla Option instrument (European, Bermudan and American).
 #+created: 2026-08-05
 #+updated: 2026-08-05
 
@@ -38,9 +38,9 @@ amounts; there is no separate strike field in ORE's FxOptionData.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
-Routes ORE product type: FxOption (European and American vanilla
+Routes ORE product type: FxOption (European, Bermudan and American vanilla
 options).
 
 #+begin_src cpp :name generator
@@ -93,7 +93,7 @@ The activity that wrote this version.
 :economic: true
 :END:
 
-ISO 4217 currency code of the bought leg.
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("EUR")
@@ -121,7 +121,7 @@ ores::utility::decimal::decimal::from_string("1000000").value()
 :economic: true
 :END:
 
-ISO 4217 currency code of the sold leg.
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -151,7 +151,7 @@ ores::utility::decimal::decimal::from_string("1100000").value()
 
 Option type: Call or Put.
 
-Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call, Put). PR 4 tightens the soft reference into a real foreign key.
+the values are the option types this store accepts (Call, Put), which ORE also states as a closed set.
 
 #+begin_src cpp :name generator
 std::string("Call")
@@ -179,9 +179,10 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :economic: true
 :END:
 
-Exercise style: European or American.
+Exercise style, one of the ORE exerciseStyle set: European, Bermudan or
+American. The lookup =ores_trading_exercise_types_tbl= holds the set, so
+the store refuses a style it does not carry.
 
-Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerciseStyle set (European, Bermudan, American). PR 4 tightens the soft reference into a real foreign key.
 
 #+begin_src cpp :name generator
 std::string("European")
@@ -258,6 +259,42 @@ is immutable.
     }
 #+end_src
 
+** option_type
+:PROPERTIES:
+:table:             ores_trading_option_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid option_type: %. No active option type found with this code.
+:END:
+
+A foreign key to =ores_trading_option_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** exercise_style
+:PROPERTIES:
+:table:             ores_trading_exercise_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid exercise_style: %. No active exercise type found with this code.
+:END:
+
+A foreign key to =ores_trading_exercise_types_tbl=: a value the store cannot resolve is
+refused on write.
+
+** settlement
+:PROPERTIES:
+:table:             ores_trading_settlement_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          true
+:error_message:     Invalid settlement: %. No active settlement type found with this code.
+:END:
+
+A foreign key to =ores_trading_settlement_types_tbl=: a value the store cannot resolve is
+refused on write.
+
 * SQL
 
 ** Flags
@@ -275,8 +312,6 @@ is immutable.
 | "sold_amount" > 0 |
 | "bought_currency" <> '' |
 | "sold_currency" <> '' |
-| "option_type" in ('Call', 'Put') |
-| "exercise_style" in ('European', 'American') |
 
 ** Indexes
 
@@ -304,6 +339,7 @@ repository profiles regenerate correctly.
 :domain_identity_group: ores.trading.instrument_identity
 :domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true
+:service_batch_reads_by_trade_id: true
 :generator_facet_name: generators
 :END:
 

@@ -1249,12 +1249,12 @@ struct list_feed_binding_activity_request {
  * A binding names a source and not a series, and a source writes one series, so the
  * series of the source's newest observation is the series the binding feeds. A
  * source that has written nothing for the party has neither a series nor a tick,
- * and both are empty.
+ * and both state null: there is no empty-string spelling of either.
  */
 struct feed_binding_activity {
     std::string source_name;
-    std::string series_id;
-    std::string last_tick_at;
+    std::optional<boost::uuids::uuid> series_id;
+    std::optional<std::chrono::system_clock::time_point> last_tick_at;
 };
 
 /**

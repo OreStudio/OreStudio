@@ -412,9 +412,10 @@ void session_repository::end_session(context ctx,
     const auto session_id_str = boost::lexical_cast<std::string>(session_id);
     const auto start_time_str = ores::platform::time::datetime::to_db_string(start_time);
     const auto end_time_str = ores::platform::time::datetime::to_db_string(end_time);
+    const auto end_time_ts = std::optional<db_timestamp>(db_timestamp{end_time_str});
 
     const auto query = sqlgen::update<session_entity>(
-                           "end_time"_c.set(end_time_str),
+                           "end_time"_c.set(end_time_ts),
                            "bytes_sent"_c.set(static_cast<std::int64_t>(bytes_sent)),
                            "bytes_received"_c.set(static_cast<std::int64_t>(bytes_received))) |
                        where("id"_c == session_id_str && "start_time"_c == start_time_str);
@@ -459,9 +460,8 @@ session_repository::read_by_account(context ctx,
 std::vector<domain::session>
 session_repository::read_active_by_account(context ctx, const boost::uuids::uuid& account_id) {
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
-    const std::string empty_end_time;
     const auto query = sqlgen::read<std::vector<session_entity>> |
-                       where("account_id"_c == account_id_str && "end_time"_c == empty_end_time) |
+                       where("account_id"_c == account_id_str && "end_time"_c.is_null()) |
                        order_by("start_time"_c.desc());
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
@@ -488,9 +488,8 @@ std::uint32_t session_repository::count_by_account(context ctx,
 }
 
 std::vector<domain::session> session_repository::read_all_active(context ctx) {
-    const std::string empty_end_time;
-    const auto query = sqlgen::read<std::vector<session_entity>> |
-                       where("end_time"_c == empty_end_time) | order_by("start_time"_c.desc());
+    const auto query = sqlgen::read<std::vector<session_entity>> | where("end_time"_c.is_null()) |
+                       order_by("start_time"_c.desc());
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());

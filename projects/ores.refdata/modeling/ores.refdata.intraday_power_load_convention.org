@@ -11,6 +11,7 @@
 #+entity_singular: intraday_power_load_convention
 #+entity_plural: intraday_power_load_conventions
 #+entity_title: Intraday Power Load Convention
+#+convention_family: intraday_power_load
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

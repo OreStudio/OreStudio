@@ -62,9 +62,7 @@ create table if not exists "ores_trading_fx_vanilla_option_instruments_tbl" (
     check ("bought_amount" > 0),
     check ("sold_amount" > 0),
     check ("bought_currency" <> ''),
-    check ("sold_currency" <> ''),
-    check ("option_type" in ('Call', 'Put')),
-    check ("exercise_style" in ('European', 'American'))
+    check ("sold_currency" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -115,6 +113,41 @@ begin
     ) then
         raise exception 'Invalid trade_activity_id: %. No active trade activity found with this id.', NEW.trade_activity_id
             using errcode = '23503';
+    end if;
+
+    -- Validate option_type (soft FK to ores_trading_option_types_tbl)
+    if not exists (
+        select 1 from ores_trading_option_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.option_type
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid option_type: %. No active option type found with this code.', NEW.option_type
+            using errcode = '23503';
+    end if;
+
+    -- Validate exercise_style (soft FK to ores_trading_exercise_types_tbl)
+    if not exists (
+        select 1 from ores_trading_exercise_types_tbl
+        where tenant_id = ores_utility_system_tenant_id_fn()
+          and code = NEW.exercise_style
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid exercise_style: %. No active exercise type found with this code.', NEW.exercise_style
+            using errcode = '23503';
+    end if;
+
+    -- Validate settlement (optional soft FK to ores_trading_settlement_types_tbl)
+    if NEW.settlement is not null then
+        if not exists (
+            select 1 from ores_trading_settlement_types_tbl
+            where tenant_id = ores_utility_system_tenant_id_fn()
+              and code = NEW.settlement
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid settlement: %. No active settlement type found with this code.', NEW.settlement
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Validate change_reason_code

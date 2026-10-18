@@ -13,6 +13,10 @@
       "types": "./dist/browser.d.ts",
       "default": "./dist/browser.js"
     },
+    "./time": {
+      "types": "./dist/time.d.ts",
+      "default": "./dist/time.js"
+    },
     "./generated/*": {
       "types": "./dist/generated/*.d.ts",
       "default": "./dist/generated/*.js"

@@ -23,7 +23,6 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
-#include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/error_code.hpp"
@@ -134,47 +133,6 @@ void configuration_document_handler::delete_curve_configuration_document(ores::n
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
         reply(nats_, msg, delete_curve_configuration_document_response{.message = e.what()});
-    }
-}
-
-void configuration_document_handler::save_conventions_document(ores::nats::message msg) {
-    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "refdata::conventions:write");
-    if (!ctx)
-        return;
-    const auto req = decode<save_conventions_document_request>(msg);
-    if (!req) {
-        error_reply(nats_, msg, ores::service::error_code::bad_request);
-        return;
-    }
-    try {
-        require_party(*ctx);
-        const auto saved = service::conventions_document_service(*ctx).save(req->document);
-        reply(nats_,
-              msg,
-              save_conventions_document_response{
-                  .success = true, .world_kept = saved.world_kept, .fx_skipped = saved.fx_skipped});
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
-        reply(nats_, msg, save_conventions_document_response{.message = e.what()});
-    }
-}
-
-void configuration_document_handler::get_conventions_document(ores::nats::message msg) {
-    const auto ctx = authorise(nats_, ctx_, msg, verifier_, "refdata::conventions:read");
-    if (!ctx)
-        return;
-    const auto req = decode<get_conventions_document_request>(msg);
-    if (!req) {
-        error_reply(nats_, msg, ores::service::error_code::bad_request);
-        return;
-    }
-    try {
-        service::conventions_document_service svc(for_requested_party(*ctx, req->party_id));
-        reply(
-            nats_, msg, get_conventions_document_response{.success = true, .document = svc.get()});
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << msg.subject << " refused: " << e.what();
-        reply(nats_, msg, get_conventions_document_response{.message = e.what()});
     }
 }
 

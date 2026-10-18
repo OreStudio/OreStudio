@@ -21,6 +21,7 @@
 #define ORES_IAM_MESSAGING_AUTH_EVENT_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/messaging/auth_event_operations_protocol.hpp"
 #include "ores.iam.core/repository/auth_event_log.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -29,6 +30,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include <string_view>
 
 namespace ores::iam::messaging {
 
@@ -101,14 +103,16 @@ public:
             std::vector<auth_event> events;
             events.reserve(rows.size());
             for (const auto& row : rows) {
-                events.push_back(auth_event{.id = row.id.value(),
-                                            .event_time = row.event_time.value(),
-                                            .account_id = row.account_id,
-                                            .event_type = row.event_type,
-                                            .username = row.username,
-                                            .session_id = row.session_id,
-                                            .party_id = row.party_id,
-                                            .error_detail = row.error_detail});
+                events.push_back(auth_event{
+                    .id = row.id.value(),
+                    .event_time =
+                        ores::platform::time::datetime::from_iso8601_utc(row.event_time.value()),
+                    .account_id = row.account_id,
+                    .event_type = row.event_type,
+                    .username = row.username,
+                    .session_id = row.session_id,
+                    .party_id = row.party_id,
+                    .error_detail = row.error_detail});
             }
 
             BOOST_LOG_SEV(auth_event_handler_lg(), debug)

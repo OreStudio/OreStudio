@@ -1,0 +1,52 @@
+:PROPERTIES:
+:ID: 5CC4694E-C342-41EB-9C9E-A3C6CDB264FE
+:END:
+#+title: ores.cpp.convention-registry.apply_includes
+#+description: The repository includes the apply fragment needs, one per convention family, rendered outside the namespace that compiles the fragment.
+#+type: archetype
+#+output: projects/ores.refdata/core/src/service/convention_family_apply_includes.inc
+#+facet: ores.cpp.convention-registry
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+The translation unit that compiles the apply fragment names no repository
+itself, so the includes it needs are generated beside the fragment rather
+than kept by hand: a family added to the registry then arrives with its own
+header and no regeneration leaves the fragment calling a repository the unit
+never declared.
+
+The includes stay outside the namespace and outside the fragment, which is
+why they travel as their own file: an include inside the fragment's namespace
+would declare every repository type in that namespace.
+
+One line per family, sorted, so two generations of the same models produce the
+same bytes whatever order the modelling tree was read in.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_convention_family_apply_includes.inc.mustache=.
+
+#+begin_src mustache :tangle cpp_convention_family_apply_includes.inc.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-registry.apply_includes.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_registry}}
+
+
+{{#repositories}}
+#include "ores.refdata.core/repository/{{repository}}.hpp"
+{{/repositories}}
+{{/convention_registry}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF][ores.cpp.convention-registry]]
+- [[id:932062BD-9759-496E-B4F1-796A53DC2FF2][ores.cpp.convention-registry.apply_fragment]] — the fragment these includes serve.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

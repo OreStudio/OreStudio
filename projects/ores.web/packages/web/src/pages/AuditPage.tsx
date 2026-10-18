@@ -43,7 +43,6 @@ import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { RefreshNow } from '../ui/RefreshButton.js';
 import { Button, LinkButton, Notice, PageHeader, Select, Tag, cx } from '../ui/Primitives.js';
 import { useTabs } from '../ui/Tabs.js';
-import { isZeroTimestamp } from '../ui/Time.js';
 
 /**
  * Audit: sign-ins, the tenant administrator's screen.
@@ -171,7 +170,9 @@ export function orderLoginRecords(rows: readonly LoginInfo[]): readonly LoginInf
         if (left.failedLogins !== right.failedLogins) {
             return right.failedLogins - left.failedLogins;
         }
-        return Number(isZeroTimestamp(left.lastLogin)) - Number(isZeroTimestamp(right.lastLogin));
+        // An account that has never signed in sorts after one that has, and the
+        // rule is the record's own absence rather than a placeholder instant.
+        return Number(left.lastLogin === null) - Number(right.lastLogin === null);
     });
 }
 
@@ -649,7 +650,7 @@ export function failureTone(failed: number): 'plain' | 'warn' | 'down' {
 
 /** The login records of accounts that have signed in at least once. */
 export function withoutNeverSignedIn(rows: readonly LoginInfo[]): readonly LoginInfo[] {
-    return rows.filter((row) => !isZeroTimestamp(row.lastLogin));
+    return rows.filter((row) => row.lastLogin !== null);
 }
 
 /**
@@ -750,7 +751,7 @@ export function FailuresPanel({
                                     )}
                                 </td>
                                 <td className="py-2">
-                                    {isZeroTimestamp(row.lastLogin) ? (
+                                    {row.lastLogin === null ? (
                                         <span className="text-xs text-ink-faint">
                                             {t('auditSignIns.failures.neverSignedIn')}
                                         </span>

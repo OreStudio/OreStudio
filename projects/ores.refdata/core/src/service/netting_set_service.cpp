@@ -104,6 +104,7 @@ domain::netting_set to_domain(const messaging::netting_set_write& write) {
     v.code = write.code;
     v.party_id = write.party_id;
     v.netting_agreement_id = write.netting_agreement_id;
+    v.credit_limit_id = write.credit_limit_id;
     v.counterparty_id = write.counterparty_id;
     v.call_type = write.call_type;
     v.initial_margin_type = write.initial_margin_type;
@@ -133,6 +134,12 @@ netting_set_service::list_netting_sets(const messaging::list_netting_sets_reques
         request.filter->netting_agreement_id_one_of->size() > 1000) {
         response.result = refuse(outcome_code::filter_too_large,
                                  {.field = "netting_agreement_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->credit_limit_id_one_of &&
+        request.filter->credit_limit_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "credit_limit_id_one_of", .limit = "1000"});
         return response;
     }
     // A stated instant is checked here, so a malformed one is the caller's
@@ -173,6 +180,12 @@ netting_set_service::list_by_netting_agreement_id_netting_sets(
                                  {.field = "netting_agreement_id_one_of", .limit = "1000"});
         return response;
     }
+    if (request.filter && request.filter->credit_limit_id_one_of &&
+        request.filter->credit_limit_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "credit_limit_id_one_of", .limit = "1000"});
+        return response;
+    }
     if (request.scope == ores::utility::domain::scope::subtree) {
         response.result = refuse(outcome_code::scope_not_supported, {.entity = "netting sets"});
         return response;
@@ -189,6 +202,52 @@ netting_set_service::list_by_netting_agreement_id_netting_sets(
         ctx_, relation, request.offset, request.limit, request.order, request.filter);
     response.total =
         repo_.get_total_netting_set_count_by_netting_agreement_id(ctx_, relation, request.filter);
+    return response;
+}
+
+messaging::list_by_credit_limit_id_netting_sets_response
+netting_set_service::list_by_credit_limit_id_netting_sets(
+    const messaging::list_by_credit_limit_id_netting_sets_request& request) {
+    messaging::list_by_credit_limit_id_netting_sets_response response;
+    if (!request.order.field.empty() &&
+        !repository::netting_set_repository::is_sortable(request.order.field)) {
+        response.result = refuse(outcome_code::order_not_supported,
+                                 {.entity = "netting sets", .field = request.order.field});
+        return response;
+    }
+    if (request.filter && request.filter->id_one_of && request.filter->id_one_of->size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->netting_agreement_id_one_of &&
+        request.filter->netting_agreement_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "netting_agreement_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.filter && request.filter->credit_limit_id_one_of &&
+        request.filter->credit_limit_id_one_of->size() > 1000) {
+        response.result = refuse(outcome_code::filter_too_large,
+                                 {.field = "credit_limit_id_one_of", .limit = "1000"});
+        return response;
+    }
+    if (request.scope == ores::utility::domain::scope::subtree) {
+        response.result = refuse(outcome_code::scope_not_supported, {.entity = "netting sets"});
+        return response;
+    }
+    // A read scoped by a relation the request may leave unstated has no scope
+    // when it does, so it is refused rather than answered with every unset row.
+    if (!request.credit_limit_id) {
+        response.result = refuse(outcome_code::relation_required,
+                                 {.entity = "netting sets", .field = "credit_limit_id"});
+        return response;
+    }
+    const auto relation = boost::uuids::to_string(*request.credit_limit_id);
+    response.netting_sets = repo_.read_latest_by_credit_limit_id(
+        ctx_, relation, request.offset, request.limit, request.order, request.filter);
+    response.total =
+        repo_.get_total_netting_set_count_by_credit_limit_id(ctx_, relation, request.filter);
     return response;
 }
 
@@ -494,6 +553,35 @@ std::uint32_t netting_set_service::count_netting_sets_by_netting_agreement_id(
                                << netting_agreement_id;
     return repo_.get_total_netting_set_count_by_netting_agreement_id(
         ctx_, boost::uuids::to_string(netting_agreement_id));
+}
+
+
+std::vector<domain::netting_set> netting_set_service::list_netting_sets_by_credit_limit_id(
+    const std::string& credit_limit_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing netting sets by credit_limit_id: " << credit_limit_id;
+    return repo_.read_latest_by_credit_limit_id(ctx_, credit_limit_id, offset, limit);
+}
+
+std::uint32_t
+netting_set_service::count_netting_sets_by_credit_limit_id(const std::string& credit_limit_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total netting sets count by credit_limit_id: "
+                               << credit_limit_id;
+    return repo_.get_total_netting_set_count_by_credit_limit_id(ctx_, credit_limit_id);
+}
+
+std::vector<domain::netting_set> netting_set_service::list_netting_sets_by_credit_limit_id(
+    const boost::uuids::uuid& credit_limit_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing netting sets by credit_limit_id: " << credit_limit_id;
+    return repo_.read_latest_by_credit_limit_id(
+        ctx_, boost::uuids::to_string(credit_limit_id), offset, limit);
+}
+
+std::uint32_t netting_set_service::count_netting_sets_by_credit_limit_id(
+    const boost::uuids::uuid& credit_limit_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total netting sets count by credit_limit_id: "
+                               << credit_limit_id;
+    return repo_.get_total_netting_set_count_by_credit_limit_id(
+        ctx_, boost::uuids::to_string(credit_limit_id));
 }
 
 

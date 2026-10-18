@@ -926,27 +926,27 @@ BEGIN
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
         'currency_market_tier', 'historical', 'tier_historical');
 
-    -- tenor_kind (reuses type_virtual/type_physical as a neutral distinct
-    -- pair, purely to give PERIOD/SPECIAL visually distinct badges -- not
-    -- to convey status, same pattern as regulatory_book_type above)
+    -- tenor_kind and tenor_unit own their badges. They used to borrow
+    -- type_physical, type_virtual, origin_primary and three treatment
+    -- lookups, which made "period" and "special" read as a physical/virtual
+    -- distinction the domain does not have, and made a unit look like a
+    -- provenance. A badge code is prefixed by the domain that owns it, so
+    -- these are tenor_kind_* and tenor_unit_*.
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'tenor_kind', 'PERIOD', 'type_physical');
+        'tenor_kind', 'PERIOD', 'tenor_kind_period');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'tenor_kind', 'SPECIAL', 'type_virtual');
+        'tenor_kind', 'SPECIAL', 'tenor_kind_special');
 
-    -- tenor_unit (four reused-but-distinct badges for DAY/WEEK/MONTH/YEAR,
-    -- purely for visual differentiation; NONE genuinely means "not
-    -- applicable" so gray/inactive is a semantic fit, not just reuse)
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'tenor_unit', 'DAY', 'origin_primary');
+        'tenor_unit', 'DAY', 'tenor_unit_day');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'tenor_unit', 'WEEK', 'nature_simulated');
+        'tenor_unit', 'WEEK', 'tenor_unit_week');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'tenor_unit', 'MONTH', 'treatment_enriched');
+        'tenor_unit', 'MONTH', 'tenor_unit_month');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'tenor_unit', 'YEAR', 'state_running');
+        'tenor_unit', 'YEAR', 'tenor_unit_year');
     PERFORM ores_dq_badge_mappings_upsert_fn(ores_utility_system_tenant_id_fn(),
-        'tenor_unit', 'NONE', 'inactive');
+        'tenor_unit', 'NONE', 'tenor_unit_none');
 
     -- crm_enabled: renders the boolean as a Yes/No badge, shared by
     -- crm_topology_config, crm_driver_pair, and crm_enabled_derived_pair --

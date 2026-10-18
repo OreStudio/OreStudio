@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -18,198 +17,170 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.platform/filesystem/file.hpp"
+#include "ores.ore.core/xml/document_kind.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace {
 
 const std::string_view test_suite("ores.ore.tests");
 const std::string tags("[ore][xml]");
 
-std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
-}
-
-}
-
-using ores::ore::domain::currencyConfig;
-using ores::ore::domain::roundingType;
 using namespace ores::logging;
+using ores::refdata::domain::currency;
 
-TEST_CASE("read_currency_config_from_simple_xml", tags) {
-    auto lg(make_logger(test_suite));
+const std::string text = "<CurrencyConfig><Currency>"
+                         "<Name>Japanese Yen</Name><ISOCode>JPY</ISOCode>"
+                         "<NumericCode>392</NumericCode><Symbol>\u00a5</Symbol>"
+                         "<FractionSymbol>sen</FractionSymbol>"
+                         "<FractionsPerUnit>100</FractionsPerUnit>"
+                         "<RoundingType>Closest</RoundingType>"
+                         "<RoundingPrecision>0</RoundingPrecision>"
+                         "<CurrencyType>Major</CurrencyType>"
+                         "</Currency></CurrencyConfig>";
 
-    const std::string simple_xml = R"(
-<CurrencyConfig>
-  <Currency>
-    <Name>United Arab Emirates dirham</Name>
-    <ISOCode>AED</ISOCode>
-    <NumericCode>784</NumericCode>
-    <Symbol></Symbol>
-    <FractionSymbol></FractionSymbol>
-    <FractionsPerUnit>100</FractionsPerUnit>
-    <RoundingType>Closest</RoundingType>
-    <RoundingPrecision>2</RoundingPrecision>
-    <CurrencyType>Major</CurrencyType>
-  </Currency>
-</CurrencyConfig>
-)";
+/**
+ * @brief Imports, exports and imports again, comparing the entities.
+ *
+ * The whole path a user takes, and the fields the message must carry. The
+ * export is read back by the codec rather than by the file system, so the
+ * comparison is against what the table wrote.
+ */
+void require_round_trip(const std::vector<currency>& original) {
+    const auto written = ores::ore::xml::exporter::export_currency_config(original);
+    CHECK(written.contains("<CurrencyConfig>"));
+    const auto reread = ores::ore::xml::importer::import_currency_config_text(written);
 
-    BOOST_LOG_SEV(lg, debug) << "Parsing simple XML string";
-    currencyConfig ccy_cfg;
-    ores::ore::domain::load_data(simple_xml, ccy_cfg);
-
-    REQUIRE(!ccy_cfg.Currency.empty());
-    REQUIRE(ccy_cfg.Currency.size() == 1);
-    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
-
-    const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << std::string(first.ISOCode) << " - "
-                             << std::string(first.Name);
-
-    CHECK(std::string(first.Name) == "United Arab Emirates dirham");
-    CHECK(std::string(first.ISOCode) == "AED");
-    REQUIRE(first.NumericCode);
-    CHECK(*first.NumericCode == 784);
-    CHECK(first.FractionsPerUnit == 100);
-    CHECK(first.RoundingType == roundingType::Closest);
-    CHECK(first.RoundingPrecision == 2);
-
-    REQUIRE(first.CurrencyType);
-    CHECK(std::string(*first.CurrencyType) == "Major");
+    REQUIRE(reread.size() == original.size());
+    for (std::size_t i = 0; i < original.size(); ++i) {
+        INFO("currency " << i);
+        CHECK(reread[i].iso_code == original[i].iso_code);
+        CHECK(reread[i].name == original[i].name);
+        CHECK(reread[i].numeric_code == original[i].numeric_code);
+        CHECK(reread[i].symbol == original[i].symbol);
+        CHECK(reread[i].fraction_symbol == original[i].fraction_symbol);
+        CHECK(reread[i].fractions_per_unit == original[i].fractions_per_unit);
+        CHECK(reread[i].rounding_type == original[i].rounding_type);
+        CHECK(reread[i].rounding_precision == original[i].rounding_precision);
+        CHECK(reread[i].ore_currency_type == original[i].ore_currency_type);
+        CHECK(reread[i].monetary_nature == original[i].monetary_nature);
+    }
 }
 
-TEST_CASE("read_currency_config_from_currencies_xml", tags) {
-    auto lg(make_logger(test_suite));
-
-    const auto f = ore_path("examples/Input/currencies.xml");
-    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
-
-    using ores::platform::filesystem::file;
-    const std::string content = file::read_content(f);
-
-    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    currencyConfig ccy_cfg;
-    ores::ore::domain::load_data(content, ccy_cfg);
-    REQUIRE(!ccy_cfg.Currency.empty());
-    REQUIRE(ccy_cfg.Currency.size() == 179);
-    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
-
-    const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "First currency: " << std::string(first.ISOCode) << " - "
-                             << std::string(first.Name);
-
-    CHECK(std::string(first.Name) == "United Arab Emirates dirham");
-    CHECK(std::string(first.ISOCode) == "AED");
-    REQUIRE(first.NumericCode);
-    CHECK(*first.NumericCode == 784);
-    CHECK(first.FractionsPerUnit == 100);
-    CHECK(first.RoundingType == roundingType::Closest);
-    CHECK(first.RoundingPrecision == 2);
-
-    REQUIRE(first.CurrencyType);
-    CHECK(std::string(*first.CurrencyType) == "Major");
-
-    const auto& last = ccy_cfg.Currency.back();
-    BOOST_LOG_SEV(lg, debug) << "Last currency: " << std::string(last.ISOCode) << " - "
-                             << std::string(last.Name);
-
-    CHECK(std::string(last.Name) == "Bitcoin");
-    CHECK(std::string(last.ISOCode) == "BTC");
-    // Bitcoin has NumericCode 000 which is parsed as 0
-    REQUIRE(last.NumericCode);
-    CHECK(*last.NumericCode == 0);
-    CHECK(last.FractionsPerUnit == 100000000);
-    CHECK(last.RoundingType == roundingType::Closest);
-    CHECK(last.RoundingPrecision == 2);
-
-    REQUIRE(last.CurrencyType);
-    CHECK(std::string(*last.CurrencyType) == "Crypto");
 }
 
-TEST_CASE("read_currency_config_from_example_1", tags) {
+TEST_CASE("a_currency_states_its_own_fields", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Legacy/Example_1/Input/currencies.xml");
-    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
+    const auto imported = ores::ore::xml::importer::import_currency_config_text(text);
+    REQUIRE(imported.size() == 1);
+    BOOST_LOG_SEV(lg, info) << "currencies: " << imported.size();
 
-    using ores::platform::filesystem::file;
-    const std::string content = file::read_content(f);
+    CHECK(imported[0].iso_code == "JPY");
+    CHECK(imported[0].name == "Japanese Yen");
+    CHECK(imported[0].numeric_code == "392");
+    CHECK(imported[0].fractions_per_unit == 100);
+    CHECK(imported[0].rounding_type == "Closest");
+    CHECK(imported[0].rounding_precision == 0);
+    CHECK(imported[0].ore_currency_type == "Major");
 
-    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    currencyConfig ccy_cfg;
-    ores::ore::domain::load_data(content, ccy_cfg);
-    REQUIRE(!ccy_cfg.Currency.empty());
-    REQUIRE(ccy_cfg.Currency.size() == 2);
-    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
+    // ORE's token is carried verbatim and the nature is derived from it.
+    CHECK(imported[0].monetary_nature == "fiat");
 
-    const auto& first = ccy_cfg.Currency.front();
-    BOOST_LOG_SEV(lg, debug) << "Currency: " << std::string(first.ISOCode) << " - "
-                             << std::string(first.Name);
-
-    CHECK(std::string(first.Name) == "Papua New Guinean kina");
-    CHECK(std::string(first.ISOCode) == "PGK");
-    REQUIRE(first.NumericCode);
-    CHECK(*first.NumericCode == 598);
-    CHECK(std::string(first.Symbol) == "K");
-    CHECK(std::string(first.FractionSymbol).empty());
-    CHECK(first.FractionsPerUnit == 100);
-    CHECK(first.RoundingType == roundingType::Closest);
-    CHECK(first.RoundingPrecision == 2);
-
-    REQUIRE(!first.CurrencyType);
+    require_round_trip(imported);
 }
 
-TEST_CASE("read_currency_config_from_example_41", tags) {
+TEST_CASE("a_currency_absent_optional_fields_stay_absent", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Legacy/Example_41/Input/currencies.xml");
-    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
+    const std::string minimal = "<CurrencyConfig><Currency>"
+                                "<Name>Gold</Name><ISOCode>XAU</ISOCode>"
+                                "<Symbol>oz</Symbol><FractionSymbol>g</FractionSymbol>"
+                                "<FractionsPerUnit>1</FractionsPerUnit>"
+                                "<RoundingType>Down</RoundingType>"
+                                "<RoundingPrecision>0</RoundingPrecision>"
+                                "<CurrencyType>Metal</CurrencyType>"
+                                "</Currency></CurrencyConfig>";
 
-    using ores::platform::filesystem::file;
-    const std::string content = file::read_content(f);
+    const auto imported = ores::ore::xml::importer::import_currency_config_text(minimal);
+    REQUIRE(imported.size() == 1);
+    CHECK(imported[0].numeric_code.empty());
+    CHECK(imported[0].monetary_nature == "commodity");
 
-    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    currencyConfig ccy_cfg;
-    ores::ore::domain::load_data(content, ccy_cfg);
-    REQUIRE(!ccy_cfg.Currency.empty());
-    REQUIRE(ccy_cfg.Currency.size() == 2);
-    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
+    require_round_trip(imported);
 }
 
-TEST_CASE("read_currency_config_from_example_62", tags) {
+TEST_CASE("every_rounding_type_the_schema_allows_round_trips", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/Legacy/Example_62/Input/currencies.xml");
-    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
+    for (const std::string spelling : {"Up", "Down", "Closest", "Floor", "Ceiling"}) {
+        INFO(spelling);
+        const std::string document = "<CurrencyConfig><Currency>"
+                                     "<Name>Any</Name><ISOCode>ANY</ISOCode>"
+                                     "<Symbol>a</Symbol><FractionSymbol>b</FractionSymbol>"
+                                     "<FractionsPerUnit>1</FractionsPerUnit>"
+                                     "<RoundingType>" +
+                                     spelling +
+                                     "</RoundingType>"
+                                     "<RoundingPrecision>0</RoundingPrecision>"
+                                     "</Currency></CurrencyConfig>";
 
-    using ores::platform::filesystem::file;
-    const std::string content = file::read_content(f);
-
-    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    currencyConfig ccy_cfg;
-    ores::ore::domain::load_data(content, ccy_cfg);
-    REQUIRE(!ccy_cfg.Currency.empty());
-    REQUIRE(ccy_cfg.Currency.size() == 2);
-    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
+        const auto imported = ores::ore::xml::importer::import_currency_config_text(document);
+        REQUIRE(imported.size() == 1);
+        CHECK(imported[0].rounding_type == spelling);
+        require_round_trip(imported);
+    }
 }
 
-TEST_CASE("read_currency_config_from_ore_api", tags) {
+TEST_CASE("a_rounding_type_ore_does_not_have_is_refused_on_export", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path("examples/ORE-API/Input/currencies.xml");
-    BOOST_LOG_SEV(lg, debug) << "Reading file: " << f;
+    auto imported = ores::ore::xml::importer::import_currency_config_text(text);
+    REQUIRE(imported.size() == 1);
+    imported[0].rounding_type = "Sideways";
 
-    using ores::platform::filesystem::file;
-    const std::string content = file::read_content(f);
+    CHECK_THROWS_AS(ores::ore::xml::exporter::export_currency_config(imported), std::runtime_error);
+}
 
-    BOOST_LOG_SEV(lg, debug) << "Parsing XML content";
-    currencyConfig ccy_cfg;
-    ores::ore::domain::load_data(content, ccy_cfg);
-    REQUIRE(!ccy_cfg.Currency.empty());
-    REQUIRE(ccy_cfg.Currency.size() == 178);
-    BOOST_LOG_SEV(lg, debug) << "Parsed " << ccy_cfg.Currency.size() << " currencies";
+TEST_CASE("a_numeric_code_that_is_not_a_number_is_left_out", tags) {
+    auto lg(make_logger(test_suite));
+
+    auto imported = ores::ore::xml::importer::import_currency_config_text(text);
+    REQUIRE(imported.size() == 1);
+    imported[0].numeric_code = "not-a-number";
+
+    const auto written = ores::ore::xml::exporter::export_currency_config(imported);
+    const auto reread = ores::ore::xml::importer::import_currency_config_text(written);
+    REQUIRE(reread.size() == 1);
+    CHECK(reread[0].numeric_code.empty());
+}
+
+TEST_CASE("every_currency_config_in_the_corpus_round_trips", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root = ores::testing::project_root::resolve("external/ore/examples");
+    REQUIRE(std::filesystem::is_directory(root));
+
+    // The corpus names these documents two ways, so the root element decides,
+    // through the function the import scanner shares.
+    std::size_t files = 0;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().extension() != ".xml")
+            continue;
+        if (ores::ore::xml::detect_document_kind(entry.path()) !=
+            ores::ore::xml::document_kind::currency_config)
+            continue;
+        ++files;
+        INFO(entry.path().string());
+        const auto imported = ores::ore::xml::importer::import_currency_config(entry.path());
+        require_round_trip(imported);
+    }
+    BOOST_LOG_SEV(lg, info) << "currency configs: " << files;
+    CHECK(files == 13);
 }

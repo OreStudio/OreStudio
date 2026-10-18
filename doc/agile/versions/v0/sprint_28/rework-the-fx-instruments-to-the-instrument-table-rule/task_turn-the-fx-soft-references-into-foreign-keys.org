@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/turn-the-fx-soft-references-into-foreign-keys
+#+pr: 3524
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
 #+updated: 2026-10-16
-#+environment:
+#+environment: solid_dirac
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ a key, not a text code that only a non-empty check defends.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Decide which references become keys and which stay soft. |
-| Last touched | 2026-10-16                               |
+| Now          | Nothing. |
+| Waiting on   | The review of its PR. |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -62,6 +62,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Columns tightened into trigger-checked keys | 14 | =grep -oE "No active [a-z ]+ found with this code" projects/ores.sql/create/trading/trading_fx_*_instruments_create.sql \| grep -v "trade activity" \| wc -l=, in =evidence/fx-keys.txt= | the PR head |
+| Columns that stay soft with a recorded reason | 21 | the fourteen currency and seven trade-type references, in the models' prose | the PR head |
+| SQL files that gained a validation | 7 | =git diff --stat origin/main -- 'projects/ores.sql/create/trading/*'= | the PR head |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests=, summarised in =evidence/trading-core-suite.txt= | the PR head |
+| ORE core suite | pass | the same command with =ores.ore.core.tests=, summarised in =evidence/ore-core-suite.txt= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -84,12 +89,72 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3524][#3524]] | [agile] Close the soft references unit |
+| [[https://github.com/OreStudio/OreStudio/pull/3523][#3523]] | [trading] Key the FX closed vocabularies to their lookup tables |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The measurement's command returns 17, because it also counts the pre-existing trade-activity message | the task's Measurements | Fixed | The command filters the trade-activity line and returns 14, the number of tightened columns. |
+| 2 | Four references were missed: =settlement= on the forward, vanilla and barrier options, and =long_short= on the Asian forward | the models | Fixed | All four are trigger-checked keys now, with the lookup that holds their codes and a nil guard where the column is nullable. |
+| 3 | The trade-type reason is false for four of the seven tables, whose check lists two to five codes | the models' prose | Fixed | The reason now says the check lists exactly the codes the catalogue routes to the table. |
+| 4 | The currency reason cites a validation the FX path never performs | the models' prose | Fixed | The reason states the measured fact instead: a recreated database holds no EUR or USD in any tenant, and the FX rows state them. |
+| 5 | Only three of the fourteen currency columns carried the reason | the models' prose | Fixed | All fourteen carry it. |
+| 6 | The barrier-type prose calls the set a closed ORE enumeration, but ORE states the leaf as free text | the barrier and digital models | Fixed | The prose now says the lookup is the set this store accepts, and that every barrier value in the repository falls inside it. |
+| 7 | The underlying-code gap the Notes require is not recorded | the task's Result | Fixed | The Result names =underlying_code= and =fx_index= as ORE names no refdata entity holds. |
+| 8 | The generated trigger comment still says "soft FK to ..." for a column that is now keyed | the generated SQL | Rejected | The comment is emitted by a shared template, so changing it rewrites every component's create SQL for a word. The model and the header state the key. |
+| 9 | The ER diagram draws a nullable key as mandatory | the trading diagram | Rejected | The cardinality comes from the diagram generator, which reads the key's presence, not the column's nullability. Changing it redraws every schema. |
 
 * Result
+
+Fourteen references became real keys and twenty-one stay soft with a recorded
+reason.
+
+The fourteen are the family's closed vocabularies: =long_short= on the
+accumulator, the Asian forward, the digital option and the variance swap;
+=option_type= on the barrier, digital and vanilla options; =barrier_type= on the
+barrier and digital options; =exercise_style= on the vanilla option;
+=moment_type= on the variance swap; and =settlement= on the forward, vanilla and
+barrier options, whose lookup holds the two methods the documents state. Each
+now carries a foreign key block to its lookup table, so the generated insert
+trigger refuses a code the lookup does not hold. The nullable columns validate
+only when they state a value.
+
+Twenty-one references stay soft, in two groups:
+
+- *The currency columns, fourteen of them.* A currency is =ores.refdata='s row,
+  published from the data-quality pipeline per environment rather than by this
+  component, and a trading database may hold only the codes its own imports
+  loaded. A freshly recreated database holds no EUR and no USD in any tenant,
+  while the FX rows state them, so a trigger check would refuse the documents
+  the store is meant to accept. Each of the fourteen columns states that reason.
+- *The seven trade-type codes.* The column's check lists exactly the codes the
+  trade-type catalogue routes to that table, and the catalogue is what decides
+  the routing, so a foreign key would duplicate the router.
+
+The other text columns name no table: =underlying_code= and =fx_index= name an
+ORE =Underlying/Name= that no =ores.refdata= entity holds, and =description= is
+free text.
+
+* Decisions
+
+- *A key is the trigger check, not a SQL constraint.* The tables are temporal,
+  so a =REFERENCES= constraint would accept a closed version as current. The
+  generated check reads the current row, which is what the rest of the family
+  already does for its trade and activity keys.
+- *A currency reference stays soft because its rows are not this component's.*
+  The unit's acceptance allows a recorded reason, and the alternative would be
+  a foreign key that fails in every database whose currency set is loaded after
+  the documents.
+- *The trade-type code stays soft because the check is narrower.* It lists the
+  codes the routing sends to the table, where a key would accept any catalogue
+  code. The trade envelope keys its own =trade_type= to the same lookup without
+  a check, so the two tables state the same set differently; the discriminators
+  unit decides which one wins.
+- *The lookup's closed set is now stated twice.* The SQL check and the lookup
+  table both hold it. Removing the checks is the discriminators unit's
+  decision, not this one's, so they stay.
+- *A barrier type is not a closed ORE enumeration.* ORE states the leaf as free
+  text, so the lookup is the set this store accepts, not a schema set. Every
+  barrier value in the repository falls inside it.

@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: 941E929E-5A51-412F-8092-479F907727C5
+:END:
+#+title: Task: Generate a protocol and handler per family
+#+description: Codegen emits the protocol, handler and registrar per family. One translation unit per family, so no unit reflects every family at once and the MSVC instantiation limit is never approached.
+#+type: task
+#+level: s1
+#+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
+#+owner: marco
+#+branch: feature/generate-per-family-protocols
+#+pr: 3464
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-18
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A convention family is reachable over the message bus by its own subjects, through its own handler and its own registrar, so a caller that wants one family never touches a type that carries all of them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- Every convention entity has a protocol header carrying its own list, get, put and delete subjects, and a handler and registrar to serve them.
+- No protocol or handler translation unit reflects a type that holds more than one family.
+- The subjects a family answers are derived from the same registry the apply uses, so the two cannot disagree about a family's name.
+
+* Plan
+
+No plan was needed. The protocols and handlers already existed per family, so the task closed on that finding.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+- The aggregate cannot be deleted before its replacement exists. Deleting
+  =conventions_document= now would leave the import path with no wire type,
+  because the per-family operations and the bundle do not exist yet. So this
+  task comes before the deletion, not after it.
+- Order within the task. First generate one protocol message pair per family
+  from the registry, additively, each in its own translation unit. Then generate
+  the handler and registrar per family. Then the bundle operation that applies
+  the families in one unit of work. Only then can the document operation and its
+  aggregate be deleted, and the ORE path move onto the new shape.
+- The registry already carries what the protocols need: family key, domain type,
+  subject stem and write mode. The subject stem is the natural subject prefix for
+  each family's messages, so the protocols and the apply fragment share one
+  derivation and cannot disagree.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3463][#3463]] | [agile] Close the per-family protocols task as already delivered |
+| [[https://github.com/OreStudio/OreStudio/pull/3464][#3464]] | [agile] Stamp the per-family protocols task DONE |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Nothing to generate. Codegen already emits a protocol and a handler for every
+convention entity: =deposit_convention_protocol.hpp= carries the list, get, put
+and delete subjects under =refdata.v1.deposit_conventions.*=, and every one of
+the 166 generated protocol headers does the same for its own entity. Each has a
+handler and a registrar. The task's premise was that this did not exist.
+
+The remaining gap is not per-family messaging. It is the unit that applies
+several families in one transaction, because a transaction needs one handler and
+one message, and one message carrying every family is the aggregate that fails on
+MSVC. That is the bundle, and its resolution is the staged import: stage the
+families durably, then commit in one message that reads the staged rows and
+applies them in one unit of work. The commit message then carries no family data
+and no aggregate is instantiated.
+
+That work belongs to the bundle task, which follows this one.

@@ -56,7 +56,7 @@ export function PartsPanel({
                         {part.decidedBy !== '' && (
                             <span className="text-xs text-ink-muted">
                                 <PersonRef who={part.decidedBy} />
-                                {part.decidedAt !== '' && (
+                                {part.decidedAt !== null && (
                                     <span className="ml-2 text-ink-faint">
                                         {formatDateTime(part.decidedAt, language)}
                                     </span>

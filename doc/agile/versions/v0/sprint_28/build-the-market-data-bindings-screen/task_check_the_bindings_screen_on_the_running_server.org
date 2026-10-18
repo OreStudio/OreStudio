@@ -22,6 +22,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 The bindings screen is built by the tasks of the story: the server reads, the BFF record kind, the list and record page, the dialogs, the history and the menu entry. This task checks it as a whole against the signed-off prototype on the running server, as step 8 of the record screen standard asks: list, page, search, open, add, edit with a stale version, delete, history and revert, and the empty, error and no-permission states. It checks the synthetic scenario to the end and the vendor binding, which is read only and deletable. It records what differs from the prototype.
 
+It also checks the window control on the series page, because no component test reads that markup: the five buttons, the sentence that names the window drawn, and the sentence a window with no observation prints.
+
 * Status
 
 | Field        | Value                                  |
@@ -38,6 +40,7 @@ The bindings screen is built by the tasks of the story: the server reads, the BF
 - The screen matches the signed-off prototype.
 - A synthetic binding is listed, bound, rebound, enabled, disabled, started and stopped from the screen.
 - A real data binding is shown and marked as not supported, and no control connects a real feed.
+- The series page shows one window of the five, says which window it draws, and says so when the window holds no observation.
 
 * Plan
 

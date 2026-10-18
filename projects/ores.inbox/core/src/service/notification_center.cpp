@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/notification_kind_repository.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.security/authorization/grants.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -55,14 +56,6 @@ std::string array_literal(const std::vector<std::string>& values) {
         out += '"';
     }
     out += '}';
-    return out;
-}
-
-constexpr auto utc_text = "to_char(%s at time zone 'UTC', 'YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')";
-
-std::string utc(const std::string& column) {
-    std::string out = utc_text;
-    out.replace(out.find("%s"), 2, column);
     return out;
 }
 
@@ -169,22 +162,23 @@ notification_page notification_center::mine(const boost::uuids::uuid& account_id
     page.total = first_int(execute_parameterized_string_query(
         ctx_, "select count(*)::text" + from, {me}, lg(), "Counting a person's notifications"));
 
+    const std::string select =
+        "select n.id::text, n.kind_code, coalesce(k.message_key, ''), coalesce(a.username, ''), "
+        "n.raised_at, n.link_route, coalesce(n.link_id, ''), r.read_at"
+        " from ores_inbox_notification_recipients_tbl r"
+        " join ores_inbox_notifications_tbl n on n.id = r.notification_id"
+        " and n.tenant_id = r.tenant_id and n.valid_to = ores_utility_infinity_timestamp_fn()"
+        " left join ores_inbox_notification_kinds_tbl k on k.code = n.kind_code"
+        " and k.tenant_id = ores_utility_system_tenant_id_fn()"
+        " and k.valid_to = ores_utility_infinity_timestamp_fn()"
+        " left join ores_iam_accounts_tbl a on a.id = n.raised_by"
+        " and a.valid_to = ores_utility_infinity_timestamp_fn()"
+        " where r.account_id = $1::uuid and r.cleared_at is null"
+        " and r.valid_to = ores_utility_infinity_timestamp_fn()";
+
     const auto rows = execute_parameterized_multi_column_query(
         ctx_,
-        "select n.id::text, n.kind_code, coalesce(k.message_key, ''), coalesce(a.username, ''), " +
-            utc("n.raised_at") + ", n.link_route, coalesce(n.link_id, ''), coalesce(" +
-            utc("r.read_at") + ", '')" +
-            " from ores_inbox_notification_recipients_tbl r"
-            " join ores_inbox_notifications_tbl n on n.id = r.notification_id"
-            " and n.tenant_id = r.tenant_id and n.valid_to = ores_utility_infinity_timestamp_fn()"
-            " left join ores_inbox_notification_kinds_tbl k on k.code = n.kind_code"
-            " and k.tenant_id = ores_utility_system_tenant_id_fn()"
-            " and k.valid_to = ores_utility_infinity_timestamp_fn()"
-            " left join ores_iam_accounts_tbl a on a.id = n.raised_by"
-            " and a.valid_to = ores_utility_infinity_timestamp_fn()"
-            " where r.account_id = $1::uuid and r.cleared_at is null"
-            " and r.valid_to = ores_utility_infinity_timestamp_fn()" +
-            unread_clause + " order by n.raised_at desc offset $2::integer limit $3::integer",
+        select + unread_clause + " order by n.raised_at desc offset $2::integer limit $3::integer",
         {me, std::to_string(std::max(offset, 0)), std::to_string(std::clamp(limit, 1, max_page))},
         lg(),
         "Reading a person's notifications");
@@ -196,10 +190,14 @@ notification_page notification_center::mine(const boost::uuids::uuid& account_id
         n.kind_code = row[1].value_or("");
         n.message_key = row[2].value_or("");
         n.raised_by = row[3].value_or("");
-        n.raised_at = row[4].value_or("");
+        if (!row[4].has_value())
+            throw std::runtime_error("Notification " + n.id + " has no raised_at");
+        n.raised_at = ores::platform::time::datetime::from_db_string(*row[4]);
         n.link_route = row[5].value_or("");
         n.link_id = row[6].value_or("");
-        n.read_at = row[7].value_or("");
+        n.read_at = row[7].has_value() ?
+                        std::optional(ores::platform::time::datetime::from_db_string(*row[7])) :
+                        std::nullopt;
         ids.push_back(n.id);
         page.notifications.push_back(std::move(n));
     }

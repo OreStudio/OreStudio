@@ -30,6 +30,7 @@
 #include "ores.trading.core/repository/equity_position_option_underlying_repository.hpp"
 #include "ores.trading.core/repository/flexi_swap_lower_notional_repository.hpp"
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
+#include "ores.trading.core/repository/range_bound_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_amount_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_rate_repository.hpp"
 #include "ores.trading.core/repository/swap_leg_repository.hpp"
@@ -439,6 +440,10 @@ void populate_instruments_for_trades(const Ctx& ctx,
         service::fx_accumulator_instrument_service svc(ctx);
         auto rows = svc.get_fx_accumulator_instruments(fxacc_ids);
         take(rows, batch.fx_accumulator_instruments);
+
+        repository::range_bound_repository bound_repo;
+        auto bounds = bound_repo.read_by_instruments_batch(ctx, fxacc_ids);
+        take(bounds, batch.range_bounds);
     }
     if (!fxvar_ids.empty()) {
         service::fx_variance_swap_instrument_service svc(ctx);

@@ -45,8 +45,7 @@ tenant_status make_tenant_status(ores::testing::database_helper& h) {
     ts.status = std::string(faker::string::alphanumeric(8)) + "_" + std::to_string(idx);
     // The database outlives the test process, so the name has to be unique
     // across runs, not just within this one.
-    ts.name = std::string(faker::word::noun()) + " " +
-        std::string(faker::string::alphanumeric(8));
+    ts.name = std::string(faker::word::noun()) + " " + std::string(faker::string::alphanumeric(8));
     ts.description = std::string(faker::lorem::sentence());
     ts.display_order = idx;
     ts.modified_by = h.db_user();

@@ -1,3 +1,6 @@
+# One offender per line: <model path>::<column>. The list is the debt
+# this guard records, and an empty list says the direction has none.
+# Regenerate with --write-baseline or --write-continuous-baseline.
 projects/ores.marketdata/modeling/ores.marketdata.market_series_identity.org::running_spread
 projects/ores.refdata/modeling/ores.refdata.base_correlation_config.org::calibrate_constituents_to_index_spread
 projects/ores.refdata/modeling/ores.refdata.base_correlation_config.org::index_spread

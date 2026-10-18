@@ -1,0 +1,324 @@
+:PROPERTIES:
+:ID: 2FEA1F01-B63A-412A-BECB-8E20AE4DC911
+:ores.cpp.shell-command.enabled: true
+:END:
+#+title: Range Bound
+#+description: Codegen entity model for one ORE RangeBound entry, keyed to the trade and the entry's ordinal.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: range_bound
+#+entity_plural: range_bounds
+#+entity_title: Range Bound
+#+brief: One range-bound level of an accumulator document, keyed to the trade and the entry's ordinal.
+#+created: 2026-10-17
+#+updated: 2026-10-17
+
+One row per entry in the =RangeBounds= list an accumulator document
+states, keyed to the trade and the entry's ordinal. The list holds the
+levels an accumulator accrues against, so the entry is the unit the
+document writes and the unit the table stores.
+
+The ORE schema states the list as unbounded =RangeBound= entries. The
+=RangeBounds= wrapper is optional, but the schema requires at least one entry
+when a document states it, and this binding writes the wrapper
+unconditionally, so a trade that holds no bound cannot be written back. Each
+entry carries an optional start date as an attribute and the optional levels
+=RangeFrom=, =RangeTo=, =Leverage=, =Strike= and =StrikeAdjustment=. The order
+is the document's order, and the ordinal preserves it, so export re-emits the
+entries as the document held them.
+
+A level is money unless it is a ratio. =RangeFrom=, =RangeTo=, =Strike=
+and =StrikeAdjustment= are price levels, so each column is exact decimal, at
+the family's twelve decimal places: a document that states a level with more
+digits than that has its value rounded, which is the precision every money
+column in the component states. =Leverage= is a multiplier, so the column is a
+binary double, the same way a basket weight is. A document that states no level
+leaves the column null rather than a zero it never wrote.
+
+The rows are keyed by the trade alone, so any instrument whose document
+states a =RangeBounds= list can own them. The FX accumulator is the first
+to write them. The equity accumulator still carries the list as JSON text
+and moves onto this table in its own unit.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:supplied_by:  user
+:economic:    false
+:END:
+
+The trade whose document states this range bound.
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:economic: false
+:END:
+
+The activity that wrote this version.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:nullable:    false
+:economic:    false
+:END:
+
+Ordinal of this entry within the document's list, counting from one.
+
+The schema declares the list unbounded and a document's order is the
+order it stated, so the ordinal is what identifies a row and preserves
+that order.
+
+** start_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:economic: false
+:END:
+
+Date the bound starts, when the document states one.
+
+The schema states the date as an attribute of the entry rather than an
+element, and it is optional. A document that states no start date leaves
+the column null, and the reverse mapper then writes no attribute back.
+
+** range_from
+:PROPERTIES:
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
+:nullable:      true
+:economic:      true
+:END:
+
+Lower level of the range the accumulator accrues against, when the
+document states one.
+
+** range_to
+:PROPERTIES:
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
+:nullable:      true
+:economic:      true
+:END:
+
+Upper level of the range the accumulator accrues against, when the
+document states one.
+
+** leverage
+:PROPERTIES:
+:type:          double precision
+:cpp_type:      std::optional<double>
+:nullable:      true
+:economic:      true
+:END:
+
+Multiplier the accumulator applies to the accrual at this bound, when the
+document states one.
+
+A leverage is a ratio rather than a money amount, so the column is a
+binary double for the same reason a basket weight is.
+
+** strike
+:PROPERTIES:
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
+:nullable:      true
+:economic:      true
+:END:
+
+Strike the bound is measured against, when the document states one.
+
+** strike_adjustment
+:PROPERTIES:
+:type:          numeric(38, 12)
+:cpp_type:      std::optional<ores::utility::decimal::decimal>
+:nullable:      true
+:economic:      true
+:END:
+
+Adjustment applied to the strike at this bound, when the document states
+one.
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:list_by:  true
+:END:
+
+The trade this row belongs to. An instrument is keyed by its trade, so a
+child row names the trade its document states and the insert trigger
+checks it there.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.core/repository/trade_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto anchor = ores::trading::generators::generate_synthetic_trade(ctx);
+        anchor.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_repository().write(party_ctx, anchor);
+        v.trade_id = anchor.id;
+    }
+#+end_src
+
+** trade_activity_id
+:PROPERTIES:
+:table:    ores_trading_trade_activities_tbl
+:error_message: Invalid trade_activity_id: %. No active trade activity found with this id.
+:nullable: false
+:END:
+
+The activity that wrote this version. A database foreign key: the
+activity is immutable.
+
+#+begin_src cpp :name parent_seed_includes
+#include "ores.trading.api/generators/trade_activity_generator.hpp"
+#include "ores.trading.core/repository/trade_activity_repository.hpp"
+#+end_src
+
+#+begin_src cpp :name parent_seed
+    {
+        auto activity = ores::trading::generators::generate_synthetic_trade_activity(ctx);
+        activity.party_id = *party_ctx.party_id();
+        ores::trading::repository::trade_activity_repository().write(party_ctx, activity);
+        v.trade_activity_id = activity.id;
+    }
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_range_bounds_tbl
+:rls_tenant_isolation: true
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "sequence_number" > 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: range_bound
+:entity_plural_short:   range_bounds
+:entity_singular_words: range bound
+:entity_plural_words:   range bounds
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Entity includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bound
+:END:
+
+** Table display
+
+| column          | header       |
+|-----------------+--------------|
+| sequence_number | Sequence     |
+| range_from      | From         |
+| range_to        | To           |
+| leverage        | Leverage     |
+| modified_by     | Modified By  |
+| version         | Version      |
+
+** Custom repository methods
+
+The export path assembles one batch for many trades, and no generated
+read covers the child set: =read_latest(context, ids)= filters on the
+child's own key and =read_latest_by_trade_id= reads one trade at a
+time. The batch read below is one statement over the trade set.
+
+*** read_by_instruments_batch
+:PROPERTIES:
+:ID: 4B1C0F2E-8A6D-4C31-9E57-2D9B6A1F0C48
+:END:
+
+Reads every current range bound of the given trades, ordered by trade and
+ordinal, in one statement. An empty input reads nothing.
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+std::vector<domain::range_bound>
+read_by_instruments_batch(context ctx, const std::vector<std::string>& trade_ids);
+#+end_src
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::range_bound>
+range_bound_repository::read_by_instruments_batch(context ctx,
+                                                  const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<range_bound_entity>> |
+                       where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("trade_id"_c, "sequence_number"_c);
+    return execute_read_query<range_bound_entity, domain::range_bound>(
+        ctx,
+        query,
+        [](const auto& entities) { return range_bound_mapper::map(entities); },
+        lg(),
+        "Reading range bounds for multiple trades.");
+}
+#+end_src
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:527B0106-3F3D-4385-91F6-BC8229B9B4B4][ores.trading.fx_accumulator_instrument]] — the instrument whose document states these bounds.

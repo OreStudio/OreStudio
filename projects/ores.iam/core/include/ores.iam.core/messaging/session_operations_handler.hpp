@@ -29,11 +29,15 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include <boost/lexical_cast.hpp>
 #include <chrono>
+#include <optional>
+#include <string>
+#include <vector>
 
 namespace ores::iam::messaging {
 
@@ -95,7 +99,7 @@ public:
             auto rows = repo.read_latest(req_ctx);
             std::vector<domain::session> open;
             for (auto& row : rows) {
-                if (row.end_time.empty())
+                if (!row.end_time.has_value())
                     open.push_back(std::move(row));
             }
             BOOST_LOG_SEV(session_handler_lg(), debug) << "Completed " << msg.subject;
@@ -152,7 +156,7 @@ public:
                                            .message = "No such session in this tenant"});
                 return;
             }
-            if (!session->end_time.empty()) {
+            if (session->end_time.has_value()) {
                 reply(nats_,
                       msg,
                       end_session_response{.success = false, .message = "Session already ended"});
@@ -203,20 +207,31 @@ public:
         }
 
         try {
+            // A window bound the caller states no value for binds as SQL NULL,
+            // which the function reads as the bound not applying.
+            const auto from_bound =
+                request->from_time.has_value() ?
+                    std::optional(
+                        ores::platform::time::datetime::to_iso8601_utc(*request->from_time)) :
+                    std::nullopt;
+            const auto to_bound = request->to_time.has_value() ?
+                                      std::optional(ores::platform::time::datetime::to_iso8601_utc(
+                                          *request->to_time)) :
+                                      std::nullopt;
             const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
                 req_ctx,
                 "select day::text, account_id, session_count, avg_duration_seconds, "
                 "total_bytes_sent, total_bytes_received, avg_bytes_sent, avg_bytes_received, "
                 "unique_countries "
                 "from ores_iam_session_stats_for_tenant_fn("
-                "$1::uuid, $2::text, nullif($3, '')::timestamp with time zone, "
-                "nullif($4, '')::timestamp with time zone, $5::integer, $6::integer)",
-                {req_ctx.tenant_id().to_string(),
-                 request->account_id,
-                 request->from_time,
-                 request->to_time,
-                 std::to_string(request->limit),
-                 std::to_string(request->offset)},
+                "$1::uuid, $2::text, $3::timestamp with time zone, "
+                "$4::timestamp with time zone, $5::integer, $6::integer)",
+                std::vector<std::optional<std::string>>{req_ctx.tenant_id().to_string(),
+                                                        request->account_id,
+                                                        from_bound,
+                                                        to_bound,
+                                                        std::to_string(request->limit),
+                                                        std::to_string(request->offset)},
                 session_handler_lg(),
                 "Reading session statistics");
 

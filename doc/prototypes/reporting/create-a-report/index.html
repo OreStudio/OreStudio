@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: create a report — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Create a report, from
+  doc/knowledge/journeys/reporting/journey_create_a_report.org:
+  a tenant administrator or market-risk owner names a report, binds the five
+  configurations it reads, reads the analytics the bound run settings
+  configuration carries, and reads back what was written.
+
+  The shape is decided. The screen is the standard steps UI, the one the system
+  bootstrap journey uses: the rail, its done/current/ahead marks and the step
+  foot are copied from doc/prototypes/setup/first-run/, which copies
+  JourneyPage.tsx.
+
+  Eight steps, and the rail is fixed:
+
+    1  What it is                    the name, the description, the report type
+                                     as a combo box over the type table,
+                                     is_official, and the concurrency policy
+    2  The conventions it binds      one step per configuration type, because
+    3  The pricing engines it binds    binding a configuration of each type
+    4  The market data it binds        decides something different. The order is
+    5  The curve configuration it binds  the order report_type_configuration_types
+    6  The run settings it binds       states and the seeder writes:
+                                       conventions, pricing_engines,
+                                       todays_market, curve_configuration,
+                                       risk_report_config.
+    7  What it runs                  the analytics the bound configuration
+                                     carries, read only: the count that is on,
+                                     the list with their display_order, the rows
+                                     kept off, the rule strip when the pfe and
+                                     simulation pair is broken, and the link to
+                                     Manage the analytics.
+    8  Review and save               every field value, the five bindings, the
+                                     analytics with their settings as the
+                                     configuration holds them, then
+                                     report_definitions.put and the read-back. It
+                                     is the final step, so it draws no Back.
+
+  Analytic management is not drawn here. doc/prototypes/reporting/
+  manage-the-analytics/ owns it: the switchboard, a step per analytic that is on,
+  every parameter with a control chosen for its shape, the refused pair, and the
+  read-back. Step 7 reads the set that screen leaves and links to it. No control
+  on this page edits an analytic or a parameter, and nothing deletes a row.
+
+  Four of the five configuration steps carry the same four parts: what binding a
+  configuration of that type means, where its data lives, the picker for the
+  configuration this report binds, and what the binding reaches and does not.
+  Conventions is the exception: step 2 is one page of named convention sets, a
+  row per set with its name, its purpose, the kinds it covers and whether this
+  report uses it, a radio to choose one, and one link out to the authoring UX
+  marked as not in this MR. It draws no per-kind row, because what a set holds is
+  decided in authoring. The other four configuration types have no screen in the
+  application, and their steps state that rather than drawing a link.
+
+  ?step=N is numeric over the eight steps. ?pfe=without-simulation opens the
+  draft with the rule broken, so the rule strip on step 7 can be read without
+  changing two rows by hand.
+
+  The rail knows position only, as the runtime's own rail does: done, current,
+  ahead. It does not know how many items a save would refuse, and it does not
+  say so.
+
+  Nothing here reads a server, and nothing is written. The operations named are
+  the ones the journey cites: report_definitions.put, report_configurations.put,
+  analytic_types.list, configurations.list_by_configuration_type_code,
+  report_type_configuration_types.list, configuration_analytics.
+  list_by_configuration_id, configuration_analytic_parameters.
+  list_by_configuration_analytic_id, and the read-back with
+  report_definitions.get. Three things are absent and the page says so: no
+  operation writes the portfolio scope, no service check enforces the
+  pfe-needs-simulation rule (the ACME seeder does, in
+  check_exposure_needs_simulation), and no operation answers what else a run
+  needs beyond its report type's configuration types. Every value on the page is
+  a fixture.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

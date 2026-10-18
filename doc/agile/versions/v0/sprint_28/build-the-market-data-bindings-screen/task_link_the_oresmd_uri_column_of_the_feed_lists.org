@@ -8,12 +8,12 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/link-the-oresmd-uri-column-of-the-feed-lists
-#+pr:
+#+pr: 3506
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The detail view of a feed draws its oresmd URI as a link to the series with an I
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Now          | Nothing. |
+| Waiting on   | The root's verification.               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -40,9 +40,28 @@ The detail view of a feed draws its oresmd URI as a link to the series with an I
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The premise is stale. The per-kind feed list screens, with the =oresmd URI= column
+of the FX list, went with commit 246921bba9 on 2026-10-13, when Synthetic became one
+screen with a feed tree. The only feed list now is the feed tree table in
+=marketdata/synthetic/FeedTreeTab.tsx=, which has no such column, and the IR list
+never had one. The column is therefore added to the feed tree and drawn with the
+rule the record page uses.
+
+1. The rule that decides where a URL points moves into =oresmd/identity.ts= as
+   =seriesTargetOf=: the Evolution page for a series with an axis, the series page
+   for one with no axis, and nowhere for a refusal, a fixing or a series the party
+   does not have. The record page and the list both call it.
+2. =OresmdUrlResolved= draws a URL with an already-decided target and the Inspect
+   button. =OresmdUrl= decides its own target and hands it to the same drawing, so
+   the record page and a row of the list look and behave the same.
+3. The list decides the target of every row on the page in one read, not one read a
+   row: =oresmd/useSeriesTargets.ts= asks the codec about the URIs of the page
+   together, through one new route (=POST /api/oresmd/parse-many=) that forwards
+   each URI to the server's existing parse subject. The party's series list is
+   already one read, and the schema is one read kept for the session.
+4. A test covers the rule over its five outcomes, and a test covers the read: one
+   call for a page of URIs, none a row, and a set larger than one call split into
+   the sets the codec's limit carries.
 
 * Measurements
 
@@ -75,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3506][#3506]] | [web] Link the oresmd URI column of the feed lists |
 
 * Review
 
@@ -84,3 +103,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+Merged as [[https://github.com/OreStudio/OreStudio/pull/3506][#3506]].
+
+- The feed tree table has the oresmd URI column, drawn as the record page draws
+  it: a link to the series with the Inspect button.
+- =oresmd/identity.ts= holds =seriesTargetOf=, the one rule that decides where a
+  URL points. The record page and the list both call it.
+- A page of rows decides its targets in one read, through the new route
+  =POST /api/oresmd/parse-many=. A grid of many feeds makes no parse request for
+  each row.

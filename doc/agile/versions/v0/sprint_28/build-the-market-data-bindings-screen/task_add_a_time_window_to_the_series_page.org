@@ -8,12 +8,12 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/add-a-time-window-to-the-series-page
-#+pr:
+#+pr: 3522
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The series page asks for the latest 500 observations. A synthetic tick every two
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Now          | Nothing. |
+| Waiting on   | review.                                |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -41,9 +41,48 @@ The series page asks for the latest 500 observations. A synthetic tick every two
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The window is a name in the browser and an instant on the wire. Three pieces,
+one decision each.
+
+** The server
+
+=observation_datetime= is marked =:filterable: true= in the observation model,
+which the repository facet reads to give the filter record an =equals=, a
+=one_of=, a =_from= and a =_to= member, and to build the condition that
+narrows the read. The =_from= bound is the observed-since time the task asks
+for. The condition is built by the template from the same member list the
+protocol record is built from, so no second list can disagree. Nothing is
+hand-written: the five generated files under =ores.marketdata= are the whole
+change on this side. This is the shape =trade_bookings_filter= already carries
+for =execution_timestamp=.
+
+** The BFF
+
+The route takes a =window= name, one of =hour=, =day=, =month=, =year= and
+=all=, and turns it into the earliest instant the read takes. The rule is a
+pure function in =series-window.ts=, tested on its own, and the clock it counts
+back from is the deployment's, not the browser's: the observations were stamped
+against that clock. =all= names no instant, and an all-null filter record reads
+as no condition, so one request shape covers both cases. The count cap is
+untouched: a window wider than the cap returns that window's newest
+observations.
+
+** The page
+
+The window is held in the address as =window=, beside =uri= and =series=, so a
+link reopens the same view. A bar of five pressed buttons offers the windows,
+the sentence beside it says which window is shown, and an empty answer inside a
+window says so rather than claiming the series holds nothing. The count the page
+reads stays =DEFAULT_OBSERVATIONS=.
+
+** The tests
+
+One C++ test writes observations an hour apart and asserts that the filter
+keeps the ones at or after the bound and that the count agrees. A second asserts
+that a bound the server cannot read is refused. The BFF test asserts the
+observed-since instant the route sends for a named window, and that =all= sends
+none. The page's own rules, the window an address names and the window bar's
+list, are pure and tested beside the page.
 
 * Measurements
 
@@ -57,9 +96,54 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| marketdata C++ suites | 4 passed, 0 failed, 849.53 s | =./compass.sh test run -- -R "ores\.marketdata"= | =14e4b22505= |
+| marketdata core test cases | 8268 assertions in 228 test cases | the same run, =Testing/Temporary/LastTest.log= | =14e4b22505= |
+| browser tests | 1651 tests in 146 files | =npm test --workspace @ores/web= | =31b0c12e64= |
+| BFF tests | 790 tests in 67 files | =npm test --workspace @ores/bff= | =31b0c12e64= |
+| generated output | No drift | =check_component_drift.py --changed --base origin/main= | =31b0c12e64= |
+
+The C++ run was made before the branch was rebased onto =2580e2a036=. Origin main
+changed no file under =projects/ores.marketdata= between the old base and that
+commit, so the result stands at the rebased head. The assertion count moves
+between runs because some cases assert per-row counts over faker-generated rows;
+the 228 test cases are stable.
 
 * Notes
+
+** 2026-10-18 — the filter member the task asks for is a model flag
+
+=observation_datetime= now carries =:filterable: true=. The model's filter
+facet then gives the record an =equals=, a =one_of=, a =_from= and a =_to=
+member and builds the condition that narrows the read, so no C++ is
+hand-written for the task. The cost of the flag is three members the page does
+not use: the relation's =one_of= members the read already carried take the same
+shape, and trading's =execution_timestamp_from= is the same member for the same
+reason.
+
+** 2026-10-18 — the window is a name in the browser and an instant on the wire
+
+The page sends =?window=hour=, the route turns it into the earliest instant the
+read takes, and the server compares =observation_datetime_from= against it. The
+rule lives in =series-window.ts= beside the route, tested on its own, because
+the deployment's clock is the one the observations were stamped against: the
+audit, logs and grid series windows are computed in the BFF for that reason.
+=all= sends no bound at all, and the route sends the filter record with every
+member null in that case, so one request shape covers both.
+
+** 2026-10-18 — the count stays the cap
+
+The page still reads =DEFAULT_OBSERVATIONS= (500), and the window only narrows
+what those 500 are drawn from. A window wider than the cap therefore returns
+that window's newest observations, and the sentence beside the bar says which
+window is drawn while the count sentence says how many of how many.
+
+** 2026-10-18 — two corrections to the first draft of the observed-since test
+
+The first bound sat ninety minutes past the first of three rows an hour apart,
+so only one row qualified and the assertion failed. The second draft compared
+each returned instant against the instant the test wrote, which fails on a
+fraction of a second: the column keeps microseconds and =system_clock::now=
+does not. The test now asserts the values the filter keeps, in no order.
 
 * Test Scenarios
 
@@ -76,12 +160,26 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3522][#3522]] | [marketdata,web] Add a time window to the series page |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The filter record is built inline with no =satisfies=, where =bindings.ts= and =synthetic.ts= pin their generated type | =packages/bff/src/series.ts= | Fixed | A generated member added later would have been dropped silently; the record is now pinned to =MarketObservationsFilter=. |
+| 2 | The buttons say "Last month" and "Last year" while the rule reaches back thirty and three hundred and sixty five days | =series-window.ts=, the three locales | Fixed | The two labels now name the span the rule uses, so a person reads the length they get. A calendar period would have needed month arithmetic with no answer for the 31st, and the task asks for a window, not a calendar. |
+| 3 | The generated =ores.marketdata.api.puml= still draws the observation filter with three members where the record now has seven | =projects/ores.marketdata/api/modeling/ores.marketdata.api.puml= | Recorded, not fixed | The rot predates this PR and this PR widens it by four members. Regenerating the diagrams is a pass of its own, with every other entity that drifted with it, and is not this task's diff. |
+| 4 | The window bar, the "Window: ..." sentence and the empty-window sentence have no component test | =packages/web/src/market/SeriesPage.tsx= | Recorded, not fixed | The workspace has no DOM library, so acceptance 3 rests on markup no test reads. Manual QA task [[id:059F5F7F-D4B7-4861-9C77-EA4B7143C22D][Check the bindings screen on the running server]] covers the screen on a running server. |
 
 * Result
+
+Shipped in #3522. The observation filter carries the observed-since instant, a
+C++ test asserts that it keeps the rows at or after the bound, the BFF turns a
+window name into that instant with its own test, and the series page offers the
+window in the address with its rules tested beside the page. The count cap
+stays, and the page says which window is drawn.
+
+All three acceptance lines are met. Two review findings were fixed in the same
+PR and two are recorded, not fixed: the stale generated API diagram, which
+predates this PR, and the missing component test for the window bar, which the
+workspace cannot host without a DOM library and the manual QA task covers.

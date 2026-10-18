@@ -19,20 +19,21 @@
  *
  */
 
+import { nullableWireTimestampSchema } from '@ores/wire-protocol/time';
 import { z } from 'zod';
 
 /**
  * What a feed binding has written, as the bindings screen reads it. A binding names a
  * source and not a series, so the server answers, for each binding, the series of its
  * source's newest observation and the time of that observation. A source that has
- * written nothing has neither, and both are empty text.
+ * written nothing has neither, and the server states null for both.
  */
 export const feedBindingActivitySchema = z.object({
     source_name: z.string(),
-    /** The series of the source's newest observation. Empty when the source has written nothing. */
-    series_id: z.string(),
-    /** When that observation was made, as YYYY-MM-DD HH:MM:SSZ. Empty when the source has written nothing. */
-    last_tick_at: z.string(),
+    /** The series of the source's newest observation, or null when it has written nothing. */
+    series_id: z.string().nullable(),
+    /** When that observation was made, or null when the source has written nothing. */
+    last_tick_at: nullableWireTimestampSchema,
 });
 export type FeedBindingActivity = z.infer<typeof feedBindingActivitySchema>;
 
@@ -43,5 +44,5 @@ export type FeedBindingActivityList = z.infer<typeof feedBindingActivityListSche
 
 /** Whether a binding's source has written anything, so the screen can say so. */
 export function hasWritten(activity: FeedBindingActivity): boolean {
-    return activity.series_id !== '' && activity.last_tick_at !== '';
+    return activity.last_tick_at !== null;
 }

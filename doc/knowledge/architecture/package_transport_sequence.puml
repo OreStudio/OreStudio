@@ -1,0 +1,62 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Package round trip: export, store, coordinate, apply
+
+actor Operator
+participant "export operation" as exp
+participant "refdata owner\n(source)" as sref
+participant "trading owner\n(source)" as strd
+participant "object storage" as store
+participant "import coordinator" as coord
+participant "refdata owner\n(target)" as tref
+participant "trading owner\n(target)" as ttrd
+
+Operator -> exp : export portfolio at as_of
+exp -> sref : export part (as_of, target)
+sref -> sref : read rows in one transaction
+sref -> store : PUT staging/refdata.zst\n(compressed entry)
+sref --> exp : part record (owner, kind,\nformat, rows, checksum)
+exp -> strd : export part (as_of, target)
+strd -> strd : read rows in one transaction
+strd -> store : PUT staging/trading.zst\n(compressed entry)
+strd --> exp : part record (owner, kind,\nformat, rows, checksum)
+
+exp -> store : PUT packages/{package_id}/manifest.msgpack
+exp -> store : assemble archive by byte copy\n(one entry per part, manifest entry)
+exp -> store : PUT packages/{package_id}/package.zip.zst
+note over exp, store
+  The manifest carries part records only.
+  No row ever reaches the bus.
+end note
+
+Operator -> coord : import package {package_id}
+coord -> store : GET manifest.msgpack
+coord -> coord : validate version, target, owners,\npart records; read no part bytes
+coord -> tref : apply bundle {package_id}\narchive URI, as_of, target,\nrefdata bundle: parts
+tref -> store : GET archive entry refdata/*
+tref -> tref : verify SHA-256, stream rows,\nvalidate, one unit_of_work
+tref --> coord : refdata applied (rows)
+coord -> ttrd : apply bundle {package_id}\narchive URI, as_of, target,\ntrading bundle: parts
+ttrd -> store : GET archive entry trading/*
+ttrd -> ttrd : verify SHA-256, stream rows,\nvalidate, one unit_of_work
+ttrd --> coord : trading applied (rows)
+coord --> Operator : per-part report (applied,\nrejected, failed, pending)
+
+@enduml

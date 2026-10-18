@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 1BA55C39-3656-4172-82C5-DEA1BFB55185
+:END:
+#+title: Task: Author the TaRF fact table
+#+description: EquityTaRF routes to equity_accumulator_instrument, whose shape has no target amount, target points or strike. Author equity_tarf_instrument from the ORE binding; the schedules and the barrier stay with the shared children.
+#+type: task
+#+level: s1
+#+filetags: :instruments-equity:sprint_28:v0:
+#+owner: marco
+#+branch: feature/author-the-tarf-fact-table
+#+pr: 3502
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A target redemption forward's own terms have a table, and its target is not written into an accumulator's columns.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:5E0580BF-A18F-456F-AEFA-CCD27B7B3A60][Rework the equity instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3502][#3502]] | [trading] Author the TaRF fact table |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The target redemption forward has its own fact table. The product's subject
+matter is the target, and an accumulator has neither a target amount nor
+target points, which is why the code could not keep routing to
+equity_accumulator_instruments.
+
+The table is authored from the ORE binding: the underlying, the currency, the
+fixing amount, the target amount and points and the strike. The fixing amount,
+the target amount and the strike are money, so all three are exact decimals.
+Target points are a count of observations rather than an amount, so they stay a
+continuous quantity. The target amount, the points and the strike are optional
+because the document may state a strike list instead of one strike, and the
+barrier that ends the product belongs with the shared strike child.
+
+Verification. Full build clean, the database recreated, the whole suite passes
+96 of 96, ores.trading.core.tests passes 1196 assertions in 178 cases, and the
+table is present in the database after the recreate.
+
+Not done, and named: no mapper writes the table and EquityTaRF still routes to
+equity_accumulator_instruments. Both move with the mapper migration.
+

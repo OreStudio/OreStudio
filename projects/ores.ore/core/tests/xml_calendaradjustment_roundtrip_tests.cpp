@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -18,75 +17,83 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.platform/filesystem/file.hpp"
+#include "ores.ore.core/xml/document_kind.hpp"
+#include "ores.ore.core/xml/exporter.hpp"
+#include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
+#include <string>
 
 namespace {
 
 const std::string_view test_suite("ores.ore.calendaradjustment.roundtrip.tests");
 const std::string tags("[ore][xml][roundtrip][calendaradjustment]");
 
-std::filesystem::path ore_path(const std::string& relative) {
-    return ores::testing::project_root::resolve("external/ore/" + relative);
-}
-
-using ores::ore::domain::calendaradjustment;
 using namespace ores::logging;
 
-void require_calendaradjustment_equal(const calendaradjustment& original,
-                                      const calendaradjustment& roundtripped) {
-    REQUIRE(roundtripped.Calendar.size() == original.Calendar.size());
-    for (size_t i = 0; i < original.Calendar.size(); ++i) {
-        const auto& orig = original.Calendar.at(i);
-        const auto& rt = roundtripped.Calendar.at(i);
-        CHECK(rt.name == orig.name);
+/**
+ * @brief Reads a document, writes it back, reads the writing, and compares.
+ *
+ * This is the whole path a user takes: a file arrives, the codec binds it, the
+ * message carries it, the table writes a document, and the codec reads that
+ * again. What is compared is the message the two readings produce, so a field
+ * the writing drops is named rather than counted.
+ */
+void round_trip_messages(const std::filesystem::path& path) {
+    auto lg(make_logger(test_suite));
 
-        REQUIRE(static_cast<bool>(rt.BaseCalendar) == static_cast<bool>(orig.BaseCalendar));
-        if (orig.BaseCalendar)
-            CHECK(*rt.BaseCalendar == *orig.BaseCalendar);
+    BOOST_LOG_SEV(lg, debug) << "Importing: " << path.string();
 
-        REQUIRE(static_cast<bool>(rt.AdditionalHolidays) ==
-                static_cast<bool>(orig.AdditionalHolidays));
-        if (orig.AdditionalHolidays)
-            CHECK(rt.AdditionalHolidays->Date == orig.AdditionalHolidays->Date);
+    const auto original = ores::ore::xml::importer::import_calendar_adjustments(path);
+    REQUIRE_FALSE(original.empty());
 
-        REQUIRE(static_cast<bool>(rt.AdditionalBusinessDays) ==
-                static_cast<bool>(orig.AdditionalBusinessDays));
-        if (orig.AdditionalBusinessDays)
-            CHECK(rt.AdditionalBusinessDays->Date == orig.AdditionalBusinessDays->Date);
+    const auto written = ores::ore::xml::exporter::export_calendar_adjustments(original);
+    CHECK(written.contains("<CalendarAdjustments>"));
+
+    const auto reread = ores::ore::xml::importer::import_calendar_adjustments_text(written);
+    REQUIRE(reread.size() == original.size());
+
+    BOOST_LOG_SEV(lg, info) << "calendar adjustments: " << original.size();
+
+    for (std::size_t i = 0; i < original.size(); ++i) {
+        INFO("calendar " << i);
+        CHECK(reread[i].calendar_name == original[i].calendar_name);
+        CHECK(reread[i].base_calendar == original[i].base_calendar);
+        CHECK(reread[i].additional_holidays == original[i].additional_holidays);
+        CHECK(reread[i].additional_business_days == original[i].additional_business_days);
     }
 }
 
-void test_roundtrip_from_file(const std::string& relative_path) {
+}
+
+TEST_CASE("calendar_adjustments_round_trip_through_the_codec", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto f = ore_path(relative_path);
-    using ores::platform::filesystem::file;
-    const std::string content = file::read_content(f);
-
-    BOOST_LOG_SEV(lg, debug) << "Parsing original XML from: " << f.string();
-    calendaradjustment original;
-    ores::ore::domain::load_data(content, original);
-
-    BOOST_LOG_SEV(lg, debug) << "Serializing to XML";
-    const std::string serialized = ores::ore::domain::save_data(original);
-
-    BOOST_LOG_SEV(lg, debug) << "Parsing serialized XML";
-    calendaradjustment roundtripped;
-    ores::ore::domain::load_data(serialized, roundtripped);
-
-    require_calendaradjustment_equal(original, roundtripped);
-    BOOST_LOG_SEV(lg, info) << "Roundtrip test passed for: " << f.string();
+    round_trip_messages(
+        ores::testing::project_root::resolve("external/ore/examples/Input/calendaradjustment.xml"));
 }
 
-}
+TEST_CASE("every_calendar_adjustment_in_the_corpus_round_trips", tags) {
+    auto lg(make_logger(test_suite));
 
-TEST_CASE("calendaradjustment_roundtrip_input", tags) {
-    test_roundtrip_from_file("examples/Input/calendaradjustment.xml");
-}
+    const auto root = ores::testing::project_root::resolve("external/ore/examples");
+    REQUIRE(std::filesystem::is_directory(root));
 
-TEST_CASE("calendaradjustment_roundtrip_ore_api", tags) {
-    test_roundtrip_from_file("examples/ORE-API/Input/calendaradjustment.xml");
+    // The corpus names these documents three ways -- calendaradjustment.xml,
+    // calendar_adjustment.xml, calendar_adjustments.xml and caladj.xml -- so
+    // the root element decides, through the same function the import scanner
+    // uses. A file-name match would silently miss half the family.
+    std::size_t files = 0;
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file() || entry.path().extension() != ".xml")
+            continue;
+        if (ores::ore::xml::detect_document_kind(entry.path()) !=
+            ores::ore::xml::document_kind::calendar_adjustments)
+            continue;
+        ++files;
+        INFO(entry.path().string());
+        round_trip_messages(entry.path());
+    }
+    CHECK(files == 8);
 }

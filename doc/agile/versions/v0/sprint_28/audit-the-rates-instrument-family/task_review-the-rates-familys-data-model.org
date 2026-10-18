@@ -38,7 +38,7 @@ Produce the evidence the parent story needs: walk the checklists over the rates 
 - Walk every Regime 2 decision check over the rates entity models, with the evidence for each result. Done: the *What holds* and *Findings* tables of the investigation.
 - Walk the Regime 3 checks over the family's carriers and protocols. Done: `instrument_batch`, `swap_instrument_data`, `trade_instrument`, `rates_fact_variant` and the protocols.
 - Spot-check the invariant checks once and state what was read. Done: 25 domain headers, the codecs, the repository entities and the batch.
-- Map each finding to a criterion, with file-and-line evidence. Done: fourteen findings.
+- Map each finding to a criterion, with file-and-line evidence. Done: thirteen findings.
 - Separate a defect from a recorded decision. Done: the soft references, the doubled vocabularies and the flat scaffolding are recorded as component-wide.
 - State what was not checked. Done: the investigation states the tree and that no build, test or database run was made.
 
@@ -62,7 +62,7 @@ live.
 |------+-------+---------+--------|
 | Rates entity models | 25 | the family list in the investigation's *Methodology* | 3a49daea81 |
 | Declared columns, and columns generated | 189 and 189 | column census over the =** name= headings against each =create table= body | 3a49daea81 |
-| Money columns | 16 | =grep -c 'numeric('= over the family's create scripts, plus a name census | 3a49daea81 |
+| Money columns, and money-ish columns | 15 exact decimals and one continuous index level | =grep -c 'numeric('= over the family's create scripts, plus a name census | 3a49daea81 |
 | Business check constraints | 53 | =grep -c 'check ('= per create script | 3a49daea81 |
 | Real foreign keys | 0 | =grep -i 'references' projects/ores.sql/create/trading/trading_*_create.sql= | 3a49daea81 |
 | Soft-reference claims in the models | 13 | =grep -ic 'soft fk'= over the family's models | 3a49daea81 |
@@ -81,11 +81,15 @@ live.
 - The review's shape is the opposite of the FX one. FX had a clean structure and
   an unmigrated boundary; rates has the best structure of the three families
   reviewed and a boundary that disagrees with it about what a product contains.
-- Three claims changed under the re-check, and all three are recorded in the
-  investigation's *Corrections made while checking*: the conversion seam passes
-  at the helper and fails at six sites beside it, the empty cap/floor fact table
-  is a dropped field rather than a product with no fields, and the variant is
-  not a Regime 3 violation.
+- Six claims changed under the re-checks and one finding was withdrawn, all
+  recorded in the investigation's *Corrections made while checking*. Five were
+  found in the main thread — the conversion seam passes at the helper and fails
+  at six sites beside it, the empty cap/floor fact table is a dropped field
+  rather than a product with no fields, the variant is not a Regime 3 violation,
+  a floor is corrupted in the reverse direction, and the leg's direction is
+  never set for two products — and an independent verifier found the rest by
+  opening every citation, which is the step that should not have needed a second
+  agent.
 - A floor becoming a cap was found on a second pass, after the strike finding
   was written. Following a lost column in both directions is what raised it.
 

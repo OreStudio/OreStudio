@@ -23,7 +23,7 @@ Establish, with evidence, whether the rates instrument family's data model meets
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | The review is written. Its fourteen findings need tasks. |
+| Now           | The review is written. Its thirteen findings need tasks. |
 | Waiting on    | Nothing.                               |
 | Next          | Break the findings into tasks.            |
 | Last touched  | 2026-10-18                               |
@@ -32,7 +32,7 @@ Establish, with evidence, whether the rates instrument family's data model meets
 
 - Every rates entity model, its generated C++ and its table are walked against the Regime 2 decision checks, with evidence for each result. Done.
 - The Regime 3 projection is walked over every carrier and protocol the family reaches, including the in-process variant the family still holds. Done.
-- Each finding maps to a criterion and carries file-and-line evidence. Done: fourteen findings.
+- Each finding maps to a criterion and carries file-and-line evidence. Done: thirteen findings.
 - A defect is told apart from a recorded decision. Done.
 
 * Tasks
@@ -46,7 +46,7 @@ Establish, with evidence, whether the rates instrument family's data model meets
 * Out of scope
 
 - The bond and FX families' remediations, which their own stories own.
-- The shared reference-data work that would turn the family's thirteen soft
+- The shared reference-data work that would turn the family's nineteen soft
   references into real keys. It is the component's deferral, not this family's.
 - The generated service read loops: 117 of 123 files loop per key, so the fix is
   a codegen question and not a rates finding.

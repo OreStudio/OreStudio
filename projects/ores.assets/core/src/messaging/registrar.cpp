@@ -18,6 +18,7 @@
  *
  */
 #include "ores.assets.core/messaging/registrar.hpp"
+#include "ores.assets.api/messaging/publish_operation_protocol.hpp"
 #include "ores.assets.core/messaging/image_operations_handler.hpp"
 #include "ores.assets.core/messaging/image_registrar.hpp"
 #include "ores.assets.core/messaging/image_tag_registrar.hpp"
@@ -74,7 +75,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     {
         auto pdq = std::make_shared<publish_from_dq_handler>(nats, std::move(ctx));
         ores::service::messaging::step_routes routes;
-        routes.on("assets.v1.ops.publish_images_from_dq",
+        routes.on(publish_images_from_dq_request::nats_subject,
                   [pdq](ores::nats::message msg) { pdq->handle(std::move(msg)); });
         subs.push_back(
             ores::service::messaging::serve_step_commands(nats, "ores.assets.service", routes));

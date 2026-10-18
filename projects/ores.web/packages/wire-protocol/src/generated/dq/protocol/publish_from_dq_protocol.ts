@@ -81,10 +81,72 @@ export interface PublishFromDqResult {
     records_deleted: number;
 }
 
-export const subjects = {} as const;
+/**
+ * @brief The workflow step that publishes the DQ-cleared ip2country.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_ip2country_publish_fn.
+ */
+export interface PublishIp2countryFromDqRequest {}
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared coding schemes.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_coding_schemes_publish_fn.
+ */
+export interface PublishCodingSchemesFromDqRequest {}
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge severities.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_severities_publish_fn.
+ */
+export interface PublishBadgeSeveritiesFromDqRequest {}
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge definitions.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_definitions_publish_fn.
+ */
+export interface PublishBadgeDefinitionsFromDqRequest {}
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared code domains.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_code_domains_publish_fn.
+ */
+export interface PublishCodeDomainsFromDqRequest {}
+
+/**
+ * @brief The workflow step that publishes the DQ-cleared badge mappings.
+ *
+ * A trigger rather than a request: the DQ publisher sends it and reads no
+ * reply. The SQL function the handler calls is ores_dq_badge_mappings_publish_fn.
+ */
+export interface PublishBadgeMappingsFromDqRequest {}
+
+export const subjects = {
+    publish_ip2country_from_dq_request: 'dq.v1.ops.publish_ip2country_from_dq',
+    publish_coding_schemes_from_dq_request: 'dq.v1.ops.publish_coding_schemes_from_dq',
+    publish_badge_severities_from_dq_request: 'dq.v1.ops.publish_badge_severities_from_dq',
+    publish_badge_definitions_from_dq_request: 'dq.v1.ops.publish_badge_definitions_from_dq',
+    publish_code_domains_from_dq_request: 'dq.v1.ops.publish_code_domains_from_dq',
+    publish_badge_mappings_from_dq_request: 'dq.v1.ops.publish_badge_mappings_from_dq',
+} as const;
 /**
  * Whether a message needs an established session first. An operation that
  * produces the session cannot present one, so a client reads this rather than
  * assuming every call carries a token.
  */
-export const requiresSession = {} as const;
+export const requiresSession = {
+    publish_ip2country_from_dq_request: true,
+    publish_coding_schemes_from_dq_request: true,
+    publish_badge_severities_from_dq_request: true,
+    publish_badge_definitions_from_dq_request: true,
+    publish_code_domains_from_dq_request: true,
+    publish_badge_mappings_from_dq_request: true,
+} as const;

@@ -68,7 +68,7 @@ A cap/floor document round-trips as the lists it stated, cap and floor alike, in
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Strike rows a collar states | 2 (cap 0.03, floor 0.0121) | =IR_CapFloor_on_FedFunds_amortising.xml:120,123= | 63bdfaeef2 |
-| Writers of a strike row | 2, the rates mapper and the credit mapper | =grep -rn 'instrument_strike row;' projects/ --include=*.cpp= | 63bdfaeef2 |
+| Writers of a strike row | 2 constructors and 3 transport sites | =grep -rn 'instrument_strike row;' projects/ --include=*.cpp= gives the two constructors; =grep -c 'put_instrument_strike_request'= gives the three sites that send one | 63bdfaeef2 |
 | Assertions in the collar case | 15 | the case body | 63bdfaeef2 |
 
 Every number this task claims about a tree, with the command that produced it

@@ -123,6 +123,33 @@ which reads as dead code, but the configuration type is seeded and stored, so
 the family is a product concept with a test-only XML path. It is migrated, not
 deleted: the projection into the five analytics tables is the work.
 
+* Where the work stands
+
+Verified on main at the time of writing, with the commands that prove each
+line.
+
+| Claim | Evidence |
+|-------+----------|
+| Nine families read and write through the codec | =python3 build/scripts/check_xml_family_coverage.py= |
+| Four still read through xsdcpp: ORE, Portfolio, CurveConfiguration, StressTesting | same |
+| Seven families nothing reads are gone | same |
+| Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
+| The XML suites pass | =[ore][xml]@, 497 cases and 82,016 assertions |
+| The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
+| Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
+
+*What each remaining family needs.* Curve configuration is 3,310 lines and
+its mapper already has the projection's shape; it is the largest single
+change left. Stress testing is 830 lines and its table generates once
+=sensitivity.xsd= is read with =stress.xsd=. The run document's table
+generates now that a derivation is read, and its mapper is the last one
+written against the generated types. Portfolio is the largest group, the
+instrument mappers, and it lands last.
+
+*The order the task table states does not fit the budget available.* One
+family per change, and a family of this size takes a working session of its
+own. Nothing else blocks them.
+
 * Measurements
 
 Every number this task claims about a tree, with the command that produced it

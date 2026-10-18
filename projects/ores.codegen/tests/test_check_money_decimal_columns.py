@@ -46,6 +46,21 @@ def test_money_as_float_is_reported(tmp_path):
     assert names(check.money_offenders(root)) == ["strike"]
 
 
+def test_money_exact_in_sql_but_a_float_in_the_domain_is_reported(tmp_path):
+    """A binary float is a binary float, whatever width it declares."""
+    root = tree(tmp_path, "ores.trading.t",
+                column("amount", "numeric(38, 12)", "std::optional<float>"))
+    assert names(check.money_offenders(root)) == ["amount"]
+
+
+def test_an_embedded_money_member_typed_text_is_reported(tmp_path):
+    """A field group's money member holds the exact decimal or it is wrong."""
+    body = "** amount\n:PROPERTIES:\n:cpp_type:      std::string\n:END:\n"
+    root = tree(tmp_path, "ores.trading.t_field_group", body)
+    offenders = list(check.money_offenders(root))
+    assert [o[2] for o in offenders] == ["amount"]
+
+
 def test_money_exact_in_sql_but_lossy_in_domain_is_reported(tmp_path):
     root = tree(tmp_path, "ores.trading.t",
                 column("notional", "numeric(38, 12)", "double"))
@@ -129,12 +144,10 @@ def test_a_variance_strike_typed_exact_is_reported(tmp_path):
 def test_a_baseline_ignores_its_header_and_comments(tmp_path):
     """A commented key is documentation, never a cover for an offender."""
     path = tmp_path / "baseline"
+    real = "projects/ores.trading/modeling/ores.trading.t.org::price"
     path.write_text(
-        check.BASELINE_HEADER
-        + "# ores.trading.t::amount\n"
-        + "ores.trading.t::price\n",
-        encoding="utf-8")
-    assert check.read_baseline(path) == {"ores.trading.t::price"}
+        check.BASELINE_HEADER + f"# {real}\n{real}\n", encoding="utf-8")
+    assert check.read_baseline(path) == {real}
 
 
 def test_an_empty_baseline_states_no_debt(tmp_path):
@@ -142,6 +155,44 @@ def test_an_empty_baseline_states_no_debt(tmp_path):
     path = tmp_path / "baseline"
     path.write_text(check.BASELINE_HEADER, encoding="utf-8")
     assert check.read_baseline(path) == set()
+
+
+def test_a_missing_baseline_is_an_error(tmp_path, monkeypatch, capsys):
+    """A direction with no debt still needs its file, or the guard is off."""
+    tree(tmp_path, "ores.trading.t",
+         column("spread", "numeric(38, 12)",
+                "ores::utility::decimal::decimal"))
+    monkeypatch.setattr(check, "BASELINE", tmp_path / "absent")
+    monkeypatch.setattr(sys, "argv",
+                        ["check", "--root", str(tmp_path),
+                         "--min-columns", "1"])
+    assert check.main() == 1
+    assert "is missing" in capsys.readouterr().out
+
+
+def test_main_fails_on_a_continuous_column_typed_exact(tmp_path, monkeypatch,
+                                                       capsys):
+    """The committed continuous baseline is header-only, so this must fail."""
+    root = tree(tmp_path, "ores.trading.t",
+                column("weight", "numeric(38, 12)", "double"))
+    monkeypatch.setattr(sys, "argv",
+                        ["check", "--root", str(root), "--min-columns", "1"])
+    assert check.main() == 1
+    assert "NEW continuous columns typed exact" in capsys.readouterr().out
+
+
+def test_a_written_baseline_round_trips(tmp_path, monkeypatch, capsys):
+    """The writer's output is what the reader reads back."""
+    root = tree(tmp_path, "ores.trading.t",
+                column("spread", "double precision", "double"))
+    baseline = tmp_path / "money.baseline"
+    monkeypatch.setattr(check, "BASELINE", baseline)
+    monkeypatch.setattr(sys, "argv",
+                        ["check", "--root", str(root), "--min-columns", "1",
+                         "--write-baseline"])
+    assert check.main() == 0
+    assert check.read_baseline(baseline) == {
+        "projects/ores.trading/modeling/ores.trading.t.org::spread"}
 
 
 def test_an_embedded_money_member_is_reported(tmp_path):

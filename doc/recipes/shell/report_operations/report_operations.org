@@ -285,3 +285,24 @@ It is addressed at =reporting.v1.ops.ignore_compute_results=.
 report_operations ignore-compute-results __none__ __none__ __none__ __none__
 #+end_src
 
+** =get-next-fire=
+:PROPERTIES:
+:ID: 0ED20A3A-5F23-5E00-B256-1102EBD89CF2
+:END:
+
+Sends =get_next_fire_request= and prints =get_next_fire_response=, so the shape is the protocol's and the meaning is the service's. It reads =definition_ids=, in that order. The caller must have established a session first.
+
+
+The command is shaped like this:
+
+#+begin_example
+report_operations get-next-fire <definition_ids>
+#+end_example
+
+It is addressed at =reporting.v1.ops.get_next_fire=.
+
+#+name: report_operations-get-next-fire
+#+begin_src ores-shell :tangle report_operations-get-next-fire.ores :exports none
+report_operations get-next-fire __none__
+#+end_src
+

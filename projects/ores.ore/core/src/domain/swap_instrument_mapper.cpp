@@ -1388,6 +1388,23 @@ swap_instrument_mapper::forward_inflation_swap(const trade& t) {
     if (!t.InflationSwapData)
         return result;
     const auto& sd = *t.InflationSwapData;
+    auto& fact = std::get<inflation_swap_instrument>(result.facts);
+
+    // The document states the index, its base level and the observation lag on
+    // the CPI leg rather than on the swap, so the product's own fields come
+    // from there. A swap states one such leg; a second would be another product.
+    for (const auto& ld : sd.LegData) {
+        if (ld.LegType != legType::CPI || !ld.legDataType || !ld.legDataType->CPILegData)
+            continue;
+        const auto& cpi = *ld.legDataType->CPILegData;
+        if (!cpi.Index.empty())
+            fact.inflation_index_code = std::string(cpi.Index.front());
+        if (!cpi.BaseCPI.empty())
+            fact.base_cpi = static_cast<double>(cpi.BaseCPI.front());
+        if (!cpi.ObservationLag.empty())
+            fact.lag_convention = std::string(cpi.ObservationLag.front());
+        break;
+    }
 
     if (!sd.LegData.empty()) {
         result.header.start_date = start_date_from_schedule(sd.LegData.front().ScheduleData);
@@ -2318,7 +2335,7 @@ trade swap_instrument_mapper::reverse_balance_guaranteed_swap(
 
 trade swap_instrument_mapper::reverse_inflation_swap(
     const trading::domain::rate_instrument& header,
-    [[maybe_unused]] const inflation_swap_instrument& instr,
+    const inflation_swap_instrument& instr,
     const std::vector<swap_leg>& legs,
     const std::vector<ores::trading::domain::swap_leg_amount>& amounts,
     const std::vector<ores::trading::domain::swap_leg_rate>& rates) {
@@ -2334,6 +2351,33 @@ trade swap_instrument_mapper::reverse_inflation_swap(
                                          sl,
                                          amounts_for_leg(amounts, sl.identity.leg_number),
                                          rates_for_leg(rates, sl.identity.leg_number)));
+
+    // The shared leg reverse states a cashflow, fixed or floating payload and
+    // nothing for a CPI leg, so the product's three fields are written here.
+    for (auto& ld : sd.LegData) {
+        if (ld.LegType != legType::CPI)
+            continue;
+        _CPILegData_t cpi;
+        if (!instr.inflation_index_code.empty()) {
+            _CPILegData_t_Index_t index;
+            static_cast<std::string&>(index) = instr.inflation_index_code;
+            cpi.Index.push_back(std::move(index));
+        }
+        if (instr.base_cpi)
+            cpi.BaseCPI.push_back(static_cast<float>(*instr.base_cpi));
+        if (!instr.lag_convention.empty()) {
+            _CPILegData_t_ObservationLag_t lag;
+            static_cast<std::string&>(lag) = instr.lag_convention;
+            cpi.ObservationLag.push_back(std::move(lag));
+        }
+        legDataType_group_t group;
+        group.CPILegData = std::move(cpi);
+        ld.legDataType = std::move(group);
+        // The import takes the first CPI leg and stops, so the export writes
+        // the one leg the same way: a second leg would receive values the
+        // document never gave it.
+        break;
+    }
 
     t.InflationSwapData = std::move(sd);
     return t;

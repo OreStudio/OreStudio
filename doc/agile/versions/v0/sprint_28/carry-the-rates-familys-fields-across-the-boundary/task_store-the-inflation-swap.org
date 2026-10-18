@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 4046D3ED-9F07-48AC-B2C2-C2B52A54ABF3
+:END:
+#+title: Task: Store the inflation swap and return its index
+#+description: An inflation swap cannot be stored: the import builds a default-constructed fact row and writes it, and the table refuses an empty index code. The document states the index, its base level and the observation lag on the CPI leg. Read them on import, write them on export, and prove the trade survives by its own values.
+#+type: task
+#+level: s1
+#+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
+#+owner: marco
+#+branch: feature/store-the-inflation-swap
+#+pr: 3546
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An inflation swap imports, stores and exports with the index, base level and lag the document states.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] |
+| Now          | In review. The import and the export both carry the CPI leg's three fields. |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The import reads the CPI leg's index, base level and observation lag into the product's fact row.
+- The export writes them back into the CPI leg, which currently leaves the leg with no payload at all.
+- A test states the document's own values as its expectations and proves both directions.
+
+* Plan
+
+1. Write the failing case first, against the document's own values:
+   =Inflation_CPI_Swap.xml= states =UKRPI=, =210= and =2M= on its CPI leg, so
+   the case asserts those three and nothing the mapper invents.
+2. Read them on import from the CPI leg, which is where the document states
+   them. A swap states one such leg; a second would be another product.
+3. Write them back on export onto the same leg, because the shared leg reverse
+   states a cashflow, fixed or floating payload and nothing for a CPI leg.
+4. Record the money limit rather than paper over it: =BaseCPI= is an =xs:float=
+   in the schema and the generated binding has no lexical form.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Product fields the CPI leg states | 3 | =Inflation_CPI_Swap.xml= lines 65, 69, 71 | 1dbadf5fba |
+| Sites the import writes | 3 | =swap_instrument_mapper.cpp=, the CPI loop in =forward_inflation_swap= | 1dbadf5fba |
+| Sites the export writes | 3 | =swap_instrument_mapper.cpp=, the CPI loop in =reverse_inflation_swap= | 1dbadf5fba |
+| Assertions in the new case | 14, of which 3 name the document's values and 3 name values it never states | the case body | 1dbadf5fba |
+|      |       |         |        |
+
+* Notes
+
+- The import and the export now key the CPI leg the same way, on
+  =LegType == CPI=, and both take the first such leg. Before that the import
+  keyed on "the leg carries a CPILegData" and the export on the leg's type, so a
+  leg typed otherwise lost its index on the way out; and with two CPI legs the
+  export wrote the first leg's values onto both.
+- Open, recorded rather than fixed: an =InflationSwap= stated with a =YY= leg
+  hits the same refusal, because neither direction has a YY branch. Captured as
+  =an-inflation-swap-on-a-yy-leg-cannot-be-stored=.
+- Open, recorded: the store's =check (base_cpi > 0)= refuses a =BaseCPI= of zero
+  or below, which the schema's =xs:float= admits. Kept, because an index level of
+  zero is not an economic value and no document in the corpus states one; a
+  finding needs evidence, and this is a conflict to decide rather than a defect
+  to fix here.
+- An unstated observation lag is stored as an empty string in a nullable column,
+  so "not stated" and "stated empty" are one value in the store. That is the
+  component's nullable-string pattern, not this unit's.
+- No test exercises the insert. The store's two constraints were confirmed by
+  querying =pg_constraint= on a recreated database, and the mapper case proves
+  the value is now supplied, but nothing asserts the row reaches Postgres. A
+  pgTAP case pinning the check would close that gap and is not in this unit.
+- The case's two halves are independent: the export half is fed values the
+  document never stated, so a reverse that wrote a constant fails there rather
+  than being carried by the import's own output.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3546][#3546]] | [ore] Store the inflation swap and return its index |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The import keyed on the payload and the export on the leg type | =swap_instrument_mapper.cpp:1397= | Fixed | Both key on =LegType == CPI= now. |
+| 2 | With two CPI legs the export wrote the first leg's values onto both | =swap_instrument_mapper.cpp:2357= | Fixed | The export stops at the first, as the import does. |
+| 3 | An inflation swap on a YY leg is still unwritable | =swap_instrument_mapper.cpp:1396= | Captured | Out of this unit's scope; the class is not closed. |
+| 4 | A =BaseCPI= of zero or below is refused by the store, though the schema admits it | =trading_inflation_swap_instruments_create.sql:59= | Recorded | A conflict to decide, with no corpus case. |
+| 5 | An unstated lag is stored as an empty string in a nullable column | =create.sql:43= | Recorded | The component's nullable-string pattern. |
+| 6 | The case's halves shared one instrument, and no test exercises the insert | =xml_ir_mapper_roundtrip_tests.cpp:486= | Fixed, in part | The halves are independent now; the insert is still untested and is recorded as an open gap. |
+| 7 | "Re-running the import is the remedy" was wrong, and the row's shape was understated | this task | Fixed | Delete the half-written trades first; no legs were written either. |
+| 8 | The money framing counted the export cast as a finding-7 site | this task | Fixed | It is a conversion on a leaf that cannot carry a lexical form. |
+
+* Result
+
+An inflation swap is stored with the index, base level and lag its document
+states, and exports them back. The import reads them from the CPI leg; the
+export writes them onto the same leg, which the shared leg reverse leaves with
+no payload at all.
+
+Proved red first: against the merge base the case fails on an empty
+=inflation_index_code= and an absent =base_cpi=; after the change it passes
+fourteen assertions, three of which name =UKRPI=, =210= and =2M= and three of
+which name values the document never states, so the two halves cannot carry each
+other.
+
+Money: =BaseCPI= is an =xs:float= in the schema, and the generated binding is a
+plain =float= with no lexical form, so the digits are the schema's own limit and
+a value from the document round-trips float to double to float unchanged. Two
+consequences worth naming. The leaf re-spells a document's =114.4= as
+=114.400002=, because the serialiser prints a float at nine significant digits.
+And the export adds one double-to-float conversion, which is not one of
+finding 7's sites: those are casts that discard a lexical form the leaf could
+have carried, and this leaf cannot. Giving it one would be a codegen change of
+the =moneyFloat= kind the FX rework made, and it is not this unit's.
+
+A trade imported before this unit was left half-written: its trade row and its
+=rate_instruments= header exist, and it has neither a fact nor any legs, because
+the instrument save is non-fatal and the leg writes come after it. Nothing needs
+migrating, but re-running the import is not the remedy: the planner mints a
+fresh trade id per trade, so a second run adds a duplicate and leaves the broken
+header in place. Delete the =rate_instruments= header first, which cascades the
+family, and then the trade: a trade delete does not reach the header, and the
+import's own cleanup closes bookings only.

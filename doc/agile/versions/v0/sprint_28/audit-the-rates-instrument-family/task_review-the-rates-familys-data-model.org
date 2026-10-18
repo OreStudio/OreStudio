@@ -65,7 +65,7 @@ live.
 | Money columns, and money-ish columns | 15 exact decimals and one continuous index level | =grep -c 'numeric('= over the family's create scripts, plus a name census | 3a49daea81 |
 | Business check constraints | 53 | =grep -c 'check ('= per create script | 3a49daea81 |
 | Real foreign keys | 0 | =grep -i 'references' projects/ores.sql/create/trading/trading_*_create.sql= | 3a49daea81 |
-| Soft-reference claims in the models | 13 | =grep -ic 'soft fk'= over the family's models | 3a49daea81 |
+| Soft-reference claims in the models | 19 | =grep -ic 'soft fk'= over the family's twenty-five models | 3a49daea81 |
 | Numeric conversions at import, and exact ones | 20 and 14 | =grep -c exact_decimal projects/ores.ore/core/src/domain/swap_instrument_mapper.cpp= plus the casts beside them | 3a49daea81 |
 | Lossy export casts, and required-element cases | 5 and 3 | the =reverse_*= functions | 3a49daea81 |
 | Reverse mappers ignoring their fact row | 4 of 9 | =grep -n 'maybe_unused.*_instrument& instr'= | 3a49daea81 |
@@ -81,15 +81,18 @@ live.
 - The review's shape is the opposite of the FX one. FX had a clean structure and
   an unmigrated boundary; rates has the best structure of the three families
   reviewed and a boundary that disagrees with it about what a product contains.
-- Six claims changed under the re-checks and one finding was withdrawn, all
-  recorded in the investigation's *Corrections made while checking*. Five were
-  found in the main thread — the conversion seam passes at the helper and fails
-  at six sites beside it, the empty cap/floor fact table is a dropped field
-  rather than a product with no fields, the variant is not a Regime 3 violation,
-  a floor is corrupted in the reverse direction, and the leg's direction is
-  never set for two products — and an independent verifier found the rest by
-  opening every citation, which is the step that should not have needed a second
-  agent.
+- Thirteen claims changed under the two re-checks and one finding was
+  withdrawn, all recorded in the investigation's *Corrections made while
+  checking*. Five were found in the main thread — the conversion seam passes at
+  the helper and fails at six sites beside it, the empty cap/floor fact table is
+  a dropped field rather than a product with no fields, the variant is not a
+  Regime 3 violation, a floor is corrupted in the reverse direction, and the
+  leg's direction is never set for two products. The other eight an independent
+  verifier found by opening every citation: a soft-reference count, three
+  =nats_call= citations, the leg-direction finding's evidence, the task's copy
+  of the money count, a batch-array count, a line number, and a scored regime
+  that contradicted its own checklist row. That is the step which should not
+  have needed a second agent.
 - A floor becoming a cap was found on a second pass, after the strike finding
   was written. Following a lost column in both directions is what raised it.
 
@@ -120,10 +123,10 @@ via its "Verifies task" field.
 
 The review is recorded as [[id:4A8B1C6E-52D4-4E7A-9F31-6C2D8E4B7A10][Investigation: Rates family data model review]].
 
-Regime 2 scores 2 of 5 with debt High, and Regime 3 scores 3 of 5 with debt
-Medium. The split is the finding: the family's structure is the best of the
-three reviewed — identity is the key, the legs and their economics are typed
-rows, the variation is generated per-type tables, the money is exact at rest —
-and its boundary is where the debt sits. Fourteen findings, three of them
-Critical: a short forward rate agreement stores as a long, an inflation swap
-cannot be stored at all, and a floor returns as a cap.
+Regime 2 scores 2 of 5 with debt High, and Regime 3 scores 5 of 5 with debt
+Low. The split is the finding: the family's structure is the best of the three
+reviewed — identity is the key, the legs and their economics are typed rows, the
+variation is generated per-type tables, the money is exact at rest — and its
+boundary is where the debt sits. Thirteen findings, three of them Critical: a
+short forward rate agreement stores as a long, an inflation swap cannot be
+stored at all, and a floor returns as a cap.

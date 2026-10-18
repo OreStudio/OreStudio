@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/decide-the-fx-discriminators-and-the-doubled-vocabularies
-#+pr: 3530
+#+pr: 3531
 #+blocked_on:
 +#+blocked_since:
 +#+created: 2026-10-16
@@ -133,6 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3531][#3531]] | [agile] Close the FX rework story |
 | [[https://github.com/OreStudio/OreStudio/pull/3530][#3530]] | [agile] Close the discriminators unit |
 | [[https://github.com/OreStudio/OreStudio/pull/3528][#3528]] | [trading] Key the FX vocabularies and barrier levels on one statement |
 | [[https://github.com/OreStudio/OreStudio/pull/3527][#3527]] | [agile] Scope the FX discriminator decisions |

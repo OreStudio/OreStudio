@@ -102,9 +102,9 @@ struct fx_digital_option_instrument final {
      * states as a check.
      *
      * The four product codes share this table, so each check names the fields its own code engages
-     * and requires them. A field another code uses is tolerated rather than refused, because one
-     * generator writes a synthetic row for all four and would otherwise produce a row no code
-     * accepts.
+     * and requires them. A field another code uses is tolerated rather than refused: the one
+     * synthetic generator fills a strike and both barriers on its single row, so a check that
+     * refused a field the code does not engage would refuse that row.
      */
     std::string long_short;
 

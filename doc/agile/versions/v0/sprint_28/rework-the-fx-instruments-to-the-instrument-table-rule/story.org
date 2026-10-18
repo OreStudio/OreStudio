@@ -21,11 +21,11 @@ Rework forwards, swaps, vanilla, barrier, digital, Asian, accumulator and varian
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Three of the nine units are done: the money digits, the barrier levels and the typed-array carrier, which merged as [[https://github.com/OreStudio/OreStudio/pull/3410][#3410]]. The range bounds unit is in flight. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Finish the range bounds unit, then agree the continuous columns with their domain types. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-17                               |
 
 * Acceptance

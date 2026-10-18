@@ -26,7 +26,8 @@
  *
  * Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
  * FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
- * the level sits in lower_barrier or upper_barrier by the style's direction.
+ * A row states at least one level, and the level sits in lower_barrier or
+ * upper_barrier by the style's direction.
  */
 
 create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (

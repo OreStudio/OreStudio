@@ -678,6 +678,50 @@ const char* const commodity_average_price_and_basket_document_text = R"(<Portfol
   </Trade>
 </Portfolio>)";
 
+const char* const composite_document_text = R"(<Portfolio>
+  <Trade id="composite-1">
+    <TradeType>CompositeTrade</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_C</CounterParty>
+      <NettingSetId>NS-3</NettingSetId>
+    </Envelope>
+    <CompositeTradeData>
+      <Currency>USD</Currency>
+      <BasketName>ACME-BASKET</BasketName>
+      <Components>
+        <Trade id="component-swap"><TradeType>Swap</TradeType></Trade>
+        <SubTrade id="component-fx"><SubTradeType>FxForward</SubTradeType></SubTrade>
+      </Components>
+    </CompositeTradeData>
+  </Trade>
+  <Trade id="trs-1">
+    <TradeType>TotalReturnSwap</TradeType>
+    <TotalReturnSwapData>
+      <UnderlyingData>
+        <Trade id="trs-underlying"><TradeType>EquityPosition</TradeType></Trade>
+      </UnderlyingData>
+      <ReturnData>
+        <Payer>Client</Payer>
+        <Currency>USD</Currency>
+        <ScheduleData/>
+      </ReturnData>
+    </TotalReturnSwapData>
+  </Trade>
+  <Trade id="cfd-1">
+    <TradeType>ContractForDifference</TradeType>
+    <ContractForDifferenceData>
+      <UnderlyingData>
+        <SubTrade id="cfd-underlying"><SubTradeType>Swap</SubTradeType></SubTrade>
+      </UnderlyingData>
+      <ReturnData>
+        <Payer>Client</Payer>
+        <Currency>EUR</Currency>
+        <ScheduleData/>
+      </ReturnData>
+    </ContractForDifferenceData>
+  </Trade>
+</Portfolio>)";
+
 auto date_of(int year, unsigned month, unsigned day) -> std::chrono::year_month_day {
     return {std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
 }
@@ -2815,4 +2859,82 @@ TEST_CASE("a_portfolio_document_projects_a_commodity_average_price_option_and_a_
     CHECK(basket_round_data->constituents[1].sequence_number == 2);
     CHECK(basket_round_data->constituents[1].underlying_code == "SILVER");
     CHECK(basket_round_data->constituents[1].weight == std::optional<double>(0.4));
+}
+
+TEST_CASE("a_portfolio_document_projects_a_composite_trade_and_its_components", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(composite_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 3);
+    CHECK(items[0].anchor.trade_type == "CompositeTrade");
+    CHECK(items[1].anchor.trade_type == "TotalReturnSwap");
+    CHECK(items[2].anchor.trade_type == "ContractForDifference");
+
+    const auto* composite =
+        std::get_if<ores::trading::domain::composite_instrument_data>(&items[0].instrument);
+    REQUIRE(composite != nullptr);
+    CHECK(composite->instrument.identity.trade_type_code == "CompositeTrade");
+    CHECK(composite->instrument.description == "ACME-BASKET");
+    REQUIRE(composite->legs.size() == 2);
+    CHECK(composite->legs[0].identity.leg_sequence == 1);
+    CHECK(composite->legs[0].constituent_trade_id == "component-swap");
+    CHECK(composite->legs[0].audit.change_reason_code == "system.external_data_import");
+    CHECK(composite->legs[1].identity.leg_sequence == 2);
+    CHECK(composite->legs[1].constituent_trade_id == "component-fx");
+    CHECK(composite->legs[1].audit.change_reason_code == "system.external_data_import");
+
+    const auto back = rebuild(items[0]);
+    CHECK(back.anchor.trade_type == "CompositeTrade");
+    const auto* round =
+        std::get_if<ores::trading::domain::composite_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    CHECK(round->instrument.identity.trade_type_code == "CompositeTrade");
+    CHECK(round->instrument.description == "ACME-BASKET");
+
+    const auto written = portfolio_projection::write(exported(items[0]));
+    const auto reread_items = portfolio_projection::map(portfolio_projection::read(written));
+    REQUIRE(reread_items.size() == 1);
+    CHECK(reread_items[0].anchor.trade_type == "CompositeTrade");
+    const auto* reread =
+        std::get_if<ores::trading::domain::composite_instrument_data>(&reread_items[0].instrument);
+    REQUIRE(reread != nullptr);
+    CHECK(reread->instrument.identity.trade_type_code == "CompositeTrade");
+    CHECK(reread->instrument.description == "ACME-BASKET");
+}
+
+TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_difference", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(composite_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 3);
+
+    const auto* trs =
+        std::get_if<ores::trading::domain::composite_instrument_data>(&items[1].instrument);
+    REQUIRE(trs != nullptr);
+    CHECK(trs->instrument.identity.trade_type_code == "TotalReturnSwap");
+    CHECK(trs->instrument.description == "EquityPosition");
+    CHECK(trs->legs.empty());
+
+    const auto* cfd =
+        std::get_if<ores::trading::domain::composite_instrument_data>(&items[2].instrument);
+    REQUIRE(cfd != nullptr);
+    CHECK(cfd->instrument.identity.trade_type_code == "ContractForDifference");
+    CHECK(cfd->instrument.description == "Swap");
+    CHECK(cfd->legs.empty());
+
+    const auto trs_again = rebuild(items[1]);
+    REQUIRE(std::get_if<ores::trading::domain::composite_instrument_data>(&trs_again.instrument) !=
+            nullptr);
+    CHECK(trs_again.anchor.trade_type == "TotalReturnSwap");
+    CHECK(std::get<ores::trading::domain::composite_instrument_data>(trs_again.instrument)
+              .instrument.identity.trade_type_code == "TotalReturnSwap");
+
+    const auto cfd_again = rebuild(items[2]);
+    REQUIRE(std::get_if<ores::trading::domain::composite_instrument_data>(&cfd_again.instrument) !=
+            nullptr);
+    CHECK(cfd_again.anchor.trade_type == "ContractForDifference");
+    CHECK(std::get<ores::trading::domain::composite_instrument_data>(cfd_again.instrument)
+              .instrument.identity.trade_type_code == "ContractForDifference");
 }

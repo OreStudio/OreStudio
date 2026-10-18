@@ -25,6 +25,7 @@ set(files
     "domain/commodity_instrument_mapper.cpp"
     "domain/commodity_instrument_projection.cpp"
     "domain/composite_instrument_mapper.cpp"
+    "domain/composite_instrument_projection.cpp"
     "domain/conventions_diff.cpp"
     "domain/conventions_mapper.cpp"
     "domain/credit_instrument_mapper.cpp"

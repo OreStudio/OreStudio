@@ -209,6 +209,26 @@ ORES_ORE_CORE_EXPORT auto write_fx_instrument(xml::record_writer& trade,
                                               const portfolio_reference_curves& reference_curves)
     -> bool;
 
+/**
+ * @brief The composite family: a basket of constituent trades.
+ *
+ * A composite trade states its constituents as one row per component, and each
+ * row is either a whole trade or its nested-only variant. The table keeps the
+ * two kinds as separate indexed members, so the reading walks one arena and
+ * then the other, and a document never mixes the kinds under one element. The
+ * writing states the basket name and the currency the schema requires, because
+ * the old mapper rebuilt no constituent.
+ */
+ORES_ORE_CORE_EXPORT auto read_composite_instrument(xml::record_reader trade,
+                                                    std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument>;
+
+ORES_ORE_CORE_EXPORT auto
+write_composite_instrument(xml::record_writer& trade,
+                           std::string_view trade_type,
+                           const trading::domain::trade_instrument& instrument,
+                           const portfolio_reference_curves& reference_curves) -> bool;
+
 }
 
 #endif

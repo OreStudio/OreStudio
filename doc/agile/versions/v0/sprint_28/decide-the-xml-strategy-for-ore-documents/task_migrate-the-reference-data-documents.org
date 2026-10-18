@@ -100,7 +100,17 @@ need the generator extended first.
 | CurveConfiguration | generates | 3,310 lines | none, but the largest |
 | Portfolio | generates | instrument mappers, the largest group | none |
 | StressTesting | generates once =sensitivity.xsd= is read | 830 lines | none; =shiftTypeEntry= lives in =sensitivity.xsd= |
-| ORE run document | refuses | run document mapper | generator lacks =xs:complexContent=, the only family that still needs it |
+| ORE run document | generates | run document mapper | none; =xs:complexContent extension= is read as a flattened derivation now, and a restriction is still refused |
+
+*The generator reads a derivation.* A type written as =xs:complexContent
+extension= now produces the base type's fields followed by its own, which is
+what flattening a derivation means for a record: the base's fields keep the
+offsets the base gives them. A regression test builds a base and a derived
+type and asserts the emitted record holds both, in that order. The run
+document generates with it. It is not in the regeneration wrapper yet, so
+nothing guards that table: it joins the wrapper in the change that migrates
+the family, because a table with no projection would leave the census with a
+supported family nothing reads.
 
 *One probe result was wrong.* The table first said stress testing could not
 be generated because the generator lacked its =shiftTypeEntry= shape. It was

@@ -36,7 +36,7 @@ the work that follows is broken into tasks.
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Eight families are on tables: calendar adjustments, currency config and pricing engines read and write through the codec, and the netting set XML mapper is deleted. Five families still read through xsdcpp. |
 | Waiting on    | Nothing.                               |
-| Next          | Curve configuration, then stress testing, then the run document, which is the only family whose schema the generator cannot express, then portfolio, then xsdcpp. |
+| Next          | Curve configuration, stress testing, the run document and portfolio, in that order, then xsdcpp. The generator expresses every one of their schemas, a restriction aside, which none of them uses. |
 | Last touched  | 2026-10-17                               |
 
 * Acceptance

@@ -25,6 +25,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router';
 import { api, type FeedFilter, type FeedFolder, type FolderFeed } from '../../api/client.js';
 import { FlagOf } from '../../images/flags.js';
 import { useTranslation } from '../../i18n/Provider.js';
+import { OresmdUrlResolved } from '../../oresmd/OresmdUrl.js';
+import { useSeriesTargets } from '../../oresmd/useSeriesTargets.js';
 import { show, useRecords } from '../../refdata/records.js';
 import { useLabelCatalogue } from '../../refdata/shared.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../../ui/Pager.js';
@@ -204,6 +206,13 @@ function Underlying({ feed }: { readonly feed: FolderFeed }): ReactNode {
     );
 }
 
+/** The words of a column header. The series is named as the field it is, on every screen. */
+function columnWords(column: string): string {
+    return column === 'series'
+        ? 'refdata.fields.oresmd_uri'
+        : `marketdata.synthetic.tree.columns.${column}`;
+}
+
 /**
  * The feed tree: the providers and their folders on the left, and on the right a
  * table of the feeds under the chosen node, a page at a time. The table is
@@ -281,6 +290,9 @@ export function FeedTreeTab(): ReactNode {
     });
     const feeds = page.data?.feeds ?? [];
     const total = page.data?.total ?? 0;
+    // The series page of every row on the page, decided in one read about the page,
+    // so a grid of many feeds does not ask the codec about a URI a row.
+    const targetOf = useSeriesTargets(feeds.map((feed) => feed.oresmd_uri));
 
     const [picked, setPicked_] = useState<Selection>(NOTHING);
     useEffect(() => setPicked_(NOTHING), [filterKey]);
@@ -568,10 +580,11 @@ export function FeedTreeTab(): ReactNode {
                                                 'underlying',
                                                 'engine',
                                                 'frequency',
+                                                'series',
                                             ] as const
                                         ).map((column) => (
                                             <th key={column} className="px-3 py-2 font-medium">
-                                                {t(`marketdata.synthetic.tree.columns.${column}`)}
+                                                {t(columnWords(column))}
                                             </th>
                                         ))}
                                     </tr>
@@ -677,12 +690,21 @@ export function FeedTreeTab(): ReactNode {
                                                         },
                                                     )}
                                                 </td>
+                                                <td
+                                                    className="max-w-xs px-3 py-2"
+                                                    onClick={(event) => event.stopPropagation()}
+                                                >
+                                                    <OresmdUrlResolved
+                                                        uri={feed.oresmd_uri}
+                                                        to={targetOf(feed.oresmd_uri)}
+                                                    />
+                                                </td>
                                             </tr>
                                         );
                                     })}
                                     {feeds.length === 0 && page.isSuccess && (
                                         <tr>
-                                            <td colSpan={8} className="px-3 py-4 text-ink-muted">
+                                            <td colSpan={9} className="px-3 py-4 text-ink-muted">
                                                 {t('marketdata.synthetic.tree.none')}
                                             </td>
                                         </tr>

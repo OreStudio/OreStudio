@@ -19,16 +19,21 @@
  *
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import type { AccountAccess } from '@ores/wire-protocol/browser';
+import type { CurveSeriesList, OresmdParseResult } from '@ores/contracts';
 import type { FeedFolder, FolderFeed, SyntheticResourceView } from '../../api/client.js';
+import { parseManyKey } from '../../oresmd/queries.js';
+import { SCHEMA } from '../../oresmd/testSchema.js';
 import { TranslationProvider } from '../../i18n/Provider.js';
 import { FEEDS_KEY } from './selectionRuns.js';
 import { SyntheticScreen } from './SyntheticScreen.js';
 import { FOLDERS_KEY } from './useCollections.js';
+
+vi.mock('../../session/SessionProvider.js', () => ({ useActingPartyId: () => 'party-1' }));
 
 function access(codes: string[]): AccountAccess {
     return {
@@ -335,5 +340,103 @@ describe('the Synthetic feed tree', () => {
         );
         expect(html).toContain('Should run and does not');
         expect(html).toContain('USD SOFR');
+    });
+});
+
+describe('the oresmd URI column of the feed tree', () => {
+    const FX_URI = 'oresmd://ir/EUR?type=quote&instrument=capfloor&quote=rate&cap_floor=Cap';
+    const SERIES_URI = 'oresmd://ir/GBP?type=quote&instrument=capfloor&quote=rate&cap_floor=Cap';
+    const FX = feed('eurusd', 'fx_spot', 'EUR/USD', 'EUR/USD', { oresmd_uri: FX_URI });
+    const IR = feed('usdsofr', 'ir_curve', 'USD SOFR', 'USD', { oresmd_uri: SERIES_URI });
+
+    /** A URI as the markup carries it, which escapes the separators of a query. */
+    const escaped = (uri: string): string => uri.replaceAll('&', '&amp;');
+
+    const parts = (subject: string): OresmdParseResult => ({
+        success: true,
+        message: '',
+        kind: 'quote',
+        instrument: 'capfloor',
+        quote: 'rate',
+        asset: 'ir',
+        subject,
+        fields: [{ name: 'cap_floor', text: 'Cap' }],
+    });
+
+    /** The party's series: the EUR one declares an axis, the GBP one does not. */
+    const LIST: CurveSeriesList = {
+        truncated: false,
+        series: [
+            {
+                series_id: 'eur',
+                axes: ['term'],
+                identity: {
+                    asset: 'ir',
+                    scope: 'EUR',
+                    instrument_type: 'capfloor',
+                    quote_type: 'rate',
+                    party_id: 'party-1',
+                    fields: [{ name: 'cap_floor', text: 'Cap' }],
+                },
+            },
+            {
+                series_id: 'gbp',
+                axes: [],
+                identity: {
+                    asset: 'ir',
+                    scope: 'GBP',
+                    instrument_type: 'capfloor',
+                    quote_type: 'rate',
+                    party_id: 'party-1',
+                    fields: [{ name: 'cap_floor', text: 'Cap' }],
+                },
+            },
+        ],
+    };
+
+    /**
+     * The page as the app reads it: one answer about both URIs, in the order the
+     * read asks them, and one series list. No answer is seeded a row, so a column
+     * that asked about a URI a row would draw plain text and fail the test.
+     */
+    function seeded(client: QueryClient): void {
+        client.setQueryData(['my-access'], access(['synthetic::*']));
+        client.setQueryData([...FEEDS_KEY, '{}', 0, 15], { total: 2, feeds: [FX, IR] });
+        client.setQueryData(['oresmd-schema'], SCHEMA);
+        client.setQueryData(parseManyKey([FX_URI, SERIES_URI]), [parts('EUR'), parts('GBP')]);
+        client.setQueryData(['market-series-list', 'party-1'], LIST);
+    }
+
+    it('names the column after the field the record page shows', () => {
+        const html = render('/market-data/synthetic?tab=tree', seeded);
+        expect(html).toContain('oresmd URI');
+        expect(html).toContain(escaped(FX_URI));
+        expect(html).toContain(escaped(SERIES_URI));
+    });
+
+    it('links each row to the page that opens its series, and its series alone', () => {
+        const html = render('/market-data/synthetic?tab=tree', seeded);
+        expect(html).toContain(`href="/market-data/evolution?uri=${encodeURIComponent(FX_URI)}"`);
+        expect(html).toContain(`href="/market-data/series?uri=${encodeURIComponent(SERIES_URI)}"`);
+    });
+
+    it('offers Inspect on a row, as the record page does', () => {
+        const html = render('/market-data/synthetic?tab=tree', seeded);
+        expect(html).toContain('>Inspect<');
+    });
+
+    it('draws plain text for a row whose series the party does not have', () => {
+        const html = render('/market-data/synthetic?tab=tree', (client) => {
+            client.setQueryData(['my-access'], access(['synthetic::*']));
+            client.setQueryData([...FEEDS_KEY, '{}', 0, 15], { total: 2, feeds: [FX, IR] });
+            client.setQueryData(['oresmd-schema'], SCHEMA);
+            client.setQueryData(parseManyKey([FX_URI, SERIES_URI]), [parts('EUR'), parts('GBP')]);
+            client.setQueryData(['market-series-list', 'party-1'], {
+                truncated: false,
+                series: [],
+            });
+        });
+        expect(html).toContain(escaped(FX_URI));
+        expect(html).not.toContain('/market-data/evolution?uri=');
     });
 });

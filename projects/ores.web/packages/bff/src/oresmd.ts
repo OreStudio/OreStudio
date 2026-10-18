@@ -24,6 +24,7 @@ import { z } from 'zod';
 import {
     oresmdComposeRequestSchema,
     oresmdComposeResultSchema,
+    oresmdParseManyRequestSchema,
     oresmdParseRequestSchema,
     oresmdParseResultSchema,
     oresmdSchemaSchema,
@@ -110,6 +111,26 @@ export function registerOresmdRoutes(
             body,
             oresmdParseResultSchema,
         );
+    });
+
+    /**
+     * Reads many URIs, one call per URI on the server and one answer to the
+     * browser. A list of rows names a URI each; asked one at a time, a page costs
+     * a call for every row.
+     */
+    server.post('/api/oresmd/parse-many', async (request) => {
+        const session = requireSession(request);
+        const body = input(oresmdParseManyRequestSchema, request.body);
+        const parts = await Promise.all(
+            body.uris.map((uri) =>
+                session.client.callAuthenticated(
+                    subjects.parse_oresmd_uri_request,
+                    { uri },
+                    oresmdParseResultSchema,
+                ),
+            ),
+        );
+        return { parts };
     });
 
     server.post('/api/oresmd/compose', async (request) => {

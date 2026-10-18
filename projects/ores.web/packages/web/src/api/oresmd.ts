@@ -21,6 +21,7 @@
 
 import {
     oresmdComposeResultSchema,
+    oresmdParseManyResultSchema,
     oresmdParseResultSchema,
     oresmdSchemaSchema,
     type OresmdComposeRequest,
@@ -53,6 +54,14 @@ export const oresmd = {
     /** The parts of a URI, or the codec's reason for refusing it. */
     async parse(uri: string): Promise<OresmdParseResult> {
         return oresmdParseResultSchema.parse(await post('/api/oresmd/parse', { uri }));
+    },
+
+    /** The parts of each URI, in the order asked, as one call. */
+    async parseMany(uris: readonly string[]): Promise<readonly OresmdParseResult[]> {
+        const answer = oresmdParseManyResultSchema.parse(
+            await post('/api/oresmd/parse-many', { uris }),
+        );
+        return answer.parts;
     },
 
     /** The URI the codec writes for the parts, or the reason they make none. */

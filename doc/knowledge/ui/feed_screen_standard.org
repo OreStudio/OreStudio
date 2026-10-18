@@ -404,8 +404,13 @@ children are the asset class folders; a provider with several lists its collecti
 
 - The table lists the feeds under the chosen node, with the folders below it, a page at a
   time, with the standard pager. Its columns are state, enabled, name, asset class,
-  underlying (a currency pair or a currency, with flags), engine and frequency. A row
-  opens the feed's page.
+  underlying (a currency pair or a currency, with flags), engine, frequency and the
+  oresmd URI. A row opens the feed's page.
+- The oresmd URI column is the same reference the feed's Details tab draws: a link to
+  the page of the series when the party has that series, and plain text when it does not,
+  with Inspect beside it. The column decides the pages of a whole page of rows in one read
+  of the codec and one read of the party's series list, so a grid does not ask about a URI
+  a row (=oresmd/useSeriesTargets.ts=).
 - The filters are the state (All, Started, Stopped), the asset class, and the search
   words. The search reaches every provider. All of them run on the server
   (=synthetic.v1.ops.list_folder_feeds=), so the counts and the pages are right.

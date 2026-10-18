@@ -176,6 +176,7 @@ describe('the oresmd routes', () => {
         for (const [method, url] of [
             ['GET', '/api/oresmd/schema'],
             ['POST', '/api/oresmd/parse'],
+            ['POST', '/api/oresmd/parse-many'],
             ['POST', '/api/oresmd/compose'],
         ] as const) {
             const response = await server.inject({ method, url, payload: {} });
@@ -217,6 +218,29 @@ describe('the oresmd routes', () => {
         const response = await send(server, sessionId, 'POST', '/api/oresmd/parse', { uri: 'x' });
         expect(response.statusCode).toBe(200);
         expect(response.json()).toMatchObject({ success: false, message: 'a query out of order' });
+    });
+
+    it('read many URIs as one answer, asking the server about each', async () => {
+        const { server, sessionId, calls } = buildTestServer({ [PARSE_SUBJECT]: PARSE_REPLY });
+        const response = await send(server, sessionId, 'POST', '/api/oresmd/parse-many', {
+            uris: [URI, 'oresmd://fx/EUR?ccy=USD'],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ parts: [PARSE_REPLY, PARSE_REPLY] });
+        expect(calls).toEqual([
+            { subject: PARSE_SUBJECT, body: { uri: URI } },
+            { subject: PARSE_SUBJECT, body: { uri: 'oresmd://fx/EUR?ccy=USD' } },
+        ]);
+    });
+
+    it('read no URI as an empty answer, without asking the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+        const response = await send(server, sessionId, 'POST', '/api/oresmd/parse-many', {
+            uris: [],
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ parts: [] });
+        expect(calls).toEqual([]);
     });
 
     it('forward the parts to the composer, filling what a body leaves out', async () => {
@@ -273,6 +297,10 @@ describe('the oresmd routes', () => {
             ['/api/oresmd/parse', { uri: 5 }],
             ['/api/oresmd/parse', { uri: long }],
             ['/api/oresmd/parse', { uri: URI, extra: 1 }],
+            ['/api/oresmd/parse-many', {}],
+            ['/api/oresmd/parse-many', { uris: 'x' }],
+            ['/api/oresmd/parse-many', { uris: [long] }],
+            ['/api/oresmd/parse-many', { uris: Array.from({ length: 201 }, () => URI) }],
             ['/api/oresmd/compose', { instrument: 'ir_swap' }],
             ['/api/oresmd/compose', { kind: 'quote', instrument: long }],
             ['/api/oresmd/compose', { kind: 'quote', instrument: 'x', fields: [{ name: 'a' }] }],
@@ -296,6 +324,7 @@ describe('the oresmd routes', () => {
         for (const [method, url, subject, payload] of [
             ['GET', '/api/oresmd/schema', SCHEMA_SUBJECT, undefined],
             ['POST', '/api/oresmd/parse', PARSE_SUBJECT, { uri: URI }],
+            ['POST', '/api/oresmd/parse-many', PARSE_SUBJECT, { uris: [URI] }],
             ['POST', '/api/oresmd/compose', COMPOSE_SUBJECT, { kind: 'quote', instrument: 'x' }],
         ] as const) {
             const { server, sessionId } = buildTestServer({

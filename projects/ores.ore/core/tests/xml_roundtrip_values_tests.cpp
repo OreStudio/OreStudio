@@ -24,6 +24,7 @@
 #include "ores.ore.core/xml/generated/conventions.hpp"
 #include "ores.ore.core/xml/generated/counterparty_information.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
+#include "ores.ore.core/xml/generated/curve_configuration.hpp"
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
 #include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
@@ -47,6 +48,7 @@ using namespace ores::ore::xml;
 namespace cal = ores::ore::xml::generated::calendar_adjustments;
 using cal::calendar_adjustments_document;
 using cal::calendaradjustment;
+namespace cc = ores::ore::xml::generated::curve_configuration;
 namespace cur = ores::ore::xml::generated::currency_config;
 using cur::currency_config;
 using cur::currency_config_document;
@@ -96,9 +98,8 @@ auto fingerprint_difference(const std::vector<value_entry>& left,
  * is allowed to order and spell things its own way; the records are.
  */
 template <typename Record>
-auto round_trip_values(const document_type& doc,
-                       std::string_view text,
-                       std::string& report) -> bool {
+auto round_trip_values(const document_type& doc, std::string_view text, std::string& report)
+    -> bool {
     Record first{};
     const auto bound = binder::bind(doc, text, &first);
     if (!bound) {
@@ -150,22 +151,35 @@ auto round_trip_values(const document_type& doc,
 
 /**
  * @brief Proves the round trip over every corpus document of one family.
+ *
+ * A family is found by the prefix of its file names, because the corpus names
+ * the same document differently per example (curveconfig.xml, curveconfig_sabr.xml)
+ * and a list of exact names would stop covering a file the corpus adds.
  */
 template <typename Record>
 auto sweep_values(const fs::path& root,
                   std::string_view family,
                   const document_type& doc,
-                  const std::vector<std::string_view>& names,
+                  const std::vector<std::string_view>& prefixes,
                   std::size_t& documents,
-                  std::string& report) -> std::size_t {
+                  std::string& report,
+                  std::size_t* swept = nullptr) -> std::size_t {
     std::size_t failures = 0;
+    if (swept != nullptr)
+        *swept = 0;
     for (const auto& entry : fs::recursive_directory_iterator(root)) {
         if (!entry.is_regular_file())
             continue;
         const auto name = entry.path().filename().string();
-        if (std::find(names.begin(), names.end(), name) == names.end())
+        if (!name.ends_with(".xml"))
+            continue;
+        if (std::none_of(prefixes.begin(), prefixes.end(), [&name](std::string_view prefix) {
+                return name.starts_with(prefix);
+            }))
             continue;
         ++documents;
+        if (swept != nullptr)
+            ++*swept;
 
         std::string reason;
         if (!round_trip_values<Record>(doc, read_file(entry.path()), reason)) {
@@ -256,6 +270,20 @@ TEST_CASE("every_generated_family_keeps_its_values_across_the_writing", tags) {
                                               {"currencies.xml", "currencyconfig.xml"},
                                               documents,
                                               report);
+    // The corpus names this family's documents curveconfig*.xml, and every
+    // one of them is counted, because the census says the harness proves the
+    // whole family. A rename or a document that stops matching is a failure
+    // here rather than a quieter sweep.
+    std::size_t curve_configurations = 0;
+    failures += sweep_values<cc::curveconfiguration>(root,
+                                                     "curve_configuration",
+                                                     cc::curve_configuration_document(),
+                                                     {"curveconfig"},
+                                                     documents,
+                                                     report,
+                                                     &curve_configurations);
+    INFO("curve configurations: " << curve_configurations);
+    CHECK(curve_configurations == 89);
     failures += sweep_values<ibor_fallback_config>(root,
                                                    "ibor_fallback_config",
                                                    ibor_fallback_config_document(),

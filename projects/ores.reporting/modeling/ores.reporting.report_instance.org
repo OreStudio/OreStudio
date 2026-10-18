@@ -276,7 +276,7 @@ the instance rather than minted beside it.
 
 * Messages
 
-The =get_latest_by_definition= pair, declared here so both the C++ header and its
+The =get_latest_report_instance_by_definition= operation, declared here so both the C++ header and its
 TypeScript twin render it. It answers the question the reports-a-party-runs
 screen asks of a list of runs: which of each definition's runs started last. The
 answer is one row per definition asked for, so the cost grows with the
@@ -284,7 +284,7 @@ definitions a party owns rather than with the runs it has made.
 
 ** get_latest_report_instances_by_definition_request
 :PROPERTIES:
-:subject: reporting.v1.report_instances.get_latest_by_definition
+:subject: reporting.v1.ops.get_latest_report_instance_by_definition
 :response: get_latest_report_instances_by_definition_response
 :END:
 
@@ -528,7 +528,7 @@ report_instance_service::get_latest_report_instances_by_definition(
 
 #+begin_src cpp :name declaration :implements B9E2F4A1-3C7D-4E8B-A5F0-2D6C1B8E3A7F
     /**
-     * @brief Serves reporting.v1.report_instances.get_latest_by_definition.
+     * @brief Serves reporting.v1.ops.get_latest_report_instance_by_definition.
      *
      * A read of the party's runs, so it is gated by the same code the generated
      * run reads are gated by.

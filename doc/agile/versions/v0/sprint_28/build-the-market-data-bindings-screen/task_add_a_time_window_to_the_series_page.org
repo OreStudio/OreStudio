@@ -96,11 +96,17 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| marketdata C++ suites | 4 passed, 0 failed, 565.11 s | =./compass.sh test run -- -R "ores\.marketdata"= | =c62789d70d= |
-| marketdata core test cases | 8270 assertions in 228 test cases | the same run, =Testing/Temporary/LastTest.log= | =c62789d70d= |
-| browser tests | 1629 tests in 144 files | =npm test --workspace @ores/web= | =c62789d70d= |
-| BFF tests | 787 tests in 67 files | =npm test --workspace @ores/bff= | =c62789d70d= |
-| generated output | No drift | =check_component_drift.py --changed --base origin/main= | =c62789d70d= |
+| marketdata C++ suites | 4 passed, 0 failed, 849.53 s | =./compass.sh test run -- -R "ores\.marketdata"= | =14e4b22505= |
+| marketdata core test cases | 8268 assertions in 228 test cases | the same run, =Testing/Temporary/LastTest.log= | =14e4b22505= |
+| browser tests | 1651 tests in 146 files | =npm test --workspace @ores/web= | =31b0c12e64= |
+| BFF tests | 790 tests in 67 files | =npm test --workspace @ores/bff= | =31b0c12e64= |
+| generated output | No drift | =check_component_drift.py --changed --base origin/main= | =31b0c12e64= |
+
+The C++ run was made before the branch was rebased onto =2580e2a036=. Origin main
+changed no file under =projects/ores.marketdata= between the old base and that
+commit, so the result stands at the rebased head. The assertion count moves
+between runs because some cases assert per-row counts over faker-generated rows;
+the 228 test cases are stable.
 
 * Notes
 

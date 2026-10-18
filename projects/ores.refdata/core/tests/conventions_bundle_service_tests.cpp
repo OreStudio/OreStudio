@@ -18,6 +18,7 @@
  */
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
@@ -278,7 +279,6 @@ TEST_CASE("a bundle reads back the rows an apply wrote", tags) {
     const auto read_central =
         rfl::json::read<ores::refdata::domain::convention>(central_row.payload);
     REQUIRE(read_central.has_value());
-    CHECK(read_central->kind_code == "TENOR_BASIS_SWAP");
     CHECK(read_central->name == "CHF-3M-6M-BASIS");
 
     const auto read_part =
@@ -362,11 +362,12 @@ TEST_CASE("a read bundle applies into another party unchanged", tags) {
     const auto read_again = ores::refdata::service::conventions_bundle_service(second).read();
 
     // Both parties see the tenant's world conventions, so the rows this case
-    // wrote are found by family and name rather than by position.
+    // wrote are found by family rather than by excluding one world family at a
+    // time.
     const auto rows_of = [](const ores::refdata::service::conventions_bundle& bundle) {
         std::vector<ores::refdata::service::conventions_bundle_row> rows;
         for (const auto& row : bundle.rows)
-            if (row.family != "ibor_index" && row.family != "overnight_index")
+            if (row.family == "convention" || row.family == "tenor_basis_swap_pay_receive")
                 rows.push_back(row);
         return rows;
     };
@@ -374,16 +375,85 @@ TEST_CASE("a read bundle applies into another party unchanged", tags) {
     const auto copied_rows = rows_of(read_again);
     REQUIRE(written_rows.size() == 2);
     REQUIRE(copied_rows.size() == 2);
-    for (std::size_t i = 0; i < written_rows.size(); ++i) {
+    for (std::size_t i = 0; i < written_rows.size(); ++i)
         CHECK(copied_rows[i].family == written_rows[i].family);
-        CHECK(copied_rows[i].sequence == written_rows[i].sequence);
-    }
 
-    const auto copied =
+    // A copy into another party mints its own keys, so the payloads are not
+    // byte-equal. The fields the document carries are what has to survive.
+    const auto copied_central =
         rfl::json::read<ores::refdata::domain::convention>(copied_rows.front().payload);
-    REQUIRE(copied.has_value());
-    CHECK(copied->name == "SEK-3M-6M-BASIS");
-    CHECK(copied->kind_code == "TENOR_BASIS_SWAP");
+    REQUIRE(copied_central.has_value());
+    CHECK(copied_central->name == "SEK-3M-6M-BASIS");
+
+    const auto copied_part = rfl::json::read<ores::refdata::domain::tenor_basis_swap_pay_receive>(
+        copied_rows.back().payload);
+    REQUIRE(copied_part.has_value());
+    CHECK(copied_part->pay_index == std::optional<std::string>("SEK-LIBOR-6M"));
+    CHECK(copied_part->receive_index == std::optional<std::string>("SEK-LIBOR-3M"));
+    CHECK(copied_part->convention_id == copied_central->id);
+}
+
+namespace {
+
+// How many rows of one family a document read holds. The document's member
+// names are the family keys, so this is the whole of the mapping between them.
+std::size_t document_row_count(const ores::refdata::messaging::conventions_document& document,
+                               const std::string& family) {
+    if (family == "average_ois")
+        return document.average_ois.size();
+    if (family == "bma_basis_swap")
+        return document.bma_basis_swap.size();
+    if (family == "bond_yield")
+        return document.bond_yield.size();
+    if (family == "cds")
+        return document.cds.size();
+    if (family == "cms_spread_option")
+        return document.cms_spread_option.size();
+    if (family == "commodity_forward")
+        return document.commodity_forward.size();
+    if (family == "commodity_future")
+        return document.commodity_future.size();
+    if (family == "convention")
+        return document.convention.size();
+    if (family == "cross_currency_basis")
+        return document.cross_currency_basis.size();
+    if (family == "cross_currency_fix_float")
+        return document.cross_currency_fix_float.size();
+    if (family == "deposit")
+        return document.deposit.size();
+    if (family == "fra")
+        return document.fra.size();
+    if (family == "future")
+        return document.future.size();
+    if (family == "fx_option")
+        return document.fx_option.size();
+    if (family == "ibor_index")
+        return document.ibor_index.size();
+    if (family == "inflation_swap")
+        return document.inflation_swap.size();
+    if (family == "intraday_power_load")
+        return document.intraday_power_load.size();
+    if (family == "ois")
+        return document.ois.size();
+    if (family == "overnight_index")
+        return document.overnight_index.size();
+    if (family == "swap")
+        return document.swap.size();
+    if (family == "swap_index")
+        return document.swap_index.size();
+    if (family == "tenor_basis_swap_long_short")
+        return document.tenor_basis_swap_long_short.size();
+    if (family == "tenor_basis_swap_pay_receive")
+        return document.tenor_basis_swap_pay_receive.size();
+    if (family == "tenor_basis_two_swap")
+        return document.tenor_basis_two_swap.size();
+    if (family == "zero")
+        return document.zero.size();
+    if (family == "zero_inflation_index")
+        return document.zero_inflation_index.size();
+    throw std::logic_error("Not a convention family: " + family);
+}
+
 }
 
 TEST_CASE("the bundle read carries what the document read carries", tags) {
@@ -410,26 +480,57 @@ TEST_CASE("the bundle read carries what the document read carries", tags) {
     documents.save(document);
     const auto held = documents.get();
 
-    const auto read = ores::refdata::service::conventions_bundle_service(ctx).read();
+    REQUIRE_FALSE(held.convention.empty());
+    REQUIRE_FALSE(held.tenor_basis_swap_pay_receive.empty());
 
-    std::size_t central_rows = 0;
-    std::size_t part_rows = 0;
-    for (const auto& row : read.rows) {
-        if (row.family == "convention") {
-            ++central_rows;
-            const auto decoded = rfl::json::read<ores::refdata::domain::convention>(row.payload);
-            REQUIRE(decoded.has_value());
-            CHECK(decoded->id == held.convention.front().id);
-        }
-        if (row.family == "tenor_basis_swap_pay_receive") {
-            ++part_rows;
-            const auto decoded =
-                rfl::json::read<ores::refdata::domain::tenor_basis_swap_pay_receive>(row.payload);
-            REQUIRE(decoded.has_value());
-            CHECK(decoded->id == held.tenor_basis_swap_pay_receive.front().id);
-            CHECK(decoded->convention_id == held.convention.front().id);
-        }
+    const auto read = ores::refdata::service::conventions_bundle_service(ctx).read();
+    const auto bundle_count = [&read](const std::string& family) {
+        return static_cast<std::size_t>(
+            std::count_if(read.rows.begin(), read.rows.end(), [&family](const auto& row) {
+                return row.family == family;
+            }));
+    };
+
+    // Every family, not just the two this case wrote: a read that dropped a
+    // whole family would still pass a check on those two.
+    for (std::size_t i = 0; i < ores::refdata::domain::convention_family_count; ++i) {
+        const auto family = std::string(ores::refdata::domain::convention_families[i].key);
+        INFO("family: " << family);
+        CHECK(bundle_count(family) == document_row_count(held, family));
     }
-    CHECK(central_rows == held.convention.size());
-    CHECK(part_rows == held.tenor_basis_swap_pay_receive.size());
+}
+
+TEST_CASE("the bundle read drops a part whose central row it does not carry", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto ctx = party_context(h);
+    boost::uuids::random_generator uuid;
+
+    // A central row of another kind, and a part that names it. The document
+    // read keeps neither, because the part belongs to a convention this bundle
+    // does not carry.
+    ores::refdata::domain::convention other;
+    other.id = uuid();
+    other.kind_code = "DEPOSIT";
+    other.name = "AUD-DEPOSIT";
+    other.change_reason_code = "system.test";
+    ores::service::messaging::stamp(other, ctx);
+    ores::refdata::repository::convention_repository conventions;
+    conventions.write(ctx, other);
+
+    ores::refdata::domain::tenor_basis_swap_pay_receive orphan;
+    orphan.id = uuid();
+    orphan.convention_id = other.id;
+    orphan.pay_index = std::string("AUD-LIBOR-6M");
+    orphan.receive_index = std::string("AUD-LIBOR-3M");
+    orphan.change_reason_code = "system.test";
+    ores::service::messaging::stamp(orphan, ctx);
+    ores::refdata::repository::tenor_basis_swap_pay_receive_repository parts;
+    parts.write(ctx, orphan);
+
+    const auto read = ores::refdata::service::conventions_bundle_service(ctx).read();
+    for (const auto& row : read.rows) {
+        INFO("family: " << row.family);
+        CHECK(row.family != "convention");
+        CHECK(row.family != "tenor_basis_swap_pay_receive");
+    }
 }

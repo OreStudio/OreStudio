@@ -63,18 +63,6 @@ struct conventions_apply_result {
 };
 
 /**
- * @brief Reads one family's live rows as the payloads the wire carries them in.
- *
- * The bytes are the bytes a stage message carries, so an in-process caller and
- * a remote caller see a family the same way. The generated dispatch gives each
- * family its own branch.
- *
- * @throws std::logic_error when the registry does not know the family.
- */
-ORES_REFDATA_CORE_EXPORT std::vector<std::string>
-read_family_payloads(const ores::database::context& ctx, const std::string& family);
-
-/**
  * @brief Applies the related families of one import.
  *
  * One writer, so a second caller cannot skip a step the first performs. The

@@ -16,6 +16,7 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "convention_family_apply.hpp"
 #include "conventions_identity.hpp"
 #include "conventions_row_helpers.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
@@ -29,7 +30,9 @@
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -81,6 +84,10 @@ conventions_bundle_service::conventions_bundle_service(context ctx)
 
 conventions_bundle conventions_bundle_service::read() {
     conventions_bundle bundle;
+    // The two part families belong to a central row the bundle must also carry,
+    // and the part tables would accept one that names nothing. The central
+    // family is read first, because registry order puts it before its parts.
+    std::set<std::string> covered_central;
     for (std::size_t i = 0; i < domain::convention_family_count; ++i) {
         const auto family = std::string(domain::convention_families[i].key);
         const auto payloads = read_family_payloads(ctx_, family);
@@ -91,6 +98,19 @@ conventions_bundle conventions_bundle_service::read() {
             if (family == central_family) {
                 const auto decoded = rfl::json::read<domain::convention>(payload);
                 if (!decoded || decoded->kind_code != tenor_basis_swap_kind)
+                    continue;
+                covered_central.insert(boost::uuids::to_string(decoded->id));
+            }
+            if (family == pay_receive_family) {
+                const auto decoded = rfl::json::read<domain::tenor_basis_swap_pay_receive>(payload);
+                if (!decoded ||
+                    !covered_central.contains(boost::uuids::to_string(decoded->convention_id)))
+                    continue;
+            }
+            if (family == long_short_family) {
+                const auto decoded = rfl::json::read<domain::tenor_basis_swap_long_short>(payload);
+                if (!decoded ||
+                    !covered_central.contains(boost::uuids::to_string(decoded->convention_id)))
                     continue;
             }
             bundle.rows.push_back(conventions_bundle_row{

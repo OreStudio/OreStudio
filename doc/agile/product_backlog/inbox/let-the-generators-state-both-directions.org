@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 0CF17FFD-9441-4E20-B7F3-9FB64CA5114A
+:END:
+#+title: Let the generators state both directions
+#+description: The synthetic generators write one value for a closed either-or: the forward rate agreement generator always writes Long, so no fixture or dataset ever holds a Short FRA. That is how a mapper that ignored the direction survived review: every witness in the tree agreed with the constant.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

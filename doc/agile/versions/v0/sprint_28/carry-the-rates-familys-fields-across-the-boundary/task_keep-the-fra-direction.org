@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: FE78A168-0C44-4DBC-AFAB-D6BC3FC9C234
+:END:
+#+title: Task: Keep the forward rate agreement's direction
+#+description: The ORE binding states LongShort and the mapper never reads it: import writes the literal Long and export writes longShort::Long, so a short forward rate agreement is stored and returned as a long. Read the document's direction on import, write it on export, and prove both with a test whose expected value is the document's own.
+#+type: task
+#+level: s1
+#+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
+#+owner: marco
+#+branch: feature/keep-the-fra-direction
+#+pr: 3540
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A trade the document states as Short is stored as Short and exported as Short.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] |
+| Now          | In review. The independent verifier passed it with notes and two of them are fixed here. |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The import stores the direction the document states, not a constant.
+- The export writes the stored direction back into the document.
+- A test proves a Short forward rate agreement survives both directions, with the document's own value as its expectation.
+
+* Plan
+
+1. Write the failing test first: an XML portfolio stating =<LongShort>Short</LongShort>=
+   through =forward_fra= and back through =reverse_fra=, expecting Short in the
+   row and in the exported document. The corpus states Long, so the document is
+   the suite's only Short witness and the codec's parse is part of the proof.
+2. Read the direction on import with =to_string=, and write it back with the
+   mapper's own =parse_code=, which round-trips the generated =to_string= so the
+   spelling has one source of truth.
+3. Check the money path while the mapper is open, since the same function
+   converts a notional and a strike. Add nothing: =mapper_fra_holds_the_digits_of_its_strike_and_notional=
+   already asserts the lexical form and the serialised =<Strike>0.005</Strike>=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Direction sites in the FRA mapper | 2, one in and one out | =grep -n 'fra.LongShort\|fra.long_short' projects/ores.ore/core/src/domain/swap_instrument_mapper.cpp= | HEAD |
+| Money conversions in the FRA mapper | 4 in, 3 out, all lexical | =exact_decimal= at :1431, :1433, :1448, :1450; =set_exact= at :1742, :1754, :1759 | HEAD |
+| FRA cases in the IR mapper suite | 4, of which 1 new | =sed -n '/FRA mapper tests/,/CapFloor mapper tests/p'= then =grep -c TEST_CASE= | HEAD |
+
+* Notes
+
+- The review graded this finding Critical because the defect is silent: the
+  store agrees with itself and the document disagrees with both. The fix is
+  small because the column, its check and the schema member were already right;
+  only the mapper ignored them.
+- The direction parse uses =parse_code=, the mapper's existing helper, rather
+  than the ternary a neighbouring product uses. =parse_code= scans the generated
+  =to_string= across =long_short_count= entries, so the spellings have one
+  source. The count itself is hand-maintained, as it is for every other enum in
+  this mapper, so a third spelling would fall back silently until someone bumped
+  it. Recorded because the first version of this note claimed the helper removed
+  the second table, and it does not.
+- Money: this unit changes no money conversion, and the FRA's seven sites were
+  already exact. =mapper_fra_holds_the_digits_of_its_strike_and_notional= proves
+  it by asserting the lexical form and the serialised =<Strike>0.005</Strike>=
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3540][#3540]] | [ore] Keep the forward rate agreement's direction |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The export parse sat inside the leg block, so a legless row exported the default | =swap_instrument_mapper.cpp:1746= (was :1751) | Fixed | The direction is the row's own; it is now written before the block. |
+| 2 | =long_short_count= is hand-maintained, so the helper does not remove the second table | =swap_instrument_mapper.cpp:515= | Fixed in prose | The mechanism is one generated spelling table plus a count beside every other enum's. |
+| 3 | A data row written before the fix cannot be recovered | — | Recorded | Re-import the affected trades; the row holds a valid value, so nothing distinguishes it. |
+| 4 | The case set the binding by hand and never parsed the spelling | =xml_ir_mapper_roundtrip_tests.cpp:212= | Fixed | The case is now a Short document, and asserts the exported text as well. |
+| 5 | The generator states Long and no fixture states Short | =fra_instrument_generator.cpp:52= | Captured | =let-the-generators-state-both-directions= in the backlog. |
+
+* Result
+
+A short forward rate agreement is now stored, exported and read back as Short.
+The import reads =fra.LongShort= through the generated =to_string=, and the
+export writes the stored code back through =parse_code= outside the leg block,
+so a row whose leg children were never written still states its direction.
+=Index= and =Strike= still come from those leg rows, so such a row exports its
+direction and neither of those; that is the shared-leg design and the leg path
+belongs to the unit that sets the leg's own direction.
+
+The case is a document, not a hand-set binding:
+=mapper_fra_reads_a_short_document_and_writes_it_back= parses an XML portfolio
+stating =<LongShort>Short</LongShort>= and asserts both the stored code and the
+exported =<LongShort>Short</LongShort>=. The codec's parse of the spelling is
+therefore part of what it proves, and the suite carries its only Short witness.
+
+Red then green, executed: with the mapper reverted to the merge base the case
+fails at =xml_ir_mapper_roundtrip_tests.cpp:236=; with the fix it passes. The
+same run also proves the second half, because the export assertion at =:244=
+would fail on its own if the reverse wrote the constant back. The CTest artefact
+holds only the last run, so the red half is reproduced by reverting the mapper
+rather than by reading a file.
+
+Money: the unit changes no conversion, and the FRA's four import and three
+export sites were already exact. The family already proves it:
+=mapper_fra_holds_the_digits_of_its_strike_and_notional= asserts the lexical
+form and the serialised document text, so this unit's money check is a negative
+result, recorded because a fix that touches a money-carrying mapper should say
+so.
+
+Rows imported before this fix hold Long for a Short trade and cannot be
+recovered from the row: the defect wrote a valid value, so nothing in the store
+distinguishes them. Re-import the affected trades from their documents.
+
+The gate ran in both fleet states: build, db, ctest, ore-xml-roundtrip and the
+fourteen static checks with the fleet down, and =step-consumers= with it up.

@@ -409,14 +409,16 @@ describe('the extra details of a record', () => {
 
     it('gives a label a tooltip and marks it when the detail has a hint', () => {
         const html = draw([['Target', 'x', 'Where it writes']]);
-        expect(html).toContain('title="Where it writes"');
+        expect(html).toContain('tabindex="0"');
+        expect(html).toContain('role="tooltip"');
+        expect(html).toContain('Where it writes');
         expect(html).toContain('cursor-help');
         expect(html).toContain('decoration-dotted');
     });
 
     it('leaves a label with no hint plain', () => {
         const html = draw([['Target', 'x']]);
-        expect(html).not.toContain('title=');
+        expect(html).not.toContain('role="tooltip"');
         expect(html).not.toContain('cursor-help');
     });
 });

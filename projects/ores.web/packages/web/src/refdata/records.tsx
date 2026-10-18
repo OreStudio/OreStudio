@@ -34,8 +34,9 @@ import type { HistoryVersion } from '@ores/wire-protocol/browser';
 import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Button, Dialog, Field, Input, Notice, PageHeader, Select, cx } from '../ui/Primitives.js';
+import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
+import { Tooltip } from '../ui/Tooltip.js';
 import { useTabs } from '../ui/Tabs.js';
 import { Flag, FlagOf, useFlags, type FlagSource } from '../images/flags.js';
 import { ImageField } from '../images/ImageChooser.js';
@@ -738,7 +739,7 @@ export function RecordDetails({
 }: {
     readonly specs: readonly FieldSpec[];
     readonly row: RecordRow;
-    /** A third item is a hint: the words the label shows when the pointer rests on it. */
+    /** A third item is a hint: the words the label opens on hover, on focus and on a tap. */
     readonly extra?: readonly (readonly [string, ReactNode, string?])[];
     /**
      * Makes the details a card of an entity page: a title with the version of
@@ -784,14 +785,8 @@ export function RecordDetails({
                 ))}
                 {(extra ?? []).map(([label, value, hint]) => (
                     <div key={label}>
-                        <dt
-                            className={cx(
-                                'text-xs text-ink-faint',
-                                hint !== undefined && 'cursor-help underline decoration-dotted',
-                            )}
-                            title={hint}
-                        >
-                            {label}
+                        <dt className="text-xs text-ink-faint">
+                            {hint === undefined ? label : <Tooltip text={hint}>{label}</Tooltip>}
                         </dt>
                         <dd className="mt-0.5 text-sm">{value}</dd>
                     </div>

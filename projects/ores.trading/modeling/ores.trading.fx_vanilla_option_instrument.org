@@ -179,9 +179,10 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :economic: true
 :END:
 
-Exercise style: European or American.
+Exercise style, one of the ORE exerciseStyle set: European, Bermudan or
+American. The lookup =ores_trading_exercise_types_tbl= holds the set, so
+the store refuses a style it does not carry.
 
-the values are the closed ORE exerciseStyle set (European, Bermudan, American).
 
 #+begin_src cpp :name generator
 std::string("European")
@@ -311,8 +312,6 @@ refused on write.
 | "sold_amount" > 0 |
 | "bought_currency" <> '' |
 | "sold_currency" <> '' |
-| "option_type" in ('Call', 'Put') |
-| "exercise_style" in ('European', 'American') |
 
 ** Indexes
 

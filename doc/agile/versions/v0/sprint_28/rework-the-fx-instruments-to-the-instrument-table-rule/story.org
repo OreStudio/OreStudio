@@ -51,6 +51,26 @@ Rework forwards, swaps, vanilla, barrier, digital, Asian, accumulator and varian
 
 * Decisions
 
+- *A closed vocabulary is stated in its lookup table, not in a check.* Five FX
+  vocabularies were stated twice. The foreign key now validates the code, so the
+  check is the copy that was removed; the lookup is what a reader edits and what
+  the store enforces.
+- *An exercise style admits the whole ORE set.* The vanilla option's check
+  refused Bermudan while its prose and the lookup both admitted it. The check
+  goes with the other duplicates, so the set is the lookup's: European, Bermudan
+  and American.
+- *A single barrier's level sits in the column its direction names.* An Up style
+  or a cap engages the upper level, a Down style or a floor the lower one, and
+  the other column stays null. The columns were positional, so an UpAndOut
+  option could not be stated without inventing a lower level.
+- *A product that states two levels is the exception, and its trade type says
+  so.* The directional check names FxBarrierOption alone; the double and generic
+  barriers hold a level per side.
+- *The digital option requires what each code engages and tolerates the rest.*
+  One table serves four codes and one generator writes a synthetic row for all
+  four, so a check that refused another code's field would refuse the only row
+  the generator can write.
+
 - The family was reviewed on 2026-10-16, and the review is recorded as [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]]. It found that the per-type tables already meet the explicit-variation check, so a family header and per-product fact tables are not required by the checklist.
 - The units below carry the deviations the review found. If the header and the fact tables are still wanted for another reason, record that reason here and add the acceptance it serves.
 - The units run digits first, because that unit moves the goldens.

@@ -44,7 +44,7 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     "expiry_date" date not null,
     "settlement" text null,
     "barrier_type" text not null,
-    "lower_barrier" numeric(38, 12) not null,
+    "lower_barrier" numeric(38, 12) null,
     "upper_barrier" numeric(38, 12) null,
     "underlying_code" text null,
     "description" text null,
@@ -67,9 +67,11 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     check ("sold_amount" > 0),
     check ("bought_currency" <> ''),
     check ("sold_currency" <> ''),
-    check ("barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor')),
-    check ("lower_barrier" > 0),
-    check ("option_type" is null or "option_type" in ('Call', 'Put'))
+    check ("lower_barrier" is null or "lower_barrier" > 0),
+    check ("upper_barrier" is null or "upper_barrier" > 0),
+    check ("lower_barrier" is not null or "upper_barrier" is not null),
+    check (("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('UpAndOut', 'UpAndIn', 'FixingCap')) or ("lower_barrier" is null and "upper_barrier" is not null)),
+    check (("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('DownAndOut', 'DownAndIn', 'FixingFloor')) or ("lower_barrier" is not null and "upper_barrier" is null))
 );
 
 -- Version uniqueness for optimistic concurrency

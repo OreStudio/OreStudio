@@ -191,6 +191,11 @@ the values are the closed ORE longShort set (Long, Short), which the SQL schema 
 std::string("Long")
 #+end_src
 
+The four product codes share this table, so each check names the fields its own
+code engages and requires them. A field another code uses is tolerated rather
+than refused, because one generator writes a synthetic row for all four and
+would otherwise produce a row no code accepts.
+
 ** strike
 :PROPERTIES:
 :type:          numeric(38, 12)
@@ -349,12 +354,13 @@ refused on write.
 | expression |
 |---|
 | "payoff_amount" > 0 |
+| ("trade_type_code" <> 'FxDigitalOption') or ("strike" is not null) |
+| ("trade_type_code" <> 'FxTouchOption') or ("lower_barrier" is not null or "upper_barrier" is not null) |
+| ("trade_type_code" <> 'FxDoubleTouchOption') or ("lower_barrier" is not null and "upper_barrier" is not null) |
+| ("trade_type_code" <> 'FxDigitalBarrierOption') or ("strike" is not null and ("lower_barrier" is not null or "upper_barrier" is not null)) |
 | "foreign_currency" <> '' |
 | "domestic_currency" <> '' |
 | "payoff_currency" <> '' |
-| "long_short" in ('Long', 'Short') |
-| "option_type" is null or "option_type" in ('Call', 'Put') |
-| "barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor') |
 
 ** Indexes
 

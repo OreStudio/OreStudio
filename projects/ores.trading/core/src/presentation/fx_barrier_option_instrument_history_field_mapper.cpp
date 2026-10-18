@@ -52,7 +52,8 @@ render_fx_barrier_option_instrument_fields(const domain::fx_barrier_option_instr
                       .value = ores::platform::time::datetime::to_iso8601_date(v.expiry_date)});
     fields.push_back({.name = "Settlement", .value = v.settlement});
     fields.push_back({.name = "Barrier Type", .value = v.barrier_type});
-    fields.push_back({.name = "Lower Barrier", .value = v.lower_barrier.to_string()});
+    fields.push_back({.name = "Lower Barrier",
+                      .value = v.lower_barrier ? v.lower_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Upper Barrier",
                       .value = v.upper_barrier ? v.upper_barrier->to_string() : std::string{}});
     fields.push_back({.name = "Underlying Code", .value = v.underlying_code});

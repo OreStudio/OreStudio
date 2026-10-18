@@ -313,8 +313,6 @@ refused on write.
 | "notional" > 0 |
 | "currency" <> '' |
 | "underlying_code" <> '' |
-| "long_short" in ('Long', 'Short') |
-| "moment_type" in ('Variance', 'Volatility') |
 
 ** Indexes
 

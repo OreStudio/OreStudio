@@ -30,9 +30,9 @@ unit decides each and makes the tree enforce the decision.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Analysed and scoped. Each of the three findings has a decided direction and a named change; none is implemented. |
-| Waiting on   | Nothing. |
-| Next         | Land the three decisions in one unit: the exercise-style set, the vocabulary duplicate, then the directional level checks with their mapper change. |
+| Now          | Implemented and the suites pass. Waiting on review and merge. |
+| Waiting on   | The review of its PR. |
+| Next         | Address the review, then merge. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -103,6 +103,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Duplicated vocabulary checks removed | 10 | =git diff --stat origin/main -- 'projects/ores.trading/modeling/*.org'=, in =evidence/fx-vocabularies.txt= | the PR head |
+| Level checks on the barrier table | 5 of its 12 | =grep -c "check (" projects/ores.sql/create/trading/trading_fx_barrier_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
+| Digital checks keyed on the trade type | 4 | =grep -c 'check (("trade_type_code"' projects/ores.sql/create/trading/trading_fx_digital_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
+| ORE core suite | pass | the same command with =ores.ore.core.tests= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -134,4 +139,34 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three findings are settled and the tree enforces each one.
+
+The duplicated vocabularies are gone. Ten =in (...)= checks named a set the
+lookup table now validates, so the checks were the second copy and are removed.
+The vanilla option's check was one of them, which settles the exercise style:
+the lookup holds European, Bermudan and American, so the store admits all three
+and the prose states that set once instead of contradicting it.
+
+The barrier option now states which level its style engages. A single
+=FxBarrierOption= with an Up style or a cap holds its level in =upper_barrier=
+and leaves =lower_barrier= null; a Down style or a floor does the reverse; the
+styles that name no direction state one of the two. =lower_barrier= became
+nullable for that reason, and the mapper places the document's level by
+direction instead of by position, so an UpAndOut option no longer needs a lower
+level invented for it. A double or generic barrier holds a level per side and
+is exempt, because its trade type says so.
+
+The digital option keys its checks on the trade type. Each of its four codes
+states the fields it engages: a plain digital a strike, a touch one barrier, a
+double touch both barriers, and a digital barrier a strike and a barrier. The
+checks require those fields and tolerate another code's, because one table
+serves four products and one generator writes a synthetic row for all four, so
+a check that refused the others would refuse the only row the generator can
+write.
+
+* Decisions
+
+The decisions are in the parent story's =* Decisions=, distilled under the
+vocabulary and barrier headings.
 #+environment: solid_dirac

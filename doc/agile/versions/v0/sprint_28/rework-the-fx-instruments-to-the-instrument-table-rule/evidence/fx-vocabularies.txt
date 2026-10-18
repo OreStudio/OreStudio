@@ -1,0 +1,7 @@
+command: git diff --stat origin/main -- 'projects/ores.trading/modeling/*.org'
+ 5 files changed, 23 insertions(+), 18 deletions(-)
+checks removed: 10
+barrier checks:
+12
+digital trade-type checks:
+4

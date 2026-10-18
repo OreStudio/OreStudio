@@ -68,8 +68,7 @@ create table if not exists "ores_trading_fx_accumulator_instruments_tbl" (
     check ("fixing_amount" > 0),
     check ("strike" > 0),
     check ("currency" <> ''),
-    check ("underlying_code" <> ''),
-    check ("long_short" in ('Long', 'Short'))
+    check ("underlying_code" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

@@ -87,9 +87,9 @@ struct fx_vanilla_option_instrument final {
     std::chrono::year_month_day expiry_date;
 
     /**
-     * @brief Exercise style: European or American.
-     *
-     * the values are the closed ORE exerciseStyle set (European, Bermudan, American).
+     * @brief Exercise style, one of the ORE exerciseStyle set: European, Bermudan or American. The
+     * lookup ores_trading_exercise_types_tbl holds the set, so the store refuses a style it does
+     * not carry.
      */
     std::string exercise_style;
 

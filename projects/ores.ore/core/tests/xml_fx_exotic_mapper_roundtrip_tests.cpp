@@ -109,7 +109,8 @@ TEST_CASE("fx_exotic_mapper_roundtrip_barrier_option", tags) {
     CHECK(!instr.sold_currency.empty());
     CHECK(instr.bought_amount.to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
-    CHECK(instr.lower_barrier.to_double() > 0.0);
+    CHECK((instr.lower_barrier.has_value() ? instr.lower_barrier->to_double() :
+                                             instr.upper_barrier->to_double()) > 0.0);
 
     const auto rt = fx_instrument_mapper::reverse_fx_barrier_option(instr);
     const bool has_data = rt.FxBarrierOptionData.operator bool();

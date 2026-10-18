@@ -2572,7 +2572,7 @@ package "trading" #E8F5E9 {
         * expiry_date : date
           settlement : text <<FK>>
         * barrier_type : text <<FK>>
-        * lower_barrier : numeric(38, 12)
+          lower_barrier : numeric(38, 12)
           upper_barrier : numeric(38, 12)
           underlying_code : text
           description : text

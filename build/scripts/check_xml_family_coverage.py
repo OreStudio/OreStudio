@@ -45,7 +45,11 @@ FAMILIES = {
     "PricingEngines": ("supported", "run_store and the run configuration service read it"),
     # Migrating: product code reads the family, so a mapper still does the
     # work and a table is owed.
-    "ORE": ("migrating", "run_store and the run configuration service read it"),
+    "ORE": (
+        "supported",
+        "the value harness proves every corpus run document; "
+        "run_document_mapper is still the reader until the projection lands",
+    ),
     "Portfolio": ("migrating", "importer and exporter read trades and their instruments"),
     "CurveConfiguration": (
         "supported",

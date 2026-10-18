@@ -143,6 +143,19 @@ generate \
     --source "$source/curve_configuration.cpp" \
     --money Spread
 
+# The run document is the smallest table in the set, and the corpus names its
+# files in a dozen ways, so the harness finds it by its root element.
+generate \
+    --schema "$xsd/ore.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element ORE \
+    --root-type ore \
+    --accessor ore_document \
+    --namespace ores::ore::xml::generated::ore \
+    --include "ores.ore.core/xml/generated/ore.hpp" \
+    --header "$header/ore.hpp" \
+    --source "$source/ore.cpp"
+
 # shiftTypeEntry lives in sensitivity.xsd, which stress.xsd references but does
 # not include, so that schema is read with it.
 generate \

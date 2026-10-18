@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 335C4014-C3EF-4EA3-B704-8C30926D4D00
+:END:
+#+title: Story: A trader screen that resolves a tenor to a date, before any editing
+#+description: The tenor resolution journey asks a person to author the rule and never shows the answer, because resolution needs a horizon date and a calendar that the screen has no field for. A trader wants the opposite: pick a tenor and a horizon, read the date. Capture the two-mode split for later, once an operation resolves a tenor over the wire.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The tenor journey is built the way an administrator needs it and not the way a
+trader does. A trader's question is "what date does =S/N= give on 16 March, on
+=TARGET2=?" and the screen cannot answer it: it asks them to author the rule,
+and it has no field for the horizon date or the calendar that resolution needs.
+
+The prototype resolves against exactly those inputs — its own query string
+carries =?cal=GB.LOIOB&horizon=2026-03-16&roll=Following&schedule=ROLL_QUARTER=
+— and says so in its own words: =SPOT= is "the spot date: horizon plus the
+currency pair's spot days, rolled on its calendar" and =TODAY= is "the horizon
+date itself". With no horizon there is no date to give.
+
+Capture the split for later:
+
+- *Resolve*, the trader's screen: pick a tenor, a horizon date and a calendar,
+  and read the date, the anchor it counted from and the schedule it rolled on.
+  Read-only and immediate.
+- *Author*, the administrator's path, reached deliberately from the resolve
+  screen: the tenor, the convention, the set it resolves, its schedules, the
+  review and the save.
+
+Both need one operation, and it exists now:
+=refdata.v1.ops.resolve_tenor= answers by tenor code and convention code with
+the dates and the refusal it carries, and
+=refdata.v1.ops.preview_tenor_resolution= answers about a rule that is not
+stored. The resolve page asks the first, because a trader asks about the rules
+as they are. The authoring journey keeps the second, because an author asks
+about the rule they are typing. This story builds the first screen only.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-18                               |
+
+* Acceptance
+
+- The page answers the trader's question with the four inputs resolution needs:
+  a convention, a tenor, a calendar and a horizon.
+- It shows the anchor date, the date before the roll, the adjusted date, the
+  roll rule and the calendar, which is the whole of what the server replies.
+- The tenor picker offers only the tenors the chosen convention resolves, so a
+  pair the server cannot resolve is not offered.
+- A refusal shows the server's code, its message and the field at fault, and
+  keeps every input the person set.
+- Nothing on the page writes. There is no save, no change reason and no
+  membership row.
+- The authoring journey is reachable from it, so the two modes read as one
+  screen's two halves rather than two unrelated pages.
+- The BFF route and the page are tested, the workspace suites pass, and the
+  local gate is green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BD5DDBDB-5FA4-4116-9B58-A484D396CEF9][Resolve a tenor to a date from the tenors area]] | STARTED | 2026-10-18 | | Task for: A trader screen that resolves a tenor to a date, before any editing |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-10-16 in the product backlog; promoted preserving the UUID.
+
+** What
+
+The tenor journey is built the way an administrator needs it and not the way a
+trader does. A trader's question is "what date does =S/N= give on 16 March, on
+=TARGET2=?" and the screen cannot answer it: it asks them to author the rule,
+and it has no field for the horizon date or the calendar that resolution needs.
+
+The prototype resolves against exactly those inputs — its own query string
+carries =?cal=GB.LOIOB&horizon=2026-03-16&roll=Following&schedule=ROLL_QUARTER=
+— and says so in its own words: =SPOT= is "the spot date: horizon plus the
+currency pair's spot days, rolled on its calendar" and =TODAY= is "the horizon
+date itself". With no horizon there is no date to give.
+
+Capture the split for later:
+
+- *Resolve*, the trader's screen: pick a tenor, a horizon date and a calendar,
+  and read the date, the anchor it counted from and the schedule it rolled on.
+  Read-only and immediate.
+- *Author*, the administrator's path, reached deliberately from the resolve
+  screen: the tenor, the convention, the set it resolves, its schedules, the
+  review and the save.
+
+Both need the operation that resolves a tenor to a date, which the server does
+not serve: it is [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor
+over the wire, with the refusal it carries]]. So this waits for that task, and
+nothing here should be built before it.
+
+** Why
+
+A screen that cannot answer its own question is not a screen a person reaches
+for. The journey as built is merged, tested and correct at what it does — it
+edits tenors and the conventions that resolve them — but its name promises a
+resolution and its rail never draws one, so a person who arrives with the
+trader's question leaves without an answer.
+
+Keeping the two apart matters because they serve different people at different
+frequencies: the resolve screen is read constantly and written never, and the
+authoring path is entered rarely and deliberately. One rail serving both is what
+made the current screen read as confusing.
+
+** References
+
+- =doc/prototypes/tenors/define-how-tenors-resolve/prototype.js= — the horizon,
+  the calendar, the roll rule and the schedule the resolution reads, and the
+  =resolve= step the built screen does not carry.
+- [[id:CFE1A720-6BB6-4D94-AA26-28FBC1A2978D][Resolve a tenor over the wire]]
+  — the operation both screens need and neither has.
+- [[id:C73F5C2E-1FE8-48BC-B2A2-1092EF828F3B][Build the tenor resolution
+  screen]] — the screen as built.
+
+** See also
+
+- [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] — the inbox bucket this
+  page belongs to.

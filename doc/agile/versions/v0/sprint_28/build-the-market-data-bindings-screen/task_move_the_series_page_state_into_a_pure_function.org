@@ -26,11 +26,11 @@ The series page says no URI, an error, loading, a fixing, an unknown type, a ser
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-13                               |
 
 * Acceptance
@@ -103,3 +103,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+Merged as [[https://github.com/OreStudio/OreStudio/pull/3509][#3509]].
+
+- =market/seriesState.ts= holds =SeriesPageState=, a tagged union with a kind for
+  each situation the page draws, and =seriesPageState=, which takes the answers
+  of the reads and the address and returns one kind.
+- The reads arrive as a plain union of =answer=, =error= and =waiting=. The rule
+  holds no hook and no framework type.
+- =SeriesPage.tsx= is a switch over the state. What a person sees for a given
+  address did not change.
+- =seriesState.test.ts= states a case for each of the nine situations, each with
+  the whole expected state as a literal. 18 tests, and the file passes.
+- Limitation. No render test of the page. The workspaces hold =react-dom/server=
+  and no DOM library, so the switch is covered by the typecheck and the state
+  tests only.

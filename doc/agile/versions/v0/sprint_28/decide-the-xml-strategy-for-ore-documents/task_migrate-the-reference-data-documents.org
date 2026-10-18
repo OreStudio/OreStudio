@@ -29,9 +29,9 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Calendar adjustments, currency config, pricing engines, credit simulation and curve configuration read and write through the codec; the netting set XML mapper is deleted. |
+| Now          | Calendar adjustments, currency config, pricing engines, credit simulation and curve configuration read and write through the codec; stress testing has a table the harness proves; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Stress testing: its mapper is the next of the three families still read through the binding, and the smaller of the two documents left. |
+| Next         | The ORE run document, then Portfolio: two families still read through the binding in product code. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -99,7 +99,6 @@ need the generator extended first.
 | PricingEngines | generates | 241 lines, read by run_store and the run configuration service | none |
 | CurveConfiguration | generates | 3,310 lines | none, but the largest |
 | Portfolio | generates | instrument mappers, the largest group | none |
-| StressTesting | generates once =sensitivity.xsd= is read | 830 lines | none; =shiftTypeEntry= lives in =sensitivity.xsd= |
 | ORE run document | generates | run document mapper | none; =xs:complexContent extension= is read as a flattened derivation now, and a restriction is still refused |
 
 *The generator reads a derivation.* A type written as =xs:complexContent
@@ -137,10 +136,10 @@ family or a path that has to move first. Verified with
 | =store/run_store.cpp= | the run document and curve configuration |
 | =service/messaging/run_configuration_operations.cpp= | the run document |
 
-Fourteen mappers remain under =domain/=: the twelve instrument mappers plus
-=trade_mapper= (portfolio), =conventions_mapper=, =curve_configuration_mapper=,
-=run_document_mapper=, =stress_test_mapper= and =todays_market_mapper=. Each
-falls with its family. When the last one does, the generated domain, the
+Twelve mappers remain under =domain/=: the instrument mappers, =trade_mapper=
+(portfolio), =conventions_mapper=, =run_document_mapper= and
+=todays_market_mapper=. Each falls with its family, and the last one takes the
+generated domain with it. When the last one does, the generated domain, the
 sibling-checkout wiring and the two regeneration patches go in one change.
 
 * The curve configuration table came before its projection
@@ -181,6 +180,23 @@ it is not the ORE =bool= enumeration, so it is read as a flag and written as
 =true= or =false=. A strike factor is a schema decimal in a double column, and
 the boundary converts it.
 
+* The stress testing mapper had no reader
+
+The family's mapper was 1,230 lines and two suites, and nothing in the product
+called it: the importer, the run store and the run configuration service never
+name a stress document, and the file type table says the import cannot yet parse
+one. Its only callers were its own round-trip suites, which is the shape the
+netting set mapper had.
+
+So the family did not need a projection. Its table is generated and proved over
+all 19 corpus documents, and the mapper and its suites are gone: the analytics
+stress test store keeps its own tests, and a later feature that imports a stress
+document will start from the table. The schema needs three files: =stress.xsd=,
+=sensitivity.xsd= for the shared element types, and =ore_types.xsd= for the
+enumerations. One name to know when reading the table: the SwaptionVolatility
+=Shifts/Shift= record is generated as =shift_type= because its element is named
+Shift, and it is not =shift_type_entry=.
+
 * Where the work stands
 
 Verified on main at the time of writing, with the commands that prove each
@@ -188,24 +204,25 @@ line.
 
 | Claim | Evidence |
 |-------+----------|
-| Ten families are supported, each with a generated table | =python3 build/scripts/check_xml_family_coverage.py= |
-| Eight families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
-| Three still read through xsdcpp: ORE, Portfolio, StressTesting | same |
+| Eleven families are supported, each with a generated table | =python3 build/scripts/check_xml_family_coverage.py= |
+| Nine families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
+| Stress testing documents bind, write and keep every value, and nothing reads the XML | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 19 of 19 |
+| Legacy readers the product still calls: ORE, Portfolio, conventions and today's market | =grep -rn "load_data" projects/ores.ore/*/src= |
 | Curve configuration documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 89 of 89 |
 | Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 23 cases |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =[ore][xml]@, 497 cases and 82,020 assertions |
+| The XML suites pass | =[ore][xml]@, 502 cases and 80,114 assertions |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 
-*What each remaining family needs.* Curve configuration is off the binding; its
-projection was the 3,310 lines of mapping the table now feeds. Stress testing is
-830 lines and its table generates once
-=sensitivity.xsd= is read with =stress.xsd=. The run document's table
-generates now that a derivation is read, and its mapper is the last one
-written against the generated types. Portfolio is the largest group, the
-instrument mappers, and it lands last.
+*What each remaining family needs.* Two families still read through the old
+binding in the product: the ORE run document and Portfolio. The run document's
+table generates now that a derivation is read, and its mapper is the last one
+written against the generated types; the run store and the run configuration
+service are its callers. Portfolio is the largest group, the instrument mappers,
+and it lands last. Conventions and today's market are supported families whose
+legacy readers the importer still calls, and they leave with the binding.
 
 *The order the task table states does not fit the budget available.* One
 family per change, and a family of this size takes a working session of its
@@ -231,7 +248,9 @@ task and name that file in the Command column.
 | XML suites | 509 cases, 79,240 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
 | Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 4e8b75caec |
 | XML suites after the curve configuration table | 497 cases, 82,020 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 4e8b75caec |
-| Corpus documents the value harness sweeps | 335 | same | 4e8b75caec |
+| Corpus documents the value harness sweeps | 354 | same | 488e82f0b8 |
+| Stress testing documents that bind, write and keep every value | 19 of 19 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 488e82f0b8 |
+| Stress mapper .cpp lines deleted, with the 76-line header and the 748 lines of suites | 2,054 | =git show origin/main:projects/ores.ore/core/src/domain/stress_test_mapper.cpp \| wc -l= | 488e82f0b8 |
 | Curve configurations that project and project back | 89 of 89 | =publish/bin/ores.ore.core.tests "[curveconfig]"= | 97015dc883 |
 | XML suites after the curve configuration migration | 502 cases, 82,086 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 97015dc883 |
 

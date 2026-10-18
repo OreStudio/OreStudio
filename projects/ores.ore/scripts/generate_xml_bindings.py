@@ -45,6 +45,7 @@ PRIMITIVES = {
 
 CPP_TYPE = {
     "text": "std::string",
+    "enumeration": "std::int16_t",
     "integer": "std::int64_t",
     "decimal": "ores::utility::decimal::decimal",
     "real": "double",
@@ -378,15 +379,54 @@ def children_of(complex_type, schema=None, bases=frozenset()):
     return elements, attributes
 
 
+def resolve_enumeration(schema, name, seen=None):
+    """The enumerated simpleType behind a name, following restrictions.
+
+    A simpleType may restrict another simpleType any number of times, and a
+    xs:simpleContent base may name any link in that chain. The spellings belong
+    to the link that declares them, so the walk returns that name rather than
+    the alias the base names.
+    """
+    seen = seen or set()
+    if name is None or name in seen:
+        return None
+    seen.add(name)
+    if name in schema.enumerations:
+        return name
+    node = schema.simple_types.get(name)
+    if node is None:
+        return None
+    for restriction in node:
+        if local(restriction.tag) != "restriction":
+            continue
+        resolved = resolve_enumeration(schema, restriction.get("base"), seen)
+        if resolved is not None:
+            return resolved
+    return None
+
+
 def content_kind(schema, complex_type):
     """The primitive kind of an element's own text, or None."""
     base = simple_content_base(complex_type)
     if base is None:
         return None
+    if resolve_enumeration(schema, base) is not None:
+        return "enumeration"
     if base in PRIMITIVES:
         return PRIMITIVES[base]
     resolved = resolve_simple(schema, base)
     return resolved or "text"
+
+
+def content_enumeration(schema, complex_type):
+    """The enumerated simpleType an element's own text is written as, or None.
+
+    A type written as xs:simpleContent extension inherits its text from a base
+    simpleType, and the base may be an enumeration. The text is then one of the
+    base's spellings, which the table states so the reading refuses a spelling
+    the schema does not allow.
+    """
+    return resolve_enumeration(schema, simple_content_base(complex_type))
 
 
 def is_residual(complex_type):
@@ -739,11 +779,13 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         rows = []
         bit = 0
         own_kind = content_kind(schema, complex_type)
+        own_enum = content_enumeration(schema, complex_type)
         if own_kind is not None:
+            tokens = f"{snake(own_enum)}_spellings" if own_enum else "nullptr"
             rows.append(
                 f'    {{"", 0u, field_kind::{own_kind}, '
                 f"std::uint32_t(offsetof({names[type_name]}, value)), "
-                f"{bit}, false, false, nullptr, nullptr, {SCALAR[own_kind]}, nullptr}},"
+                f"{bit}, false, false, {tokens}, nullptr, {SCALAR[own_kind]}, nullptr}},"
             )
             bit += 1
         for attribute in attributes:
@@ -826,6 +868,12 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
 
     spellings = []
     emitted = set()
+    for type_name in ordered:
+        base = content_enumeration(schema, schema.complex_types[type_name])
+        if base is not None and base not in emitted:
+            emitted.add(base)
+            values = ", ".join(f'"{v}"' for v in schema.enumerations[base])
+            spellings.append(f"const char* {snake(base)}_spellings[] = {{{values}, nullptr}};")
     for type_name in ordered:
         for element in children_of(schema.complex_types[type_name], schema)[0]:
             for field in expand(schema, element):

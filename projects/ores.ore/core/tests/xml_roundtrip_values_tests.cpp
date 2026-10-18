@@ -19,6 +19,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/document.hpp"
+#include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.ore.core/xml/generated/conventions.hpp"
@@ -27,6 +28,7 @@
 #include "ores.ore.core/xml/generated/curve_configuration.hpp"
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
 #include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
+#include "ores.ore.core/xml/generated/stress_testing.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.ore.core/xml/value_fingerprint.hpp"
@@ -61,6 +63,7 @@ using cp::counterparty_information;
 using cp::counterparty_information_document;
 namespace nsd = ores::ore::xml::generated::netting_set_definitions;
 namespace tm = ores::ore::xml::generated::todays_market;
+namespace st = ores::ore::xml::generated::stress_testing;
 using tm::todays_market_document;
 using tm::todaysmarket;
 
@@ -69,9 +72,6 @@ auto read_file(const fs::path& path) -> std::string {
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
 
-/**
- * @brief The first value two fingerprints disagree about.
- */
 auto fingerprint_difference(const std::vector<value_entry>& left,
                             const std::vector<value_entry>& right) -> std::optional<std::string> {
     for (std::size_t at = 0; at < std::min(left.size(), right.size()); ++at) {
@@ -152,9 +152,11 @@ auto round_trip_values(const document_type& doc, std::string_view text, std::str
 /**
  * @brief Proves the round trip over every corpus document of one family.
  *
- * A family is found by the prefix of its file names, because the corpus names
- * the same document differently per example (curveconfig.xml, curveconfig_sabr.xml)
- * and a list of exact names would stop covering a file the corpus adds.
+ * Most families are found by the prefix of their file names, because the corpus
+ * names the same document differently per example (curveconfig.xml,
+ * curveconfig_sabr.xml) and a list of exact names would stop covering a file
+ * the corpus adds. A family whose names cannot be trusted is found by its root
+ * element instead.
  */
 template <typename Record>
 auto sweep_values(const fs::path& root,
@@ -163,7 +165,8 @@ auto sweep_values(const fs::path& root,
                   const std::vector<std::string_view>& prefixes,
                   std::size_t& documents,
                   std::string& report,
-                  std::size_t* swept = nullptr) -> std::size_t {
+                  std::size_t* swept = nullptr,
+                  std::string_view root_element_name = {}) -> std::size_t {
     std::size_t failures = 0;
     if (swept != nullptr)
         *swept = 0;
@@ -173,10 +176,16 @@ auto sweep_values(const fs::path& root,
         const auto name = entry.path().filename().string();
         if (!name.ends_with(".xml"))
             continue;
-        if (std::none_of(prefixes.begin(), prefixes.end(), [&name](std::string_view prefix) {
-                return name.starts_with(prefix);
-            }))
+        if (root_element_name.empty()) {
+            if (std::none_of(prefixes.begin(), prefixes.end(), [&name](std::string_view prefix) {
+                    return name.starts_with(prefix);
+                }))
+                continue;
+        } else if (ores::ore::xml::read_root_element(entry.path()) != root_element_name) {
+            // The family is found by the root element, so a document under a
+            // name no prefix anticipates still counts.
             continue;
+        }
         ++documents;
         if (swept != nullptr)
             ++*swept;
@@ -284,6 +293,17 @@ TEST_CASE("every_generated_family_keeps_its_values_across_the_writing", tags) {
                                                      &curve_configurations);
     INFO("curve configurations: " << curve_configurations);
     CHECK(curve_configurations == 89);
+    std::size_t stress_tests = 0;
+    failures += sweep_values<st::stresstesting>(root,
+                                                "stress_testing",
+                                                st::stress_testing_document(),
+                                                {},
+                                                documents,
+                                                report,
+                                                &stress_tests,
+                                                "StressTesting");
+    INFO("stress tests: " << stress_tests);
+    CHECK(stress_tests == 19);
     failures += sweep_values<ibor_fallback_config>(root,
                                                    "ibor_fallback_config",
                                                    ibor_fallback_config_document(),

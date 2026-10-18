@@ -143,6 +143,20 @@ generate \
     --source "$source/curve_configuration.cpp" \
     --money Spread
 
+# shiftTypeEntry lives in sensitivity.xsd, which stress.xsd references but does
+# not include, so that schema is read with it.
+generate \
+    --schema "$xsd/stress.xsd" \
+    --schema "$xsd/sensitivity.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element StressTesting \
+    --root-type stresstesting \
+    --accessor stress_testing_document \
+    --namespace ores::ore::xml::generated::stress_testing \
+    --include "ores.ore.core/xml/generated/stress_testing.hpp" \
+    --header "$header/stress_testing.hpp" \
+    --source "$source/stress_testing.cpp"
+
 generate \
     --schema "$xsd/creditsimulation.xsd" \
     --schema "$xsd/ore_types.xsd" \

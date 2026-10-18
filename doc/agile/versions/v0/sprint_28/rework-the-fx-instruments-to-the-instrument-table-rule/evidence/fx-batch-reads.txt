@@ -1,0 +1,9 @@
+command: grep -l 'One read for the whole key set' projects/ores.trading/core/src/service/*.cpp
+count: 7
+fx_accumulator_instrument_service.cpp
+fx_asian_forward_instrument_service.cpp
+fx_barrier_option_instrument_service.cpp
+fx_digital_option_instrument_service.cpp
+fx_forward_instrument_service.cpp
+fx_vanilla_option_instrument_service.cpp
+fx_variance_swap_instrument_service.cpp

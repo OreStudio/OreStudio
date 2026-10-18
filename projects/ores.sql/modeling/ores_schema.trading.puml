@@ -2486,7 +2486,7 @@ package "trading" #E8F5E9 {
         * fixing_amount : numeric(38, 12)
         * strike : numeric(38, 12)
         * underlying_code : text
-        * long_short : text
+        * long_short : text <<FK>>
         * start_date : date
           knock_out_barrier : numeric(38, 12)
           description : text
@@ -2527,7 +2527,7 @@ package "trading" #E8F5E9 {
           settlement_currency : text
           settlement_notional : numeric(38, 12)
           payment_date : date
-          long_short : text
+          long_short : text <<FK>>
           currency : text
           fixing_amount : numeric(38, 12)
           target_amount : numeric(38, 12)
@@ -2568,10 +2568,10 @@ package "trading" #E8F5E9 {
         * bought_amount : numeric(38, 12)
         * sold_currency : text
         * sold_amount : numeric(38, 12)
-          option_type : text
+          option_type : text <<FK>>
         * expiry_date : date
-          settlement : text
-        * barrier_type : text
+          settlement : text <<FK>>
+        * barrier_type : text <<FK>>
         * lower_barrier : numeric(38, 12)
           upper_barrier : numeric(38, 12)
           underlying_code : text
@@ -2606,11 +2606,11 @@ package "trading" #E8F5E9 {
         * domestic_currency : text
         * payoff_currency : text
         * payoff_amount : numeric(38, 12)
-          option_type : text
+          option_type : text <<FK>>
         * expiry_date : date
-        * long_short : text
+        * long_short : text <<FK>>
           strike : numeric(38, 12)
-          barrier_type : text
+          barrier_type : text <<FK>>
           lower_barrier : numeric(38, 12)
           upper_barrier : numeric(38, 12)
           description : text
@@ -2648,7 +2648,7 @@ package "trading" #E8F5E9 {
         * sold_currency : text
         * sold_amount : numeric(38, 12)
         * value_date : date
-          settlement : text
+          settlement : text <<FK>>
           description : text
         * modified_by : text
         * performed_by : text
@@ -2680,10 +2680,10 @@ package "trading" #E8F5E9 {
         * bought_amount : numeric(38, 12)
         * sold_currency : text
         * sold_amount : numeric(38, 12)
-        * option_type : text
+        * option_type : text <<FK>>
         * expiry_date : date
-        * exercise_style : text
-          settlement : text
+        * exercise_style : text <<FK>>
+          settlement : text <<FK>>
           description : text
         * modified_by : text
         * performed_by : text
@@ -2714,10 +2714,10 @@ package "trading" #E8F5E9 {
         * end_date : date
         * currency : text
         * underlying_code : text
-        * long_short : text
+        * long_short : text <<FK>>
         * strike : double
         * notional : numeric(38, 12)
-        * moment_type : text
+        * moment_type : text <<FK>>
           description : text
         * modified_by : text
         * performed_by : text
@@ -4525,18 +4525,32 @@ ores_trading_trades_tbl ||--o{ ores_trading_fra_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fra_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_accumulator_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_accumulator_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_accumulator_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_asian_forward_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_asian_forward_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_asian_forward_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
+ores_trading_barrier_types_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
+ores_trading_settlement_types_tbl ||--o{ ores_trading_fx_barrier_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
+ores_trading_barrier_types_tbl ||--o{ ores_trading_fx_digital_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_forward_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_forward_instruments_tbl : "has"
+ores_trading_settlement_types_tbl ||--o{ ores_trading_fx_forward_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
+ores_trading_option_types_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
+ores_trading_exercise_types_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
+ores_trading_settlement_types_tbl ||--o{ ores_trading_fx_vanilla_option_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
+ores_trading_long_short_types_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
+ores_trading_moment_types_tbl ||--o{ ores_trading_fx_variance_swap_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
 ores_trading_trade_activities_tbl ||--o{ ores_trading_index_cds_instruments_tbl : "has"
 ores_trading_trades_tbl ||--o{ ores_trading_index_cds_option_instruments_tbl : "has"

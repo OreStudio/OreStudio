@@ -45,7 +45,7 @@ least one =RangeBound=.
 :nullable: false
 :END:
 
-Trade type code (soft FK to ores_trading_trade_types_tbl).
+Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
 Routes ORE product type: FxAccumulator.
 
@@ -99,9 +99,7 @@ The activity that wrote this version.
 :economic: true
 :END:
 
-Settlement currency (domestic side).
-
-Soft FK to ores_refdata_currencies_tbl: ISO 4217 currency codes belong to ores.refdata, so the dependency is recorded rather than copied. PR 4 tightens the soft reference into a real foreign key.
+The currency reference stays soft. A currency is =ores.refdata='s row, published from the data-quality pipeline per environment rather than by this component, and a trading database may hold only the codes its own imports loaded. No tenant's currency table holds EUR or USD in a freshly recreated database, so a trigger check would refuse the documents the store is meant to accept.
 
 #+begin_src cpp :name generator
 std::string("USD")
@@ -160,7 +158,7 @@ std::string("TR20H-EUR-JPY")
 
 Position direction: Long or Short.
 
-Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check. PR 4 tightens the soft reference into a real foreign key.
+the values are the closed ORE longShort set (Long, Short), which the SQL schema already states as a check.
 
 #+begin_src cpp :name generator
 std::string("Long")
@@ -251,6 +249,18 @@ is immutable.
     }
 #+end_src
 
+** long_short
+:PROPERTIES:
+:table:             ores_trading_long_short_types_tbl
+:target_column:     code
+:use_system_tenant: true
+:nullable:          false
+:error_message:     Invalid long_short: %. No active long short type found with this code.
+:END:
+
+A foreign key to =ores_trading_long_short_types_tbl=: a value the store cannot resolve is
+refused on write.
+
 * SQL
 
 ** Flags
@@ -296,6 +306,7 @@ repository profiles regenerate correctly.
 :domain_identity_group: ores.trading.instrument_identity
 :domain_audit_group:    ores.dq.audit_record
 :has_batch_read:       true
+:service_batch_reads_by_trade_id: true
 :generator_facet_name: generators
 :END:
 

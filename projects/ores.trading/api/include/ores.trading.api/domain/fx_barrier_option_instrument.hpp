@@ -48,7 +48,11 @@ struct fx_barrier_option_instrument final {
     instrument_identity identity;
 
     /**
-     * @brief Currency being bought.
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string bought_currency;
 
@@ -58,7 +62,11 @@ struct fx_barrier_option_instrument final {
     ores::utility::decimal::decimal bought_amount;
 
     /**
-     * @brief Currency being sold.
+     * @brief The currency reference stays soft. A currency is ores.refdata's row, published from
+     * the data-quality pipeline per environment rather than by this component, and a trading
+     * database may hold only the codes its own imports loaded. No tenant's currency table holds EUR
+     * or USD in a freshly recreated database, so a trigger check would refuse the documents the
+     * store is meant to accept.
      */
     std::string sold_currency;
 
@@ -70,8 +78,8 @@ struct fx_barrier_option_instrument final {
     /**
      * @brief Option type (e.g. Call or Put).
      *
-     * Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionType set (Call,
-     * Put). PR 4 tightens the soft reference into a real foreign key.
+     * the values are the option types this store accepts (Call, Put), which ORE also states as a
+     * closed set.
      */
     std::string option_type;
 
@@ -88,8 +96,8 @@ struct fx_barrier_option_instrument final {
     /**
      * @brief Barrier style (e.g. UpAndIn, DownAndOut).
      *
-     * Soft FK to ores_trading_barrier_types_tbl: the values are the closed ORE barrierType set. PR
-     * 4 tightens the soft reference into a real foreign key.
+     * the values are the barrier styles ORE Studio supports. ORE states the leaf as free text, so
+     * the lookup is the set this store accepts rather than a closed schema enumeration.
      */
     std::string barrier_type;
 

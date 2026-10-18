@@ -8,7 +8,7 @@
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
 #+branch: feature/model-each-convention-family
-#+pr: 3500
+#+pr: 3542
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -165,6 +165,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3542][#3542]] | [refdata] Apply a conventions bundle in the caller's transaction |
 | [[https://github.com/OreStudio/OreStudio/pull/3459][#3459]] | [codegen] Generate the convention family registry |
 | [[https://github.com/OreStudio/OreStudio/pull/3460][#3460]] | [agile] Record that the FX convention is a projection |
 | [[https://github.com/OreStudio/OreStudio/pull/3462][#3462]] | [codegen] Generate the convention family apply fragment |

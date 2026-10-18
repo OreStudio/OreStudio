@@ -102,9 +102,10 @@ filters it has acknowledged it, and the day only bounds a command no consumer
 can take. A stream's subject filter is the contract that decides which publishes
 it holds, so =ensure_stream= compares it, the retention policy and the age limit
 against the ones asked for and *updates* them when any differs, in place. A
-durable consumer stores its own filter, so =js_queue_subscribe= reconciles that
-one the same way, also in place. Both reconciles are what make a renamed subject
-heal without losing a position.
+durable consumer stores its own filter and delivery settings, so
+=js_queue_subscribe= reconciles those the same way, also in place. Both
+reconciles are what make a renamed subject heal without losing a position, and
+what makes a changed delivery bound reach a consumer that is already stored.
 
 The consumer is not left to the subscribe to create. =js_queue_subscribe=
 creates it explicitly, with a delivery subject derived from the stream and the
@@ -141,11 +142,11 @@ data-quality steps, and =execution= for reporting's report-execution steps.
 
 * The durable consumers
 
-| Consumer | Stream | Held by |
-|----------+--------+---------|
-| =workflow-engine-start= | =workflow= | =ores.workflow.service= |
-| =workflow-engine-step-completed= | =workflow= | =ores.workflow.service= |
-| =<stream>_consumer= | each step-command stream | the service that declared the stream |
+| Consumer | Stream | MaxDeliver | AckWait | Held by |
+|----------+--------+------------+---------+---------|
+| =workflow-engine-start= | =workflow= | 10 | 30 s | =ores.workflow.service= |
+| =workflow-engine-step-completed= | =workflow= | 10 | 30 s | =ores.workflow.service= |
+| =<stream>_consumer= | each step-command stream | 10 | 30 s | the service that declared the stream |
 
 The two engine consumers are a single position each, because the engine is a
 single logical reader.
@@ -160,6 +161,51 @@ it up on its first start. The prune runs after the subscribe, never before:
 between the two the stream would have no consumer at all, and under =interest=
 retention a command published in that window would be dropped rather than held.
 
+* What bounds a delivery
+
+The stream's age and the consumer's delivery bound answer different questions,
+and the code sets both.
+
+| Setting | Value | Set in | What it decides |
+|---------+-------+--------+-----------------|
+| Stream =max_age= | 1 day for a step stream, 7 days for =workflow= | =step_stream_max_age_days=, or =ensure_stream='s default | How long an unacknowledged message stays in the stream |
+| =MaxDeliver= | 10 | =ores::service::messaging::step_max_deliver= | How many deliveries a message gets before the server stops |
+| =AckWait= | 30 s | =ores::service::messaging::step_ack_wait= | How long one delivery may stay unanswered |
+| =MaxAckPending= | 1000 | not set; the server default | How many deliveries may be outstanding at once |
+| =Backoff= | none | not set | No extra delay between redeliveries beyond =AckWait= |
+
+=MaxDeliver= and =AckWait= are passed to every =js_queue_subscribe= call and
+written onto the consumer by =ensure_durable_consumer=. They are not inherited
+from a server default, because the claim protocol is written against them:
+=step_claim_lease= sizes the takeover from ten deliveries at thirty-second
+spacing. Do not lower either number without revisiting that invariant.
+
+The delivery bound is not a downtime window. A push consumer with no bound
+subscriber receives nothing, so it spends no delivery while its service is
+down. A command published in that window stays unprocessed on the consumer, and
+the stream's age is the only limit. Measured on server 2.14.6: a push consumer
+with =MaxDeliver= 3 and =AckWait= 2 s was published to with no subscriber, and
+after seven seconds it showed =NumPending= 1, =NumAckPending= 0 and
+=NumRedelivered= 0. It delivered the command when a subscriber bound.
+
+The bound applies once a member is bound and keeps failing. The server
+redelivers after =AckWait=, up to =MaxDeliver= deliveries. Ten at thirty seconds
+is about five minutes. Then the server stops delivering that message to that
+consumer. It does not acknowledge the message and it does not park it: the
+message is removed from the consumer's pending set and stays in the stream,
+unacknowledged, until the stream's age expires. The consumer that gave up never
+receives it again, even after a restart. A new consumer reading from
+=DeliverAll= would still see it. Treat the message as lost to the stored durable.
+
+A consumer whose bound changes is updated in place by =ensure_durable_consumer=,
+which keeps its position and its creation time. The update reaches future
+deliveries only. A message the consumer already gave up on is no longer pending,
+so a raised bound does not bring it back.
+
+A step command is work, and the engine fails a step at its deadline. A command
+delivered after that deadline is answered and discarded by the claim. The
+stream kept it for a day, but the work was no longer wanted.
+
 * What a subject rename strands
 
 This is the one failure that costs a service its start, and it fails closed.
@@ -172,8 +218,8 @@ stream, and nothing reconciles a consumer unless the subscribe does.
 =js_queue_subscribe= closes that hole. The stream name is required — pass it as
 =make_stream_name= returns it — and the call reads the durable's stored
 configuration first, updates the filter, the ack policy, the delivery bound, the
-delivery subject and the delivery group in place where any differs, and only
-then binds:
+ack wait, the delivery subject and the delivery group in place where any
+differs, and only then binds:
 
 #+begin_src cpp :results verbatim
 const std::string engine_stream(nats.make_stream_name("workflow"));
@@ -183,7 +229,9 @@ nats.js_queue_subscribe(
     "workflow-engine-step-completed",
     qg,
     handler,
-    engine_stream);
+    engine_stream,
+    step_max_deliver,
+    step_ack_wait);
 #+end_src
 
 The update is in place because the alternative costs the consumer its position.

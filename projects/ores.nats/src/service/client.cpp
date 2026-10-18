@@ -885,11 +885,15 @@ void set_filters(jsConsumerConfig& config,
  *
  * Idempotent. An existing consumer whose configuration already matches is
  * reused as it stands, which is the normal restart path. One whose filter set,
- * ack policy, delivery bound, delivery subject or delivery group differs is
- * updated in place, so the consumer keeps its position: a subject rename or a
- * widened filter set does not replay a backlog it had already worked through.
- * The stored configuration is the base of the update, so every field this code
- * does not set keeps the value the server holds.
+ * ack policy, delivery bound, ack wait, delivery subject or delivery group
+ * differs is updated in place, so the consumer keeps its position: a subject
+ * rename or a widened filter set does not replay a backlog it had already
+ * worked through. The stored configuration is the base of the update, so every
+ * field this code does not set keeps the value the server holds.
+ *
+ * A message the stored consumer had already given up on is not pending, so the
+ * update does not bring it back. Raising the bound changes what future
+ * deliveries may do; it does not revive the work already discarded.
  *
  * A consumer that cannot be created or reconciled throws: the service would
  * otherwise run with a filter or a position it did not ask for, and silently
@@ -901,7 +905,8 @@ void ensure_durable_consumer(jsCtx* js,
                              const std::string& deliver_subject,
                              const std::string& deliver_group,
                              const std::vector<std::string>& filters,
-                             int max_deliver) {
+                             int max_deliver,
+                             std::chrono::milliseconds ack_wait) {
     jsOptions opts;
     jsOptions_Init(&opts);
 
@@ -932,6 +937,7 @@ void ensure_durable_consumer(jsCtx* js,
         config.DeliverPolicy = js_DeliverAll;
         config.ReplayPolicy = js_ReplayInstant;
         config.MaxDeliver = max_deliver;
+        config.AckWait = ack_wait.count() * 1'000'000LL;
 
         // The add reads these pointers during the call, so they outlive it here.
         std::vector<const char*> raw;
@@ -968,32 +974,41 @@ void ensure_durable_consumer(jsCtx* js,
     std::vector<std::string> stored(stored_filters(*config));
     const jsAckPolicy stored_ack = config->AckPolicy;
     const int64_t stored_bound = config->MaxDeliver;
+    const int64_t stored_ack_wait = config->AckWait;
     const std::string stored_deliver(config->DeliverSubject != nullptr ? config->DeliverSubject
                                                                       : "");
     const std::string stored_group(config->DeliverGroup != nullptr ? config->DeliverGroup : "");
 
     std::vector<std::string> want(filters);
     std::sort(want.begin(), want.end());
+    const int64_t want_ack_wait = ack_wait.count() * 1'000'000LL;
     const bool stale = stored != want || stored_ack != js_AckExplicit ||
                        stored_bound != static_cast<int64_t>(max_deliver) ||
-                       stored_deliver != deliver_subject || stored_group != deliver_group;
+                       stored_ack_wait != want_ack_wait || stored_deliver != deliver_subject ||
+                       stored_group != deliver_group;
     if (!stale) {
         jsConsumerInfo_Destroy(existing);
         return;
     }
 
     // The update reads these pointers during the call, so they outlive it here.
+    // The stored configuration is copied rather than edited: its string fields
+    // are owned by `existing`, and overwriting them would leave the destroy
+    // below freeing pointers this function had put there.
+    jsConsumerConfig updated_config = *config;
     std::vector<const char*> raw;
-    set_filters(*config, filters, raw);
+    set_filters(updated_config, filters, raw);
 
-    config->DeliverSubject = deliver_subject.c_str();
-    config->DeliverGroup = deliver_group.empty() ? nullptr : deliver_group.c_str();
-    config->AckPolicy = js_AckExplicit;
-    config->MaxDeliver = max_deliver;
+    updated_config.DeliverSubject = deliver_subject.c_str();
+    updated_config.DeliverGroup = deliver_group.empty() ? nullptr : deliver_group.c_str();
+    updated_config.AckPolicy = js_AckExplicit;
+    updated_config.MaxDeliver = max_deliver;
+    updated_config.AckWait = want_ack_wait;
 
     jsConsumerInfo* updated = nullptr;
     auto jerr = jsErrCode(0);
-    const natsStatus us = js_UpdateConsumer(&updated, js, stream.c_str(), config, &opts, &jerr);
+    const natsStatus us =
+        js_UpdateConsumer(&updated, js, stream.c_str(), &updated_config, &opts, &jerr);
     if (updated != nullptr)
         jsConsumerInfo_Destroy(updated);
     jsConsumerInfo_Destroy(existing);
@@ -1006,9 +1021,10 @@ void ensure_durable_consumer(jsCtx* js,
     BOOST_LOG_SEV(lg(), info) << "NATS durable '" << durable << "' on '" << stream
                               << "' migrated in place from " << stored.size() << " filter(s), ack "
                               << static_cast<int>(stored_ack) << ", max-deliver " << stored_bound
-                              << ", delivery to '" << stored_deliver << "' to " << filters.size()
-                              << " filter(s), max-deliver " << max_deliver << ", delivery to '"
-                              << deliver_subject << "'";
+                              << ", ack-wait " << stored_ack_wait << "ns, delivery to '"
+                              << stored_deliver << "' to " << filters.size()
+                              << " filter(s), max-deliver " << max_deliver << ", ack-wait "
+                              << want_ack_wait << "ns, delivery to '" << deliver_subject << "'";
 }
 
 }
@@ -1018,7 +1034,8 @@ subscription client::js_queue_subscribe(std::string_view subject,
                                         std::string_view queue_group,
                                         message_handler handler,
                                         std::string_view stream_name,
-                                        int max_deliver) {
+                                        int max_deliver,
+                                        std::chrono::milliseconds ack_wait) {
 
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
@@ -1038,10 +1055,17 @@ subscription client::js_queue_subscribe(std::string_view subject,
 
     BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe: " << subj_str
                               << " (durable: " << durable_str << ", group: " << queue_str
-                              << ", max-deliver: " << max_deliver << ")";
+                              << ", max-deliver: " << max_deliver
+                              << ", ack-wait: " << ack_wait.count() << "ms)";
 
-    ensure_durable_consumer(
-        impl_->js, stream_str, durable_str, deliver_str, queue_str, {subj_str}, max_deliver);
+    ensure_durable_consumer(impl_->js,
+                            stream_str,
+                            durable_str,
+                            deliver_str,
+                            queue_str,
+                            {subj_str},
+                            max_deliver,
+                            ack_wait);
 
     jsSubOptions sub_opts;
     jsSubOptions_Init(&sub_opts);
@@ -1050,6 +1074,7 @@ subscription client::js_queue_subscribe(std::string_view subject,
     sub_opts.Config.Durable = durable_str.c_str();
     sub_opts.Config.AckPolicy = js_AckExplicit;
     sub_opts.Config.MaxDeliver = max_deliver;
+    sub_opts.Config.AckWait = ack_wait.count() * 1'000'000LL;
     sub_opts.Queue = queue_str.c_str();
 
     natsSubscription* sub = nullptr;
@@ -1070,7 +1095,8 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
                                               std::string_view queue_group,
                                               message_handler handler,
                                               std::string_view stream_name,
-                                              int max_deliver) {
+                                              int max_deliver,
+                                              std::chrono::milliseconds ack_wait) {
 
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
@@ -1094,10 +1120,17 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
 
     BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe-multi: " << full.size()
                               << " subject(s) (durable: " << durable_str << ", group: " << queue_str
-                              << ", max-deliver: " << max_deliver << ")";
+                              << ", max-deliver: " << max_deliver
+                              << ", ack-wait: " << ack_wait.count() << "ms)";
 
-    ensure_durable_consumer(impl_->js, stream_str, durable_str, deliver_str, queue_str, full,
-                            max_deliver);
+    ensure_durable_consumer(impl_->js,
+                            stream_str,
+                            durable_str,
+                            deliver_str,
+                            queue_str,
+                            full,
+                            max_deliver,
+                            ack_wait);
 
     // The C API wants a null-terminated-style array of pointers that outlives
     // the call; the strings themselves live in `full`.
@@ -1113,6 +1146,7 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
     sub_opts.Config.Durable = durable_str.c_str();
     sub_opts.Config.AckPolicy = js_AckExplicit;
     sub_opts.Config.MaxDeliver = max_deliver;
+    sub_opts.Config.AckWait = ack_wait.count() * 1'000'000LL;
     sub_opts.Queue = queue_str.c_str();
 
     natsSubscription* sub = nullptr;

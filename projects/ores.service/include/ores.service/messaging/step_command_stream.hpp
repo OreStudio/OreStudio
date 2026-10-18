@@ -24,6 +24,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
+#include <chrono>
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
@@ -40,8 +41,32 @@ namespace ores::service::messaging {
  * A command that always fails must stop being delivered. The bound is high
  * enough that a transient fault is retried well past a restart, and low enough
  * that a poison command cannot cycle for ever.
+ *
+ * It is a retry budget for a consumer that is bound and failing, not a
+ * downtime window: a push consumer with no subscriber receives nothing, so it
+ * spends no deliveries while its service is down. That service reads the
+ * command when it returns, however long it was away, for as long as the stream
+ * keeps it.
+ *
+ * Ten is also the number the claim takeover needs; see
+ * @c ores::workflow::messaging::step_claim_lease. Each attempt is spaced by
+ * @c step_ack_wait, so the budget is about five minutes of a handler that keeps
+ * failing, not five attempts in a burst.
  */
 inline constexpr int step_max_deliver = 10;
+
+/**
+ * @brief How long the server waits for an answer on a step-protocol delivery.
+ *
+ * It serves the step commands and the workflow engine's two control consumers,
+ * which share this delivery bound. The value is set explicitly on the consumer
+ * rather than inherited from the server's default, because the claim takeover
+ * is written against it: a delivery that finds the step held comes back after
+ * this wait, and the lease is sized from the number of deliveries at this
+ * spacing. With @c step_max_deliver it also makes the retry budget a real
+ * window: ten deliveries at thirty seconds is about five minutes.
+ */
+inline constexpr std::chrono::milliseconds step_ack_wait{std::chrono::seconds{30}};
 
 /**
  * @brief How long the server keeps a step command that nobody acknowledged.
@@ -186,6 +211,15 @@ private:
  * The stream removes a command once the consumer has it, so it does not grow
  * into a day-long archive of every step ever dispatched.
  *
+ * The delivery bound is a retry budget, not the stream's age. A command
+ * published while the service is down is unprocessed work on the consumer, and
+ * the consumer spends no delivery on it until a subscriber binds. The stream's
+ * day is what bounds that wait. The bound applies once a member is bound and
+ * keeps failing: @c step_max_deliver deliveries spaced by @c step_ack_wait,
+ * after which the server stops delivering that message to this consumer and the
+ * command stays in the stream until the day expires, unreadable by that
+ * consumer for ever.
+ *
  * The handler answers the delivery itself, with @c ores::nats::ack_guard, so
  * that a handler which records no outcome is redelivered. Passing a handler
  * that cannot answer is what makes at-least-once delivery a promise the code
@@ -285,10 +319,16 @@ private:
                             // The engine could not be reached or could not decide.
                             // Failing closed is deliberate: running the work
                             // unclaimed is what the claim exists to prevent.
+                            // Come back after a pause, not at once: an immediate
+                            // retry burns the whole delivery budget in a burst,
+                            // so the bound would be seconds rather than the
+                            // minutes it is written to be.
                             BOOST_LOG_SEV(detail::lg(), warn)
                                 << "Could not claim step " << wf->step_id << " for " << msg.subject
-                                << "; retrying rather than running it unclaimed.";
-                            ack.retry();
+                                << "; retrying in "
+                                << ores::workflow::messaging::step_claim_hold_off.count()
+                                << "ms rather than running it unclaimed.";
+                            ack.retry_after(ores::workflow::messaging::step_claim_hold_off);
                         }
                         return;
                     }
@@ -307,7 +347,8 @@ private:
             ack.reject();
         },
         stream,
-        step_max_deliver);
+        step_max_deliver,
+        step_ack_wait);
 
     // The consumer that serves the whole family now exists, so the consumers
     // this service used to declare one subject at a time are dead weight: they

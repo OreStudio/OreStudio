@@ -143,7 +143,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         qg,
         [engine](ores::nats::message msg) { engine->on_step_completed(std::move(msg)); },
         engine_stream,
-        ores::service::messaging::step_max_deliver));
+        ores::service::messaging::step_max_deliver,
+        ores::service::messaging::step_ack_wait));
 
     subs.push_back(nats.js_queue_subscribe(
         messaging::start_workflow_message::nats_subject,
@@ -151,7 +152,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
         qg,
         [engine](ores::nats::message msg) { engine->on_start_workflow(std::move(msg)); },
         engine_stream,
-        ores::service::messaging::step_max_deliver));
+        ores::service::messaging::step_max_deliver,
+        ores::service::messaging::step_ack_wait));
 
     // ----------------------------------------------------------------
     // Query handler (list instances, get steps).

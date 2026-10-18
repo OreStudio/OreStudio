@@ -218,13 +218,19 @@ public:
      *        The bound is what keeps a message that always fails from being
      *        redelivered forever; it is required, and there is no unlimited
      *        setting.
+     * @param ack_wait How long the server waits for an answer before it counts
+     *        the delivery as failed and redelivers. Required, because the
+     *        server's own default is invisible to this code while the delivery
+     *        bound is written against a known value. Times @p max_deliver, it
+     *        is the window in which a failing handler keeps retrying.
      */
     [[nodiscard]] subscription js_queue_subscribe(std::string_view subject,
                                                   std::string_view durable_name,
                                                   std::string_view queue_group,
                                                   message_handler handler,
                                                   std::string_view stream_name,
-                                                  int max_deliver);
+                                                  int max_deliver,
+                                                  std::chrono::milliseconds ack_wait);
 
     /**
      * @brief Queue-group push-subscribe to several subjects on one consumer.
@@ -249,13 +255,16 @@ public:
      * @param stream_name The stream holding @p subjects, as
      *        @c make_stream_name returns it. Required, for the same reason as
      *        @c js_queue_subscribe.
+     * @param max_deliver The delivery bound; see @c js_queue_subscribe.
+     * @param ack_wait The redelivery timer; see @c js_queue_subscribe.
      */
     [[nodiscard]] subscription js_queue_subscribe_multi(std::span<const std::string_view> subjects,
                                                         std::string_view durable_name,
                                                         std::string_view queue_group,
                                                         message_handler handler,
                                                         std::string_view stream_name,
-                                                        int max_deliver);
+                                                        int max_deliver,
+                                                        std::chrono::milliseconds ack_wait);
 
     /**
      * @brief Create a JetStream admin handle for provisioning streams.

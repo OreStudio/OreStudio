@@ -181,7 +181,7 @@ TEST_CASE("a_durable_consumer_survives_the_drain_that_stops_a_service",
 
     std::int64_t created_ns = 0;
     {
-        auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 10);
+        auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 10, 30s);
         const auto created = await_state(
             admin, stream, durable, [](const consumer_status&) { return true; }, 5s);
         REQUIRE(created.has_value());
@@ -218,7 +218,7 @@ TEST_CASE("a_durable_consumer_survives_the_drain_that_stops_a_service",
     CHECK(pending->num_redelivered == 0);
 
     {
-        auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 10);
+        auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 10, 30s);
         const auto served = await_state(
             admin,
             stream,
@@ -295,4 +295,75 @@ TEST_CASE("a_consumer_created_by_js_subscribe_is_removed_when_its_subscription_d
                                      [](const consumer_status&) { return false; }, 5s);
     INFO("an implicitly created consumer must disappear on drain");
     CHECK_FALSE(removed.has_value());
+}
+
+TEST_CASE("a_stored_consumer_takes_the_delivery_bound_the_code_asks_for",
+          "[nats][jetstream][integration]") {
+    const auto suffix = unique_suffix();
+    const std::string subject = "test.migrate." + suffix;
+    const std::string durable = "test_migrate_" + suffix;
+    const std::string queue = "ores.test.migrate." + suffix;
+
+    ores::nats::service::client nats(ores::testing::make_nats_options());
+    nats.connect();
+    const std::string stream = nats.make_stream_name("test_migrate_" + suffix);
+    auto admin = nats.make_admin();
+    const stream_cleanup cleanup{admin, stream};
+    admin.ensure_stream(stream,
+                        nats.covering_subjects({subject}),
+                        1,
+                        ores::nats::service::stream_retention::interest);
+
+    std::atomic<int> delivered{0};
+    auto handler = [&delivered](ores::nats::message msg) {
+        ores::nats::ack_guard ack(msg);
+        ack.accept();
+        delivered.fetch_add(1);
+    };
+
+    // The first start writes its numbers onto the consumer.
+    {
+        auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 10, 30s);
+        const auto created = await_state(
+            admin, stream, durable, [](const consumer_status&) { return true; }, 5s);
+        REQUIRE(created.has_value());
+        CHECK(created->max_deliver == 10);
+        CHECK(created->ack_wait_ns == 30'000'000'000LL);
+
+        // One command is served, so the position to preserve is a real one.
+        nats.js_publish(subject, ores::nats::as_bytes("serve before the change"));
+        const auto served =
+            await_state(admin, stream, durable,
+                        [](const consumer_status& s) { return s.ack_floor_stream == 1; }, 10s);
+        REQUIRE(served.has_value());
+        CHECK(served->max_deliver == 10);
+        CHECK(served->created_ns == created->created_ns);
+    }
+
+    // A later start asks for different numbers. The consumer is updated in
+    // place, not replaced: the creation time and the acknowledged position are
+    // the same consumer's. This is the restart path a live broker takes when a
+    // service's bound changes.
+    {
+        auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 3, 5s);
+        const auto migrated = await_state(
+            admin,
+            stream,
+            durable,
+            [](const consumer_status& s) {
+                return s.max_deliver == 3 && s.ack_wait_ns == 5'000'000'000LL;
+            },
+            5s);
+        if (!migrated)
+            FAIL("the stored consumer did not take the delivery bound and ack wait the "
+                 "subscription asked for");
+        CHECK(migrated->max_deliver == 3);
+        CHECK(migrated->ack_wait_ns == 5'000'000'000LL);
+        CHECK(migrated->ack_floor_stream == 1);
+        CHECK(migrated->num_pending == 0);
+        CHECK(migrated->created_ns > 0);
+        CHECK(delivered.load() == 1);
+        // The position was kept, not replayed.
+        CHECK(migrated->delivered >= 1);
+    }
 }

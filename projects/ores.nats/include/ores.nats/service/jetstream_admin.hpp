@@ -61,6 +61,10 @@ struct consumer_status {
     int64_t num_redelivered = 0;
     uint64_t num_pending = 0;
     bool push_bound = false;
+    /// How many times a message may be delivered before the server gives up.
+    int64_t max_deliver = 0;
+    /// How long the server waits for an answer, in nanoseconds.
+    int64_t ack_wait_ns = 0;
 };
 
 /**

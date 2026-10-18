@@ -245,6 +245,10 @@ std::optional<consumer_status> jetstream_admin::consumer_state(std::string_view 
     status.num_redelivered = info->NumRedelivered;
     status.num_pending = info->NumPending;
     status.push_bound = info->PushBound;
+    if (info->Config != nullptr) {
+        status.max_deliver = info->Config->MaxDeliver;
+        status.ack_wait_ns = info->Config->AckWait;
+    }
     jsConsumerInfo_Destroy(info);
     return status;
 }

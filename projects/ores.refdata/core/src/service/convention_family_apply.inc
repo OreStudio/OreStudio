@@ -17,12 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-// AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-// Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
-// To change a call, edit the convention entity model's #+convention_family: or
-// #+convention_write: declaration and regenerate. Include this fragment where
-// replace_party_rows, replace_rows_by_id and add_missing_world_rows are
-// visible, with <rfl/json.hpp> and the stamp helper already included.
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: cpp_convention_family_apply.inc.mustache
+ * To modify, update the template and regenerate.
+ */
 
 
 // Party families: the import replaces the rows the party holds.

@@ -19,9 +19,8 @@
  */
 /**
  * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Generator: projects/ores.codegen/scripts/regenerate_convention_family_registry.py
- * To change an entry, edit the convention entity model's
- * #+convention_family: or #+convention_write: declaration and regenerate.
+ * Template: cpp_convention_family_registry.hpp.mustache
+ * To modify, update the template and regenerate.
  */
 #ifndef ORES_REFDATA_API_DOMAIN_CONVENTION_FAMILY_REGISTRY_HPP
 #define ORES_REFDATA_API_DOMAIN_CONVENTION_FAMILY_REGISTRY_HPP

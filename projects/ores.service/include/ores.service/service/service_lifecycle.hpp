@@ -154,6 +154,12 @@ announce_ready_and_drain(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";
     if (on_shutdown)
         on_shutdown();
+    // Destroying a subscription waits for the handler it is running, so this
+    // runs before the connection is drained: a handler that is still going
+    // finishes here, on a live connection. "Shutdown complete" would otherwise
+    // be written while a handler still runs, and a service has died that way
+    // with one more delivery arriving after the line.
+    subs.clear();
     nats.drain();
     BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
     co_return;

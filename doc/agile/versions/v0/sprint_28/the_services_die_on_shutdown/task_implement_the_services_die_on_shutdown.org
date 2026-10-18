@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: CFCDD541-DF78-4760-9F0B-30BCBFFBEB48
+:END:
+#+title: Task: Wait for in-flight handlers when a subscription is destroyed
+#+description: Initial task for: Hotfix: the services die on shutdown
+#+type: task
+#+level: s1
+#+filetags: :the_services_die_on_shutdown:sprint_28:v0:
+#+owner: marco
+#+branch: hotfix/the-services-die-on-shutdown
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D858FF3F-2F55-4531-AE30-DCF734565361][Hotfix: the services die on shutdown]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Destroying an =ores::nats::service::subscription= must not return while the
+dispatch thread is inside the handler that subscription carries. Once it does
+return, the owner is free to destroy everything the handler reaches.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D858FF3F-2F55-4531-AE30-DCF734565361][Hotfix: the services die on shutdown]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- =~subscription= and move assignment drain, wait for that drain to complete,
+  and only then free the closure and destroy the NATS subscription. The wait is
+  bounded at 30s, the budget cnats itself uses for a drain.
+- =subscription::drain()= keeps its promise: it returns after in-flight
+  deliveries have been processed.
+- =client::drain()= waits for the connection's closed callback instead of
+  returning as soon as the drain was requested.
+- A regression test holds a handler inside a delivery and asserts that
+  destroying the subscription does not return until the handler is released.
+- A fleet start and stop leaves 0 failed units.
+- ctest passes.
+
+* Plan
+
+=subscription= destroyed the cnats subscription through an asynchronous drain:
+it registered =natsSubscription_SetOnCompleteCB=, called
+=natsSubscription_Drain=, and returned. The closure the handler runs through
+was freed later, from the dispatch thread, which made destruction look safe to
+the caller. It is not: the closure calls into the owner's state, and the owner
+treats "the handle is gone" as "nothing will call me again".
+
+=service_lifecycle::announce_ready_and_drain= owns that order. It calls
+=nats.drain()=, logs "Shutdown complete", and returns; the coroutine's frame then
+destroys the subscription vector, the event bus and the service state. The
+marketdata ingest loop was destroyed in that window while a tick was in
+=handle_tick=, and the dispatch thread walked into a freed rate engine.
+
+Two changes, both at the seam the promise was made on:
+
+1. =drain_and_release= replaces the async helpers. It drains, calls
+   =natsSubscription_WaitForDrainCompletion=, then frees the closure and
+   destroys the subscription. =~subscription= and move assignment both use it,
+   and =subscription::drain()= waits the same way.
+2. =client::drain()= registers a closed callback through
+   =natsOptions_SetClosedCB= and waits on it, because =natsConnection_Drain=
+   only starts the drain. The latch lives in =client::impl= so it outlives the
+   connection, and every connect clears it.
+
+No call site creates a subscription per request: =request_sync= uses
+=natsConnection_RequestMsg=, so a blocking destruction touches only teardown and
+subscriber churn, not the request path.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ctest cases | 96 of 96 pass | =./compass.sh check --only ctest= | e6eeec37b5 + this task's diff |
+| gate sweep on untouched main | 61 of 61 pass | =./compass.sh check --all --json= | e6eeec37b5 |
+| fleet after start, 45s, stop | 23 stopped, 0 failed | =./compass.sh services start= then =stop= | b47e63fe7a + the closed-connection change |
+| marketdata journal on that stop | no core dump and no drain error | =./compass.sh services logs ores.marketdata -n 25= | b47e63fe7a + the closed-connection change |
+| marketdata journal after that stop | no core dump; "Shutdown complete" then the event bus unsubscribes | =./compass.sh services logs ores.marketdata -n 25= | e6eeec37b5 + this task's diff |
+| regression test | passes in 0.30s: the destroyer has not returned after 200ms of the handler holding | =./compass.sh test run -- -R ores.nats.tests= | c331e22f76 + the review changes |
+
+* Notes
+
+The crash is intermittent: it needs a delivery in flight at the moment the
+owner is destroyed. Two short start/stop cycles did not reproduce it, before or
+after the fix, so the evidence for the defect is the recorded core dump and the
+ordering above, not a repeatable trigger. What the fix changes is the ordering,
+which is checkable by reading the two functions.
+
+Two gates report this change while it is uncommitted, and neither report is
+about the code: =format= wants clang-format on the edited files, and
+=component-drift= fails on any =git diff= at all, because it regenerates the
+components and reads the working tree's diff as drift. Both pass on a committed
+tree.
+
+A closed connection counts as drained. The first version of the wait treated
+the =NATS_CONNECTION_CLOSED= that a teardown drain returns as a failure, so the
+marketdata service leaked every subscription and logged an error at each stop,
+and the fleet run showed it. Closing a connection joins its dispatch threads,
+so nothing can be running once it answers that way.
+
+The regression test is =service_subscription_lifetime_tests.cpp=. It holds a
+handler inside a delivery and destroys the subscription from another thread, so
+the assertion is the old behaviour's outcome: before the fix the destroyer
+returned immediately and the check would see it done. The test was never run
+against the old code, because relinking every dependent of =libores.nats= takes
+about forty minutes in this shared checkout.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+| Regression test in ores.nats.tests | AUTOMATED | destroying a subscription waits for the handler it is running |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| 3550 | [nats] Wait for in-flight handlers before a subscription dies |
+
+* Review
+
+Round 1 ran the two axes (Standards, Spec) against the PR diff. Every finding
+is answered here or in the commit that follows it.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | No test covers the change | projects/ores.nats/tests | fixed | Added service_subscription_lifetime_tests.cpp |
+| 2 | The timeout path still frees the closure, so the use-after-free returns | client.cpp | fixed | A drain that does not complete now leaks the closure and the subscription on purpose, and logs at error |
+| 3 | The drain and the wait share one 30s budget | client.cpp | fixed | Drain with natsSubscription_DrainTimeout, then wait twice that |
+| 4 | ClosedCB fires for closes other than this drain | client.cpp | fixed | drain() clears the latch before asking for the drain |
+| 5 | Drain/wait statuses were ignored | client.cpp | fixed | Both paths now log the status at error |
+| 6 | WaitForDrainCompletion blocks if the handle dies on the dispatch thread | subscription.hpp | documented | The header states the constraint |
+| 7 | Duplicated drain-and-wait shape | client.cpp | fixed | One drain_and_wait helper |
+| 8 | drain_timeout_ms named one value for two budgets | client.cpp | fixed | Renamed drain_budget_ms |
+| 9 | End-of-line comment on an edited line | client.cpp | fixed | Moved above the line |
+| 10 | The comment narrated the incident rather than the invariant | client.cpp | fixed | Trimmed to the invariant; the incident lives in the story |
+| 11 | The client::impl banner headed an unrelated namespace | client.cpp | fixed | Namespace moved above the banner |
+| 12 | subscription::drain() did not say it blocks | subscription.hpp | fixed | Documented, with the self-drain constraint |
+| 13 | "Shutdown complete" is logged before the subscriptions are destroyed | service_lifecycle.hpp | fixed | subs.clear() runs before nats.drain(), so the NATS handlers are done before the line; the app's own event-bus subscribers still tear down after it, and the ingest loop's own subscription belongs to the app, not to subs |
+| 14 | Scaffold task is boilerplate | task_scaffold_*.org | fixed | Filled |
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Destroying a subscription now waits for the handler it carries, and the wait is
+bounded: 30s for the drain, twice that for the wait, and a drain that does not
+finish leaks the closure and the subscription rather than handing a running
+handler a dangling pointer. A closed connection counts as drained.
+
+=service_subscription_lifetime_tests.cpp= holds the behaviour: it keeps a
+handler inside a delivery, destroys the subscription from another thread, and
+asserts the destroyer has not returned while the handler still holds.
+
+Verified on this tree: the nats, iam-service and marketdata-service suites pass,
+and a fleet start and stop leaves 23 units stopped with none failed and no drain
+error in the marketdata journal. The full rebuild of every dependent of
+=libores.nats= was not run here; it takes about three hours in this checkout's
+shared build queue.

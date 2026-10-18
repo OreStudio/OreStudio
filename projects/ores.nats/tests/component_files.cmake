@@ -28,4 +28,5 @@ set(files
     "service_caller_identity_tests.cpp"
     "service_durable_consumer_lifecycle_tests.cpp"
     "service_refusal_tests.cpp"
+    "service_subscription_lifetime_tests.cpp"
 )

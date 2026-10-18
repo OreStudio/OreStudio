@@ -66,11 +66,33 @@ export type ResolveAnswer =
     | { readonly kind: 'refused'; readonly resolution: TenorResolution }
     | { readonly kind: 'unreachable'; readonly message: string };
 
-/** The three dates a resolution reports, when it reported any. */
+/**
+ * The three dates a resolution reports, each empty when it did not reach it.
+ *
+ * The server fills them as it walks the rule, so a refusal can carry an anchor
+ * and no adjusted date. Each stands on its own; a page draws the ones it got.
+ */
 export interface ReachedDates {
     readonly anchor: string;
     readonly beforeRoll: string;
     readonly adjusted: string;
+}
+
+/** The words for the fields a refusal can name, so no wire name reaches a person. */
+const FIELD_LABEL_KEYS: Readonly<Record<string, string>> = {
+    calendar_code: 'refdata.tenors.calendar',
+    tenor_code: 'refdata.tenors.tenor',
+    convention_code: 'refdata.tenors.convention',
+    spot: 'refdata.tenors.spot',
+    tenor_anchor: 'refdata.tenors.anchor',
+    resolution_algorithm: 'refdata.tenors.algorithm',
+    schedule_code: 'refdata.tenors.schedule',
+    tenor_convention_resolutions: 'refdata.tenors.tenor',
+};
+
+/** The label key for a field a refusal names, or nothing when it names a field we do not draw. */
+export function fieldLabelKey(field: string): string | undefined {
+    return FIELD_LABEL_KEYS[field];
 }
 
 export function answerOf(
@@ -100,11 +122,12 @@ export function answerOf(
  * must not invent.
  */
 export function reachedDates(resolution: TenorResolution): ReachedDates | undefined {
-    return resolution.adjustedDate === ''
+    const dates = {
+        anchor: resolution.anchorDate,
+        beforeRoll: resolution.dateBeforeRoll,
+        adjusted: resolution.adjustedDate,
+    };
+    return dates.anchor === '' && dates.beforeRoll === '' && dates.adjusted === ''
         ? undefined
-        : {
-              anchor: resolution.anchorDate,
-              beforeRoll: resolution.dateBeforeRoll,
-              adjusted: resolution.adjustedDate,
-          };
+        : dates;
 }

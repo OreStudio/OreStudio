@@ -27,18 +27,23 @@
  * the screen writes nothing: there is no save, no change reason and no
  * membership row. The journey that authors those rules is offered from here as
  * a workflow, so reading a date never becomes authoring one by accident.
+ *
+ * The date is asked for as soon as the picks can answer it. A button would only
+ * ask the person to confirm the four things they just chose, and the screen's
+ * whole job is the answer.
  */
 
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
-import { tenors, type TenorResolution, type TenorResolveQuery } from '../api/tenors.js';
+import { tenors, type TenorResolveQuery } from '../api/tenors.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { loadedIso } from '../ui/loadedLabel.js';
 import { WorkflowMenu } from '../shell/WorkflowMenu.js';
 import { Button, Detail, Field, Input, Notice, Select } from '../ui/Primitives.js';
+import { loadedIso } from '../ui/loadedLabel.js';
 import {
     answerOf,
     canResolve,
+    fieldLabelKey,
     reachedDates,
     type ReachedDates,
     type ResolveAnswer,
@@ -63,7 +68,7 @@ function today(): string {
     return loadedIso(Date.now()).slice(0, 10);
 }
 
-/** The three dates a resolution reports, drawn the same way wherever they appear. */
+/** The three dates a resolution reports, each drawn only when it was reached. */
 function DateDetails({
     dates,
     t,
@@ -73,20 +78,55 @@ function DateDetails({
 }): ReactNode {
     return (
         <>
-            <Detail label={t('refdata.tenors.anchor')} value={dates.anchor} mono />
-            <Detail label={t('refdata.tenors.beforeRoll')} value={dates.beforeRoll} mono />
-            <Detail label={t('refdata.tenors.adjusted')} value={dates.adjusted} mono />
+            {dates.anchor !== '' && (
+                <Detail label={t('refdata.tenors.anchor')} value={dates.anchor} mono />
+            )}
+            {dates.beforeRoll !== '' && (
+                <Detail label={t('refdata.tenors.beforeRoll')} value={dates.beforeRoll} mono />
+            )}
+            {dates.adjusted !== '' && (
+                <Detail label={t('refdata.tenors.adjusted')} value={dates.adjusted} mono />
+            )}
         </>
+    );
+}
+
+/** A read that failed, in the server's words, with the one action that helps. */
+function Failed({
+    message,
+    onRetry,
+    t,
+}: {
+    readonly message: string;
+    readonly onRetry: () => void;
+    readonly t: Translator['t'];
+}): ReactNode {
+    return (
+        <Notice tone="error">
+            <p>{message}</p>
+            <Button size="sm" onClick={onRetry}>
+                {t('unavailable.retry')}
+            </Button>
+        </Notice>
     );
 }
 
 /**
  * One answer, drawn by its kind.
  *
+ * The page renders this, and the tests render it directly because this package
+ * has no DOM to click through.
+ *
  * A refusal and a failed request read differently on purpose: the first is a
  * rule that declined to resolve, the second is a question that never arrived.
  */
-export function ResolutionAnswer({ answer }: { readonly answer: ResolveAnswer }): ReactNode {
+export function ResolutionAnswer({
+    answer,
+    onRetry,
+}: {
+    readonly answer: ResolveAnswer;
+    readonly onRetry: () => void;
+}): ReactNode {
     const { t } = useTranslation();
     if (answer.kind === 'answered') {
         const dates = reachedDates(answer.resolution);
@@ -115,21 +155,23 @@ export function ResolutionAnswer({ answer }: { readonly answer: ResolveAnswer })
             <div className="space-y-4">
                 <Notice tone="error">
                     <p className="font-semibold">{t('refdata.tenors.refused')}</p>
-                    <p className="text-sm">
-                        <span className="font-mono text-xs">{answer.resolution.result.code}</span>{' '}
-                        {answer.resolution.result.message}
-                    </p>
+                    <p>{answer.resolution.result.message}</p>
                     {answer.resolution.result.fields.length > 0 && (
-                        <ul className="text-sm">
-                            {answer.resolution.result.fields.map((failure) => (
-                                <li key={`${failure.field}:${failure.code}`}>
-                                    {failure.field}: {failure.message}
-                                </li>
-                            ))}
+                        <ul>
+                            {answer.resolution.result.fields.map((failure) => {
+                                const label = fieldLabelKey(failure.field);
+                                return (
+                                    <li key={`${failure.field}:${failure.code}`}>
+                                        {label === undefined
+                                            ? failure.message
+                                            : `${t(label)}: ${failure.message}`}
+                                    </li>
+                                );
+                            })}
                         </ul>
                     )}
                 </Notice>
-                {/* A refusal may still have walked part of the way, so what it reached is shown. */}
+                {/* A refusal may have walked part of the way, so what it reached is kept. */}
                 {dates !== undefined && (
                     <dl className="grid gap-3 md:grid-cols-3">
                         <DateDetails dates={dates} t={t} />
@@ -139,11 +181,7 @@ export function ResolutionAnswer({ answer }: { readonly answer: ResolveAnswer })
         );
     }
     if (answer.kind === 'unreachable') {
-        return (
-            <Notice tone="error">
-                {t('refdata.tenors.unreachable', { message: answer.message })}
-            </Notice>
-        );
+        return <Failed message={answer.message} onRetry={onRetry} t={t} />;
     }
     return null;
 }
@@ -163,8 +201,28 @@ export function TenorResolutionPage(): ReactNode {
         queryFn: () => tenors.resolutions(conventionCode),
         enabled: conventionCode !== '',
     });
-    const resolve = useMutation({
-        mutationFn: (query: TenorResolveQuery) => tenors.resolve(query),
+
+    /*
+     * A rule measured from spot cannot resolve without a spot date, and the
+     * engine refuses rather than assume the pair's spot lag. The member row may
+     * override the anchor the convention sets, and the server reads the
+     * override first, so the question goes to the row that will answer it.
+     */
+    const chosenConvention = (catalogue.data?.conventions ?? []).find(
+        (row) => row.code === conventionCode,
+    );
+    const chosenMember = (members.data ?? []).find((row) => row.tenor_code === tenorCode);
+    const anchor = chosenMember?.anchor_override ?? chosenConvention?.measured_from ?? '';
+    const needsSpot = anchor === 'SPOT';
+
+    const picks = { conventionCode, tenorCode, calendarCode, horizon, spot };
+    const ready = canResolve(picks, needsSpot);
+    const query: TenorResolveQuery = { ...picks, spot: spot.trim() === '' ? null : spot };
+
+    const resolution = useQuery({
+        queryKey: ['tenors', 'resolve', query],
+        queryFn: () => tenors.resolve(query),
+        enabled: ready,
     });
 
     const displayNames = new Map(
@@ -174,22 +232,30 @@ export function TenorResolutionPage(): ReactNode {
         code: member.tenor_code,
         name: displayNames.get(member.tenor_code) ?? member.tenor_code,
     }));
-    const needsSpot =
-        (catalogue.data?.conventions ?? []).find((row) => row.code === conventionCode)
-            ?.measured_from === 'SPOT';
-    const ready = canResolve({ conventionCode, tenorCode, calendarCode, horizon, spot }, needsSpot);
+
     const readFailure = catalogue.error ?? pickLists.error ?? members.error;
-    const answer = answerOf(resolve.data, resolve.error ?? null, resolve.isPending);
+    const retryReads = (): void => {
+        void catalogue.refetch();
+        void pickLists.refetch();
+        if (conventionCode !== '') {
+            void members.refetch();
+        }
+    };
+    const answer = answerOf(
+        resolution.data,
+        resolution.error ?? null,
+        resolution.isFetching && resolution.data === undefined,
+    );
+    const loading = catalogue.isPending || pickLists.isPending;
 
     return (
         <div className="space-y-5">
             <div className="flex justify-end">
                 <WorkflowMenu on="tenors" />
             </div>
+            {loading && <Notice tone="info">{t('refdata.tenors.loading')}</Notice>}
             {readFailure !== null && (
-                <Notice tone="error">
-                    {t('refdata.tenors.readFailed', { message: readFailure.message })}
-                </Notice>
+                <Failed message={readFailure.message} onRetry={retryReads} t={t} />
             )}
             <div className="grid gap-4 md:grid-cols-2">
                 <Field label={t('refdata.tenors.convention')}>
@@ -198,7 +264,6 @@ export function TenorResolutionPage(): ReactNode {
                         onChange={(event) => {
                             setConventionCode(event.target.value);
                             setTenorCode('');
-                            resolve.reset();
                         }}
                     >
                         <option value="">{t('refdata.tenors.choose')}</option>
@@ -213,10 +278,7 @@ export function TenorResolutionPage(): ReactNode {
                     <Select
                         value={tenorCode}
                         disabled={conventionCode === ''}
-                        onChange={(event) => {
-                            setTenorCode(event.target.value);
-                            resolve.reset();
-                        }}
+                        onChange={(event) => setTenorCode(event.target.value)}
                     >
                         <option value="">{t('refdata.tenors.choose')}</option>
                         {offered.map((tenor) => (
@@ -229,10 +291,7 @@ export function TenorResolutionPage(): ReactNode {
                 <Field label={t('refdata.tenors.calendar')}>
                     <Select
                         value={calendarCode}
-                        onChange={(event) => {
-                            setCalendarCode(event.target.value);
-                            resolve.reset();
-                        }}
+                        onChange={(event) => setCalendarCode(event.target.value)}
                     >
                         <option value="">{t('refdata.tenors.choose')}</option>
                         {(pickLists.data?.calendars ?? []).map((calendar) => (
@@ -246,40 +305,21 @@ export function TenorResolutionPage(): ReactNode {
                     <Input
                         type="date"
                         value={horizon}
-                        onChange={(event) => {
-                            setHorizon(event.target.value);
-                            resolve.reset();
-                        }}
+                        onChange={(event) => setHorizon(event.target.value)}
                     />
                 </Field>
                 <Field label={t('refdata.tenors.spot')} hint={t('refdata.tenors.spotHint')}>
                     <Input
                         type="date"
                         value={spot}
-                        onChange={(event) => {
-                            setSpot(event.target.value);
-                            resolve.reset();
-                        }}
+                        onChange={(event) => setSpot(event.target.value)}
                     />
                 </Field>
             </div>
-            <Button
-                variant="primary"
-                pending={resolve.isPending}
-                disabled={!ready}
-                onClick={() => {
-                    resolve.mutate({
-                        tenorCode,
-                        conventionCode,
-                        calendarCode,
-                        horizon,
-                        spot: spot.trim() === '' ? null : spot,
-                    });
-                }}
-            >
-                {t('refdata.tenors.run')}
-            </Button>
-            <ResolutionAnswer answer={answer} />
+            {resolution.isFetching && resolution.data !== undefined && (
+                <Notice tone="info">{t('refdata.tenors.loading')}</Notice>
+            )}
+            <ResolutionAnswer answer={answer} onRetry={() => void resolution.refetch()} />
         </div>
     );
 }

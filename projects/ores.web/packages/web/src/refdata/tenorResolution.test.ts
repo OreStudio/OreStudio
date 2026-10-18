@@ -21,7 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { TenorResolution } from '../api/tenors.js';
-import { answerOf, canResolve, reachedDates } from './tenorResolution.js';
+import { answerOf, canResolve, fieldLabelKey, reachedDates } from './tenorResolution.js';
 
 const answered: TenorResolution = {
     result: { outcome: 'ok', code: '', message: '', fields: [] },
@@ -114,5 +114,34 @@ describe('canResolve', () => {
         expect(canResolve({ ...full, tenorCode: '' }, false)).toBe(false);
         expect(canResolve({ ...full, calendarCode: '' }, false)).toBe(false);
         expect(canResolve({ ...full, horizon: '   ' }, false)).toBe(false);
+    });
+});
+
+describe('a refusal that got part of the way', () => {
+    it('keeps the dates it reached and leaves the ones it did not', () => {
+        expect(
+            reachedDates({
+                ...refused,
+                anchorDate: '2026-03-18',
+                dateBeforeRoll: '',
+                adjustedDate: '',
+            }),
+        ).toEqual({ anchor: '2026-03-18', beforeRoll: '', adjusted: '' });
+    });
+
+    it('has nothing to show when it reached no date at all', () => {
+        expect(reachedDates(refused)).toBeUndefined();
+    });
+});
+
+describe('fieldLabelKey', () => {
+    it('names the fields the page draws', () => {
+        expect(fieldLabelKey('calendar_code')).toBe('refdata.tenors.calendar');
+        expect(fieldLabelKey('spot')).toBe('refdata.tenors.spot');
+        expect(fieldLabelKey('tenor_anchor')).toBe('refdata.tenors.anchor');
+    });
+
+    it('says nothing for a field the page does not draw, so no wire name reaches a person', () => {
+        expect(fieldLabelKey('some_internal_column')).toBeUndefined();
     });
 });

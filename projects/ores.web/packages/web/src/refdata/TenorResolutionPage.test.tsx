@@ -111,17 +111,18 @@ describe('the tenor resolution screen', () => {
         expect(html).toContain('Spot date');
         expect(html).toContain('Tenor');
         expect(html).toContain('Horizon date');
-        expect(html).toContain('>Resolve<');
         expect(html).toContain('Argentina');
         expect(html).toContain('href="/refdata/tenors/author"');
         expect(html).not.toContain('The tenor resolves to this date.');
         expect(html).not.toContain('The server declined to resolve this tenor.');
-        expect(html).toContain('disabled');
     });
 
     it('shows the three dates and the rule that reached them', () => {
         const html = render(
-            <ResolutionAnswer answer={{ kind: 'answered', resolution: answered }} />,
+            <ResolutionAnswer
+                answer={{ kind: 'answered', resolution: answered }}
+                onRetry={() => {}}
+            />,
         );
 
         expect(html).toContain('The tenor resolves to this date.');
@@ -131,7 +132,7 @@ describe('the tenor resolution screen', () => {
         expect(html).toContain('Argentina');
     });
 
-    it('shows a refusal with its code and the field at fault, and no date it did not reach', () => {
+    it('shows a refusal without a wire name, and no date it did not reach', () => {
         const html = render(
             <ResolutionAnswer
                 answer={{
@@ -156,23 +157,77 @@ describe('the tenor resolution screen', () => {
                         calendar: 'Argentina',
                     },
                 }}
+                onRetry={() => {}}
             />,
         );
 
         expect(html).toContain('The server declined to resolve this tenor.');
-        expect(html).toContain('tenor_not_in_convention');
-        expect(html).toContain('tenor_code: No rule resolves 3M.');
+        expect(html).toContain('Tenor: No rule resolves 3M.');
+        expect(html).not.toContain('tenor_not_in_convention');
+        expect(html).not.toContain('tenor_code');
         expect(html).not.toContain('Anchor date');
         expect(html).not.toContain('The tenor resolves to this date.');
     });
 
-    it('says a request failed rather than a rule was declined', () => {
+    it('says a request failed rather than a rule was declined, and offers one action', () => {
         const html = render(
-            <ResolutionAnswer answer={{ kind: 'unreachable', message: 'the socket closed' }} />,
+            <ResolutionAnswer
+                answer={{ kind: 'unreachable', message: 'the socket closed' }}
+                onRetry={() => {}}
+            />,
         );
 
-        expect(html).toContain('The request to resolve the tenor failed.');
         expect(html).toContain('the socket closed');
+        expect(html).toContain('Try again');
         expect(html).not.toContain('The server declined to resolve this tenor.');
+    });
+});
+
+describe('what a refusal says', () => {
+    const refusedWithSpot = {
+        result: {
+            outcome: 'invalid' as const,
+            code: 'missing_spot_date',
+            message: 'The rule is measured from spot and no spot date was given.',
+            fields: [
+                {
+                    field: 'spot',
+                    code: 'missing_spot_date',
+                    message: 'The rule is measured from spot and no spot date was given.',
+                },
+            ],
+        },
+        anchorDate: '2026-03-18',
+        dateBeforeRoll: '',
+        adjustedDate: '',
+        rollRule: 'ModifiedFollowing',
+        calendar: 'Argentina',
+    };
+
+    it('names the field in words and keeps the date it did reach', () => {
+        const html = render(
+            <ResolutionAnswer
+                answer={{ kind: 'refused', resolution: refusedWithSpot }}
+                onRetry={() => {}}
+            />,
+        );
+
+        expect(html).toContain('Spot date: The rule is measured from spot');
+        expect(html).not.toContain('spot:');
+        expect(html).not.toContain('missing_spot_date');
+        expect(html).toContain('2026-03-18');
+        expect(html).not.toContain('Date before the roll');
+    });
+
+    it('offers one action when the request never arrived', () => {
+        const html = render(
+            <ResolutionAnswer
+                answer={{ kind: 'unreachable', message: 'the socket closed' }}
+                onRetry={() => {}}
+            />,
+        );
+
+        expect(html).toContain('the socket closed');
+        expect(html).toContain('Try again');
     });
 });

@@ -344,6 +344,19 @@ describe('tenor routes', () => {
         });
     });
 
+    it('refuses a question that names no tenor, before it reaches the server', async () => {
+        const { server, sessionId, calls } = buildTestServer({});
+
+        const response = await send(server, sessionId, 'POST', '/api/tenors/resolve', {
+            convention_code: 'RATES_SPOT_FORWARD',
+            calendar_code: 'Argentina',
+            horizon: '2026-03-16',
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(calls).toHaveLength(0);
+    });
+
     it('hands a refusal of the stored rules back as an answer', async () => {
         const { server, sessionId, calls } = buildTestServer({
             'refdata.v1.ops.resolve_tenor': {

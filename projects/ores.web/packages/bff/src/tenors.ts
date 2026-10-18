@@ -117,7 +117,9 @@ const PICK_LISTS = [
  * The preview and resolve operations answer with the same reply, so the two
  * routes shape it here once rather than each naming the six fields.
  */
-function resolutionReply(reply: z.infer<typeof resolutionReplySchema>): unknown {
+function resolutionReply(
+    reply: z.infer<typeof resolutionReplySchema>,
+): z.infer<typeof resolutionReplySchema> {
     return {
         result: reply.result,
         anchor_date: reply.anchor_date,

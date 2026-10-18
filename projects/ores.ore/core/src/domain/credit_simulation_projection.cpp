@@ -17,14 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/credit_simulation_mapper.hpp"
+#include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.ore.core/domain/credit_simulation_grid.hpp"
+#include "ores.ore.core/xml/binding.hpp"
+#include "ores.ore.core/xml/emitter.hpp"
+#include "ores.ore.core/xml/projection.hpp"
 #include "ores.platform/numeric/floating_point.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <charconv>
 #include <cstddef>
+#include <format>
+#include <sstream>
 #include <stdexcept>
+#include <string_view>
 #include <unordered_map>
 
 namespace ores::ore::domain {
@@ -32,6 +38,8 @@ namespace ores::ore::domain {
 using namespace ores::logging;
 
 namespace {
+
+namespace xg = xml::generated::credit_simulation;
 
 constexpr std::string_view audit_modified_by = "ores";
 constexpr std::string_view audit_reason_code = "system.external_data_import";
@@ -49,13 +57,6 @@ void set_audit(T& r) {
     r.performed_by = std::string(audit_modified_by);
     r.change_reason_code = std::string(audit_reason_code);
     r.change_commentary = std::string(audit_commentary);
-}
-
-// Every generated text field is a distinct struct derived from xsd::string, so
-// the base subobject is the only assignment target a std::string converts to.
-template <typename T>
-void assign_text(T& target, const std::string& value) {
-    static_cast<xsd::string&>(target) = value;
 }
 
 double parse_double(const std::string& text) {
@@ -76,84 +77,96 @@ std::string format_double(double value) {
     return std::string(buffer, written.ptr);
 }
 
-}
-
-bool credit_simulation_mapper::parse_bool(domain::bool_ v) {
-    using b = domain::bool_;
-    switch (v) {
-        case b::Y:
-        case b::YES:
-        case b::TRUE_:
-        case b::True:
-        case b::true_:
-        case b::_1:
-            return true;
-        default:
-            return false;
-    }
-}
-
-domain::bool_ credit_simulation_mapper::make_bool(bool v) {
-    return v ? domain::bool_::Y : domain::bool_::N;
+/**
+ * @brief Whether a flag the schema spells as an enumeration is on.
+ *
+ * ORE writes a true flag six ways. The model holds the truth, not the token,
+ * so every spelling reads the same and an export writes Y or N.
+ */
+auto is_on(const std::string_view spelling) -> bool {
+    return spelling == "Y" || spelling == "YES" || spelling == "TRUE" || spelling == "True" ||
+           spelling == "true" || spelling == "1";
 }
 
 /**
- * @brief Returns the flag in the spelling the document used.
- *
- * ORE accepts six spellings of a true flag. The model keeps the token it read,
- * so the export must return that token rather than normalising every spelling
- * to Y, which would change a document that said YES.
+ * @brief States a flag, or refuses a table that has no such column.
  */
-domain::bool_ to_bool_enum(const std::string& v) {
-    using b = domain::bool_;
-    if (v == "Y")
-        return b::Y;
-    if (v == "YES")
-        return b::YES;
-    if (v == "TRUE")
-        return b::TRUE_;
-    if (v == "True")
-        return b::True;
-    if (v == "true")
-        return b::true_;
-    if (v == "1")
-        return b::_1;
-    return b::N;
+void set_token(const xml::record_type& type,
+               void* record,
+               const std::string_view name,
+               const std::string& token) {
+    if (!xml::set_enumeration(type, record, name, token))
+        throw std::runtime_error(
+            std::format("'{}' is not a flag spelling for {} in {}", token, name, type.name));
 }
 
-mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v) {
+void set_flag(const xml::record_type& type, void* record, const std::string_view name, bool on) {
+    if (!xml::set_enumeration(type, record, name, on ? "Y" : "N"))
+        throw std::runtime_error(std::format("the {} table has no flag '{}'", type.name, name));
+}
+
+}
+
+credit_simulation_projection::document credit_simulation_projection::read(std::string_view text,
+                                                                          std::string_view origin) {
+    document record;
+    const auto bound = xml::binder::bind(xg::credit_simulation_document(), text, &record);
+    if (!bound) {
+        const auto where = origin.empty() ? std::string("credit simulation") : std::string(origin);
+        throw std::invalid_argument(
+            std::format("{}: line {}: {}", where, bound.error().line, bound.error().message));
+    }
+    return record;
+}
+
+std::string credit_simulation_projection::write(const document& v) {
+    std::string out;
+    const auto emitted = xml::emitter::emit(xg::credit_simulation_document(), &v, out);
+    if (!emitted)
+        throw std::runtime_error(emitted.error().message);
+    return out;
+}
+
+mapped_credit_simulation credit_simulation_projection::map(const document& v) {
     mapped_credit_simulation mapped;
 
     auto& config = mapped.config;
     config.id = new_uuid();
     config.name = "CreditSimulation";
-    config.market = to_string(v.Risk.Market);
-    config.credit = to_string(v.Risk.Credit);
-    config.zero_market_pnl = parse_bool(v.Risk.ZeroMarketPnl);
-    config.evaluation = v.Risk.Evaluation;
-    config.double_default = parse_bool(v.Risk.DoubleDefault);
-    config.seed = static_cast<int>(v.Risk.Seed);
-    config.paths = static_cast<int>(v.Risk.Paths);
-    config.credit_mode = v.Risk.CreditMode;
-    config.loan_exposure_mode = v.Risk.LoanExposureMode;
+    const auto& risk_type = xml::projection::child(*xg::credit_simulation_document().root, "Risk");
+    const auto token = [&risk_type, &v](const std::string_view name) -> std::string {
+        return xml::enumeration_spelling(risk_type, &v.risk, name).value_or("");
+    };
+    const auto flag = [&token](const std::string_view name) {
+        return is_on(token(name));
+    };
+    config.market = token("Market");
+    config.credit = token("Credit");
+    config.zero_market_pnl = flag("ZeroMarketPnl");
+    config.double_default = flag("DoubleDefault");
+    config.evaluation = v.risk.evaluation;
+    config.seed = static_cast<int>(v.risk.seed);
+    config.paths = static_cast<int>(v.risk.paths);
+    config.credit_mode = v.risk.credit_mode;
+    config.loan_exposure_mode = v.risk.loan_exposure_mode;
     set_audit(config);
 
     std::unordered_map<std::string, boost::uuids::uuid> matrix_ids;
-    for (const auto& tm : v.TransitionMatrices.TransitionMatrix) {
+    for (const auto& tm : v.transition_matrices.transition_matrix) {
         analytics::domain::credit_simulation_matrix_config matrix;
         matrix.id = new_uuid();
-        matrix.name = tm.Name;
-        matrix.t0 = tm.Data.t0 ? parse_double(*tm.Data.t0) : 0.0;
-        matrix.t1 = tm.Data.t1 ? parse_double(*tm.Data.t1) : 0.0;
+        matrix.name = tm.name;
+        matrix.t0 = tm.data.t0.empty() ? 0.0 : parse_double(tm.data.t0);
+        matrix.t1 = tm.data.t1.empty() ? 0.0 : parse_double(tm.data.t1);
         set_audit(matrix);
         matrix_ids[matrix.name] = matrix.id;
 
-        const auto grid = parse_credit_simulation_grid(tm.Data);
+        const auto grid = parse_credit_simulation_grid(tm.data.value);
         const auto side = grid.side();
         if (side != rating_count)
             throw std::runtime_error("A transition matrix is not eight by eight, so it has no "
                                      "rating rows: " +
-                                     std::string(tm.Name));
+                                     tm.name);
 
         for (std::size_t r = 0; r < side; ++r) {
             analytics::domain::credit_simulation_matrix_row_config row;
@@ -175,25 +188,25 @@ mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v
         mapped.matrices.push_back(std::move(matrix));
     }
 
-    for (const auto& e : v.Entities.Entity) {
+    for (const auto& e : v.entities.entity) {
         analytics::domain::credit_simulation_entity_config entity;
         entity.id = new_uuid();
         entity.credit_simulation_config_id = config.id;
-        entity.name = e.Name;
-        const auto found = matrix_ids.find(std::string(e.TransitionMatrix));
+        entity.name = e.name;
+        const auto found = matrix_ids.find(e.transition_matrix);
         if (found == matrix_ids.end())
             throw std::runtime_error("An entity names a transition matrix that does not exist: " +
-                                     std::string(e.TransitionMatrix));
+                                     e.transition_matrix);
         entity.transition_matrix_id = found->second;
-        entity.initial_state = static_cast<int>(e.InitialState);
-        entity.factor_loadings = e.FactorLoadings;
+        entity.initial_state = static_cast<int>(e.initial_state);
+        entity.factor_loadings = e.factor_loadings;
         set_audit(entity);
         mapped.entities.push_back(std::move(entity));
     }
 
     // ORE writes the netting sets as a comma separated list in one element. A
     // list is rows, so each code becomes a row and the position keeps the order.
-    const std::string codes(v.NettingSetIds);
+    const std::string codes(v.netting_set_ids);
     std::string current;
     std::istringstream code_stream(codes);
     int code_position = 0;
@@ -213,8 +226,17 @@ mapped_credit_simulation credit_simulation_mapper::map(const creditsimulation& v
     return mapped;
 }
 
-creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulation& v) {
-    creditsimulation document;
+credit_simulation_projection::document
+credit_simulation_projection::reverse(const mapped_credit_simulation& v) {
+    const auto& root = xg::credit_simulation_document().root;
+    const auto& matrices_type = xml::projection::child(*root, "TransitionMatrices");
+    const auto& matrix_type = xml::projection::child(matrices_type, "TransitionMatrix");
+    const auto& data_type = xml::projection::child(matrix_type, "Data");
+    const auto& entities_type = xml::projection::child(*root, "Entities");
+    const auto& entity_type = xml::projection::child(entities_type, "Entity");
+    const auto& risk_type = xml::projection::child(*root, "Risk");
+
+    document record;
 
     std::unordered_map<std::string, std::string> matrix_names;
     for (const auto& matrix : v.matrices) {
@@ -244,25 +266,36 @@ creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulatio
                 grid.values[r * side + c] = probabilities[c];
         }
 
-        domain::transitionmatrix tm;
-        assign_text(tm.Name, matrix.name);
-        assign_text(tm.Data, format_credit_simulation_grid(grid));
-        tm.Data.t0 = format_double(matrix.t0);
-        tm.Data.t1 = format_double(matrix.t1);
+        xg::transitionmatrix tm;
+        tm.name = matrix.name;
+        xml::projection::state(matrix_type, &tm, "Name");
+        tm.data.value = format_credit_simulation_grid(grid);
+        tm.data.t0 = format_double(matrix.t0);
+        tm.data.t1 = format_double(matrix.t1);
+        xml::mark_text_present(data_type, &tm.data);
+        xml::projection::state(data_type, &tm.data, "t0");
+        xml::projection::state(data_type, &tm.data, "t1");
+        xml::projection::state(matrix_type, &tm, "Data");
 
-        document.TransitionMatrices.TransitionMatrix.push_back(std::move(tm));
+        record.transition_matrices.transition_matrix.push_back(std::move(tm));
+        xml::projection::state(matrices_type, &record.transition_matrices, "TransitionMatrix");
     }
 
     for (const auto& entity : v.entities) {
-        domain::entity e;
-        assign_text(e.Name, entity.name);
-        assign_text(e.FactorLoadings, entity.factor_loadings);
+        xg::entity e;
+        e.name = entity.name;
+        e.factor_loadings = entity.factor_loadings;
         const auto matrix = matrix_names.find(boost::uuids::to_string(entity.transition_matrix_id));
         if (matrix == matrix_names.end())
             throw std::runtime_error("An entity points at a transition matrix that is not mapped");
-        assign_text(e.TransitionMatrix, matrix->second);
-        e.InitialState = entity.initial_state;
-        document.Entities.Entity.push_back(std::move(e));
+        e.transition_matrix = matrix->second;
+        e.initial_state = entity.initial_state;
+        xml::projection::state(entity_type, &e, "Name");
+        xml::projection::state(entity_type, &e, "FactorLoadings");
+        xml::projection::state(entity_type, &e, "TransitionMatrix");
+        xml::projection::state(entity_type, &e, "InitialState");
+        record.entities.entity.push_back(std::move(e));
+        xml::projection::state(entities_type, &record.entities, "Entity");
     }
 
     {
@@ -272,20 +305,34 @@ creditsimulation credit_simulation_mapper::reverse(const mapped_credit_simulatio
                 joined += ",";
             joined += netting_set.netting_set_id;
         }
-        assign_text(document.NettingSetIds, joined);
+        record.netting_set_ids = joined;
+        xml::projection::state(*root, &record, "NettingSetIds");
     }
 
-    document.Risk.Market = to_bool_enum(v.config.market);
-    document.Risk.Credit = to_bool_enum(v.config.credit);
-    document.Risk.ZeroMarketPnl = make_bool(v.config.zero_market_pnl);
-    assign_text(document.Risk.Evaluation, v.config.evaluation);
-    document.Risk.DoubleDefault = make_bool(v.config.double_default);
-    document.Risk.Seed = v.config.seed;
-    document.Risk.Paths = v.config.paths;
-    assign_text(document.Risk.CreditMode, v.config.credit_mode);
-    assign_text(document.Risk.LoanExposureMode, v.config.loan_exposure_mode);
+    // Two flags keep the token the document used; they are held as text and
+    // written back as text, so a document that said YES is answered with YES.
+    set_token(risk_type, &record.risk, "Market", v.config.market);
+    set_token(risk_type, &record.risk, "Credit", v.config.credit);
+    set_flag(risk_type, &record.risk, "ZeroMarketPnl", v.config.zero_market_pnl);
+    set_flag(risk_type, &record.risk, "DoubleDefault", v.config.double_default);
+    record.risk.evaluation = v.config.evaluation;
+    xml::projection::state(risk_type, &record.risk, "Evaluation");
+    record.risk.seed = v.config.seed;
+    xml::projection::state(risk_type, &record.risk, "Seed");
+    record.risk.paths = v.config.paths;
+    xml::projection::state(risk_type, &record.risk, "Paths");
+    record.risk.credit_mode = v.config.credit_mode;
+    xml::projection::state(risk_type, &record.risk, "CreditMode");
+    record.risk.loan_exposure_mode = v.config.loan_exposure_mode;
+    xml::projection::state(risk_type, &record.risk, "LoanExposureMode");
+    xml::projection::state(*root, &record, "Risk");
 
-    return document;
+    if (!record.transition_matrices.transition_matrix.empty())
+        xml::projection::state(*root, &record, "TransitionMatrices");
+    if (!record.entities.entity.empty())
+        xml::projection::state(*root, &record, "Entities");
+
+    return record;
 }
 
 }

@@ -24,8 +24,7 @@
 #include "ores.analytics.core/repository/credit_simulation_netting_set_config_repository.hpp"
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/credit_simulation_mapper.hpp"
-#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -56,8 +55,7 @@ using ores::analytics::repository::credit_simulation_matrix_config_repository;
 using ores::analytics::repository::credit_simulation_matrix_row_config_repository;
 using ores::analytics::repository::credit_simulation_netting_set_config_repository;
 using ores::ore::domain::credit_rating_scale;
-using ores::ore::domain::credit_simulation_mapper;
-using ores::ore::domain::creditsimulation;
+using ores::ore::domain::credit_simulation_projection;
 using ores::ore::domain::mapped_credit_simulation;
 using ores::logging::make_logger;
 using ores::testing::scoped_database_helper;
@@ -76,10 +74,9 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(f);
 
-    creditsimulation original;
-    ores::ore::domain::load_data(content, original);
+    const auto original = credit_simulation_projection::read(content, f.string());
 
-    mapped_credit_simulation mapped = credit_simulation_mapper::map(original);
+    mapped_credit_simulation mapped = credit_simulation_projection::map(original);
     ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(mapped.rows.size() == credit_rating_scale.size());
 
@@ -134,28 +131,25 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
     // Export from what the database returned, not from what was written.
     mapped_credit_simulation from_database = mapped;
     from_database.rows = rows;
-    const creditsimulation rebuilt = credit_simulation_mapper::reverse(from_database);
-    const std::string exported_xml = ores::ore::domain::save_data(rebuilt);
+    const auto rebuilt = credit_simulation_projection::reverse(from_database);
+    const std::string exported_xml = credit_simulation_projection::write(rebuilt);
 
     // No state comment is written: the ratings come from the type, so the
     // exported document differs from the original by that comment alone.
     CHECK(exported_xml.find("<!--") == std::string::npos);
 
-    creditsimulation exported;
-    ores::ore::domain::load_data(exported_xml, exported);
-    REQUIRE(exported.TransitionMatrices.TransitionMatrix.size() == 1);
-    CHECK(exported.Entities.Entity.size() == original.Entities.Entity.size());
+    const auto exported = credit_simulation_projection::read(exported_xml);
+    REQUIRE(exported.transition_matrices.transition_matrix.size() == 1);
+    CHECK(exported.entities.entity.size() == original.entities.entity.size());
 }
 
 TEST_CASE("a party sees only its own credit simulation configuration", tags) {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
-    creditsimulation original;
-    ores::ore::domain::load_data(
-        ores::platform::filesystem::file::read_content(
-            ore_path("examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml")),
-        original);
-    auto mapped = credit_simulation_mapper::map(original);
+    const auto original =
+        credit_simulation_projection::read(ores::platform::filesystem::file::read_content(
+            ore_path("examples/CreditRisk/Input/CreditPortfolioModel/creditsimulation.xml")));
+    auto mapped = credit_simulation_projection::map(original);
     ores::database::domain::assign_party(mapped, parties.a);
 
     ores::analytics::repository::credit_simulation_config_repository repo;

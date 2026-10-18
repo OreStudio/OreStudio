@@ -18,6 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.reporting.core/repository/configuration_type_repository.hpp"
 #include "ores.testing/project_root.hpp"
@@ -67,7 +68,8 @@ const std::map<std::string, std::function<std::string()>>& savers() {
         {"simulation", saved_empty<simulation>},
         {"sensitivity", saved_empty<sensitivityanalysis>},
         {"stress_test", saved_empty<stresstesting>},
-        {"credit_simulation", saved_empty<creditsimulation>},
+        {"credit_simulation",
+         [] { return ores::ore::domain::credit_simulation_projection::write({}); }},
         {"curve_configuration", saved_empty<curveconfiguration>},
         {"conventions", saved_empty<conventions>},
         {"calendar_adjustment", saved_empty<calendaradjustment>},

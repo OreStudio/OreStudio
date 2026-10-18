@@ -26,6 +26,7 @@
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.nats/service/nats_connect_error.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/next_fire_plan.hpp"
@@ -66,19 +67,104 @@ struct report_trigger_action_payload {
 // are the ones the trigger path consents under as well, so the pair is stated
 // once, in report_run_grant_service.
 
+/**
+ * @brief How a call to another service failed, in the words a result carries.
+ *
+ * The three transport failures are kept apart because a caller acts on each
+ * differently: a refusal is an answer that must not be retried unchanged, no
+ * responders is an absence to wait out, and a deadline that passed may be
+ * retried. The outcome is the protocol's own coarse word and the code is the
+ * one the transport already states for the case, so neither is a word of this
+ * service's own.
+ */
+struct call_failure {
+    ores::utility::domain::outcome outcome;
+    std::string code;
+    std::string message;
+};
+
+/**
+ * @brief The code a request nobody is subscribed to carries.
+ *
+ * It is the nats_error_kind that names the case, because the outcome catalogue
+ * holds refused operations and not transport failures, so no entry covers it.
+ */
+inline constexpr std::string_view no_responders_code = "services_unavailable";
+
+/**
+ * @brief The code a request that ran its deadline out carries.
+ *
+ * `nats_error_kind::connection_timeout` names a connect that failed, which is
+ * another failure, so the deadline's own name is used: the platform calls it
+ * the request timeout.
+ */
+inline constexpr std::string_view request_timeout_code = "request_timeout";
+
+/**
+ * @brief What ores.nats states when a request ran its deadline out.
+ *
+ * The transport raises it as a plain runtime error and gives it no kind of its
+ * own, so these words are all that tells it from a fault this service cannot
+ * name.
+ */
+inline constexpr std::string_view request_timeout_message = "NATS request timed out";
+
+/**
+ * @brief The code for a fault of this service or of its transport.
+ */
+std::string internal_error_code() {
+    return std::string(ores::database::domain::to_string(outcome_code::internal_error));
+}
+
 template <typename Request>
-std::expected<typename Request::response_type, std::string>
+std::expected<typename Request::response_type, call_failure>
 call(ores::nats::service::nats_client& nats, const Request& request) {
+    using ores::utility::domain::outcome;
     const auto& codec = ores::nats::default_wire_codec();
-    const auto msg = nats.authenticated_request(Request::nats_subject, codec.encode(request));
-    if (const auto it = msg.headers.find(std::string(ores::nats::headers::x_error));
-        it != msg.headers.end())
-        return std::unexpected(std::string(Request::nats_subject) + " refused: " + it->second);
-    auto response = codec.decode<typename Request::response_type>(msg.data);
+    const std::string subject(Request::nats_subject);
+    ores::nats::message reply;
+    try {
+        reply = nats.authenticated_request(Request::nats_subject, codec.encode(request));
+    } catch (const ores::nats::service::nats_connect_error& e) {
+        // Nobody is listening: the service is down, or the subject is wrong.
+        if (e.kind() == ores::nats::service::nats_error_kind::services_unavailable)
+            return std::unexpected(call_failure{.outcome = outcome::unavailable,
+                                                .code = std::string(no_responders_code),
+                                                .message = e.what()});
+        return std::unexpected(call_failure{
+            .outcome = outcome::failed, .code = internal_error_code(), .message = e.what()});
+    } catch (const std::exception& e) {
+        // Someone is there and is slow, or the transport broke in a way it does
+        // not name. Only the first is a dependency the caller may retry.
+        if (std::string_view(e.what()) == request_timeout_message)
+            return std::unexpected(call_failure{.outcome = outcome::unavailable,
+                                                .code = std::string(request_timeout_code),
+                                                .message = subject +
+                                                           " did not answer within the request "
+                                                           "deadline."});
+        return std::unexpected(
+            call_failure{.outcome = outcome::failed,
+                         .code = internal_error_code(),
+                         .message = subject + " could not be called: " + e.what()});
+    }
+    // A refusal is an answer, and the code it names is the one the caller acts
+    // on, so it travels on unchanged, expiry codes included: the session that
+    // ran out is the caller's own, relayed, and only the caller can renew it.
+    if (const auto it = reply.headers.find(std::string(ores::nats::headers::x_error));
+        it != reply.headers.end())
+        return std::unexpected(
+            call_failure{.outcome = outcome::denied,
+                         .code = it->second,
+                         .message = subject + " refused the request: " + it->second});
+    auto response = codec.decode<typename Request::response_type>(reply.data);
     if (!response)
-        return std::unexpected(std::string(Request::nats_subject) + " answered unreadably");
+        return std::unexpected(call_failure{.outcome = outcome::failed,
+                                            .code = internal_error_code(),
+                                            .message = subject + " answered unreadably."});
     if (!response->success)
-        return std::unexpected(response->message);
+        return std::unexpected(call_failure{.outcome = outcome::failed,
+                                            .code = internal_error_code(),
+                                            .message = response->message});
     return *response;
 }
 
@@ -234,8 +320,9 @@ report_scheduling_service::grant_runs(const domain::report_definition& def) {
     try {
         const auto granted = call(*person_nats_, req);
         if (!granted)
-            return std::unexpected("IAM refused the run grant for definition " +
-                                   boost::uuids::to_string(def.id) + ": " + granted.error());
+            return std::unexpected("IAM could not grant the run of definition " +
+                                   boost::uuids::to_string(def.id) + ": " +
+                                   granted.error().message);
         return boost::uuids::string_generator()(granted->grant_id);
     } catch (const std::exception& e) {
         return std::unexpected(std::string("IAM run grant call failed: ") + e.what());
@@ -251,7 +338,7 @@ report_scheduling_service::revoke_runs(const boost::uuids::uuid& grant_id) {
     req.reason = "schedule not recorded";
     try {
         if (const auto revoked = call(*person_nats_, req); !revoked)
-            return std::unexpected(revoked.error());
+            return std::unexpected(revoked.error().message);
         return {};
     } catch (const std::exception& e) {
         return std::unexpected(std::string("IAM run grant call failed: ") + e.what());
@@ -574,8 +661,7 @@ messaging::get_next_fire_response report_scheduling_service::next_fire_for_defin
         return response;
 
     if (!person_nats_) {
-        response.result.outcome = ores::utility::domain::outcome::failed;
-        response.result.code = "internal_error";
+        response.result = refuse(outcome_code::internal_error);
         response.result.message =
             "The next fire time is read with the caller's own session, and no session was "
             "delegated.";
@@ -590,12 +676,16 @@ messaging::get_next_fire_response report_scheduling_service::next_fire_for_defin
     const auto status =
         call(*person_nats_, ores::scheduler::messaging::get_scheduler_status_request{});
     if (!status) {
-        response.result.outcome = ores::utility::domain::outcome::failed;
-        response.result.code = "internal_error";
-        // The scheduler's own words, so a caller it refused reads the refusal
-        // rather than a report that the reporting service broke.
-        response.result.message = status.error();
-        BOOST_LOG_SEV(lg(), warn) << "Next fire times unavailable: " << status.error();
+        // The classification the call made, not one made here: a refusal reads
+        // as denied with the scheduler's own code, an absent scheduler as
+        // unavailable, and only a fault of this service as internal_error. The
+        // message carries the scheduler's words, so nothing it said is lost.
+        const auto& failure = status.error();
+        response.result.outcome = failure.outcome;
+        response.result.code = failure.code;
+        response.result.message = failure.message;
+        BOOST_LOG_SEV(lg(), warn) << "Next fire times unavailable (" << failure.code
+                                  << "): " << failure.message;
         return response;
     }
 

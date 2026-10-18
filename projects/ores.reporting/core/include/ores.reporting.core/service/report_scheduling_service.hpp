@@ -132,7 +132,17 @@ public:
      * relays the caller's own session to scheduler.v1.ops.get_scheduler_status.
      * The caller's scheduler grant is what answers it: the reporting service
      * adds no authority of its own, and a caller without
-     * scheduler::job_instances:read reads the refusal in the result.
+     * scheduler::job_instances:read reads the refusal in the result, which is
+     * outcome @c denied with the scheduler's own code (@c forbidden) and its
+     * words. A scheduler nobody is subscribed for reads as outcome
+     * @c unavailable with code @c services_unavailable, and one that does not
+     * answer inside the request deadline as outcome @c unavailable with code
+     * @c request_timeout. Only this service's own faults read as
+     * @c internal_error.
+     *
+     * A dependency that cannot be reached leaves the read answerable and
+     * states no schedule: a next fire that cannot be determined is absent,
+     * never a time this service made up.
      *
      * One status call answers every definition asked for, so a screen pays one
      * scheduler read per page and not one per row.

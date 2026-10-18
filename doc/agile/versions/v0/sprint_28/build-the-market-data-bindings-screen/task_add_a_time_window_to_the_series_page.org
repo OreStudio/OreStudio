@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/add-a-time-window-to-the-series-page
-#+pr:
+#+pr: 3522
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -154,7 +154,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3522][#3522]] | [marketdata,web] Add a time window to the series page |
 
 * Review
 

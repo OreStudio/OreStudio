@@ -70,6 +70,14 @@ interface RunView {
     readonly warnings: number | null;
 }
 
+/**
+ * One row, as this module composes it.
+ *
+ * The browser reads the same shape through `reportsPageSchema` in
+ * `wire-protocol/src/reporting.ts`, which brands the two instants; the module
+ * states them as plain strings because this side only passes them through and
+ * never parses them.
+ */
 interface ReportRow {
     readonly name: string;
     readonly reportType: string;

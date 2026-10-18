@@ -26,12 +26,12 @@ A record detail can carry a hint, and it shows as a native title on the label. A
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -84,3 +84,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged as [[https://github.com/OreStudio/OreStudio/pull/3496][#3496]].
+
+- =ui/Tooltip.tsx= holds one shared tooltip. It opens on hover, on keyboard
+  focus and on tap, and it wires =aria-describedby= from the label to the hint.
+- =revealAfter= is a pure function over the reveal state. A test covers when
+  the hint stays open and when it closes.
+- The record screen hints use the tooltip. The native =title= attribute is gone.
+

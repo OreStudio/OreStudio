@@ -8,7 +8,7 @@
 #+filetags: :close-the-credit-loose-ends:sprint_28:v0:
 #+owner: marco
 #+branch: feature/key-netting-sets-by-credit-limit
-#+pr:
+#+pr: 3499
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3499][#3499]] | [refdata] Key netting sets by their credit limit |
 
 * Review
 

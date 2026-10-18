@@ -135,6 +135,25 @@ write_bond_instrument(xml::record_writer& trade,
                       const portfolio_reference_curves& reference_curves) -> bool;
 
 /**
+ * @brief The credit family: a routed header, one fact row per product and legs
+ * grouped by the payment they state.
+ *
+ * An index swap, an index option and a synthetic CDO state a basket of names
+ * beside the instrument, and a risk participation agreement states its own legs
+ * as the rows of two groups. A product's legs are keyed by the trade, so the
+ * group is the column that tells one product's legs from another's.
+ */
+ORES_ORE_CORE_EXPORT auto read_credit_instrument(xml::record_reader trade,
+                                                 std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument>;
+
+ORES_ORE_CORE_EXPORT auto
+write_credit_instrument(xml::record_writer& trade,
+                        std::string_view trade_type,
+                        const trading::domain::trade_instrument& instrument,
+                        const portfolio_reference_curves& reference_curves) -> bool;
+
+/**
  * @brief The FX family: one carrier holding a row per product, and no header.
  *
  * The carrier states a product by the array its row sits in, so the reading

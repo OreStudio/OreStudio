@@ -27,6 +27,7 @@ set(files
     "domain/conventions_diff.cpp"
     "domain/conventions_mapper.cpp"
     "domain/credit_instrument_mapper.cpp"
+    "domain/credit_instrument_projection.cpp"
     "domain/credit_simulation_projection.cpp"
     "domain/curve_configuration_projection.cpp"
     "domain/domain.cpp"

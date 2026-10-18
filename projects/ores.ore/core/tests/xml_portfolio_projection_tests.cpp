@@ -1503,3 +1503,704 @@ TEST_CASE("a_portfolio_document_projects_a_bond_option_and_its_redemption", tags
     REQUIRE(round->option_exercise_dates.size() == 1);
     CHECK(round->option_exercise_dates[0] == "2028-02-02");
 }
+
+TEST_CASE("a_portfolio_document_projects_a_credit_default_swap_and_its_premium_leg", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="cds-1">
+    <TradeType>CreditDefaultSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_D</CounterParty>
+      <NettingSetId>NS-C</NettingSetId>
+    </Envelope>
+    <CreditDefaultSwapData>
+      <IssuerId>ACME</IssuerId>
+      <CreditCurveId>ACME-SR</CreditCurveId>
+      <ReferenceObligation>ACME-5Y</ReferenceObligation>
+      <SettlesAccrual>Y</SettlesAccrual>
+      <PaysAtDefaultTime>true</PaysAtDefaultTime>
+      <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
+      <ProtectionStart>2024-06-03</ProtectionStart>
+      <UpfrontDate>2024-06-05</UpfrontDate>
+      <UpfrontFee>1250.5</UpfrontFee>
+      <FixedRecoveryRate>0.4</FixedRecoveryRate>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>USD</Currency>
+        <DayCounter>ACT/360</DayCounter>
+        <PaymentConvention>MF</PaymentConvention>
+        <Notionals><Notional>10000000</Notional></Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-06-03</StartDate>
+            <EndDate>2029-06-03</EndDate>
+            <Tenor>3M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData><Rates><Rate>0.01</Rate></Rates></FixedLegData>
+      </LegData>
+      <TradeDate>2024-06-01</TradeDate>
+      <CashSettlementDays>3</CashSettlementDays>
+    </CreditDefaultSwapData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].anchor.trade_type == "CreditDefaultSwap");
+
+    const auto* instrument =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
+    REQUIRE(instrument != nullptr);
+    CHECK(instrument->instrument.identity.trade_type_code == "CreditDefaultSwap");
+    CHECK(instrument->instrument.audit.modified_by == "ores");
+    CHECK(instrument->instrument.reference_entity == "ACME");
+    CHECK(instrument->instrument.start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 6, 3)));
+    CHECK(instrument->instrument.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2029, 6, 3)));
+
+    REQUIRE(instrument->credit_default_swap_instruments.size() == 1);
+    const auto& fact = instrument->credit_default_swap_instruments[0];
+    CHECK(fact.credit_curve_id == std::optional<std::string>("ACME-SR"));
+    CHECK(fact.issuer_id == std::optional<std::string>("ACME"));
+    CHECK(fact.reference_obligation == std::optional<std::string>("ACME-5Y"));
+    CHECK(fact.settles_accrual == std::optional<bool>(true));
+    CHECK(fact.rebates_accrual == std::nullopt);
+    CHECK(fact.pays_at_default_time == std::optional<bool>(true));
+    CHECK(fact.protection_payment_time == std::optional<std::string>("atDefault"));
+    CHECK(fact.protection_start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 6, 3)));
+    CHECK(fact.upfront_date == std::optional<std::chrono::year_month_day>(date_of(2024, 6, 5)));
+    REQUIRE(fact.upfront_fee.has_value());
+    CHECK(fact.upfront_fee->to_string() == "1250.5");
+    CHECK(fact.recovery_rate == std::optional<double>(0.4));
+    CHECK(fact.trade_date == std::optional<std::chrono::year_month_day>(date_of(2024, 6, 1)));
+    CHECK(fact.cash_settlement_days == std::optional<int>(3));
+    CHECK(fact.modified_by == "ores");
+
+    REQUIRE(instrument->legs.size() == 1);
+    CHECK(instrument->legs[0].leg_group == std::optional<std::string>("premium"));
+    CHECK(instrument->legs[0].payer == std::optional<bool>(true));
+    CHECK(instrument->legs[0].leg_type_code == "Fixed");
+    CHECK(instrument->legs[0].currency == "USD");
+    CHECK(instrument->legs[0].day_count_fraction_code == "ACT/360");
+    CHECK(instrument->legs[0].payment_frequency_code == "Quarterly");
+
+    REQUIRE(instrument->leg_amounts.size() == 1);
+    CHECK(instrument->leg_amounts[0].leg_number == 1);
+    CHECK(instrument->leg_amounts[0].amount.to_string() == "10000000");
+    REQUIRE(instrument->leg_rates.size() == 1);
+    CHECK(instrument->leg_rates[0].rate_role == "fixed");
+    CHECK(instrument->leg_rates[0].value.to_string() == "0.01");
+
+    const auto back = rebuild(items[0]);
+    const auto* round =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    CHECK(back.anchor.trade_type == "CreditDefaultSwap");
+    CHECK(round->instrument.reference_entity == "ACME");
+    CHECK(round->instrument.start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 6, 3)));
+    CHECK(round->instrument.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2029, 6, 3)));
+    REQUIRE(round->credit_default_swap_instruments.size() == 1);
+    const auto& round_fact = round->credit_default_swap_instruments[0];
+    CHECK(round_fact.credit_curve_id == std::optional<std::string>("ACME-SR"));
+    CHECK(round_fact.issuer_id == std::optional<std::string>("ACME"));
+    CHECK(round_fact.reference_obligation == std::optional<std::string>("ACME-5Y"));
+    CHECK(round_fact.settles_accrual == std::optional<bool>(true));
+    CHECK(round_fact.pays_at_default_time == std::optional<bool>(true));
+    CHECK(round_fact.protection_payment_time == std::optional<std::string>("atDefault"));
+    REQUIRE(round_fact.upfront_fee.has_value());
+    CHECK(round_fact.upfront_fee->to_string() == "1250.5");
+    CHECK(round_fact.recovery_rate == std::optional<double>(0.4));
+    CHECK(round_fact.cash_settlement_days == std::optional<int>(3));
+    REQUIRE(round->legs.size() == 1);
+    CHECK(round->legs[0].leg_group == std::optional<std::string>("premium"));
+    CHECK(round->legs[0].leg_type_code == "Fixed");
+    CHECK(round->legs[0].payment_frequency_code == "Quarterly");
+    REQUIRE(round->leg_amounts.size() == 1);
+    CHECK(round->leg_amounts[0].amount.to_string() == "10000000");
+    REQUIRE(round->leg_rates.size() == 1);
+    CHECK(round->leg_rates[0].value.to_string() == "0.01");
+}
+
+TEST_CASE("a_portfolio_document_projects_a_credit_linked_swap_and_its_payment_groups", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="cls-1">
+    <TradeType>CreditLinkedSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_D</CounterParty>
+      <NettingSetId>NS-C</NettingSetId>
+    </Envelope>
+    <CreditLinkedSwapData>
+      <CreditCurveId>ACME-SR</CreditCurveId>
+      <SettlesAccrual>Y</SettlesAccrual>
+      <FixedRecoveryRate>0.35</FixedRecoveryRate>
+      <DefaultPaymentTime>atDefault</DefaultPaymentTime>
+      <IndependentPayments>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>USD</Currency>
+          <DayCounter>ACT/360</DayCounter>
+          <Notionals><Notional>5000000</Notional></Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2024-05-01</StartDate>
+              <EndDate>2026-05-01</EndDate>
+              <Tenor>6M</Tenor>
+              <Convention>MF</Convention>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData><Rates><Rate>0.02</Rate></Rates></FixedLegData>
+        </LegData>
+      </IndependentPayments>
+      <ContingentPayments>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Floating</LegType>
+          <Currency>USD</Currency>
+          <DayCounter>ACT/360</DayCounter>
+          <Notionals><Notional>5000000</Notional></Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2024-07-01</StartDate>
+              <EndDate>2029-07-01</EndDate>
+              <Tenor>3M</Tenor>
+              <Convention>MF</Convention>
+            </Rules>
+          </ScheduleData>
+          <FloatingLegData>
+            <Index>USD-LIBOR-3M</Index>
+            <Spreads><Spread>0.0015</Spread></Spreads>
+          </FloatingLegData>
+        </LegData>
+      </ContingentPayments>
+    </CreditLinkedSwapData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].anchor.trade_type == "CreditLinkedSwap");
+
+    const auto* instrument =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
+    REQUIRE(instrument != nullptr);
+    CHECK(instrument->instrument.identity.trade_type_code == "CreditLinkedSwap");
+    CHECK(instrument->instrument.reference_entity == "ACME-SR");
+    // The header's dates are those of the first contingent payment leg.
+    CHECK(instrument->instrument.start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 7, 1)));
+    CHECK(instrument->instrument.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2029, 7, 1)));
+
+    REQUIRE(instrument->credit_linked_swap_instruments.size() == 1);
+    const auto& fact = instrument->credit_linked_swap_instruments[0];
+    CHECK(fact.credit_curve_id == "ACME-SR");
+    CHECK(fact.settles_accrual == std::optional<bool>(true));
+    CHECK(fact.recovery_rate == std::optional<double>(0.35));
+    CHECK(fact.default_payment_time == std::optional<std::string>("atDefault"));
+
+    REQUIRE(instrument->legs.size() == 2);
+    CHECK(instrument->legs[0].identity.leg_number == 1);
+    CHECK(instrument->legs[0].leg_group == std::optional<std::string>("independent"));
+    CHECK(instrument->legs[0].leg_type_code == "Fixed");
+    CHECK(instrument->legs[0].payment_frequency_code == "Semiannual");
+    CHECK(instrument->legs[1].leg_group == std::optional<std::string>("contingent"));
+    CHECK(instrument->legs[1].leg_type_code == "Floating");
+    CHECK(instrument->legs[1].payment_frequency_code == "Quarterly");
+    CHECK(instrument->legs[1].floating_index_code == "USD-LIBOR-3M");
+
+    REQUIRE(instrument->leg_amounts.size() == 2);
+    CHECK(instrument->leg_amounts[0].leg_number == 1);
+    CHECK(instrument->leg_amounts[0].amount.to_string() == "5000000");
+    CHECK(instrument->leg_amounts[1].leg_number == 2);
+    REQUIRE(instrument->leg_rates.size() == 2);
+    CHECK(instrument->leg_rates[0].rate_role == "fixed");
+    CHECK(instrument->leg_rates[0].value.to_string() == "0.02");
+    CHECK(instrument->leg_rates[1].rate_role == "spread");
+    CHECK(instrument->leg_rates[1].value.to_string() == "0.0015");
+
+    const auto back = rebuild(items[0]);
+    const auto* round =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    CHECK(back.anchor.trade_type == "CreditLinkedSwap");
+    CHECK(round->instrument.reference_entity == "ACME-SR");
+    CHECK(round->instrument.start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 7, 1)));
+    CHECK(round->instrument.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2029, 7, 1)));
+    REQUIRE(round->credit_linked_swap_instruments.size() == 1);
+    CHECK(round->credit_linked_swap_instruments[0].recovery_rate == std::optional<double>(0.35));
+    REQUIRE(round->legs.size() == 2);
+    CHECK(round->legs[0].leg_group == std::optional<std::string>("independent"));
+    CHECK(round->legs[1].leg_group == std::optional<std::string>("contingent"));
+    CHECK(round->legs[1].floating_index_code == "USD-LIBOR-3M");
+    REQUIRE(round->leg_rates.size() == 2);
+    CHECK(round->leg_rates[1].value.to_string() == "0.0015");
+}
+
+TEST_CASE("a_portfolio_document_projects_an_index_swap_and_a_synthetic_cdo", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="index-cds-1">
+    <TradeType>IndexCreditDefaultSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_E</CounterParty>
+      <NettingSetId>NS-I</NettingSetId>
+    </Envelope>
+    <IndexCreditDefaultSwapData>
+      <IssuerId>ITRAXX</IssuerId>
+      <CreditCurveId>ITRAXX-S28-5Y</CreditCurveId>
+      <SettlesAccrual>Y</SettlesAccrual>
+      <ProtectionStart>2024-03-20</ProtectionStart>
+      <UpfrontFee>25000</UpfrontFee>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <DayCounter>ACT/360</DayCounter>
+        <Notionals><Notional>25000000</Notional></Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-03-20</StartDate>
+            <EndDate>2029-03-20</EndDate>
+            <Tenor>3M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData><Rates><Rate>0.01</Rate></Rates></FixedLegData>
+      </LegData>
+      <TradeDate>2024-03-18</TradeDate>
+      <CashSettlementDays>2</CashSettlementDays>
+      <BasketData>
+        <Name>
+          <IssuerId>ACME</IssuerId>
+          <CreditCurveId>ACME-SR</CreditCurveId>
+          <Notional>1000000</Notional>
+          <Weight>0.5</Weight>
+          <Currency>EUR</Currency>
+        </Name>
+        <Name>
+          <IssuerId>BETA</IssuerId>
+          <CreditCurveId>BETA-SR</CreditCurveId>
+          <Notional>1000000</Notional>
+          <Weight>0.5</Weight>
+          <Currency>EUR</Currency>
+        </Name>
+      </BasketData>
+    </IndexCreditDefaultSwapData>
+  </Trade>
+  <Trade id="cdo-1">
+    <TradeType>SyntheticCDO</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_E</CounterParty>
+      <NettingSetId>NS-I</NettingSetId>
+    </Envelope>
+    <CdoData>
+      <Qualifier>CDO-1</Qualifier>
+      <ProtectionStart>2024-01-10</ProtectionStart>
+      <UpfrontDate>2024-01-12</UpfrontDate>
+      <UpfrontFee>1500</UpfrontFee>
+      <SettlesAccrual>N</SettlesAccrual>
+      <FixedRecoveryRate>0.4</FixedRecoveryRate>
+      <AttachmentPoint>0.03</AttachmentPoint>
+      <DetachmentPoint>0.06</DetachmentPoint>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <DayCounter>ACT/360</DayCounter>
+        <Notionals><Notional>20000000</Notional></Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-01-10</StartDate>
+            <EndDate>2029-01-10</EndDate>
+            <Tenor>3M</Tenor>
+            <Convention>MF</Convention>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData><Rates><Rate>0.045</Rate></Rates></FixedLegData>
+      </LegData>
+      <BasketData>
+        <Name>
+          <IssuerId>ACME</IssuerId>
+          <CreditCurveId>ACME-SR</CreditCurveId>
+          <Currency>EUR</Currency>
+        </Name>
+      </BasketData>
+    </CdoData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    CHECK(items[0].anchor.trade_type == "IndexCreditDefaultSwap");
+    CHECK(items[1].anchor.trade_type == "SyntheticCDO");
+
+    const auto* index_swap =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
+    REQUIRE(index_swap != nullptr);
+    CHECK(index_swap->instrument.reference_entity == "ITRAXX-S28-5Y");
+    REQUIRE(index_swap->index_credit_default_swap_instruments.size() == 1);
+    const auto& index_fact = index_swap->index_credit_default_swap_instruments[0];
+    CHECK(index_fact.credit_curve_id == "ITRAXX-S28-5Y");
+    CHECK(index_fact.issuer_id == std::optional<std::string>("ITRAXX"));
+    CHECK(index_fact.settles_accrual == std::optional<bool>(true));
+    REQUIRE(index_fact.upfront_fee.has_value());
+    CHECK(index_fact.upfront_fee->to_string() == "25000");
+    CHECK(index_fact.trade_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 3, 18)));
+    CHECK(index_fact.cash_settlement_days == std::optional<int>(2));
+
+    REQUIRE(index_swap->constituents.size() == 2);
+    CHECK(index_swap->constituents[0].sequence_number == 1);
+    CHECK(index_swap->constituents[0].issuer_id == "ACME");
+    CHECK(index_swap->constituents[0].credit_curve_id == std::optional<std::string>("ACME-SR"));
+    REQUIRE(index_swap->constituents[0].notional.has_value());
+    CHECK(index_swap->constituents[0].notional->to_string() == "1000000");
+    CHECK(index_swap->constituents[0].weight == std::optional<double>(0.5));
+    CHECK(index_swap->constituents[0].currency == std::optional<std::string>("EUR"));
+    CHECK(index_swap->constituents[1].sequence_number == 2);
+    CHECK(index_swap->constituents[1].issuer_id == "BETA");
+
+    const auto* cdo =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&items[1].instrument);
+    REQUIRE(cdo != nullptr);
+    CHECK(cdo->instrument.reference_entity == "CDO-1");
+    CHECK(cdo->instrument.start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 1, 10)));
+    CHECK(cdo->instrument.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2029, 1, 10)));
+    REQUIRE(cdo->synthetic_cdo_instruments.size() == 1);
+    const auto& cdo_fact = cdo->synthetic_cdo_instruments[0];
+    CHECK(cdo_fact.qualifier == "CDO-1");
+    CHECK(cdo_fact.protection_start_date == date_of(2024, 1, 10));
+    REQUIRE(cdo_fact.upfront_fee.has_value());
+    CHECK(cdo_fact.upfront_fee->to_string() == "1500");
+    CHECK(cdo_fact.settles_accrual == std::optional<bool>(false));
+    CHECK(cdo_fact.attachment_point == 0.03);
+    CHECK(cdo_fact.detachment_point == 0.06);
+    CHECK(cdo_fact.recovery_rate == std::optional<double>(0.4));
+    REQUIRE(cdo->legs.size() == 1);
+    CHECK(cdo->legs[0].leg_group == std::optional<std::string>("premium"));
+    REQUIRE(cdo->constituents.size() == 1);
+    CHECK(cdo->constituents[0].issuer_id == "ACME");
+    CHECK(!cdo->constituents[0].notional.has_value());
+    CHECK(!cdo->constituents[0].weight.has_value());
+
+    const auto index_again = rebuild(items[0]);
+    const auto* index_round =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&index_again.instrument);
+    REQUIRE(index_round != nullptr);
+    CHECK(index_again.anchor.trade_type == "IndexCreditDefaultSwap");
+    REQUIRE(index_round->constituents.size() == 2);
+    CHECK(index_round->constituents[0].issuer_id == "ACME");
+    CHECK(index_round->constituents[0].weight == std::optional<double>(0.5));
+    CHECK(index_round->constituents[1].issuer_id == "BETA");
+    REQUIRE(index_round->index_credit_default_swap_instruments.size() == 1);
+    REQUIRE(index_round->index_credit_default_swap_instruments[0].upfront_fee.has_value());
+    CHECK(index_round->index_credit_default_swap_instruments[0].upfront_fee->to_string() ==
+          "25000");
+
+    const auto cdo_again = rebuild(items[1]);
+    const auto* cdo_round =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&cdo_again.instrument);
+    REQUIRE(cdo_round != nullptr);
+    CHECK(cdo_again.anchor.trade_type == "SyntheticCDO");
+    REQUIRE(cdo_round->synthetic_cdo_instruments.size() == 1);
+    const auto& cdo_round_fact = cdo_round->synthetic_cdo_instruments[0];
+    CHECK(cdo_round_fact.qualifier == "CDO-1");
+    CHECK(cdo_round_fact.protection_start_date == date_of(2024, 1, 10));
+    REQUIRE(cdo_round_fact.upfront_fee.has_value());
+    CHECK(cdo_round_fact.upfront_fee->to_string() == "1500");
+    CHECK(cdo_round_fact.attachment_point == 0.03);
+    CHECK(cdo_round_fact.detachment_point == 0.06);
+    REQUIRE(cdo_round->constituents.size() == 1);
+    CHECK(cdo_round->constituents[0].issuer_id == "ACME");
+}
+
+TEST_CASE("a_portfolio_document_projects_a_risk_participation_agreement", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="rpa-1">
+    <TradeType>RiskParticipationAgreement</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_F</CounterParty>
+      <NettingSetId>NS-R</NettingSetId>
+    </Envelope>
+    <RiskParticipationAgreementData>
+      <ParticipationRate>0.5</ParticipationRate>
+      <ProtectionStart>2024-02-01</ProtectionStart>
+      <ProtectionEnd>2029-02-01</ProtectionEnd>
+      <CreditCurveId>ACME-SR</CreditCurveId>
+      <IssuerId>ACME</IssuerId>
+      <SettlesAccrual>true</SettlesAccrual>
+      <FixedRecoveryRate>0.4</FixedRecoveryRate>
+      <ProtectionFee>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>USD</Currency>
+          <DayCounter>ACT/360</DayCounter>
+          <Notionals><Notional>2000000</Notional></Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2024-02-01</StartDate>
+              <EndDate>2025-02-01</EndDate>
+              <Tenor>3M</Tenor>
+              <Convention>MF</Convention>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData><Rates><Rate>0.03</Rate></Rates></FixedLegData>
+        </LegData>
+      </ProtectionFee>
+      <Underlying>
+        <OptionData>
+          <LongShort>Long</LongShort>
+          <Style>European</Style>
+          <ExerciseDates><ExerciseDate>2029-02-01</ExerciseDate></ExerciseDates>
+        </OptionData>
+        <NakedOption>false</NakedOption>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Cashflow</LegType>
+          <Currency>USD</Currency>
+          <DayCounter>ACT/360</DayCounter>
+          <CashflowData>
+            <Cashflow><Amount date="2029-02-01">250000</Amount></Cashflow>
+          </CashflowData>
+        </LegData>
+      </Underlying>
+    </RiskParticipationAgreementData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].anchor.trade_type == "RiskParticipationAgreement");
+
+    const auto* instrument =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
+    REQUIRE(instrument != nullptr);
+    CHECK(instrument->instrument.identity.trade_type_code == "RiskParticipationAgreement");
+    CHECK(instrument->instrument.reference_entity == "ACME");
+    CHECK(instrument->instrument.start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 2, 1)));
+    CHECK(instrument->instrument.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2029, 2, 1)));
+
+    REQUIRE(instrument->risk_participation_agreement_instruments.size() == 1);
+    const auto& fact = instrument->risk_participation_agreement_instruments[0];
+    CHECK(fact.participation_rate == 0.5);
+    CHECK(fact.credit_curve_id == "ACME-SR");
+    CHECK(fact.issuer_id == std::optional<std::string>("ACME"));
+    CHECK(fact.settles_accrual == std::optional<bool>(true));
+    CHECK(fact.recovery_rate == std::optional<double>(0.4));
+    CHECK(fact.naked_option == std::optional<bool>(false));
+
+    REQUIRE(instrument->legs.size() == 2);
+    CHECK(instrument->legs[0].leg_group == std::optional<std::string>("protection_fee"));
+    CHECK(instrument->legs[0].leg_type_code == "Fixed");
+    CHECK(instrument->legs[0].payment_frequency_code == "Quarterly");
+    CHECK(instrument->legs[1].leg_group == std::optional<std::string>("underlying"));
+    CHECK(instrument->legs[1].leg_type_code == "Cashflow");
+    REQUIRE(instrument->leg_amounts.size() == 2);
+    CHECK(instrument->leg_amounts[0].amount.to_string() == "2000000");
+    CHECK(instrument->leg_amounts[1].amount.to_string() == "250000");
+    CHECK(instrument->leg_amounts[1].start_date == date_of(2029, 2, 1));
+    REQUIRE(instrument->leg_rates.size() == 1);
+    CHECK(instrument->leg_rates[0].rate_role == "fixed");
+    CHECK(instrument->leg_rates[0].value.to_string() == "0.03");
+
+    // The protection fee leg keeps its own schedule, which is the period it
+    // states rather than the protection period the header holds.
+    REQUIRE(instrument->schedules.size() == 2);
+    CHECK(instrument->schedules[0].owner_role == "swap");
+    CHECK(instrument->schedules[0].owner_number == 1);
+    CHECK(instrument->schedules[0].schedule_role == "schedule");
+    CHECK(instrument->schedules[0].start_date == date_of(2024, 2, 1));
+    CHECK(instrument->schedules[0].end_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2025, 2, 1)));
+    CHECK(instrument->schedules[1].owner_role == "option");
+    CHECK(instrument->schedules[1].schedule_role == "exercise_dates");
+
+    REQUIRE(instrument->options.size() == 1);
+    CHECK(instrument->options[0].long_short == "Long");
+    CHECK(instrument->options[0].style == std::optional<std::string>("European"));
+    REQUIRE(instrument->schedule_dates.size() == 1);
+    CHECK(instrument->schedule_dates[0].schedule_date == date_of(2029, 2, 1));
+
+    const auto back = rebuild(items[0]);
+    const auto* round =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    CHECK(back.anchor.trade_type == "RiskParticipationAgreement");
+    CHECK(round->instrument.reference_entity == "ACME");
+    CHECK(round->instrument.start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 2, 1)));
+    CHECK(round->instrument.maturity_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2029, 2, 1)));
+    REQUIRE(round->risk_participation_agreement_instruments.size() == 1);
+    const auto& round_fact = round->risk_participation_agreement_instruments[0];
+    CHECK(round_fact.participation_rate == 0.5);
+    CHECK(round_fact.credit_curve_id == "ACME-SR");
+    CHECK(round_fact.issuer_id == std::optional<std::string>("ACME"));
+    CHECK(round_fact.settles_accrual == std::optional<bool>(true));
+    CHECK(round_fact.recovery_rate == std::optional<double>(0.4));
+    CHECK(round_fact.naked_option == std::optional<bool>(false));
+    REQUIRE(round->legs.size() == 2);
+    CHECK(round->legs[0].leg_group == std::optional<std::string>("protection_fee"));
+    CHECK(round->legs[1].leg_group == std::optional<std::string>("underlying"));
+    CHECK(round->legs[1].leg_type_code == "Cashflow");
+    REQUIRE(round->leg_amounts.size() == 2);
+    CHECK(round->leg_amounts[1].amount.to_string() == "250000");
+    REQUIRE(round->leg_rates.size() == 1);
+    CHECK(round->leg_rates[0].value.to_string() == "0.03");
+    REQUIRE(round->schedules.size() == 2);
+    CHECK(round->schedules[0].owner_number == 1);
+    CHECK(round->schedules[0].end_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2025, 2, 1)));
+    REQUIRE(round->options.size() == 1);
+    CHECK(round->options[0].style == std::optional<std::string>("European"));
+    REQUIRE(round->schedule_dates.size() == 1);
+    CHECK(round->schedule_dates[0].schedule_date == date_of(2029, 2, 1));
+}
+
+TEST_CASE("a_portfolio_document_projects_an_index_swap_option_and_its_wrapped_swap", tags) {
+    auto lg(make_logger(test_suite));
+
+    const char* const text = R"(<Portfolio>
+  <Trade id="index-option-1">
+    <TradeType>IndexCreditDefaultSwapOption</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_G</CounterParty>
+      <NettingSetId>NS-O</NettingSetId>
+    </Envelope>
+    <IndexCreditDefaultSwapOptionData>
+      <Strike>0.02</Strike>
+      <KnockOut>Y</KnockOut>
+      <IndexTerm>5Y</IndexTerm>
+      <StrikeType>Spread</StrikeType>
+      <TradeDate>2024-04-02</TradeDate>
+      <FrontEndProtectionStartDate>2024-03-20</FrontEndProtectionStartDate>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates><ExerciseDate>2024-06-20</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <IndexCreditDefaultSwapData>
+        <IssuerId>ITRAXX</IssuerId>
+        <CreditCurveId>ITRAXX-S28-5Y</CreditCurveId>
+        <SettlesAccrual>Y</SettlesAccrual>
+        <ProtectionStart>2024-03-20</ProtectionStart>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>EUR</Currency>
+          <DayCounter>ACT/360</DayCounter>
+          <Notionals><Notional>10000000</Notional></Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2024-03-20</StartDate>
+              <EndDate>2029-03-20</EndDate>
+              <Tenor>3M</Tenor>
+              <Convention>MF</Convention>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData><Rates><Rate>0.01</Rate></Rates></FixedLegData>
+        </LegData>
+        <BasketData>
+          <Name>
+            <IssuerId>ACME</IssuerId>
+            <CreditCurveId>ACME-SR</CreditCurveId>
+            <Weight>1</Weight>
+          </Name>
+        </BasketData>
+      </IndexCreditDefaultSwapData>
+    </IndexCreditDefaultSwapOptionData>
+  </Trade>
+</Portfolio>)";
+
+    const auto document = portfolio_projection::read(text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].anchor.trade_type == "IndexCreditDefaultSwapOption");
+
+    const auto* instrument =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&items[0].instrument);
+    REQUIRE(instrument != nullptr);
+    CHECK(instrument->instrument.identity.trade_type_code == "IndexCreditDefaultSwapOption");
+    CHECK(instrument->instrument.reference_entity == "ITRAXX-S28-5Y");
+
+    REQUIRE(instrument->index_credit_default_swap_option_instruments.size() == 1);
+    const auto& fact = instrument->index_credit_default_swap_option_instruments[0];
+    CHECK(fact.knock_out == std::optional<bool>(true));
+    CHECK(fact.index_term == std::optional<std::string>("5Y"));
+    CHECK(fact.strike_type == std::optional<std::string>("Spread"));
+    CHECK(fact.trade_date == std::optional<std::chrono::year_month_day>(date_of(2024, 4, 2)));
+    CHECK(fact.front_end_protection_start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 3, 20)));
+
+    REQUIRE(instrument->wrapped_index_swap.has_value());
+    CHECK(instrument->wrapped_index_swap->credit_curve_id == "ITRAXX-S28-5Y");
+    CHECK(instrument->wrapped_index_swap->issuer_id == std::optional<std::string>("ITRAXX"));
+    CHECK(instrument->wrapped_index_swap->settles_accrual == std::optional<bool>(true));
+
+    REQUIRE(instrument->strikes.size() == 1);
+    REQUIRE(instrument->strikes[0].bare_value.has_value());
+    CHECK(instrument->strikes[0].bare_value->to_string() == "0.02");
+    REQUIRE(instrument->options.size() == 1);
+    CHECK(instrument->options[0].long_short == "Long");
+    CHECK(instrument->options[0].option_type == std::optional<std::string>("Call"));
+    CHECK(instrument->options[0].style == std::optional<std::string>("European"));
+    REQUIRE(instrument->schedule_dates.size() == 1);
+    CHECK(instrument->schedule_dates[0].schedule_date == date_of(2024, 6, 20));
+    REQUIRE(instrument->legs.size() == 1);
+    CHECK(instrument->legs[0].leg_group == std::optional<std::string>("premium"));
+    REQUIRE(instrument->constituents.size() == 1);
+    CHECK(instrument->constituents[0].issuer_id == "ACME");
+    CHECK(instrument->constituents[0].weight == std::optional<double>(1.0));
+
+    const auto back = rebuild(items[0]);
+    const auto* round =
+        std::get_if<ores::trading::domain::credit_instrument_data>(&back.instrument);
+    REQUIRE(round != nullptr);
+    CHECK(back.anchor.trade_type == "IndexCreditDefaultSwapOption");
+    CHECK(round->instrument.reference_entity == "ITRAXX-S28-5Y");
+    REQUIRE(round->index_credit_default_swap_option_instruments.size() == 1);
+    const auto& round_fact = round->index_credit_default_swap_option_instruments[0];
+    CHECK(round_fact.knock_out == std::optional<bool>(true));
+    CHECK(round_fact.index_term == std::optional<std::string>("5Y"));
+    CHECK(round_fact.strike_type == std::optional<std::string>("Spread"));
+    CHECK(round_fact.front_end_protection_start_date ==
+          std::optional<std::chrono::year_month_day>(date_of(2024, 3, 20)));
+    REQUIRE(round->wrapped_index_swap.has_value());
+    CHECK(round->wrapped_index_swap->credit_curve_id == "ITRAXX-S28-5Y");
+    REQUIRE(round->strikes.size() == 1);
+    REQUIRE(round->strikes[0].bare_value.has_value());
+    CHECK(round->strikes[0].bare_value->to_string() == "0.02");
+    REQUIRE(round->options.size() == 1);
+    CHECK(round->options[0].option_type == std::optional<std::string>("Call"));
+    REQUIRE(round->schedule_dates.size() == 1);
+    CHECK(round->schedule_dates[0].schedule_date == date_of(2024, 6, 20));
+    REQUIRE(round->constituents.size() == 1);
+    CHECK(round->constituents[0].issuer_id == "ACME");
+    CHECK(round->constituents[0].weight == std::optional<double>(1.0));
+}

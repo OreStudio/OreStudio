@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/decide-the-fx-discriminators-and-the-doubled-vocabularies
-#+pr: 3527
+#+pr: 3528
 #+blocked_on:
 +#+blocked_since:
 +#+created: 2026-10-16
@@ -30,9 +30,9 @@ unit decides each and makes the tree enforce the decision.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Analysed and scoped. Each of the three findings has a decided direction and a named change; none is implemented. |
-| Waiting on   | Nothing. |
-| Next         | Land the three decisions in one unit: the exercise-style set, the vocabulary duplicate, then the directional level checks with their mapper change. |
+| Now          | Implemented and the suites pass. Waiting on review and merge. |
+| Waiting on   | The review of its PR. |
+| Next         | Address the review, then merge. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -48,7 +48,8 @@ unit decides each and makes the tree enforce the decision.
 - *The exercise style admits Bermuda.* ORE's =exerciseStyle= is the closed set
   European, Bermudan and American, the lookup already seeds all three, and the
   model's prose states all three, so the check is the one that is wrong. The
-  check widens to admit =Bermudan= and the prose states the set once.
+  check is removed with the other duplicates, which leaves the lookup as the
+  statement of the set, and the prose states it once.
 - *The lookup table is the single statement of each closed vocabulary.* Five
   vocabularies (=long_short=, =option_type=, =barrier_type=, =exercise_style=,
   =moment_type=) are stated in a lookup and again in the table's check. The
@@ -103,6 +104,13 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Duplicated vocabulary checks removed | 10 | =git diff origin/main -- 'projects/ores.trading/modeling/*.org' \| grep -c '^-.* in ('=, in =evidence/fx-vocabularies.txt= | the PR head |
+| Level checks on the barrier table | 6 of its 13 | =grep -c 'check (' projects/ores.sql/create/trading/trading_fx_barrier_option_instruments_create.sql= gives 13; the six level checks are the ones naming a barrier column, listed in =evidence/fx-vocabularies.txt= | the PR head |
+| Digital checks keyed on the trade type | 4 | =grep -c 'check (("trade_type_code"' projects/ores.sql/create/trading/trading_fx_digital_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
+| ORE core suite | pass | the same command with =ores.ore.core.tests= | the PR head |
+| Refusing cases | 2 (an Up style with a lower level, a double barrier with one level) | =an_up_style_refuses_a_lower_level= in =projects/ores.trading/core/tests/repository_fx_barrier_option_instrument_repository_tests.cpp= | the PR head |
+| Economic-digest suite | rotted, not wired | =grep -rn digest_tests --include=CMakeLists.txt projects/ \| wc -l= returns 0, so the suite is outside the build; a local wiring run failed four cases on an empty digest, recorded in =evidence/fx-digest-suite.txt= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -125,6 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3528][#3528]] | [trading] Key the FX vocabularies and barrier levels on one statement |
 | [[https://github.com/OreStudio/OreStudio/pull/3527][#3527]] | [agile] Scope the FX discriminator decisions |
 
 * Review
@@ -134,4 +143,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Findings
+
+- *The economic-digest suite is rotted, and not by this unit.* No CMakeLists
+  adds =projects/ores.trading/core/digest_tests=, so the suite is outside the
+  build. Wiring it in and running it fails four cases, one of them for
+  =ScriptedTrade=, a family this unit never touches, because the digest column
+  is empty before and after the write. The suite was therefore left unwired and
+  is recorded as its own defect.
+- *The wire twins and the goldens are corrected here.* Both TS files now type
+  the lower level as =string | null=, and the barrier golden records the level
+  in =upper_barrier= with a note that says so.
+- *The direction is a second list.* The check names the Up and Down styles
+  beside the lookup that holds them. Encoding the direction on
+  =ores_trading_barrier_types_tbl= is the right shape and is captured as its
+  own work.
+
+The duplicated vocabularies are gone. Ten =in (...)= checks named a set the
+lookup table now validates, so the checks were the second copy and are removed.
+The vanilla option's check was one of them, which settles the exercise style:
+the lookup holds European, Bermudan and American, so the store admits all three
+and the prose states that set once instead of contradicting it.
+
+The barrier option now states which level its style engages. A single
+=FxBarrierOption= with an Up style or a cap holds its level in =upper_barrier=
+and leaves =lower_barrier= null; a Down style or a floor does the reverse; the
+styles that name no direction state one of the two. =lower_barrier= became
+nullable for that reason, and the mapper places the document's level by
+direction instead of by position, so an UpAndOut option no longer needs a lower
+level invented for it. A double or generic barrier holds a level per side and
+is exempt, because its trade type says so.
+
+The digital option keys its checks on the trade type. Each of its four codes
+states the fields it engages: a plain digital a strike, a touch one barrier, a
+double touch both barriers, and a digital barrier a strike and a barrier. The
+checks require those fields and tolerate another code's, because the one synthetic
+generator fills a strike and both barriers on its single row, so a check that
+refused a field the code does not engage would refuse that row.
+
+The decisions are in the parent story's =* Decisions=.
 #+environment: solid_dirac

@@ -56,7 +56,7 @@ struct fx_barrier_option_instrument_entity {
     std::string expiry_date;
     std::optional<std::string> settlement;
     std::string barrier_type;
-    std::string lower_barrier;
+    std::optional<std::string> lower_barrier;
     std::optional<std::string> upper_barrier;
     std::optional<std::string> underlying_code;
     std::optional<std::string> description;

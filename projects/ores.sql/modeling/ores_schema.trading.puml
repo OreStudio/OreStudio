@@ -2572,7 +2572,7 @@ package "trading" #E8F5E9 {
         * expiry_date : date
           settlement : text <<FK>>
         * barrier_type : text <<FK>>
-        * lower_barrier : numeric(38, 12)
+          lower_barrier : numeric(38, 12)
           upper_barrier : numeric(38, 12)
           underlying_code : text
           description : text
@@ -2591,7 +2591,7 @@ package "trading" #E8F5E9 {
     FX Barrier Option Instrument Table
     Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
     FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
-    upper_barrier is optional (single-barrier products leave it NULL).
+    the level sits in lower_barrier or upper_barrier by the style's direction.
     end note
 
     entity ores_trading_fx_digital_option_instruments_tbl <<temporal>> #C6F0D8 {

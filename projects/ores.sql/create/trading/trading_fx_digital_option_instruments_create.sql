@@ -67,12 +67,13 @@ create table if not exists "ores_trading_fx_digital_option_instruments_tbl" (
     check ("trade_id" <> ores_utility_nil_uuid_fn()),
     check ("trade_type_code" in ('FxDigitalOption', 'FxTouchOption', 'FxDoubleTouchOption', 'FxDigitalBarrierOption')),
     check ("payoff_amount" > 0),
+    check (("trade_type_code" <> 'FxDigitalOption') or ("strike" is not null)),
+    check (("trade_type_code" <> 'FxTouchOption') or ("lower_barrier" is not null or "upper_barrier" is not null)),
+    check (("trade_type_code" <> 'FxDoubleTouchOption') or ("lower_barrier" is not null and "upper_barrier" is not null)),
+    check (("trade_type_code" <> 'FxDigitalBarrierOption') or ("strike" is not null and ("lower_barrier" is not null or "upper_barrier" is not null))),
     check ("foreign_currency" <> ''),
     check ("domestic_currency" <> ''),
-    check ("payoff_currency" <> ''),
-    check ("long_short" in ('Long', 'Short')),
-    check ("option_type" is null or "option_type" in ('Call', 'Put')),
-    check ("barrier_type" is null or "barrier_type" in ('UpAndOut', 'UpAndIn', 'DownAndOut', 'DownAndIn', 'KnockIn', 'KnockOut', 'CumulatedProfitCap', 'CumulatedProfitCapPoints', 'FixingCap', 'FixingFloor'))
+    check ("payoff_currency" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency

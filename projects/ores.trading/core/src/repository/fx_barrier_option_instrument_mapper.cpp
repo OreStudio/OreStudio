@@ -62,7 +62,10 @@ fx_barrier_option_instrument_mapper::map(const fx_barrier_option_instrument_enti
     r.expiry_date = ores::platform::time::datetime::from_iso8601_date(v.expiry_date);
     r.settlement = v.settlement.value_or("");
     r.barrier_type = v.barrier_type;
-    r.lower_barrier = ores::utility::decimal::decimal::from_string(v.lower_barrier).value();
+    r.lower_barrier =
+        v.lower_barrier.has_value() ?
+            std::optional(ores::utility::decimal::decimal::from_string(*v.lower_barrier).value()) :
+            std::nullopt;
     r.upper_barrier =
         v.upper_barrier.has_value() ?
             std::optional(ores::utility::decimal::decimal::from_string(*v.upper_barrier).value()) :
@@ -98,7 +101,8 @@ fx_barrier_option_instrument_mapper::map(const domain::fx_barrier_option_instrum
     r.expiry_date = ores::platform::time::datetime::to_iso8601_date(v.expiry_date);
     r.settlement = v.settlement.empty() ? std::nullopt : std::optional(v.settlement);
     r.barrier_type = v.barrier_type;
-    r.lower_barrier = v.lower_barrier.to_string();
+    r.lower_barrier =
+        v.lower_barrier.has_value() ? std::optional(v.lower_barrier->to_string()) : std::nullopt;
     r.upper_barrier =
         v.upper_barrier.has_value() ? std::optional(v.upper_barrier->to_string()) : std::nullopt;
     r.underlying_code = v.underlying_code.empty() ? std::nullopt : std::optional(v.underlying_code);

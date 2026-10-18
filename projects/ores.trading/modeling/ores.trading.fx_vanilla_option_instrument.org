@@ -11,7 +11,7 @@
 #+entity_singular: fx_vanilla_option_instrument
 #+entity_plural: fx_vanilla_option_instruments
 #+entity_title: FX Vanilla Option Instrument
-#+brief: FX Vanilla Option instrument (European and American).
+#+brief: FX Vanilla Option instrument (European, Bermudan and American).
 #+created: 2026-08-05
 #+updated: 2026-08-05
 
@@ -40,7 +40,7 @@ amounts; there is no separate strike field in ORE's FxOptionData.
 
 Trade type code. The trade type reference stays soft. The column's check lists exactly the codes the trade-type catalogue routes to this table, and the catalogue is what decides the routing, so a foreign key would duplicate the router.
 
-Routes ORE product type: FxOption (European and American vanilla
+Routes ORE product type: FxOption (European, Bermudan and American vanilla
 options).
 
 #+begin_src cpp :name generator
@@ -179,9 +179,10 @@ std::chrono::year_month_day{std::chrono::year{2025}/1/15}
 :economic: true
 :END:
 
-Exercise style: European or American.
+Exercise style, one of the ORE exerciseStyle set: European, Bermudan or
+American. The lookup =ores_trading_exercise_types_tbl= holds the set, so
+the store refuses a style it does not carry.
 
-the values are the closed ORE exerciseStyle set (European, Bermudan, American).
 
 #+begin_src cpp :name generator
 std::string("European")
@@ -311,8 +312,6 @@ refused on write.
 | "sold_amount" > 0 |
 | "bought_currency" <> '' |
 | "sold_currency" <> '' |
-| "option_type" in ('Call', 'Put') |
-| "exercise_style" in ('European', 'American') |
 
 ** Indexes
 

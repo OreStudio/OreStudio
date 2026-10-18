@@ -42,7 +42,8 @@ namespace ores::trading::domain {
  *
  * Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
  * FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
- * upper_barrier is optional (single-barrier products leave it NULL).
+ * A row states at least one level, and the level sits in lower_barrier or
+ * upper_barrier by the style's direction.
  */
 struct fx_barrier_option_instrument final {
     instrument_identity identity;
@@ -102,12 +103,14 @@ struct fx_barrier_option_instrument final {
     std::string barrier_type;
 
     /**
-     * @brief Lower barrier level. Must be positive.
+     * @brief Barrier level of a Down... or FixingFloor style. Null when the style engages the upper
+     * level, which an Up... or FixingCap style does.
      */
-    ores::utility::decimal::decimal lower_barrier = ores::utility::decimal::decimal{};
+    std::optional<ores::utility::decimal::decimal> lower_barrier;
 
     /**
-     * @brief Upper barrier level (double-barrier products only; NULL otherwise).
+     * @brief Barrier level of an Up... or FixingCap style. Null when the style engages the lower
+     * level. A product that states two levels holds one in each.
      */
     std::optional<ores::utility::decimal::decimal> upper_barrier;
 

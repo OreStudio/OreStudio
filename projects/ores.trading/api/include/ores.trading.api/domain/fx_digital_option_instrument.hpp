@@ -100,6 +100,11 @@ struct fx_digital_option_instrument final {
      *
      * the values are the closed ORE longShort set (Long, Short), which the SQL schema already
      * states as a check.
+     *
+     * The four product codes share this table, so each check names the fields its own code engages
+     * and requires them. A field another code uses is tolerated rather than refused, because one
+     * generator writes a synthetic row for all four and would otherwise produce a row no code
+     * accepts.
      */
     std::string long_short;
 

@@ -174,16 +174,34 @@ std::string option_type_from_single(const optionData& od) {
     return {};
 }
 
+/**
+ * @brief Whether a barrier style names the direction it engages.
+ *
+ * An Up style or a FixingCap engages the upper level, a Down style or a
+ * FixingFloor the lower one. The styles that name no direction keep the level
+ * in the lower column, which is the shape their readers expect.
+ */
+bool is_up_barrier_style(const std::string& type) {
+    return type == "UpAndOut" || type == "UpAndIn" || type == "FixingCap";
+}
+
 // BarrierData carries one level for a single barrier and two for a
 // double barrier, lower first.
 template <typename Lower, typename Upper>
 void fill_barrier(const barrierData& bd, std::string& barrier_type, Lower& lower, Upper& upper) {
     barrier_type = to_string(bd.Type);
     const auto& levels = bd.Levels.Level;
-    if (!levels.empty())
+    if (levels.size() > 1) {
         lower = exact_decimal(levels.front());
-    if (levels.size() > 1)
         upper = exact_decimal(levels[1]);
+        return;
+    }
+    if (levels.empty())
+        return;
+    if (is_up_barrier_style(barrier_type))
+        upper = exact_decimal(levels.front());
+    else
+        lower = exact_decimal(levels.front());
 }
 
 void validate_long_short(const std::string& v) {
@@ -259,14 +277,13 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type,
     return b;
 }
 
-// The reverse of fill_barrier. Barrier types with a plain double lower
-// level use zero to mean "no lower barrier", so a zero lower lets the
-// upper level start the group on its own.
+// The reverse of fill_barrier. An absent level is absent because the column is
+// nullable, so the group starts from whichever level the row states.
 barrierData fx_instrument_mapper::make_barrier_group(
     const std::string& type,
     const std::optional<ores::utility::decimal::decimal>& lower,
     const std::optional<ores::utility::decimal::decimal>& upper) {
-    const bool has_lower = lower.has_value() && *lower != ores::utility::decimal::decimal{};
+    const bool has_lower = lower.has_value();
     if (!has_lower && !upper.has_value())
         return {};
     barrierData b = make_barrier(type, has_lower ? *lower : *upper);
@@ -449,6 +466,8 @@ fx_instrument_mapper::forward_fx_kiko_barrier_option(const trade& t) {
         r.option_type = std::string(*d.OptionData.OptionType);
     r.expiry_date = expiry_date_from_single(d.OptionData);
 
+    // A KIKO or generic barrier states a level per side, so the pair stays
+    // positional here (see fill_barrier for the directional rule).
     if (!d.Barriers.BarrierData.empty()) {
         r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
         if (!d.Barriers.BarrierData.front().Levels.Level.empty())
@@ -483,6 +502,8 @@ fx_instrument_mapper::forward_fx_generic_barrier_option(const trade& t) {
         r.option_type = std::string(*d.OptionData.OptionType);
     r.expiry_date = expiry_date_from_single(d.OptionData);
 
+    // A two-sided product keeps the positional pair; see fill_barrier for the
+    // directional rule the single-sided products follow.
     if (!d.Barriers.BarrierData.empty()) {
         r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
         if (!d.Barriers.BarrierData.front().Levels.Level.empty())
@@ -543,7 +564,12 @@ fx_instrument_mapper::forward_fx_digital_barrier_option(const trade& t) {
 
     if (!d.BarrierData.Levels.Level.empty()) {
         r.barrier_type = to_string(d.BarrierData.Type);
-        r.lower_barrier = exact_decimal(d.BarrierData.Levels.Level.front());
+        // One level, placed by the style's direction, so the digital table and
+        // the barrier table state a level the same way.
+        if (is_up_barrier_style(r.barrier_type))
+            r.upper_barrier = exact_decimal(d.BarrierData.Levels.Level.front());
+        else
+            r.lower_barrier = exact_decimal(d.BarrierData.Levels.Level.front());
     }
     return r;
 }
@@ -880,8 +906,8 @@ trade fx_instrument_mapper::reverse_fx_kiko_barrier_option(
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
     set_exact(d.SoldAmount, instr.sold_amount);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
-    if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (!instr.barrier_type.empty() && instr.lower_barrier.has_value())
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.lower_barrier));
     if (instr.upper_barrier.has_value())
         d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
     t.FxKIKOBarrierOptionData = std::move(d);
@@ -904,8 +930,8 @@ trade fx_instrument_mapper::reverse_fx_generic_barrier_option(
     d.underlyingTypes = make_underlying_type_name(instr.underlying_code);
     d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
 
-    if (!instr.barrier_type.empty() && instr.lower_barrier != ores::utility::decimal::decimal{})
-        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (!instr.barrier_type.empty() && instr.lower_barrier.has_value())
+        d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.lower_barrier));
     if (instr.upper_barrier.has_value())
         d.Barriers.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
 

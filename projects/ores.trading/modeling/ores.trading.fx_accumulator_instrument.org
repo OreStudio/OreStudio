@@ -278,7 +278,6 @@ refused on write.
 | "strike" > 0 |
 | "currency" <> '' |
 | "underlying_code" <> '' |
-| "long_short" in ('Long', 'Short') |
 
 ** Indexes
 

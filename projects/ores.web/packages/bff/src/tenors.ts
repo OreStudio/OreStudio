@@ -22,7 +22,7 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { subjects as businessDayConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/business_day_convention_type_protocol';
-import { subjects as calendarNameSubjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_name_protocol';
+import { subjects as calendarSubjects } from '@ores/wire-protocol/generated/refdata/protocol/calendar_protocol';
 import { subjects as tenorAnchorSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_anchor_protocol';
 import { subjects as tenorConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_convention_protocol';
 import { subjects as tenorKindSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_kind_protocol';
@@ -66,10 +66,22 @@ const previewBodySchema = z.object({
 });
 
 /**
+ * A question about the rules as the store holds them: which tenor, under which
+ * convention, on which calendar, counted from which date.
+ */
+const resolveBodySchema = z.object({
+    tenor_code: codeSchema,
+    convention_code: codeSchema,
+    calendar_code: codeSchema,
+    horizon: z.string().trim().min(1).max(40),
+    spot: z.string().trim().min(1).max(40).nullable().default(null),
+});
+
+/**
  * What the resolution answered, or why it declined. The dates travel on a
  * refusal too: a refusal that says only "no" cannot be acted on.
  */
-const previewResolutionSchema = z.looseObject({
+const resolutionReplySchema = z.looseObject({
     result: resultSchema,
     anchor_date: z.string().default(''),
     date_before_roll: z.string().default(''),
@@ -94,10 +106,27 @@ const PICK_LISTS = [
     },
     {
         key: 'calendars',
-        subject: calendarNameSubjects.list_calendar_names_request,
-        rows: 'calendar_names',
+        subject: calendarSubjects.list_calendars_request,
+        rows: 'calendars',
     },
 ] as const;
+
+/**
+ * The resolution's answer as the screen reads it.
+ *
+ * The preview and resolve operations answer with the same reply, so the two
+ * routes shape it here once rather than each naming the six fields.
+ */
+function resolutionReply(reply: z.infer<typeof resolutionReplySchema>): unknown {
+    return {
+        result: reply.result,
+        anchor_date: reply.anchor_date,
+        date_before_roll: reply.date_before_roll,
+        adjusted_date: reply.adjusted_date,
+        roll_rule: reply.roll_rule,
+        calendar: reply.calendar,
+    };
+}
 
 function precondition(version: number | null): unknown {
     return version === null
@@ -120,13 +149,15 @@ function orderBy(rows: readonly Record<string, unknown>[]): readonly Record<stri
 
 /**
  * The tenor routes: the catalogue with its conventions and schedules, the pick
- * lists, one convention's set, the resolution of a drafted rule, and the writes
- * of a tenor, a convention and a membership row.
+ * lists, one convention's set, the resolution of a drafted rule, the resolution
+ * of the rules as they are stored, and the writes of a tenor, a convention and
+ * a membership row.
  *
- * The resolution route answers about the rows it is handed, not about the rows
- * the store holds, so a person authoring a rule reads its answer before
- * writing it. A rule the server declines comes back as a 200 whose result is
- * not ok: the refusal is the answer, not a transport failure.
+ * The preview route answers about the rows it is handed, so a person authoring
+ * a rule reads its answer before writing it. The resolve route answers about the
+ * rows the store holds, so a person who only wants a date never authors
+ * anything. A rule the server declines comes back as a 200 whose result is not
+ * ok: the refusal is the answer, not a transport failure.
  */
 export function registerTenorRoutes(
     server: FastifyInstance,
@@ -181,16 +212,26 @@ export function registerTenorRoutes(
                 horizon: body.horizon,
                 spot: body.spot,
             },
-            previewResolutionSchema,
+            resolutionReplySchema,
         );
-        return {
-            result: reply.result,
-            anchor_date: reply.anchor_date,
-            date_before_roll: reply.date_before_roll,
-            adjusted_date: reply.adjusted_date,
-            roll_rule: reply.roll_rule,
-            calendar: reply.calendar,
-        };
+        return resolutionReply(reply);
+    });
+
+    server.post('/api/tenors/resolve', async (request) => {
+        const session = requireSession(request);
+        const body = input(resolveBodySchema, request.body);
+        const reply = await session.client.callAuthenticated(
+            tenorSubjects.resolve_tenor_request,
+            {
+                tenor_code: body.tenor_code,
+                convention_code: body.convention_code,
+                calendar_code: body.calendar_code,
+                horizon: body.horizon,
+                spot: body.spot,
+            },
+            resolutionReplySchema,
+        );
+        return resolutionReply(reply);
     });
 
     server.get('/api/tenors/conventions/:code/resolutions', async (request) => {

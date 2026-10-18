@@ -154,6 +154,10 @@ task and name that file in the Command column.
 | =ores.reporting.core.tests= | 103 test cases, 496 assertions, all pass | =compass build test_ores.reporting.core.tests= | e96b8a2580 |
 | =ores.reporting.api.tests=, =ores.reporting.service.tests=, =ores.shell.reporting.tests= | 63 / 10 / 377 test cases, all pass | =compass build test_ores.reporting.api.tests test_ores.reporting.service.tests test_ores.shell.reporting.tests= | e96b8a2580 |
 | Local checks | =org-links= and =lint= pass, 2 of 2 | =compass check --only org-links --only lint --exclude-heavy= | e96b8a2580 |
+| =ores.reporting.core.tests=, phase 2 | 106 test cases, 544 assertions, all pass | =compass build test_ores.reporting.core.tests= | 894b967c9c |
+| =ores.reporting.api.tests=, =ores.reporting.service.tests=, =ores.shell.reporting.tests=, phase 2 | 63 / 10 / 380 test cases, all pass | =compass build test_ores.reporting.api.tests test_ores.reporting.service.tests test_ores.shell.reporting.tests= | 894b967c9c |
+| Subjects outside the entity protocol, after phase 2 | 0; the three new reads and phase 1's latest-run read are in the =ops= namespace | =compass check --only subject-conformance --exclude-heavy= | 894b967c9c |
+| Local checks, phase 2 | =org-links= and =lint= pass, 2 of 2 | =compass check --only org-links --only lint --exclude-heavy= | 894b967c9c |
 
 * Notes
 
@@ -374,7 +378,18 @@ populated database; =definition_id= is a filter member on the runs list; and
 =reporting.v1.ops.get_latest_report_instances_by_definition= answers one run per
 definition asked for, reduced in the store and scoped by the session.
 
-Phases 2 and 3 are not started: per-run error count, health word, owner,
-next-fire, the event's definition id, cancelled and skipped health, the
-on-demand word, the prototype's kinds and the party code in the session are
+Phase 2 is closed. =reporting.v1.ops.get_report_error_counts= answers a run's
+problems as one row split into errors and warnings; the store aggregates, so the
+error rows never leave it. =reporting.v1.ops.get_report_instance_health= states
+the health word of each run and the state it was derived from, with the mapping
+in =report_health.hpp= and the states read where they live, in the system tenant.
+=reporting.v1.ops.get_next_fire= relays the caller's own session to the
+scheduler and answers one next fire per definition, or none.
+
+G10 stays open. No owner is recorded anywhere in the tree, so the column, the
+read and the cell all wait on a decision no code can make; the options and the
+recommendation are in * Notes.
+
+Phase 3 is not started: the event's definition id, cancelled and skipped health,
+the on-demand word, the prototype's kinds and the party code in the session are
 still open, exactly as the checkboxes say.

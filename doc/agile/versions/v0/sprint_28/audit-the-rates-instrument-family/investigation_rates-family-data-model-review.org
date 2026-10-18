@@ -1,0 +1,259 @@
+:PROPERTIES:
+:ID: 4A8B1C6E-52D4-4E7A-9F31-6C2D8E4B7A10
+:END:
+#+title: Investigation: Rates family data model review
+#+description: The rates family header, its nine product fact tables, its fifteen shared children and their generated artefacts reviewed against the Regime 2 and Regime 3 data-oriented design checklists: what holds, what does not, and which findings are recorded decisions.
+#+type: investigation
+#+level: s1
+#+filetags: :audit-the-rates-instrument-family:sprint_28:v0:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+A point-in-time record of a review of the rates instrument family against
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]],
+Regime 2, the persisted domain data, and Regime 3, the wire projection.
+
+The family is the third of the instrument families reviewed with this lens.
+Bonds were the pilot and were reworked to the method; FX was never reworked and
+its review asked whether it had ever been built to the rules. Rates sits
+between the two: it was reworked to the instrument table rule across sprint 27,
+so this review asks whether the tree the rework produced meets the guidelines,
+which is a different question from both earlier reviews.
+
+* Context
+
+The family is one header, =rate_instruments=, nine product fact tables and
+fifteen shared children, twenty-five entities over twenty-five tables and 189
+business columns. Ten trade-type codes route to the header and each then names
+one fact table: =Swap= and =CrossCurrencySwap= to =vanilla_swap_instruments=,
+=ForwardRateAgreement= to =fra_instruments=, =CapFloor=, =Swaption=,
+=FlexiSwap=, =BalanceGuaranteedSwap=, =CallableSwap=, =KnockOutSwap= and
+=InflationSwap= each to their own. The header states the coverage check, the
+common dates and the description, and owns the family's delete cascade; the
+fact tables carry the product's own fields; the children carry the legs, leg
+amounts, leg rates, strikes, schedules, the option block and the three
+product-specific lists.
+
+The review was commissioned to establish, with evidence, whether that model
+meets the checklists, and to separate a defect from a recorded decision. The
+sprint-27 design already recorded twenty findings (R1 to R20) and five
+decisions (D1 to D5); this review treats those as context and asks what the
+tree does now.
+
+* Methodology
+
+The family is twenty-five entity models under
+=projects/ores.trading/modeling/=, their twenty-five tables and insert triggers
+under =projects/ores.sql/create/trading/=, and the generated C++ in
+=projects/ores.trading/api/= and =projects/ores.trading/core/=. The Regime 2
+decision checks were walked per model; the invariant checks were spot-checked
+once over the generated output. The ORE import and export seam was read in
+=projects/ores.ore/=, because the *One-way numeric conversion* check is decided
+there and nowhere else. The Regime 3 checks were walked over the carriers, the
+batch and the protocols.
+
+The work was split three ways — the model-to-generated-artefact census, the ORE
+conversion seam, and the carrier, service and wire surfaces — and every claim
+below was then re-checked in the main thread. Two claims changed under that
+re-check, and both are recorded in *Corrections made while checking*. No build,
+test or database run: every claim is from source artefacts at tree =3a49daea81=.
+
+| What | Value | Command |
+|------+-------+---------|
+| Rates entity models | 25 (1 header, 9 facts, 15 children) | the model list in the task's *Scope* |
+| Declared columns, and columns generated | 189 and 189 | column census over the =** name= headings against each =create table= body |
+| Money columns | 16, all =numeric(38, 12)= or =numeric(28, 10)= | the classifier of =check_money_decimal_columns.py= plus a name census |
+| Type disagreements, model against table | 0 | the same census |
+| Business check constraints | 53 (103 including the two scaffolding checks) | =grep -c 'check ('= per create script |
+| Indexes | 81, all partial on the current row | =grep -c 'create index'= per create script |
+| Real foreign keys in the 25 tables | 0 | =grep -i 'references' projects/ores.sql/create/trading/trading_*_create.sql= |
+| Soft-reference claims in the models | 13 | =grep -ic 'soft fk'= over the family's models |
+| Numeric conversions at import | 20, of which 14 keep the document's digits | the =exact_decimal= sites plus the casts beside them |
+| Lossy export casts | 5, of which 3 write an element the schema requires | the =reverse_*= functions |
+| Reverse mappers that ignore their fact row | 4 of 9 | =grep -n 'maybe_unused.*_instrument& instr'= |
+| Fact tables with no product column | 2 of 9 | =cap_floor_instruments= and =callable_swap_instruments= |
+| Columns with no producer | 5 | =settlement_lag=, =lockout_days=, and the three inflation columns |
+| Hand-written lists of the product arrays | 6 | the variant, the carrier, three batch-mapper sites and =stamp_ids= |
+| =nats_call= sites in the import handler | 73 | =grep -c 'nats_call(delegated_nats'= |
+| Per-key read loops in generated services | 117 of 123 files | component-wide, so not a family finding |
+| Models carrying =:domain_audit_group:= | 2 of 25 rates, 25 of 146 trading | =grep -c ':domain_audit_group:'= |
+| Catalogue codes routed, against fact tables | 10 against 9 | =ores.trading.trade_type_catalogue.org:51-70= |
+
+* Paths taken
+
+- *The model and its generated artefacts.* For each of the twenty-five models
+  the declared column, the generated SQL column, the generated domain member
+  and the generated repository entity member were compared. This path found
+  nothing: the three artefacts agree on all 189 columns. That is the review's
+  first useful result — the codegen chain is not where this family's defects
+  are.
+- *The ORE boundary.* =swap_instrument_mapper.cpp= was read in full, in both
+  directions, then the binding each call reads and the helper it calls. This is
+  the path that found the two Criticals and the digit loss. It is also the path
+  that changed the review's shape: the defects are in what the mapper does with
+  the document, not in the schema that holds the result.
+- *The carriers and the wire.* =instrument_batch=, =swap_instrument_data=,
+  =trade_instrument=, =rates_fact_variant= and the import handler were read
+  together. This path answered the question the review was asked to settle: the
+  variant does not cross the wire, and what is wrong with the carrier is not its
+  existence but the number of places that must agree about it.
+- *Withdrawn: a Regime 3 finding on the variant.* The rule that a message
+  carries no =std::variant= field is satisfied. See *What holds*.
+
+* Conclusions
+
+** What holds
+
+| Check | Result |
+|-------+--------|
+| Identity by key | PASS with a caveat. Every one of the twenty-five tables is keyed on the trade — =primary key (tenant_id, trade_id, valid_from, valid_to)= on the header and the seven single-row facts, plus =leg_number=, =sequence_number=, =rate_role= or =(owner_role, owner_number, schedule_role)= on the children. The relation is the key itself, never an owning-parent link, and there are no pointers anywhere. The caveat is finding 10. |
+| Table-shaped children | PASS for the legs, the schedules and the option block. The legs are the headline: =swap_legs= holds the direction, the type, the day count, the business-day convention, the frequency, the index and the currency, and its economics are rows in =swap_leg_amounts= and =swap_leg_rates= keyed by =(trade, leg, role, sequence)=. A leg whose notional amortises or whose rate steps is rows, not a flattened scalar, which is what sprint 27's finding R4 asked for. The exception is finding 3. |
+| Explicit variation | PASS. The family states its variation as per-type tables, not as an inheritance web: ten catalogue codes route to nine fact tables, the header's =trade_type_code= check is generated from the single catalogue, and the sets are disjoint. =InflationSwap= sitting on a rates table is a recorded transition (D1), not an oversight: the model's own prose says it is a member until an inflation family is scaffolded. |
+| Exact money at rest | PASS with two caveats. All sixteen money columns resolve to =ores::utility::decimal::decimal= in the domain and =numeric(p, s)= in the table, with no case of "model decimal, domain double" and no money column stored as text. The repository entity carries each money value as =std::string= and parses it with a decimal parse, not through a binary float, so no =double= enters the persisted domain. The caveats are findings 8 and 9. |
+| Core/cold split | PARTIAL. =rate_instrument= and =swap_leg= set both =:domain_identity_group:= and =:domain_audit_group:=, so their scaffolding nests into =identity= and =audit= members. The other twenty-three models set neither. Finding 11. |
+| Batched collection access | PASS at the repository and service API. Every rates repository declares the key-vector batch read and each is a single query; =trade_export_service= uses it, bucketing trade ids per routed table and reading each table once per page. The generated protocol handlers and the import path loop per key; that is component-wide (117 of 123 service files) and is recorded in finding 8 as a Regime 3 matter rather than a family one. |
+| Value semantics | PASS. Across the twenty-five generated domain headers: 0 =shared_ptr=, 0 =unique_ptr=, 0 =weak_ptr=, 0 raw-pointer members, 0 =virtual=, 0 hand-written destructors and 0 =<memory>= includes. The hand-written carriers in =instrument.hpp= and =instrument_batch.hpp= are equally pointer-free. |
+| Codec drift | PASS. Every generated JSON and table codec carries the AUTO-GENERATED banner; the =*_table.hpp= files are a single =convert_to_table= shell that holds no column types. The one stale artefact is a generated diagram, recorded in finding 13. |
+| Flat value messages | PASS. =instrument_batch= is one typed array per concrete entity — 58 arrays, 17 of them rates-related, no variant and no nested aggregate. A fact row's type is static from the array it sits in and the array, not the element, carries the tag. |
+| No polymorphic payload fields | PASS. No protocol header, JSON codec or table codec in the tree holds a =std::variant= field. =rates_fact_variant= is reachable only from =swap_instrument_data=, which is an in-process carrier: it is built inside the import handler from the plan and inside =rebuild_instrument= from the batch, and neither it nor =trade_instrument= is serialised. =trade_operations_protocol.hpp:163-169= states the rule and the reason. |
+| Feed batching | FAIL. Finding 8. |
+
+** Findings
+
+Severity, effort and the criterion each maps to. *Recorded* marks a finding
+that a decision or a prior review already covers; those are context for a
+remediation, not new work. *Field fidelity* is a criterion the checklists do
+not name — see *The enforcement gap*.
+
+| # | Severity | Effort | Criterion | Finding | Evidence |
+|---+----------+--------+-----------+---------+----------|
+| 1 | Critical | Large | Field fidelity | A forward rate agreement's direction is a constant in both directions. The ORE binding states =LongShort=, the mapper never reads it: import writes the literal =\"Long\"= and export writes =longShort::Long=, so a short FRA is stored and returned as a long. The column that should hold it, =fra_instruments.long_short=, is written from the constant and read by nothing. | ORE field at =projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp:4356=; the constant at =swap_instrument_mapper.cpp:1433=; the reverse constant at =:1750=; the unused column at =trading_fra_instruments_create.sql:43=; the read of the leg's index instead at =swap_instrument_mapper.cpp:1745=. |
+| 2 | Critical | Small | Field fidelity | An inflation swap cannot be stored. The import builds a default-constructed fact row and writes it; =inflation_index_code= is =not null= with a non-empty check, so the insert is refused and the trade fails. Nothing else writes the column: its only producers are the synthetic generator and the shell command. | the default at =swap_instrument_mapper.cpp:1385=; the write at =ore_import_execute_handler.cpp:2387=; the column and its check at =trading_inflation_swap_instruments_create.sql:41,58=; the sole producers at =projects/ores.trading/api/src/generators/inflation_swap_instrument_generator.cpp:49= and =inflation_swap_instrument_commands.hpp:90=. |
+| 3 | Critical | Medium | Table-shaped children | A floor is stored and returned as a cap. The document states a cap/floor's strikes as two lists, =Caps= and =Floors=; the mapper keeps one value from whichever list is filled and the shared strike row has no column recording which list it came from, so the reverse writes every strike back under =Caps=. The strike schedule flattens with it: the first cap, or the first floor when no cap is stated, is the whole row, and the child has no sequence to hold the rest. | =Cap= and =Floors= lists at =domain.hpp:4664-4665=; the flattening at =swap_instrument_mapper.cpp:667-680= and its comment at =:664-666=; the always-a-cap reverse at =:1831-1839=; the child's key at =trading_instrument_strikes_create.sql:55= against =swap_leg_amounts=, which carries =sequence_number= at =:53=. |
+| 4 | Important | Small | Field fidelity | A cap/floor's direction, its premium and its fixed leg are dropped. The product states =LongShort=, =PremiumAmount=, =PremiumCurrency= and =PremiumPayDate=; the mapper reads none of them and the key-only fact table has no column to hold them, so export hardcodes the direction and omits the premium. The reverse also writes a leg payload only for the floating case, so a fixed-leg cap/floor exports with its fixed rates and its leg type gone, though the rows are in the store. | binding at =domain.hpp:4661-4670=; the dropped direction at the export constant =swap_instrument_mapper.cpp:1780=; the floating-only leg branch at =:1815-1829=; the empty table at =trading_cap_floor_instruments_create.sql:36-55=; the ignored fact parameter at =swap_instrument_mapper.cpp:1767=. |
+| 5 | Important | Medium | Explicit variation | Two of the nine fact tables carry no fact. =cap_floor_instruments= and =callable_swap_instruments= hold the trade key and the audit spine and nothing else, so their row's only content is "this trade is this product" — the fact the header's =trade_type_code= already states. The tag is therefore stated twice, once in the container and once as the existence of a row, and the store does not constrain the second: =trade_id= is the key of nine tables and nothing ties a row to the header's code, so one trade can hold rows in all nine. | the two key-only tables at =trading_cap_floor_instruments_create.sql:36-55= and =trading_callable_swap_instruments_create.sql:49-68=; nine tables sharing the key, e.g. =trading_fra_instruments_create.sql:52=; the header's routing at =trading_rate_instruments_create.sql:84=. |
+| 6 | Important | Medium | Encode the map in structure | The product-to-array map is written six times by hand. The variant's alternative list, the carrier's members, the positional construction in =as_swap=, the append block, the nine rebuild clauses and the sixteen =stamp_ids= loops must all agree, and nothing proves they do; a new product touches every one. The credit carrier, converted in the same component a week earlier, derives the same map from two tuples and one =static_assert=. The recorded decision that the variant is gone is also wrong: the commit that closed sprint 27's finding R13 deleted =rates_instrument_variant.hpp= and created =rates_fact_variant.hpp= in the same change, and the next task added an alternative to it. | the six sites at =rates_fact_variant.hpp:45-53=, =instrument.hpp:115-133=, =instrument_batch_mapper.cpp:36-58=, =:194-238=, =:307-326=, =instrument.hpp:477-528=; the credit shape at =instrument.hpp:185-235= and =instrument_batch_mapper.cpp:66-89=; the deletion and creation at =b6cc9851e3=; the added alternative at =70ef78cbae=; the claim at =task_close-the-rates-round-trip.org=, *Result*. |
+| 7 | Important | Medium | One-way numeric conversion | Six of the twenty money conversions at import rebuild a money value from a binary float, and five casts on export do the same. The helper reads a leaf's own digits and the family's routed leaves carry them, so this is not systemic as it was for FX; the loss is at the sites that bypass the helper or reach the bare =double= overload — a premium amount, an exercise fee, an amortization value, a flexible swap's lower notional, a balance-guaranteed tranche's notional and an option's exercise price. Three of the export cases write an element the schema requires, so the digit loss reaches the document. One element loses its digits before the mapper runs: the schema declares the exercise price as a decimal and the binding types it as an optional =double=. The two boundary idioms also disagree — =exact_decimal= falls back to zero on a value it cannot read, while the =from_double(...).value()= sites throw. | lossy import at =swap_instrument_mapper.cpp:845,874,894,1249,2112,2227=; lossy export at =:1018,1038,1054,2164,2290=; the required-element cases at =external/ore/xsd/instruments.xsd:1747,2644= and =external/ore/xsd/ore_types.xsd:936=; the mistyped binding at =external/ore/xsd/instruments.xsd:329= against =domain.hpp:9299=; the helper at =ore_boundary_decimal.hpp:56-67= and its fallback at =:65-67=; the lexical form at =domain_xsd.hpp:326-340= and its population at =domain.cpp:9782-9788=. |
+| 8 | Important | Medium | Feed batching | The import writes one NATS request per row: a header, then a fact, then each leg, each amount, each rate, each call date. A portfolio of swaps is thousands of round trips on the highest-volume ingress in the product. The =put_many_*= requests exist for every one of these entities and are not used. | =nats_call= at =ore_import_execute_handler.cpp:2292= (the FRA fact), =:2373= (knock-out), =:2384= (inflation), and 70 more; the per-row loops at =:2272-2279= and =:2400-2434=; the unused batch requests, e.g. =put_many_fra_instrument_request=. |
+| 9 | Important | Small | Exact money at rest | The leg amount column refuses a negative amount while the mapper writes signed cashflow payments into it. A cashflow leg's amounts are payments in and out, and =swap_leg_amounts.amount= carries =check (\"amount\" >= 0)=, so a leg whose payment is negative is refused at insert. The column serves two quantities with opposite sign conventions. | the check at =trading_swap_leg_amounts_create.sql:68=; the cashflow write at =swap_instrument_mapper.cpp:1241-1244=. |
+| 10 | Minor | Small | Identity by key | The family declares no database foreign key, and it is inconsistent about how it validates a code. Thirteen columns are labelled a soft reference in the models and none is a real key. Some code columns are validated against their lookup by function — the leg's five — and others are frozen as an inline =in= list beside the seeded table that holds the same vocabulary, so the two copies must be kept equal by hand. *Recorded*: the soft references are the component's shared reference-data deferral, and the doubled vocabularies are the FX review's finding 9. | zero =references= across the 25 create scripts; the trigger validators at =trading_swap_legs_create.sql:154-169=; the inline copy at =trading_knock_out_swap_instruments_create.sql:58= against =trading_barrier_types_populate.sql=; the count of 13 from =grep -ic 'soft fk'=. |
+| 11 | Minor | Small | Core/cold split | Twenty-three of the twenty-five models set neither group flag, so the family generates two shapes for one scaffolding spine: =rate_instrument= and =swap_leg= nest =identity= and =audit=, while every fact and the other children carry =version=, =modified_by= and =change_reason_code= flat. It is a presentation difference, not a storage one, and it is the component's habit rather than this family's — but within one family a reader meets both. | the two flag blocks at =ores.trading.rate_instruments.org:427-434= and =ores.trading.swap_leg.org:341-346=; the generated flat member at =fra_instrument.hpp:121= against =rate_instrument.hpp:76,101=; the component count of 25 of 146 from =grep -c ':domain_audit_group:'=. |
+| 12 | Minor | Small | Duplication | The option row keeps a single premium amount, currency and pay date, and an exercise price, beside the child tables that hold the same money as rows. The model records the two spellings a document may use, and nothing forbids a row from filling both, so one quantity has two homes and no rule says which wins. | the columns at =trading_instrument_options_create.sql:67-69,76=; the child tables at =trading_instrument_option_premiums_create.sql:48= and =trading_instrument_option_exercise_prices_create.sql:45=; the recorded reason at =ores.trading.instrument_option.org:210-222=. |
+| 13 | Minor | Small | Documentation | Three statements the tree contradicts. The header's model says the fact and child rows carry no party, and =swap_legs.party_id= is =not null=, stamped from the session and carrying its own restrictive policy. The same model's RLS prose counts eight product fact tables where the cascade lists nine. The swaption's =expiry_date= is declared a common date on a fact table rather than the header, so the family's common-date view joins one product table to fill its column. | the prose at =ores.trading.rate_instruments.org:85-86= against =trading_swap_legs_create.sql:70= and =trading_rls_policies_create.sql:739-743=; the count at =trading_rls_policies_create.sql:751= against the cascade at =trading_rate_instruments_create.sql:265-298=; the marker at =ores.trading.swaption_instrument.org:68= and the view at =trading_common_dates_vw_create.sql:53-72=. |
+
+** The enforcement gap
+
+Four of these findings pass every gate the product has, and a fifth is invisible
+to the gate that exists for its own criterion.
+
+- =check_model_sql_types.py= passes the family, correctly: the model and the
+  generated table agree on all 189 columns. Findings 1 to 4 are disagreements
+  between the *model* and the *mapper*, and no check reads both.
+- =check_money_decimal_columns.py= passes the family, and should: the money that
+  reaches a column is exact. Finding 7 never reaches the check, because the loss
+  is inside the boundary and the check reads the models.
+- Finding 9 is the opposite case: the column is typed exactly, and the check
+  that reads the family's sign conventions does not exist, so a check constraint
+  that refuses legitimate data is invisible.
+- Finding 5 is a modelling decision that the store does not constrain, so
+  nothing can fail: nine tables accept a row for one trade and no constraint
+  objects.
+- The one check in the neighbourhood, =check_xml_family_coverage.py=, classifies
+  whole document families as supported, migrating or unused. It cannot see a
+  single uncovered column inside a supported family.
+
+The gap, stated once: *nothing asserts that a model column has a producer and a
+consumer at the ORE boundary*. Every defect this review found in the family's
+fields is a violation of that sentence, and none can be caught without a check
+that reads the mapper against the model.
+
+** Corrections made while checking
+
+- The conversion seam was first recorded as passing. The routed rates leaves are
+  =xsd::base<float>= subclasses, whose parser stores the document's text, so
+  =exact_decimal= resolves to the lexical overload for twelve of the
+  fifteen call sites, unlike FX where every leaf was a bare float. Reading the
+  call sites alone then missed six conversions that never reach the helper, and
+  the pass became finding 7 with a count.
+- The empty cap/floor fact table was first recorded as a product with no fields
+  of its own, which is what the shape suggests. The binding says otherwise: the
+  product states a direction and a premium, and the fact table is empty because
+  they have no home. That turned a tidiness note into finding 4.
+- The variant was first recorded as a Regime 3 violation, on the letter of the
+  rule against a polymorphic payload field. It is not: nothing serialises it,
+  and the rule is about messages. The finding that survives is about the six
+  places that must agree, which is a different defect with a different remedy.
+- The recorded decision on the carrier was first read as settling the question.
+  The history says otherwise: the variant was renamed, not removed, and the
+  next task added an alternative to it.
+- A floor becoming a cap was found last, on a second pass over the reverse
+  mapper after the strike finding was already written. The import half had been
+  recorded as a flattening; the export half turns the same missing column into a
+  change of product, which is what raised finding 3 from Important to Critical.
+  The review's own lesson: a lost column is worth following in both directions
+  before it is graded.
+
+** Score
+
+Regime 2, *2 of 5*, debt *High*. As with the bonds and FX reviews, the single
+number hides a split worth stating. The *structure* is the best of the three
+families reviewed: identity is the key throughout, the legs and their economics
+are typed rows rather than flattened scalars, the variation is per-type tables
+generated from one catalogue, the money is exact at rest, and every generated
+invariant holds. The *boundary* is where the debt is: four of the nine fact
+tables disagree with the document about what the product contains, one product
+cannot be stored, and two are stored wrong — a short forward rate agreement as a
+long, and a floor as a cap.
+
+Regime 3, *3 of 5*, debt *Medium*. The wire shape is right — one typed array per
+concrete type, the tag on the container, no variant in any codec — and the
+import's per-row request pattern is the whole of the debt.
+
+Regime 1 does not apply: the family has no numerical kernel. The mappers are a
+boundary translation and the repositories are query wrappers; neither is a hot
+loop, and a review that demanded SoA here would have misread the regime.
+
+* Recommendations
+
+1. *Close the two Criticals first.* Both are small and both corrupt data rather
+   than omitting it: read the FRA's =LongShort= and write it back, and give the
+   inflation swap's index code a producer — most likely by reading it from the
+   CPI leg, which is where the document states it, and retiring the column's
+   separate home. Neither needs a schema change to =swap_legs=.
+2. *Decide what a fact table is for, then apply the answer to all nine.* Either
+   a fact table carries the product's own fields — in which case
+   =cap_floor_instruments= gains the direction and the premium, and its
+   reverse mapper stops ignoring it — or it does not exist, in which case the
+   two key-only tables are dropped and the header's code is the only tag. Do not
+   keep two tables whose only content is a tag the container already states.
+3. *Give the strike child a sequence and a role.* It is the one list in the
+   family that still flattens, and it also loses which list it came from. The
+   fix is the shape its siblings already have: =sequence_number= and a role
+   column holding cap or floor, and every strike written rather than the first.
+   Until then a floor is a cap after a round trip.
+4. *Take the carrier to the credit shape.* Typed arrays with one tuple pair as
+   their home, a =static_assert= that the pair lines up, and the append,
+   rebuild and stamp paths derived from them. That retires the variant, collapses
+   six hand-written lists into two, and lets the rebuild report a rates header
+   with no fact row instead of falling through to another family.
+5. *Close the boundary's digit loss in one change.* One helper for the sites
+   that bypass =exact_decimal=, and the required-element casts first: a required
+   element written through a float is the case that reaches a document.
+6. *Batch the import writes* — the =put_many_*= requests exist and the handler
+   does not use them. This is one handler, so it is also the cheapest fix on the
+   list by ratio.
+7. *Fix the amount sign check* so a signed cashflow can be stored, and decide
+   whether the column carries a notional or a payment.
+8. *Close the gate.* A check that reads the ORE mapper against the model's
+   columns would have found findings 1, 2, 3, 4 and, in the reverse direction,
+   the five dead columns. Write it before the next family review, or the next
+   family review will find the same class of defect by hand again.
+
+* See also
+
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the criteria applied here.
+- [[id:AE72D444-02B1-4428-B56C-062B849ED568][Code Review Data Model Skill]] — the review procedure.
+- [[id:38931409-479B-40C3-A118-16D234C687C9][Investigation: FX family data model review]] — the sibling review, and the pilot for this method after bonds.
+- [[id:9EB4964F-A5BA-4CC8-8EB9-BD1E4FDED160][Rework the rates instruments to the instrument table rule]] — the sprint-27 story whose output this reviews.
+- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] — the target model for the component.
+- [[id:C650CBC9-FDED-4C68-981F-7902E296928E][NATS entity protocol specification]] — the wire rule =instrument_batch= follows.

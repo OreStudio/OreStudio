@@ -1,0 +1,53 @@
+:PROPERTIES:
+:ID: E2EA8426-B9DF-4C93-9843-C34CC803B26D
+:END:
+#+title: Story: Audit the rates instrument family against the data-oriented design guidelines
+#+description: Review the rates family header, its nine product fact tables, its shared children and their generated artefacts against the Regime 2 and Regime 3 data-oriented design checklists, and record what holds and what does not.
+#+type: story
+#+level: s2
+#+filetags: :audit-the-rates-instrument-family:sprint_28:v0:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: jolly_knuth
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Establish, with evidence, whether the rates instrument family's data model meets the data-oriented design guidelines, and record the findings so the remediations can be planned.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | The review is written. Its thirteen findings need tasks. |
+| Waiting on    | Nothing.                               |
+| Next          | Break the findings into tasks.            |
+| Last touched  | 2026-10-18                               |
+
+* Acceptance
+
+- Every rates entity model, its generated C++ and its table are walked against the Regime 2 decision checks, with evidence for each result. Done.
+- The Regime 3 projection is walked over every carrier and protocol the family reaches, including the in-process variant the family still holds. Done.
+- Each finding maps to a criterion and carries file-and-line evidence. Done: thirteen findings.
+- A defect is told apart from a recorded decision. Done.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:272BBB33-ED72-401F-ADAD-6A69CEEBC4CE][Review the rates family's data model]] | STARTED | 2026-10-18 | | Walk the Regime 2 and Regime 3 checklists over the rates family header, its product fact tables, its shared children, the generated C++ and the ORE import and export seam, and record the findings as an investigation. |
+
+* Decisions
+
+* Out of scope
+
+- The bond and FX families' remediations, which their own stories own.
+- The shared reference-data work that would turn the family's thirteen soft
+  references into real keys. It is the component's deferral, not this family's.
+- The generated service read loops: 117 of 123 files loop per key, so the fix is
+  a codegen question and not a rates finding.
+- The =equity_instrument_variant=, which another environment owns.

@@ -8,7 +8,7 @@
 #+filetags: :the_services_die_on_shutdown:sprint_28:v0:
 #+owner: marco
 #+branch: hotfix/the-services-die-on-shutdown
-#+pr:
+#+pr: 3550
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -74,7 +74,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3550][#3550]] | [nats] Wait for in-flight handlers before a subscription dies |
 
 * Review
 

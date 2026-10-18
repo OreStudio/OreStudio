@@ -28,9 +28,9 @@ A standalone program checked the rule, and the Catch2 case in the describer test
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Nothing. |
-| Waiting on   | Nothing.                               |
-| Next         | Nothing. |
+| Now          | Completed 2026-10-18. |
+| Waiting on   | None.                               |
+| Next         | None. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -54,9 +54,8 @@ build, which the host lock rules out.
    build. The two agree.
 
 The cases need no database at all. =oresmd_schema_describer::describe()=
-answers from its own tables, so the two cases stand alone; the other 224 cases
-in the same binary are the ones that need the environment database, which is
-the reason nobody had watched the whole binary run before.
+answers from its own tables, so the two cases stand alone, and the other 224
+cases in the same binary are the ones the environment database serves.
 
 * Measurements
 
@@ -72,48 +71,55 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 | The title cases in the binary | 2 cases, tags =[marketdata][oresmd_schema_describer][service]= | =ores.marketdata.core.tests --list-tests "*title*"=, see =evidence/local_title_cases.txt= | binary built at 3a99d376d2 |
 | The title cases run in this environment | All tests passed, 223 assertions in 2 test cases | same binary with ="*title*" -r compact=, see =evidence/local_title_cases.txt= | binary built at 3a99d376d2 |
-| Test entries in the release Continuous run | 96, of which 96 passed and 0 failed | =gh run view --job 117397450911 --log=, see =evidence/ci_marketdata_core_test.txt= | e336bd0ffb |
+| Test entries in the release Continuous run | "100% tests passed out of 96", as ctest wrote it | =gh run view --job 117397450911 --log=, see =evidence/ci_marketdata_core_test.txt= | e336bd0ffb |
 | The marketdata core test in that run | Test #89 Passed, 393.68 s, 8299 assertions in 226 test cases | same log, see =evidence/ci_marketdata_core_test.txt= | e336bd0ffb |
 | The title cases in that run | Both listed by name, 0.000 s each | same log, see =evidence/ci_marketdata_core_test.txt= | e336bd0ffb |
 | The title cases in the next run | Both listed by name; binary passed with 8275 assertions | =gh run view --job 117459968034 --log=, see =evidence/ci_marketdata_core_test.txt= | 132b3de2e6 |
 | Tests that failed in that next run | 1, =ores.synthetic.service.tests=, outside this component | same log, see =evidence/ci_marketdata_core_test.txt= | 132b3de2e6 |
-| Totals of the same two runs, as submitted | 96 pass and 0 fail, then 95 pass and 1 fail | =curl -s "https://my.cdash.org/api/v1/index.php?project=OreStudio"=, see =evidence/cdash_build_totals.txt= | e336bd0ffb, 132b3de2e6 |
+| Totals of the same two runs, as CDash counted them | 96 pass and 0 fail, then 95 pass and 1 fail | =curl -s "https://my.cdash.org/api/v1/index.php?project=OreStudio"=, see =evidence/cdash_build_totals.txt= | e336bd0ffb, 132b3de2e6 |
+| Debug job of the first run | Failed, "The action 'Run CTest workflow' has timed out after 320 minutes", still compiling at 7187 of 7536 targets | =gh run view --job 117397451408 --log= | e336bd0ffb |
 
 * Notes
 
 CI already runs the cases, so this task ends with no change to the workflow and
-no change to the test. What follows is why the answer is yes, and what a reader
-should not take from it.
+no change to the test. The entries below are the observations, in order, and
+what a reader should not take from them.
 
-- =continuous-linux.yml= runs every three hours. It recreates the
+- 2026-10-18. =continuous-linux.yml= runs every three hours. It recreates the
   database with =compass db recreate -y -D ores_ci=, starts NATS, then calls
   =ctest= through =CTest.cmake=. =CTest.cmake= calls =ctest_test()= with a
   parallel level and nothing else, so no test is filtered out by label or by
   name.
-- Each component's =CTestTestfile.cmake= registers one test per test binary, and
-  =projects/CMakeLists.txt= sets =ORES_CATCH2_ARGS= to
+- 2026-10-18. Each component's =CTestTestfile.cmake= registers one test per test
+  binary, and =projects/CMakeLists.txt= sets =ORES_CATCH2_ARGS= to
   =--allow-running-no-tests --durations yes --filenames-as-tags -r compact=. The
   first of those means a binary that runs no case at all still passes. The
   protection here is that the log names the cases, which is what the evidence
   file shows: =89: 0.000 s: every title names only the subject and the fields of
   its row=.
-- The Continuous runs of 2026-10-17 are red, and not because of this component.
-  The run at =132b3de2e6= failed one test, =ores.synthetic.service.tests=. The
-  marketdata core test passed in the same run.
-- The binary in this worktree was built at =3a99d376d2= on another branch, so
-  the local run is corroboration and not authority. The two CI logs are the
-  authority, and both name the cases and pass.
-- The environment here reports that the database schema is out of sync with
-  this checkout. The title cases read no database, so the local run does not
-  depend on that; the rest of the binary would.
-- A reviewer should distrust the =0.000 s= duration: the compact reporter prints
-  the time each case took, and a case that asserts over a table built once at
-  first use spends its time in that first use, not in its own run. It is
-  evidence that the case ran, not evidence that it is cheap.
-- A reviewer should also distrust =96/96= in the log. ctest prints that as each
-  test completes, so it counts tests finished and not tests passed. The pass and
-  fail counts are in =evidence/cdash_build_totals.txt=, which is the other
-  artefact of the same two builds.
+- 2026-10-18. Both release jobs of 2026-10-17 printed a ctest total, and both
+  runs are red for reasons outside this component. The run at =e336bd0ffb=
+  reports =100% tests passed out of 96= in its release job, and the run is red
+  because its debug job hit the 320 minute limit of its CTest step while still
+  compiling, at 7187 of 7536 targets, so that job never reached a test. The run
+  at =132b3de2e6= reports =99% tests passed, 1 tests failed out of 96=, and the
+  failure is =ores.synthetic.service.tests=. The marketdata core test passed in
+  both release jobs.
+- 2026-10-18. The binary in this worktree was built at =3a99d376d2= on another
+  branch, so the local run is corroboration and not authority. The two CI logs
+  are the authority, and both name the cases and pass.
+- 2026-10-18. The environment here reports that the database schema is out of
+  sync with this checkout. The title cases read no database, so the local run
+  does not depend on that; the rest of the binary would.
+- 2026-10-18. A reviewer should distrust the =0.000 s= duration: the compact
+  reporter prints the time each case took, and a case that asserts over a table
+  built once at first use spends its time in that first use, not in its own run.
+  It is evidence that the case ran, not evidence that it is cheap.
+- 2026-10-18. A reviewer should read =96/96= in the log as a completion counter,
+  because ctest prints it as each test finishes. The run total is the separate
+  summary line, =100% tests passed out of 96= or =99% tests passed, 1 tests
+  failed out of 96=, and =evidence/cdash_build_totals.txt= holds the same
+  numbers as CDash recorded them.
 
 * Test Scenarios
 
@@ -137,27 +143,34 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | =Last touched= should read 2026-10-18 on both task pages | this page, =task_move_the_series_page_state_into_a_pure_function.org= | accept | Set both. =compass task done= owns the Status table and leaves the field as it was. |
-| 2 | The documented grep looks for a ctest total line that the log does not hold | =evidence/ci_marketdata_core_test.txt= | accept | Pattern dropped from the command list, and the file now says where the totals are. |
+| 2 | The documented grep looks for a ctest total line that the log does not hold | =evidence/ci_marketdata_core_test.txt= | accept, reason withdrawn | The pattern was right and the search that produced the file was wrong: it took the first five matches of a broader pattern, so the total fell below the cut. The excerpt now quotes =100% tests passed out of 96= and =99% tests passed, 1 tests failed out of 96=, and the sentences saying the log holds no total are gone. |
 | 3 | Run 2 is red, and =96/96= is a completion counter, not a pass count | =evidence/ci_marketdata_core_test.txt=, Notes | accept | Added =evidence/cdash_build_totals.txt= from the submitted results, and a Notes bullet on the counter. |
 | 4 | The other task's closure travels in this PR without a mention | PR body | accept | The PR body now says which task the first commit closes and why. |
 | 5 | =run_from_ctest_env.py= can read the wrong block, accept an empty entry and raise =IndexError= | =evidence/run_from_ctest_env.py= | accept | The script now walks one =set_tests_properties()= call at a time, skips empty entries, and prints usage. |
 | 6 | "on a schedule each three hours" | Notes | accept | Reads "every three hours" now. |
+| 7 | The evidence files claim the log holds no run total, which is false | =evidence/ci_marketdata_core_test.txt=, =evidence/cdash_build_totals.txt= | accept | Both logs hold a ctest total. Both sentences deleted, both summary lines quoted, and row 2 above corrected. |
+| 8 | Row 1 of Measurements cites a file that claims to hold no totals | Measurements | accept | It now quotes the log's own =100% tests passed out of 96= and cites the excerpt. |
+| 9 | The "reason nobody had watched the whole binary run before" is unsupported | Plan | accept | The clause is gone; the sentence says what the cases do and what the other 224 need, and claims no history. |
+| 10 | The first run is red too, so "all of them passed" is wrong | Result, Notes | accept | The first run's debug job timed out after 320 minutes in its CTest step, still compiling at 7187 of 7536 targets, and reached no test. Both runs' reasons are now stated, and the debug job is a Measurements row. |
+| 11 | Status should carry the DONE epitaph, and the Notes should be dated | Status, Notes | accept | =Now= reads "Completed 2026-10-18.", =Waiting on= and =Next= read "None." as =doc/meta/document_type_task.org= asks, and every Notes entry carries its date. The A52E345C page keeps "Nothing." because its close is not this task's to rewrite. |
 
 * Result
 
 CI already ran the cases and they passed. No change to the workflow and no
 change to the test, because the acceptance was met before the task started.
 
-- The release Continuous run at =e336bd0ffb= ran 96 test entries and all of them
-  passed. Test #89 is =ores.marketdata.core.tests=, 8299 assertions in 226 test
-  cases.
+- The release job of the Continuous run at =e336bd0ffb= ended with =100% tests
+  passed out of 96=. Test #89 is =ores.marketdata.core.tests=, 8299 assertions in
+  226 test cases. The run is red all the same, because its debug job hit the 320
+  minute limit of its CTest step while compiling and reached no test.
 - That log names both title cases and their durations: =the answer gives one
   title for each quote type, empty only for none=, and =every title names only
   the subject and the fields of its row=.
-- The next run, at =132b3de2e6=, names the same two cases and its marketdata
-  core test passed again. That run is red, and the failure is
-  =ores.synthetic.service.tests=.
+- The next run, at =132b3de2e6=, ended with =99% tests passed, 1 tests failed
+  out of 96=, names the same two cases, and its marketdata core test passed
+  again. The failure is =ores.synthetic.service.tests=.
 - The evidence is =evidence/ci_marketdata_core_test.txt=, taken from the Actions
-  logs of both runs; =evidence/cdash_build_totals.txt=, the pass and fail totals
-  those runs submitted; and =evidence/local_title_cases.txt=, the same two cases
-  run against this environment.
+  logs of both runs; =evidence/cdash_build_totals.txt=, the same totals as CDash
+  recorded them, with the build each run submitted; and
+  =evidence/local_title_cases.txt=, the same two cases run against this
+  environment.

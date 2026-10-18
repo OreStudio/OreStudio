@@ -4,17 +4,22 @@ Raw output: the CDash totals for the two Continuous builds this task names
 Command: curl -s "https://my.cdash.org/api/v1/index.php?project=OreStudio"
          then read buildgroups[].builds[].test for build 4333146 and 4333820.
 
-The Actions log excerpt in ci_marketdata_core_test.txt is read as the log wrote
-it, so it holds no run total. The ctest step prints "N/96 Test #x" as each test
-completes, which is a completion counter and not a pass count. The totals below
-come from the results those same two builds submitted.
+The Actions logs carry the same totals, as "100% tests passed out of 96" and
+"99% tests passed, 1 tests failed out of 96", and the excerpt in
+ci_marketdata_core_test.txt keeps both lines. This file adds what the log does
+not say: which CDash build each run submitted, and that the platform site
+counted the same numbers.
 
 build    buildname                   revision  pass  fail  notrun  date
 -------  --------------------------  --------  ----  ----  ------  ----------------------
 4333146  linux-clang-release-ninja   e336bd    96    0     0       Oct 17, 2026 - 13:45 BST
 4333820  linux-clang-release-ninja   132b3d    95    1     0       Oct 17, 2026 - 18:47 BST
 
-Build 4333146 belongs to run 39033061931, head e336bd0ffb. Every test passed.
+Build 4333146 belongs to run 39033061931, head e336bd0ffb. Every test passed in
+its release job. The run as a whole is red, and not because of a test: its
+debug job ran out the 320 minute limit of its CTest step while still compiling,
+so it never reached a test and submitted no build of its own.
+
 Build 4333820 belongs to run 39054569414, head 132b3de2e6. The one failure is
 ores.synthetic.service.tests, and the marketdata core test passed in the same
 run, which the Actions log excerpt shows.

@@ -71,6 +71,30 @@ task and name that file in the Command column.
 
 * Notes
 
+- The import and the export now key the CPI leg the same way, on
+  =LegType == CPI=, and both take the first such leg. Before that the import
+  keyed on "the leg carries a CPILegData" and the export on the leg's type, so a
+  leg typed otherwise lost its index on the way out; and with two CPI legs the
+  export wrote the first leg's values onto both.
+- Open, recorded rather than fixed: an =InflationSwap= stated with a =YY= leg
+  hits the same refusal, because neither direction has a YY branch. Captured as
+  =an-inflation-swap-on-a-yy-leg-cannot-be-stored=.
+- Open, recorded: the store's =check (base_cpi > 0)= refuses a =BaseCPI= of zero
+  or below, which the schema's =xs:float= admits. Kept, because an index level of
+  zero is not an economic value and no document in the corpus states one; a
+  finding needs evidence, and this is a conflict to decide rather than a defect
+  to fix here.
+- An unstated observation lag is stored as an empty string in a nullable column,
+  so "not stated" and "stated empty" are one value in the store. That is the
+  component's nullable-string pattern, not this unit's.
+- No test exercises the insert. The store's two constraints were confirmed by
+  querying =pg_constraint= on a recreated database, and the mapper case proves
+  the value is now supplied, but nothing asserts the row reaches Postgres. A
+  pgTAP case pinning the check would close that gap and is not in this unit.
+- The case's two halves are independent: the export half is fed values the
+  document never stated, so a reverse that wrote a constant fails there rather
+  than being carried by the import's own output.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -92,7 +116,14 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The import keyed on the payload and the export on the leg type | =swap_instrument_mapper.cpp:1397= | Fixed | Both key on =LegType == CPI= now. |
+| 2 | With two CPI legs the export wrote the first leg's values onto both | =swap_instrument_mapper.cpp:2357= | Fixed | The export stops at the first, as the import does. |
+| 3 | An inflation swap on a YY leg is still unwritable | =swap_instrument_mapper.cpp:1396= | Captured | Out of this unit's scope; the class is not closed. |
+| 4 | A =BaseCPI= of zero or below is refused by the store, though the schema admits it | =trading_inflation_swap_instruments_create.sql:59= | Recorded | A conflict to decide, with no corpus case. |
+| 5 | An unstated lag is stored as an empty string in a nullable column | =create.sql:43= | Recorded | The component's nullable-string pattern. |
+| 6 | The case's halves shared one instrument, and no test exercises the insert | =xml_ir_mapper_roundtrip_tests.cpp:486= | Fixed, in part | The halves are independent now; the insert is still untested and is recorded as an open gap. |
+| 7 | "Re-running the import is the remedy" was wrong, and the row's shape was understated | this task | Fixed | Delete the half-written trades first; no legs were written either. |
+| 8 | The money framing counted the export cast as a finding-7 site | this task | Fixed | It is a conversion on a leaf that cannot carry a lexical form. |
 
 * Result
 
@@ -107,11 +138,18 @@ fifteen assertions, six of which name =UKRPI=, =210= and =2M= rather than quotin
 the mapper.
 
 Money: =BaseCPI= is an =xs:float= in the schema, and the generated binding is a
-plain =float= with no lexical form, so the digits are the schema's own limit.
-The column is =double=, which is wider than the leaf, so the store adds no loss
-of its own. Giving the leaf a lexical form would be a codegen change of the
-=moneyFloat= kind, which the FX rework already made; it is not this unit's.
+plain =float= with no lexical form, so the digits are the schema's own limit and
+a value from the document round-trips float to double to float unchanged. Two
+consequences worth naming. The leaf re-spells a document's =114.4= as
+=114.400002=, because the serialiser prints a float at nine significant digits.
+And the export adds one decimal-to-float conversion, which is not one of
+finding 7's sites: those are casts that discard a lexical form the leaf could
+have carried, and this leaf cannot. Giving it one would be a codegen change of
+the =moneyFloat= kind the FX rework made, and it is not this unit's.
 
-A row imported before this unit could not be written at all, so there is nothing
-to re-import: the affected trades failed and were left with a header and no
-fact. Re-running the import after this change is the remedy for them.
+A trade imported before this unit was left half-written: its trade row and its
+=rate_instruments= header exist, and it has neither a fact nor any legs, because
+the instrument save is non-fatal and the leg writes come after it. Nothing needs
+migrating, but re-running the import is not the remedy: the planner mints a
+fresh trade id per trade, so a second run adds a duplicate and leaves the broken
+header in place. Delete the half-written trades first.

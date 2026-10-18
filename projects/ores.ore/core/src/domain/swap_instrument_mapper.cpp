@@ -1394,7 +1394,7 @@ swap_instrument_mapper::forward_inflation_swap(const trade& t) {
     // the CPI leg rather than on the swap, so the product's own fields come
     // from there. A swap states one such leg; a second would be another product.
     for (const auto& ld : sd.LegData) {
-        if (!ld.legDataType || !ld.legDataType->CPILegData)
+        if (ld.LegType != legType::CPI || !ld.legDataType || !ld.legDataType->CPILegData)
             continue;
         const auto& cpi = *ld.legDataType->CPILegData;
         if (!cpi.Index.empty())
@@ -2373,6 +2373,10 @@ trade swap_instrument_mapper::reverse_inflation_swap(
         legDataType_group_t group;
         group.CPILegData = std::move(cpi);
         ld.legDataType = std::move(group);
+        // The import takes the first CPI leg and stops, so the export writes
+        // the one leg the same way: a second leg would receive values the
+        // document never gave it.
+        break;
     }
 
     t.InflationSwapData = std::move(sd);

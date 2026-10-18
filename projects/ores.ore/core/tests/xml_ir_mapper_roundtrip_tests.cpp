@@ -496,8 +496,15 @@ TEST_CASE("mapper_inflation_swap_keeps_its_index_base_level_and_lag", tags) {
     CHECK(*instr.base_cpi == Approx(210.0));
     CHECK(instr.lag_convention == "2M");
 
+    // The export half is fed values the document never stated, so a reverse
+    // that wrote a constant would fail here and not be carried by the import.
+    auto other = instr;
+    other.inflation_index_code = "LIKELY-NOT-THE-DOCUMENT";
+    other.base_cpi = 300.0;
+    other.lag_convention = "3M";
+
     const auto reconstructed = swap_instrument_mapper::reverse_inflation_swap(
-        result.header, instr, result.legs, result.leg_amounts, result.leg_rates);
+        result.header, other, result.legs, result.leg_amounts, result.leg_rates);
 
     REQUIRE(reconstructed.InflationSwapData.operator bool());
     const auto cpi =
@@ -509,11 +516,11 @@ TEST_CASE("mapper_inflation_swap_keeps_its_index_base_level_and_lag", tags) {
     REQUIRE(cpi->legDataType->CPILegData.operator bool());
     const auto& data = *cpi->legDataType->CPILegData;
     REQUIRE(!data.Index.empty());
-    CHECK(std::string(data.Index.front()) == "UKRPI");
+    CHECK(std::string(data.Index.front()) == "LIKELY-NOT-THE-DOCUMENT");
     REQUIRE(!data.BaseCPI.empty());
-    CHECK(data.BaseCPI.front() == Approx(210.0f));
+    CHECK(data.BaseCPI.front() == Approx(300.0f));
     REQUIRE(!data.ObservationLag.empty());
-    CHECK(std::string(data.ObservationLag.front()) == "2M");
+    CHECK(std::string(data.ObservationLag.front()) == "3M");
     BOOST_LOG_SEV(lg, info) << "Inflation swap field test passed";
 }
 

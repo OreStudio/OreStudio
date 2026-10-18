@@ -259,7 +259,7 @@ function Rows({
 }
 
 export function ReportsPage(): ReactNode {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const reports = useQuery({ queryKey: REPORTS_QUERY_KEY, queryFn: api.reports });
     const trail = (
         <Crumbs
@@ -312,7 +312,11 @@ export function ReportsPage(): ReactNode {
             <section className="card space-y-4 p-4">
                 <header className="flex flex-wrap items-baseline justify-between gap-2">
                     <h2 className="text-sm font-medium">{t('reporting.list.title')}</h2>
-                    <span className="text-xs text-ink-faint">{t('reporting.list.lead')}</span>
+                    <span className="text-xs text-ink-faint">
+                        {t('reporting.list.lead', {
+                            count: formatCount(rows.length, language),
+                        })}
+                    </span>
                 </header>
                 <Rows rows={rows} healthChecked={healthChecked} />
                 <p className="text-xs text-ink-faint">{t('reporting.list.note')}</p>

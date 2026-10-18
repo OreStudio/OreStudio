@@ -177,6 +177,14 @@ describe('the list of reports a party runs', () => {
         expect(row).toContain('not stated');
     });
 
+    it('states how many definitions the list holds, and not the placeholder', () => {
+        const page = textOf(list());
+
+        // Two rows in the fixture, so the count is the row count and not a literal.
+        expect(page).toContain('2 definitions');
+        expect(page).not.toContain('{count}');
+    });
+
     it('counts the rows by health word before any row is read', () => {
         const page = textOf(list());
 

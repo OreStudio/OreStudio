@@ -19,16 +19,31 @@
  *
  */
 
-import { seriesObservationsSchema, type SeriesObservations } from '@ores/contracts';
+import {
+    seriesObservationsSchema,
+    type SeriesObservations,
+    type SeriesWindow,
+} from '@ores/contracts';
 import { request } from './transport.js';
 
 /** The values of one series over time. */
 export const series = {
-    /** The latest observations of a series, oldest first, and how many the series holds. */
-    async observations(seriesId: string, limit?: number): Promise<SeriesObservations> {
-        const query = limit === undefined ? '' : `?limit=${limit}`;
+    /**
+     * The observations of a series over a window, oldest first, and how many
+     * the window holds. The count caps the answer, so a window wider than the
+     * cap returns the newest observations of it.
+     */
+    async observations(
+        seriesId: string,
+        limit?: number,
+        window?: SeriesWindow,
+    ): Promise<SeriesObservations> {
+        const query = new URLSearchParams();
+        if (limit !== undefined) query.set('limit', String(limit));
+        if (window !== undefined) query.set('window', window);
+        const asked = query.size === 0 ? '' : `?${query.toString()}`;
         return seriesObservationsSchema.parse(
-            await request(`/api/series/${encodeURIComponent(seriesId)}/observations${query}`, {
+            await request(`/api/series/${encodeURIComponent(seriesId)}/observations${asked}`, {
                 method: 'GET',
             }),
         );

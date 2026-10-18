@@ -75,7 +75,8 @@ struct market_observation final {
 
     /**
      * @brief Financial valid-time: when the market value was observed (UTC). Also the hypertable
-     * partition column.
+     * partition column. A reader that draws a window of time narrows by observation_datetime_from,
+     * the lower bound the filterable column adds.
      */
     std::chrono::system_clock::time_point observation_datetime;
 

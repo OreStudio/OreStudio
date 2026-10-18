@@ -26,6 +26,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/list_filter.hpp"
+#include "ores.database/repository/range_bound.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/unit_of_work.hpp"
 #include "ores.database/repository/valid_at.hpp"
@@ -110,6 +111,8 @@ filter_condition(const std::optional<messaging::market_observations_filter>& fil
     std::vector<sqlgen::dynamic::Condition> r;
     if (filter->series_id)
         r.push_back(equals("series_id", filter_value(*filter->series_id)));
+    if (filter->observation_datetime)
+        r.push_back(equals("observation_datetime", filter_value(*filter->observation_datetime)));
     if (filter->id_one_of) {
         std::vector<sqlgen::dynamic::Value> values;
         for (const auto& v : *filter->id_one_of)
@@ -121,6 +124,27 @@ filter_condition(const std::optional<messaging::market_observations_filter>& fil
         for (const auto& v : *filter->series_id_one_of)
             values.push_back(filter_value(v));
         r.push_back(one_of("series_id", std::move(values)));
+    }
+    if (filter->observation_datetime_one_of) {
+        std::vector<sqlgen::dynamic::Value> values;
+        for (const auto& v : *filter->observation_datetime_one_of)
+            values.push_back(filter_value(v));
+        r.push_back(one_of("observation_datetime", std::move(values)));
+    }
+    if (filter->observation_datetime_from) {
+        const auto bound = range_bound(*filter->observation_datetime_from, range_end::from, true);
+        if (!bound)
+            throw std::invalid_argument(
+                "The bound " + *filter->observation_datetime_from +
+                " of observation_datetime_from is not a valid date or time.");
+        r.push_back(at_least("observation_datetime", filter_value(*bound)));
+    }
+    if (filter->observation_datetime_to) {
+        const auto bound = range_bound(*filter->observation_datetime_to, range_end::to, true);
+        if (!bound)
+            throw std::invalid_argument("The bound " + *filter->observation_datetime_to +
+                                        " of observation_datetime_to is not a valid date or time.");
+        r.push_back(at_most("observation_datetime", filter_value(*bound)));
     }
     return all_of(std::move(r));
 }

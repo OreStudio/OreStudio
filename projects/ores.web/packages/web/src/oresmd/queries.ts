@@ -20,7 +20,7 @@
  */
 
 import { keepPreviousData, queryOptions } from '@tanstack/react-query';
-import { ORESMD_MAX_BATCH, type OresmdComposeRequest } from '@ores/contracts';
+import { ORESMD_MAX_BATCH, type OresmdComposeRequest, type SeriesWindow } from '@ores/contracts';
 import { api } from '../api/client.js';
 import { curves } from '../api/curves.js';
 import { series } from '../api/series.js';
@@ -101,11 +101,11 @@ export const oresmdQueries = {
             meta: QUIET,
         }),
 
-    /** The latest observations of one series, oldest first. */
-    observations: (seriesId: string, limit: number) =>
+    /** The observations of one series over a window, oldest first. */
+    observations: (seriesId: string, limit: number, window: SeriesWindow) =>
         queryOptions({
-            queryKey: ['series-observations', seriesId, limit],
-            queryFn: () => series.observations(seriesId, limit),
+            queryKey: ['series-observations', seriesId, limit, window],
+            queryFn: () => series.observations(seriesId, limit, window),
             retry: false,
             meta: QUIET,
         }),

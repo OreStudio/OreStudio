@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: E4699215-6BAB-4416-98B0-2808F67ECE2F
+:END:
+#+title: Story: Hotfix: the debug builds never finish
+#+description: Every debug leg of Continuous and Nightly times out because the compiler cache it would warm never gets stored.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The debug legs finish. Every clang-debug run of Continuous and Nightly for the
+last day ended with
+
+#+begin_example
+##[error]The action 'Run CTest workflow' has timed out after 320 minutes.
+#+end_example
+
+not with a test failure. The build was at 3,378 of 7,663 targets three hours in,
+so it needed about seven hours. The leg builds in four hours when its compiler
+cache is warm, and no run since the 07:32 one has had a warm cache.
+
+The cache never warms because it cannot turn over. GitHub gives a repository
+10 GB, this project needs four sccache variants, sccache's default cache is
+10 GB all by itself, and the prune that would free room ran only after a save
+that was itself waiting for it:
+
+- A debug cache directory holds 3,938 MB; the repository held 7.31 GB of 10 GB,
+  so the upload could not fit.
+- =actions/cache/save= turns an upload it cannot make into a warning and exits
+  zero, so the step reported success and stored nothing.
+- The prune step then asked the service whether this run's key existed, found it
+  did not, and failed the job without deleting anything.
+- Every later run restored the same stale entry, missed, and timed out again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Fix written; the logic is exercised against fixtures. |
+| Waiting on    | Nothing.                               |
+| Next          | Merge, then read the next two scheduled runs. |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- Each Linux variant caps its cache, so four variants fit the repository's
+  allowance.
+- Space is freed before the save, oldest entries of the same variant first.
+- A save that stored nothing warns instead of failing a build that passed.
+- The step cap leaves room to save: 350 minutes under the 360 a hosted runner
+  allows.
+- Both Linux workflows carry the same logic.
+
+* Decisions
+
+- Cap each variant rather than raise the repository's cache: the allowance is a
+  property of the plan, and four variants at 2 GB fit with room for vcpkg.
+- Free space before the save. The older order was safer against a failed save,
+  and it deadlocks the moment the allowance is the binding constraint, which is
+  the state this repository reached.
+- Do not fail the job when a save stores nothing. The build it describes has
+  already passed, and the red job hid that the cache, not the code, had failed.
+
+* Out of scope
+
+- The Windows and macOS debug legs. Their reds are compile errors, not
+  timeouts, and they keep their own caches.
+- The nightly gcc legs' compile errors, which are separate.
+
+* Result
+
+Both Linux workflows now cap sccache at 2 GB per variant, free room in the
+repository cache before saving (oldest entries of the same variant first), warn
+instead of failing when a save stores nothing, and give the build 350 minutes.
+The deletion logic is exercised against three cache layouts: a warm four-variant
+set that fits, an empty allowance, and a full allowance holding duplicates.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BED779B8-AA5C-46CC-B0CD-B9D37001536D][Scaffold story: Hotfix: the debug builds never finish]] | STARTED | 2026-10-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EDE8E9BE-3C93-45D2-9530-ACFEED982A5D][Make the compiler cache turn over inside the repository quota]] | STARTED | 2026-10-19 | | Initial task for: Hotfix: the debug builds never finish |
+
+* Decisions
+
+* Out of scope
+
+-

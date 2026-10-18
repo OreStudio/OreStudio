@@ -28,7 +28,7 @@ no test that its data came with it.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | The harness proves, for the seven generated families, that every value the corpus states comes back and that every writing validates. |
 | Waiting on   | Nothing.                               |
@@ -130,3 +130,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Merged. The harness compares two records and two value fingerprints, so a
+value lost on the reading is named rather than compared against itself, and
+it covers every document of the eight families on tables. Validity stays a
+script, so a machine running the suite needs no validator.
+

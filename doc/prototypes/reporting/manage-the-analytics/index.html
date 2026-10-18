@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reporting: manage the analytics — prototype</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step.
+
+  Manage the analytics. This page owns the whole analytic interaction of a run
+  settings configuration, and the two prototypes that used to repeat it hand the
+  work here:
+
+    doc/prototypes/reporting/create-a-report/            step 7 links here
+    doc/prototypes/reporting/change-what-a-report-runs/  its analytics step links here
+
+  The analytics belong to the bound run settings configuration, not to a
+  definition. A configuration_analytic row hangs off the configuration, so a
+  change here reaches every definition bound to that configuration, and a set
+  that must differ belongs to a configuration of its own. The page says so on
+  every step.
+
+  The screen is the standard steps UI, the one the system bootstrap journey
+  uses: the rail, its done/current/ahead marks and the step foot are copied from
+  doc/prototypes/setup/first-run/, which copies JourneyPage.tsx.
+
+  The rail is computed from state, not written out:
+
+    1        The switchboard      the fourteen analytic types, one row each, with
+                                   the on/off control, the display_order and a
+                                   one-line summary. A type the configuration
+                                   carries no row for says so and offers to add it.
+    2..n     One per analytic on   in display_order, titled with the analytic's
+                                   name. What it is, how it is calculated, and
+                                   every parameter with a control chosen for its
+                                   shape and a note on what it means and what a
+                                   normal value is. An analytic with no parameter
+                                   says so.
+    last     What the analytics    reads back the set as it now is and offers to
+             are now               return to the report. It is final, so Back is
+                                   refused from it.
+
+  Turning an analytic on adds its step and renumbers the ones after it. Turning
+  one off removes it and asks first, because its parameter values go with it. An
+  analytic is turned off by setting active false, never by deleting the row, and
+  no control on this page deletes anything.
+
+  pfe reads a cube that simulation writes, so pfe without simulation cannot work.
+  The page shows that as a state: the rule strip, both rows marked, the toggle
+  that would write either row of the pair refused, and the final step refusing to
+  read back a set that cannot run. The rule lives in the ACME seeder, at
+  check_exposure_needs_simulation, and no service validates it.
+
+  The purpose-built editors for simulation and pfe are deferred. Those settings
+  are drawn as plain fields and each one is labelled a deferred editor.
+
+  Three readings of the per-analytic step, and nothing else, behind
+  ?variant=A|B|C:
+
+    A  document      the explanation as a short page, the parameters in one
+                     column below it
+    B  two columns   explanation left, settings and effect right
+    C  guided        one parameter at a time with the explanation beside it, and
+                     a summary at the end
+
+  The switchboard and the rail are identical across the three.
+
+  ?step=N is numeric over the current rail, so it moves when an analytic is
+  turned on or off. ?analytic=<code> resolves to that analytic's step whatever
+  its number, so a reload lands where the person was. ?pfe=without-simulation
+  opens the broken pair. ?refuse=<code> opens the refusal a switch draws.
+  ?from=create-a-report|change-what-a-report-runs decides where "Return to the
+  report" goes.
+
+  Nothing here reads a server and nothing is written. Every value on the page is
+  a fixture, and the page says so.
+-->
+
+<div class="proto-note" id="proto-note"></div>
+<div id="app"></div>
+<div class="proto-bar" id="proto-bar"></div>
+
+<script src="prototype.js"></script>
+</body>
+</html>

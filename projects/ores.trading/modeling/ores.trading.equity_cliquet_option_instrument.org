@@ -1,0 +1,269 @@
+:PROPERTIES:
+:ID: 8B390608-5BA2-4625-8B23-3765E45C0061
+:END:
+#+title: ores.trading.equity_cliquet_option_instrument
+#+description: Codegen entity model for the trading equity_cliquet_option_instruments table. One row per equity cliquet option, keyed by the trade.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: equity_cliquet_option_instrument
+#+entity_plural: equity_cliquet_option_instruments
+#+entity_title: Equity Cliquet Option Instrument
+#+brief: One row per equity cliquet option, keyed by the trade.
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+One row per equity cliquet option, keyed by the trade. The cliquet's own
+terms live here rather than in =equity_option_instruments=, whose vanilla
+shape has no moneyness, no periodic caps and floors and no premium.
+
+The cap and floor pair is the option's own subject matter: the local pair
+applies to one period's return and the global pair to the accumulated
+return. Every one is money, so every one is an exact numeric.
+
+The moneyness is a ratio and not an amount, so it is a continuous quantity and
+stays a binary float.
+
+The schedule and the settlement days state when the option is observed and
+settled. The schedule's dates belong to the shared schedule children; this
+table keeps the settlement days the document states.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:supplied_by:  user
+:END:
+
+The trade this cliquet belongs to, and the row's key.
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** underlying_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name of the equity underlying the option is on.
+
+#+begin_src cpp :name generator
+std::string("ACME Corp")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Currency of the notional and the premium.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** notional
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: ores::utility::decimal::decimal
+:nullable: false
+:END:
+
+The option's notional. Money, so an exact numeric.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("1000000").value()
+#+end_src
+
+** long_short
+:PROPERTIES:
+:type:           text
+:cpp_type:       std::string
+:nullable:       false
+:generator_expr: std::string("Long")
+:END:
+
+Whether the holder is long or short the option.
+
+** option_type
+:PROPERTIES:
+:type:           text
+:cpp_type:       std::string
+:nullable:       false
+:generator_expr: std::string("Call")
+:END:
+
+Call or put.
+
+** moneyness
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The option's moneyness, when the document states one.
+
+A ratio and not an amount, so a continuous quantity and not money.
+
+** local_cap
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The cap on one period's return, when the document states one.
+
+** local_floor
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The floor on one period's return, when the document states one.
+
+** global_cap
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The cap on the accumulated return, when the document states one.
+
+** global_floor
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The floor on the accumulated return, when the document states one.
+
+** settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Settlement lag in days, when the document states one.
+
+** premium
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The premium paid for the option, when the document states one.
+
+** premium_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency of the premium, which the document may state apart from the
+notional's.
+
+** premium_payment_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::chrono::year_month_day>
+:nullable: true
+:END:
+
+When the premium is paid, when the document states it.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_equity_cliquet_option_instruments_tbl
+:rls_tenant_isolation: true
+:party_scoped_writes: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "underlying_name" <> '' |
+| "long_short" in ('Long', 'Short') |
+| "option_type" in ('Call', 'Put') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: equity_cliquet_option_instrument
+:entity_plural_short:   equity_cliquet_option_instruments
+:entity_singular_words: equity cliquet option instrument
+:entity_plural_words:   equity cliquet option instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cliquet
+:END:
+
+** Table display
+
+| column          | header          |
+|-----------------+-----------------|
+| underlying_name | Underlying      |
+| currency        | Currency        |
+| notional        | Notional        |
+| option_type     | Type            |
+| moneyness       | Moneyness       |
+| global_cap      | Global Cap      |
+| global_floor    | Global Floor    |
+| premium         | Premium         |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:9EBD0386-603F-4E0A-A9A3-57B4E390CE0F][ores.trading.equity_instrument]] — the family header these facts hang from.

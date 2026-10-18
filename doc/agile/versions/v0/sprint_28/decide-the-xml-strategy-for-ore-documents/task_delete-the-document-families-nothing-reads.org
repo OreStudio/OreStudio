@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 9781E5B4-012B-4012-9670-BCB39058BA3D
+:END:
+#+title: Task: Delete the document families nothing reads
+#+description: Eight of the twenty corpus root elements have no product consumer. Do not map them; delete their tests and their dead mapper, and record the census that says which families those are.
+#+type: task
+#+level: s1
+#+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:xml:codegen:
+#+owner: marco
+#+branch: feature/delete-the-document-families-nothing-reads
+#+pr: 3451
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: swift_curie
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story planned a table for every one of the twenty corpus root elements.
+Counting the consumers first showed that eight of them have none: no product
+code reads those documents, so there is no mapper to migrate and no feature
+that a table would serve. Building eight tables, and their harness cases, would
+prove a capability nothing uses. They are deleted instead, and a table is added
+if a feature ever needs one.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
+| Now          | Eight families are classified unused, and the tests and the mapper that served them are deleted. |
+| Waiting on   | Nothing.                               |
+| Next         | The remaining mapper families, then xsdcpp itself. |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+- Every corpus root element is classified as supported, migrating or unused,
+  and a check fails when the tree stops agreeing with that.
+- A family classified unused has no test that names it, so the deletion stays
+  deleted rather than growing back as an unused test.
+- The deleted families' mapper and its tests go together, so no dead code is
+  left behind.
+- What remains compiles and the XML suites pass.
+
+* Plan
+
+*Count consumers before mapping anything.* The boundary between "migrate" and
+"delete" is whether the product reads the family, and that is a grep, not a
+judgement: =domain.hpp= -- the generated binding -- is included by six product
+files plus the mappers, so the families a mapper, a store or a service reaches
+are the ones that matter.
+
+*The census is a decision, and a check.* =build/scripts/check_xml_family_coverage.py=
+names each family's state with its evidence and fails when the tree disagrees:
+a supported family without a table, an unused family that an XML family suite
+still names, or a corpus root element nobody classified. The check is what
+stops "seven families to delete" from becoming "seven families nobody got to".
+
+*Seven are deleted, six are not.* Simulation, sensitivity analysis, reference
+data, script library, collateral balances, SIMM calibration and the cross asset
+model have no reader at all: nothing in a component's =src=, =service= or =api=
+touches them, so their tests and the family's xsdcpp-generated types go. The
+counterparty information and ibor fallback families already have tables and
+stay supported: a table that is written and proved costs nothing to carry.
+
+*Stress testing was reclassified by the review.* The first reading of the tree
+said nothing in product code called =stress_test_mapper=, and the family was
+deleted with the rest. That was wrong: the analytics stress test store is
+modelled on =stresstest.xml=, its libraries, scenarios and shifts are live
+repository and service surface, and the mapper is the only importer that
+document has. The mapper, its two stress suites and the lexical-form suite,
+which proves the live writer's number rendering on a portfolio case, are
+restored, and the family is classified as migrating.
+
+*What is not deleted here* is the xsdcpp-generated type surface for the seven
+families. It is generated from =input.xsd= as one unit, so it leaves when
+xsdcpp leaves, which is the last task.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Corpus root elements, classified | 20 | =python3 build/scripts/check_xml_family_coverage.py= | 2b51096de6 |
+| Families supported by a table | 7 | same | 2b51096de6 |
+| Families migrating from a mapper | 6 | same | 2b51096de6 |
+| Families unused and deleted | 7 | same | 2b51096de6 |
+| Test cases removed with the seven families | 11 | =publish/bin/ores.ore.core.tests "[ore][xml]"= before (541) and after (530) | 2b51096de6 |
+| XML suites after the deletion and the review | 530 cases, 63,560 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 2b51096de6 |
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3451][#3451]] | [ore] Delete the document families nothing reads |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Merged, with the review that followed it applied. Seven families are
+deleted, not eight: stress testing was restored because its store is live
+and its mapper is the only importer. The census check now defends the
+boundary, and the netting set mapper went the same way afterwards.
+

@@ -765,8 +765,7 @@ void workflow_engine::begin_compensation(const domain::workflow_instance& instan
 
         // Publish compensation command with tenant header.
         BOOST_LOG_SEV(lg(), info) << "step " << comp_step.step_index << " (" << comp_step.name
-                                  << ")"
-                                  << " workflow=" << boost::uuids::to_string(instance.id)
+                                  << ")" << " workflow=" << boost::uuids::to_string(instance.id)
                                   << " step_id=" << boost::uuids::to_string(comp_id)
                                   << " state=" << state_name(step_states_, comp_step.state_id)
                                   << " at="

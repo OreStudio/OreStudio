@@ -320,7 +320,17 @@
 \ir ./trading_risk_participation_agreement_instruments_create.sql
 \ir ./trading_risk_participation_agreement_instruments_notify_trigger_create.sql
 
+-- Equity family header and basket
+\ir ./trading_equity_instruments_create.sql
+\ir ./trading_equity_instruments_notify_trigger_create.sql
+\ir ./trading_equity_basket_constituents_create.sql
+\ir ./trading_equity_basket_constituents_notify_trigger_create.sql
+
 -- Per-type equity instruments
+\ir ./trading_equity_cliquet_option_instruments_create.sql
+\ir ./trading_equity_cliquet_option_instruments_notify_trigger_create.sql
+\ir ./trading_equity_outperformance_option_instruments_create.sql
+\ir ./trading_equity_outperformance_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_option_instruments_create.sql
 \ir ./trading_equity_option_instruments_notify_trigger_create.sql
 \ir ./trading_equity_digital_option_instruments_create.sql

@@ -1,0 +1,353 @@
+:PROPERTIES:
+:ID: 0DC107D4-170D-478B-9476-570343806888
+:END:
+#+title: User Journey: See the conventions a party uses
+#+description: A person asks which market terms the next run of their party will read, gets the 26 kinds with what each holds, and finds that no document is marked as the one a run takes.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:reporting:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person asks which market terms the next run of their party will read, and cannot be answered from what is stored.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Something in this run looks wrong and I think it is a convention. Which terms
+does the run read, kind by kind, and which one of them is the one that counts?"
+
+The person opens the conventions of one party and gets one row per convention
+kind. Each row answers three questions: how many documents of that kind the
+party holds, what the terms of one of them say in words, and where the kind
+came from. The journey is done when the person can say, for the kind they
+suspect, which document a run takes.
+
+Today the third question has no answer for any kind, and the row has to say so.
+There is no default marker anywhere, no name column to look a document up by,
+and the conventions configuration a report binds carries no rows that would
+name one. *What is missing* states all three, and each is a fact about the
+server rather than an opinion about the screen.
+
+* Actor and trigger
+
+Three actors read the same rows: the market risk function, the trading desk and
+the tenant administrator. A market risk reader arrives after a run produced
+numbers they did not expect, and wants the terms behind one instrument family.
+A trading desk arrives with a booking in front of them and asks what the
+convention for that family states. A tenant administrator arrives when a party
+reports a term that has moved, and reads across the tenant's parties. The three
+read the same activity over different visible sets, and the sets are the
+permissions and the row-level policy, not three screens.
+
+The trigger is a run whose figures are doubted, or a term that is known to have
+moved. The journey starts when the person opens the conventions of a party and
+ends when they have read the terms of the kind they came for, and have read that
+which document a run takes is not recorded.
+
+This is a read-only journey. It creates nothing, changes nothing and destroys
+nothing. It reaches one write only from a row: the link to
+[[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses
+for one kind]].
+
+The journey keeps no server state. No step waits on the server after its reply.
+
+* Steps
+
+1. *Open the conventions of the party.* The person opens the conventions area
+   with a party in view. The system shows one screen: a header that names the
+   tenant and the party, a summary that counts the kinds and the documents, and
+   a table with one row per convention kind. ACME's one operational party holds
+   2,155 rows across the 22 kinds that carry a party column, and the tenant
+   holds 216 more across the four kinds that do not. A party that holds nothing
+   is stated as such, and the row says what a run would write instead: a
+   conventions file with no rows for the 22 kinds.
+2. *Read the 26 kinds.* There are 26 convention tables and the table draws one
+   row per table: =average_ois=, =bma_basis_swap=, =bond_yield=, =cds=,
+   =cms_spread_option=, =commodity_forward=, =commodity_future=,
+   =cross_currency_basis=, =cross_currency_fix_float=, =currency_pair=,
+   =deposit=, =fra=, =future=, =fx_option=, =ibor_index=, =inflation_swap=,
+   =intraday_power_load=, =ois=, =overnight_index=, =swap=, =swap_index=,
+   =tenor=, =tenor_basis_swap=, =tenor_basis_two_swap=, =zero= and
+   =zero_inflation_index=. Each row states the kind's name, how many term
+   columns its table carries, how many documents the party holds, and whether
+   the party or the tenant owns them. The two are not the same claim, so the
+   row states which: 22 kinds belong to the party and four belong to the tenant.
+3. *Read the terms of one kind in words.* The person opens the kind they
+   suspect. The system shows the kind's documents, each with its terms said in
+   words rather than as codes: "The AED calendar, modified following as the
+   business-day rule, ACT/360 as its day count, settlement 2 business days after
+   the trade." Every convention table states its terms as text columns and a
+   term that is a pick holds the list's code, never its label, so the words on
+   the screen are the screen's reading of the codes.
+4. *Look for the document that counts, and find nothing.* The person asks which
+   of the swap kind's 320 documents a run takes. The system has no answer. No
+   convention table carries a default marker: the only =%default%= column in the
+   whole of =ores.refdata= is =pays_at_default_time= on =cds_convention=, which
+   is a business term about a credit event and not a mark on a document. So the
+   row states the count and states, on the row, that nothing records which of
+   them a run reads.
+5. *Look a document up by name, and find that a name is derived.* No convention
+   table has a name column. One has a description: =tenor= carries a nullable
+   =description=, and the row =CREDIT_CDS_IMM= states
+   "Credit/CDS curves: tenors resolve to the first business day following the
+   appropriate IMM roll date, not a fixed offset from an anchor." For the other
+   25 kinds the name is read off the terms: an index-based document by its
+   index, and a terms-based one by its calendar, its convention, its day count
+   and its settlement days. The screen says the name is derived, and says the
+   consequence: a derived name does not identify a document. ACME's party holds
+   320 swap documents stating 201 distinct sets of terms, so 201 derived names
+   stand for 320 documents and 119 rows carry a name another row also carries.
+   The primary key sits beside every name for that reason.
+6. *Follow the run back to its configuration and find a label.* A person who
+   reasoned "the report knows" opens the report definition and reads the
+   conventions configuration it binds. Each of ACME's 78 definitions binds one,
+   and there are four of them: *US conventions* with 22 definitions,
+   *UK conventions* with 24, *HK conventions* with 22 and *Group conventions*
+   with 10. The names are read; the contents are not. Every one of the four is a
+   header with no rows: no market binding, no parameter and no analytic hangs off
+   it. The system therefore shows the configuration's name and states that the
+   configuration names no document.
+7. *Read what the run actually writes.* The person asks the question one step
+   further back: when a run writes its conventions file, which rows go in? The
+   export reads the party's whole conventions document and nothing else, and it
+   does not read the configuration's id at all. So every definition of a party
+   writes the same conventions file, and it holds every document the party owns
+   for the 22 party kinds plus the tenant's 216 for the four tenant kinds. The
+   four configuration names describe different intents and select the same rows.
+   The screen states this rather than drawing four configurations as four sets.
+   In ACME each party binds one of the four for all of its definitions, so the
+   coincidence hides: a tenant that gave one party two conventions configurations
+   would find the two produce one file.
+8. *Read where a document came from.* Each row states its provenance, because
+   "provisioned" is not "authored". 25 of the 26 kinds arrived from a DQ publish
+   and their rows carry =system.external_data_import= with the dataset's name in
+   the commentary. =tenor='s 4 rows carry =system.new_record= and the commentary
+   "Copied from the system tenant during provisioning". A row a person wrote
+   carries the change reason that person chose. A reader who wants the publish
+   itself reads [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions
+   from data quality]].
+9. *Read one document's versions.* The person opens one document's history and
+   reads every saved version with the field-level difference from the one before,
+   by whom and why. This is the only place the screen can say when a term
+   changed, because no run records the version it read.
+10. *Leave, or go on.* The person either has the answer, or has found the term
+    that is wrong and goes to
+    [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party
+    uses for one kind]]. A person with no permission to write terminates a
+    read-only copy of the same screen; there is no read/write pair of screens.
+
+* Screens and wireframes
+
+One screen. The party header, the summary counts, the kind table and the open
+kind's terms are panels of that screen, because the person reads them as one
+answer. The screen is read-only: it creates nothing, changes nothing and
+destroys nothing. The table is the whole answer, and a row carries its count, its
+terms in words, its provenance and the statement that no default is recorded, so
+that no row needs opening to be understood.
+
+#+caption: See the conventions a party uses: the 26 kinds with their counts and terms in words, a kind open with its 320 documents and 201 distinct term sets, and the four configuration names that select the same rows.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_see_the_conventions_a_party_uses.png]]
+
+* Prototype
+
+No prototype answers this journey today. The prototype that used to draw the
+26-kind table inside the reporting group has been retired: it was built on a
+conventions configuration that carries no children, and the conventions are now
+named convention sets rather than a per-kind list a person assembles. This pass
+writes no prototype.
+
+Conventions are named convention sets: a set carries a name, a purpose and a
+description, a system holds few of them, and a report binds one by choosing it.
+The choosing surface is drawn in
+[[file:../../prototypes/reporting/create-a-report/][Create a report]] and
+[[file:../../prototypes/reporting/change-what-a-report-runs/][Change what a
+report runs]]: one page of sets, a radio to bind one, and one link out to the
+authoring UX. The authoring prototype is deferred to its own work and is not in
+this MR. The decision, and the three absences this journey records — no default
+marker, no name, and a configuration that holds nothing — are stated in the story
+[[file:../../../agile/versions/v0/sprint_28/name-the-convention-sets-a-report-chooses/story.org][Name
+the convention sets a report chooses]] (DE6C0BDA-D12A-4E31-AA86-C323F5A7E016).
+Two points the retired prototype raised are kept here rather than lost: a party
+with no conventions does not fall back to the curated document for the kind, and
+no such fallback exists (see *What is missing*); and the retired note said
+thirty-one definitions bind the conventions configuration, where each of ACME's
+78 definitions binds one.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| The 26 convention tables | The rows themselves: one table per kind, each with its own terms. The 22 party kinds carry =party_id=; the four tenant kinds carry none. | see the table below |
+| =configuration= | The four conventions configurations a report binds, by name and type | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| =report_configuration= | The binding of one definition to its conventions configuration | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+| =report_definition= | The definition whose next run carries the terms, and the party the export reads the document for | [[id:FB4A11C5-07EA-4923-B8AC-65F46EBA517C][ores.reporting.report_definition]] |
+| =party= | The owner of the 22 party kinds in the header, and the party the export resolves | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+The four kinds whose table carries no =party_id= are the ones the table has to
+mark, because their count is the tenant's and not the party's:
+
+#+ATTR_HTML: :class hug-leading
+| Kind | Key column | ACME rows | Why it has no party |
+|------+------------+-----------+---------------------|
+| =currency_pair= | =pair_code= | 179 | One convention per pair for the tenant, 1:1 with the pair |
+| =ibor_index= | =id= | 10 | The index terms belong to the index, not to a party |
+| =overnight_index= | =id= | 23 | The same |
+| =tenor= | =code= | 4 | The label resolves once for the tenant |
+
+The two worked term sets, and the two model documents the rest of this group
+cites:
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =swap_convention= | The worked example: seven term columns, 320 documents per party, 201 distinct sets | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] |
+| =deposit_convention= | The simpler contrast: =index_based= decides whether the row states its own terms or inherits them from the index | [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] |
+| =ibor_index_convention= | The kind that cannot name itself: its table carries a fixing calendar, a day count, settlement days and a business-day rule, and no index column | [[id:852FE06C-70D9-48BC-B768-D99D87D0D796][ores.refdata.ibor_index_convention]] |
+| =tenor_convention= | The one kind with a description column, and the one kind with no DQ route | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =currency_pair_convention= | The one tenant kind that arrives on its own subject and its own dataset | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
+
+Every one of these tables is bitemporal: a term edited today leaves the earlier
+version readable, so the history view reads saved versions and the current row
+reads the latest. The party-scoped kinds are party-scoped by row-level security
+and not by a filter the screen applies.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Open the screen | List the party's convention rows of one kind | =refdata.v1.<kind>_conventions.list= | exists |
+| Open the screen | Read one convention | =refdata.v1.<kind>_conventions.get= | exists |
+| Open the screen | Read many conventions by key | =refdata.v1.<kind>_conventions.get_many= | exists |
+| Read the terms | Read the term lists the codes come from | =refdata.v1.calendar_names.list=, =refdata.v1.day_count_fraction_types.list=, =refdata.v1.business_day_convention_types.list=, =refdata.v1.payment_frequencies.list=, =refdata.v1.floating_index_types.list= | exists |
+| Read one document's versions | List a document's versions | =refdata.v1.<kind>_conventions_versions.list= | exists |
+| Read one document's versions | Read every version with its diff | =refdata.v1.history.get= (=entity_type= = =ores.refdata.<kind>_convention=) | exists |
+| Follow the run back | Read the configurations a definition binds | =reporting.v1.report_configurations.list= | exists |
+| Follow the run back | Read the configurations of type =conventions= | =reporting.v1.configurations.list_by_configuration_type_code= | exists |
+| Read the whole party document in one answer | Read the party's conventions document | =refdata.v1.conventions_documents.get= | exists, not reachable by a person |
+| Read the whole party document in one answer | Write the party's conventions document | =refdata.v1.conventions_documents.put= | exists, held by no role |
+| Search a kind by a term | Filter a convention list by anything but the key | (the filter is =id_one_of= and nothing else) | missing |
+| Name the document a run takes | Read the default of a kind | (no default column, no default row) | missing |
+| Read what a configuration names | Read the documents a conventions configuration holds | (a conventions configuration has no children to read) | missing |
+| The screen itself | Read 26 kinds for one party in one answer | (no BFF route) | missing |
+
+The per-kind subjects are the generated ones: =refdata.v1.swap_conventions.list=
+and its equals for every one of the 26 kinds, under the kind's own plural. A
+tenant kind's subject is the same shape, and its key holds no party:
+=refdata.v1.ibor_index_conventions.get= takes an =id= alone.
+
+=refdata.v1.conventions_documents.get= is the read that would answer this
+journey in one call: it returns every convention the party holds, kind by kind,
+in one message. It is not available to the person who asks the question. Its
+permission is =refdata::conventions:read= and the two roles that hold it are
+=OreService= and =ReportRun=. =refdata::conventions:write= is held by no role at
+all, so the document write is reachable only by =TenantAdmin= and =SuperAdmin=,
+which hold =*=. The person who reads conventions for a living holds
+=refdata::swap_conventions:read= and its siblings under =Operations=, and reads
+them one kind at a time.
+
+No BFF route serves conventions. This journey adds one, for example
+=GET /api/refdata/parties/<party-id>/conventions=, which reads the party's
+document once, joins the term lists, derives the names and returns the 26 rows
+with their counts and their provenance.
+
+* What is missing
+
+1. *No default marker exists anywhere.* Nothing on any of the 26 tables and
+   nothing keyed by tenant and kind says which document a run takes. The only
+   =%default%= column in =ores.refdata= is =pays_at_default_time= on
+   =cds_convention=, a business term about a credit event. A real default needs
+   either a per-kind default column on =ores_refdata_<kind>_conventions_tbl= or a
+   per-kind default row keyed by tenant and kind. This is the gap that makes the
+   journey's own goal unanswerable, and it is the first thing to build.
+2. *No convention has a name or a description column.* Only =tenor= has a
+   nullable =description=. Every other kind must be named from its terms, and a
+   derived name does not identify a document: ACME's party holds 320 swap
+   documents stating 201 distinct term sets, so 201 names stand for 320
+   documents. The deposit kind holds 163 documents stating 141 sets. A screen
+   cannot offer a person a name to choose by until a name is stored.
+3. *A conventions configuration carries no rows, so naming one selects nothing.*
+   All four of ACME's conventions configurations are headers with no market
+   binding, no parameter and no analytic. The reporting model can say a
+   definition binds *US conventions*; it cannot say what *US conventions* holds.
+4. *The export ignores the configuration entirely, so every report of a party
+   reads the same rows.* When a run's files are assembled, the conventions file
+   is written from the party's whole conventions document and the bound
+   configuration's id is not read. Rebinding a definition to a different
+   conventions configuration would change nothing. This is not a screen defect
+   and no screen can paper over it: four configurations that name four intentions
+   select one set.
+5. *`refdata::conventions:read` sits where no person can reach it.* It is held by
+   =OreService= and =ReportRun=. =refdata::conventions:write= is held by no role
+   below =TenantAdmin=. So the one operation that answers the journey in a single
+   call is reachable by a service and by two administrative roles, and the person
+   who runs reference data reads 26 lists instead.
+6. *A convention list cannot be searched by a term.* The generated filter takes
+   =id_one_of= and nothing else, so a person who knows the index, the calendar or
+   the day count and not the key cannot reach the document. The screen says so on
+   the field and pages the list for the client to filter, which does not reach
+   320 documents in a browser.
+7. *One kind cannot name itself at all.* =ibor_index_convention= carries a fixing
+   calendar, a day count, settlement days and a business-day rule, and no index
+   column. Its terms do not state which index they belong to, so no naming rule
+   recovers it, and two IBOR indices with the same conventions are
+   indistinguishable in every column the table has.
+8. *The four tenant kinds belong to no party, and a party reader is not told.*
+   216 of ACME's 10,991 rows are held once for the tenant: =currency_pair= 179,
+   =overnight_index= 23, =ibor_index= 10 and =tenor= 4. A change one party makes
+   to the IBOR convention changes what every party reads, and nothing on the row
+   says so. The screen marks the owning scope per kind; the server does not
+   report it.
+9. *No operation returns how many distinct term sets a kind holds.* The 201 of
+   320 is a =count(distinct (…))= over seven columns that the screen performs. No
+   read states it, so the person learning that a derived name collides learns it
+   from a count the client made.
+10. *No run records the version of a convention it read.* The history view can
+    say when a term changed and cannot say which run was affected. The person who
+    asks "did the AED number change because the term changed" has a timeline and
+    two separate facts, and no join between them.
+11. *A party with no conventions has no fallback, whatever the design note says.*
+    The party's document read returns the rows the party holds; for a new party
+    that is nothing for the 22 party kinds. The export writes that file. Nothing
+    in the tree substitutes a curated document, and nothing refuses the run. See
+    [[id:AD7E6FC0-392E-46A9-8E28-23B7B4946A88][Onboard a party and verify its
+    conventions]] for what fills the gap instead.
+
+* Related journeys
+
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] — the action on a row: choose a different document for a kind, and read what the change reaches
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] — the kind has no document stating these terms, so the person writes one
+- [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data quality]] — where the 25 published kinds came from, and what a re-publish does
+- [[id:AD7E6FC0-392E-46A9-8E28-23B7B4946A88][Onboard a party and verify its conventions]] — the party the screen is opened for, and how its rows arrived
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the runs that read these terms, reached from the party and not from a convention
+- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — the configurations the definition binds, of which conventions is one of five
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — the calendars, day counts, business-day rules and indices a convention's terms are codes from
+- [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] — a currency-pair convention is 1:1 with its pair, so the pair screen and this one read the two faces of one record
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey opens
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance and change reasons
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the staging table the published rows came through
+- [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the bundle that publishes a party's conventions
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE =conventions.xml= elements these tables correspond to
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the form and badge vocabulary this screen follows
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the runs that read these terms
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how a screen of this group composes its reads
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections this page fills
+- =ores_refdata_publish_conventions_from_dq_fn= — the function that wrote 25 of the 26 kinds
+- =conventions_document_service= — the read and the write of the whole party document
+- =ore.v1.ops.export_run_configuration= — the export that writes the conventions file from the party and not from the configuration

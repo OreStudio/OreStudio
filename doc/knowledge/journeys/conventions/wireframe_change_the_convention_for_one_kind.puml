@@ -1,0 +1,121 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>CHANGE THE CONVENTION A PARTY USES FOR ONE KIND</b>  { Kind: swap | Document | Change | Reach }
+  --
+  {
+    {
+      <b>swap</b>, party ACCOUS
+      --
+      Owner: <b>party</b> | Term columns: 7 | Documents: <b>320</b> | Distinct term sets: <b>201</b>
+      Filter: "^AED-EIBOR-3M-SWAP     "  <i>takes id_one_of only: it filters by key, not by a term</i>
+      --
+      {#
+        Document | Terms in words | Version
+        AED-SWAP | AED - ModifiedFollowing - 30/360 - 2d | v1
+        <b>AED-EIBOR-3M-SWAP</b> | the same terms as AED-SWAP | v1
+        EUR-6M-SWAP | TARGET - ModifiedFollowing - ACT/360 | v3
+        ... 317 more documents ...
+      }
+    } | {
+      <b>AED-EIBOR-3M-SWAP</b>  (key, not a name: 201 names cover 320 documents)
+      --
+      {#
+        Term | Value | Source
+        Fixed Calendar | ^AED^ | from calendar_names
+        Fixed Frequency | ^Annual^ | from payment_frequencies
+        Fixed Convention | ^ModifiedFollowing^ | from business_day_convention_types
+        Fixed Day Count Fraction | ^ACT/360^ | from day_count_fraction_types
+        Index | ^AED-EIBOR-3M^ | from floating_index_types
+        Float Frequency | ^Semi-Annual^ | from payment_frequencies
+        Sub-Periods Coupon Type | ^Compounding^ | from sub_periods_coupon_types
+      }
+      --
+      <b>Which act is this?</b>
+      (o) Use a different document    <i>pick an existing row</i>
+      ( ) Correct this document       <i>write a new version of this row</i>
+      <i>A third act, terms no document states, is a different journey.</i>
+      [ Review the change ]
+    }
+  }
+  --
+  {
+    {
+      <b>Review, and what the change reaches</b>
+      --
+      2 fields differ from version 1. Nothing is written until you confirm.
+      {#
+        Field | v1 | staged
+        Fixed Day Count Fraction | 30/360 | ACT/360
+        Sub-Periods Coupon Type | (empty) | Compounding
+      }
+      --
+      <b>It reaches every definition of this party.</b>
+      The run's conventionsFile is built from the party's whole conventions
+      document and the bound configuration is not read, so this change reaches
+      <b>all 22</b> of ACCOUS's definitions.
+      <i>On a tenant kind it reaches every party of the tenant.</i>
+      --
+      <b>The reach looks narrower than it is.</b>
+      ACCOUS binds one configuration, US conventions, for all 22 of its definitions,
+      so the party's reach and the configuration's reach coincide and nobody sees
+      the difference. A party binding two conventions configurations would still
+      be reached in both, and the screen would have said one.
+      --
+      <b>It does not reach a run already produced.</b>
+      A run keeps the file it ran with; its outputs and its errors are that run's.
+      --
+      <b>Nothing records which run read which version.</b>
+      A comparison across this change compares two different sets of terms.
+      --
+      Change reason: [ ^system.reference_data_correction v ]  Commentary: "^ACT/360 per the 2026 term sheet        "
+      [ Cancel ] | [ Save ]
+    } | {
+      <b>Outcome</b>
+      --
+      <b>AED-EIBOR-3M-SWAP is saved as version 2</b>
+      by m.okafor at 2026-10-18 09:41, reason system.reference_data_correction
+      --
+      <b>What the write did not do</b>
+      It did not mark this document as the one a run takes: no such mark exists.
+      It did not retire version 1: a convention is retired by a delete.
+      --
+      <b>History</b>  version: { <b>v1</b> | v2 }
+      {#
+        Field | v1
+        Fixed Day Count Fraction | 30/360
+        Sub-Periods Coupon Type | (empty)
+      }
+      [ Back to the kind ]
+      --
+      <b>Refused</b>  (its own screen, no rail place)
+      The write was refused. The document keeps version 1.
+      {#
+        Refusal | Detail
+        Raised on | Review, and what the change reaches
+        kind | must_match_version: the row moved since you read it
+      }
+      <i>result.success = false carries no field-level record.</i>
+    }
+  }
+}
+
+@enduml

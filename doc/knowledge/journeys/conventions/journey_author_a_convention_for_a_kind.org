@@ -1,0 +1,281 @@
+:PROPERTIES:
+:ID: 857206FA-DA09-4920-8713-D28E613C8BCC
+:END:
+#+title: User Journey: Author a convention for a kind
+#+description: A person needs market terms no curated document states, writes them as a new convention of one kind for one party, saves it with a precondition and a change reason, and reads the bitemporal record it leaves.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:
+#+created: 2026-10-07
+#+updated: 2026-10-18
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person writes a convention that no curated document states, for one kind and one party.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"We trade something the convention list does not cover, and the run has to read
+a term set that states it. I want to write that set down once, for my party, and
+be able to show later what it said and who changed it."
+
+The journey is done when the new document exists, its terms are the ones the
+person meant, and its record shows the version, the author, the time and the
+reason. That last part is not paperwork: the terms are copied into a
+conventions file that a run reads, so the record of who wrote them is the record
+of what a run read.
+
+This is a different job from
+[[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses
+for one kind]]. There the document already exists and the person picks it or
+corrects it. Here nothing exists — the person is the author of a term set, and
+the curated list is one more thing that was authored before them.
+
+* Actor and trigger
+
+The actor is the person who owns the market terms the desks book on: a market
+risk owner acting inside their own tenant, a tenant administrator, or an
+account holding =Operations=, which holds =refdata::<kind>_conventions:write=
+for every kind. A market risk owner knows the terms and asks for them; an
+operations account holds the write and makes it.
+
+The trigger is a trade whose terms no document states, or a term set the party
+agreed with a counterparty that the curated dataset does not carry. The person
+arrives from the kind's list — having found that the document they need is not
+there — or from a trade whose booking is blocked on it. The journey starts on
+one kind and ends when the new document is saved and its history reads back.
+
+This journey writes one new convention row of one kind. It does not write a
+report definition, a binding, a schedule or a trade, and it does not run
+anything.
+
+The journey keeps no server state. No step waits on the server after its reply.
+
+* Steps
+
+1. *Establish that the terms are not already there.* The person opens the kind
+   and searches for the terms they need. The generated filter takes =id_one_of=
+   and nothing else, so the search is a page of rows read in words, and on a kind
+   of 320 documents it is a real cost. The step exists because authoring a
+   document that duplicates one of the 201 existing term sets is the mistake this
+   journey must not make, and the screen has no cheap way to prevent it. See
+   /What is missing/.
+2. *Choose the kind.* The person picks the convention kind that serves the
+   instrument family they are booking. There are 26 and each is its own table
+   with its own columns, so the kind is chosen before any field is drawn: the
+   screen draws the fields the chosen kind's table carries and no others. A
+   =swap= row states a fixed calendar, a fixed frequency, a fixed convention, a
+   fixed day count, an index, a float frequency and a sub-periods coupon type; a
+   =deposit= row states whether it is index-based and, if not, its own calendar,
+   convention, day count and settlement days.
+3. *Read the fields, and what each one is.* The system shows every term column
+   the kind carries, grouped by the part of the schedule it belongs to, and says
+   of each whether it is a pick from another reference list or a value that lives
+   only on this row. A pick holds the list's code and the screen shows the code
+   and the label. The screen states where the grouping comes from: it is the
+   screen's reading, because the table carries no leg or schedule object.
+4. *Author the terms.* The person fills the fields. Every field the model marks
+   as required is required; every nullable field may be left empty, and the
+   screen shows it as empty rather than defaulting it, because empty and stated
+   are different claims a later reader has to tell apart. A term that is a pick
+   is not created here: the screen links to the list that owns it, and says so.
+5. *Review.* The system shows the term set in the table's own column order, a
+   count of the fields the person filled, and, for each optional column left
+   empty, that it is empty. Nothing is written until the person confirms.
+6. *Save.* The person saves. The system writes the row with one request,
+   =refdata.v1.<kind>_conventions.put=, carrying the row, a =must_not_exist=
+   precondition and a =change_intent=. The precondition is what makes this safe:
+   a key already present is refused rather than overwriting a document someone
+   else wrote. The intent carries a reason code from =dq.v1.change_reasons.list=
+   and the person's own commentary. The service stamps =modified_by=,
+   =performed_by=, =valid_from= and =valid_to= from the session, and the row's
+   =version= starts at 1.
+7. *See the result.* The system reports the document's key, its version, and what
+   the write did not do: it did not mark the document as one a run takes, because
+   no such mark exists, and it did not attach the document to any report, because
+   a conventions configuration holds no rows to attach it to. What the person has
+   actually done is add a document that every run of the party will now carry.
+8. *Read the record.* The person opens the history. The first version shows the
+   terms as authored, the author, the time and the reason. The bitemporal
+   envelope is what this step is about: a later correction closes this row with a
+   =valid_to= and writes version 2 with a =valid_from=, so this version stays
+   readable, and the two can be compared field by field.
+9. *Leave, or go on.* The person returns to the kind's list, or goes to
+   [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party
+   uses for one kind]] to correct what they just wrote, or to
+   [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party
+   uses]] to read the kind back.
+
+* Screens and wireframes
+
+One screen: the kind in the header, the fields the kind's table carries grouped
+by the part of the schedule, the review panel, the outcome, and the history as
+the outcome step's own view. The rail shows the steps in order, and the last step
+cannot be returned past.
+
+The screen is a form over one table, because that is what authoring a convention
+is. It draws the fields it reads from the table and invents none: the 26 tables
+have different columns and a screen that drew a single shared form would be
+claiming a shape the data does not have.
+
+#+caption: Author a convention for a kind: the kind chosen, the fields its own table carries with pick and free-text kept apart, the review, the saved document with its bitemporal record, and the version history.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_author_a_convention_for_a_kind.png]]
+
+* Prototype
+
+No prototype is written for this journey in this pass. The act it describes is a
+form over one table and there is no open interaction question in it, which is
+the condition for spending a prototype; the questions that are open here are
+about the server and are recorded in /What is missing/.
+
+Conventions are named convention sets: a set carries a name, a purpose and a
+description, a system holds few of them, and a report binds one by choosing it.
+Authoring a set is its own UX, and its prototype is deferred to its own work. It
+is not in this MR, and nothing here draws it. The decision, and the gaps that
+block it, are recorded in the story
+[[file:../../../agile/versions/v0/sprint_28/name-the-convention-sets-a-report-chooses/story.org][Name
+the convention sets a report chooses]] (DE6C0BDA-D12A-4E31-AA86-C323F5A7E016).
+The report side of the choice is drawn in
+[[file:../../prototypes/reporting/create-a-report/][Create a report]] and
+[[file:../../prototypes/reporting/change-what-a-report-runs/][Change what a
+report runs]], and those two pages are the choosing surface this journey feeds.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| The kind's convention table | The row this journey writes: every term column of the chosen kind, plus =version=, =valid_from=, =valid_to=, =modified_by=, =performed_by=, =change_reason_code= and =change_commentary= | one of the 26; see below |
+| =change_reason= | The reason code the person supplies, from the tenant's own list | |
+| =calendar_name=, =day_count_fraction_type=, =business_day_convention_type=, =payment_frequency=, =floating_index_type=, =sub_period_coupon_type= | The lists a pick is a code from | |
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =swap_convention= | The worked example: seven term columns, of which five are picks and two are required text | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] |
+| =deposit_convention= | The contrast: =index_based= decides whether the row states its own terms or inherits them, so the same kind draws two shapes | [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] |
+| =ibor_index_convention= | The tenant kind: a document authored here belongs to no party, so it is authored once for the tenant | [[id:852FE06C-70D9-48BC-B768-D99D87D0D796][ores.refdata.ibor_index_convention]] |
+| =overnight_index_convention= | The same, for the overnight index | [[id:B72547F3-83B5-4F83-AA65-BBE16C191089][ores.refdata.overnight_index_convention]] |
+| =tenor_convention= | The one kind with a description column, and the one kind keyed by =code= | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =currency_pair_convention= | The tenant kind keyed by =pair_code=, whose calendars are a child table | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
+| =party= | The owner of a document authored on one of the 22 party kinds | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+The writable fields are the table's own columns and nothing else. The row's key
+is =id= on 24 kinds, =code= on =tenor= and =pair_code= on =currency_pair=, and
+the person supplies it: nothing generates a key, and the key is what a
+conventions file refers to a document by.
+
+The envelope is the table's, not a separate store. =version= starts at 1,
+=valid_from= is the write's time, =valid_to= is the store's infinity until the
+next version closes it, =modified_by= and =performed_by= come from the session,
+and =change_reason_code= with =change_commentary= come from the request. The
+convention tables are the only record of who wrote a term and why.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Establish that it is not there | List the kind's documents | =refdata.v1.<kind>_conventions.list= | exists |
+| Establish that it is not there | Read one document | =refdata.v1.<kind>_conventions.get= | exists |
+| Author the terms | Fill the calendar picker | =refdata.v1.calendar_names.list= | exists |
+| Author the terms | Fill the day count picker | =refdata.v1.day_count_fraction_types.list= | exists |
+| Author the terms | Fill the business-day convention picker | =refdata.v1.business_day_convention_types.list= | exists |
+| Author the terms | Fill the payment frequency picker | =refdata.v1.payment_frequencies.list= | exists |
+| Author the terms | Fill the floating index picker | =refdata.v1.floating_index_types.list= | exists |
+| Save | Offer the change reasons | =dq.v1.change_reasons.list= | exists |
+| Save | Write the new document | =refdata.v1.<kind>_conventions.put= (=must_not_exist=) | exists |
+| Read the record | List the document's versions | =refdata.v1.<kind>_conventions_versions.list= | exists |
+| Read the record | Read one version | =refdata.v1.<kind>_conventions_versions.get= | exists |
+| Read the record | Read every version with its diff | =refdata.v1.history.get= (=entity_type= = =ores.refdata.<kind>_convention=) | exists |
+| See the result | Announce the write | =refdata.v1.<kind>_conventions_events.created= | exists |
+| Establish that it is not there | Search the kind by a term | (the filter is =id_one_of= and nothing else) | missing |
+| Attach the document to a report | Record which document a run takes | (no default column, no default row) | missing |
+| The screen itself | Author a convention from the browser | (no BFF route) | missing |
+
+The per-kind subjects are the generated ones: =refdata.v1.swap_conventions.put=,
+=refdata.v1.tenor_conventions.put=, =refdata.v1.currency_pair_conventions.put=
+and their equals. =swap_conventions_versions.list= and =.get= read the versions
+of one document; =refdata.v1.history.get= reads them with a diff.
+
+No BFF route serves conventions. This journey adds one, for example
+=POST /api/refdata/parties/<party-id>/conventions/<kind>=, which validates the
+person's terms against the term lists, sends the =put= with =must_not_exist=,
+and returns the new key and version.
+
+* What is missing
+
+1. *The new document is indistinguishable from 320 others.* A row is authored
+   with a key the person chose and no name or description, so nothing a reader
+   sees says what it is for. The only kind with a description column is =tenor=.
+   The screen derives a name from the terms, and a derived name collides: the
+   party already holds 201 distinct term sets across 320 swap rows. The person
+   who authors the 202nd has authored a document a reader cannot pick out by
+   name.
+2. *Nothing prevents authoring a duplicate of a document already there.* The
+   precondition is =must_not_exist= on the key, so a new key with terms identical
+   to an existing row is accepted. Finding the duplicate first needs a term
+   search the list does not offer, so the check is a person reading 320 rows.
+3. *The new document is not marked as the one a run takes.* Authoring adds a row
+   to the party's conventions document, and the export writes every row of that
+   document. So the run reads the new document and reads the 320 old ones equally
+   and has no way to be told which applies. A default marker is the missing
+   piece, exactly as it is for
+   [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses
+   for one kind]].
+4. *A refused write carries no field-level record.* A =must_not_exist= violation
+   or a term naming a value the list no longer holds arrives as a plain error
+   with a code and a message, and the screen has to name the offending field
+   itself.
+5. *No convention field validates its term.* The models declare no foreign key
+   and no lookup check on a convention's term columns, so the server stores any
+   text and a term list that no longer holds a code does not refuse the write.
+6. *The history has no draft version.* =refdata.v1.history.get= returns saved
+   versions only, so the history view is a post-write view and a person cannot
+   compare what they are about to write against what is stored.
+7. *An authored document does not travel.* There is no route from a tenant's
+   authored row back into the curated DQ dataset, so a term a party needs is
+   authored again in every tenant, and the next publish cannot carry it. The DQ
+   tables are seeded in the system tenant and published downward; nothing writes
+   a tenant's row upward.
+8. *A tenant-scoped kind is authored for the whole tenant.* Authoring a
+   =currency_pair=, =ibor_index=, =overnight_index= or =tenor= document writes a
+   row no party owns, so it is one document for every party of the tenant. The
+   screen states the scope; nothing refuses the write on that ground.
+9. *No four-eyes control is seeded.* A new term set that every desk's runs will
+   read cannot be second-checked: the approval operations exist, no request kind
+   is seeded for a convention, and nothing applies a change when the last decider
+   approves.
+
+* Related journeys
+
+- [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] — the read that shows the new document exists and what its terms say
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] — the neighbouring job, when a document already states the terms
+- [[id:99481EA8-1D2B-426D-A4E6-5E834FF5FFCE][Publish conventions from data quality]] — how the curated documents arrive, and why an authored one does not travel back
+- [[id:8D2C0A98-83B9-4C24-89F0-900DF14B2936][Maintain a classification list]] — a term the person needs may be missing from a list rather than from a convention
+- [[id:9E46C8C2-05FF-4F31-BFC1-5B634963DBE3][Add or correct a currency]] — a cross-currency or an FX convention names the currencies whose pair it serves
+- [[id:FA1D8A3C-70C6-4E35-BEA2-F617851C6B55][Set up a currency pair]] — the pair and its convention are the two faces of one record
+- [[id:D730532F-4D1B-4344-B723-4F9F006B8041][Tune the tenant]] — the change reasons a convention write carries are tenant data
+- [[id:E27EB1B6-E030-468D-996E-FED71CC17F92][Define how tenors resolve]] — the tenor convention a new tenor document resolves under
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — versioning, provenance, change reasons and the precondition
+- [[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] — the badge and form vocabulary the terms panel follows
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE =conventions.xml= elements an authored row exports to
+- [[id:DF9EFAF9-1340-48F2-BFD9-1F4ED0ADBC76][Date Rolling and Business-Day Calendars]] — the calendars and business-day rules a term names
+- [[id:1427C01C-17C0-4D7E-AE55-BF16C414FD58][Term Structures and Tenors]] — how a tenor resolves
+- [[id:3361CF92-89B0-481E-9E51-ACE2FEEF2FAA][Journey execution]] — how the screen composes its reads
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections this page fills
+- =refdata.v1.<kind>_conventions.put= — the one write, with =must_not_exist= or =must_match_version=

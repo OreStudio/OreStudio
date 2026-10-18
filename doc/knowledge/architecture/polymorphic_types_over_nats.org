@@ -63,9 +63,9 @@ them, which exceeds the fold-expression nesting limit on macOS and the
 recursive-type limit on MSVC.
 
 The consequence is that a typed replacement must be flat at the *leaf* level.
-A nested variant — =swap_instrument_data= holding =rates_instrument_variant=,
-or =fx_instrument_variant= — cannot be encoded either, so splitting only the
-top-level alternatives is not enough.
+A nested variant — =swap_instrument_data= holding =rates_fact_variant=, or
+=equity_instrument_data= holding =equity_instrument_variant= — cannot be
+encoded either, so splitting only the top-level alternatives is not enough.
 
 * The violation this page records
 

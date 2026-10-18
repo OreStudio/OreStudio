@@ -8,12 +8,12 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/show-a-bindings-history-as-the-timeline
-#+pr:
+#+pr: 3452
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The History tab is the shared timeline of the entity screen specification, for t
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Built on the branch; typecheck and the web suites pass. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Next         | Merge, then story task 059F5F7F checks the screen on the running server. |
+| Last touched | 2026-10-17                               |
 
 * Acceptance
 
@@ -41,9 +41,21 @@ The History tab is the shared timeline of the entity screen specification, for t
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The page gains the two tabs the record screen standard gives a versioned
+record, through =useRecordTabs=, the hook the feed screens already use.
+
+=BindingHistory= reads the binding's own versions through the generic history
+request, =api.history=, and draws them with the shared =Timeline=: the chart, the
+one-line entries, the details on demand, the current-version emblem and the
+system-activity toggle. Nothing about the rail is drawn here.
+
+Revert is offered by =revertOffer= in =bindingView.ts=, a pure function rather
+than a condition inside the component, so the three gates the prototype states
+are covered by a test: the person may write, the binding is not a vendor's, and
+the version is older than the newest. The fourth gate is the series: a version
+whose series a running feed holds offers no Revert, because writing it back
+would take a series another feed is publishing. That is the same read the add
+dialog refuses on, =bindings.sources()=.
 
 * Measurements
 
@@ -76,7 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3452][#3452]] | [web] Draw a binding's history as the shared timeline |
 
 * Review
 
@@ -85,3 +97,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The History tab is the shared =Timeline= over the binding's own versions, beside
+a Details tab, with the tab bar between them. A person who may write a synthetic
+binding is offered Revert on every version but the newest, and on none of them
+when a running feed holds the series the binding writes. A vendor binding offers
+no Revert at all.
+
+The rule lives in =revertOffer=, so its five cases are covered without rendering
+the page: an older version, a vendor binding, the newest version, a reader who
+may not write, and a series a running feed holds.

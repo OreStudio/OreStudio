@@ -117,10 +117,26 @@ generate \
     --header "$header/currency_config.hpp" \
     --source "$source/currency_config.cpp"
 
+generate \
+    --schema "$xsd/pricingengines.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element PricingEngines \
+    --root-type pricingengines \
+    --accessor pricing_engines_document \
+    --namespace ores::ore::xml::generated::pricing_engines \
+    --include "ores.ore.core/xml/generated/pricing_engines.hpp" \
+    --header "$header/pricing_engines.hpp" \
+    --source "$source/pricing_engines.cpp"
+
 # The repository formats its C++ with clang-format and a check enforces it, so
 # the generator's output has to be formatted too, not only correct.
+# The style comes from the checkout, not from the staging tree: clang-format
+# discovers a .clang-format by walking up from each file, and a staging tree
+# outside the repository has none, so the files would be left in its default
+# style and the repository's format gate would reject them.
 if command -v clang-format >/dev/null 2>&1; then
-    find "$staging" -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i
+    find "$staging" \( -name "*.hpp" -o -name "*.cpp" \) -print0 |
+        xargs -0 clang-format -i -style="file:$root/.clang-format"
 fi
 
 mkdir -p "$out/projects/ores.ore/core/include/ores.ore.core/xml/generated"

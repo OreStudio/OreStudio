@@ -1,0 +1,133 @@
+:PROPERTIES:
+:ID: 5AF8B394-A97C-4056-89DB-83256E12619C
+:END:
+#+title: Task: Give the FX family typed arrays, not a variant
+#+description: The FX family returns fx_instrument_variant: one aggregate that carries an entity. The atomised entity forbids it. Replace it with one typed array per product in a carrier struct, delete the variant, and route the mapper, the carrier, the exporter and the import handler through the arrays. No behaviour change and no schema change; it unblocks the range bounds unit.
+#+type: task
+#+level: s1
+#+filetags: :rework-the-fx-instruments-to-the-instrument-table-rule:sprint_28:v0:
+#+owner: marco
+#+branch: feature/give-the-fx-family-typed-arrays
+#+pr: 3410
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-16
+#+updated: 2026-10-17
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace =fx_instrument_variant= with one typed array per product. The variant is
+an aggregate that carries an entity, and the family this story is reworking is
+the one place it survives on the FX path: every other family already returns a
+carrier struct. The array an element sits in states its type, so nothing needs
+a discriminator, and the range bounds unit has one more array to add rather
+than a field to push into an aggregate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-16                               |
+
+* Acceptance
+
+- =fx_instrument_variant= is deleted, and no source names it.
+- The carrier is one typed array per product in =fx_instrument_data=, joined by trade id, with no discriminator and no aggregate holding an entity.
+- Each =forward_fx_*= function returns its own concrete domain type, so a caller names the product it asked for.
+- The import handler and the exporter drive the arrays through one shared visitor rather than an inner =std::visit=.
+- No behaviour change: the ORE core suite passes unchanged.
+
+* Plan
+
+1. Add =fx_instrument_data= beside the other family carriers in =instrument.hpp=, with the seven instrument arrays and a =stamp_ids= overload.
+2. Change the fifteen =forward_fx_*= functions to return their own product type, and have =map_fx_instrument= push into the array the product belongs to.
+3. Add one visitor, =visit_fx_products=, that walks the arrays in order and returns whatever the visitor returns, so both the importer and the exporter keep their existing per-product bodies.
+4. Swap the alternative in =trade_instrument=, delete the variant header, and join the arrays in =instrument_batch_mapper=.
+5. Convert the tests that unwrapped the variant.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Sources naming the variant | 0 | =grep -rn fx_instrument_variant projects/ --include=*.cpp --include=*.hpp= | the PR head |
+| Forward mappers returning their own type | 15 | the =forward_fx_*= declarations in =fx_instrument_mapper.hpp= | the PR head |
+| Test files converted | 5 | =xml_fx_mapper_roundtrip_tests.cpp=, =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =xml_remaining_phases_mapper_roundtrip_tests.cpp=, =planner_import_planner_tests.cpp=, =xml_trade_import_tests.cpp= | the PR head |
+| ORE core suite | 706 cases, all pass | =compass test run --preset linux-clang-release-ninja -- -R ores.ore.core.tests= | the PR head |
+| FX products crossing the batch join | 8 documents | =export_portfolio_roundtrips_every_fx_product= | the PR head |
+| ORE service builds | yes | =compass build ores.ore.service= | the PR head |
+
+* Notes
+
+- The evidence for this task is the parent story's decision and [[id:B607E5B7-190F-4D38-B515-8A7B27FB6B47][The atomised entity]]: the wire carries one typed array per part, and the array an element sits in states its type.
+- The bond family carries its variation with =std::optional= fact rows beside a header, so it needs no variant. FX has no header, which is why the variant stood in for one; typed arrays answer the same question without inventing a header. The story records why the header was not taken.
+- The equalities are not lost: a caller that needs to know which product it holds asks the array, and the routing by =trade_type_code= stays where the catalogue puts it, in the mapper and the exporter.
+- The equity, credit and rates variants are untouched. They are the same defect in other families and want their own story.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3410][#3410]] | [ore] Give the FX family typed arrays, not a variant |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The public carrier, its seven members and the visitor carry =//= prose rather than Doxygen | =instrument.hpp= | Fixed | Each member, the struct, the array list and the visitor carry a =@brief=. |
+| 2 | The empty-carrier result contradicts its own comment, and the result it returns means failure | =instrument.hpp= | Fixed | The comment states the invariant both call paths hold, so no carrier that reaches the visitor is empty. |
+| 3 | The visitor reads the first row only, while =stamp_ids= and the batch append process every row | =instrument.hpp= | Fixed | The join states one row per trade id; the comment names that and says a second row is a fault. |
+| 4 | The seven-array list is copied five times, so an eighth product can be missed silently | =instrument.hpp=, =instrument_batch_mapper.cpp= | Fixed | Two lists: the carrier's array order in =detail=, the carrier-to-batch pairing in the batch mapper. The visitor, =stamp_ids=, the append and the rebuild join read them. |
+| 5 | =append_all= is a generic name for one family | =instrument_batch_mapper.cpp= | Fixed | Renamed =append_fx_arrays=. |
+| 6 | The tests read =.front()= on an unchecked vector, so a regression is UB rather than a failure | =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =xml_remaining_phases_mapper_roundtrip_tests.cpp= | Fixed | =single_row()= requires exactly one row before it hands the row out. |
+| 7 | =Visitor&&= is never forwarded, so it misstates ownership | =instrument.hpp= | Fixed | The visitor is taken by value, which is what both call sites pass. |
+| 8 | The dispatch is written out twice, once per result kind | =instrument.hpp= | Fixed | One =visit_first_fx_product= helper serves both branches. |
+| 9 | The =stamp_ids= arrays omit braces while their siblings use them | =instrument.hpp= | Fixed | Folded into the shared array list. |
+| 10 | The new batch comments narrate the code and use the wrong comment form | =instrument_batch_mapper.cpp= | Fixed | Doxygen form, and only the trade-id join rationale is kept. |
+| 11 | Stale text names the variant in the tests and in the mapper brief | =xml_fx_exotic_mapper_roundtrip_tests.cpp=, =planner_import_planner_tests.cpp=, =trade_mapper.hpp= | Fixed | The test comments and the failure text name the carrier row; the brief states every mapped FX code. |
+| 12 | Only FxForward crosses the batch join in a test | =xml_exporter_tests.cpp= | Fixed | New case runs one document per FX product through =append_instrument= and the export join. |
+| 13 | The carrier has no =operator==, unlike its sibling | =instrument.hpp= | Fixed | Defaulted and documented. |
+| 14 | =export_portfolio='s signature was re-wrapped although nothing in it changed | =exporter.cpp= | Rejected | The =format= gate refuses the old wrapping once the file is in the delta, so keeping it fails the check. |
+
+* Result
+
+The FX family carries typed arrays. =fx_instrument_variant= is deleted, no
+source names it, and the family's carrier is =fx_instrument_data=: seven typed
+arrays joined by trade id, with no discriminator anywhere. The fifteen
+=forward_fx_*= functions return their own product type, =map_fx_instrument=
+chooses the array, and one shared visitor walks the arrays so the importer and
+the exporter keep their per-product bodies.
+
+No behaviour change. The ORE core suite passes at 706 cases, and both
+=ores.ore.core.tests= and =ores.ore.service= build. One review reply is
+recorded above as rejected, with the gate that refuses it.
+
+The range bounds unit now has its place: one more array on the carrier, stated
+once in each of the two array lists, and no walk or branch to edit.

@@ -46,13 +46,16 @@ generate_synthetic_equity_position_option_underlying(utility::generation::genera
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.trade_id = ctx.generate_uuid();
-    r.sequence_number = 0;
+    r.sequence_number = 1;
     r.trade_activity_id = ctx.generate_uuid();
     r.underlying_name = std::string(faker::word::noun());
     r.strike = ores::utility::decimal::decimal::from_string(
                    std::to_string(faker::number::decimal<double>(1.0, 1000.0)))
                    .value();
-    r.long_short = std::string(faker::word::noun());
+    r.long_short = std::string("Long");
+    r.option_type = std::string("Call");
+    r.exercise_type = std::string("European");
+    r.settlement_type = std::string("Cash");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

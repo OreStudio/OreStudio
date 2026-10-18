@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: EBB81C0A-54C2-410A-865D-2DCDD1E8EDCE
+:END:
+#+title: User Journey: Export to share with support
+#+description: A person exports the smallest set of data that shows a problem, so support can reproduce it from the ticket.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:refdata:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A person exports the smallest set of data that shows a problem, so support can reproduce it from the ticket.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to send support exactly what shows the problem, and no more." The
+journey is done when the person has a small file set, a short note that says what
+each file is, and a ticket that carries both.
+
+* Actor and trigger
+
+The actor is any signed-in person who can read the data that shows the problem,
+usually an operations user. The trigger is a support ticket, a failed report, or
+a question about a convention that needs a concrete example. The journey starts
+at the ticket and ends when the attachment is on it.
+
+The export reads only what the session may read. A book whose rights exclude the
+person cannot be exported, and the server refuses rather than returning an empty
+file.
+
+* Steps
+
+1. *Reduce the scope.* The person picks one book or portfolio, one report
+   definition, or one series. A whole party is usually too much, and the ticket
+   rarely needs it.
+2. *Export the trades.* The person runs =ore export <file> --node-id <id>=. The
+   system exports the trades under that node as ORE portfolio XML.
+3. *Export the run.* The person runs =ore export-run <report_definition_id>
+   <dir>= when the problem is a report. The system writes the run document and
+   every configuration document it binds.
+4. *Export the market data.* The person runs =marketdata export --market-data
+   <file> --fixings <file>= when the problem is a quote or a fixing.
+5. *Name the parts.* The person writes a short note: the party, the node or
+   report definition, the time, and what each file is. No command writes this
+   manifest.
+6. *Attach to the ticket.* The person attaches the files and the note to the
+   ticket by hand. There is no attach action in the product.
+
+* On success
+
+The shell prints the number of trades and the bytes written, or the stored files
+of the run, or the series and observation counts. The files open in an ORE reader
+and in the platform's own importer. The ticket holds the files and the note.
+
+* On failure
+
+An export with no read permission is refused and says so. An export of a node
+the person cannot see returns no trades or a refusal, depending on the read.
+A write to a path the person cannot use fails with the path named. An export of
+a report definition that binds a configuration type the exporter cannot write is
+refused. The person can still attach the failure message itself.
+
+* What must never happen
+
+- The export must never include rows the person cannot read.
+- The export must never be presented as a complete backup. It is an ORE-shaped
+  file set with no audit columns and no history.
+- The export must never write into the platform. It returns text to the caller's
+  file system.
+- The person must never be told the ticket received the files automatically. The
+  product does not talk to the ticket system.
+
+* Screens and entry points
+
+There is no export screen and no ticket integration. The entry points are =ore
+export=, =ore export-run=, =marketdata export=, and the person's own file system
+and ticket system. The web UI has no export route.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =trade=, =instrument= | The trade data the portfolio export writes | |
+| =run_document=, =configuration_binding= | The run the export walks | |
+| =conventions_document= | The conventions the run export writes | |
+| =market_observation=, =market_fixing= | The quotes and fixings | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Export the trades | Export the trades under a node | =trading.v1.ops.export_portfolio= | exists |
+| Export the run | Export the run directory | =ore.v1.ops.export_run_configuration= | exists |
+| Export the market data | Export quotes and fixings | =marketdata.v1.ops.export_market_data= | exists |
+| Name the parts | No operation: the person writes the note | none | missing |
+| Attach to the ticket | No operation: the person attaches by hand | none | missing |
+
+* What is missing
+
+1. *No bundle.* The person exports several files and packs them by hand. Nothing
+   writes one archive for the ticket.
+2. *No manifest.* The party, the node, the time and the tool versions are not
+   written by any export.
+3. *No redaction.* A run directory carries whatever the run binds, and the person
+   must remove the parts that are not needed. Nothing helps.
+4. *No ticket integration.* The attach step is outside the product.
+5. *No export record.* Nothing lists what the person exported and when.
+
+* Related journeys
+
+- [[id:8953CEFB-4E41-4D95-B18C-44ACAC9D4B9B][Reproduce a defect from an exported environment]] - what support does with the files.
+- [[id:33AF3CCA-50BE-4CAD-A4DA-4C3917E4EA9F][Export for archival]] - the complete version, with different intent.
+- [[id:4E3AB7E8-5F4C-458F-B0CF-006731B0DA4A][Diagnose and reproduce a failure]] - the failure the person is reporting.
+- [[id:E140C8C6-4532-48D9-ABDF-7B81A21C9EE3][Import a portfolio from ORE]] - the receiving side.
+
+* Related knowledge
+
+- [[id:1B23A456-EC3C-4C5F-AE3A-34F21E7C7B33][Trade journeys]]
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/generate-tables-for-every-document-family
+#+pr: 3440
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -28,7 +28,7 @@ disagree.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -83,7 +83,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3440][#3440]] | [ore] Generate one family's records and tables from its schema |
 
 * Review
 

@@ -23,24 +23,30 @@
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/curve_configuration_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
+#include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
+#include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <cstdint>
 #include <format>
 #include <optional>
+#include <rfl/json.hpp>
 #include <stdexcept>
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace ores::ore::service::messaging {
 
@@ -111,6 +117,159 @@ typename Req::response_type call(nats_client& owners, const Req& req) {
     return *resp;
 }
 
+const rfl::Generic* member_of(const rfl::Generic::Object& object, std::string_view key) {
+    const auto it =
+        std::ranges::find_if(object, [key](const auto& entry) { return entry.first == key; });
+    return it == object.end() ? nullptr : &it->second;
+}
+
+const std::vector<rfl::Generic>* array_of(const rfl::Generic& value) {
+    return std::get_if<std::vector<rfl::Generic>>(&value.get());
+}
+
+const std::vector<rfl::Generic>* first_array_of(const rfl::Generic::Object& object) {
+    for (const auto& [key, value] : object)
+        if (const auto* array = array_of(value))
+            return array;
+    return nullptr;
+}
+
+std::string string_member(const rfl::Generic& value, std::string_view key) {
+    const auto* object = std::get_if<rfl::Generic::Object>(&value.get());
+    if (object == nullptr)
+        return {};
+    const auto* member = member_of(*object, key);
+    if (member == nullptr)
+        return {};
+    const auto* text = std::get_if<std::string>(&member->get());
+    return text == nullptr ? std::string{} : *text;
+}
+
+// Sends a request the registry names at runtime and returns the decoded
+// response. The families differ only in their subject and their value type, so
+// the wire carries the request as the generic value the codec knows.
+rfl::Generic
+call_subject(nats_client& owners, std::string_view subject, const rfl::Generic& request) {
+    const auto& codec = ores::nats::default_wire_codec();
+    const auto msg = owners.authenticated_request(subject, codec.encode(request));
+    const auto error = msg.headers.find("X-Error");
+    if (error != msg.headers.end())
+        throw std::runtime_error(std::format("Service error on {}: {}", subject, error->second));
+    auto decoded = codec.decode<rfl::Generic>(msg.data);
+    if (!decoded)
+        throw std::runtime_error(
+            std::format("Failed to parse response from {}: {}", subject, decoded.error().what()));
+    return *decoded;
+}
+
+// The list request every family's protocol reads: one page, no filter, the
+// default order.
+rfl::Generic family_list_request(std::uint64_t offset, std::uint64_t limit) {
+    rfl::Generic::Object order;
+    order.insert(std::string{"field"}, rfl::Generic{std::string{}});
+    order.insert(std::string{"descending"}, rfl::Generic{false});
+
+    rfl::Generic::Object request;
+    request.insert(std::string{"offset"}, rfl::Generic{static_cast<std::int64_t>(offset)});
+    request.insert(std::string{"limit"}, rfl::Generic{static_cast<std::int64_t>(limit)});
+    request.insert(std::string{"order"}, rfl::Generic{std::move(order)});
+    request.insert(std::string{"filter"}, rfl::Generic{rfl::Generic::Null});
+    request.insert(std::string{"as_of"}, rfl::Generic{rfl::Generic::Null});
+    return rfl::Generic{std::move(request)};
+}
+
+// One family's rows, paged, narrowed to the run's party when the family's
+// table carries a party. World families are the tenant's, so every row stays.
+std::vector<rfl::Generic> read_family(nats_client& owners,
+                                      const ores::refdata::domain::convention_family_entry& family,
+                                      const std::string& party_id) {
+    const auto subject = std::string(family.subject_stem) + ".list";
+    constexpr std::uint64_t page = 1000;
+    std::vector<rfl::Generic> rows;
+    for (std::uint64_t offset = 0;; offset += page) {
+        const auto response = call_subject(owners, subject, family_list_request(offset, page));
+        const auto* object = std::get_if<rfl::Generic::Object>(&response.get());
+        if (object == nullptr)
+            throw std::runtime_error(
+                std::format("The response from {} is not an object.", subject));
+        const auto* array = first_array_of(*object);
+        if (array == nullptr)
+            break;
+        for (const auto& row : *array)
+            if (!family.party_scoped || string_member(row, "party_id") == party_id)
+                rows.push_back(row);
+        if (array->size() < page)
+            break;
+    }
+    return rows;
+}
+
+// Stages one message per row, because a stage carries one family value.
+void stage_conventions(nats_client& owners,
+                       const boost::uuids::uuid& import_id,
+                       const rd::conventions_document& document) {
+    const auto parsed = rfl::json::read<rfl::Generic>(rfl::json::write(document));
+    if (!parsed)
+        throw std::runtime_error(
+            std::format("The conventions document does not serialise: {}", parsed.error().what()));
+    const auto* object = std::get_if<rfl::Generic::Object>(&parsed->get());
+    if (object == nullptr)
+        throw std::runtime_error("The conventions document is not an object.");
+
+    for (const auto& family : ores::refdata::domain::convention_families) {
+        const auto* member = member_of(*object, family.key);
+        if (member == nullptr)
+            continue;
+        const auto* rows = array_of(*member);
+        if (rows == nullptr)
+            continue;
+        int sequence = 0;
+        for (const auto& row : *rows) {
+            const auto staged =
+                call(owners,
+                     rd::stage_bundle_family_request{.import_id = import_id,
+                                                          .family = std::string(family.key),
+                                                          .sequence = sequence++,
+                                                          .payload = rfl::json::write(row)});
+            if (!staged.success)
+                throw std::runtime_error(staged.message);
+        }
+    }
+}
+
+// Begins an import, stages every family, then commits them in one transaction.
+rd::commit_bundle_import_response save_conventions(nats_client& owners,
+                                                        const rd::conventions_document& document) {
+    const auto import_id = boost::uuids::random_generator()();
+    const auto begun = call(owners, rd::begin_bundle_import_request{.id = import_id});
+    if (!begun.success)
+        throw std::runtime_error(begun.message);
+    stage_conventions(owners, import_id, document);
+    auto committed = call(owners, rd::commit_bundle_import_request{.import_id = import_id});
+    if (!committed.success)
+        throw std::runtime_error(committed.message);
+    return committed;
+}
+
+// Reassembles the document from one paged read per family. No family carries
+// the whole document, and no read spans the others.
+rd::conventions_document read_conventions(nats_client& owners, const std::string& party_id) {
+    rfl::Generic::Object document;
+    for (const auto& family : ores::refdata::domain::convention_families)
+        document.insert(std::string(family.key),
+                        rfl::Generic{read_family(owners, family, party_id)});
+    // FX conventions have no store, as they have none on the write path.
+    document.insert(std::string{"fx"}, rfl::Generic{std::vector<rfl::Generic>{}});
+
+    const auto parsed = rfl::json::read<rd::conventions_document>(
+        rfl::json::write(rfl::Generic{std::move(document)}));
+    if (!parsed)
+        throw std::runtime_error(
+            std::format("The per-family reads do not assemble a conventions document: {}",
+                        parsed.error().what()));
+    return *parsed;
+}
+
 // The documents a run names, each with the Setup parameter the file types table gives it.
 std::vector<document_kind> document_kinds_of(nats_client& owners) {
     rp::file_types_filter filter;
@@ -167,7 +326,7 @@ void parse_document(std::string_view code,
     else if (code == "todays_market")
         d.market = todays_market_mapper::map(parse_file<todaysmarket>(file, content));
     else if (code == "pricing_engines")
-        d.engines = pricing_engine_mapper::map(parse_file<pricingengines>(file, content));
+        d.engines = pricing_engine_projection::map(pricing_engine_projection::read(content, file));
 }
 
 // Hands one parsed document to the component that owns it. A document with a
@@ -185,10 +344,11 @@ void store_document(nats_client& owners,
         return document;
     };
     if (code == "conventions") {
-        const auto saved =
-            call(owners, rd::save_conventions_document_request{.document = *d.conventions});
-        r.world_conventions_kept = saved.world_kept;
-        r.fx_conventions_skipped = saved.fx_skipped;
+        auto committed = save_conventions(owners, *d.conventions);
+        r.world_conventions_kept = std::move(committed.world_kept);
+        for (const auto& fx : d.conventions->fx)
+            r.fx_conventions_skipped.push_back(fx.pair.base_currency + "-" +
+                                               fx.pair.quote_currency + "-FX-CONVENTIONS");
         return;
     }
     if (code == "curve_configuration")
@@ -340,9 +500,8 @@ input_files export_run(nats_client& owners, const std::string& report_definition
         const auto configuration = boost::uuids::to_string(b.configuration_id);
         const auto& code = b.configuration_type_code;
         if (code == "conventions")
-            files[*file] = save_data(conventions_mapper::reverse(
-                call(owners, rd::get_conventions_document_request{.party_id = run.party_id})
-                    .document));
+            files[*file] =
+                save_data(conventions_mapper::reverse(read_conventions(owners, run.party_id)));
         else if (code == "curve_configuration")
             files[*file] = save_data(curve_configuration_mapper::reverse(
                 call(owners,
@@ -356,7 +515,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
                                                             .party_id = run.party_id})
                     .document));
         else if (code == "pricing_engines")
-            files[*file] = save_data(pricing_engine_mapper::reverse(
+            files[*file] = pricing_engine_projection::write(pricing_engine_projection::reverse(
                 call(owners,
                      an::get_pricing_engines_document_request{.configuration_id = configuration,
                                                               .party_id = run.party_id})
@@ -396,8 +555,8 @@ reference_curve_names_of(nats_client& owners, const std::string& report_definiti
                 currency_of_definition[boost::uuids::to_string(d.id)] = d.curve_id;
 
             for (const auto& y : document.yield_curves) {
-                const auto it = currency_of_definition.find(boost::uuids::to_string(
-                    y.curve_definition_id));
+                const auto it =
+                    currency_of_definition.find(boost::uuids::to_string(y.curve_definition_id));
                 if (it == currency_of_definition.end() || !y.day_counter || y.day_counter->empty())
                     continue;
                 /*
@@ -441,8 +600,8 @@ reference_curve_names_of(nats_client& owners, const std::string& report_definiti
     }
 
     BOOST_LOG_SEV(run_configuration_operations_lg(), ores::logging::debug)
-        << "reference_curve_names_of: " << index_of_curve_uri.size() << " curve name(s) for definition "
-        << report_definition_id;
+        << "reference_curve_names_of: " << index_of_curve_uri.size()
+        << " curve name(s) for definition " << report_definition_id;
 
     return [index_of_curve_uri](const std::string& uri) -> std::string {
         const auto it = index_of_curve_uri.find(uri);

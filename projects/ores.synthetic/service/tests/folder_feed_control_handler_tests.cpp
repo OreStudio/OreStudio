@@ -60,6 +60,7 @@
 #include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
+#include "provider_seed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -246,6 +247,8 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
 
     repo::folder_repository().write(party_ctx, root);
     repo::folder_repository().write(party_ctx, child);
+
+    ores::synthetic::service::tests::ensure_system_market_data_provider(h, "bloomberg");
 
     dom::market_data_generation_config container;
     container.tenant_id = h.tenant_id();

@@ -398,7 +398,7 @@ barrierData fx_instrument_mapper::make_barrier_group(
 // Forward: FxForward
 // ===========================================================================
 
-trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_forward(const trade& t) {
+trading::domain::fx_forward_instrument fx_instrument_mapper::forward_fx_forward(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxForward: " << std::string(t.id);
     fx_forward_instrument r;
     r.identity.trade_type_code = "FxForward";
@@ -422,7 +422,7 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_forward(
 // Forward: FxSwap
 // ===========================================================================
 
-trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_swap(const trade& t) {
+trading::domain::fx_forward_instrument fx_instrument_mapper::forward_fx_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxSwap: " << std::string(t.id);
     fx_forward_instrument r;
     r.identity.trade_type_code = "FxSwap";
@@ -447,7 +447,8 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_swap(con
 // Forward: FxOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_option(const trade& t) {
+trading::domain::fx_vanilla_option_instrument
+fx_instrument_mapper::forward_fx_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxOption: " << std::string(t.id);
     fx_vanilla_option_instrument r;
     r.identity.trade_type_code = "FxOption";
@@ -477,7 +478,7 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_option(c
 // Forward: FxBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -501,7 +502,7 @@ fx_instrument_mapper::forward_fx_barrier_option(const trade& t) {
 // Forward: FxDoubleBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_double_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDoubleBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -525,7 +526,7 @@ fx_instrument_mapper::forward_fx_double_barrier_option(const trade& t) {
 // Forward: FxEuropeanBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_european_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxEuropeanBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -549,7 +550,7 @@ fx_instrument_mapper::forward_fx_european_barrier_option(const trade& t) {
 // Forward: FxKIKOBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_kiko_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxKIKOBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -581,7 +582,7 @@ fx_instrument_mapper::forward_fx_kiko_barrier_option(const trade& t) {
 // Forward: FxGenericBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_barrier_option_instrument
 fx_instrument_mapper::forward_fx_generic_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxGenericBarrierOption: " << std::string(t.id);
     fx_barrier_option_instrument r;
@@ -615,7 +616,7 @@ fx_instrument_mapper::forward_fx_generic_barrier_option(const trade& t) {
 // Forward: FxDigitalOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_digital_option_instrument
 fx_instrument_mapper::forward_fx_digital_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDigitalOption: " << std::string(t.id);
     fx_digital_option_instrument r;
@@ -640,7 +641,7 @@ fx_instrument_mapper::forward_fx_digital_option(const trade& t) {
 // Forward: FxDigitalBarrierOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_digital_option_instrument
 fx_instrument_mapper::forward_fx_digital_barrier_option(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDigitalBarrierOption: " << std::string(t.id);
     fx_digital_option_instrument r;
@@ -670,7 +671,7 @@ fx_instrument_mapper::forward_fx_digital_barrier_option(const trade& t) {
 // Forward: FxTouchOption / FxDoubleTouchOption
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_digital_option_instrument
 fx_instrument_mapper::forward_fx_touch_option(const trade& t) {
     const std::string type_str = to_string(t.TradeType);
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping " << type_str << ": " << std::string(t.id);
@@ -701,7 +702,7 @@ fx_instrument_mapper::forward_fx_touch_option(const trade& t) {
 // Forward: FxVarianceSwap
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_variance_swap_instrument
 fx_instrument_mapper::forward_fx_variance_swap(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxVarianceSwap: " << std::string(t.id);
     fx_variance_swap_instrument r;
@@ -730,7 +731,7 @@ fx_instrument_mapper::forward_fx_variance_swap(const trade& t) {
 // Forward: FxAverageForward
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_asian_forward_instrument
 fx_instrument_mapper::forward_fx_average_forward(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxAverageForward: " << std::string(t.id);
     fx_asian_forward_instrument r;
@@ -754,7 +755,7 @@ fx_instrument_mapper::forward_fx_average_forward(const trade& t) {
 // Forward: FxAccumulator
 // ===========================================================================
 
-trading::domain::fx_instrument_variant
+trading::domain::fx_accumulator_instrument
 fx_instrument_mapper::forward_fx_accumulator(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxAccumulator: " << std::string(t.id);
     fx_accumulator_instrument r;
@@ -793,7 +794,7 @@ fx_instrument_mapper::forward_fx_accumulator(const trade& t) {
 // Forward: FxTaRF
 // ===========================================================================
 
-trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_tarf(const trade& t) {
+trading::domain::fx_asian_forward_instrument fx_instrument_mapper::forward_fx_tarf(const trade& t) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxTaRF: " << std::string(t.id);
     fx_asian_forward_instrument r;
     r.identity.trade_type_code = "FxTaRF";

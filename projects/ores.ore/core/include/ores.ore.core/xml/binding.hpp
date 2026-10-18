@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -150,6 +151,83 @@ struct bind_error {
     std::uint32_t line = 0;
     std::uint32_t column = 0;
 };
+
+/**
+ * @brief The field a type declares under a name, or null when it declares none.
+ *
+ * A projection from a record into a domain type asks the table which fields
+ * exist rather than repeating the schema, so a renamed element is a generated
+ * change and not a silent disagreement.
+ */
+ORES_ORE_CORE_EXPORT auto find_field(const record_type& type, std::string_view name, bool attribute)
+    -> const field*;
+
+/**
+ * @brief The table a named child element of a type is described by, or null.
+ *
+ * A projection that walks into a nested record names the element, not the
+ * table: the table is the type the caller's column points at, and asking for
+ * it keeps the schema's shape in the generated code.
+ */
+ORES_ORE_CORE_EXPORT auto find_child_type(const record_type& type, std::string_view name)
+    -> const record_type*;
+
+/**
+ * @brief Marks the element's own text as present.
+ *
+ * A type written as xs:simpleContent holds text beside its attributes, and
+ * that text is a row of its own with no name: the table names it by index.
+ * A projection that sets the text states it here.
+ *
+ * @return False when the type holds no text of its own.
+ */
+ORES_ORE_CORE_EXPORT auto mark_text_present(const record_type& type, void* record) -> bool;
+
+/**
+ * @brief Whether a record states a value for the named field.
+ *
+ * An element that holds an empty string is present and empty, and one that
+ * never arrived is absent: the presence bit is the difference, and a
+ * projection that reads a member without it cannot tell the two apart.
+ */
+ORES_ORE_CORE_EXPORT auto
+is_present(const record_type& type, const void* record, std::string_view name) -> bool;
+
+/**
+ * @brief Marks the named field of a record as present.
+ *
+ * The reader sets the bit when the element arrives. A record built by a
+ * projection states that itself, because the writer writes only the fields
+ * whose bit is set -- a value set without its bit is written nowhere.
+ *
+ * @return False when the type declares no such field.
+ */
+ORES_ORE_CORE_EXPORT auto mark_present(const record_type& type, void* record, std::string_view name)
+    -> bool;
+
+/**
+ * @brief The spelling a record states for an enumerated field.
+ *
+ * A projection of ours speaks the schema's spelling, not the index the table
+ * stores, and the index means nothing without the table that produced it.
+ *
+ * @return The spelling, or nothing when the field is absent or holds no
+ * spelling.
+ */
+ORES_ORE_CORE_EXPORT auto enumeration_spelling(const record_type& type,
+                                               const void* record,
+                                               std::string_view name) -> std::optional<std::string>;
+
+/**
+ * @brief States an enumerated field from the spelling a caller holds.
+ *
+ * @return False when the type declares no such field or the spelling is not
+ * one it allows.
+ */
+ORES_ORE_CORE_EXPORT auto set_enumeration(const record_type& type,
+                                          void* record,
+                                          std::string_view name,
+                                          std::string_view spelling) -> bool;
 
 /**
  * @brief Fills one record from one document, as the scanner walks past it.

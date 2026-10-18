@@ -271,66 +271,6 @@ struct delete_curve_configuration_document_response {
     std::string message;
 };
 
-/**
- * @brief Stores a conventions document.
- *
- * The instrument conventions belong to the session's party and replace any
- * it holds under the same id. A world convention the tenant lacks is added;
- * one it holds is left as it is.
- */
-struct save_conventions_document_request {
-    using response_type = struct save_conventions_document_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.conventions_documents.put";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    conventions_document document;
-};
-
-/**
- * @brief What the save did not store, and why.
- */
-struct save_conventions_document_response {
-    bool success = false;
-    std::string message;
-    /** World conventions the tenant already held, left unchanged. */
-    std::vector<std::string> world_kept;
-    /** FX conventions, by ORE id, which have no store yet. */
-    std::vector<std::string> fx_skipped;
-};
-
-/**
- * @brief Reads every convention the party sees: its instrument conventions
- * and the tenant's world conventions.
- */
-struct get_conventions_document_request {
-    using response_type = struct get_conventions_document_response;
-    static constexpr std::string_view nats_subject = "refdata.v1.conventions_documents.get";
-    /**
-     * @brief Whether the caller must have established a session first.
-     *
-     * An operation that produces the session cannot present one, so a client
-     * reads this rather than assuming every call carries a token.
-     */
-    static constexpr bool requires_session = true;
-    /** When the session acts for no party, as a workflow step's does, the party whose rows to read.
-     */
-    std::string party_id;
-};
-
-/**
- * @brief The conventions the party sees.
- */
-struct get_conventions_document_response {
-    bool success = false;
-    std::string message;
-    conventions_document document;
-};
-
 }
 
 #endif

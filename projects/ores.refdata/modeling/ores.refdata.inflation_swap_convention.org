@@ -11,6 +11,7 @@
 #+entity_singular: inflation_swap_convention
 #+entity_plural: inflation_swap_conventions
 #+entity_title: Inflation Swap Convention
+#+convention_family: inflation_swap
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

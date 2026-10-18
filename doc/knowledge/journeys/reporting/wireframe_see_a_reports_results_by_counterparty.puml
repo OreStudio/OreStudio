@@ -1,0 +1,90 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: RESULTS BY COUNTERPARTY</b>
+  --
+  <b>RUN: Cross-Entity Counterparty Concentration - 4b7e1a02</b>
+  --
+  {#
+    Party | Runs | State | Took
+    ACMCOR | npv, saccr | completed | 2 m 18 s
+  }
+  --
+  <b>THE COUNTERPARTIES THIS RUN IS EXPOSED TO</b>
+  --
+  {#
+    Code | Counterparty | NPV USD m | Notional USD m | Trades | Exposure USD m | Share
+    . | <b>MERIDIAN CAPITAL GROUP</b> | 12.5 | 2,418.0 | 1,742 | 918.4 | 14.1%
+    MERID | Meridian Capital | 8.2 | 1,610.0 | 1,204 | 604.3 | 9.3%
+    MERID-UK | Meridian Capital UK | 4.3 | 808.0 | 538 | 314.2 | 4.8%
+    . | <b>ACME BANK PLC</b> | 21.9 | 3,902.0 | 2,318 | 1,486.3 | 24.8%
+    ACMEBK | ACME Bank PLC | 21.9 | 3,902.0 | 2,318 | 1,486.3 | 24.8%
+    NRTHCLR | NORTHGATE CLEARING | 9.1 | 1,744.0 | 906 | 512.9 | 10.3%
+    HANSAPF | HANSA PFANDBRIEF | 2.9 | 622.0 | 214 | 88.7 | 3.3%
+    PACTRST | PACIFIC TRUST | 1.7 | 418.0 | 168 | 41.2 | 1.9%
+    KSTLASR | KESTREL ASSURANCE | 0.9 | 212.0 | 96 | 18.4 | 1.0%
+    . | <b>Total, largest first</b> | 88.4 | 18,204.0 | 18,204 | 3,248.5 | 100%
+  }
+  Largest first, by exposure where the report runs =saccr= and by aggregate NPV
+  where it does not. A group row sits above its members and carries the sum of
+  them; a member keeps its own figure because the desk faces the member and
+  credit faces the group. No operation returns a result grouped by counterparty,
+  and nothing parses the archive, so every figure here is a fixture.
+  --
+  <b>ONE COUNTERPARTY: ACME BANK PLC (ACMEBK)</b>
+  --
+  {#
+    Netting Set | Trades | NPV USD m | Exposure USD m | Errors
+    ACME-CSA-1 | 1,842 | 17.2 | 1,180.4 | 0
+    ACME-CSA-2 | 476 | 4.7 | 305.9 | 2
+  }
+  {#
+    Trade | Type | Notional USD m | NPV | Netting Set | Error
+    2df8fa31... | Swap | 40.0 | 1.28 | CSA-1 | -
+    2d0f8a31... | Bond | 40.0 | - | CSA-2 | Analytics
+  }
+  The trade is the trading trade with that id, and the trade names its
+  counterparty_id. The error scopes are Trade, Analytics, Curve, Configuration
+  and Report: none of them is a counterparty, so a counterparty's errors are
+  reached through the trades that name it, and an error recorded against the
+  analytic alone is not divided across names.
+  --
+  <b>A COUNTERPARTY WITH NO RESULT</b>
+  --
+  {#
+    Code | Counterparty | NPV | Notional | Trades | Exposure | Share
+    BLUERIV | BLUE RIVER PENSION | - | - | 0 | - | -
+  }
+  The party can see this counterparty and the run produced nothing for it. It is
+  listed, not dropped, and it is not a measure of zero.
+  --
+  <b>A TRADE THAT NAMES NO COUNTERPARTY</b>
+  --
+  {#
+    Heading | Trades | Notional USD m | NPV USD m
+    counterparty_scope = intra_entity | 412 | 980.0 | 1.2
+  }
+  The schema allows counterparty_id to be null when the scope is intra_entity. The
+  run's counterparty totals are less than the run's total by this amount, and the
+  screen says so rather than folding it into a name.
+}
+
+@enduml

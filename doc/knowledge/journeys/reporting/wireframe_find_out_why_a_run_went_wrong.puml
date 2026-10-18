@@ -1,0 +1,114 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: RUN ERRORS</b>
+  --
+  <b>RUN: Group Consolidated Exposure - 4b7e1a02</b>
+  --
+  {#
+    Finished | Completed | Errors collected | Rows
+    completed while carrying errors | 08:15:02 | 08:15:03 | 20
+  }
+  --
+  <b>BY SCOPE AND SEVERITY</b>
+  --
+  {#
+    Scope | error | warning | Total
+    Trade | 16 | 0 | 16
+    Analytics | 2 | 1 | 3
+    Curve | 1 | 0 | 1
+    Configuration | 0 | 0 | 0
+    Report | 0 | 0 | 0
+    Total | 19 | 1 | 20
+  }
+  --
+  <b>FILTER BY SUBJECT</b>
+  --
+  {
+    Subject [ trade ] | Subject id [ 6f2c19a1-... ] | [ Find errors ] | [ Clear ]
+  }
+  Two rows name this trade. They are kept apart by detail.
+  --
+  <b>ERROR ROWS</b>
+  --
+  {#
+    # | Severity | Scope | Subject | Subject id | Detail
+    1 | error | Curve | curve | IndexCurve(GBP-SONIA,Yield/GBP/GBP1D) | -
+    2 | error | Trade | trade | 6f2c19a1-... | PRICING
+    3 | error | Trade | trade | 6f2c19a1-... | SA_CCR
+    4 | error | Analytics | analytic | PRICING | -
+    5 | warning | Analytics | analytic | OREApp::run() | -
+  }
+  --
+  <b>ROW 1 - CURVE ERROR</b>
+  --
+  {
+    Message: yield curve building failed for curve(s) Yield/GBP/GBP1D on date 2026-10-15 while processing Yield/GBP/GBP1D
+  }
+  --
+  <b>ROWS 2 AND 3 - THE SAME TRADE, TWO ANALYTICS</b>
+  --
+  {#
+    # | Scope | Subject | Subject id | Message
+    2 | Trade | trade | 6f2c19a1-... | Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)])
+    3 | Trade | trade | 6f2c19a1-... | Cannot build all required curves! Building failed for: ([IndexCurve(GBP-SONIA,Yield/GBP/GBP1D)])
+  }
+  {
+    Row 2 detail: {"exceptionType": "Error building trade for context 'analytic/PRICING'"}
+  }
+  {
+    Row 3 detail: {"exceptionType": "Error building trade for context 'analytic/SA_CCR'"}
+  }
+  The rows are identical in scope, subject, subject id and message. Only detail
+  tells them apart. The screen never de-duplicates by message, scope and subject.
+  --
+  <b>ROW 4 - ANALYTICS ERROR</b>
+  --
+  {
+    Subject: analytic PRICING. Message: Portfolio does not contain any built trades, context is 'analytic/PRICING'
+  }
+  --
+  <b>ROW 5 - ANALYTICS WARNING</b>
+  --
+  {
+    Subject: analytic OREApp::run(). Message: Error in ORE analytics: Failed to run analytics PRICING,SA_CCR
+  }
+  --
+  <b>A CONFIGURATION WARNING, A REAL ROW</b>
+  --
+  {
+    Subject: configuration Counterparty. Message: Input configuration was not provided. The default values will be used for all netting sets in the portfolio
+  }
+  It names an input and no trade. A run that completed clean can still record
+  Configuration warnings: the clean run of this report recorded eight Analytics
+  errors and three Configuration warnings.
+  --
+  <b>A REPORT SCOPE ROW - NO SUBJECT</b>
+  --
+  {#
+    Scope | Severity | Subject | Subject id | Message
+    Report | error | none | none | the reason the run failed, stated by the model
+  }
+  The row names the run itself, for a failure no engine saw. It has no subject
+  because a subject without an id is not a row the model admits.
+}
+
+@enduml

@@ -86,10 +86,11 @@ public:
     /**
      * @brief Dispatches an FX-family trade to fx_instrument_mapper.
      *
-     * Returns a populated result for FxForward, FxSwap, and FxOption.
-     * Returns empty for all other types.
+     * Returns a result that holds one row in the array of the product the trade
+     * states, for every FX code the family maps. Returns empty for all other
+     * types.
      */
-    static std::optional<trading::domain::fx_instrument_variant> map_fx_instrument(const trade& v);
+    static std::optional<trading::domain::fx_instrument_data> map_fx_instrument(const trade& v);
 
     /**
      * @brief Dispatches a credit-family trade to credit_instrument_mapper.

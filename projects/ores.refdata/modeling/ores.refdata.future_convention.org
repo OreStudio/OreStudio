@@ -11,6 +11,7 @@
 #+entity_singular: future_convention
 #+entity_plural: future_conventions
 #+entity_title: Future Convention
+#+convention_family: future
 #+created: 2026-09-29
 #+updated: 2026-09-29
 

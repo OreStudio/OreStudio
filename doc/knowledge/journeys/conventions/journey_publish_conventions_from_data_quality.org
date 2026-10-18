@@ -1,0 +1,338 @@
+:PROPERTIES:
+:ID: 99481EA8-1D2B-426D-A4E6-5E834FF5FFCE
+:END:
+#+title: User Journey: Publish conventions from data quality
+#+description: A data quality operator publishes the curated ORE conventions dataset into a tenant, reads the counts each kind lands with, learns why 33 rows are skipped on every party after the first, and finds that a re-publish does not carry a corrected curated term.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:refdata:dq:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A data quality operator publishes the curated conventions dataset into a tenant and reads what landed.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"The curated ORE conventions are the ones we trade on. I need them in the tenant,
+for the party that trades, and I need to know what arrived, what did not, and
+what a second publish will do before I run it."
+
+This journey is how every convention a party holds actually arrives. ACME holds
+10,991 convention rows across 26 kinds, and 25 of those kinds came from a DQ
+publish. The person is not authoring a term and not choosing one: they are
+moving a curated catalogue into a tenant and reading the receipt.
+
+The journey is done when the person can state four things: which kinds the
+publish covers, how many rows each kind landed with, why part of the receipt is
+a skip rather than an insert, and what a re-publish would and would not change.
+
+* Actor and trigger
+
+The actor is a data quality operator or a tenant administrator. Publishing a
+dataset is a DQ permission and reading what it wrote is a reference data
+permission; in a small tenant one person holds both. A data quality operator
+arrives with a dataset that has been curated or corrected. A tenant
+administrator arrives because a party has been added or because a term in the
+tenant is stale.
+
+The trigger is three different things and the same journey covers all three: a
+new tenant or party that needs the curated set, a curated row that has been
+corrected upstream and should now be in the tenant, and a publish that returned a
+skip count nobody can explain. The journey starts at the dataset and ends when
+the person has read the counts against what they expected.
+
+The journey writes through the DQ publish path and sends no per-kind convention
+write. It does not author a term, does not choose which document a run takes,
+and does not run a report.
+
+The journey keeps no server state of its own. The publish does: it runs as a
+workflow instance, and progress is read from the instance and not from the
+client.
+
+* Steps
+
+1. *Read the dataset.* The person opens the dataset and reads what it is. There
+   are two for conventions:
+   - =ore.conventions=, named *ORE Instrument Conventions*, artefact type
+     =conventions=, catalogue *ORE Analytics*, subject area *Trading*, domain
+     *Reference Data*;
+   - =refdata.currency_pair_conventions=, named *Standard Currency Pair
+     Conventions*, artefact type =currency_pair_conventions=, catalogue *FX Market
+     Conventions*, subject area *Currency Pairs*.
+   The person also reads the third, =refdata.currency_pair_convention_calendars=,
+   which carries the calendars a currency pair advances on, because a pair
+   without its calendars is half a convention.
+2. *Read what each dataset covers, and count the kinds.* The first dataset's
+   artefact type names 24 artefact tables and one subject,
+   =refdata.v1.ops.publish_conventions_from_dq=. The function behind it loops an
+   array of exactly those 24 kinds and dispatches =ores_dq_<kind>_conventions_artefact_tbl=
+   into =ores_refdata_<kind>_conventions_tbl=. The second dataset covers
+   =currency_pair= alone, on its own subject. Together that is **25 kinds of the
+   26**. The person is shown the 26th explicitly, because a publish that silently
+   covers 25 of 26 is a trap: =tenor= has no DQ route at all. There is no
+   =ores_dq_tenor_conventions_artefact_tbl=, so no function can copy it, and its
+   4 rows are not published — they are copied from the system tenant when the
+   tenant is created. The screen says so on the =tenor= row rather than leaving
+   the count to be discovered.
+3. *Read the bundle that carries it, and who it publishes for.* The two datasets
+   travel in different bundles, and the difference decides who they land for.
+   =ore.conventions= is a member of =party_essentials=, which is published **once
+   per party** with a ={"party_id": "..."}= parameter. =refdata.currency_pair_conventions=
+   and its calendars are members of =base=, which is published **once per
+   tenant**. The person reads this before publishing, because "publish the
+   conventions" means one thing per party and another per tenant, and a person
+   who publishes =base= expecting party rows gets none.
+4. *Publish.* The person publishes. The operation is
+   =dq.v1.ops.publish_bundle=, which the shell spells =bundles publish <bundle>
+   --party-id <id> --wait=. The service starts a workflow instance and the
+   publication walks the bundle's datasets in dependency order, one step per
+   dataset. The conventions step is one step of that run and not a run of its own.
+   With =--wait= the person watches step transitions and the command returns when
+   the instance reaches a terminal state. Without it they hold an instance id and
+   read progress from =workflow.v1.ops.get_workflow_steps=.
+5. *Read the counts the publish returns.* The step's result is four counts:
+   =records_inserted=, =records_updated=, =records_skipped= and
+   =records_deleted=. ACME's actual receipts, in publish order:
+   - the first party: **2,188 inserted, 0 skipped, 0 updated**;
+   - each of the next four parties: **2,155 inserted, 33 skipped, 0 updated**;
+   - a later re-publish of the same party: **0 inserted, 2,188 skipped, 0
+     updated**.
+   The person reads all three against each other, because the difference between
+   them is the whole of this journey's remaining steps.
+6. *Explain the 33.* 2,188 is 2,155 plus 33, and the 33 is not a defect. Four of
+   the 26 kinds are tenant-scoped — their table carries no =party_id= column — and
+   two of them are in the 24-kind array: =ibor_index= with 10 rows and
+   =overnight_index= with 23. 10 + 23 = 33. The publish's insert is guarded by
+   "this key does not exist for this tenant and party", and for a table with no
+   party column that guard finds the row the first party's publish wrote. So the
+   first party's publish writes them and every later party's publish reports them
+   as skipped, because they are not that party's rows to write. The person reads
+   the 33 as *already present, tenant-wide*, and not as a failure. The screen
+   states the arithmetic and names the two kinds, because a skip count of 33 with
+   no account of it is unreadable.
+7. *Explain what a re-publish will and will not do, before running it.* This is
+   the step the journey exists for. The 24-kind function writes with an insert
+   guarded by "the row is not already there", and it has no update path: its
+   result carries no =updated= count and the function's own body never updates a
+   row. So **a curated row corrected in the dataset does not reach a tenant that
+   already holds it** — the re-publish reports it as skipped and the tenant keeps
+   the old terms. A re-publish of a party that already has its rows is 2,188
+   skipped and 0 inserted. The exception is =currency_pair=: its own function
+   inserts with the store's version-replace, and its second publish reports
+   **179 updated**. So 25 of the 26 kinds cannot take a correction and 1 can, and
+   the person is told which is which on the row rather than from a run's
+   surprise. Correcting a convention a tenant already holds is
+   [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses
+   for one kind]]'s job, done per row.
+8. *Read what the publish cannot show.* The person asks what the curated rows
+   actually say before publishing them. Nothing answers. There is no read of an
+   =ores_dq_*_artefact_tbl= over NATS: DQ publishes artefact *types* and
+   *datasets*, and the rows they stage are readable only in the database. So the
+   person can read what landed in the tenant, kind by kind, and cannot read what
+   is about to land. The screen says so and does not draw an artefact preview it
+   cannot fill.
+9. *Read where the =tenor= rows came from, and when.* The four =tenor= rows were
+   copied from the system tenant when the tenant was provisioned, by
+   =ores_iam_provision_tenant_fn=, with =change_reason_code= =system.new_record=
+   and the commentary "Copied from the system tenant during provisioning". That
+   copy happens once per tenant and never again. A change to the system tenant's
+   tenor conventions reaches a new tenant and does not reach an existing one, and
+   no publish refreshes it. The row says so.
+10. *Leave, or go on.* The person has the receipt. They either go to the party's
+    conventions to verify what a run will read
+    ([[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party
+    uses]]), or to a kind to correct a term the publish could not carry
+    ([[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party
+    uses for one kind]]).
+
+* Screens and wireframes
+
+One screen: the dataset in the header, the kinds it covers with their counts, the
+bundle and the scope it publishes for, the publish action with its instance, and
+the receipt. The receipt is the largest panel, because the counts are the answer
+and the same four counts mean different things on the first publish, the fourth
+and a re-publish. The screen shows the last publish's counts beside what the
+person expected, so a skip count is read against an expectation rather than in
+isolation.
+
+The screen never shows artefact rows. There is no operation that returns them,
+and a panel that drew an empty table would be claiming a read that does not
+exist.
+
+#+caption: Publish conventions from data quality: the two datasets with the 25 of 26 kinds they cover, the tenor exception, the bundle and scope per dataset, and the receipt as it reads on the first party, a later party, and a re-publish.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/conventions/wireframe_publish_conventions_from_data_quality.png]]
+
+* Prototype
+
+No prototype is written for this journey in this pass, and none should be until
+the artefact read exists. The screen's central panel is a receipt the person
+compares against an expectation, and half the expectation — what the curated
+rows say — cannot be read at all. A prototype would have to fake the half that
+matters.
+
+What a prototype must draw when the read exists is stated here so it is not lost:
+the four counts, in three columns, one per publish act; the 33 accounted for by
+the two tenant kinds; the =tenor= row marked as not published; and the one kind
+that updates marked apart from the 25 that do not.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =dataset= | The two convention datasets, their names, their artefact types and their catalogue | |
+| =artefact_type= | What each dataset stages and publishes as, and the subject that carries it | |
+| =dataset_bundle=, =dataset_bundle_member= | The bundle each dataset travels in, and therefore whether it publishes per tenant or per party | |
+| The 26 convention tables | Where the rows land. 22 carry =party_id= and are written per party; four carry none and are written once per tenant. | one per kind; see below |
+| =change_reason= | =system.external_data_import= for a published row and =system.new_record= for a copied one, which is how a row states its own provenance | |
+| =party= | The party a =party_essentials= publish writes for | [[id:8F3A1C2D-4B5E-4A6C-8F9D-2E3F4A5B6C7D][ores.refdata.party]] |
+
+#+ATTR_HTML: :class hug-leading
+| Kind | Route | Rows per party | Rows per tenant | Re-publish behaviour |
+|------+-------+----------------+-----------------+---------------------|
+| the 22 party kinds | =refdata.v1.ops.publish_conventions_from_dq= | 2,155 | — | insert only; a correction is skipped |
+| =currency_pair= | =refdata.v1.ops.publish_currency_pair_conventions_from_dq= | — | 179 | version replace; a correction is written as an update |
+| =ibor_index= | the 24-kind subject | — | 10 | skipped after the first party, because it has no party column |
+| =overnight_index= | the 24-kind subject | — | 23 | skipped after the first party, for the same reason |
+| =tenor= | none | — | 4 | copied at tenant provisioning, never republished |
+
+The models the rows land in:
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =swap_convention= | The worked example of a party kind: 320 rows per party from 320 staged rows | [[id:F68E18C5-A704-40E8-A37B-4B8F5DCB5089][ores.refdata.swap_convention]] |
+| =deposit_convention= | The contrast, 163 rows per party | [[id:F7C5287B-7781-45EA-BA4C-63F077E36A89][ores.refdata.deposit_convention]] |
+| =ibor_index_convention= | One of the two tenant kinds in the 24-kind array, and part of the 33 | [[id:852FE06C-70D9-48BC-B768-D99D87D0D796][ores.refdata.ibor_index_convention]] |
+| =overnight_index_convention= | The other one, and the larger part of the 33 | [[id:B72547F3-83B5-4F83-AA65-BBE16C191089][ores.refdata.overnight_index_convention]] |
+| =tenor_convention= | The kind with no DQ route | [[id:C4D8A2E6-3B7F-4A1D-9C5E-8F2A6D3B1E90][ores.refdata.tenor_convention]] |
+| =currency_pair_convention= | The kind with its own subject and its own bundle | [[id:1B88215B-1FE0-4CAF-B6AB-53F471963CA6][ores.refdata.currency_pair_convention]] |
+
+The publish copies the live table's own data columns, read from
+=information_schema= at call time, less the columns it stamps. That is why one
+function spans 24 kinds: a new kind costs one array entry and one artefact table,
+not a function. It also means the published row's key is the artefact's key, so
+a curated document keeps one key across every tenant that publishes it.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Read the dataset | List the datasets | =dq.v1.datasets.list= | exists |
+| Read the dataset | Read one dataset | =dq.v1.datasets.get= | exists |
+| Read the dataset | Read the artefact types | =dq.v1.artefact_types.list= | exists |
+| Read the bundle | List the bundles | =dq.v1.dataset_bundles.list= | exists |
+| Read the bundle | Read a bundle's members | =dq.v1.dataset_bundle_members.list= | exists |
+| Publish | Publish a bundle | =dq.v1.ops.publish_bundle= | exists |
+| Publish | Publish one dataset | =dq.v1.ops.publish_datasets= | exists |
+| Publish | Watch the run's steps | =workflow.v1.ops.get_workflow_steps= | exists |
+| Publish | List the instances | =workflow.v1.instances.list= | exists |
+| Read the receipt | The counts the publish returns | the step's =result_json=: =records_inserted=, =records_updated=, =records_skipped=, =records_deleted= | partial |
+| Read the receipt | List the tenant's published conventions | =refdata.v1.<kind>_conventions.list= | exists |
+| Read the receipt | Read the party's whole conventions document | =refdata.v1.conventions_documents.get= | exists, not reachable by a person |
+| Read what is about to land | Read an artefact table's rows | (no read of =ores_dq_*_artefact_tbl= over NATS) | missing |
+| Read the receipt | Read one publish's counts and its whole receipt | (no read of a publication's result; the counts are on the workflow step) | missing |
+| Read the receipt | Attribute a skip count to a kind | (the function returns one total, not a breakdown) | missing |
+
+The publish steps that the function serves are subscribed by the reference data
+service's =publish_from_dq_handler=, one handler for every
+=publish_*_from_dq= subject, and each call reaches a =security definer= SQL
+function. The counts reach the caller through the workflow step's result and not
+through a service read of the tenant's own tables.
+
+No BFF route serves DQ. This journey adds one, for example
+=GET /api/dq/datasets/<code>/conventions=, which returns the kinds the dataset
+covers, the artefact suite count, the bundle and the scope, and the last
+publication's counts per kind. That read has to be built on a per-kind count and
+does not exist today.
+
+* What is missing
+
+1. *A corrected curated row never reaches a tenant that already holds it.* The
+   24-kind publish function has no update path: it inserts where the row is
+   absent and counts everything else as skipped. Its result type carries no
+   =updated= count, and its body performs no update. A re-publish after a
+   correction returns 2,188 skipped and 0 inserted, and the tenant keeps the old
+   terms. This is the most consequential gap in the group: the curated dataset is
+   the source of truth for 25 kinds and it cannot be corrected downstream.
+   =currency_pair= is the only kind whose function replaces the row it finds.
+2. *A skip count is a total, not an account.* The function returns one
+   =records_skipped= for the whole 24-kind loop. The person who sees 33 cannot
+   learn from the server that 10 are =ibor_index= and 23 are =overnight_index=.
+   The arithmetic is derivable by counting the tenant-scoped kinds' rows, and the
+   server does not state it.
+3. *Nothing reads the curated rows.* No operation returns an
+   =ores_dq_*_artefact_tbl= row. DQ exposes artefact types and datasets and not
+   the rows they stage, so a person can read what landed in a tenant and cannot
+   read what is about to land. Comparing a curated document against the tenant's
+   copy is a database query and not a screen.
+4. *No read states a publication's outcome.* The counts exist on the workflow
+   step's =result_json=, and no operation returns a publication with its counts
+   and the dataset it published. A person reads a workflow instance to learn what
+   a dataset did.
+5. *`tenor` has no publish route at all.* There is no
+   =ores_dq_tenor_conventions_artefact_tbl= and no subject. Its 4 rows come from
+   a one-time copy at tenant provisioning, so a corrected tenor convention
+   reaches only tenants created after the correction. A DQ artefact table and a
+   subject would close it, and until then this is the one kind whose curation
+   cannot be shipped.
+6. *A tenant-scoped kind publishes once and is then reported as skipped forever.*
+   =ibor_index= and =overnight_index= are in the 24-kind array and their tables
+   carry no =party_id=, so the insert's "already present" guard fires for every
+   party after the first. The behaviour is correct and the receipt is not: a
+   person publishing a party is told 33 rows were skipped without being told that
+   they are present, tenant-wide, and were written for someone else.
+7. *A tenant-scoped kind cannot be published per party even if a tenant wanted
+   it.* =currency_pair='s function writes the whole tenant, and =currency_pair=
+   is in =base=, a tenant bundle. There is no way to give one party a different
+   pair convention, which is consistent with the 1:1 pair model and is a limit a
+   reader should be told rather than discover.
+8. *The publish cannot be scoped to a kind.* One subject publishes 24 kinds
+   together. A person who needs one kind refreshed cannot ask for it, and a failed
+   step is a failed publish of all 24. There is no per-kind publish subject, and
+   the function's array is the only partition.
+9. *No dry run.* The mode is =upsert=, =insert_only= or =replace_all=, and there
+   is no mode that reports what it would do. On a function that skips rather than
+   updates, a dry run is the only way to learn what a publish would change, and
+   there is not one.
+10. *`replace_all` is offered and closes rows before it writes.* The 24-kind
+    function does not honour =replace_all= at all — it ignores the mode and its
+    contract says the mode has no effect — while =currency_pair='s function does
+    honour it and closes every current pair convention in the tenant before
+    inserting. A caller reading "all publish functions take the same modes" would
+    be wrong here, and a person who sends =replace_all= to the currency pair
+    function removes what the dataset no longer carries.
+
+* Related journeys
+
+- [[id:AD7E6FC0-392E-46A9-8E28-23B7B4946A88][Onboard a party and verify its conventions]] — the publish as it lands for a newly provisioned party, and how a person checks it
+- [[id:0DC107D4-170D-478B-9476-570343806888][See the conventions a party uses]] — what a run reads after the publish has landed
+- [[id:FA1CC25B-9745-4172-BAE8-4B6413958077][Change the convention a party uses for one kind]] — how a correction reaches a tenant that already holds the row
+- [[id:857206FA-DA09-4920-8713-D28E613C8BCC][Author a convention for a kind]] — a term the curated dataset does not carry, written in the tenant and not published back
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the runs that read what this publish wrote
+
+* Related knowledge
+
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]] — the group this journey belongs to
+- [[id:F19A6B98-1CAD-4206-913B-A4EAAED2DEAF][DQ artefacts]] — the artefact table, the dataset, the artefact type, the bundle and the publish contract this journey follows
+- [[id:34CB23D5-E0B1-4B68-BE21-0F41B957217E][Provisioning operations and the plan]] — the bundle a starting point publishes and the scope it publishes for
+- [[id:FD54D29E-9309-4AFE-AFE2-50DA9F7BA354][Reference Data]] — provenance, change reasons and the bitemporal store
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the ORE =conventions.xml= elements the published rows export to
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections this page fills
+- =ores_refdata_publish_conventions_from_dq_fn= — the 24-kind function, its array and its insert-only guard
+- =ores_refdata_publish_currency_pair_conventions_from_dq_fn= — the one function that replaces the row it finds
+- =ores_iam_provision_tenant_fn= — the one-time copy of the tenor conventions
+- =bundles publish <code> --party-id <id> --wait= — the shell spelling of =dq.v1.ops.publish_bundle=

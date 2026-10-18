@@ -80,6 +80,10 @@ struct report_instance final {
 
     /**
      * @brief The report definition that produced this instance.
+     *
+     * The column is filterable so that a caller asking for the runs of the definitions a party owns
+     * sends their ids, rather than paging the party's whole run history and discarding the rest.
+     * The filter record then carries definition_id and definition_id_one_of.
      */
     boost::uuids::uuid definition_id;
 

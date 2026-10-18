@@ -248,6 +248,17 @@ def children_of(complex_type):
                 for attribute in extension:
                     if local(attribute.tag) == "attribute":
                         attributes.append(attribute)
+    # A projection looks a member up by the name the document writes, and the
+    # document does not say whether it is an element or an attribute. A type
+    # that spelled both the same would make that lookup ambiguous, so it is
+    # refused here rather than resolved silently later.
+    element_names = {element.get("name") for element in elements}
+    for attribute in attributes:
+        if attribute.get("name") in element_names:
+            raise SystemExit(
+                f"{complex_type.get('name')} declares both an element and an attribute "
+                f"named {attribute.get('name')!r}"
+            )
     return elements, attributes
 
 

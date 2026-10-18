@@ -23,6 +23,7 @@
 #include <array>
 #include <charconv>
 #include <expected>
+#include <optional>
 #include <vector>
 
 namespace ores::ore::xml {
@@ -65,6 +66,20 @@ auto residual_field(const record_type& type) -> const field* {
         if (type.fields[i].kind == field_kind::residual)
             return &type.fields[i];
     return nullptr;
+}
+
+/**
+ * @brief The field a name denotes, whether the schema writes it as an element
+ * or as an attribute.
+ *
+ * A projection names a member the way the document does, and the document
+ * does not say which of the two it is. The generator refuses a type that
+ * spells an element and an attribute the same, so the search cannot be
+ * ambiguous.
+ */
+auto find_by_name(const record_type& type, std::string_view name) -> const field* {
+    const auto* f = find(type, name, false);
+    return f != nullptr ? f : find(type, name, true);
 }
 
 auto present(const void* record, const field& f) -> bool {
@@ -211,6 +226,68 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
     return true;
 }
 
+}
+
+auto find_field(const record_type& type, std::string_view name, bool attribute) -> const field* {
+    return find(type, name, attribute);
+}
+
+auto enumeration_spelling(const record_type& type, const void* record, std::string_view name)
+    -> std::optional<std::string> {
+    const auto* f = find_by_name(type, name);
+    if (f == nullptr || f->kind != field_kind::enumeration || !present(record, *f) ||
+        f->tokens == nullptr)
+        return std::nullopt;
+    const auto index =
+        *reinterpret_cast<const std::int16_t*>(static_cast<const std::byte*>(record) + f->offset);
+    if (index < 0)
+        return std::nullopt;
+    for (std::int16_t i = 0; i <= index; ++i)
+        if (f->tokens[i] == nullptr)
+            return std::nullopt;
+    return std::string(f->tokens[index]);
+}
+
+auto set_enumeration(const record_type& type,
+                     void* record,
+                     std::string_view name,
+                     std::string_view spelling) -> bool {
+    const auto* f = find_by_name(type, name);
+    if (f == nullptr || f->kind != field_kind::enumeration || f->tokens == nullptr)
+        return false;
+    for (std::int16_t i = 0; f->tokens[i] != nullptr; ++i) {
+        if (spelling == f->tokens[i]) {
+            *reinterpret_cast<std::int16_t*>(static_cast<std::byte*>(record) + f->offset) = i;
+            mark_present(record, *f);
+            return true;
+        }
+    }
+    return false;
+}
+
+auto mark_text_present(const record_type& type, void* record) -> bool {
+    if (type.text_field == no_text)
+        return false;
+    mark_present(record, type.fields[type.text_field]);
+    return true;
+}
+
+auto find_child_type(const record_type& type, std::string_view name) -> const record_type* {
+    const auto* f = find(type, name, false);
+    return f != nullptr ? f->type : nullptr;
+}
+
+auto is_present(const record_type& type, const void* record, std::string_view name) -> bool {
+    const auto* f = find_by_name(type, name);
+    return f != nullptr && present(record, *f);
+}
+
+auto mark_present(const record_type& type, void* record, std::string_view name) -> bool {
+    const auto* f = find_by_name(type, name);
+    if (f == nullptr)
+        return false;
+    mark_present(record, *f);
+    return true;
 }
 
 auto binder::bind(const document_type& doc, std::string_view text, void* root)

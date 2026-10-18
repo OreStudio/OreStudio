@@ -407,6 +407,21 @@ CATALOGUE: tuple[Check, ...] = (
                "benchmarks/xml/inputs.tsv"),
         fix="Run ./benchmarks/xml/run.sh and commit benchmarks/xml/history.tsv.",
     ),
+    # A family is either supported by a table, migrating from a mapper, or
+    # unused and on its way out with xsdcpp. The census is a decision; this
+    # check is whether the tree still agrees with it.
+    Check(
+        id="xml-family-census",
+        title="Every ORE document family is classified and the tree agrees",
+        argv=("python3", "build/scripts/check_xml_family_coverage.py"),
+        classes=("cpp", "tooling"),
+        paths=("external/ore/examples/*",
+               "projects/ores.ore/core/src/xml/generated/*",
+               "projects/*/*/tests/xml_*_tests.cpp",
+               "build/scripts/check_xml_family_coverage.py"),
+        fix="Classify the family in build/scripts/check_xml_family_coverage.py, "
+            "or delete the test that names an unused one.",
+    ),
     Check(
         id="prototypes",
         title="The prototype inventory matches the tree",
@@ -460,6 +475,22 @@ CATALOGUE: tuple[Check, ...] = (
         argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_model_drift.py", "--summary"),
         classes=("modeling", "codegen"),
         phase=PREPARE,
+    ),
+    Check(
+        id="convention-family-registry",
+        title="The convention family registry, apply fragment and includes match the modelling tree",
+        argv=(CODEGEN_PY, "projects/ores.codegen/scripts/check_convention_family_registry.py"),
+        classes=("modeling", "codegen"),
+        paths=(
+            "projects/ores.refdata/modeling/*.org",
+            "projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp",
+            "projects/ores.refdata/core/src/service/convention_family_apply.inc",
+            "projects/ores.refdata/core/src/service/convention_family_apply_includes.inc",
+            "projects/ores.codegen/src/codegen/convention_family_registry.py",
+            "projects/ores.codegen/scripts/*convention_family_registry.py",
+        ),
+        fix="Run projects/ores.codegen/scripts/regenerate_convention_family_registry.py"
+            " and commit the header and fragment.",
     ),
     Check(
         id="er-diagram",

@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: A51392C5-F7CE-419C-9671-7F648E83C36C
+:END:
+#+title: Task: Model each convention family on its own
+#+description: Replace the hand-listed document model with one operation model per convention family, so a family is declared once and carries its own fields. No aggregate of unrelated families survives.
+#+type: task
+#+level: s1
+#+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
+#+owner: marco
+#+branch: feature/model-each-convention-family
+#+pr: 3459
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-17                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+- The pin holds. Comparing the service's hand-written calls with the generated
+  registry gives 26 families against 26 entries, no disagreement about which
+  families are party-scoped and which are world-scoped, and no registry row the
+  service never writes. =fx= is skipped and unregistered, as decided. The
+  registry is therefore equivalent to the hand list before the hand list is
+  deleted.
+- The registry cannot replace the calls by itself. A table of strings cannot
+  call =replace_party_rows(ctx, zero_convention_repository(), ...)=, because
+  each family needs its own repository type. The dispatch has to be generated.
+  Codegen must emit one apply function per scope from the same registry:
+  party families through =replace_party_rows=, world families through
+  =add_missing_world_rows=, and the skipped families collected. The service
+  then calls two generated functions instead of listing 26.
+- The work splits. First the generated apply functions, which delete the
+  service's hand list with behaviour unchanged and the pin green. Then the
+  aggregate itself, which is what forces the mapper, the run store and the BFF
+  to move in one wave.
+
+- =fx= needs no entity and no registry entry. The document carries an
+  =fx_convention= that is the pair, its =currency_pair_convention=, a spot lag
+  and its advance calendars. All three of those are entities
+  (=currency_pair=, =currency_pair_convention=, =currency_pair_convention_calendar=),
+  so the ORE FX convention is a projection of existing rows, not a store of its
+  own. Drop it from the document and derive it in the boundary mapper.
+- The tenor basis swap family registers as its central row plus its two parts,
+  because that is what the document carried. Collapsing it to one family entry
+  is a later decision, not part of this task.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3459][#3459]] | [codegen] Generate the convention family registry |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

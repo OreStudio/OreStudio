@@ -213,6 +213,10 @@
 \ir ./trading_commodity_basket_constituents_notify_trigger_drop.sql
 \ir ./trading_commodity_basket_constituents_drop.sql
 
+-- Equity basket constituents (child rows drop on their own)
+\ir ./trading_equity_basket_constituents_notify_trigger_drop.sql
+\ir ./trading_equity_basket_constituents_drop.sql
+
 -- Equity position option underlyings (child rows drop on their own)
 \ir ./trading_equity_position_option_underlyings_notify_trigger_drop.sql
 \ir ./trading_equity_position_option_underlyings_drop.sql
@@ -234,8 +238,16 @@
 \ir ./trading_equity_barrier_option_instruments_drop.sql
 \ir ./trading_equity_digital_option_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_digital_option_instruments_drop.sql
+\ir ./trading_equity_cliquet_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_outperformance_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_outperformance_option_instruments_drop.sql
+\ir ./trading_equity_cliquet_option_instruments_drop.sql
 \ir ./trading_equity_option_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_option_instruments_drop.sql
+
+-- Equity family header (drops last, after its facts and children)
+\ir ./trading_equity_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_instruments_drop.sql
 
 -- Composite instruments (drop legs before header)
 \ir ./trading_composite_legs_notify_trigger_drop.sql

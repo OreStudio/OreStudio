@@ -1,0 +1,102 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>AUTHOR A CONVENTION FOR A KIND</b>  { Kind | Terms | Review | Saved | History }
+  --
+  {
+    {
+      <b>1. Choose the kind</b>
+      --
+      Party ACCOUS. 26 kinds, one table each; the kind decides which fields are drawn.
+      --
+      {#
+        Kind | Term columns | Party holds | The act asks for
+        deposit | 8 | 163 | calendar, convention, day count, settlement days
+        <b>swap</b> | 7 | <b>320</b> | fixed leg schedule and a floating index
+        tenor_basis_swap | 7 | 37 | two legs
+        ... 23 more kinds ...
+      }
+      <i>The filter takes id_one_of only, so "these terms are not here yet" is a page of rows read in words.</i>
+      [ Continue ]
+    } | {
+      <b>2. Author its terms</b>  -  swap, party ACCOUS
+      --
+      {#
+        Field | Value | Source
+        Key | ^AED-EIBOR-6M-SWAP      ^ | authored here; the run refers to the document by it
+        Fixed Calendar | ^AED^v | from calendar_names
+        Fixed Frequency | ^Annual^v | from payment_frequencies
+        Fixed Convention | ^ModifiedFollowing^v | from business_day_convention_types
+        Fixed Day Count Fraction | ^ACT/365^v | from day_count_fraction_types
+        Index | ^AED-EIBOR-6M^v | from floating_index_types
+        Float Frequency | ^Semi-Annual^v | from payment_frequencies
+        Sub-Periods Coupon Type | (empty)v | from sub_periods_coupon_types
+      }
+      <i>Empty and stated are different claims: an empty column is drawn empty and not defaulted.</i>
+      <i>The grouping is the screen's: the table carries no leg object.</i>
+      [ Read calendars... ] | [ Back ] | [ Review ]
+    }
+  }
+  --
+  {
+    {
+      <b>3. Review</b>
+      --
+      7 fields filled, 1 left empty.
+      {#
+        Field | Value
+        Fixed leg |
+        Fixed Calendar | AED
+        Fixed Frequency | Annual
+        Fixed Day Count Fraction | ACT/365
+        Sub-Periods Coupon Type | (empty)
+      }
+      <i>None of the 320 existing swap documents states this term set.</i>
+      [ Back ] | [ Save as a new document ]
+    } | {
+      <b>4. Saved</b>
+      --
+      <b>AED-EIBOR-6M-SWAP is saved as version 1</b>
+      by m.okafor at 2026-10-18 10:12, reason system.new_record
+      precondition: must_not_exist (a key already present is refused, never overwritten)
+      --
+      <b>What the write did not do</b>
+      It did not mark this document as the one a run takes: no such mark exists.
+      It did not attach it to a report: a conventions configuration holds no rows.
+      It added a document every run of ACCOUS will now carry, beside the 320 others.
+      [ See the history ] | [ Back to the kind ] | [ Another kind ]
+      --
+      <b>5. History</b>  version: { <b>v1</b> }
+      {#
+        Envelope | Value
+        version | 1
+        valid_from | 2026-10-18 10:12
+        valid_to | (open)
+        modified_by | m.okafor
+        change_reason_code | system.new_record
+        change_commentary | authored for the AED 6M swap the curated set does not state
+      }
+      <i>A later correction closes this row with valid_to and writes version 2 with valid_from.</i>
+    }
+  }
+}
+
+@enduml

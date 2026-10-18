@@ -20,16 +20,14 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import type { OresmdParseResult, OresmdSchema } from '@ores/contracts';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Detail, Dialog, Notice } from '../ui/Primitives.js';
 import { fromParse, rowOf } from './editor.js';
 import { oresmdQueries } from './queries.js';
 import { titleOfUrl } from './title.js';
-
-/** How long the word Copied stays after a copy. */
-const COPIED_MS = 2000;
+import { useCopyToClipboard } from './useCopyToClipboard.js';
 
 /**
  * An oresmd URL read as labelled values, in the layout of the record screens'
@@ -106,19 +104,7 @@ export function OresmdViewDialog({
     const { t } = useTranslation();
     const schema = useQuery(oresmdQueries.schema());
     const parsed = useQuery(oresmdQueries.parse(url));
-    const [copied, setCopied] = useState(false);
-    const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    useEffect(() => () => clearTimeout(timer.current), []);
-    const copy = async (): Promise<void> => {
-        try {
-            await navigator.clipboard.writeText(url);
-            setCopied(true);
-            clearTimeout(timer.current);
-            timer.current = setTimeout(() => setCopied(false), COPIED_MS);
-        } catch {
-            setCopied(false);
-        }
-    };
+    const { copied, failed, copy } = useCopyToClipboard(url);
     return (
         <Dialog
             title={t('oresmd.title')}
@@ -130,12 +116,13 @@ export function OresmdViewDialog({
                     <Button type="button" variant="ghost" onClick={onClose}>
                         {t('oresmd.close')}
                     </Button>
-                    <Button type="button" onClick={() => void copy()}>
+                    <Button type="button" onClick={copy}>
                         {copied ? t('oresmd.copied') : t('oresmd.copy')}
                     </Button>
                 </>
             }
         >
+            {failed && <Notice tone="error">{t('oresmd.copyFailed')}</Notice>}
             {schema.isError ? (
                 <Notice tone="error">{schema.error.message}</Notice>
             ) : parsed.isError ? (

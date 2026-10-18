@@ -99,3 +99,27 @@ export function heldBy(
 ): string | undefined {
     return sources?.find((source) => source.source_name === sourceName)?.held_by ?? undefined;
 }
+
+/**
+ * Whether Revert is offered on a version of a binding.
+ *
+ * The offering is a statement about a write, so it needs a person who may write a
+ * binding and a binding that is not a vendor's, which records a real feed the screen
+ * does not control. The newest version has nothing to revert to, and a version whose
+ * series a running feed holds cannot be written back without taking a series another
+ * feed is publishing.
+ */
+export function revertOffer(input: {
+    readonly kind: string;
+    readonly mayWrite: boolean;
+    readonly version: number;
+    readonly newest: number;
+    readonly heldBy: string | undefined;
+}): boolean {
+    return (
+        input.mayWrite &&
+        isSynthetic(input.kind) &&
+        input.version < input.newest &&
+        input.heldBy === undefined
+    );
+}

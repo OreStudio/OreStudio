@@ -65,6 +65,34 @@ equity_instrument_data load_and_map(const std::string& filename) {
     return *r;
 }
 
+/*
+ * A position is a top-level trade, and the corpus documents none at the top
+ * level: the only documented positions sit inside a total return swap. Take the
+ * sub-trade out of the swap and map it as the top-level document it is, so the
+ * test exercises the model rather than the nesting the importer no longer
+ * produces.
+ */
+equity_instrument_data load_position_as_top_level(const std::string& filename) {
+    using ores::platform::filesystem::file;
+    const std::string content = file::read_content(example_path(filename));
+    portfolio p;
+    ores::ore::domain::load_data(content, p);
+    REQUIRE(!p.Trade.empty());
+    REQUIRE(p.Trade.front().TotalReturnSwapData);
+    const auto& groups = p.Trade.front().TotalReturnSwapData->UnderlyingData.subTradeGroup;
+    REQUIRE(!groups.empty());
+    REQUIRE(groups.front().SubTrade);
+
+    ores::ore::domain::trade position;
+    position.TradeType = groups.front().SubTrade->SubTradeType;
+    position.EquityPositionData = groups.front().SubTrade->EquityPositionData;
+    position.EquityOptionPositionData = groups.front().SubTrade->EquityOptionPositionData;
+
+    auto r = ores::ore::domain::trade_mapper::map_equity_instrument(position);
+    REQUIRE(r.has_value());
+    return *r;
+}
+
 } // namespace
 
 // ---------------------------------------------------------------------------
@@ -147,7 +175,7 @@ TEST_CASE("equity_mapper_roundtrip_variance_swap", tags) {
 
     CHECK(inst.identity.trade_type_code == "EquityVarianceSwap");
     CHECK(!inst.underlying_name.empty());
-    CHECK(inst.variance_strike > 0.0);
+    CHECK(!inst.variance_strike.is_zero());
     CHECK(inst.start_date.ok());
     CHECK(inst.maturity_date.ok());
 
@@ -155,7 +183,7 @@ TEST_CASE("equity_mapper_roundtrip_variance_swap", tags) {
     REQUIRE(rt.EquityVarianceSwapData);
 
     BOOST_LOG_SEV(lg, info) << "EquityVarianceSwap roundtrip passed. Strike: "
-                            << inst.variance_strike;
+                            << inst.variance_strike.to_string();
 }
 
 TEST_CASE("equity_mapper_roundtrip_barrier_option", tags) {
@@ -338,7 +366,7 @@ TEST_CASE("equity_mapper_roundtrip_worst_of_basket_swap", tags) {
 
 TEST_CASE("equity_option_position_forward_carries_every_entry", tags) {
     auto lg(make_logger(test_suite));
-    const auto r = load_and_map("Hybrid_GenericTRS_with_EquityOptionPosition.xml");
+    const auto r = load_position_as_top_level("Hybrid_GenericTRS_with_EquityOptionPosition.xml");
     const auto& inst = std::get<ores::trading::domain::equity_position_instrument>(r.instrument);
 
     CHECK(inst.identity.trade_type_code == "EquityOptionPosition");
@@ -367,21 +395,15 @@ TEST_CASE("equity_option_position_forward_carries_every_entry", tags) {
 
 TEST_CASE("equity_option_position_roundtrip_rebuilds_the_entries", tags) {
     auto lg(make_logger(test_suite));
-    const auto r = load_and_map("Hybrid_GenericTRS_with_EquityOptionPosition.xml");
+    const auto r = load_position_as_top_level("Hybrid_GenericTRS_with_EquityOptionPosition.xml");
     const auto& inst = std::get<ores::trading::domain::equity_position_instrument>(r.instrument);
 
     const auto rt = equity_instrument_mapper::reverse_equity_option_position(
-        inst, r.underlyings, "TotalReturnSwap");
+        inst, r.underlyings);
 
-    CHECK(rt.TradeType == ores::ore::domain::oreTradeType::TotalReturnSwap);
-    REQUIRE(rt.TotalReturnSwapData);
-    const auto& ud = rt.TotalReturnSwapData->UnderlyingData;
-    REQUIRE(ud.subTradeGroup.size() == 1);
-    REQUIRE(ud.subTradeGroup.front().SubTrade);
-    const auto& sub = *ud.subTradeGroup.front().SubTrade;
-    CHECK(sub.SubTradeType == ores::ore::domain::oreTradeType::EquityOptionPosition);
-    REQUIRE(sub.EquityOptionPositionData);
-    const auto& d = *sub.EquityOptionPositionData;
+    CHECK(rt.TradeType == ores::ore::domain::oreTradeType::EquityOptionPosition);
+    REQUIRE(rt.EquityOptionPositionData);
+    const auto& d = *rt.EquityOptionPositionData;
 
     CHECK(d.Quantity == 1000.0F);
     REQUIRE(d.Underlying.size() == 2);
@@ -401,4 +423,27 @@ TEST_CASE("equity_option_position_roundtrip_rebuilds_the_entries", tags) {
 
     BOOST_LOG_SEV(lg, info) << "EquityOptionPosition roundtrip passed. Entries: "
                             << d.Underlying.size();
+}
+
+/*
+ * The plain position reverse had no coverage: nothing but the exporter called
+ * it, and the corpus carries no top-level position document to reach it with.
+ * It writes the whole document, so build the domain row and assert what comes
+ * back rather than reaching it through a fixture.
+ */
+TEST_CASE("equity_position_reverse_writes_its_own_document", tags) {
+    auto lg(make_logger(test_suite));
+
+    ores::trading::domain::equity_position_instrument inst;
+    inst.quantity = 7006.0;
+    inst.underlying_name = ".SPX";
+
+    const auto rt = equity_instrument_mapper::reverse_equity_position(inst);
+
+    CHECK(rt.TradeType == ores::ore::domain::oreTradeType::EquityPosition);
+    REQUIRE(rt.EquityPositionData);
+    CHECK(!rt.TotalReturnSwapData);
+    CHECK(rt.EquityPositionData->Quantity == 7006.0F);
+    REQUIRE(rt.EquityPositionData->Underlying.size() == 1);
+    CHECK(std::string(rt.EquityPositionData->Underlying[0].Name) == ".SPX");
 }

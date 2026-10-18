@@ -1,0 +1,121 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: SCHEDULE</b>
+  --
+  <b>DEFINITION: Group Consolidated Exposure - ACMCOR</b>
+  --
+  {#
+    Type | Party | Latest run
+    risk | ACMCOR | completed clean at 06:04:31
+  }
+  --
+  <b>CURRENT SCHEDULE: ON DEMAND</b>
+  --
+  {#
+    State | Schedule expression | Scheduler job
+    on demand | - | none
+  }
+  {
+    [ Set a schedule ]
+  }
+  --
+  <b>SET A SCHEDULE</b>
+  --
+  {
+    Expression [ 0 6 ~* ~* 1-5 ] | [ Schedule ]
+  }
+  Confirm: give Group Consolidated Exposure (ACMCOR) the schedule 0 6 ~* ~* 1-5?
+  {
+    [ Cancel ] | [ Schedule ]
+  }
+  --
+  <b>AFTER THE WRITE: SCHEDULED</b>
+  --
+  {#
+    State | Schedule expression | Scheduler job
+    scheduled | 0 6 ~* ~* 1-5 | a job id from scheduler_job_id
+  }
+  {
+    [ Change the expression ] | [ Run now ] | [ Pause ] | [ Unschedule ]
+  }
+  The panel states that the definition is scheduled because scheduler_job_id is
+  set. The next firing creates a run, and the run appears on the front door.
+  --
+  <b>CHANGE THE EXPRESSION</b>
+  --
+  {
+    Expression [ 0 7 ~* ~* 1-5 ] | [ Schedule ]
+  }
+  The same operation is sent with the new expression. The service reconciles the
+  definition's schedule; the screen reads the definition back and states the
+  result.
+  --
+  <b>RUN NOW, PAUSE, PLAY</b>
+  --
+  {
+    Run now | Pause | Play
+  }
+  Run now starts one run at once and leaves the schedule alone. Pause keeps the
+  expression and the job and stops them firing; Play starts them again. Neither
+  pause nor play has an operation today: the scheduler job's is_active is where
+  that state would live, so the panel draws a paused row as a fixture.
+  --
+  <b>AFTER THE WRITE: PAUSED</b>
+  --
+  {#
+    State | Schedule expression | Scheduler job | Next fire
+    paused | 0 6 ~* ~* 1-5 | kept | will not fire while paused
+  }
+  The expression and the job survive, so Play resumes the same recurrence. The
+  next fire time is unknown while paused, and the panel states no date.
+  --
+  <b>UNSCHEDULE</b>
+  --
+  {
+    Take the schedule away from Group Consolidated Exposure (ACMCOR)?
+  }
+  {
+    [ Cancel ] | [ Unschedule ]
+  }
+  Unscheduling is not pausing. It removes the expression and the job with it, so
+  there is no recurrence left to resume.
+  --
+  <b>AFTER THE WRITE: ON DEMAND AGAIN</b>
+  --
+  {#
+    State | Schedule expression | Scheduler job | Past runs
+    on demand | 0 7 ~* ~* 1-5 | none | kept
+  }
+  The definition stays and can still be run now. The runs already produced keep
+  their outputs and their errors. Unscheduling does not stop a run in flight, and
+  there is no operation here that cancels one.
+  --
+  <b>WHAT THIS PANEL CANNOT SHOW</b>
+  --
+  Last fired: not readable. Next due: not readable. The firing is a
+  report_trigger_event and no read of it exists; the scheduler job's state is
+  not read either. The schedule expression carries no time zone, so the panel
+  cannot say whose clock reads it. The screen states these absences rather than
+  inventing a next-run time.
+}
+
+@enduml

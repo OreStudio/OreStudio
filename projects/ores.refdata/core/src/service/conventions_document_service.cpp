@@ -48,18 +48,23 @@
 #include "ores.refdata.core/repository/zero_inflation_index_convention_repository.hpp"
 #include "ores.refdata.core/service/convention_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <limits>
 #include <map>
+#include <rfl/json.hpp>
 #include <set>
 #include <string>
+#include "convention_family_apply.hpp"
+#include "conventions_row_helpers.hpp"
 #include <utility>
 #include <vector>
 
 namespace ores::refdata::service {
+
 
 using namespace ores::refdata::repository;
 
@@ -68,41 +73,6 @@ namespace {
 // A party's convention is identified by the party, the kind and the name the
 // source document gives it, so a second import of that convention replaces the
 // row the party holds rather than colliding with it.
-template <typename Repository, typename Row>
-void replace_party_rows(const ores::database::context& ctx,
-                        Repository repo,
-                        std::vector<Row> rows) {
-    if (rows.empty())
-        return;
-    std::map<std::pair<std::string, boost::uuids::uuid>, int> held;
-    for (const auto& r : repo.read_latest(ctx))
-        held[{r.id, r.party_id}] = r.version;
-    for (auto& r : rows) {
-        const auto it = held.find({r.id, r.party_id});
-        r.version = it == held.end() ? 0 : it->second;
-    }
-    repo.write(ctx, rows);
-}
-
-// A row's version comes from the live row with the same key, so an import
-// replaces the row it names rather than colliding with it. The central row and
-// its parts are addressed by the key the identity resolved to, which the
-// resolver below sets, so the id alone is the key by the time a row is written.
-template <typename Repository, typename Row>
-void replace_rows_by_id(const ores::database::context& ctx,
-                        Repository repo,
-                        std::vector<Row> rows) {
-    if (rows.empty())
-        return;
-    std::map<std::string, int> held;
-    for (const auto& r : repo.read_latest(ctx))
-        held[boost::uuids::to_string(r.id)] = r.version;
-    for (auto& r : rows) {
-        const auto it = held.find(boost::uuids::to_string(r.id));
-        r.version = it == held.end() ? 0 : it->second;
-    }
-    repo.write(ctx, rows);
-}
 
 constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
 
@@ -189,26 +159,10 @@ void close_omitted_leg_forms(const ores::database::context& ctx,
 
 // A world convention is the tenant's, whoever imports a document naming it, so
 // one the tenant holds is never replaced by an import.
-template <typename Repository, typename Row>
-void add_missing_world_rows(const ores::database::context& ctx,
-                            Repository repo,
-                            const std::vector<Row>& rows,
-                            std::vector<std::string>& kept) {
-    std::set<std::string> held;
-    for (const auto& r : repo.read_latest(ctx))
-        held.insert(r.id);
-    std::vector<Row> missing;
-    for (const auto& r : rows) {
-        if (held.contains(r.id))
-            kept.push_back(r.id);
-        else
-            missing.push_back(r);
-    }
-    if (!missing.empty())
-        repo.write(ctx, missing);
-}
 
 }
+
+// The generated per-family apply lives in convention_family_apply.cpp.
 
 conventions_document_service::conventions_document_service(context ctx)
     : ctx_(std::move(ctx)) {}
@@ -231,44 +185,9 @@ conventions_save_result conventions_document_service::save(messaging::convention
             tenor_conventions.push_back(c.id);
 
     conventions_save_result r;
-    replace_party_rows(ctx_, zero_convention_repository(), std::move(v.zero));
-    replace_party_rows(ctx_, average_ois_convention_repository(), std::move(v.average_ois));
-    replace_party_rows(ctx_, bma_basis_swap_convention_repository(), std::move(v.bma_basis_swap));
-    replace_party_rows(
-        ctx_, cross_currency_basis_convention_repository(), std::move(v.cross_currency_basis));
-    replace_party_rows(ctx_,
-                       cross_currency_fix_float_convention_repository(),
-                       std::move(v.cross_currency_fix_float));
-    replace_rows_by_id(ctx_, convention_repository(), std::move(v.convention));
-    replace_rows_by_id(
-        ctx_, tenor_basis_swap_pay_receive_repository(), std::move(v.tenor_basis_swap_pay_receive));
-    replace_rows_by_id(
-        ctx_, tenor_basis_swap_long_short_repository(), std::move(v.tenor_basis_swap_long_short));
-    replace_party_rows(
-        ctx_, tenor_basis_two_swap_convention_repository(), std::move(v.tenor_basis_two_swap));
-    replace_party_rows(ctx_, deposit_convention_repository(), std::move(v.deposit));
-    replace_party_rows(ctx_, swap_convention_repository(), std::move(v.swap));
-    replace_party_rows(ctx_, swap_index_convention_repository(), std::move(v.swap_index));
-    replace_party_rows(ctx_, future_convention_repository(), std::move(v.future));
-    replace_party_rows(ctx_, fx_option_convention_repository(), std::move(v.fx_option));
-    replace_party_rows(ctx_, inflation_swap_convention_repository(), std::move(v.inflation_swap));
-    replace_party_rows(
-        ctx_, intraday_power_load_convention_repository(), std::move(v.intraday_power_load));
-    replace_party_rows(ctx_, ois_convention_repository(), std::move(v.ois));
-    replace_party_rows(ctx_, fra_convention_repository(), std::move(v.fra));
-    replace_party_rows(
-        ctx_, zero_inflation_index_convention_repository(), std::move(v.zero_inflation_index));
-    replace_party_rows(ctx_, cds_convention_repository(), std::move(v.cds));
-    replace_party_rows(
-        ctx_, cms_spread_option_convention_repository(), std::move(v.cms_spread_option));
-    replace_party_rows(
-        ctx_, commodity_future_convention_repository(), std::move(v.commodity_future));
-    replace_party_rows(
-        ctx_, commodity_forward_convention_repository(), std::move(v.commodity_forward));
-    replace_party_rows(ctx_, bond_yield_convention_repository(), std::move(v.bond_yield));
-    add_missing_world_rows(ctx_, ibor_index_convention_repository(), v.ibor_index, r.world_kept);
-    add_missing_world_rows(
-        ctx_, overnight_index_convention_repository(), v.overnight_index, r.world_kept);
+    apply_party_families(ctx_, v);
+    apply_families_by_id(ctx_, v);
+    apply_world_families(ctx_, v, r);
     close_omitted_leg_forms(ctx_, tenor_conventions, pay_receive_forms, long_short_forms);
     for (const auto& fx : v.fx)
         r.fx_skipped.push_back(fx.pair.base_currency + "-" + fx.pair.quote_currency +
@@ -278,18 +197,20 @@ conventions_save_result conventions_document_service::save(messaging::convention
 
 messaging::conventions_document conventions_document_service::get() {
     messaging::conventions_document r;
-    r.zero = zero_convention_repository().read_latest(ctx_);
-    r.average_ois = average_ois_convention_repository().read_latest(ctx_);
-    r.bma_basis_swap = bma_basis_swap_convention_repository().read_latest(ctx_);
-    r.cross_currency_basis = cross_currency_basis_convention_repository().read_latest(ctx_);
-    r.cross_currency_fix_float = cross_currency_fix_float_convention_repository().read_latest(ctx_);
+    read_party_families(ctx_, r);
+    read_families_by_id(ctx_, r);
+    read_world_families(ctx_, r);
+
     // The central row is shared by every kind, so only the rows whose kind is a
-    // family this document carries are read, and each part joins by its key.
-    const auto conventions = convention_repository().read_latest(ctx_);
-    const auto pay_receives = tenor_basis_swap_pay_receive_repository().read_latest(ctx_);
-    const auto long_shorts = tenor_basis_swap_long_short_repository().read_latest(ctx_);
+    // family this document carries are kept, and each part joins by its key.
+    const auto conventions = std::move(r.convention);
+    const auto pay_receives = std::move(r.tenor_basis_swap_pay_receive);
+    const auto long_shorts = std::move(r.tenor_basis_swap_long_short);
+    r.convention.clear();
+    r.tenor_basis_swap_pay_receive.clear();
+    r.tenor_basis_swap_long_short.clear();
     for (const auto& c : conventions) {
-        if (c.kind_code != "TENOR_BASIS_SWAP")
+        if (c.kind_code != tenor_basis_swap_kind)
             continue;
         r.convention.push_back(c);
         for (const auto& p : pay_receives)
@@ -299,24 +220,6 @@ messaging::conventions_document conventions_document_service::get() {
             if (l.convention_id == c.id)
                 r.tenor_basis_swap_long_short.push_back(l);
     }
-    r.tenor_basis_two_swap = tenor_basis_two_swap_convention_repository().read_latest(ctx_);
-    r.deposit = deposit_convention_repository().read_latest(ctx_);
-    r.swap = swap_convention_repository().read_latest(ctx_);
-    r.swap_index = swap_index_convention_repository().read_latest(ctx_);
-    r.future = future_convention_repository().read_latest(ctx_);
-    r.fx_option = fx_option_convention_repository().read_latest(ctx_);
-    r.inflation_swap = inflation_swap_convention_repository().read_latest(ctx_);
-    r.intraday_power_load = intraday_power_load_convention_repository().read_latest(ctx_);
-    r.ois = ois_convention_repository().read_latest(ctx_);
-    r.fra = fra_convention_repository().read_latest(ctx_);
-    r.zero_inflation_index = zero_inflation_index_convention_repository().read_latest(ctx_);
-    r.cds = cds_convention_repository().read_latest(ctx_);
-    r.cms_spread_option = cms_spread_option_convention_repository().read_latest(ctx_);
-    r.commodity_future = commodity_future_convention_repository().read_latest(ctx_);
-    r.commodity_forward = commodity_forward_convention_repository().read_latest(ctx_);
-    r.bond_yield = bond_yield_convention_repository().read_latest(ctx_);
-    r.ibor_index = ibor_index_convention_repository().read_latest(ctx_);
-    r.overnight_index = overnight_index_convention_repository().read_latest(ctx_);
     return r;
 }
 

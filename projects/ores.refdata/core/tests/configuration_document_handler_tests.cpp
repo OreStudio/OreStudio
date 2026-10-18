@@ -21,7 +21,6 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.refdata.api/generators/curve_configuration_generator.hpp"
-#include "ores.refdata.api/generators/deposit_convention_generator.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/messaging/configuration_document_handler.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -93,12 +92,6 @@ struct fixture {
         subscribe("delete_curve_configuration_document", [this](ores::nats::message m) {
             handler().delete_curve_configuration_document(std::move(m));
         });
-        subscribe("save_conventions_document", [this](ores::nats::message m) {
-            handler().save_conventions_document(std::move(m));
-        });
-        subscribe("get_conventions_document", [this](ores::nats::message m) {
-            handler().get_conventions_document(std::move(m));
-        });
     }
 };
 
@@ -159,31 +152,6 @@ TEST_CASE("a curve configuration document saves, reads back and deletes by its c
     CHECK_FALSE(gone->success);
 }
 
-TEST_CASE("a conventions document saves and reads back through the operations", tags) {
-    fixture f;
-    const auto token = f.token({"refdata::conventions:read", "refdata::conventions:write"});
-    auto gen = ores::testing::make_generation_context(f.db);
-    ores::refdata::messaging::conventions_document doc;
-    doc.deposit.push_back(ores::refdata::generators::generate_synthetic_deposit_convention(gen));
-    doc.deposit[0].change_reason_code = "system.test";
-
-    const auto saved = decode_reply<save_conventions_document_response>(
-        request(f.nats,
-                subject("save_conventions_document"),
-                token,
-                save_conventions_document_request{.document = doc}));
-    REQUIRE(saved);
-    INFO(saved->message);
-    REQUIRE(saved->success);
-
-    const auto got = decode_reply<get_conventions_document_response>(request(
-        f.nats, subject("get_conventions_document"), token, get_conventions_document_request{}));
-    REQUIRE(got);
-    REQUIRE(got->success);
-    CHECK(std::ranges::any_of(got->document.deposit,
-                              [&](const auto& c) { return c.id == doc.deposit[0].id; }));
-}
-
 TEST_CASE("a caller without the permission is refused", tags) {
     fixture f;
     const auto token = f.token({"refdata::curve_configurations:read"});
@@ -223,18 +191,4 @@ TEST_CASE("deleting a configuration no document fills succeeds", tags) {
             .configuration_id = boost::uuids::to_string(boost::uuids::random_generator()())}));
     REQUIRE(deleted);
     CHECK(deleted->success);
-}
-
-TEST_CASE("a read naming a party that does not parse is refused", tags) {
-    fixture f;
-    const auto token =
-        f.keys.token_without_party(f.db.tenant_id().to_string(), {"refdata::conventions:read"});
-    const auto got = decode_reply<get_conventions_document_response>(
-        request(f.nats,
-                subject("get_conventions_document"),
-                token,
-                get_conventions_document_request{.party_id = "not-a-party"}));
-    REQUIRE(got);
-    CHECK_FALSE(got->success);
-    CHECK(got->message.find("Not a party id") != std::string::npos);
 }

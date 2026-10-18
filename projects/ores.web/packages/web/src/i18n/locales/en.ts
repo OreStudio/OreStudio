@@ -1326,6 +1326,7 @@ export const en: SourceCatalogue = {
         cancel: 'Cancel',
         copy: 'Copy',
         copied: 'Copied',
+        copyFailed: 'The browser refused the copy. Select the URL and copy it yourself.',
         apply: 'Apply',
         refused: 'The URL was refused: {message}',
         choose: 'Choose an instrument and a quote type.',
@@ -3816,6 +3817,10 @@ export const en: SourceCatalogue = {
             folder: 'Folder',
             ticksPerHour: 'Ticks per hour',
             seriesHint: 'The series this binding writes to, and the oresmd URL that names it.',
+            historyLead:
+                'Every saved version of this binding and what changed in each, newest first.',
+            historyGap:
+                'A version whose series a running feed holds cannot be written back, so it offers no Revert.',
             vendorNote:
                 'A binding of a real feed is read only here. Only a binding of a synthetic feed can change.',
             add: 'Add binding',

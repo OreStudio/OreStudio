@@ -704,6 +704,47 @@ credit, fx, commodity, composite and scripted arms are left as they are.
 Retiring their variants is the same defect in other families and belongs to
 those families, not to this one.
 
+** Status
+
+Units 1 to 5 are merged, together with finding E15. The rest are not started.
+
+| Unit | State | PR |
+|------+-------+----|
+| 1 Analyse | merged | #3389 |
+| 2 Repair the routing | merged | #3448 |
+| 3 Carry the digits, model half | merged | #3461, #3466 |
+| 4 The basket as rows | merged | #3471, #3472 |
+| 5 The family header | merged | #3477 |
+| E15 Test the position underlying | merged | #3488 |
+| E11 The basket's weight | merged | #3492 |
+| The cliquet fact table | merged | #3495 |
+| The outperformance fact table | merged | #3498 |
+| 6 to 8 Round trips | not started | |
+| 9 The common-date view | not started | |
+| 10 The corpus proof | not started | |
+| 11 Retire the variant | not started | |
+
+Units 6 to 11 are mapper work and they cannot be done as model work. The
+evidence is the routing itself. =trade_type_routing.hpp= is a generated enum
+over the tables the catalogue names, and =trade_component_queries.cpp= and
+=trade_export_service.cpp= route by it at runtime. Pointing the 17 equity
+codes at =equity_instrument= before the importer writes it would make the
+import and the export look for equity instruments in an empty table. That is
+why the re-pointing sits in unit 5 rather than alone, and why every later
+unit waits on the same migration.
+
+The operator deferred that migration to the xsdcpp removal, on the grounds
+that the XML boundary is being replaced and the mappers go with it. That
+leaves the data-model half of this arc complete and the mapper half with the
+refactor. What the data model now holds, verified against the committed
+schema: a header keyed by the trade with the family's common dates, a basket
+stored as rows, exact money on every money column, and an identity keyed by
+the trade on all twelve tables.
+
+The three model halves still open are the routing re-point, the fact tables'
+duplicated identity columns, and the columns E7 and E8 name. All three move
+with the same migration for the same reason.
+
 ** Measurements
 
 Every number this page claims, with the command that produced it, at

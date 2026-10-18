@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: EEACF799-D2A9-45E0-AF82-BF9168C057A4
+:END:
+#+title: User Journey: Import as a party-scoped user
+#+description: An operations user imports into their own party and sees only what that party may see, while a tenant administrator imports for the tenant.
+#+type: user_journey
+#+level: cross
+#+filetags: :user_journey:access:
+#+created: 2026-10-17
+#+updated: 2026-10-17
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: An operations user imports into their own party and sees only what that party may see, while a tenant administrator imports for the tenant.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I want to bring data into the party I work in, and I want to see only that
+party's data afterwards." The journey is done when the import is scoped to the
+session's party, the person can read what they imported, and a party they do not
+work in is neither a target nor a result.
+
+* Actor and trigger
+
+The actor is an operations user signed in to one party. The tenant administrator
+runs the same journey with the same subject and a wider scope. The trigger is a
+file that belongs to the person's party, not to the tenant.
+
+The actor's permissions decide which half of the journey is reachable today. A
+tenant administrator or super administrator holds every permission the imports
+need, because their role carries a wildcard. An operations user holds
+=refdata::conventions:write= but not the run-document write, the trade write or
+the market-data import write. So an operations user cannot drive a portfolio, a
+run or a market data import today, and the journey is an administrator journey in
+practice.
+
+* Steps
+
+1. *Sign in to the party.* The person signs in, or switches party. The session
+   carries the party, and every read and write is scoped to it.
+2. *Choose the file.* The person has an ORE input directory, a run directory, or
+   a quotes and fixings pair. The file's party is not in the file. The session
+   decides it.
+3. *Import.* The person runs the verb. The system checks the session's
+   permissions for each write, and refuses a call whose session has no party.
+4. *Name a party, or not.* If the person passes =--party-id= for a party other
+   than the session's, the shell refuses and names the session's party. The
+   conventions save takes no party argument at all. The read path can name a
+   party only when the session acts for none, as a workflow step does.
+5. *Read the result.* The person reads the imported rows in their own party. The
+   world conventions the tenant owns are visible alongside the party's own, and
+   the screens mark which is which.
+6. *Check the boundary.* The person confirms that a book or portfolio of another
+   party is absent, and that an import for another party was refused.
+
+* On success
+
+The import reports the counts. The rows carry the session's party. The person
+sees the party's conventions and trades, plus the tenant's world conventions
+where the model shares them. Another party's rows are absent.
+
+* On failure
+
+A session with no party is refused with a message that names the missing party.
+A =--party-id= that differs from the session is refused before the import runs.
+A read of another party's book is refused or returns nothing. A write refused by
+a missing permission returns a plain refusal from the owning service.
+
+* What must never happen
+
+- An import must never write a row into a party other than the session's.
+- A party must never see another party's trades, books or conventions. The
+  tenant's world conventions are the one shared set, and they are marked as
+  world data.
+- A party-scoped user must never be shown another party's import result or
+  workflow instance.
+- A refusal must never be reported as an empty success.
+
+* Screens and entry points
+
+There is no import screen. The entry points are the shell verbs. The web UI
+shows conventions and market data under the session's party, and the access
+screens show which parties an account may act for. The party switcher changes the
+session, not the import.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =party= | The scope of every row the import writes | |
+| =account=, =role=, =permission= | Who may run which import | |
+| =conventions_document= | The party rows, plus the tenant's world rows | |
+| =trade=, =portfolio=, =book= | The trade data the session owns | |
+| =sandbox= | The sample sandbox the trade import lands in | |
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| Sign in to the party | Establish the session | the sign-in operation | exists |
+| Import | Start the trade import | =workflow.v1.ops.ore_import= | exists |
+| Import | Start the run import | =ore.v1.ops.import_run_configuration= | exists |
+| Import | Store the conventions document | =refdata.v1.conventions_documents.put= | exists |
+| Import | Import market data | =marketdata.v1.ops.import_market_data= | exists |
+| Read the result | Read the conventions for a party | =refdata.v1.conventions_documents.get= | exists |
+| Check the boundary | Read a book's rights | =refdata.v1.books.get= and the rights read | exists |
+
+* What is missing
+
+1. *No party argument on the import verbs.* The session is the only scope. That
+   is safe, but it means a tenant administrator cannot stage a party's import
+   without switching to it.
+2. *No import permission of its own.* Each import borrows the write permissions
+   of the rows it creates, so granting "may import" means granting every write.
+   No role today means "may import for a party".
+3. *No per-party import history.* There is no list of who imported what, into
+   which party.
+4. *No screen.* The party scope is not visible on any import surface because
+   there is no import surface.
+
+* Related journeys
+
+- [[id:7057D248-6CA8-4F70-AD35-08850D5C22F6][Onboard a party with its conventions and portfolio]] - the administrator's version.
+- [[id:239695F8-8486-404B-ADBC-85EFD1D0612F][Import one dataset in isolation]] - a narrower write in the same party.
+- [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations]] - the group whose actors run the installation.
+- [[id:B3B7B4D1-6E1F-4C7A-9D2E-5A8C3F0B7E41][Entry]] - signing in and switching party.
+
+* Related knowledge
+
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]]
+- [[id:72375ADC-BD12-4821-AE1C-C895EB084872][Conventions journeys]]
+
+* See also
+
+- [[id:0A39D7BD-C4B7-48B0-AE4C-9F2720048FC8][Data exchange journeys]] - the group hub.

@@ -162,15 +162,14 @@ public:
     static trade
     reverse_equity_worst_of_basket_swap(const ores::trading::domain::equity_swap_instrument& instr);
 
-    // Equity position — reverse. The outer type names the document the
-    // position came from, so the total return swap is rebuilt as one.
+    // Equity position — reverse. A position is a top-level trade, so the
+    // reverse writes the position's own document and never wraps it in the
+    // swap it may once have been nested in.
     static trade
-    reverse_equity_position(const ores::trading::domain::equity_position_instrument& instr,
-                            const std::string& outer_trade_type);
+    reverse_equity_position(const ores::trading::domain::equity_position_instrument& instr);
     static trade reverse_equity_option_position(
         const ores::trading::domain::equity_position_instrument& instr,
-        const std::vector<ores::trading::domain::equity_position_option_underlying>& underlyings,
-        const std::string& outer_trade_type);
+        const std::vector<ores::trading::domain::equity_position_option_underlying>& underlyings);
 };
 
 

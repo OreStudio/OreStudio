@@ -1329,6 +1329,7 @@ const pt: SourceCatalogue = {
         cancel: 'Cancelar',
         copy: 'Copiar',
         copied: 'Copiado',
+        copyFailed: 'O navegador recusou a cópia. Selecione o URL e copie-o você mesmo.',
         apply: 'Aplicar',
         refused: 'O URL foi recusado: {message}',
         choose: 'Escolha um instrumento e um tipo de cotação.',
@@ -3842,6 +3843,10 @@ const pt: SourceCatalogue = {
             folder: 'Pasta',
             ticksPerHour: 'Ticks por hora',
             seriesHint: 'A série em que este vínculo escreve e o URL oresmd que a nomeia.',
+            historyLead:
+                'Cada versão guardada deste vínculo e o que mudou em cada uma, da mais recente para a mais antiga.',
+            historyGap:
+                'Uma versão cuja série é detida por um feed em execução não pode ser reposta, por isso não oferece Reverter.',
             vendorNote:
                 'Um vínculo de feed real é só de leitura aqui. Só um vínculo de feed sintético pode mudar.',
             add: 'Adicionar vínculo',

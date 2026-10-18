@@ -2249,7 +2249,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
             continue;
         using namespace ores::trading::messaging;
         using ores::trading::domain::swap_instrument_data;
-        using ores::trading::domain::fx_instrument_variant;
+        using ores::trading::domain::fx_instrument_data;
         using ores::trading::domain::bond_instrument_data;
         using ores::trading::domain::credit_instrument_data;
         using ores::trading::domain::equity_instrument_data;
@@ -2661,8 +2661,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     }
 
                     return true;
-                } else if constexpr (std::is_same_v<T, fx_instrument_variant>) {
-                    return std::visit(
+                } else if constexpr (std::is_same_v<T, fx_instrument_data>) {
+                    return ores::trading::domain::visit_fx_products(
                         [&](const auto& instr) -> bool {
                             using InstrT = std::decay_t<decltype(instr)>;
                             using namespace ores::trading::domain;
@@ -2949,7 +2949,13 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                                           "a credit fact type has no import branch");
                         }
                     };
-                    if (!std::visit(write_fact, r.facts))
+                    const auto fact_written =
+                        ores::trading::domain::visit_credit_facts(write_fact, r);
+                    if (!fact_written) {
+                        instr_error = "a credit trade states no fact row";
+                        return false;
+                    }
+                    if (!*fact_written)
                         return false;
                     if (r.wrapped_index_swap && !write_fact(*r.wrapped_index_swap))
                         return false;

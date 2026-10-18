@@ -9,56 +9,47 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
  */
-#include "ores.ore.core/domain/run_document_mapper.hpp"
+#include "ores.ore.core/domain/run_document_projection.hpp"
+#include "ores.ore.core/xml/binding.hpp"
+#include "ores.ore.core/xml/emitter.hpp"
+#include "ores.ore.core/xml/record.hpp"
 #include <algorithm>
 #include <array>
 #include <charconv>
-#include <optional>
-#include <set>
+#include <format>
 #include <stdexcept>
-#include <string_view>
 
 namespace ores::ore::domain {
 
 namespace {
 
+namespace xg = xml::generated::ore;
+using xml::record_reader;
+using xml::record_writer;
+
 using settings_t = reporting::domain::risk_report_config;
 
-/**
- * @brief A choice that holds text, and the ORE parameter name it answers to.
- *
- * The mapper is a rename table rather than forty branches: the forward map looks
- * a parameter's name up here and writes its value into the member, and the
- * reverse map walks the table in order and writes a parameter for every member
- * that has a value.
- */
+// A choice that holds text, and the ORE parameter name it answers to. The
+// projection is a rename table rather than forty branches.
 struct text_binding {
     std::string_view parameter;
-    std::optional<std::string> settings_t::*member;
+    std::optional<std::string> settings_t::* member;
 };
 
-/**
- * @brief A choice the configuration always states: the folders and the log file.
- *
- * Every shipped run document states all three, so a stored default never adds a
- * parameter the document did not have.
- */
 struct required_binding {
     std::string_view parameter;
-    std::string settings_t::*member;
+    std::string settings_t::* member;
 };
 
 struct int_binding {
     std::string_view parameter;
-    std::optional<int> settings_t::*member;
+    std::optional<int> settings_t::* member;
 };
 
 const std::array<text_binding, 20> text_bindings = {{
@@ -96,12 +87,8 @@ const std::array<int_binding, 3> int_bindings = {{
     {"ignoreFixingLag", &settings_t::ignore_fixing_lag},
 }};
 
-/**
- * @brief The Setup parameters that name a file.
- *
- * They are data, not choices, so they are carried beside the configuration and
- * never stored on it.
- */
+// The Setup parameters that name a file: data, not choices, carried beside the
+// configuration and never stored on it.
 const std::array<std::string_view, 16> file_parameters = {{
     "curveConfigFile",
     "conventionsFile",
@@ -121,44 +108,73 @@ const std::array<std::string_view, 16> file_parameters = {{
     "iborFallbackConfig",
 }};
 
-/**
- * @brief Reads a parameter the entity holds as an integer.
- *
- * ORE writes these as text, so a value that is not a whole number is a
- * document the mapper cannot represent. It is refused by name rather than
- * converted with std::stoi, which throws an exception that says nothing about
- * which parameter was at fault.
- */
+std::runtime_error refusal(const std::string& what) {
+    return std::runtime_error("run_document_projection: " + what);
+}
+
+// ORE writes these as text, so a value that is not a whole number is a document
+// the projection cannot represent. It is refused by name rather than converted
+// with std::stoi, whose exception says nothing about which parameter was at
+// fault.
 int parse_int(const std::string& name, const std::string& value) {
     int out = 0;
     const auto* first = value.data();
     const auto* last = value.data() + value.size();
     const auto result = std::from_chars(first, last, out);
     if (result.ec != std::errc() || result.ptr != last)
-        throw std::runtime_error("run_document_mapper: Setup parameter '" + name +
-                                 "' is not an integer: '" + value + "'");
+        throw refusal("Setup parameter '" + name + "' is not an integer: '" + value + "'");
     return out;
 }
 
+void append_parameter(record_writer out, std::string_view name, const std::string& value) {
+    auto parameter = out.append("Parameter");
+    parameter.set_text("name", name);
+    parameter.set_own_text(value);
 }
 
-mapped_setup run_document_mapper::map_setup(const ore& v) {
+}
+
+ores::reporting::messaging::run_document run_document_projection::map(const document& v) {
+    ores::reporting::messaging::run_document r;
+    auto setup = map_setup(v);
+    r.settings = std::move(setup.settings);
+    r.files = std::move(setup.files);
+    r.analytics = map_analytics(v);
+    r.market_bindings = map_market_bindings(v);
+    return r;
+}
+
+run_document_projection::document
+run_document_projection::reverse(const ores::reporting::messaging::run_document& v) {
+    document out{};
+    auto written = record_writer(*xg::ore_document().root, &out);
+    reverse_setup(written.child("Setup"), {v.settings, v.files});
+    reverse_analytics(written.child("Analytics"), v.analytics);
+    if (!v.market_bindings.empty())
+        reverse_market_bindings(written.child("Markets"), v.market_bindings);
+    return out;
+}
+
+mapped_setup run_document_projection::map_setup(const document& v) {
     mapped_setup r;
     auto& settings = r.settings;
+    const auto root = record_reader(*xg::ore_document().root, &v);
+    const auto setup = root.child("Setup");
+    if (!setup)
+        throw refusal("the document states no Setup block");
 
     // A name that appears more than once is read from its last occurrence.
     // Three shipped documents repeat continueOnError, and in all three the
     // repeated values agree, so the rule is stated rather than enforced.
-    for (const auto& parameter : v.Setup.Parameter) {
-        const std::string name(parameter.name);
-        const std::string value(parameter);
+    for (const auto& parameter : setup->children("Parameter")) {
+        const auto name = parameter.text("name").value_or("");
+        const auto value = parameter.own_text().value_or("");
 
         if (name == "asofDate") {
             settings.market_data_type = "date";
             settings.market_data_date = value;
             continue;
         }
-
         bool matched = false;
         for (const auto& binding : text_bindings) {
             if (binding.parameter == name) {
@@ -169,7 +185,6 @@ mapped_setup run_document_mapper::map_setup(const ore& v) {
         }
         if (matched)
             continue;
-
         for (const auto& binding : required_bindings) {
             if (binding.parameter == name) {
                 settings.*(binding.member) = value;
@@ -179,7 +194,6 @@ mapped_setup run_document_mapper::map_setup(const ore& v) {
         }
         if (matched)
             continue;
-
         for (const auto& binding : int_bindings) {
             if (binding.parameter == name) {
                 settings.*(binding.member) = parse_int(name, value);
@@ -190,11 +204,9 @@ mapped_setup run_document_mapper::map_setup(const ore& v) {
         if (matched)
             continue;
 
-        const auto file = std::find(file_parameters.begin(), file_parameters.end(), name);
-        if (file == file_parameters.end())
-            throw std::runtime_error("run_document_mapper: no column holds Setup parameter '" +
-                                     name + "'");
-
+        if (std::find(file_parameters.begin(), file_parameters.end(), name) ==
+            file_parameters.end())
+            throw refusal("no column holds Setup parameter '" + name + "'");
         const auto existing = std::find_if(
             r.files.begin(), r.files.end(), [&name](const auto& f) { return f.parameter == name; });
         if (existing != r.files.end())
@@ -207,127 +219,115 @@ mapped_setup run_document_mapper::map_setup(const ore& v) {
 }
 
 std::vector<ores::reporting::messaging::run_analytic>
-run_document_mapper::map_analytics(const ore& v) {
+run_document_projection::map_analytics(const document& v) {
     std::vector<ores::reporting::messaging::run_analytic> r;
-    r.reserve(v.Analytics.Analytic.size());
+    const auto root = record_reader(*xg::ore_document().root, &v);
+    const auto analytics = root.child("Analytics");
+    if (!analytics)
+        throw refusal("the document states no Analytics block");
 
     int order = 0;
-    for (const auto& element : v.Analytics.Analytic) {
+    for (const auto& element : analytics->children("Analytic")) {
         ++order;
         ores::reporting::messaging::run_analytic mapped;
         mapped.analytic.display_order = order;
-        if (element.type)
-            mapped.analytic.analytic_type_code = std::string(*element.type);
+        mapped.analytic.analytic_type_code = element.text("type").value_or("");
 
         int position = 0;
-        for (const auto& parameter : element.Parameter) {
+        for (const auto& parameter : element.children("Parameter")) {
             ++position;
-            const std::string name(parameter.name);
-            const std::string value(parameter);
+            const auto name = parameter.text("name").value_or("");
+            const auto value = parameter.own_text().value_or("");
             if (name == "active") {
                 mapped.analytic.active = value;
                 continue;
             }
             mapped.parameters.push_back({name, value, position});
         }
-
         r.push_back(std::move(mapped));
     }
-
-    return r;
-}
-
-analyticsType run_document_mapper::reverse_analytics(
-    const std::vector<ores::reporting::messaging::run_analytic>& v) {
-    analyticsType r;
-
-    for (const auto& mapped : v) {
-        analyticsType_Analytic_t element;
-        element.type = mapped.analytic.analytic_type_code;
-
-        // An element the document wrote without an active flag must not gain
-        // one on the way back out.
-        if (!mapped.analytic.active.empty()) {
-            parameterListType_Parameter_t active;
-            active.name = "active";
-            static_cast<std::string&>(active) = mapped.analytic.active;
-            element.Parameter.push_back(active);
-        }
-
-        for (const auto& parameter : mapped.parameters) {
-            parameterListType_Parameter_t x;
-            x.name = parameter.name;
-            static_cast<std::string&>(x) = parameter.value;
-            element.Parameter.push_back(x);
-        }
-
-        r.Analytic.push_back(element);
-    }
-
     return r;
 }
 
 std::vector<reporting::domain::configuration_market_binding>
-run_document_mapper::map_market_bindings(const ore& v) {
+run_document_projection::map_market_bindings(const document& v) {
     std::vector<reporting::domain::configuration_market_binding> r;
-    if (!v.Markets)
+    const auto root = record_reader(*xg::ore_document().root, &v);
+    const auto markets = root.child("Markets");
+    if (!markets)
         return r;
 
     int position = 0;
-    for (const auto& parameter : v.Markets->Parameter) {
+    for (const auto& parameter : markets->children("Parameter")) {
         ++position;
         reporting::domain::configuration_market_binding binding;
-        binding.role = std::string(parameter.name);
-        binding.market_configuration_name = static_cast<const std::string&>(parameter);
+        binding.role = parameter.text("name").value_or("");
+        binding.market_configuration_name = parameter.own_text().value_or("");
         binding.position = position;
         r.push_back(std::move(binding));
     }
-
     return r;
 }
 
-parameterListType run_document_mapper::reverse_market_bindings(
-    const std::vector<reporting::domain::configuration_market_binding>& v) {
-    parameterListType r;
-
-    for (const auto& binding : v) {
-        parameterListType_Parameter_t parameter;
-        parameter.name = binding.role;
-        static_cast<std::string&>(parameter) = binding.market_configuration_name;
-        r.Parameter.push_back(parameter);
-    }
-
-    return r;
-}
-
-parameterListType run_document_mapper::reverse_setup(const mapped_setup& v) {
-    parameterListType r;
+void run_document_projection::reverse_setup(record_writer out, const mapped_setup& v) {
     const auto& settings = v.settings;
-
-    const auto append = [&r](std::string_view name, const std::string& value) {
-        parameterListType_Parameter_t parameter;
-        parameter.name = std::string(name);
-        static_cast<std::string&>(parameter) = value;
-        r.Parameter.push_back(parameter);
-    };
-
     if (settings.market_data_type == "date")
-        append("asofDate", settings.market_data_date);
-
+        append_parameter(out, "asofDate", settings.market_data_date);
     for (const auto& binding : required_bindings)
-        append(binding.parameter, settings.*(binding.member));
+        append_parameter(out, binding.parameter, settings.*(binding.member));
     for (const auto& binding : text_bindings) {
         if (const auto& value = settings.*(binding.member))
-            append(binding.parameter, *value);
+            append_parameter(out, binding.parameter, *value);
     }
     for (const auto& binding : int_bindings) {
         if (const auto& value = settings.*(binding.member))
-            append(binding.parameter, std::to_string(*value));
+            append_parameter(out, binding.parameter, std::to_string(*value));
     }
     for (const auto& file : v.files)
-        append(file.parameter, file.name);
+        append_parameter(out, file.parameter, file.name);
+}
 
-    return r;
+void run_document_projection::reverse_analytics(
+    record_writer out, const std::vector<ores::reporting::messaging::run_analytic>& v) {
+    for (const auto& mapped : v) {
+        auto element = out.append("Analytic");
+        element.set_optional_text("type", mapped.analytic.analytic_type_code);
+        // An element the document wrote without an active flag must not gain one
+        // on the way back out.
+        if (!mapped.analytic.active.empty())
+            append_parameter(element, "active", mapped.analytic.active);
+        for (const auto& parameter : mapped.parameters) {
+            auto x = element.append("Parameter");
+            x.set_text("name", parameter.name);
+            x.set_own_text(parameter.value);
+        }
+    }
+}
+
+void run_document_projection::reverse_market_bindings(
+    record_writer out, const std::vector<reporting::domain::configuration_market_binding>& v) {
+    for (const auto& binding : v)
+        append_parameter(out, binding.role, binding.market_configuration_name);
+}
+
+run_document_projection::document run_document_projection::read(std::string_view text,
+                                                                std::string_view origin) {
+    document record;
+    const auto bound = xml::binder::bind(xg::ore_document(), text, &record);
+    if (!bound) {
+        const auto where = origin.empty() ? std::string("run document") : std::string(origin);
+        throw std::invalid_argument(
+            std::format("{}: line {}: {}", where, bound.error().line, bound.error().message));
+    }
+    return record;
+}
+
+std::string run_document_projection::write(const document& v) {
+    std::string out;
+    const auto emitted = xml::emitter::emit(xg::ore_document(), &v, out);
+    if (!emitted)
+        throw std::runtime_error(emitted.error().message);
+    return out;
 }
 
 }

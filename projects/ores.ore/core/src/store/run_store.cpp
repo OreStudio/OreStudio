@@ -26,7 +26,7 @@
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
-#include "ores.ore.core/domain/run_document_mapper.hpp"
+#include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.refdata.core/service/curve_configuration_document_service.hpp"
@@ -215,25 +215,26 @@ std::string load_document(const context& ctx, const reporting::domain::report_co
 /**
  * @brief The run document out of a set of input files.
  */
-domain::ore parse_run_document(const input_files& files) {
+domain::mapped_setup parse_run_document(const input_files& files) {
     const auto run = files.find(std::string(run_document_file));
     if (run == files.end())
         throw std::invalid_argument(
             std::format("An ORE input holds its run document as {}.", run_document_file));
 
-    domain::ore document;
-    domain::load_data(run->second, document);
-    return document;
+    return domain::run_document_projection::map_setup(
+        domain::run_document_projection::read(run->second, std::string(run_document_file)));
 }
 
 /**
  * @brief What a run document sets one setup parameter to, empty when none.
  */
-std::string setup_parameter(const domain::ore& document, std::string_view name) {
-    for (const auto& p : document.Setup.Parameter)
-        if (std::string(p.name) == name)
-            return static_cast<const std::string&>(p);
-    return {};
+std::string setup_parameter(const domain::mapped_setup& setup, std::string_view name) {
+    if (name == "inputPath")
+        return setup.settings.input_path;
+    const auto file = std::find_if(setup.files.begin(), setup.files.end(), [name](const auto& f) {
+        return f.parameter == name;
+    });
+    return file == setup.files.end() ? std::string{} : file->name;
 }
 
 /**
@@ -280,13 +281,9 @@ run_import_result import_run(const context& ctx,
         throw std::invalid_argument(
             std::format("An ORE input holds its run document as {}.", run_document_file));
 
-    const auto run = parse_file<domain::ore>(std::string(run_document_file), run_file->second);
-    reporting::messaging::run_document document;
-    auto setup = domain::run_document_mapper::map_setup(run);
-    document.settings = std::move(setup.settings);
-    document.files = std::move(setup.files);
-    document.analytics = domain::run_document_mapper::map_analytics(run);
-    document.market_bindings = domain::run_document_mapper::map_market_bindings(run);
+    const auto run =
+        domain::run_document_projection::read(run_file->second, std::string(run_document_file));
+    auto document = domain::run_document_projection::map(run);
 
     // Everything an import can refuse, a missing file or one that does not
     // parse, is found before its first write, since the writes are not one
@@ -350,15 +347,10 @@ input_files export_run(const context& session, const boost::uuids::uuid& report_
     const auto& document = *stored;
 
     const auto kinds = document_kinds_of(file_types_of(ctx));
-    domain::ore run;
-    run.Setup = domain::run_document_mapper::reverse_setup({document.settings, document.files});
-    run.Analytics = domain::run_document_mapper::reverse_analytics(document.analytics);
-    if (!document.market_bindings.empty())
-        run.Markets =
-            domain::run_document_mapper::reverse_market_bindings(document.market_bindings);
+    const auto run = domain::run_document_projection::reverse(document);
 
     input_files files;
-    files[std::string(run_document_file)] = domain::save_data(run);
+    files[std::string(run_document_file)] = domain::run_document_projection::write(run);
     for (const auto& b : runs.bindings(report_definition_id)) {
         if (b.configuration_type_code == run_settings_type)
             continue;

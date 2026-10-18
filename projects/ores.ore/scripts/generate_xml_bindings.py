@@ -102,7 +102,7 @@ def register_substitutes(schema, root):
         group = node.get("substitutionGroup")
         if group is not None:
             schema.substitutes.setdefault(group, []).append(node)
-    schema.globals = globals_by_name
+    schema.globals.update(globals_by_name)
 
 
 def register_inline(schema, root):
@@ -162,6 +162,10 @@ class Schema:
         # flattened where it is referenced, which is what a record does with a
         # group: the document states the members, not the group.
         self.groups = {}
+        # The global elements of every schema read, by name. A reference names
+        # one of them, and the schemas are read in a list, so the index is
+        # accumulated rather than replaced per file.
+        self.globals = {}
         # An inline simpleType is an enumeration with no name of its own. Its
         # spellings are emitted under the type that holds it.
         self.inline_enum = {}
@@ -550,6 +554,11 @@ def field_shape(schema, element):
     # produces. The generator registered it, possibly under a qualified name.
     if any(local(child.tag) == "complexType" for child in element):
         return "nested", schema.inline_name[id(element)]
+    if declared is None and not any(local(child.tag) == "simpleType" for child in element):
+        # An element with no type at all is xs:anyType, which the schema does
+        # not describe. It is carried as text: a document that puts children in
+        # it is refused by the reading rather than half stored.
+        return "text", None
     raise SystemExit(f"element {element.get('name')} has neither a type nor a complexType")
 
 
@@ -634,6 +643,14 @@ def expand(schema, element):
             stand_in.set("maxOccurs", element.get("maxOccurs", "1"))
             yield stand_in
         return
+    if head is not None and head.get("type") is None and id(head) in schema.inline_name:
+        # A member of another group may be referenced by name. It carries its
+        # type inline, so it is yielded as itself for the same reason.
+        for attribute in ("minOccurs", "maxOccurs"):
+            if element.get(attribute) is not None:
+                head.set(attribute, element.get(attribute))
+        yield head
+        return
     if head is not None and head.get("type") is not None:
         # A plain global element: synthesise the element that names it.
         stand_in = ET.Element("xs:element")
@@ -644,7 +661,10 @@ def expand(schema, element):
                 stand_in.set(attribute, element.get(attribute))
         yield stand_in
         return
-    raise SystemExit(f"element reference {ref} cannot be resolved")
+    detail = "no such global element"
+    if head is not None:
+        detail = "the global element states no type"
+    raise SystemExit(f"element reference {ref} cannot be resolved: {detail}")
 
 
 def spellings_of(schema, owner, element):

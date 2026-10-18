@@ -9,11 +9,15 @@ Commands: gh run view --job <job> --log > <log>
           -e '89: Test command:' -e 'title names only the subject' \
           -e 'one title for each quote type' -e '89: All tests passed' \
           -e 'Test #89: ores.marketdata.core.tests' \
-          -e 'tests passed, 0 tests failed' -e 'The following tests FAILED' \
+          -e 'The following tests FAILED' \
           -e ' - ores.synthetic.service.tests' <log>
 
 Each line below is as the Actions log wrote it, with the log's job-name and
 timestamp prefix stripped. Nothing else is changed.
+
+"The following tests FAILED" and the line under it are absent from run 1
+because that run had no failure. The run totals live in
+cdash_build_totals.txt, because this log carries only the progress counter.
 
 
 Run 39033061931, job 117397450911, head e336bd0ffb36b1d85344faf057151853aa9fe687, 2026-10-17 15:57-16:03 UTC

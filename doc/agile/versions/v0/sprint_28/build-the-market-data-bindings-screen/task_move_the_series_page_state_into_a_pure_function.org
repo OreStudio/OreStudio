@@ -31,7 +31,7 @@ The series page says no URI, an error, loading, a fixing, an unknown type, a ser
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-13                               |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 

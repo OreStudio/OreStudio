@@ -662,22 +662,25 @@ void append_schedule(trading::domain::swap_instrument_data& result,
     }
 }
 
-// The shared strike table holds one row per trade, keyed by the trade
-// alone, while the schema states a cap/floor's strikes as two lists. The
-// first cap, or the first floor when no cap is stated, is the row.
+// The schema states a cap/floor's strikes as two lists, so every cap and every
+// floor is its own row, carrying the list it came from and its ordinal within
+// that list. A collar states both lists and holds all of them.
 void append_capfloor_strike(trading::domain::swap_instrument_data& result, const capFloorData& cf) {
-    std::optional<ores::utility::decimal::decimal> value;
-    if (cf.Caps && !cf.Caps->Cap.empty())
-        value = exact_decimal(cf.Caps->Cap.front());
-    else if (cf.Floors && !cf.Floors->Floor.empty())
-        value = exact_decimal(cf.Floors->Floor.front());
-    if (!value)
-        return;
-
-    trading::domain::instrument_strike row;
-    row.bare_value = *value;
-    stamp_child_audit(row);
-    result.strikes.push_back(std::move(row));
+    const auto append_rows = [&result](const auto& values, const char* role) {
+        int sequence_number = 0;
+        for (const auto& value : values) {
+            trading::domain::instrument_strike row;
+            row.strike_role = role;
+            row.sequence_number = ++sequence_number;
+            row.bare_value = exact_decimal(value);
+            stamp_child_audit(row);
+            result.strikes.push_back(std::move(row));
+        }
+    };
+    if (cf.Caps)
+        append_rows(cf.Caps->Cap, "cap");
+    if (cf.Floors)
+        append_rows(cf.Floors->Floor, "floor");
 }
 
 /**
@@ -1850,14 +1853,28 @@ trade swap_instrument_mapper::reverse_capfloor(
         }
     }
 
-    // The shared strike table holds one row per trade; the document states
-    // the strike as a cap. A floor has no separate column to return to.
-    if (!strikes.empty() && strikes.front().bare_value) {
-        capFloorData_Caps_t caps;
-        capFloorData_Caps_t_Cap_t cap;
-        set_exact(cap, *strikes.front().bare_value);
-        caps.Cap.push_back(cap);
-        cf.Caps = std::move(caps);
+    // Each stored strike returns to the list its role names, so a floor comes
+    // back as a floor and a collar keeps both arms.
+    for (const auto& row : strikes) {
+        if (!row.bare_value)
+            continue;
+        if (row.strike_role == "floor") {
+            capFloorData_Floors_t floors;
+            if (cf.Floors)
+                floors = *cf.Floors;
+            capFloorData_Floors_t_Floor_t floor;
+            set_exact(floor, *row.bare_value);
+            floors.Floor.push_back(floor);
+            cf.Floors = std::move(floors);
+        } else {
+            capFloorData_Caps_t caps;
+            if (cf.Caps)
+                caps = *cf.Caps;
+            capFloorData_Caps_t_Cap_t cap;
+            set_exact(cap, *row.bare_value);
+            caps.Cap.push_back(cap);
+            cf.Caps = std::move(caps);
+        }
     }
 
     t.CapFloorData = std::move(cf);

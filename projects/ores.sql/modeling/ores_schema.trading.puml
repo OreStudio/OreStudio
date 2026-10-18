@@ -3156,6 +3156,8 @@ package "trading" #E8F5E9 {
     entity ores_trading_instrument_strikes_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * trade_id : uuid <<PK, FK>>
+        * strike_role : text <<PK>>
+        * sequence_number : integer <<PK>>
         --
         * version : integer
         * trade_activity_id : uuid <<FK>>

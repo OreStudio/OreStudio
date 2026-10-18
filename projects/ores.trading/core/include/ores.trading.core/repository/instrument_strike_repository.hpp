@@ -28,7 +28,6 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
-#include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.utility/domain/protocol.hpp"
 #include <chrono>
@@ -103,16 +102,25 @@ public:
      */
     /**@{*/
     std::vector<domain::instrument_strike> read_latest(context ctx);
-    std::vector<domain::instrument_strike> read_latest(context ctx, const std::string& trade_id);
     std::vector<domain::instrument_strike> read_latest(context ctx,
-                                                       const std::vector<std::string>& trade_ids);
+                                                       const std::string& trade_id,
+                                                       const std::string& strike_role,
+                                                       const std::string& sequence_number);
+    std::vector<domain::instrument_strike>
+    read_latest(context ctx,
+                const std::vector<std::string>& trade_ids,
+                const std::vector<std::string>& strike_roles,
+                const std::vector<std::string>& sequence_numbers);
     /**@}*/
 
 
     /**
      * @brief Reads all instrument strikes, possibly filtered by primary key.
      */
-    std::vector<domain::instrument_strike> read_all(context ctx, const std::string& trade_id);
+    std::vector<domain::instrument_strike> read_all(context ctx,
+                                                    const std::string& trade_id,
+                                                    const std::string& strike_role,
+                                                    const std::string& sequence_number);
 
     /**
      * @brief Reads a single instrument strike as it stood at a specific
@@ -123,8 +131,11 @@ public:
      * @param ctx Repository context with database connection
      * @param version The version to fetch
      */
-    std::optional<domain::instrument_strike>
-    read_at_version(context ctx, const std::string& trade_id, std::uint32_t version);
+    std::optional<domain::instrument_strike> read_at_version(context ctx,
+                                                             const std::string& trade_id,
+                                                             const std::string& strike_role,
+                                                             const std::string& sequence_number,
+                                                             std::uint32_t version);
 
 
     /**
@@ -148,7 +159,6 @@ public:
                 std::uint32_t offset,
                 std::uint32_t limit,
                 const ores::utility::domain::order& order = {},
-                const std::optional<messaging::instrument_strikes_filter>& filter = std::nullopt,
                 const std::optional<std::string>& as_of = std::nullopt);
 
     /**
@@ -156,15 +166,17 @@ public:
      * @param ctx Repository context with database connection
      * @return Total number of active instrument strikes
      */
-    std::uint32_t get_total_instrument_strike_count(
-        context ctx,
-        const std::optional<messaging::instrument_strikes_filter>& filter = std::nullopt,
-        const std::optional<std::string>& as_of = std::nullopt);
+    std::uint32_t
+    get_total_instrument_strike_count(context ctx,
+                                      const std::optional<std::string>& as_of = std::nullopt);
 
     /**
      * @brief Deletes a instrument strike by closing its temporal validity.
      */
-    void remove(context ctx, const std::string& trade_id);
+    void remove(context ctx,
+                const std::string& trade_id,
+                const std::string& strike_role,
+                const std::string& sequence_number);
 
     /**
      * @brief What a removal did, so a caller reports a conflict as an outcome
@@ -186,13 +198,19 @@ public:
      * version removes whatever is current, which is what a caller that stated
      * no version asked for.
      */
-    remove_status
-    remove(context ctx, const std::string& trade_id, std::optional<std::uint32_t> version);
+    remove_status remove(context ctx,
+                         const std::string& trade_id,
+                         const std::string& strike_role,
+                         const std::string& sequence_number,
+                         std::optional<std::uint32_t> version);
 
     /**
      * @brief Deletes instrument strikes by closing their temporal validity.
      */
-    void remove(context ctx, const std::vector<std::string>& trade_ids);
+    void remove(context ctx,
+                const std::vector<std::string>& trade_ids,
+                const std::vector<std::string>& strike_roles,
+                const std::vector<std::string>& sequence_numbers);
 
 
 private:

@@ -486,6 +486,8 @@ credit_instrument_data credit_instrument_mapper::forward_index_cds_option(const 
         // The strike is the option's one shared strike row.
         if (od.Strike) {
             instrument_strike row;
+            row.strike_role = "single";
+            row.sequence_number = 1;
             row.bare_value = exact_decimal(*od.Strike);
             stamp_audit(row);
             result.strikes.push_back(std::move(row));

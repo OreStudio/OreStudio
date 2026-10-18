@@ -25,13 +25,11 @@
 #include "ores.trading.core/repository/instrument_strike_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/list_filter.hpp"
 #include "ores.database/repository/stated_order.hpp"
 #include "ores.database/repository/valid_at.hpp"
 #include "ores.logging/boost_severity.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/instrument_strike_json_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.core/repository/instrument_strike_entity.hpp"
 #include "ores.trading.core/repository/instrument_strike_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
@@ -42,10 +40,9 @@
 #include <cstdint>
 #include <initializer_list>
 #include <optional>
+#include <set>
 #include <sqlgen/delete_from.hpp>
-#include <sqlgen/dynamic/Condition.hpp>
 #include <sqlgen/dynamic/OrderBy.hpp>
-#include <sqlgen/dynamic/Value.hpp>
 #include <sqlgen/limit.hpp>
 #include <sqlgen/literals.hpp>
 #include <sqlgen/offset.hpp>
@@ -55,6 +52,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -85,36 +83,22 @@ sqlgen::dynamic::OrderBy list_order(const ores::utility::domain::order& order,
                                     std::initializer_list<std::string> default_columns,
                                     bool default_descending) {
     if (order.field.empty())
-        return make_order(default_columns, default_descending != order.descending, {"trade_id"});
+        return make_order(default_columns,
+                          default_descending != order.descending,
+                          {"trade_id", "strike_role", "sequence_number"});
     if (!instrument_strike_repository::is_sortable(order.field))
         throw std::invalid_argument("A list of instrument strikes cannot be ordered by " +
                                     order.field + ".");
-    return make_order({order.field}, order.descending, {"trade_id"});
-}
-
-/*
- * The conditions the filter record sets. Every member is optional, and the
- * members a request sets must all hold.
- */
-std::optional<sqlgen::dynamic::Condition>
-filter_condition(const std::optional<messaging::instrument_strikes_filter>& filter) {
-    if (!filter)
-        return std::nullopt;
-    std::vector<sqlgen::dynamic::Condition> r;
-    if (filter->trade_id_one_of) {
-        std::vector<sqlgen::dynamic::Value> values;
-        for (const auto& v : *filter->trade_id_one_of)
-            values.push_back(filter_value(v));
-        r.push_back(one_of("trade_id", std::move(values)));
-    }
-    return all_of(std::move(r));
+    return make_order(
+        {order.field}, order.descending, {"trade_id", "strike_role", "sequence_number"});
 }
 
 }
 
 ores::utility::domain::precondition
 instrument_strike_repository::replace_claim(context ctx, const domain::instrument_strike& v) {
-    const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
+    const auto current = read_latest(
+        ctx, boost::uuids::to_string(v.trade_id), v.strike_role, std::to_string(v.sequence_number));
     if (current.empty())
         return {ores::utility::domain::precondition_kind::must_not_exist, std::nullopt};
     return {ores::utility::domain::precondition_kind::must_match_version,
@@ -141,7 +125,10 @@ instrument_strike_repository::apply_claim(context ctx,
             // the row is read and its version stated. A row that moved on between
             // this read and the write is a conflict the trigger raises, never a
             // silent overwrite.
-            const auto current = read_latest(ctx, boost::uuids::to_string(v.trade_id));
+            const auto current = read_latest(ctx,
+                                             boost::uuids::to_string(v.trade_id),
+                                             v.strike_role,
+                                             std::to_string(v.sequence_number));
             t.version = current.empty() ? 0 : current.front().version;
             break;
         }
@@ -165,7 +152,9 @@ void instrument_strike_repository::write(context ctx,
 void instrument_strike_repository::write(context ctx,
                                          const domain::instrument_strike& v,
                                          const ores::utility::domain::precondition& claim) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing instrument strike. " << "trade_id: " << v.trade_id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing instrument strike. " << "trade_id: " << v.trade_id
+                               << " strike_role: " << v.strike_role
+                               << " sequence_number: " << v.sequence_number;
     const auto t = apply_claim(ctx, v, claim);
     execute_write_query(
         ctx, instrument_strike_mapper::map(t), lg(), "Writing instrument strike to database.");
@@ -189,7 +178,7 @@ std::vector<domain::instrument_strike> instrument_strike_repository::read_latest
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<instrument_strike_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("trade_id"_c);
+                       order_by("trade_id"_c, "strike_role"_c, "sequence_number"_c);
 
     return execute_read_query<instrument_strike_entity, domain::instrument_strike>(
         ctx,
@@ -200,13 +189,19 @@ std::vector<domain::instrument_strike> instrument_strike_repository::read_latest
 }
 
 std::vector<domain::instrument_strike>
-instrument_strike_repository::read_latest(context ctx, const std::string& trade_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument strike. " << "trade_id: " << trade_id;
+instrument_strike_repository::read_latest(context ctx,
+                                          const std::string& trade_id,
+                                          const std::string& strike_role,
+                                          const std::string& sequence_number) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument strike. " << "trade_id: " << trade_id
+                               << " strike_role: " << strike_role
+                               << " sequence_number: " << sequence_number;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<instrument_strike_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "strike_role"_c == strike_role &&
+              "sequence_number"_c == sequence_number && "valid_to"_c == max.value());
 
     return execute_read_query<instrument_strike_entity, domain::instrument_strike>(
         ctx,
@@ -218,13 +213,19 @@ instrument_strike_repository::read_latest(context ctx, const std::string& trade_
 
 
 std::vector<domain::instrument_strike>
-instrument_strike_repository::read_all(context ctx, const std::string& trade_id) {
+instrument_strike_repository::read_all(context ctx,
+                                       const std::string& trade_id,
+                                       const std::string& strike_role,
+                                       const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all instrument strike versions. "
-                               << "trade_id: " << trade_id;
+                               << "trade_id: " << trade_id << " strike_role: " << strike_role
+                               << " sequence_number: " << sequence_number;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<instrument_strike_entity>> |
-                       where("tenant_id"_c == tid && "trade_id"_c == trade_id) |
-                       order_by("version"_c.desc(), "valid_from"_c.desc());
+    const auto query =
+        sqlgen::read<std::vector<instrument_strike_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "strike_role"_c == strike_role &&
+              "sequence_number"_c == sequence_number) |
+        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<instrument_strike_entity, domain::instrument_strike>(
         ctx,
@@ -234,14 +235,21 @@ instrument_strike_repository::read_all(context ctx, const std::string& trade_id)
         "Reading all instrument strike versions by trade_id.");
 }
 
-std::optional<domain::instrument_strike> instrument_strike_repository::read_at_version(
-    context ctx, const std::string& trade_id, std::uint32_t version) {
+std::optional<domain::instrument_strike>
+instrument_strike_repository::read_at_version(context ctx,
+                                              const std::string& trade_id,
+                                              const std::string& strike_role,
+                                              const std::string& sequence_number,
+                                              std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Reading instrument strike at version. "
-                               << "trade_id: " << trade_id << " version: " << version;
+                               << "trade_id: " << trade_id << " strike_role: " << strike_role
+                               << " sequence_number: " << sequence_number
+                               << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<instrument_strike_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "version"_c == version) |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "strike_role"_c == strike_role &&
+              "sequence_number"_c == sequence_number && "version"_c == version) |
         sqlgen::limit(1);
 
     const auto entities = execute_read_query<instrument_strike_entity, domain::instrument_strike>(
@@ -257,10 +265,16 @@ std::optional<domain::instrument_strike> instrument_strike_repository::read_at_v
 }
 
 
-instrument_strike_repository::remove_status instrument_strike_repository::remove(
-    context ctx, const std::string& trade_id, std::optional<std::uint32_t> version) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing instrument strike. " << "trade_id: " << trade_id;
-    const auto current = read_latest(ctx, trade_id);
+instrument_strike_repository::remove_status
+instrument_strike_repository::remove(context ctx,
+                                     const std::string& trade_id,
+                                     const std::string& strike_role,
+                                     const std::string& sequence_number,
+                                     std::optional<std::uint32_t> version) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing instrument strike. " << "trade_id: " << trade_id
+                               << " strike_role: " << strike_role
+                               << " sequence_number: " << sequence_number;
+    const auto current = read_latest(ctx, trade_id, strike_role, sequence_number);
     if (current.empty())
         return remove_status::missing;
     // The protocol states the version as a uint32 and the row carries it as an
@@ -273,30 +287,34 @@ instrument_strike_repository::remove_status instrument_strike_repository::remove
     // read above and this statement.
     const auto expected = version ? static_cast<int>(*version) : current.front().version;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::delete_from<instrument_strike_entity> |
-                       where("tenant_id"_c == tid && "trade_id"_c == trade_id &&
-                             "valid_to"_c == max.value() && "version"_c == expected);
+    const auto query =
+        sqlgen::delete_from<instrument_strike_entity> |
+        where("tenant_id"_c == tid && "trade_id"_c == trade_id && "strike_role"_c == strike_role &&
+              "sequence_number"_c == sequence_number && "valid_to"_c == max.value() &&
+              "version"_c == expected);
 
     execute_delete_query(ctx, query, lg(), "Removing instrument strike from database.");
     // The delete reports no affected-row count, so the row is read back: a row
     // still open after the statement means the store refused the removal, and
     // the caller hears "conflicting" rather than "removed".
-    if (!read_latest(ctx, trade_id).empty())
+    if (!read_latest(ctx, trade_id, strike_role, sequence_number).empty())
         return remove_status::conflicting;
     return remove_status::removed;
 }
 
-void instrument_strike_repository::remove(context ctx, const std::string& trade_id) {
-    static_cast<void>(remove(ctx, trade_id, std::nullopt));
+void instrument_strike_repository::remove(context ctx,
+                                          const std::string& trade_id,
+                                          const std::string& strike_role,
+                                          const std::string& sequence_number) {
+    static_cast<void>(remove(ctx, trade_id, strike_role, sequence_number, std::nullopt));
 }
 
-std::vector<domain::instrument_strike> instrument_strike_repository::read_latest(
-    context ctx,
-    std::uint32_t offset,
-    std::uint32_t limit,
-    const ores::utility::domain::order& order,
-    const std::optional<messaging::instrument_strikes_filter>& filter,
-    const std::optional<std::string>& as_of) {
+std::vector<domain::instrument_strike>
+instrument_strike_repository::read_latest(context ctx,
+                                          std::uint32_t offset,
+                                          std::uint32_t limit,
+                                          const ores::utility::domain::order& order,
+                                          const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest instrument strikes with offset: " << offset
                                << " and limit: " << limit;
     const auto tid = ctx.tenant_id().to_string();
@@ -306,17 +324,15 @@ std::vector<domain::instrument_strike> instrument_strike_repository::read_latest
     return execute_ordered_read_query<instrument_strike_entity, domain::instrument_strike>(
         ctx,
         query,
-        list_order(order, {"trade_id"}, false),
-        narrowed(valid_at(as_of), filter_condition(filter)),
+        list_order(order, {"trade_id", "strike_role", "sequence_number"}, false),
+        narrowed(valid_at(as_of), std::nullopt),
         [](const auto& entities) { return instrument_strike_mapper::map(entities); },
         lg(),
         "Reading latest instrument strikes with pagination.");
 }
 
 std::uint32_t instrument_strike_repository::get_total_instrument_strike_count(
-    context ctx,
-    const std::optional<messaging::instrument_strikes_filter>& filter,
-    const std::optional<std::string>& as_of) {
+    context ctx, const std::optional<std::string>& as_of) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active instrument strike count";
 
     const auto tid = ctx.tenant_id().to_string();
@@ -324,46 +340,61 @@ std::uint32_t instrument_strike_repository::get_total_instrument_strike_count(
         sqlgen::read<std::vector<instrument_strike_entity>> | where("tenant_id"_c == tid);
 
     return execute_count_query<instrument_strike_entity>(
-        ctx,
-        query,
-        narrowed(valid_at(as_of), filter_condition(filter)),
-        lg(),
-        "Counting instrument strikes");
+        ctx, query, narrowed(valid_at(as_of), std::nullopt), lg(), "Counting instrument strikes");
 }
 
 std::vector<domain::instrument_strike>
-instrument_strike_repository::read_latest(context ctx, const std::vector<std::string>& trade_ids) {
-    if (trade_ids.empty())
+instrument_strike_repository::read_latest(context ctx,
+                                          const std::vector<std::string>& trade_ids,
+                                          const std::vector<std::string>& strike_roles,
+                                          const std::vector<std::string>& sequence_numbers) {
+    if (trade_ids.empty() || strike_roles.empty() || sequence_numbers.empty())
         return {};
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query =
         sqlgen::read<std::vector<instrument_strike_entity>> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) &&
+              "strike_role"_c.in(strike_roles) && "sequence_number"_c.in(sequence_numbers) &&
+              "valid_to"_c == max.value());
     auto result = execute_read_query<instrument_strike_entity, domain::instrument_strike>(
         ctx,
         query,
         [](const auto& entities) { return instrument_strike_mapper::map(entities); },
         lg(),
         "Reading latest instrument strikes by ids.");
-    return result;
+    // Compound key: the query above is a per-column .in() cross-product
+    // over-fetch (sqlgen has no tuple/composite IN), so filter down to the
+    // exact requested key-tuples here.
+    if (strike_roles.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())
+        throw std::invalid_argument("instrument_strike_repository::read_latest: key column vectors "
+                                    "must be the same length");
+    std::set<std::tuple<std::string, std::string, std::string>> requested;
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        requested.emplace(trade_ids[i], strike_roles[i], sequence_numbers[i]);
+    std::vector<domain::instrument_strike> filtered;
+    filtered.reserve(result.size());
+    for (auto& item : result) {
+        if (requested.contains(std::make_tuple(boost::uuids::to_string(item.trade_id),
+                                               item.strike_role,
+                                               std::to_string(item.sequence_number))))
+            filtered.push_back(std::move(item));
+    }
+    return filtered;
 }
 
-void instrument_strike_repository::remove(context ctx, const std::vector<std::string>& trade_ids) {
-    // A batch of nothing addresses no row, so there is nothing to delete. The
-    // query builder renders an empty key list as an empty IN (), which the
-    // server refuses as a syntax error; the read overloads answer the empty
-    // case the same way. The compound branch above is left alone: it loops, so
-    // it already removes nothing, and its length check still refuses an
-    // asymmetric pair.
-    if (trade_ids.empty())
-        return;
-    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto tid = ctx.tenant_id().to_string();
-    const auto query =
-        sqlgen::delete_from<instrument_strike_entity> |
-        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "Batch removing instrument strikes.");
+void instrument_strike_repository::remove(context ctx,
+                                          const std::vector<std::string>& trade_ids,
+                                          const std::vector<std::string>& strike_roles,
+                                          const std::vector<std::string>& sequence_numbers) {
+    // Compound key: a per-column .in() DELETE would be a cross-product
+    // over-delete (rows outside the requested tuples), and a DELETE can't
+    // be filtered after the fact like a read -- remove one tuple at a time.
+    if (strike_roles.size() != trade_ids.size() || sequence_numbers.size() != trade_ids.size())
+        throw std::invalid_argument(
+            "instrument_strike_repository::remove: key column vectors must be the same length");
+    for (std::size_t i = 0; i < trade_ids.size(); ++i)
+        remove(ctx, trade_ids[i], strike_roles[i], sequence_numbers[i]);
 }
 
 

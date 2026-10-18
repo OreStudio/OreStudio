@@ -190,3 +190,40 @@ TEST_CASE("a bundle refuses a family the registry does not know", tags) {
     CHECK_THROWS_AS(ores::refdata::service::conventions_bundle_service(ctx).apply(bundle),
                     std::runtime_error);
 }
+
+TEST_CASE("a bundle whose part comes first still writes the central row first", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto ctx = party_context(h);
+    boost::uuids::random_generator uuid;
+
+    ores::refdata::domain::convention central;
+    central.id = uuid();
+    central.kind_code = "TENOR_BASIS_SWAP";
+    central.name = "JPY-3M-6M-BASIS";
+    central.change_reason_code = "system.test";
+
+    ores::refdata::domain::tenor_basis_swap_long_short long_short;
+    long_short.convention_id = central.id;
+    long_short.long_index = std::string("JPY-LIBOR-6M");
+    long_short.short_index = std::string("JPY-LIBOR-3M");
+    long_short.change_reason_code = "system.test";
+
+    // The bundle carries the part before the central row. The writer owns the
+    // order for this family, so the foreign key holds anyway.
+    ores::refdata::service::conventions_bundle bundle;
+    bundle.rows.push_back({.family = "tenor_basis_swap_long_short",
+                           .sequence = 0,
+                           .payload = rfl::json::write(long_short)});
+    bundle.rows.push_back(
+        {.family = "convention", .sequence = 1, .payload = rfl::json::write(central)});
+    ores::refdata::service::conventions_bundle_service(ctx).apply(bundle);
+
+    ores::refdata::repository::convention_repository conventions;
+    const auto held = conventions.read_latest(ctx);
+    REQUIRE(held.size() == 1);
+
+    ores::refdata::repository::tenor_basis_swap_long_short_repository parts;
+    const auto held_parts = parts.read_latest(ctx);
+    REQUIRE(held_parts.size() == 1);
+    CHECK(held_parts.front().convention_id == held.front().id);
+}

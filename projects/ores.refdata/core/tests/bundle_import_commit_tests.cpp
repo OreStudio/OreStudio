@@ -21,6 +21,7 @@
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
+#include "ores.refdata.core/repository/bundle_import_repository.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
@@ -133,11 +134,12 @@ TEST_CASE("a commit that cannot decode a family leaves the import staging", tags
     ores::refdata::repository::convention_repository conventions;
     CHECK(conventions.read_latest(ctx).empty());
 
-    // The import is still staging, which the second commit proves by failing on
-    // the same decode rather than on the import's state.
-    const auto again = imports.commit({.import_id = import_id});
-    CHECK_FALSE(again.success);
-    CHECK_FALSE(again.message.empty());
+    ores::refdata::repository::bundle_import_repository imports_repo;
+    const auto import_row = imports_repo.read_latest(ctx, boost::uuids::to_string(import_id));
+    REQUIRE(import_row.size() == 1);
+    CHECK(import_row.front().state == "staging");
+
+    CHECK_FALSE(imports.commit({.import_id = import_id}).success);
 }
 
 TEST_CASE("a second commit of the same import applies nothing", tags) {
@@ -156,8 +158,14 @@ TEST_CASE("a second commit of the same import applies nothing", tags) {
 
     ores::refdata::service::bundle_import_operations_service imports(ctx);
     REQUIRE(imports.commit({.import_id = import_id}).success);
-    CHECK_FALSE(imports.commit({.import_id = import_id}).success);
 
     ores::refdata::repository::convention_repository conventions;
-    CHECK(conventions.read_latest(ctx).size() == 1);
+    const auto after_first = conventions.read_latest(ctx);
+    REQUIRE(after_first.size() == 1);
+
+    CHECK_FALSE(imports.commit({.import_id = import_id}).success);
+
+    const auto after_second = conventions.read_latest(ctx);
+    REQUIRE(after_second.size() == 1);
+    CHECK(after_second.front().version == after_first.front().version);
 }

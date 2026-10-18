@@ -279,6 +279,27 @@ or =PowerLoadProfileData=, mandatory, and a portfolio document that states none
 of them binds. The values are not lost; the reading is looser than the schema.
 Teaching the table a required group is its own change.
 
+* The projection follows the instrument families
+
+The product still reads a portfolio through the old binding: =importer.cpp=,
+=exporter.cpp=, =trade_mapper= and one mapper per instrument family. The
+projection is the same mapping with the codec record as its input, so the
+schema's shape reaches the product once.
+
+The shell owns the document, the envelope and the trade list. Each family owns
+the trade types it holds, and a family that does not handle a type returns
+nothing so the next one is asked. A projection names the elements it takes
+(the table is asked for the offsets), reads a money value as the exact decimal
+the table keeps and converts at the boundary, and refuses an element the
+mapping cannot hold rather than dropping it.
+
+The scripted family came first because it is the smallest. The script's =NPV= is
+a name the schema requires and the instrument's flat table has no column for, so
+it rides in the parameters JSON the table does carry. The remaining families are
+rates, FX, bonds, credit, equity, commodities and composites. The old mappers,
+the importer and the exporter go in the change that lands the last one, so the
+product never runs both paths.
+
 * Where the work stands
 
 Verified at the head of the portfolio table branch, with the commands that prove

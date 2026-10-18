@@ -131,8 +131,8 @@ writeFixture(
         {
             account_id: '',
             event_type: '',
-            from_time: '',
-            to_time: '',
+            from_time: null,
+            to_time: null,
             limit: 3,
             offset: 0,
         },

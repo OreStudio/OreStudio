@@ -103,6 +103,28 @@ task and name that file in the Command column.
 | Empty-string sentinel grep | no matches | =git grep -nE "(end_time|endTime)[[:space:]]*[:=][[:space:]]*(''|\"\")"= | =7f58f494a0= |
 | Live sessions endpoint | =endTime= is =null= for an open session and ="2026-10-17 22:09:39.000000Z"= for a closed one | =curl -b jar http://127.0.0.1:20402/api/sessions= | =7f58f494a0= |
 
+** The four deferrals closed
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Empty-string sentinels gone | 2 matches, both a negative test asserting the refusal; no writer states one | =git grep -nE "(last_tick_at|series_id|from_time|to_time|last_login|lastLogin)[[:space:]]*[:=][[:space:]]*(''|\"\")"= | =7eb259350c= |
+| Empty-string sentinels gone, server side | no matches | =git grep -nE "(last_login|from_time|to_time|last_tick_at)[[:space:]]*=[[:space:]]*\"\""= | =7eb259350c= |
+| The epoch display rule gone | =isZeroTimestamp= appears once, in the prose that records its deletion | =git grep -n "isZeroTimestamp"= | =7eb259350c= |
+| C++ build | exit 0, 816 targets | =./compass.sh build -j6= after =compass services stop= | =7eb259350c= |
+| Database recreate | exit 0; schema =bdd8287e08d04346=; =last_login timestamp with time zone= with no NOT NULL | =compass db recreate -y -k= | =7eb259350c= |
+| Web suite | bff 782, contracts 23, org 59, web 1580, wire-protocol 203, all passed | =npm test= in =projects/ores.web= | =7eb259350c= |
+| Typecheck | exit 0 | =npm run typecheck= | =7eb259350c= |
+| Web build | exit 0 | =npm run build= | =7eb259350c= |
+| Codegen suite | 1474 passed | =python -m pytest tests= in =projects/ores.codegen= | =7eb259350c= |
+| Codegen drift sweep | no file this branch touched would change | =check_component_drift.py --sweep --dry-run= | =7eb259350c= |
+| Model drift, SQL types, twin coverage | 0 drift, 3365 columns compared and 0 mismatches, 466 protocol headers with a twin | =check_model_drift.py=, =check_model_sql_types.py=, =check_protocol_twin_coverage.py= | =7eb259350c= |
+| C++ tests of the touched components | 3 of 3 passed (iam.core 49s, shell.iam, marketdata.core) | =compass test run -- -R "ores.marketdata.core.tests|ores.iam.core.tests|ores.shell.iam"= | =7eb259350c= |
+| Live feed binding activity | ="series_id":null,"last_tick_at":null= for a silent source and ="last_tick_at":"2026-10-18 00:14:43.071274Z"= for one that ticked | =evidence/capture_null_instants.sh= | =7eb259350c= |
+| Live auth events, no window | =200= with =eventTime":"2026-10-18 00:14:58.778857Z"=, the bound passed as SQL NULL | =evidence/capture_null_instants.sh= | =7eb259350c= |
+| Live session statistics, no window | =200=, the function called with NULL bounds | =evidence/capture_null_instants.sh= | =7eb259350c= |
+| Live login records | ="lastLogin":null= for the accounts that never signed in and ="2026-10-18 00:14:58.000000Z"= for the one that did | =evidence/capture_null_instants.sh= | =7eb259350c= |
+| A malformed bound | =✗ Invalid value for from_time: not-a-time=, and =-= is the absent token | =compass shell -f tmp/malformed_bound.ores= | =7eb259350c= |
+
 * Notes
 
 ** Fields typed with =wireTimestampSchema=
@@ -137,7 +159,7 @@ Already typed before this task: =account.recordedAt=,
 | =domain.ts=, =operations.ts= | =session.endTime=, =wireSession.end_time= | The producer writes =to_db_string= (no designator, no Z), and an empty string means "still open". Typing it now would turn a silent bug into a crash against live closed sessions; it is a producer fix of its own. |
 | =inbox.ts= | =requested_at=, =expires_at=, =decided_at=, =raised_at=, =read_at=, =asked_at=, =applied_at=, =recorded_at= and the view fields =decidedAt=, =requestedAt=, =expiresAt=, =raisedAt=, =readAt= | =notification_center.cpp= and =approval_lifecycle.cpp= render them with =to_char(..., 'YYYY-MM-DD"T"HH24:MI:SS"Z"')=: a =T= separator and no fraction, which is not the wire shape. |
 | =operations.ts= | telemetry =sampled_at= (grid, node, logs, NATS), series =start_time= and =end_time=, =read_at=, =recorded_at= in the telemetry views | =compute/core/.../telemetry_handler.hpp= and =compute/wrapper/.../application.cpp= write =std::format("{:%Y-%m-%dT%H:%M:%SZ}")=, a =T= separator; some paths still copy database text. |
-| =client.ts= request ports, =credentials.ts=, =operations.ts= request schemas | =start_time=, =end_time=, =from_time=, =to_time= | These are outgoing filters, not instants the server returns. An empty value means the filter is off; the server casts the text to =timestamptz=. |
+| =client.ts= request ports, =credentials.ts=, =operations.ts= request schemas | =start_time=, =end_time=, =from_time=, =to_time= | These were outgoing filters whose empty value meant "no bound". They are now =std::optional<time_point>= end to end and an absent bound is null; see *The four deferrals, now closed*. |
 
 **Other producers found carrying non-wire text**
 
@@ -262,7 +284,7 @@ via its "Verifies task" field.
   spelling of "no instant". =nullableWireTimestampSchema= is the only one.
 - The screen helper no longer parses timestamps itself. It delegates to the
   wire parser, and a value that is not the wire shape is logged with its bytes
-  and thrown; =isZeroTimestamp= keeps only the epoch rule.
+  and thrown.
 - A change event and a published message that fail to parse are logged and
   thrown, not dropped. The transport logs the error that stops a subscription.
 - The =timestamp_to_timepoint= ambiguity was not resolved by =06ddd7ed91=:
@@ -270,23 +292,48 @@ via its "Verifies task" field.
   did not build. The auth-event read now calls
   =datetime::from_iso8601_utc= directly, so the choice is stated.
 
-** Deferred, with the reason
+** The four deferrals, now closed
 
-- =marketdata.feed_binding_activity.last_tick_at= is still a =std::string=
-  that is =''= when a source has written nothing. It is a marketdata protocol
-  field whose web schema lives in =@ores/contracts=, a package with no
-  =wire-protocol= dependency; typing it needs that package's ownership decision
-  and is a separate change. It is named here rather than left silent.
-- =iam= auth-event and session-statistics =from_time=/=to_time= are outgoing
-  filter strings in the generated protocol, with no web schema, and an empty
-  value means "no bound". They are not instants a server returns and were not
-  touched.
-- =login_info.last_login= is a NOT NULL column whose zero instant means "never
-  signed in". The web types it as the wire shape and =isZeroTimestamp= keeps
-  the epoch rule for display; making the column nullable is a model change of
-  its own, not a wire-typing fix.
-- HTTP contract schemas outside =wire-protocol= (=contracts/=, =web/src/api/=)
-  still spell some instants as =z.string()=. Their producers emit the wire
-  shape, so they are tolerant rather than wrong, but they are not the one
-  owner and are left for a follow-up that gives =@ores/contracts= the
-  dependency.
+Each of these was named as a workaround under this story's rule that no
+sentinel stands in for an absence. None is deferred any more.
+
+- =marketdata.feed_binding_activity= no longer spells "this source has not
+  written" as empty text. =last_tick_at= is
+  =std::optional<std::chrono::system_clock::time_point>= and =series_id= is
+  =std::optional<boost::uuids::uuid>=, so a binding whose source has written
+  nothing states =null= for both on the wire. There is no nullable column to
+  change: the absence lives in the join, because the read asks for the source's
+  newest observation and a source with none has no row to read.
+- =@ores/contracts= gained the one owner through
+  =@ores/wire-protocol/time=, a subpath export of =time.ts= that imports only
+  Zod, so the HTTP contracts read the same schema the NATS protocol does and
+  still carry no Node dependency. No copy of the pattern exists.
+- =iam= auth-event and session-statistics =from_time=/=to_time= are
+  =std::optional<std::chrono::system_clock::time_point>=: a bound the caller
+  states no value for is =nullopt=, which binds as SQL NULL. The generated
+  shell commands take the shell's absent token, the HTTP routes read the
+  request as a JSON body, and the reads compare the parameter with =is null=
+  instead of casting an empty string through =nullif=.
+- =login_info.last_login= is a nullable =timestamp with time zone=. An account
+  is created before anybody signs into it, so the domain, entity and protocol
+  hold =std::optional<time_point>= and the record states =null= until the first
+  successful sign-in. =isZeroTimestamp= is deleted: no screen has a zero
+  instant to explain, because no writer produces one.
+- Every instant in =contracts/= and =web/src/api/= is typed with the shared
+  schema or its null union. The fields left as =z.string()= are named under
+  Notes as what they are: org-mode dates, identifiers, enums and free text.
+
+** Left alone, with the reason
+
+- An empty =account_id= or =event_type= still means "this filter is off" in the
+  auth-event and session-statistics reads. They are identifiers, not instants,
+  and the same blank-string-means-unset idiom appears in every list request in
+  the product (a search term, an order field, a page cursor). Changing it here
+  would leave the rest of the estate on the old idiom, which is worse than the
+  consistent line this change holds: an absent *instant* is null.
+- =session_statistics_row.day= still crosses the wire as PostgreSQL's own
+  rendering, =2026-10-18 00:00:00+00=, because the statistics read selects
+  =day::text=. It carries no absence, so no sentinel is involved, and the day
+  bucket is a calendar day that the screen prints as one. Making it a wire
+  instant changes what the audit screen draws, which is a screen decision of its
+  own; it is named here rather than left silent.

@@ -28,6 +28,7 @@
 #include "ores.ore.core/xml/generated/curve_configuration.hpp"
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
 #include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
+#include "ores.ore.core/xml/generated/ore.hpp"
 #include "ores.ore.core/xml/generated/stress_testing.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
@@ -63,6 +64,7 @@ using cp::counterparty_information;
 using cp::counterparty_information_document;
 namespace nsd = ores::ore::xml::generated::netting_set_definitions;
 namespace tm = ores::ore::xml::generated::todays_market;
+namespace rd = ores::ore::xml::generated::ore;
 namespace st = ores::ore::xml::generated::stress_testing;
 using tm::todays_market_document;
 using tm::todaysmarket;
@@ -304,6 +306,11 @@ TEST_CASE("every_generated_family_keeps_its_values_across_the_writing", tags) {
                                                 "StressTesting");
     INFO("stress tests: " << stress_tests);
     CHECK(stress_tests == 19);
+    std::size_t run_documents = 0;
+    failures += sweep_values<rd::ore>(
+        root, "ore", rd::ore_document(), {}, documents, report, &run_documents, "ORE");
+    INFO("run documents: " << run_documents);
+    CHECK(run_documents == 422);
     failures += sweep_values<ibor_fallback_config>(root,
                                                    "ibor_fallback_config",
                                                    ibor_fallback_config_document(),

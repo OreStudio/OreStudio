@@ -143,6 +143,19 @@ generate \
     --source "$source/curve_configuration.cpp" \
     --money Spread
 
+# The corpus names the run document 235 ways, six of them without the "ore"
+# prefix, so the harness finds the family by its root element. The family keeps
+# the schema's name; the product calls it the run document.
+generate \
+    --schema "$xsd/ore.xsd" \
+    --root-element ORE \
+    --root-type ore \
+    --accessor ore_document \
+    --namespace ores::ore::xml::generated::ore \
+    --include "ores.ore.core/xml/generated/ore.hpp" \
+    --header "$header/ore.hpp" \
+    --source "$source/ore.cpp"
+
 # shiftTypeEntry lives in sensitivity.xsd, which stress.xsd references but does
 # not include, so that schema is read with it.
 generate \

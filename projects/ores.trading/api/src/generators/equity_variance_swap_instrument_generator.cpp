@@ -52,7 +52,7 @@ generate_synthetic_equity_variance_swap_instrument(utility::generation::generati
     r.underlying_name = std::string("ACME Corp");
     r.currency = std::string("USD");
     r.notional = ores::utility::decimal::decimal::from_string("1000000").value();
-    r.variance_strike = ores::utility::decimal::decimal::from_string("0.04").value();
+    r.variance_strike = 0.04;
     r.start_date = std::chrono::year_month_day{std::chrono::year{2024} / 1 / 15};
     r.maturity_date = std::chrono::year_month_day{std::chrono::year{2025} / 1 / 15};
     r.long_short = std::string("Long");

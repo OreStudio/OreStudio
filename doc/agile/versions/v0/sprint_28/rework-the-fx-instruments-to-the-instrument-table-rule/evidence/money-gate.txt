@@ -1,0 +1,11 @@
+projects/ores.marketdata/modeling/ores.marketdata.market_series_identity.org:535: running_spread sql=text cpp=std::string
+projects/ores.refdata/modeling/ores.refdata.base_correlation_config.org:263: calibrate_constituents_to_index_spread sql=text cpp=std::optional<std::string>
+projects/ores.refdata/modeling/ores.refdata.base_correlation_config.org:233: index_spread sql=text cpp=std::optional<std::string>
+projects/ores.refdata/modeling/ores.refdata.curve_segment.org:192: spot_rate sql=text cpp=std::optional<std::string>
+projects/ores.refdata/modeling/ores.refdata.inflation_curve_config.org:197: base_rate sql=text cpp=std::optional<std::string>
+
+money columns not exact: 5 (known 5, new 0)
+
+continuous columns typed exact: 0 (known 0, new 0)
+
+columns read: 7523 (floor 1000)

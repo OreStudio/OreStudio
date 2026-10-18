@@ -66,7 +66,7 @@ struct equity_variance_swap_instrument final {
     /**
      * @brief Strike variance.
      */
-    ores::utility::decimal::decimal variance_strike;
+    double variance_strike;
 
     /**
      * @brief ISO 8601 date string (YYYY-MM-DD).

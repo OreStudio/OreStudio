@@ -112,11 +112,18 @@ def test_a_money_token_loses_to_a_continuous_token(tmp_path):
     assert names(check.money_offenders(root)) == []
 
 
-def test_an_excluded_column_is_not_reported(tmp_path):
-    """A variance strike is volatility, not money."""
+def test_a_variance_strike_is_continuous_not_money(tmp_path):
+    """The FX model names the volatility `strike`; the entity decides."""
     root = tree(tmp_path, "ores.trading.fx_variance_swap_instrument",
                 column("strike", "double precision", "double"))
     assert names(check.money_offenders(root)) == []
+
+
+def test_a_variance_strike_typed_exact_is_reported(tmp_path):
+    """The rule bites in the direction that matters: reverting the column."""
+    root = tree(tmp_path, "ores.trading.fx_variance_swap_instrument",
+                column("strike", "numeric(38, 12)", "double"))
+    assert names(check.continuous_offenders(root)) == ["strike"]
 
 
 def test_an_embedded_money_member_is_reported(tmp_path):

@@ -364,6 +364,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/3484][#3484]] | [reporting,sql] Close the first phase of the reporting gaps |
+| [[https://github.com/OreStudio/OreStudio/pull/3501][#3501]] | [reporting] Close the second phase of the reporting gaps |
 
 * Review
 

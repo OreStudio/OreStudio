@@ -57,7 +57,15 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Task State rows rewritten | 2 | =git diff origin/main 650caa39de -- 'doc/agile/versions/v0/sprint_28/refactor-conventions-onto-families-and-bundles/task_*.org'= piped through =grep -c '^-| State'= | 650caa39de |
+| Task State rows rewritten | 2 | The command below the table | 650caa39de |
+
+The command counts the State rows the branch rewrites. The agent that read this
+record could not copy the pattern out of a table cell, because a pipe in a cell
+splits the table.
+
+#+begin_src sh
+git diff origin/main 650caa39de -- 'doc/agile/versions/v0/sprint_28/refactor-conventions-onto-families-and-bundles/task_*.org' | grep -c '^-| State'
+#+end_src
 
 * Notes
 

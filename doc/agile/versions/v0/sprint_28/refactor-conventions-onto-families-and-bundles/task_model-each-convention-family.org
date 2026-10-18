@@ -107,6 +107,12 @@ task and name that file in the Command column.
   behaviour are =conventions_document_service_tests= and the conventions half of
   =run_store_database_tests=.
 
+- Two code comments still repeat claims this task's record no longer makes, and
+  both belong to the next code change. =bundle_import_operations_service= says
+  the staged rows are applied in the order the stages landed, which the read
+  order does not guarantee. =bundle_import.hpp= and =ores.refdata.bundle_import.org=
+  describe a sweep that marks stale imports expired, which nothing performs.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -143,4 +149,4 @@ via its "Verifies task" field.
 
 Not yet complete. Merged so far are the per-family entities, the generated registry, the generated per-family apply in its own translation unit, and the retirement of the python renderer. The aggregate itself is still present, so the task's headline acceptance criterion is not met.
 
-The deletion is in progress. It needs the whole-document service and the six generated apply and read functions gone, the mapper pair and the run store and the diff and the legacy importer and exporter on per-family values, and the type removed from the model and its protocol.
+The deletion is in progress. It needs the whole-document service and the six generated apply and read functions gone, the mapper pair and the run store and the diff and the legacy importer and exporter and the service import on per-family values, and the type removed from the model and its protocol.

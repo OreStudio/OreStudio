@@ -160,6 +160,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The filter record is built inline with no =satisfies=, where =bindings.ts= and =synthetic.ts= pin their generated type | =packages/bff/src/series.ts= | Fixed | A generated member added later would have been dropped silently; the record is now pinned to =MarketObservationsFilter=. |
+| 2 | The buttons say "Last month" and "Last year" while the rule reaches back thirty and three hundred and sixty five days | =series-window.ts=, the three locales | Fixed | The two labels now name the span the rule uses, so a person reads the length they get. A calendar period would have needed month arithmetic with no answer for the 31st, and the task asks for a window, not a calendar. |
+| 3 | The generated =ores.marketdata.api.puml= still draws the observation filter with three members where the record now has seven | =projects/ores.marketdata/api/modeling/ores.marketdata.api.puml= | Recorded, not fixed | The rot predates this PR and this PR widens it by four members. Regenerating the diagrams is a pass of its own, with every other entity that drifted with it, and is not this task's diff. |
+| 4 | The window bar, the "Window: ..." sentence and the empty-window sentence have no component test | =packages/web/src/market/SeriesPage.tsx= | Recorded, not fixed | The workspace has no DOM library, so acceptance 3 rests on markup no test reads. Manual QA task [[id:059F5F7F-D4B7-4861-9C77-EA4B7143C22D][Check the bindings screen on the running server]] covers the screen on a running server. |
 
 * Result

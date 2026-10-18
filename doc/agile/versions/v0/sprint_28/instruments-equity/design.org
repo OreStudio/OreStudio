@@ -746,6 +746,24 @@ The three model halves still open are the routing re-point, the fact tables'
 duplicated identity columns, and the columns E7 and E8 name. All three move
 with the same migration for the same reason.
 
+** The model phase is complete
+
+Every additively-modelled product now has its own table: fifteen equity entity
+models, twelve fact tables, the header and the basket child. What remains is
+subtractive and cannot be done without the mappers, which was tested rather
+than assumed. Three splits and their evidence:
+
+| Remaining model change | What blocks it |
+|------------------------+----------------|
+| Split the touch option out of the digital table | =equity_instrument_mapper.cpp= writes =barrier_type=, =lower_barrier= and =upper_barrier= on the digital path, lines 578 to 580 and 668 to 669 |
+| Split the worst-of basket out of the swap table | the mapper writes =basket_json= at line 840 and reads it at line 1229 |
+| Split the option position out of the position table | the position child is written per underlying by the same mapper |
+
+So the three are separable only once the mapper moves with them, which is the
+work the operator deferred to the xsdcpp removal. The same holds for the
+routing re-point, whose consumer is the generated routing enum used by
+=trade_component_queries.cpp= and =trade_export_service.cpp=.
+
 ** Measurements
 
 Every number this page claims, with the command that produced it, at

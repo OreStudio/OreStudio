@@ -30,7 +30,7 @@ A cap/floor document round-trips as the lists it stated, cap and floor alike, in
 | Parent story | [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] |
 | Now          | In review. Every cap and floor is a row with its arm and its ordinal. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | The importer's three strike writes now share one builder. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -85,6 +85,35 @@ task and name that file in the Command column.
 
 * Notes
 
+- A key change on a shared table has four writers, and the first pass fixed one
+  of them. The importer built =put_instrument_strike_request= in three places
+  and copied eight of its ten fields in two of them, so a CapFloor or an index
+  option strike would have been sent with an empty role and an indeterminate
+  ordinal: the service throws and the table refuses it. The three sites now call
+  one builder that takes the row, so a new key column cannot be forgotten by two
+  of three callers.
+- =sequence_number= is generated as a bare =int= with no initialiser, and the
+  model has no way to say otherwise: =:default_value:= changes the database
+  default, not the C++ member. A missed assignment is therefore undefined rather
+  than loud. The single builder is the answer for these three sites, and the
+  same pattern is in =swap_leg_rate=, so it is a codegen-wide gap worth its own
+  capture if it bites.
+- Strike history is now a no-op for this entity. A compound key has no
+  single-string id on the =history_provider= interface, so the registrar
+  registers nothing, exactly as =swap_leg_rate='s registrar has since it became
+  compound; the generated comment states the reason. It is a change for this
+  entity, and it is not covered by a test.
+- The =trade_id_one_of= filter on the strike protocol is gone, because the
+  generator emits it only for a single-key entity. All the sibling protocols
+  still declare theirs; the batch read that replaces it takes three parallel key
+  vectors.
+- Two readers consume strikes without filtering by role: the credit reverse took
+  =front()= and now asks for the =single= row; the bond reader assigns into a map
+  keyed by trade and keeps the last row, which is safe only while a bond states
+  one strike.
+- The ordinal now orders the reverse's output. Nothing else reads it, and
+  =read_strikes_by_trade_ids= still orders by trade alone.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -129,5 +158,9 @@ writes =cap= or =floor=, the credit mapper writes =single= for the one strike an
 index option states, and the generator writes =single= rather than a word
 outside the set.
 
-The gate: build, db, ctest, ore-xml-roundtrip and the static checks with the
-fleet down, then =step-consumers= with it up.
+Order within a role is preserved on the way out because the reverse sorts by
+the ordinal, and a role the product does not state is skipped rather than
+rendered as a cap.
+
+The gate: build, db, ctest, ore-xml-roundtrip, pgtap and the static checks with
+the fleet down, then =step-consumers= with it up.

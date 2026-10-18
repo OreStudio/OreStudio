@@ -1854,8 +1854,14 @@ trade swap_instrument_mapper::reverse_capfloor(
     }
 
     // Each stored strike returns to the list its role names, so a floor comes
-    // back as a floor and a collar keeps both arms.
-    for (const auto& row : strikes) {
+    // back as a floor and a collar keeps both arms. The row's ordinal decides
+    // its place in that list, and a role this product does not state is left
+    // out rather than guessed into a cap.
+    auto ordered = strikes;
+    std::sort(ordered.begin(), ordered.end(), [](const auto& lhs, const auto& rhs) {
+        return lhs.sequence_number < rhs.sequence_number;
+    });
+    for (const auto& row : ordered) {
         if (!row.bare_value)
             continue;
         if (row.strike_role == "floor") {
@@ -1866,7 +1872,7 @@ trade swap_instrument_mapper::reverse_capfloor(
             set_exact(floor, *row.bare_value);
             floors.Floor.push_back(floor);
             cf.Floors = std::move(floors);
-        } else {
+        } else if (row.strike_role == "cap") {
             capFloorData_Caps_t caps;
             if (cf.Caps)
                 caps = *cf.Caps;

@@ -1470,6 +1470,39 @@ std::string save_option_block(Nats& nats,
 }
 
 /**
+ * @brief Saves one strike row, which is the one place its request is built.
+ *
+ * The row's key travels with its values, so a call site cannot write a strike
+ * without saying which arm it belongs to and where it sits in that arm.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_instrument_strike(Nats& nats,
+                                   const ores::trading::domain::instrument_strike& strike) {
+    using ores::trading::messaging::put_instrument_strike_request;
+
+    put_instrument_strike_request req;
+    auto& w = req.change.write;
+    w.trade_id = strike.trade_id;
+    w.trade_activity_id = strike.trade_activity_id;
+    w.strike_role = strike.strike_role;
+    w.sequence_number = strike.sequence_number;
+    w.price_value = strike.price_value;
+    w.price_currency = strike.price_currency;
+    w.yield_value = strike.yield_value;
+    w.yield_compounding = strike.yield_compounding;
+    w.bare_value = strike.bare_value;
+    w.bare_currency = strike.bare_currency;
+
+    std::string error;
+    auto resp = nats_call(nats, req, error);
+    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
+        return error.empty() ? "save_instrument_strike failed" : error;
+    return {};
+}
+
+/**
  * @brief Saves the strike group, which the option row has no column for.
  *
  * @return An empty string on success, or the first failure.
@@ -1479,27 +1512,20 @@ std::string save_strike(Nats& nats,
                         const boost::uuids::uuid& trade_id,
                         const boost::uuids::uuid& trade_activity_id,
                         const ores::trading::domain::bond_strike_data& strike) {
-    using ores::trading::messaging::put_instrument_strike_request;
-
-    put_instrument_strike_request req;
-    req.change.write.trade_id = trade_id;
-    req.change.write.trade_activity_id = trade_activity_id;
     // A bond states one strike with no arm to name, and bond_strike_data is a
     // hand-written carrier that predates the role column.
-    req.change.write.strike_role = "single";
-    req.change.write.sequence_number = 1;
-    req.change.write.price_value = strike.price_value;
-    req.change.write.price_currency = strike.price_currency;
-    req.change.write.yield_value = strike.yield_value;
-    req.change.write.yield_compounding = strike.yield_compounding;
-    req.change.write.bare_value = strike.bare_value;
-    req.change.write.bare_currency = strike.bare_currency;
-
-    std::string error;
-    auto resp = nats_call(nats, req, error);
-    if (!resp || resp->result.outcome != ores::utility::domain::outcome::ok)
-        return error.empty() ? "save_instrument_strike failed" : error;
-    return {};
+    ores::trading::domain::instrument_strike row;
+    row.trade_id = trade_id;
+    row.trade_activity_id = trade_activity_id;
+    row.strike_role = "single";
+    row.sequence_number = 1;
+    row.price_value = strike.price_value;
+    row.price_currency = strike.price_currency;
+    row.yield_value = strike.yield_value;
+    row.yield_compounding = strike.yield_compounding;
+    row.bare_value = strike.bare_value;
+    row.bare_currency = strike.bare_currency;
+    return save_instrument_strike(nats, row);
 }
 
 /**
@@ -2451,18 +2477,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                     // underlying swap's schedules, and the swaption's option
                     // block and its children.
                     for (const auto& strike : r.strikes) {
-                        put_instrument_strike_request strike_req;
-                        strike_req.change.write.trade_id = strike.trade_id;
-                        strike_req.change.write.trade_activity_id = strike.trade_activity_id;
-                        strike_req.change.write.price_value = strike.price_value;
-                        strike_req.change.write.price_currency = strike.price_currency;
-                        strike_req.change.write.yield_value = strike.yield_value;
-                        strike_req.change.write.yield_compounding = strike.yield_compounding;
-                        strike_req.change.write.bare_value = strike.bare_value;
-                        strike_req.change.write.bare_currency = strike.bare_currency;
-                        auto strike_resp = nats_call(delegated_nats, strike_req, instr_error);
-                        if (!strike_resp ||
-                            strike_resp->result.outcome != ores::utility::domain::outcome::ok)
+                        instr_error = save_instrument_strike(delegated_nats, strike);
+                        if (!instr_error.empty())
                             return false;
                     }
 
@@ -3048,18 +3064,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             return false;
                     }
                     for (const auto& strike : r.strikes) {
-                        put_instrument_strike_request strike_req;
-                        strike_req.change.write.trade_id = strike.trade_id;
-                        strike_req.change.write.trade_activity_id = strike.trade_activity_id;
-                        strike_req.change.write.price_value = strike.price_value;
-                        strike_req.change.write.price_currency = strike.price_currency;
-                        strike_req.change.write.yield_value = strike.yield_value;
-                        strike_req.change.write.yield_compounding = strike.yield_compounding;
-                        strike_req.change.write.bare_value = strike.bare_value;
-                        strike_req.change.write.bare_currency = strike.bare_currency;
-                        auto strike_resp = nats_call(delegated_nats, strike_req, instr_error);
-                        if (!strike_resp ||
-                            strike_resp->result.outcome != ores::utility::domain::outcome::ok)
+                        instr_error = save_instrument_strike(delegated_nats, strike);
+                        if (!instr_error.empty())
                             return false;
                     }
                     for (const auto& schedule : r.schedules) {

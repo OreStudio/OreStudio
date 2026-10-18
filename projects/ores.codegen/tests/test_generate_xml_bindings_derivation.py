@@ -377,8 +377,8 @@ def test_a_member_under_an_optional_group_is_not_required(tmp_path):
 def test_a_member_named_like_an_earlier_type_is_qualified(tmp_path):
     """A member declared earlier hides a type of the same name.
 
-    `leaf leaf; other leaf;` reads the second `leaf` as the member declared
-    first, so the type has to be spelled with the struct keyword.
+    A string member named `leaf` is in scope when an element of type `leaf` is
+    declared after it, so the type has to be spelled with the struct keyword.
     """
     emitted, _source = _emit(
         tmp_path,
@@ -412,6 +412,79 @@ def test_two_alternatives_with_different_cardinality_are_refused(tmp_path):
     <xs:choice>
       <xs:element type="xs:int" name="Shared"/>
       <xs:element type="xs:int" name="Shared" maxOccurs="unbounded"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
+    assert result.returncode != 0
+    assert "Shared" in result.stderr
+
+
+def test_a_member_named_like_its_own_type_is_also_qualified_when_used_again(tmp_path):
+    """`leaf leaf;` compiles, but a later `leaf` of the same type does not."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="leaf" name="leaf"/>
+      <xs:element type="leaf" name="second"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="leaf">
+    <xs:sequence><xs:element type="xs:string" name="Value" minOccurs="0"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "struct leaf leaf;" in record
+    assert "struct leaf second;" in record
+
+
+def test_an_attribute_named_after_a_type_shadows_it_too(tmp_path):
+    """Attributes are declared before elements, so they shadow for every element."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="leaf" name="first"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="leaf"/>
+  </xs:complexType>
+  <xs:complexType name="leaf">
+    <xs:sequence><xs:element type="xs:string" name="Value" minOccurs="0"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "std::string leaf;" in record
+    assert "struct leaf first;" in record
+
+
+def test_two_alternatives_with_different_inline_types_are_refused(tmp_path):
+    """Two inline types of the same size are still two shapes."""
+    (tmp_path / "choice.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:choice>
+      <xs:element name="Shared">
+        <xs:complexType><xs:sequence>
+          <xs:element type="xs:string" name="Alpha"/>
+        </xs:sequence></xs:complexType>
+      </xs:element>
+      <xs:element name="Shared">
+        <xs:complexType><xs:sequence>
+          <xs:element type="xs:int" name="Beta"/>
+        </xs:sequence></xs:complexType>
+      </xs:element>
     </xs:choice>
   </xs:complexType>
 </xs:schema>

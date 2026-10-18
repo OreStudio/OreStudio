@@ -326,12 +326,17 @@ def children_of(complex_type, schema=None, bases=frozenset()):
         """
         reference = element.get("ref")
         target = element if reference is None else schema.elements.get(reference, element)
+        # An element written with its own type has no `type` attribute, so the
+        # name the generator gave that inline type stands in for its shape. Two
+        # alternatives that each write a different inline type therefore do not
+        # agree, however many children each happens to have.
+        inline = schema.inline_name.get(id(target))
         return (
             reference or target.get("name"),
-            target.get("type"),
+            target.get("type") or inline,
             element.get("minOccurs"),
             element.get("maxOccurs"),
-            len(target),
+            tuple(schema.inline_enum.get(id(target), ())),
         )
 
     first_by_key, kept = {}, []
@@ -352,7 +357,7 @@ def children_of(complex_type, schema=None, bases=frozenset()):
     # document does not say whether it is an element or an attribute. A type
     # that spelled both the same would make that lookup ambiguous, so it is
     # refused here rather than resolved silently later.
-    element_names = [element.get("name") for element in elements]
+    element_names = [element.get("name") or element.get("ref") for element in elements]
     attribute_names = [attribute.get("name") for attribute in attributes]
     # A name the base already holds, or the same name as both an element and an
     # attribute, would give the record two members at different offsets and the
@@ -660,10 +665,12 @@ def shadowed_types(schema, ordered, names):
     resolves. This is the only place the generator needs that spelling, so no
     type has to be renamed for it.
     """
+    # The members are listed in the order the record declares them, which is
+    # the order render writes them: attributes first, then elements.
     fields = {}
     for type_name in ordered:
         elements, attributes = children_of(schema.complex_types[type_name], schema)
-        held = []
+        held = [(snake(attribute.get("name")), None) for attribute in attributes]
         for element in elements:
             for field in expand(schema, element):
                 if not field.get("name"):
@@ -672,8 +679,6 @@ def shadowed_types(schema, ordered, names):
                     id(field), field.get("name")
                 )
                 held.append((snake(field.get("name")), target))
-        for attribute in attributes:
-            held.append((snake(attribute.get("name")), None))
         fields[type_name] = held
 
     shadowed = set()

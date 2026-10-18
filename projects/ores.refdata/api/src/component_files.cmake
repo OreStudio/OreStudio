@@ -1767,6 +1767,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/portfolio_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/portfolio_right_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/producer_kind_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/publish_operation_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/purpose_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/regulatory_book_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.refdata.api/messaging/regulatory_corporate_sector_protocol.hpp"

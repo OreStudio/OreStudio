@@ -120,8 +120,8 @@ struct raw_jetstream {
         natsOptions_SetURL(opts, options.url.c_str());
         if (!options.tls_ca_cert.empty()) {
             natsOptions_SetSecure(opts, true);
-            const natsStatus ca = natsOptions_LoadCATrustedCertificates(
-                opts, options.tls_ca_cert.c_str());
+            const natsStatus ca =
+                natsOptions_LoadCATrustedCertificates(opts, options.tls_ca_cert.c_str());
             if (ca != NATS_OK) {
                 natsOptions_Destroy(opts);
                 require_ok(ca, "load the CA certificate");
@@ -182,8 +182,8 @@ TEST_CASE("a_durable_consumer_survives_the_drain_that_stops_a_service",
     std::int64_t created_ns = 0;
     {
         auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 10, 30s);
-        const auto created = await_state(
-            admin, stream, durable, [](const consumer_status&) { return true; }, 5s);
+        const auto created =
+            await_state(admin, stream, durable, [](const consumer_status&) { return true; }, 5s);
         REQUIRE(created.has_value());
         created_ns = created->created_ns;
         CHECK(created_ns > 0);
@@ -192,9 +192,8 @@ TEST_CASE("a_durable_consumer_survives_the_drain_that_stops_a_service",
     // Leaving the scope drained the subscription, which is what a service
     // shutdown does. The server no longer reports the consumer as bound, so the
     // drain has been processed and what remains is the record it kept.
-    const auto drained =
-        await_state(admin, stream, durable, [](const consumer_status& s) { return !s.push_bound; },
-                    5s);
+    const auto drained = await_state(
+        admin, stream, durable, [](const consumer_status& s) { return !s.push_bound; }, 5s);
     if (!drained)
         FAIL("the consumer did not survive the drain: the server removed the "
              "consumer, which is the defect this test pins");
@@ -206,9 +205,8 @@ TEST_CASE("a_durable_consumer_survives_the_drain_that_stops_a_service",
     // subject, and its position says the work is outstanding.
     const std::string command = "command published while the service was down";
     nats.js_publish(subject, ores::nats::as_bytes(command));
-    const auto pending = await_state(admin, stream, durable,
-                                     [](const consumer_status& s) { return s.num_pending == 1; },
-                                     5s);
+    const auto pending = await_state(
+        admin, stream, durable, [](const consumer_status& s) { return s.num_pending == 1; }, 5s);
     if (!pending)
         FAIL("the command published while the service was down was not retained "
              "as outstanding work on the consumer");
@@ -275,13 +273,18 @@ TEST_CASE("a_consumer_created_by_js_subscribe_is_removed_when_its_subscription_d
     sub_options.Queue = queue.c_str();
 
     natsSubscription* sub = nullptr;
-    const natsStatus subscribed = js_Subscribe(
-        &sub, raw.js, full_subject.c_str(), discard_message, nullptr, nullptr, &sub_options,
-        nullptr);
+    const natsStatus subscribed = js_Subscribe(&sub,
+                                               raw.js,
+                                               full_subject.c_str(),
+                                               discard_message,
+                                               nullptr,
+                                               nullptr,
+                                               &sub_options,
+                                               nullptr);
     require_ok(subscribed, "js_Subscribe with an implicit consumer");
 
-    const auto created = await_state(admin, stream, durable,
-                                     [](const consumer_status&) { return true; }, 5s);
+    const auto created =
+        await_state(admin, stream, durable, [](const consumer_status&) { return true; }, 5s);
     REQUIRE(created.has_value());
 
     natsSubscription_Drain(sub);
@@ -291,8 +294,8 @@ TEST_CASE("a_consumer_created_by_js_subscribe_is_removed_when_its_subscription_d
     // The same drain that leaves the production consumer in place removes this
     // one. If it did not, the main case would pass against the old behaviour
     // and would prove nothing.
-    const auto removed = await_state(admin, stream, durable,
-                                     [](const consumer_status&) { return false; }, 5s);
+    const auto removed =
+        await_state(admin, stream, durable, [](const consumer_status&) { return false; }, 5s);
     INFO("an implicitly created consumer must disappear on drain");
     CHECK_FALSE(removed.has_value());
 }
@@ -324,17 +327,20 @@ TEST_CASE("a_stored_consumer_takes_the_delivery_bound_the_code_asks_for",
     // The first start writes its numbers onto the consumer.
     {
         auto bound = nats.js_queue_subscribe(subject, durable, queue, handler, stream, 10, 30s);
-        const auto created = await_state(
-            admin, stream, durable, [](const consumer_status&) { return true; }, 5s);
+        const auto created =
+            await_state(admin, stream, durable, [](const consumer_status&) { return true; }, 5s);
         REQUIRE(created.has_value());
         CHECK(created->max_deliver == 10);
         CHECK(created->ack_wait_ns == 30'000'000'000LL);
 
         // One command is served, so the position to preserve is a real one.
         nats.js_publish(subject, ores::nats::as_bytes("serve before the change"));
-        const auto served =
-            await_state(admin, stream, durable,
-                        [](const consumer_status& s) { return s.ack_floor_stream == 1; }, 10s);
+        const auto served = await_state(
+            admin,
+            stream,
+            durable,
+            [](const consumer_status& s) { return s.ack_floor_stream == 1; },
+            10s);
         REQUIRE(served.has_value());
         CHECK(served->max_deliver == 10);
         CHECK(served->created_ns == created->created_ns);

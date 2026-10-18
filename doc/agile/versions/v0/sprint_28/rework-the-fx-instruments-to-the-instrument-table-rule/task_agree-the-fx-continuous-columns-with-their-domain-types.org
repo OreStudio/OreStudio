@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/agree-the-fx-continuous-columns-with-their-domain-types
-#+pr:
+#+pr: 3507
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3507][#3507]] | [trading] Agree the FX variance strike with its domain type |
 
 * Review
 

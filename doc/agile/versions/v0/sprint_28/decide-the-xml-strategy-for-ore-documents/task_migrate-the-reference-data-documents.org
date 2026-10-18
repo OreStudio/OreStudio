@@ -29,9 +29,9 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Calendar adjustments, currency config, pricing engines, credit simulation and curve configuration read and write through the codec; the netting set XML mapper is deleted. |
+| Now          | Calendar adjustments, currency config, pricing engines, credit simulation and curve configuration read and write through the codec; stress testing has a table the harness proves; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Stress testing: its mapper is the next of the three families still read through the binding, and the smaller of the two documents left. |
+| Next         | The stress testing projection, which replaces its 830-line mapper, then the ORE run document. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -181,6 +181,14 @@ it is not the ORE =bool= enumeration, so it is read as a flag and written as
 =true= or =false=. A strike factor is a schema decimal in a double column, and
 the boundary converts it.
 
+* The stress testing table came before its projection
+
+The family's mapper is the last one whose only reader is the product, so it is
+the last family that has to move for the binding to go. Its table is generated
+from two schemas: =stress.xsd= names a =shiftTypeEntry= that lives in
+=sensitivity.xsd=, and that file is read with it. The value harness proves all
+19 corpus documents before any of the mapping moves.
+
 * Where the work stands
 
 Verified on main at the time of writing, with the commands that prove each
@@ -188,8 +196,8 @@ line.
 
 | Claim | Evidence |
 |-------+----------|
-| Ten families are supported, each with a generated table | =python3 build/scripts/check_xml_family_coverage.py= |
-| Eight families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
+| Eleven families are supported, each with a generated table | =python3 build/scripts/check_xml_family_coverage.py= |
+| Nine families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
 | Three still read through xsdcpp: ORE, Portfolio, StressTesting | same |
 | Curve configuration documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 89 of 89 |
 | Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 23 cases |
@@ -231,7 +239,8 @@ task and name that file in the Command column.
 | XML suites | 509 cases, 79,240 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
 | Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 4e8b75caec |
 | XML suites after the curve configuration table | 497 cases, 82,020 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 4e8b75caec |
-| Corpus documents the value harness sweeps | 335 | same | 4e8b75caec |
+| Corpus documents the value harness sweeps | 354 | same | 488e82f0b8 |
+| Stress testing documents that bind, write and keep every value | 19 of 19 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 488e82f0b8 |
 | Curve configurations that project and project back | 89 of 89 | =publish/bin/ores.ore.core.tests "[curveconfig]"= | 97015dc883 |
 | XML suites after the curve configuration migration | 502 cases, 82,086 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 97015dc883 |
 

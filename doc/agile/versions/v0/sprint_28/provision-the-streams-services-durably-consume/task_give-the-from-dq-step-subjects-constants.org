@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -83,3 +83,25 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+The four services now name a generated constant instead of a hand-written literal
+for every from-DQ trigger: refdata 47, dq 6, assets 1, marketdata 1.
+
+Nothing was missing in the generator. It emits a subject constant for a message a
+codegen operation model declares, and none of these four declared its triggers
+there: refdata had no such model, assets and marketdata had one but did not name
+the trigger in it, and dq declared only the payloads and said in prose that the
+subjects stayed in the registrar. The protocol tables in each component are
+documentation that the generator never reads. So the fix was to declare them.
+
+Each subject is declared once in a model and projected once into C++. The proof
+that nothing changed is a comparison rather than two passing runs: the check was
+run against a clean extraction of the previous commit and against this tree, and
+the subject sets are identical, 19 streams, 17 consumers and 87 subjects in both,
+with nothing only before and nothing only after. All 55 constants were also
+confirmed equal to the target subject rows already seeded in DQ.
+
+Live, the restarted services expose identical stream filters: refdata 94, dq 12,
+assets 2, marketdata 2.

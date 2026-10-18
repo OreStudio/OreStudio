@@ -59,7 +59,10 @@ re-checked every citation. Thirteen claims and one finding did not survive that:
 five claims in the main thread and eight from the verifier, plus the one
 withdrawal. All fourteen are recorded in *Corrections made while checking*. No
 build, test or database run: every claim is from source artefacts at tree
-=3a49daea81=.
+=3a49daea81=. That tree was the base when the review was written; the base moved
+to =b4e641ed35= while it was in review, a nightly format run that touches
+twenty-five files and none of them an artefact cited here, so every citation
+below resolves to the same content on either tree.
 
 | What | Value | Command |
 |------+-------+---------|

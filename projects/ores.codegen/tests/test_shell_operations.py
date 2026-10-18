@@ -158,6 +158,9 @@ class TestHowFieldsArrive:
         "std::uint64_t",
         "boost::uuids::uuid", "std::uint16_t", "double",
         "std::vector<std::string>",
+        "std::chrono::system_clock::time_point",
+        "std::optional<std::chrono::system_clock::time_point>",
+        "std::optional<boost::uuids::uuid>",
     ])
     def test_a_type_a_token_can_fill_is_fillable(self, cpp_type):
         commands = shell_command_projection([
@@ -165,6 +168,19 @@ class TestHowFieldsArrive:
                      [_field("v", cpp_type)]),
         ])
         assert commands[0]["unsupported"] == []
+
+    def test_an_optional_of_a_fillable_type_is_filled_from_its_value_type(self):
+        # from_token reads a std::optional<T> as the absent token or a T, so
+        # the command fills it. Before this the set named value types only and
+        # an optional field was refused, which is why an absent time bound
+        # could not be modelled as std::optional<time_point>.
+        field = _shell_field(_field("v", "std::optional<std::chrono::system_clock::time_point>"))
+        assert field["fillable"] is True
+        assert field["token_literal"] == "2026-01-01T00:00:00Z"
+
+    def test_an_optional_of_an_unfillable_type_is_still_refused(self):
+        field = _shell_field(_field("v", "std::optional<std::vector<int>>"))
+        assert field["fillable"] is False
 
 
 class TestTokenLiterals:

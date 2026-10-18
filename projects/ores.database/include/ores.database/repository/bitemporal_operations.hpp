@@ -365,9 +365,16 @@ ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx,
  * binding. Each inner vector represents a row, with column values as optional
  * strings (nullopt for NULL values).
  *
+ * A parameter that is @c std::nullopt binds as SQL NULL, so a read that narrows
+ * on a value the caller may not state passes NULL rather than a placeholder
+ * text that the statement then has to recognise and undo. The statement
+ * compares such a parameter with @c is\ null and needs no cast-guard. A plain
+ * string converts, so a parameter list states an absent value only where it has
+ * one.
+ *
  * @param ctx The repository context
  * @param sql The SQL query with $1, $2, etc. placeholders
- * @param params Vector of parameter values
+ * @param params Vector of parameter values, where a nullopt is a SQL NULL
  * @param lg The logger to use
  * @param operation_desc Description of the operation for logging
  * @return A vector of rows, where each row is a vector of optional<string>
@@ -377,11 +384,18 @@ ORES_DATABASE_EXPORT void execute_parameterized_command(context ctx,
  *     "SELECT id, status FROM ores_mq_messages_tbl WHERE queue_id = $1::uuid",
  *     {queue_id},
  *     lg(), "Reading queue messages");
+ *
+ * @example
+ * // A window bound the caller stated no value for:
+ * auto rows = execute_parameterized_multi_column_query(ctx_,
+ *     "SELECT id FROM t WHERE ($1::timestamptz is null or at >= $1::timestamptz)",
+ *     {from_time},
+ *     lg(), "Reading by a window");
  */
 ORES_DATABASE_EXPORT std::vector<std::vector<std::optional<std::string>>>
 execute_parameterized_multi_column_query(context ctx,
                                          const std::string& sql,
-                                         const std::vector<std::string>& params,
+                                         const std::vector<std::optional<std::string>>& params,
                                          logging::logger_t& lg,
                                          const std::string& operation_desc);
 

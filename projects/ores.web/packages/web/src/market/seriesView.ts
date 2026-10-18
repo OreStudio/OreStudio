@@ -20,17 +20,9 @@
  */
 
 import type { Observation } from '@ores/contracts';
+import { fromWireTimestamp } from '@ores/wire-protocol/browser';
 import type { RecordRow } from '../api/client.js';
 import type { TitledIdentity } from '../oresmd/title.js';
-
-/**
- * The instant as ISO text. The wire writes UTC with a Z, and a text with no zone is
- * read as UTC too, so the viewer's own zone never shifts a point.
- */
-function instantText(text: string): string {
-    const iso = text.trim().replace(' ', 'T');
-    return /(Z|[+-]\d\d:?\d\d)$/.test(iso) ? iso : `${iso}Z`;
-}
 
 /** One observation as a point of a chart: its instant in milliseconds and its value. */
 export interface Point {
@@ -40,16 +32,18 @@ export interface Point {
 
 /**
  * The points a chart can draw from the observations. An observation whose
- * instant or value does not read as a number is left out, because a chart of a
- * made-up zero would say something no source said. The order of the observations
- * is kept.
+ * value does not read as a number is left out, because a chart of a made-up
+ * zero would say something no source said. The instant is the wire
+ * protocol's own conversion, and the schema that parsed the observation has
+ * already refused anything that is not the wire shape. The order of the
+ * observations is kept.
  */
 export function pointsOf(observations: readonly Observation[]): readonly Point[] {
     const points: Point[] = [];
     for (const observation of observations) {
-        const at = Date.parse(instantText(observation.at));
+        const at = fromWireTimestamp(observation.at).getTime();
         const value = Number(observation.value);
-        if (Number.isFinite(at) && observation.value.trim() !== '' && Number.isFinite(value)) {
+        if (observation.value.trim() !== '' && Number.isFinite(value)) {
             points.push({ at, value });
         }
     }

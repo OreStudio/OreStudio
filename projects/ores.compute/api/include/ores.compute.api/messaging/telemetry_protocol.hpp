@@ -166,7 +166,7 @@ struct get_grid_stats_response {
     /**
      * @brief ISO-8601 timestamp of when the sample was taken.
      */
-    std::string sampled_at;
+    std::chrono::system_clock::time_point sampled_at;
     /**
      * @brief Per-node summaries from the most recent node samples.
      */
@@ -194,11 +194,11 @@ struct get_grid_series_request {
     /**
      * @brief ISO-8601 start of the range, inclusive.
      */
-    std::string start_time;
+    std::chrono::system_clock::time_point start_time;
     /**
      * @brief ISO-8601 end of the range, exclusive.
      */
-    std::string end_time;
+    std::chrono::system_clock::time_point end_time;
     /**
      * @brief Width of a bucket in seconds.
      */
@@ -228,7 +228,7 @@ struct get_grid_series_response {
     /**
      * @brief ISO-8601 start of the first bucket.
      */
-    std::string start_time;
+    std::chrono::system_clock::time_point start_time;
     /**
      * @brief Width of a bucket in seconds.
      */
@@ -317,11 +317,11 @@ struct get_node_series_request {
     /**
      * @brief ISO-8601 start of the range, inclusive.
      */
-    std::string start_time;
+    std::chrono::system_clock::time_point start_time;
     /**
      * @brief ISO-8601 end of the range, exclusive.
      */
-    std::string end_time;
+    std::chrono::system_clock::time_point end_time;
     /**
      * @brief Width of a bucket in seconds.
      */
@@ -367,7 +367,7 @@ struct get_node_series_response {
     /**
      * @brief ISO-8601 start of the first bucket.
      */
-    std::string start_time;
+    std::chrono::system_clock::time_point start_time;
     /**
      * @brief Width of a bucket in seconds.
      */
@@ -446,7 +446,7 @@ struct node_sample_message {
     /**
      * @brief ISO-8601 timestamp of the sample.
      */
-    std::string sampled_at;
+    std::chrono::system_clock::time_point sampled_at;
     /**
      * @brief Tasks finished since the wrapper started.
      */

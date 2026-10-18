@@ -95,7 +95,7 @@ function session(overrides: Partial<Session> = {}): Session {
         id: SESSION_ID,
         accountId: ACCOUNT_ID,
         startTime: new Date().toISOString().replace('T', ' ').slice(0, 19) + 'Z',
-        endTime: '',
+        endTime: null,
         clientIp: '203.0.113.44',
         clientIdentifier: 'ores.web',
         clientVersionMajor: 0,
@@ -268,7 +268,7 @@ describe('the audit sign-ins screen', () => {
             failedLogins: 0,
             locked: false,
             online: false,
-            lastLogin: '1970-01-01 00:00:00Z',
+            lastLogin: null,
             lastAttemptIp: '0.0.0.0',
         });
         const html = renderFailures([never], false);
@@ -281,7 +281,7 @@ describe('the audit sign-ins screen', () => {
     });
 
     it('hides the accounts that never signed in until the button is released', () => {
-        const never = loginInfo({ lastLogin: '1970-01-01 00:00:00Z' });
+        const never = loginInfo({ lastLogin: null });
 
         expect(renderFailures([never], true)).not.toContain(ACCOUNT_ID);
         expect(renderFailures([never], true)).toContain('Every record is hidden');
@@ -381,20 +381,24 @@ describe('the audit helpers', () => {
         expect(isZeroAddress('198.51.100.7')).toBe(false);
     });
 
-    it('drops the accounts that never signed in, whether the time is empty or zero', () => {
+    it('drops the accounts whose record states no last sign-in', () => {
         const signedIn = loginInfo({ lastLogin: '2026-09-29 21:03:00Z' });
-        const never = loginInfo({ lastLogin: '1970-01-01 00:00:00Z' });
+        const never = loginInfo({ lastLogin: null });
 
         expect(withoutNeverSignedIn([signedIn, never])).toEqual([signedIn]);
         expect(withoutNeverSignedIn([never])).toEqual([]);
     });
 
     it('orders the most failed first, then the accounts that have signed in', () => {
-        const accountA = loginInfo({ accountId: ACCOUNT_ID, failedLogins: 2, lastLogin: '' });
+        const accountA = loginInfo({
+            accountId: ACCOUNT_ID,
+            failedLogins: 2,
+            lastLogin: null,
+        });
         const accountB = loginInfo({
             accountId: uuid('22222222-2222-2222-2222-222222222222'),
             failedLogins: 5,
-            lastLogin: '1970-01-01 00:00:00Z',
+            lastLogin: null,
         });
         const accountC = loginInfo({
             accountId: uuid('33333333-3333-3333-3333-333333333333'),

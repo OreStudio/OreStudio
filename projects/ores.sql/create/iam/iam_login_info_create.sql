@@ -55,7 +55,7 @@ create table if not exists "ores_iam_login_info_tbl" (
     "last_attempt_ip" inet not null,
     "failed_logins" integer not null,
     "locked" boolean not null,
-    "last_login" timestamp with time zone not null,
+    "last_login" timestamp with time zone null,
     "online" boolean not null,
     "password_reset_required" boolean not null default false,
     primary key (account_id)

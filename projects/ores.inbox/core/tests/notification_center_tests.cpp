@@ -78,7 +78,7 @@ TEST_CASE("a_raised_notification_reaches_each_recipient_with_its_values", tags) 
     CHECK(it->kind_code == "inbox.approval_waiting");
     CHECK(it->message_key == "notification.inbox.approval_waiting");
     CHECK(it->link_route == "requests");
-    CHECK(it->read_at.empty());
+    CHECK_FALSE(it->read_at.has_value());
     REQUIRE(it->arguments.size() == 2);
     CHECK(it->arguments[0].name == "kind");
     CHECK(it->arguments[1].value == "Covers, \"the\" {desk}");

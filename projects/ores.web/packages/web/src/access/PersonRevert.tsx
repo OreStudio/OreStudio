@@ -24,6 +24,7 @@ import type { ReactNode } from 'react';
 import {
     TIMELINE_PROVENANCE_FIELDS,
     fieldValue,
+    wireTimestamp,
     type HistoryVersion,
     type TimelineEvent,
 } from '@ores/wire-protocol/browser';
@@ -68,7 +69,7 @@ function versionOf(event: TimelineEvent): HistoryVersion {
     return {
         version: event.version,
         modifiedBy: event.actor,
-        recordedAt: event.at,
+        recordedAt: wireTimestamp(event.at),
         fields: [...event.fields],
         changes: [],
     };

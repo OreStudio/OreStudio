@@ -19,13 +19,13 @@
  *
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { OresClient } from './client.js';
 import { z } from 'zod';
 import { NotAuthenticatedError, OperationFailedError, SessionExpiredError } from './errors.js';
 import { WireCodec } from './codec.js';
 import type { MessageEnvelope, Reply, RequestHeaders, Transport } from './transport.js';
-import { wireTimestamp } from './primitives.js';
+import { wireTimestamp } from './time.js';
 
 interface RecordedCall {
     readonly subject: string;
@@ -488,7 +488,15 @@ describe('OresClient authenticated calls', () => {
     it('refuses a grid read the server did not produce, rather than reading it as idle', async () => {
         const transport = new ScriptedTransport({
             'iam.v1.ops.login': [{ body: loginReply() }],
-            'compute.v1.ops.get_grid_stats': [{ body: { success: false, message: 'denied' } }],
+            'compute.v1.ops.get_grid_stats': [
+                {
+                    body: {
+                        success: false,
+                        message: 'denied',
+                        sampled_at: '1970-01-01 00:00:00.000000Z',
+                    },
+                },
+            ],
         });
         const client = new OresClient({ transport });
         await client.login({ principal: 'probe', password: 'secret' });
@@ -574,10 +582,22 @@ describe('OresClient authenticated calls', () => {
         const transport = new ScriptedTransport({
             'iam.v1.ops.login': [{ body: loginReply() }],
             'compute.v1.ops.get_grid_series': [
-                { body: { success: false, message: 'The range needs 9000 buckets.' } },
+                {
+                    body: {
+                        success: false,
+                        message: 'The range needs 9000 buckets.',
+                        start_time: '1970-01-01 00:00:00.000000Z',
+                    },
+                },
             ],
             'compute.v1.ops.get_node_series': [
-                { body: { success: false, message: 'The range needs 9000 buckets.' } },
+                {
+                    body: {
+                        success: false,
+                        message: 'The range needs 9000 buckets.',
+                        start_time: '1970-01-01 00:00:00.000000Z',
+                    },
+                },
             ],
         });
         const client = new OresClient({ transport });
@@ -1173,15 +1193,51 @@ describe('listening to published events', () => {
         const payload = new WireCodec('msgpack').encode({
             event_id: '44444444-4444-4444-4444-444444444444',
             action: 'updated',
-            occurred_at: '2026-10-10T12:00:03Z',
+            occurred_at: '2026-10-10 12:00:03Z',
         });
         deliver?.(payload, { tenantId: 't1', partyId: 'p1' });
         deliver?.(payload, { tenantId: undefined, partyId: undefined });
 
         expect(heard).toEqual([
-            { at: '2026-10-10T12:00:03Z', tenantId: 't1', partyId: 'p1', key: {} },
-            { at: '2026-10-10T12:00:03Z', tenantId: undefined, partyId: undefined, key: {} },
+            { at: '2026-10-10 12:00:03Z', tenantId: 't1', partyId: 'p1', key: {} },
+            { at: '2026-10-10 12:00:03Z', tenantId: undefined, partyId: undefined, key: {} },
         ]);
+    });
+
+    it('logs and throws a change whose instant is not the wire shape', () => {
+        let deliver: ((payload: Uint8Array, envelope: MessageEnvelope) => void) | undefined;
+        const transport = {
+            async request(): Promise<Reply> {
+                throw new Error('not used');
+            },
+            async close(): Promise<void> {
+                return undefined;
+            },
+            subscribe(
+                _relative: string,
+                onMessage: (payload: Uint8Array, envelope: MessageEnvelope) => void,
+            ) {
+                deliver = onMessage;
+                return () => undefined;
+            },
+        } as unknown as Transport;
+        new OresClient({ transport }).subscribeToEvents('iam.v1.accounts_events.>', () => undefined);
+        const payload = new WireCodec('msgpack').encode({
+            occurred_at: '2026-10-10T12:00:03Z',
+            key: {},
+        });
+        const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        try {
+            expect(() => deliver?.(payload, { tenantId: 't1', partyId: undefined })).toThrow(
+                'Not a wire timestamp: "2026-10-10T12:00:03Z"',
+            );
+            expect(logged).toHaveBeenCalledWith(
+                'ores.wire-protocol: a change event did not parse',
+                expect.anything(),
+            );
+        } finally {
+            logged.mockRestore();
+        }
     });
 
     it('hands over the key of the record an event is about, as text', () => {
@@ -1206,7 +1262,7 @@ describe('listening to published events', () => {
             heard.push(change.key),
         );
         const encode = (key: unknown): Uint8Array =>
-            new WireCodec('msgpack').encode({ occurred_at: '2026-10-10T12:00:03Z', key });
+            new WireCodec('msgpack').encode({ occurred_at: '2026-10-10 12:00:03Z', key });
         const envelope = { tenantId: 't1', partyId: undefined };
         deliver?.(encode({ username: 'diane.kay', version: 4, nested: { a: 1 } }), envelope);
         deliver?.(encode(undefined), envelope);

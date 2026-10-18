@@ -105,7 +105,7 @@ public:
                 resp.outcomes_client_error = grid->outcomes_client_error;
                 resp.outcomes_no_reply = grid->outcomes_no_reply;
 
-                resp.sampled_at = std::format("{:%Y-%m-%dT%H:%M:%SZ}", grid->sampled_at);
+                resp.sampled_at = grid->sampled_at;
             }
 
             const auto nodes = repo.latest_node_samples(ctx);
@@ -170,10 +170,10 @@ public:
             using ores::platform::time::datetime;
             repository::compute_telemetry_repository repo;
             auto series = repo.grid_series_in_range(ctx,
-                                                    datetime::from_iso8601_utc(req->start_time),
-                                                    datetime::from_iso8601_utc(req->end_time),
+                                                    req->start_time,
+                                                    req->end_time,
                                                     req->bucket_seconds);
-            resp.start_time = datetime::to_iso8601_utc(series.start);
+            resp.start_time = series.start;
             resp.bucket_seconds = series.bucket_seconds;
             resp.bucket_count = series.bucket_count;
             resp.samples = std::move(series.samples);
@@ -281,10 +281,10 @@ public:
             using ores::platform::time::datetime;
             repository::compute_telemetry_repository repo;
             auto series = repo.node_series_in_range(ctx,
-                                                    datetime::from_iso8601_utc(req->start_time),
-                                                    datetime::from_iso8601_utc(req->end_time),
+                                                    req->start_time,
+                                                    req->end_time,
                                                     req->bucket_seconds);
-            resp.start_time = datetime::to_iso8601_utc(series.start);
+            resp.start_time = series.start;
             resp.bucket_seconds = series.bucket_seconds;
             resp.bucket_count = series.bucket_count;
             resp.nodes.reserve(series.nodes.size());

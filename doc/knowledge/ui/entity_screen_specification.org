@@ -794,7 +794,8 @@ by a direct edit for those who hold the update permission.
 - A refused read is a refusal and not a failure. The screen says the reader may
   not see this, in words, and never shows a permission code.
 - A time is relative with the exact time on hover. "Never signed in" is a phrase
-  and not 1 January 1970: a missing time is not a time.
+  and not 1 January 1970: a missing time is not a time, the server states null
+  for it, and no screen has a zero instant to explain.
 - Words are in sentence case, and the verbs are Add, Edit, Save, Delete, Remove,
   Revert, Refresh, Cancel and Propose. An entity's own action is a verb and its
   object.

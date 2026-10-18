@@ -28,6 +28,7 @@ import {
     lookupCountry,
     toWireTimestamp,
 } from '@ores/wire-protocol';
+import type { WireTimestamp } from '@ores/wire-protocol';
 import { invalidRequest } from './errors.js';
 import type { LiveSession } from './sessions.js';
 
@@ -53,13 +54,18 @@ const AUDIT_PERIOD_SECONDS: Readonly<Record<AuditPeriod, number>> = {
     all: 0,
 };
 
-/** The window one period names, as the wire timestamps the reads take. */
+/**
+ * The window one period names, as the instants the reads take.
+ *
+ * `all` names no window, and absence is stated as null: the read applies no
+ * bound on a side it is handed null for.
+ */
 export function auditWindow(
     period: AuditPeriod,
     now: number,
-): { readonly from: string; readonly to: string } {
+): { readonly from: WireTimestamp | null; readonly to: WireTimestamp | null } {
     if (period === 'all') {
-        return { from: '', to: '' };
+        return { from: null, to: null };
     }
     return {
         from: toWireTimestamp(new Date(now - AUDIT_PERIOD_SECONDS[period] * 1000)),

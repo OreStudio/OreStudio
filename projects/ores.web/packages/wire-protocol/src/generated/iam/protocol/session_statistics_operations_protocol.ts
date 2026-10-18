@@ -43,13 +43,14 @@ export interface SessionStatisticsRow {
 /**
  * @brief A window over the caller's tenant session statistics.
  *
- * An empty filter does not filter. The window is newest first, so the screen
- * reads the most recent days without asking for an order.
+ * A bound the caller states no value for is null, and the read then applies no
+ * bound on that side. The window is newest first, so the screen reads the most
+ * recent days without asking for an order.
  */
 export interface GetSessionStatisticsRequest {
     account_id: string;
-    from_time: string;
-    to_time: string;
+    from_time: string | null;
+    to_time: string | null;
     limit: number;
     offset: number;
 }

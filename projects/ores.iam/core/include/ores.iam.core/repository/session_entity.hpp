@@ -46,7 +46,7 @@ struct session_entity {
     sqlgen::PrimaryKey<std::string> start_time;
     std::string tenant_id;
     std::string account_id;
-    std::string end_time = "";
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> end_time;
     std::string client_ip;
     std::string client_identifier = "";
     std::uint16_t client_version_major = 0;

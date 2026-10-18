@@ -530,7 +530,7 @@ function loginRow(overrides: Partial<LoginInfo> = {}): LoginInfo {
         lastAttemptIp: '',
         failedLogins: 0,
         locked: false,
-        lastLogin: '',
+        lastLogin: null,
         online: false,
         passwordResetRequired: false,
         ...overrides,

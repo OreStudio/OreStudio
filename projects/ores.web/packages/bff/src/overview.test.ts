@@ -114,8 +114,9 @@ function wireRun(id: string, target: string, status: string, error = '') {
         step_count: 7,
         correlation_id: '',
         created_by: 'admin',
-        created_at: '2026-10-04T09:00:00Z',
-        completed_at: status === 'in_progress' ? null : '2026-10-04T09:05:00Z',
+        created_at: '2026-10-04 09:00:00.000000Z',
+        completed_at: status === 'in_progress' ? null : '2026-10-04 09:05:00.000000Z',
+        last_event_at: '2026-10-04 09:05:00.000000Z',
         error,
         target_kind: 'tenant',
         target_id: target,
@@ -286,7 +287,7 @@ describe('GET /api/overview', () => {
                 stepsDone: 4,
                 stepCount: 7,
                 error: 'Publishing failed.',
-                at: '2026-10-04T09:05:00Z',
+                at: '2026-10-04 09:05:00.000000Z',
             },
             {
                 instanceId: 'run-acme',
@@ -295,7 +296,7 @@ describe('GET /api/overview', () => {
                 stepsDone: 7,
                 stepCount: 7,
                 error: '',
-                at: '2026-10-04T09:05:00Z',
+                at: '2026-10-04 09:05:00.000000Z',
             },
         ]);
     });

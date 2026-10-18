@@ -35,7 +35,7 @@ export interface Session {
     id: string;
     start_time: string;
     account_id: string;
-    end_time: string;
+    end_time: string | null;
     client_ip: string;
     client_identifier: string;
     client_version_major: number;

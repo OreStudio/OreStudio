@@ -91,9 +91,9 @@ begin
 
     -- Sessions: end active sessions (uses end_time, not valid_to)
     update ores_iam_sessions_tbl
-    set end_time = ores_utility_iso8601_timestamp_fn(current_timestamp)
+    set end_time = current_timestamp
     where tenant_id = p_tenant_id
-    and end_time = '';
+    and end_time is null;
 
     get diagnostics v_affected_count = row_count;
     if v_affected_count > 0 then

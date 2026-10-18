@@ -293,13 +293,13 @@ TEST_CASE("get_my_sessions_returns_only_the_callers_open_sessions", tags) {
 
     auto open_mine = generate_synthetic_session(ctx);
     open_mine.account_id = a.id;
-    open_mine.end_time = "";
+    open_mine.end_time = std::nullopt;
     auto ended_mine = generate_synthetic_session(ctx);
     ended_mine.account_id = a.id;
-    ended_mine.end_time = "2026-10-01 10:00:00";
+    ended_mine.end_time = std::chrono::system_clock::now();
     auto open_theirs = generate_synthetic_session(ctx);
     open_theirs.account_id = boost::uuids::random_generator()();
-    open_theirs.end_time = "";
+    open_theirs.end_time = std::nullopt;
 
     repository::session_repository sessions;
     for (const auto& row : {open_mine, ended_mine, open_theirs})
@@ -636,8 +636,8 @@ std::vector<repository::auth_event_entity> lock_events(const ores::database::con
                                                        ctx.tenant_id().to_string(),
                                                        boost::uuids::to_string(account_id),
                                                        event_type,
-                                                       "",
-                                                       "",
+                                                       std::nullopt,
+                                                       std::nullopt,
                                                        100,
                                                        0);
 }

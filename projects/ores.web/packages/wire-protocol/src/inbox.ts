@@ -59,6 +59,7 @@ import {
     type RequestedRole,
 } from './generated/iam/protocol/role_request_operations_protocol.js';
 import { resultEnvelopeSchema } from './operations.js';
+import { nullableWireTimestampSchema, wireTimestampSchema, type WireTimestamp } from './time.js';
 import {
     orderTimeline,
     timelineEventSchema,
@@ -128,9 +129,9 @@ const wireApprovalRequestSchema = z.object({
     kind_code: z.string().default(''),
     state_code: z.string().default(''),
     requested_by: z.string().default(''),
-    requested_at: z.string().default(''),
+    requested_at: wireTimestampSchema,
     reason: z.string().default(''),
-    expires_at: z.string().nullable().default(null),
+    expires_at: nullableWireTimestampSchema,
 });
 
 const wireApprovalDecisionSchema = z.object({
@@ -138,7 +139,7 @@ const wireApprovalDecisionSchema = z.object({
     decision_code: z.string().default(''),
     part_code: z.string().nullable().default(null),
     decided_by: z.string().default(''),
-    decided_at: z.string().default(''),
+    decided_at: wireTimestampSchema,
     comment: z.string().default(''),
 });
 
@@ -152,11 +153,11 @@ const wireNotificationSchema = z.object({
     kind_code: z.string().default(''),
     message_key: z.string().default(''),
     raised_by: z.string().default(''),
-    raised_at: z.string().default(''),
+    raised_at: wireTimestampSchema,
     link_route: z.string().default(''),
     link_id: z.string().default(''),
     arguments: z.array(wireNotificationArgumentSchema).default([]),
-    read_at: z.string().default(''),
+    read_at: nullableWireTimestampSchema,
 });
 
 const wireRoleGrantRequestSchema = z.object({
@@ -207,8 +208,8 @@ const requestRolesReplySchema = z.object({
                     name: z.string(),
                     description: z.string(),
                 }),
-                asked_at: z.string().default(''),
-                applied_at: z.string().nullable().default(null),
+                asked_at: wireTimestampSchema,
+                applied_at: nullableWireTimestampSchema,
                 applied_by: z.string().default(''),
             }),
         )
@@ -225,7 +226,7 @@ const requestPartsReplySchema = z.object({
                 answer_order: z.int().nonnegative().default(0),
                 state: z.string().default(''),
                 decided_by: z.string().default(''),
-                decided_at: z.string().default(''),
+                decided_at: nullableWireTimestampSchema,
                 comment: z.string().default(''),
             }),
         )
@@ -240,7 +241,7 @@ const requestHistoryReplySchema = z.object({
                 version: z.int().nonnegative().default(0),
                 modified_by: z.string().default(''),
                 performed_by: z.string().default(''),
-                recorded_at: z.string().default(''),
+                recorded_at: wireTimestampSchema,
                 change_reason_code: z.string().default(''),
                 change_commentary: z.string().default(''),
                 fields: z
@@ -307,8 +308,8 @@ export interface InboxRequestedRole {
     readonly roleId: string;
     readonly name: string;
     readonly description: string;
-    readonly askedAt: string;
-    readonly appliedAt: string;
+    readonly askedAt: WireTimestamp;
+    readonly appliedAt: WireTimestamp | null;
     readonly appliedBy: string;
 }
 
@@ -321,7 +322,7 @@ export interface InboxRequestedRole {
 export const inboxRequestDecisionViewSchema = z.object({
     decisionCode: z.string().default(''),
     decidedBy: z.string().default(''),
-    decidedAt: z.string().default(''),
+    decidedAt: wireTimestampSchema,
     comment: z.string().default(''),
 });
 
@@ -339,7 +340,7 @@ export const inboxRequestPartViewSchema = z.object({
     answerOrder: z.int().nonnegative().default(0),
     stateCode: z.string().default(''),
     decidedBy: z.string().default(''),
-    decidedAt: z.string().default(''),
+    decidedAt: nullableWireTimestampSchema,
     comment: z.string().default(''),
 });
 
@@ -358,9 +359,9 @@ export const inboxRequestViewSchema = z.object({
     kindCode: z.string().default(''),
     stateCode: z.string().default(''),
     requestedBy: z.string().default(''),
-    requestedAt: z.string().default(''),
+    requestedAt: wireTimestampSchema,
     reason: z.string().default(''),
-    expiresAt: z.string().default(''),
+    expiresAt: nullableWireTimestampSchema,
     roles: z.array(inboxRequestRoleViewSchema).default([]),
     decision: inboxRequestDecisionViewSchema.nullable().default(null),
     // The parts are read for one request, not for a page, so a list draws none.
@@ -379,11 +380,11 @@ export const inboxNotificationViewSchema = z.object({
     kindCode: z.string().default(''),
     messageKey: z.string().default(''),
     raisedBy: z.string().default(''),
-    raisedAt: z.string().default(''),
+    raisedAt: wireTimestampSchema,
     linkRoute: z.string().default(''),
     linkId: z.string().default(''),
     arguments: z.array(wireNotificationArgumentSchema).default([]),
-    readAt: z.string().default(''),
+    readAt: nullableWireTimestampSchema,
 });
 
 /** One page of anything, with the size of the whole so a screen can page. */
@@ -566,7 +567,7 @@ async function readRequestedRoles(
         name: held.role.name,
         description: held.role.description,
         askedAt: held.asked_at,
-        appliedAt: held.applied_at ?? '',
+        appliedAt: held.applied_at,
         appliedBy: held.applied_by,
     }));
 }
@@ -750,7 +751,7 @@ function toRequestView(
         requestedBy: join.usernameByAccount.get(accountId) ?? accountId,
         requestedAt: wire.requested_at,
         reason: wire.reason,
-        expiresAt: wire.expires_at ?? '',
+        expiresAt: wire.expires_at,
         roles: join.rolesByRequest.get(wire.id) ?? [],
         decision: namedDecision(join.decisionByRequest.get(wire.id), join.usernameByAccount),
         parts: [],
@@ -988,7 +989,9 @@ async function readNoticesAbout(
                     name: argument.name,
                     value: argument.value,
                 })),
-                { name: 'Read At', value: notice.readAt },
+                ...(notice.readAt === null
+                    ? []
+                    : [{ name: 'Read At', value: notice.readAt as string }]),
             ],
         }));
 }
@@ -1018,7 +1021,7 @@ function roleEvents(roles: readonly InboxRequestedRole[]): readonly InboxStoryEv
                 { name: 'Description', value: held.description },
             ],
         });
-        if (held.appliedAt !== '') {
+        if (held.appliedAt !== null) {
             events.push({
                 entityType: REQUEST_ROLE_ENTITY,
                 entityId: held.roleId,

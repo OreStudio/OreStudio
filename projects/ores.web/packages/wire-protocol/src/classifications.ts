@@ -30,6 +30,7 @@ import type {
 } from './domain.js';
 import { readBadgeCatalogue } from './badges.js';
 import { OperationFailedError } from './errors.js';
+import { wireTimestampSchema } from './time.js';
 import { subjects as badgeMappingSubjects } from './generated/dq/protocol/badge_mapping_protocol.js';
 import {
     historySubjectFor,
@@ -595,7 +596,7 @@ const wireRowSchema = z.object({
     description: z.string().default(''),
     display_order: z.int().optional(),
     modified_by: z.string().default(''),
-    recorded_at: z.string().default(''),
+    recorded_at: wireTimestampSchema,
     change_reason_code: z.string().default(''),
     change_commentary: z.string().default(''),
 });
@@ -753,7 +754,7 @@ const historyReplySchema = z.object({
             z.object({
                 version: z.int().nonnegative().default(0),
                 modified_by: z.string().default(''),
-                recorded_at: z.string().default(''),
+                recorded_at: wireTimestampSchema,
                 fields: z
                     .array(z.object({ name: z.string(), value: z.string().default('') }))
                     .default([]),

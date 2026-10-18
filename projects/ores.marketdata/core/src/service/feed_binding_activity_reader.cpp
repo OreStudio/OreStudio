@@ -21,8 +21,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observation_repository.hpp"
-#include "ores.platform/time/datetime.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <string>
 #include <string_view>
@@ -49,9 +47,8 @@ feed_binding_activity_reader::activity_of(const std::string& source_name,
     messaging::feed_binding_activity activity;
     activity.source_name = source_name;
     if (newest) {
-        activity.series_id = boost::uuids::to_string(newest->series_id);
-        activity.last_tick_at =
-            ores::platform::time::datetime::to_iso8601_utc(newest->observation_datetime);
+        activity.series_id = newest->series_id;
+        activity.last_tick_at = newest->observation_datetime;
     }
     return activity;
 }

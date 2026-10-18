@@ -23,15 +23,16 @@ import type { ReactNode } from 'react';
 import type { LoginInfo } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import { Detail } from '../ui/Primitives.js';
-import { isZeroTimestamp, RelativeTime } from '../ui/Time.js';
+import { RelativeTime } from '../ui/Time.js';
 
 /**
  * What the server says about an account's sign-ins: when it last signed in,
  * from where, and how many attempts failed.
  *
  * The member's Security screen and the administrator's Rescue access screen show
- * these three facts the same way. A time that was never written is "Never
- * signed in", not a date in 1970, and an account with no record has no facts.
+ * these three facts the same way. An account that never signed in states null
+ * for its last sign-in and reads "Never signed in", not a date in 1970, and an
+ * account with no record has no facts.
  */
 export function SignInFacts({
     state,
@@ -50,7 +51,7 @@ export function SignInFacts({
             <Detail
                 label={t('signInFacts.lastSignIn')}
                 value={
-                    isZeroTimestamp(state.lastLogin) ? (
+                    state.lastLogin === null ? (
                         t('signInFacts.never')
                     ) : (
                         <RelativeTime at={state.lastLogin} />

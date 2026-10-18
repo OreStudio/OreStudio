@@ -31,16 +31,44 @@ describe('the activity of a feed binding', () => {
                     series_id: '5d0f4a1e-9c2b-4a6e-8f31-0a7b1c2d3e4f',
                     last_tick_at: '2026-10-12 23:50:26Z',
                 },
-                { source_name: 'synthetic.bloomberg.nzdusd', series_id: '', last_tick_at: '' },
+                { source_name: 'synthetic.bloomberg.nzdusd', series_id: null, last_tick_at: null },
             ],
         });
+        expect(list.activities[0]?.series_id).toBe('5d0f4a1e-9c2b-4a6e-8f31-0a7b1c2d3e4f');
+        expect(list.activities[0]?.last_tick_at).toBe('2026-10-12 23:50:26Z');
+        expect(list.activities[1]?.series_id).toBeNull();
+        expect(list.activities[1]?.last_tick_at).toBeNull();
         expect(list.activities.map(hasWritten)).toEqual([true, false]);
     });
 
     it('refuses an entry with no source name', () => {
         expect(
             feedBindingActivityListSchema.safeParse({
-                activities: [{ series_id: '', last_tick_at: '' }],
+                activities: [{ series_id: null, last_tick_at: null }],
+            }).success,
+        ).toBe(false);
+    });
+
+    it('refuses an empty string where an instant is absent, which null is the only spelling of', () => {
+        expect(
+            feedBindingActivityListSchema.safeParse({
+                activities: [
+                    { source_name: 'synthetic.bloomberg.nzdusd', series_id: '', last_tick_at: '' },
+                ],
+            }).success,
+        ).toBe(false);
+    });
+
+    it('refuses a last tick that is not the wire shape', () => {
+        expect(
+            feedBindingActivityListSchema.safeParse({
+                activities: [
+                    {
+                        source_name: 'synthetic.bloomberg.audusd',
+                        series_id: null,
+                        last_tick_at: '2026-10-12T23:50:26+00:00',
+                    },
+                ],
             }).success,
         ).toBe(false);
     });

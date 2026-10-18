@@ -44,7 +44,7 @@ function linkVersion(number: number, closedAt = '', closedBy = '') {
     return {
         version: number,
         modifiedBy: 'priya',
-        recordedAt: `2026-10-0${String(number)}T10:00:00Z`,
+        recordedAt: `2026-10-0${String(number)} 10:00:00Z`,
         fields: [
             { name: 'ID', value: 'acct-1/role-1' },
             { name: 'Account', value: 'acct-1' },
@@ -69,7 +69,7 @@ describe('a person’s roles in their timeline', () => {
     it('shows a role given, and a role taken away, by the role’s name', async () => {
         reads.history.mockImplementation(async (_caller: unknown, entity: string) =>
             entity === 'ores.iam.account_role'
-                ? [linkVersion(1), linkVersion(2, '2026-10-05T10:00:00Z', 'tenant_admin')]
+                ? [linkVersion(1), linkVersion(2, '2026-10-05 10:00:00Z', 'tenant_admin')]
                 : [],
         );
 

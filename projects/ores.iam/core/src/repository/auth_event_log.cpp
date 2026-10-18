@@ -24,6 +24,7 @@
 #include "ores.iam.core/repository/audit_scope.hpp"
 #include "ores.iam.core/repository/auth_event_entity.hpp"
 #include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -165,46 +166,55 @@ auth_event_log::read_events(const context& ctx,
                             const std::string& tenant_id,
                             const std::string& account_id,
                             const std::string& event_type,
-                            const std::string& from_time,
-                            const std::string& to_time,
+                            const std::optional<std::chrono::system_clock::time_point>& from_time,
+                            const std::optional<std::chrono::system_clock::time_point>& to_time,
                             std::uint32_t limit,
                             std::uint32_t offset) {
     /*
-     * The filters are optional, and the statement says so itself: an empty
-     * parameter does not filter. Building the WHERE clause in C++ would
-     * branch once per combination, and the table's (tenant_id, event_time)
-     * index still orders the scan.
+     * A window bound the caller states no value for binds as SQL NULL, so the
+     * statement asks is null and applies no bound on that side. The bounds
+     * reach the column as timestamptz: the parameter is cast once, in the
+     * statement, because text does not compare against the column.
      *
-     * The time bounds arrive as text, because a wire timestamp crosses the
-     * protocol as one, and text does not compare against the timestamptz
-     * column: PostgreSQL refuses the comparison rather than coercing the
-     * parameter, so the read has to name the cast. It goes through nullif
-     * so the empty value stays the filter turned off -- casting the empty
-     * string on its own raises instead of yielding null.
+     * event_time is rendered in UTC here, in the project's one wire shape.
+     * A bare timestamptz column carries the reading session's text
+     * rendering, which changes with its timezone; to_char at time zone 'UTC'
+     * states the microsecond and appends the Z that from_iso8601_utc
+     * requires. See doc/knowledge/architecture/time_architecture.org.
      */
     static const std::string sql =
-        "select id, event_time, tenant_id, account_id, event_type, username, "
+        "select id, "
+        "to_char(event_time at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') || 'Z', "
+        "tenant_id, account_id, event_type, username, "
         "session_id, party_id, error_detail "
         "from ores_iam_auth_events_tbl "
         "where tenant_id = $1 "
         "and ($2 = '' or account_id = $2) "
         "and ($3 = '' or event_type = $3) "
-        "and (nullif($4, '') is null or event_time >= nullif($4, '')::timestamptz) "
-        "and (nullif($5, '') is null or event_time <= nullif($5, '')::timestamptz) "
+        "and ($4::timestamptz is null or event_time >= $4::timestamptz) "
+        "and ($5::timestamptz is null or event_time <= $5::timestamptz) "
         "order by event_time desc "
         "limit $6::bigint offset $7::bigint";
 
-    const auto rows = execute_parameterized_multi_column_query(ctx,
-                                                               sql,
-                                                               {tenant_id,
-                                                                account_id,
-                                                                event_type,
-                                                                from_time,
-                                                                to_time,
-                                                                std::to_string(limit),
-                                                                std::to_string(offset)},
-                                                               lg(),
-                                                               "Reading auth events");
+    const auto from_bound = from_time.has_value() ?
+                                std::optional(datetime::to_iso8601_utc(*from_time)) :
+                                std::nullopt;
+    const auto to_bound = to_time.has_value() ?
+                              std::optional(datetime::to_iso8601_utc(*to_time)) :
+                              std::nullopt;
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx,
+        sql,
+        std::vector<std::optional<std::string>>{tenant_id,
+                                                account_id,
+                                                event_type,
+                                                from_bound,
+                                                to_bound,
+                                                std::to_string(limit),
+                                                std::to_string(offset)},
+        lg(),
+        "Reading auth events");
 
     std::vector<repository::auth_event_entity> events;
     events.reserve(rows.size());

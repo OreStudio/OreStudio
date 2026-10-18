@@ -19,7 +19,7 @@
  *
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { TimelineEvent } from '@ores/wire-protocol/browser';
 import { BATCH_GAP_MS, BATCH_MINIMUM, batchesOf } from './batches.js';
 
@@ -109,10 +109,14 @@ describe('entries that are one act', () => {
         expect(rows.map((r) => r.kind)).toEqual(['entry', 'batch']);
     });
 
-    it('leave an entry with a time it cannot read as an entry, and batch the rest', () => {
-        const rows = batchesOf(act(4).map((e, i) => (i === 0 ? { ...e, at: 'never' } : e)));
-
-        expect(rows.map((r) => r.kind)).toEqual(['entry', 'batch']);
-        expect(rows[1]?.kind === 'batch' && rows[1].events).toHaveLength(3);
+    it('refuses an entry whose time is not the wire shape rather than guessing its place', () => {
+        const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        try {
+            expect(() =>
+                batchesOf(act(4).map((e, i) => (i === 0 ? { ...e, at: 'never' } : e))),
+            ).toThrow('Not a wire timestamp: "never"');
+        } finally {
+            logged.mockRestore();
+        }
     });
 });

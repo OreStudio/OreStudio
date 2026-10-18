@@ -341,10 +341,10 @@ describe('the IR curve feed screens', () => {
             client.setQueryData(['feed-ticks', FEED_ID, 12], {
                 sourceName: 'synthetic.eureuribor6m',
                 ticks: [
-                    { at: '2026-10-11T09:00:00Z', value: 0.02, uri: 'a' },
-                    { at: '2026-10-11T09:00:00Z', value: 0.03, uri: 'b' },
-                    { at: '2026-10-11T09:00:30Z', value: 0.021, uri: 'a' },
-                    { at: '2026-10-11T09:00:30Z', value: 0.032, uri: 'b' },
+                    { at: '2026-10-11 09:00:00Z', value: 0.02, uri: 'a' },
+                    { at: '2026-10-11 09:00:00Z', value: 0.03, uri: 'b' },
+                    { at: '2026-10-11 09:00:30Z', value: 0.021, uri: 'a' },
+                    { at: '2026-10-11 09:00:30Z', value: 0.032, uri: 'b' },
                 ],
             });
             client.setQueryData(['my-access'], access(['synthetic::*']));
@@ -419,7 +419,7 @@ describe('the IR curve feed screens', () => {
             client.setQueryData(['records', 'ir-template-entries', FEED_ID], []);
             client.setQueryData(
                 ['history', 'ores.synthetic.ir_curve_generation_config', FEED_ID],
-                [version(2, '2026-10-11 09:00:00'), version(1, '2026-10-10 09:00:00')],
+                [version(2, '2026-10-11 09:00:00Z'), version(1, '2026-10-10 09:00:00Z')],
             );
             client.setQueryData(
                 [
@@ -427,7 +427,7 @@ describe('the IR curve feed screens', () => {
                     'ores.synthetic.ir_curve_generation_config_process_parameter_value',
                     'v1',
                 ],
-                [version(2, '2026-10-11 09:05:00'), version(1, '2026-10-10 09:05:00')],
+                [version(2, '2026-10-11 09:05:00Z'), version(1, '2026-10-10 09:05:00Z')],
             );
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });

@@ -204,7 +204,9 @@ export interface GetStepResultResponse {
 /**
  * @brief Summary of a single workflow instance returned by list_instances.
  *
- * All timestamps are UTC ISO-8601 strings (e.g. "2026-04-10T14:30:00Z").
+ * The timestamps are the project's wire shape, defined once in
+ * doc/knowledge/architecture/time_architecture.org; they are not ISO 8601's
+ * 'T' spelling.
  * status is a human-readable state name: in_progress, completed, failed,
  * compensating, or compensated.
  */

@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 79E4788A-BC24-47B0-B900-E833D3A98A9F
+:END:
+#+title: A freshly recreated database has no materialised calendar da…
+#+description: A freshly recreated database has no materialised calendar dates, so every tenor resolution refuses with calendar_not_materialised until somebody rebuilds a calendar. Verified 2026-10-18: after compass db recreate and the ACME provisioning script, ores_refdata_calendar_dates_tbl was empty across all 122 calendars, and every preview and resolve call against any calendar refused. One rebuild fixed it: POST /api/refdata/calendars/Argentina/rebuild with endYear 2027 wrote 1461 dates spanning 2024 to 2027 and the same call then resolved. The journey's test step and the new resolve screen both therefore refuse on a brand new environment, and the refusal is correct but reads as a broken screen. Provisioning should materialise at least the calendars the seed conventions roll on, or the rebuild should run as a provisioning step, or the screens should offer the rebuild where they report the refusal.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

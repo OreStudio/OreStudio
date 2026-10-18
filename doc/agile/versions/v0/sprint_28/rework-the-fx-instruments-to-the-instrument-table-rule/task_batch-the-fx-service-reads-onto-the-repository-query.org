@@ -8,7 +8,7 @@
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
 #+branch: feature/batch-the-fx-service-reads
-#+pr: 3525
+#+pr: 3526
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-16
@@ -109,6 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3526][#3526]] | [agile] Close the batch reads unit |
 | [[https://github.com/OreStudio/OreStudio/pull/3525][#3525]] | [trading] Read the FX service key sets in one statement |
 | [[https://github.com/OreStudio/OreStudio/pull/3519][#3519]] | [agile] Scope the batched service reads onto the service template |
 

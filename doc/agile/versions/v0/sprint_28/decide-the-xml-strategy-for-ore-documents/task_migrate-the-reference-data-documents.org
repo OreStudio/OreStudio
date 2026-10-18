@@ -178,7 +178,7 @@ line.
 | Curve configuration documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 89 of 89 |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =[ore][xml]@, 497 cases and 82,016 assertions |
+| The XML suites pass | =[ore][xml]@, 497 cases and 82,020 assertions |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 

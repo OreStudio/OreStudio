@@ -975,8 +975,8 @@ void ensure_durable_consumer(jsCtx* js,
     const jsAckPolicy stored_ack = config->AckPolicy;
     const int64_t stored_bound = config->MaxDeliver;
     const int64_t stored_ack_wait = config->AckWait;
-    const std::string stored_deliver(config->DeliverSubject != nullptr ? config->DeliverSubject
-                                                                      : "");
+    const std::string stored_deliver(config->DeliverSubject != nullptr ? config->DeliverSubject :
+                                                                         "");
     const std::string stored_group(config->DeliverGroup != nullptr ? config->DeliverGroup : "");
 
     std::vector<std::string> want(filters);
@@ -1123,14 +1123,8 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
                               << ", max-deliver: " << max_deliver
                               << ", ack-wait: " << ack_wait.count() << "ms)";
 
-    ensure_durable_consumer(impl_->js,
-                            stream_str,
-                            durable_str,
-                            deliver_str,
-                            queue_str,
-                            full,
-                            max_deliver,
-                            ack_wait);
+    ensure_durable_consumer(
+        impl_->js, stream_str, durable_str, deliver_str, queue_str, full, max_deliver, ack_wait);
 
     // The C API wants a null-terminated-style array of pointers that outlives
     // the call; the strings themselves live in `full`.

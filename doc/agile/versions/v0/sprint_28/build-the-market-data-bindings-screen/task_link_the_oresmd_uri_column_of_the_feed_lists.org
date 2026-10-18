@@ -8,7 +8,7 @@
 #+filetags: :build-the-market-data-bindings-screen:sprint_28:v0:
 #+owner: marco
 #+branch: feature/link-the-oresmd-uri-column-of-the-feed-lists
-#+pr:
+#+pr: 3506
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-13
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3506][#3506]] | [web] Link the oresmd URI column of the feed lists |
 
 * Review
 

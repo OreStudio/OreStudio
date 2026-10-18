@@ -69,9 +69,9 @@ public:
     /**
      * @brief Applies every staged family of one import in one transaction.
      *
-     * Locks the import row, refuses anything but a staging import, applies the
-     * staged payloads in the order the stages landed, marks the import applied,
-     * and commits. Any failure rolls the transaction back and leaves the import
+     * Locks the import row, refuses anything but a staging import, builds one
+     * bundle from the staged rows, applies it, marks the import applied, and
+     * commits. Any failure rolls the transaction back and leaves the import
      * staging.
      */
     messaging::commit_bundle_import_response

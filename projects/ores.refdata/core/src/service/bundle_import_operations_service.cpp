@@ -23,6 +23,7 @@
 #include "ores.refdata.api/domain/bundle_import.hpp"
 #include "ores.refdata.api/domain/bundle_import_item.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
@@ -30,8 +31,8 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
-#include <iterator>
 #include <limits>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -72,12 +73,20 @@ boost::uuids::uuid new_uuid() {
 }
 
 /**
+ * @brief Where the registry lists a family, or nothing when it does not.
+ */
+std::optional<std::size_t> family_position(const std::string& family) {
+    for (std::size_t i = 0; i < domain::convention_family_count; ++i)
+        if (domain::convention_families[i].key == family)
+            return i;
+    return std::nullopt;
+}
+
+/**
  * @brief Whether the registry names the family a stage or commit carries.
  */
 bool known_family(const std::string& family) {
-    return std::any_of(std::begin(domain::convention_families),
-                       std::end(domain::convention_families),
-                       [&family](const auto& entry) { return entry.key == family; });
+    return family_position(family).has_value();
 }
 
 }
@@ -224,28 +233,41 @@ bundle_import_operations_service::commit(const messaging::commit_bundle_import_r
             return response;
         }
 
-        // Every stage of an import landed before its commit, so the read order
-        // is the order the stages were committed in.
+        // The staged rows become one bundle, and the bundle is what the caller
+        // wrote. Applying it in registry order rather than in id order makes
+        // both the writes and the reported outcomes the same for the same
+        // import, whichever order the stages landed in.
         const auto staged =
             items_.read_latest_by_import_id(ctx, key, 0, std::numeric_limits<std::uint32_t>::max());
-        conventions_save_result applied;
+        conventions_bundle bundle;
+        bundle.rows.reserve(staged.size());
+        for (const auto& item : staged)
+            bundle.rows.push_back(conventions_bundle_row{
+                .family = item.family, .sequence = item.sequence, .payload = item.payload});
+        std::stable_sort(
+            bundle.rows.begin(), bundle.rows.end(), [](const auto& lhs, const auto& rhs) {
+                const auto lhs_rank =
+                    family_position(lhs.family).value_or(domain::convention_family_count);
+                const auto rhs_rank =
+                    family_position(rhs.family).value_or(domain::convention_family_count);
+                if (lhs_rank != rhs_rank)
+                    return lhs_rank < rhs_rank;
+                return lhs.sequence < rhs.sequence;
+            });
+
+        conventions_apply_result applied;
         std::vector<messaging::bundle_import_family_outcome> outcomes;
-        outcomes.reserve(staged.size());
-        for (const auto& item : staged) {
-            try {
-                if (!apply_staged_family(ctx, item.family, item.payload, applied)) {
-                    response.message =
-                        "The registry does not know the convention family '" + item.family + "'.";
-                    return response;
-                }
-            } catch (const std::exception& error) {
-                // The unit of work rolls back, so the import stays staging.
-                response.message = error.what();
-                return response;
-            }
-            outcomes.push_back(messaging::bundle_import_family_outcome{
-                .family = item.family, .sequence = item.sequence, .applied = true, .message = {}});
+        outcomes.reserve(bundle.rows.size());
+        try {
+            applied = conventions_bundle_service(ctx).apply(bundle);
+        } catch (const std::exception& error) {
+            // The unit of work rolls back, so the import stays staging.
+            response.message = error.what();
+            return response;
         }
+        for (const auto& row : bundle.rows)
+            outcomes.push_back(messaging::bundle_import_family_outcome{
+                .family = row.family, .sequence = row.sequence, .applied = true, .message = {}});
 
         import.state = "applied";
         ores::service::messaging::stamp(

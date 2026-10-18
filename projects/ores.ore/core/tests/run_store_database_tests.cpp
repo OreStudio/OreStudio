@@ -22,6 +22,11 @@
 #include "ores.ore.core/store/run_store.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
+#include "ores.refdata.core/repository/convention_repository.hpp"
+#include "ores.refdata.core/repository/deposit_convention_repository.hpp"
+#include "ores.refdata.core/repository/swap_convention_repository.hpp"
+#include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
+#include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
@@ -182,6 +187,40 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
                                          "pricing_engines",
                                          "risk_report_config",
                                          "todays_market"});
+}
+
+TEST_CASE("a run import installs the conventions the sample names", tags) {
+    ores::testing::scoped_database_helper h;
+    const auto parties = ores::ore::tests::make_two_parties(h);
+    store::import_run(parties.a_context, make_definition(h, parties), "Example_1", example_input());
+
+    // The rows the import stores, read from the tables rather than through the
+    // service, so the count survives the service being replaced.
+    ores::refdata::repository::convention_repository conventions;
+    const auto central = conventions.read_latest(parties.a_context);
+    CHECK(central.size() == 1);
+    REQUIRE_FALSE(central.empty());
+    CHECK(central.front().kind_code == "TENOR_BASIS_SWAP");
+    CHECK(central.front().party_id == parties.a);
+
+    ores::refdata::repository::tenor_basis_swap_pay_receive_repository pay_receive;
+    ores::refdata::repository::tenor_basis_swap_long_short_repository long_short;
+    const auto pay = pay_receive.read_latest(parties.a_context);
+    const auto receive = long_short.read_latest(parties.a_context);
+    // The document names one leg form, so exactly one of the two tables holds a
+    // row, and that row names the central row the identity resolved to.
+    CHECK(pay.size() + receive.size() == 1);
+    if (!pay.empty())
+        CHECK(pay.front().convention_id == central.front().id);
+    else {
+        REQUIRE_FALSE(receive.empty());
+        CHECK(receive.front().convention_id == central.front().id);
+    }
+
+    ores::refdata::repository::deposit_convention_repository deposits;
+    ores::refdata::repository::swap_convention_repository swaps;
+    CHECK_FALSE(deposits.read_latest(parties.a_context).empty());
+    CHECK_FALSE(swaps.read_latest(parties.a_context).empty());
 }
 
 TEST_CASE("another party cannot export a run it does not own", tags) {

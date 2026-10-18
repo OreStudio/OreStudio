@@ -212,9 +212,9 @@ task and name that file in the Command column.
 | Calendar documents that round trip through the importer and exporter | 8 of 8 | =publish/bin/ores.ore.core.tests "[ore][xml][roundtrip][calendaradjustment]"= | 3260f93169 |
 | Currency configs that round trip through the importer and exporter | 13 of 13 | =publish/bin/ores.ore.core.tests "every_currency_config_in_the_corpus_round_trips"= | 3260f93169 |
 | XML suites | 509 cases, 79,240 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 35e8c17b9c |
-| Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 032b12a02d |
-| XML suites after the curve configuration table | 497 cases, 82,019 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 032b12a02d |
-| Corpus documents the value harness sweeps | 335 | same | 032b12a02d |
+| Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 4e8b75caec |
+| XML suites after the curve configuration table | 497 cases, 82,020 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 4e8b75caec |
+| Corpus documents the value harness sweeps | 335 | same | 4e8b75caec |
 
 * Notes
 

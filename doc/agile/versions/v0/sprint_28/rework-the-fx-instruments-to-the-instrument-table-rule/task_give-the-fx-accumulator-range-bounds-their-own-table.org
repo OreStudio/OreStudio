@@ -29,12 +29,12 @@ rows, and the Regime 3 check forbids an encoded string field.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | DONE                                 |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
 | Now          | Nothing. |
-| Waiting on   | The review of its PR. |
+| Waiting on   | Nothing. |
 | Next         | Nothing. |
-| Last touched | 2026-10-17                               |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -108,6 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3504][#3504]] | [agile] Close the range bounds unit |
 | [[https://github.com/OreStudio/OreStudio/pull/3478][#3478]] | [trading] Give the accumulator's range bounds their own table |
 | [[https://github.com/OreStudio/OreStudio/pull/3458][#3458]] | [agile] Record where the FX rework stands |
 

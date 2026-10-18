@@ -223,6 +223,35 @@ written first because that is where ORE writes it. The suite compares Setup by
 name and value and each analytic by name and value, and it compares the analytics
 in order and the markets as a subtree.
 
+* The portfolio document is recursive, and a flat record cannot hold it
+
+This is a design finding, not a generator gap, and it decides whether the last
+two clauses of this task can be met at all.
+
+The schema is recursive in two places. A composite trade holds a bounded list of
+=subTradeGroup= entries, whose =SubTrade= member is a =componentSubTrade=; that
+type carries =oreTradeData=, which reaches the composite trade again. The same
+edge makes =cbodata= reach itself. A record is a fixed layout, so an edge that
+closes a cycle can only be left out, and a document that writes it is then
+refused: 18 corpus documents write =SubTrade= inside a composite, so the value
+harness cannot prove the family over the corpus with a flat table.
+
+Two ways forward, and they are a decision rather than a fix:
+
+1. Represent the recursion explicitly: keep one flat table per document, and hold
+   a composite's components in a document-level vector linked by parent index,
+   the way the database already models them. The codec has no such member kind
+   today, so this is new design work in the engine and the generator.
+2. Keep Portfolio on the generated binding. The family then stays =migrating=,
+   clauses (a) and (b) cannot be satisfied, and the binding removal is scoped to
+   every other family.
+
+What is already true: the generator reads a model group, a substitution member
+that writes its own type, a reference to a global element of an earlier schema,
+an element with no type, and it sizes a presence mask over more than 64 fields.
+Those changes are additive and leave every committed table byte-identical, but
+without a family that needs them they are not committed.
+
 * The portfolio table is blocked on the type ordering
 
 The portfolio schema reaches five shapes the generator did not read, and four are

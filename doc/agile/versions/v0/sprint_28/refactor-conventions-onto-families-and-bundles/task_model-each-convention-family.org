@@ -92,14 +92,16 @@ task and name that file in the Command column.
 - Step 2's write side is merged. =conventions_bundle_service= applies a bundle
   of family payloads in the caller's transaction, the two tenor basis swap
   obligations now live in =conventions_identity= and are called by both write
-  paths, and the commit sorts its staged rows into registry order so the shared
-  convention family is written before the parts that name it. The staged path
+  paths. The writer gives the shared family its own order, and the commit
+  sorts its staged rows into registry order so the rows and the reported
+  outcomes do not depend on the order the stages landed in. The staged path
   gains the obligations it lacked, which is a behaviour change and the one this
   step declares.
 - The registry does not yet say which families are one bundle. The bundle
   service names the three tenor basis swap families by hand, and the commit
   sorts by the registry's alphabetical order. A registry field that states the
-  dependency order would remove both hand lists.
+  dependency order would remove the hand list and make the ordering rule
+  explicit.
 - The run store has no unit of work, so the document path it uses is still not
   atomic. Task 4 closes that when it moves the run store onto the bundle.
 - The read side of step 2 is open. =conventions_bundle_service::read= does not

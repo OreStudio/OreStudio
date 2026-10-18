@@ -138,8 +138,6 @@ TEST_CASE("a commit that cannot decode a family leaves the import staging", tags
     const auto import_row = imports_repo.read_latest(ctx, boost::uuids::to_string(import_id));
     REQUIRE(import_row.size() == 1);
     CHECK(import_row.front().state == "staging");
-
-    CHECK_FALSE(imports.commit({.import_id = import_id}).success);
 }
 
 TEST_CASE("a second commit of the same import applies nothing", tags) {

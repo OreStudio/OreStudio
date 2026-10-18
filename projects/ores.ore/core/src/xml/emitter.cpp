@@ -27,8 +27,8 @@ namespace ores::ore::xml {
 
 namespace {
 
-/// The deepest a chain of indices may reach before it is taken for a cycle.
-/// It is the binder's limit: a document this writer emits must bind again.
+/// The deepest nesting this writer follows. It is the binder's limit, so a
+/// document the writer emits binds again.
 constexpr std::size_t max_emit_depth = binder::max_depth;
 
 constexpr std::string_view declaration = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";

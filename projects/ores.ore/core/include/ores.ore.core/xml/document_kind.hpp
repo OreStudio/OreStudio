@@ -53,6 +53,16 @@ enum class document_kind {
 ORES_ORE_CORE_EXPORT std::optional<document_kind>
 detect_document_kind(const std::filesystem::path& path);
 
+/**
+ * @brief The name of a document's root element, or empty when none is read.
+ *
+ * The same reading decides a document's kind, so a caller that selects
+ * documents by root element asks this rather than parsing a prefix of the
+ * file itself: leading comments, processing instructions and a doctype are
+ * skipped by one rule.
+ */
+ORES_ORE_CORE_EXPORT auto read_root_element(const std::filesystem::path& path) -> std::string;
+
 }
 
 #endif

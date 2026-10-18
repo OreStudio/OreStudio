@@ -598,3 +598,31 @@ def test_text_typed_by_an_enumerated_simple_type_keeps_its_spellings(tmp_path):
     own_row = own_row[: own_row.index("}")]
     assert "scheme_spellings" in own_row
     assert 'const char* scheme_spellings[] = {"Forward", "Backward", nullptr};' in source
+
+
+def test_an_enumeration_behind_a_restriction_chain_keeps_its_spellings(tmp_path):
+    """A simpleContent base may name any link in a chain of restrictions."""
+    emitted, source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="scheme">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Forward"/>
+      <xs:enumeration value="Backward"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="schemeAlias">
+    <xs:restriction base="scheme"/>
+  </xs:simpleType>
+  <xs:complexType name="entry">
+    <xs:simpleContent><xs:extension base="schemeAlias"/></xs:simpleContent>
+  </xs:complexType>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element type="entry" name="Entry"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    assert "std::int16_t value" in _record(emitted, "entry")
+    assert "scheme_spellings" in source

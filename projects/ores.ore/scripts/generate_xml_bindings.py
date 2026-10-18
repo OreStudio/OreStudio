@@ -379,12 +379,38 @@ def children_of(complex_type, schema=None, bases=frozenset()):
     return elements, attributes
 
 
+def resolve_enumeration(schema, name, seen=None):
+    """The enumerated simpleType behind a name, following restrictions.
+
+    A simpleType may restrict another simpleType any number of times, and a
+    xs:simpleContent base may name any link in that chain. The spellings belong
+    to the link that declares them, so the walk returns that name rather than
+    the alias the base names.
+    """
+    seen = seen or set()
+    if name is None or name in seen:
+        return None
+    seen.add(name)
+    if name in schema.enumerations:
+        return name
+    node = schema.simple_types.get(name)
+    if node is None:
+        return None
+    for restriction in node:
+        if local(restriction.tag) != "restriction":
+            continue
+        resolved = resolve_enumeration(schema, restriction.get("base"), seen)
+        if resolved is not None:
+            return resolved
+    return None
+
+
 def content_kind(schema, complex_type):
     """The primitive kind of an element's own text, or None."""
     base = simple_content_base(complex_type)
     if base is None:
         return None
-    if base in schema.enumerations:
+    if resolve_enumeration(schema, base) is not None:
         return "enumeration"
     if base in PRIMITIVES:
         return PRIMITIVES[base]
@@ -400,10 +426,7 @@ def content_enumeration(schema, complex_type):
     base's spellings, which the table states so the reading refuses a spelling
     the schema does not allow.
     """
-    base = simple_content_base(complex_type)
-    if base in schema.enumerations:
-        return base
-    return None
+    return resolve_enumeration(schema, simple_content_base(complex_type))
 
 
 def is_residual(complex_type):

@@ -45,7 +45,7 @@ std::string read_header(const std::filesystem::path& file) {
  * skipped, so the first start tag is the root however the file is
  * decorated.
  */
-std::string read_root_element(const std::filesystem::path& file) {
+std::string root_element_of(const std::filesystem::path& file) {
     const auto header = read_header(file);
     auto at = header.find('<');
     while (at != std::string::npos) {
@@ -75,7 +75,7 @@ std::string read_root_element(const std::filesystem::path& file) {
 } // namespace
 
 std::optional<document_kind> detect_document_kind(const std::filesystem::path& path) {
-    const auto root = read_root_element(path);
+    const auto root = root_element_of(path);
     if (root == "Portfolio")
         return document_kind::portfolio;
     if (root == "CurrencyConfig")
@@ -89,6 +89,10 @@ std::optional<document_kind> detect_document_kind(const std::filesystem::path& p
     if (root == "CreditSimulation")
         return document_kind::credit_simulation;
     return std::nullopt;
+}
+
+auto read_root_element(const std::filesystem::path& path) -> std::string {
+    return root_element_of(path);
 }
 
 }

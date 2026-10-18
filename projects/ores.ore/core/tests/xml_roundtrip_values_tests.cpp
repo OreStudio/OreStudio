@@ -19,6 +19,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/document.hpp"
+#include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.ore.core/xml/generated/conventions.hpp"
@@ -71,28 +72,6 @@ auto read_file(const fs::path& path) -> std::string {
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
 
-/// The root element of a document, without reading it through a binding.
-auto root_element(const std::string& text) -> std::string {
-    std::size_t at = 0;
-    while ((at = text.find('<', at)) != std::string::npos) {
-        if (at + 1 < text.size() && (text[at + 1] == '?' || text[at + 1] == '!')) {
-            at = text.find('>', at);
-            if (at == std::string::npos)
-                return {};
-            ++at;
-            continue;
-        }
-        const auto end = text.find_first_of(" \t\r\n>/", at + 1);
-        if (end == std::string::npos)
-            return {};
-        return text.substr(at + 1, end - at - 1);
-    }
-    return {};
-}
-
-/**
- * @brief The first value two fingerprints disagree about.
- */
 auto fingerprint_difference(const std::vector<value_entry>& left,
                             const std::vector<value_entry>& right) -> std::optional<std::string> {
     for (std::size_t at = 0; at < std::min(left.size(), right.size()); ++at) {
@@ -173,9 +152,11 @@ auto round_trip_values(const document_type& doc, std::string_view text, std::str
 /**
  * @brief Proves the round trip over every corpus document of one family.
  *
- * A family is found by the prefix of its file names, because the corpus names
- * the same document differently per example (curveconfig.xml, curveconfig_sabr.xml)
- * and a list of exact names would stop covering a file the corpus adds.
+ * Most families are found by the prefix of their file names, because the corpus
+ * names the same document differently per example (curveconfig.xml,
+ * curveconfig_sabr.xml) and a list of exact names would stop covering a file
+ * the corpus adds. A family whose names cannot be trusted is found by its root
+ * element instead.
  */
 template <typename Record>
 auto sweep_values(const fs::path& root,
@@ -200,7 +181,7 @@ auto sweep_values(const fs::path& root,
                     return name.starts_with(prefix);
                 }))
                 continue;
-        } else if (root_element(read_file(entry.path())) != root_element_name) {
+        } else if (ores::ore::xml::read_root_element(entry.path()) != root_element_name) {
             // The family is found by the root element, so a document under a
             // name no prefix anticipates still counts.
             continue;

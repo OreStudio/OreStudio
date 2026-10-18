@@ -20,6 +20,7 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.utility/crypto/sha256.hpp"
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
@@ -1044,4 +1045,65 @@ TEST_CASE("conventions_unmodelled_categories_measurement", "[.][conventions][mea
     }
 
     CHECK(files == 72);
+}
+
+namespace {
+
+std::filesystem::path digests_path() {
+    return ores::testing::project_root::resolve(
+        "projects/ores.ore/core/tests/evidence/conventions_corpus_export.sha256");
+}
+
+/**
+ * @brief The bytes the export writes for one corpus file.
+ *
+ * This is the whole pipeline the export runs: parse the file, map it to the
+ * store's shape, and write that shape back out.
+ */
+std::string exported_bytes(const std::filesystem::path& path) {
+    return save_data(conventions_mapper::reverse(conventions_mapper::map(load(path))));
+}
+
+/**
+ * @brief The recorded digests, keyed by the path relative to the corpus root.
+ *
+ * A line holds the digest, a space, then the path. Blank lines and lines
+ * starting with a hash are notes.
+ */
+std::map<std::string, std::string> read_digests(const std::filesystem::path& path) {
+    std::ifstream in(path, std::ios::binary);
+    std::map<std::string, std::string> digests;
+    std::string line;
+    while (std::getline(in, line)) {
+        if (line.empty() || line.front() == '#')
+            continue;
+        const auto space = line.find(' ');
+        if (space == std::string::npos)
+            continue;
+        digests[line.substr(space + 1)] = line.substr(0, space);
+    }
+    return digests;
+}
+
+}
+
+TEST_CASE("the exported conventions corpus matches its recorded digests", tags) {
+    const auto root = corpus_root();
+    const auto recorded = read_digests(digests_path());
+    REQUIRE_FALSE(recorded.empty());
+
+    int compared = 0;
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", root)) {
+        const auto key = std::filesystem::relative(path, root).generic_string();
+        INFO("file: " << key);
+        const auto found = recorded.find(key);
+        REQUIRE(found != recorded.end());
+        CHECK(ores::utility::crypto::sha256::hex_digest(exported_bytes(path)) == found->second);
+        ++compared;
+    }
+
+    // The corpus is pinned at seventy-two files, so a file the expectations do
+    // not name, or one they name that the corpus lost, is a change to the pin
+    // rather than a silent shrink.
+    CHECK(compared == static_cast<int>(recorded.size()));
 }

@@ -76,7 +76,7 @@ def test_a_derived_type_flattens_its_base(tmp_path):
     assert derived.index("alpha") < derived.index("beta")
 
 
-def _generate(tmp_path, schema, root="Root", root_type="derivedType"):
+def _generate(tmp_path, schema, root="Root", root_type="derivedType", extra=None):
     header = tmp_path / "out.hpp"
     return subprocess.run(
         [
@@ -94,6 +94,7 @@ def _generate(tmp_path, schema, root="Root", root_type="derivedType"):
             str(header),
             "--source",
             str(tmp_path / "out.cpp"),
+            *(extra or []),
         ],
         capture_output=True,
         text=True,
@@ -970,3 +971,90 @@ def test_a_recursive_member_the_schema_allows_once_states_it(tmp_path):
     assert fields[5] == "false"  # is_attribute
     assert fields[6] == "false"  # required, minOccurs is 0
     assert fields[12].startswith("true")  # once
+
+
+def test_an_exact_decimal_leaves_a_text_element_as_text(tmp_path):
+    """The list names reals. A text element already states its digits, and the
+    same name in another type may not be a number at all."""
+    (tmp_path / "strike.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element type="xs:string" name="Strike"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(
+        tmp_path,
+        "strike.xsd",
+        root_type="rootType",
+        extra=["--exact-decimal", "Strike"],
+    )
+    assert result.returncode == 0, result.stderr
+
+    emitted = (tmp_path / "out.hpp").read_text()
+    assert "std::string strike;" in emitted
+    assert "field_kind::text" in (tmp_path / "out.cpp").read_text()
+
+
+def test_an_exact_decimal_promotes_a_real(tmp_path):
+    """A real the list names is carried with every digit the document wrote."""
+    (tmp_path / "amount.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element type="xs:double" name="Amount"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(
+        tmp_path,
+        "amount.xsd",
+        root_type="rootType",
+        extra=["--exact-decimal", "Amount"],
+    )
+    assert result.returncode == 0, result.stderr
+
+    emitted = (tmp_path / "out.hpp").read_text()
+    assert "decimal amount;" in emitted
+    assert "field_kind::decimal" in (tmp_path / "out.cpp").read_text()
+
+
+def test_a_wildcard_carries_every_real_exactly(tmp_path):
+    """A family whose numbers all matter states '*' and every real is exact,
+    including the text of a simpleContent element."""
+    (tmp_path / "reals.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="xs:double" name="Level"/>
+      <xs:element name="Rate">
+        <xs:complexType>
+          <xs:simpleContent>
+            <xs:extension base="xs:float">
+              <xs:attribute type="xs:string" name="startDate"/>
+            </xs:extension>
+          </xs:simpleContent>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(
+        tmp_path,
+        "reals.xsd",
+        root_type="rootType",
+        extra=["--exact-decimal", "*"],
+    )
+    assert result.returncode == 0, result.stderr
+
+    emitted = (tmp_path / "out.hpp").read_text()
+    assert "decimal level;" in emitted
+    assert "decimal value;" in emitted
+    source = (tmp_path / "out.cpp").read_text()
+    assert source.count("field_kind::decimal") >= 2

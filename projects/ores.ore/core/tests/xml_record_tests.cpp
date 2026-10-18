@@ -624,3 +624,67 @@ TEST_CASE("a_writer_appends_indexed_rows", tags) {
     REQUIRE(rows.size() == 1);
     CHECK(rows[0].indexed("Child")[0].text("Value") == std::optional<std::string>("c"));
 }
+
+namespace {
+
+/*
+ * A type written as xs:simpleContent whose text is a number. The record keeps
+ * the digits, and the reader and writer speak the number as text.
+ */
+struct measure {
+    std::uint64_t present = 0;
+    ores::utility::decimal::decimal value;
+};
+
+const field measure_fields[] = {
+    {"",
+     0,
+     field_kind::decimal,
+     std::uint32_t(offsetof(measure, value)),
+     0,
+     false,
+     false,
+     nullptr,
+     nullptr,
+     scalar_kind::decimal,
+     nullptr},
+};
+const record_type measure_type{"Measure", measure_fields, 1, 0};
+const document_type measure_document{"Measure", &measure_type};
+
+}
+
+TEST_CASE("a_type_whose_own_text_is_a_number_keeps_its_digits", tags) {
+    auto lg(make_logger(test_suite));
+
+    measure parsed{};
+    const auto bound =
+        binder::bind(measure_document, "<Measure>7342.8000000000002</Measure>", &parsed);
+    REQUIRE(bound);
+    CHECK(record_reader(measure_type, &parsed).own_text() ==
+          std::optional<std::string>("7342.8000000000002"));
+
+    std::string out;
+    REQUIRE(emitter::emit(measure_document, &parsed, out));
+    CHECK(out.find("7342.8000000000002") != std::string::npos);
+
+    measure written{};
+    record_writer(measure_type, &written).set_own_text("0.050000000000000003");
+    CHECK(record_reader(measure_type, &written).own_text() ==
+          std::optional<std::string>("0.050000000000000003"));
+
+    // The text may arrive on its own indented line.
+    measure indented{};
+    REQUIRE(binder::bind(measure_document, "<Measure>\n  0.005\n</Measure>", &indented));
+    CHECK(record_reader(measure_type, &indented).own_text() == std::optional<std::string>("0.005"));
+
+    // An element with no text states nothing, and the writing does not invent
+    // the member's zero for it.
+    measure absent{};
+    REQUIRE(binder::bind(measure_document, "<Measure/>", &absent));
+    CHECK_FALSE(record_reader(measure_type, &absent).own_text().has_value());
+    std::string written_out;
+    REQUIRE(emitter::emit(measure_document, &absent, written_out));
+    CHECK(written_out.find("<Measure/>") != std::string::npos);
+    CHECK(written_out.find("<Measure>0</Measure>") == std::string::npos);
+}

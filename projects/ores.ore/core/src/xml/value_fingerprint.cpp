@@ -17,6 +17,7 @@
  *
  */
 #include "ores.ore.core/xml/value_fingerprint.hpp"
+#include "ores.ore.core/xml/lexical.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <algorithm>
 #include <cstdint>
@@ -34,7 +35,13 @@ namespace {
  * date, a currency, a count of days -- exactly as it stands.
  */
 auto canonical(std::string_view text) -> std::string {
-    const auto parsed = utility::decimal::decimal::from_string(text);
+    // A number may be written on its own line, and its lexical space allows
+    // the space around it. A text that parses as a decimal is compared as the
+    // number, so the reading's trim of it does not read as a difference. The
+    // tape does not say which kind a leaf is, so a text value that happens to
+    // parse as a number is compared the same way; the record comparison is the
+    // stricter check for those.
+    const auto parsed = utility::decimal::decimal::from_string(trim_space(text));
     if (parsed)
         return parsed->to_string();
     return std::string(text);

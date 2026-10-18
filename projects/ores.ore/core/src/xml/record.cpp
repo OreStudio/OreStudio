@@ -17,6 +17,8 @@
  *
  */
 #include "ores.ore.core/xml/record.hpp"
+#include "ores.ore.core/xml/lexical.hpp"
+#include <charconv>
 #include <format>
 #include <stdexcept>
 
@@ -144,7 +146,33 @@ auto record_reader::own_text() const -> std::optional<std::string> {
     const auto& f = type_->fields[type_->text_field];
     if (!bit_is_set(record_, f))
         return std::nullopt;
-    return *static_cast<const std::string*>(slot_of(record_, f));
+    switch (f.kind) {
+        case field_kind::text:
+            return *static_cast<const std::string*>(slot_of(record_, f));
+        case field_kind::integer:
+            return std::to_string(*static_cast<const std::int64_t*>(slot_of(record_, f)));
+        case field_kind::decimal:
+            return static_cast<const utility::decimal::decimal*>(slot_of(record_, f))->to_string();
+        case field_kind::real: {
+            char buffer[64]{};
+            const auto value = *static_cast<const double*>(slot_of(record_, f));
+            const auto [stop, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value);
+            if (ec != std::errc{})
+                return std::nullopt;
+            return std::string(buffer, stop);
+        }
+        case field_kind::enumeration: {
+            const auto index = *static_cast<const std::int16_t*>(slot_of(record_, f));
+            if (index < 0 || f.tokens == nullptr)
+                return std::nullopt;
+            for (std::int16_t i = 0; i <= index; ++i)
+                if (f.tokens[i] == nullptr)
+                    return std::nullopt;
+            return std::string(f.tokens[index]);
+        }
+        default:
+            return std::nullopt;
+    }
 }
 
 auto record_reader::child(std::string_view name) const -> std::optional<record_reader> {
@@ -307,7 +335,56 @@ void record_writer::set_own_text(std::string_view value) {
     if (type_->text_field == no_text)
         throw std::runtime_error(std::format("the {} table holds no text of its own", type_->name));
     const auto& f = type_->fields[type_->text_field];
-    *static_cast<std::string*>(slot_of(f)) = std::string(value);
+    switch (f.kind) {
+        case field_kind::text:
+            *static_cast<std::string*>(slot_of(f)) = std::string(value);
+            break;
+        case field_kind::integer: {
+            const auto digits = trim_space(value);
+            auto* slot = static_cast<std::int64_t*>(slot_of(f));
+            const auto [stop, ec] =
+                std::from_chars(digits.data(), digits.data() + digits.size(), *slot);
+            if (ec != std::errc{} || stop != digits.data() + digits.size())
+                throw std::runtime_error(
+                    std::format("'{}' is not an integer for the {} table", value, type_->name));
+            break;
+        }
+        case field_kind::decimal: {
+            const auto parsed = utility::decimal::decimal::from_string(trim_space(value));
+            if (!parsed)
+                throw std::runtime_error(std::format(
+                    "'{}' is not an exact decimal for the {} table", value, type_->name));
+            *static_cast<utility::decimal::decimal*>(slot_of(f)) = *parsed;
+            break;
+        }
+        case field_kind::real: {
+            const auto digits = trim_space(value);
+            auto* slot = static_cast<double*>(slot_of(f));
+            const auto [stop, ec] =
+                std::from_chars(digits.data(), digits.data() + digits.size(), *slot);
+            if (ec != std::errc{} || stop != digits.data() + digits.size())
+                throw std::runtime_error(
+                    std::format("'{}' is not a real number for the {} table", value, type_->name));
+            break;
+        }
+        case field_kind::enumeration: {
+            auto* slot = static_cast<std::int16_t*>(slot_of(f));
+            *slot = -1;
+            for (std::int16_t i = 0; f.tokens != nullptr && f.tokens[i] != nullptr; ++i) {
+                if (value == f.tokens[i]) {
+                    *slot = i;
+                    break;
+                }
+            }
+            if (*slot < 0)
+                throw std::runtime_error(
+                    std::format("'{}' is not a spelling the {} table allows", value, type_->name));
+            break;
+        }
+        default:
+            throw std::runtime_error(
+                std::format("the {} table's own text is not a value", type_->name));
+    }
     set_bit(record_, f);
 }
 

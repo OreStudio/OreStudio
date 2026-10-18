@@ -6,9 +6,10 @@ with ORE about which elements exist, their order, their cardinality or their
 type. Two things the schema does not say and this file does:
 
 - the C++ name of each member, which is the element name in snake case;
-- what a numeric element *means* to us. ORE types the same money concept as
-  xs:float, xs:double and xs:string in three places, so the kind arrives from
-  a money vocabulary supplied on the command line rather than from the schema.
+- which real elements must keep the digits the document wrote. A double cannot
+  hold every spelling a document may write, so the list of elements carried as
+  exact decimals arrives on the command line rather than from the schema. A
+  text element already states its digits, and keeps them.
 
 Output is two files: a header with the records and the accessor, and a source
 with the tables. Both carry the generated marker so tooling skips them.
@@ -769,7 +770,7 @@ def vector_element_type(cpp):
     return cpp[len(prefix) : -1]
 
 
-def member_declaration(schema, element, money):
+def member_declaration(schema, element, exact_decimals):
     name = element.get("name")
     member = snake(name)
     repeated = element.get("maxOccurs", "1") not in ("1",)
@@ -783,7 +784,11 @@ def member_declaration(schema, element, money):
     else:
         kind = shape
         cpp = CPP_TYPE[kind]
-    if name in money:
+    # Only a real has digits a double can lose. A text element states them
+    # already, and an enumeration is not a number, so the same element name in
+    # a different type keeps the kind the schema gives it. A list holding "*"
+    # names every real, which is what a family whose numbers all matter states.
+    if shape == "real" and ("*" in exact_decimals or name in exact_decimals):
         kind, cpp = "decimal", CPP_TYPE["decimal"]
 
     if repeated:
@@ -869,7 +874,7 @@ def shadowed_types(schema, ordered, names):
     return shadowed
 
 
-def render(schema, root_element, root_type, namespace, accessor, money, include):
+def render(schema, root_element, root_type, namespace, accessor, exact_decimals, include):
     ordered = order_types(schema, root_type)
     names = cpp_names(schema, ordered)
     cut = {(holder, member) for holder, member, _target in schema.cut_members}
@@ -887,6 +892,8 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         body = [f"struct {names[type_name]} {{"]
         field_count = 0
         own_kind = content_kind(schema, complex_type)
+        if own_kind == "real" and "*" in exact_decimals:
+            own_kind = "decimal"
         if own_kind is not None:
             own_cpp = CPP_TYPE[own_kind]
             body.append(f"    {own_cpp} value{CPP_ZERO.get(own_cpp, '')};")
@@ -896,7 +903,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             field_count += 1
         for element in elements:
             for field in expand(schema, element):
-                member, kind, cpp, repeated = member_declaration(schema, field, money)
+                member, kind, cpp, repeated = member_declaration(schema, field, exact_decimals)
                 if kind == "nested":
                     target = field.get("type") or schema.inline_name.get(id(field), field.get("name"))
                     if target not in names:
@@ -960,6 +967,8 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         rows = []
         bit = 0
         own_kind = content_kind(schema, complex_type)
+        if own_kind == "real" and "*" in exact_decimals:
+            own_kind = "decimal"
         own_enum = content_enumeration(schema, complex_type)
         if own_kind is not None:
             tokens = f"{snake(own_enum)}_spellings" if own_enum else "nullptr"
@@ -982,7 +991,7 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         for element in elements:
           for element in expand(schema, element):
             name = element.get("name")
-            member, kind, cpp, repeated = member_declaration(schema, element, money)
+            member, kind, cpp, repeated = member_declaration(schema, element, exact_decimals)
             required = element.get("minOccurs", "1") != "0" and id(element) not in CHOICE_CHILDREN
             scalar = SCALAR.get(kind, "scalar_kind::text")
             if kind == "nested":
@@ -1185,10 +1194,11 @@ def main():
     parser.add_argument("--header", required=True)
     parser.add_argument("--source", required=True)
     parser.add_argument(
-        "--money",
+        "--exact-decimal",
         action="append",
         default=[],
-        help="element name to treat as an exact decimal regardless of its schema type",
+        dest="exact_decimals",
+        help="real element carried as an exact decimal; '*' names every real",
     )
     args = parser.parse_args()
 
@@ -1204,7 +1214,7 @@ def main():
         args.root_type,
         args.namespace,
         args.accessor,
-        set(args.money),
+        set(args.exact_decimals),
         args.include or default_include,
     )
     with open(args.header, "w", encoding="utf-8") as handle:

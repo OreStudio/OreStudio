@@ -326,9 +326,13 @@ auto write_element(std::string& out,
     std::string own_text;
     if (type.text_field != no_text) {
         const auto& tf = type.fields[type.text_field];
-        const auto written = append_value(own_text, tf, slot_of(record, tf));
-        if (!written)
-            return written;
+        // A number the reading left absent states no value, and writing the
+        // member's zero would invent one.
+        if (present(record, tf)) {
+            const auto written = append_value(own_text, tf, slot_of(record, tf));
+            if (!written)
+                return written;
+        }
     }
 
     if (!has_children && own_text.empty()) {

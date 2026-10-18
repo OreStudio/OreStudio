@@ -39,7 +39,7 @@ export interface EquityVarianceSwapInstrumentWrite {
     underlying_name: string;
     currency: string;
     notional: string;
-    variance_strike: string;
+    variance_strike: number;
     start_date: string;
     maturity_date: string;
     long_short: string;

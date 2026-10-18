@@ -159,8 +159,8 @@ struct bind_error {
  * exist rather than repeating the schema, so a renamed element is a generated
  * change and not a silent disagreement.
  */
-ORES_ORE_CORE_EXPORT auto find_field(const record_type& type, std::string_view name, bool attribute)
-    -> const field*;
+ORES_ORE_CORE_EXPORT auto
+find_field(const record_type& type, std::string_view name, bool attribute) -> const field*;
 
 /**
  * @brief The table a named child element of a type is described by, or null.
@@ -169,8 +169,8 @@ ORES_ORE_CORE_EXPORT auto find_field(const record_type& type, std::string_view n
  * table: the table is the type the caller's column points at, and asking for
  * it keeps the schema's shape in the generated code.
  */
-ORES_ORE_CORE_EXPORT auto find_child_type(const record_type& type, std::string_view name)
-    -> const record_type*;
+ORES_ORE_CORE_EXPORT auto find_child_type(const record_type& type,
+                                          std::string_view name) -> const record_type*;
 
 /**
  * @brief Marks the element's own text as present.
@@ -202,8 +202,8 @@ is_present(const record_type& type, const void* record, std::string_view name) -
  *
  * @return False when the type declares no such field.
  */
-ORES_ORE_CORE_EXPORT auto mark_present(const record_type& type, void* record, std::string_view name)
-    -> bool;
+ORES_ORE_CORE_EXPORT auto
+mark_present(const record_type& type, void* record, std::string_view name) -> bool;
 
 /**
  * @brief The spelling a record states for an enumerated field.
@@ -257,8 +257,9 @@ public:
      * @return Nothing on success, or where and why the document could not be
      * bound.
      */
-    static auto bind(const document_type& doc, std::string_view text, void* root)
-        -> std::expected<void, bind_error>;
+    static auto bind(const document_type& doc,
+                     std::string_view text,
+                     void* root) -> std::expected<void, bind_error>;
 };
 
 }

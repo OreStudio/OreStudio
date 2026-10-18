@@ -19,13 +19,13 @@
  */
 #include "ores.inbox.core/service/approval_lifecycle.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.platform/time/datetime.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.inbox.core/repository/approval_kind_repository.hpp"
 #include "ores.inbox.core/repository/approval_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_part_repository.hpp"
 #include "ores.inbox.core/repository/approval_request_repository.hpp"
 #include "ores.inbox.core/service/notification_center.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -197,8 +197,7 @@ std::vector<part_progress> approval_lifecycle::progress_of(const std::string& re
                 continue;
             entry.state = text(row, 1) == "approve" ? "approved" : "refused";
             entry.decided_by = text(row, 2);
-            entry.decided_at =
-                ores::platform::time::datetime::from_db_string(text(row, 3));
+            entry.decided_at = ores::platform::time::datetime::from_db_string(text(row, 3));
             entry.comment = text(row, 4);
         }
         progress.push_back(std::move(entry));

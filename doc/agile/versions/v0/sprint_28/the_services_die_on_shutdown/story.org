@@ -39,9 +39,9 @@ ores.marketdata.service-...: Main process exited, code=dumped, status=11/SEGV
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Fix written; a full fleet start and stop is clean. |
+| Now           | Review round 1 answered; PR #3550 is open. |
 | Waiting on    | Nothing.                               |
-| Next          | Commit, then a PR.                     |
+| Next          | Merge PR #3550.                        |
 | Last touched  | 2026-10-18                               |
 
 * Acceptance
@@ -51,7 +51,9 @@ ores.marketdata.service-...: Main process exited, code=dumped, status=11/SEGV
 - =client::drain()= returns only after the connection has closed, as its
   documentation already promised.
 - A full fleet start and stop leaves every unit stopped and none failed.
-- The suite still passes: 96 of 96 ctest cases.
+- A regression test fails if the handle stops waiting: it holds a handler
+  inside a delivery and asserts destruction does not return until release.
+- The suite still passes.
 
 * Tasks
 

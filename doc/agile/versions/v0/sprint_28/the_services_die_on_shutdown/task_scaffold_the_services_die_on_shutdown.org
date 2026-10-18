@@ -20,7 +20,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The hotfix exists as agile record and PR: a story, two tasks, the sprint row,
+and PR #3550 carrying them.
 
 * Status
 
@@ -28,20 +29,21 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:D858FF3F-2F55-4531-AE30-DCF734565361][Hotfix: the services die on shutdown]] |
-| Now          | Not yet started.                       |
+| Now          | PR #3550 is open and records this task. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Close on merge, after the implement task. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
 
--
+- Story, tasks and sprint row exist and lint clean.
+- PR #3550 is recorded here and on the implement task.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scaffolded with =compass story new --kind hotfix=. The story carries the defect
+and the acceptance; the implement task carries the plan, the measurements and
+the review round.
 
 * Measurements
 

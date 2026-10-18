@@ -30,9 +30,9 @@ return, the owner is free to destroy everything the handler reaches.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:D858FF3F-2F55-4531-AE30-DCF734565361][Hotfix: the services die on shutdown]] |
-| Now          | Fix built; a full fleet start and stop is clean. |
+| Now          | Review round 1 answered; the regression test passes. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit.                                |
+| Next         | Re-run the suite, then merge PR #3550.   |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -44,8 +44,10 @@ return, the owner is free to destroy everything the handler reaches.
   deliveries have been processed.
 - =client::drain()= waits for the connection's closed callback instead of
   returning as soon as the drain was requested.
+- A regression test holds a handler inside a delivery and asserts that
+  destroying the subscription does not return until the handler is released.
 - A fleet start and stop leaves 0 failed units.
-- ctest passes 96 of 96.
+- ctest passes.
 
 * Plan
 
@@ -85,6 +87,7 @@ subscriber churn, not the request path.
 | gate sweep on untouched main | 61 of 61 pass | =./compass.sh check --all --json= | e6eeec37b5 |
 | fleet after start, 120s, stop | 23 stopped, 0 failed, 24 units active before the stop | =./compass.sh services start= then =stop= | e6eeec37b5 + this task's diff |
 | marketdata journal after that stop | no core dump; "Shutdown complete" then the event bus unsubscribes | =./compass.sh services logs ores.marketdata -n 25= | e6eeec37b5 + this task's diff |
+| regression test | passes in 0.30s: the destroyer has not returned after 200ms of the handler holding | =./compass.sh test run -- -R ores.nats.tests= | c331e22f76 + the review changes |
 
 * Notes
 
@@ -100,6 +103,13 @@ about the code: =format= wants clang-format on the edited files, and
 components and reads the working tree's diff as drift. Both pass on a committed
 tree.
 
+The regression test is =service_subscription_lifetime_tests.cpp=. It holds a
+handler inside a delivery and destroys the subscription from another thread, so
+the assertion is the old behaviour's outcome: before the fix the destroyer
+returned immediately and the check would see it done. The test was never run
+against the old code, because relinking every dependent of =libores.nats= takes
+about forty minutes in this shared checkout.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)
@@ -109,15 +119,35 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| Regression test in ores.nats.tests | AUTOMATED | destroying a subscription waits for the handler it is running |
 
 * PRs
 
 | PR | Title |
 |----+-------|
-|    |       |
+| 3550 | [nats] Wait for in-flight handlers before a subscription dies |
 
 * Review
+
+Round 1 ran the two axes (Standards, Spec) against the PR diff. Every finding
+is answered here or in the commit that follows it.
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | No test covers the change | projects/ores.nats/tests | fixed | Added service_subscription_lifetime_tests.cpp |
+| 2 | The timeout path still frees the closure, so the use-after-free returns | client.cpp | fixed | A drain that does not complete now leaks the closure and the subscription on purpose, and logs at error |
+| 3 | The drain and the wait share one 30s budget | client.cpp | fixed | Drain with natsSubscription_DrainTimeout, then wait twice that |
+| 4 | ClosedCB fires for closes other than this drain | client.cpp | fixed | drain() clears the latch before asking for the drain |
+| 5 | Drain/wait statuses were ignored | client.cpp | fixed | Both paths now log the status at error |
+| 6 | WaitForDrainCompletion blocks if the handle dies on the dispatch thread | subscription.hpp | documented | The header states the constraint |
+| 7 | Duplicated drain-and-wait shape | client.cpp | fixed | One drain_and_wait helper |
+| 8 | drain_timeout_ms named one value for two budgets | client.cpp | fixed | Renamed drain_budget_ms |
+| 9 | End-of-line comment on an edited line | client.cpp | fixed | Moved above the line |
+| 10 | The comment narrated the incident rather than the invariant | client.cpp | fixed | Trimmed to the invariant; the incident lives in the story |
+| 11 | The client::impl banner headed an unrelated namespace | client.cpp | fixed | Namespace moved above the banner |
+| 12 | subscription::drain() did not say it blocks | subscription.hpp | fixed | Documented, with the self-drain constraint |
+| 13 | "Shutdown complete" is logged before the subscriptions are destroyed | service_lifecycle.hpp | fixed | subs.clear() runs before the line |
+| 14 | Scaffold task is boilerplate | task_scaffold_*.org | fixed | Filled |
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|

@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 * Result
 
-Merged. A caller now opens an import with =begin_bundle_import=, adds one family per =stage_bundle_family=, and applies the set with =commit_bundle_import=. The commit takes the import row's lock, reads the staged rows in ascending id order, and applies each through the generated =apply_staged_family= inside one =unit_of_work=. The order the caller staged them is carried in the item's =sequence=, which the commit does not use to sort, so the order the caller staged the families in is not preserved by the apply. A family that fails to decode throws, the unit of work rolls back, and the import stays staging. The reply carries an outcome per family and the world rows that were already there.
+Merged. A caller now opens an import with =begin_bundle_import=, adds one family per =stage_bundle_family=, and applies the set with =commit_bundle_import=. The commit takes the import row's lock, reads the staged rows in ascending id order, and applies each through the generated =apply_staged_family= inside one =unit_of_work=. The order the caller staged them is carried in the item's =sequence=, which the commit does not use to sort. The commit applies in ascending id, and the service mints each id from a time-ordered UUIDv7 generator, so the apply follows the order the stages landed apart from two stages stamped in the same millisecond. A family that fails to decode throws, the unit of work rolls back, and the import stays staging. The reply carries an outcome per family and the world rows that were already there.
 
 The reply declares =fx_skipped= and never fills it. The ORE callers work out the skipped FX conventions themselves. Filling the field is open work, so the acceptance criterion is met only in part.
 

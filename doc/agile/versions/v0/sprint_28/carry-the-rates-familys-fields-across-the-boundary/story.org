@@ -8,7 +8,7 @@
 #+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
 #+created: 2026-10-18
 #+updated: 2026-10-18
-#+environment:
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -58,7 +58,7 @@ family's whole class of defect.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:FE78A168-0C44-4DBC-AFAB-D6BC3FC9C234][Keep the forward rate agreement's direction]] | STARTED | 2026-10-18 | | The ORE binding states LongShort and the mapper never reads it: import writes the literal Long and export writes longShort::Long, so a short forward rate agreement is stored and returned as a long. Read the document's direction on import, write it on export, and prove both with a test whose expected value is the document's own. |
 
 * Decisions
 

@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: FE78A168-0C44-4DBC-AFAB-D6BC3FC9C234
+:END:
+#+title: Task: Keep the forward rate agreement's direction
+#+description: The ORE binding states LongShort and the mapper never reads it: import writes the literal Long and export writes longShort::Long, so a short forward rate agreement is stored and returned as a long. Read the document's direction on import, write it on export, and prove both with a test whose expected value is the document's own.
+#+type: task
+#+level: s1
+#+filetags: :carry-the-rates-familys-fields-across-the-boundary:sprint_28:v0:
+#+owner: marco
+#+branch: feature/keep-the-fra-direction
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A trade the document states as Short is stored as Short and exported as Short.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:A5C6E83B-7F23-4963-B039-EE8C74A78615][Carry the rates family's fields across the ORE boundary]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- The import stores the direction the document states, not a constant.
+- The export writes the stored direction back into the document.
+- A test proves a Short forward rate agreement survives both directions, with the document's own value as its expectation.
+
+* Plan
+
+1. Write the failing test first: a Short document through =forward_fra= and back
+   through =reverse_fra=, expecting Short both ways. The corpus states Long, so
+   the test changes the one binding member rather than inventing a document.
+2. Read the direction on import with =to_string=, and write it back with the
+   mapper's own =parse_code=, which round-trips the generated =to_string= so the
+   spelling has one source of truth.
+3. Check the money path while the mapper is open, since the same function
+   converts a notional and a strike. Add nothing: =mapper_fra_holds_the_digits_of_its_strike_and_notional=
+   already asserts the lexical form and the serialised =<Strike>0.005</Strike>=.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Direction sites in the FRA mapper | 1 in, 1 out | =grep -n 'long_short' projects/ores.ore/core/src/domain/swap_instrument_mapper.cpp= | HEAD |
+| Money conversions in the FRA mapper | 4 in, 3 out, all lexical | =exact_decimal= at :1431, :1433, :1448, :1450; =set_exact= at :1742, :1750, :1756 | HEAD |
+| FRA cases in the IR mapper suite | 4, of which 1 new | =grep -c 'TEST_CASE'= over the FRA block | HEAD |
+|      |       |         |        |
+
+* Notes
+
+- The review graded this finding Critical because the defect is silent: the
+  store agrees with itself and the document disagrees with both. The fix is
+  small because the column, its check and the schema member were already right;
+  only the mapper ignored them.
+- The direction parse uses =parse_code=, the mapper's existing helper, rather
+  than the ternary a neighbouring product uses. =parse_code= scans the generated
+  =to_string=, so a spelling the schema adds is parsed with no second table to
+  keep aligned.
+- Money: this unit changes no money conversion, and the FRA's seven sites were
+  already exact. I added two lexical-form assertions to the reverse case on the
+  way past, then found that =mapper_fra_holds_the_digits_of_its_strike_and_notional=
+  already asserted them *and* the serialised =<Strike>0.005</Strike>=. The
+  duplicates were removed. Recording it because the first version of this note
+  claimed the coverage was missing, and it was not.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+A short forward rate agreement now stores as Short and exports as Short. The
+import reads =fra.LongShort= through the generated =to_string=, and the export
+writes the stored code back through =parse_code=, so the column the review found
+written from a constant is now the one source of truth for both directions.
+
+Proved red first: =mapper_fra_keeps_the_document_direction= failed at
+=xml_ir_mapper_roundtrip_tests.cpp:216= on =instr.long_short == "Short"= against
+the constant, and passes after the change.
+
+Money: the unit changes no conversion, and the FRA's four import and three
+export sites were already exact. The family already proves it:
+=mapper_fra_holds_the_digits_of_its_strike_and_notional= asserts the lexical
+form and the serialised document text. This unit first added the same two
+assertions to the reverse case as well; they were redundant, and they were
+removed. The money check for this unit is therefore a negative result, recorded
+because a fix that touches a money-carrying mapper should say so.
+
+The gate ran in both fleet states: build, db, ctest, ore-xml-roundtrip and the
+fourteen static checks with the fleet down, and =step-consumers= with it up.

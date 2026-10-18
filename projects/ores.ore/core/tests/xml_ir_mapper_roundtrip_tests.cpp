@@ -201,6 +201,28 @@ TEST_CASE("mapper_roundtrip_fra_reverse", tags) {
     BOOST_LOG_SEV(lg, info) << "FRA reverse-mapper test passed";
 }
 
+TEST_CASE("mapper_fra_keeps_the_document_direction", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The corpus states Long. A Short trade is the same document with the one
+    // member changed, so this asks the mapper the question the schema asks of a
+    // Short trade rather than a question the corpus cannot pose.
+    auto t = load_first_trade("IR_FRA.xml");
+    REQUIRE(t.ForwardRateAgreementData.operator bool());
+    t.ForwardRateAgreementData->LongShort = ores::ore::domain::longShort::Short;
+
+    const auto result = swap_instrument_mapper::forward_fra(t);
+    const auto& instr = std::get<ores::trading::domain::fra_instrument>(result.facts);
+    CHECK(instr.long_short == "Short");
+
+    const auto reconstructed = swap_instrument_mapper::reverse_fra(
+        result.header, instr, result.legs, result.leg_amounts, result.leg_rates);
+
+    REQUIRE(reconstructed.ForwardRateAgreementData.operator bool());
+    CHECK(reconstructed.ForwardRateAgreementData->LongShort == ores::ore::domain::longShort::Short);
+    BOOST_LOG_SEV(lg, info) << "FRA direction test passed";
+}
+
 TEST_CASE("mapper_fra_holds_the_digits_of_its_strike_and_notional", tags) {
     const auto t = load_first_trade("IR_FRA.xml");
     const auto result = swap_instrument_mapper::forward_fra(t);

@@ -512,6 +512,7 @@ constexpr int date_rule_count = 16;
 constexpr int option_pay_relative_to_count = 2;
 constexpr int settlement_method_count = 4;
 constexpr int settlement_type_count = 2;
+constexpr int long_short_count = 2;
 
 template <typename Field>
 void set_text(Field& field, const std::string& value) {
@@ -1430,7 +1431,7 @@ trading::domain::swap_instrument_data swap_instrument_mapper::forward_fra(const 
     fi.notional = exact_decimal(fra.Notional);
     fi.rate_index = std::string(fra.Index);
     fi.strike = exact_decimal(fra.Strike);
-    fi.long_short = "Long";
+    fi.long_short = to_string(fra.LongShort);
 
     swap_leg sl;
     sl.identity.leg_number = 1;
@@ -1747,7 +1748,7 @@ trade swap_instrument_mapper::reverse_fra(
             rates.begin(), rates.end(), [](const auto& r) { return r.rate_role == "fixed"; });
         if (fixed != rates.end())
             set_exact(fra.Strike, fixed->value);
-        fra.LongShort = longShort::Long;
+        fra.LongShort = parse_code(instr.long_short, long_short_count, longShort::Long);
     }
     // The leg's own notional is the one the document stated on the leg; the
     // instrument's copy is the fallback for a row written before the children.

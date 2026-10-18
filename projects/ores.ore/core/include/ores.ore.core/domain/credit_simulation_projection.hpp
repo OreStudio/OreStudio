@@ -25,7 +25,6 @@
 #include "ores.analytics.api/domain/credit_simulation_matrix_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_matrix_row_config.hpp"
 #include "ores.analytics.api/domain/credit_simulation_netting_set_config.hpp"
-#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.ore.core/xml/generated/credit_simulation.hpp"
 #include <array>
@@ -68,19 +67,12 @@ struct mapped_credit_simulation {
  *
  * Import turns each matrix's Data grid into a matrix row and one row per
  * source rating; an entity refers to its matrix by id, never by text. Export
- * reassembles the grid from the rows, so the document comes back cell for cell
- * and label for label.
+ * reassembles the grid from the rows, so the numbers come back cell for cell.
+ * The label comment is not written: no reader depends on it, and a document
+ * without it still validates.
  */
 class ORES_ORE_CORE_EXPORT credit_simulation_projection {
 private:
-    inline static std::string_view logger_name = "ores.ore.domain.credit_simulation_projection";
-
-    static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
     /**
      * @brief Maps an ORE CreditSimulation document to the analytics entities.

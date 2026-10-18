@@ -35,8 +35,6 @@
 
 namespace ores::ore::domain {
 
-using namespace ores::logging;
-
 namespace {
 
 namespace xg = xml::generated::credit_simulation;
@@ -327,6 +325,9 @@ credit_simulation_projection::reverse(const mapped_credit_simulation& v) {
     xml::projection::state(risk_type, &record.risk, "LoanExposureMode");
     xml::projection::state(*root, &record, "Risk");
 
+    // Both lists are required, and the schema also requires a matrix and an
+    // entity inside them, so a model with none is refused by the writer rather
+    // than written as a document that cannot validate.
     if (!record.transition_matrices.transition_matrix.empty())
         xml::projection::state(*root, &record, "TransitionMatrices");
     if (!record.entities.entity.empty())

@@ -78,7 +78,7 @@ TEST_CASE("credit_simulation_roundtrip_through_the_database", tags) {
 
     mapped_credit_simulation mapped = credit_simulation_projection::map(original);
     ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
-    REQUIRE(mapped.rows.size() == credit_rating_scale.size());
+    REQUIRE(mapped.rows.size() == mapped.matrices.size() * credit_rating_scale.size());
 
     credit_simulation_config_repository config_repo;
     credit_simulation_matrix_config_repository matrix_repo;

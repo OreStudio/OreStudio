@@ -39,8 +39,8 @@ FAMILIES = {
     "TodaysMarket": ("supported", "todays_market_mapper reads it"),
     "CreditSimulation": (
         "supported",
-        "the configuration type is seeded and stored; the projection reads and "
-        "writes the document through the codec",
+        "the projection reads and writes the document through the codec; the "
+        "configuration type is seeded and stored",
     ),
     "PricingEngines": ("supported", "run_store and the run configuration service read it"),
     # Migrating: product code reads the family, so a mapper still does the

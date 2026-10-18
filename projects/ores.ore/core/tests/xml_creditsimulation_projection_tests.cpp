@@ -20,9 +20,11 @@
 #include "ores.ore.core/domain/credit_simulation_projection.hpp"
 #include "ores.ore.core/xml/document_kind.hpp"
 #include "ores.testing/project_root.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 
 /**
@@ -83,11 +85,31 @@ void require_same_entities(const mapped_credit_simulation& lhs,
     for (std::size_t i = 0; i < lhs.rows.size(); ++i) {
         CHECK(lhs.rows[i].from_rating == rhs.rows[i].from_rating);
         CHECK(lhs.rows[i].p_aaa == rhs.rows[i].p_aaa);
+        CHECK(lhs.rows[i].p_aa == rhs.rows[i].p_aa);
+        CHECK(lhs.rows[i].p_a == rhs.rows[i].p_a);
+        CHECK(lhs.rows[i].p_baa == rhs.rows[i].p_baa);
+        CHECK(lhs.rows[i].p_ba == rhs.rows[i].p_ba);
+        CHECK(lhs.rows[i].p_b == rhs.rows[i].p_b);
+        CHECK(lhs.rows[i].p_c == rhs.rows[i].p_c);
         CHECK(lhs.rows[i].p_default == rhs.rows[i].p_default);
     }
+    // The entity points at a matrix by id, and the ids are minted on each
+    // mapping, so the link is compared by the name each id resolves to.
+    for (std::size_t i = 0; i < lhs.entities.size(); ++i) {
+        const auto name_of = [](const auto& mapped, const boost::uuids::uuid& id) {
+            for (const auto& matrix : mapped.matrices)
+                if (matrix.id == id)
+                    return matrix.name;
+            return std::string{};
+        };
+        CHECK(name_of(lhs, lhs.entities[i].transition_matrix_id) ==
+              name_of(rhs, rhs.entities[i].transition_matrix_id));
+    }
     REQUIRE(lhs.netting_sets.size() == rhs.netting_sets.size());
-    for (std::size_t i = 0; i < lhs.netting_sets.size(); ++i)
+    for (std::size_t i = 0; i < lhs.netting_sets.size(); ++i) {
         CHECK(lhs.netting_sets[i].netting_set_id == rhs.netting_sets[i].netting_set_id);
+        CHECK(lhs.netting_sets[i].position == rhs.netting_sets[i].position);
+    }
 }
 
 }
@@ -131,9 +153,22 @@ TEST_CASE("a_credit_simulation_survives_the_round_trip", tags) {
 
     const auto written =
         credit_simulation_projection::write(credit_simulation_projection::reverse(first));
+    // A comment carries no data, so the export does not write the label block.
+    CHECK(written.find("<!--") == std::string::npos);
     const auto second =
         credit_simulation_projection::map(credit_simulation_projection::read(written));
     require_same_entities(first, second, "literal document");
+}
+
+TEST_CASE("a_model_with_no_matrix_is_refused_rather_than_written_empty", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schema requires a matrix and an entity, so an empty model cannot
+    // produce a document that validates. The writer says which element is
+    // missing rather than emitting one.
+    CHECK_THROWS_AS(credit_simulation_projection::write(credit_simulation_projection::reverse(
+                        ores::ore::domain::mapped_credit_simulation{})),
+                    std::runtime_error);
 }
 
 TEST_CASE("every_credit_simulation_in_the_corpus_round_trips", tags) {

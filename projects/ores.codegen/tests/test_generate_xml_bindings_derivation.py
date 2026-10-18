@@ -626,3 +626,121 @@ def test_an_enumeration_behind_a_restriction_chain_keeps_its_spellings(tmp_path)
     )
     assert "std::int16_t value" in _record(emitted, "entry")
     assert "scheme_spellings" in source
+
+
+GROUP = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:group name="common">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Alpha"/>
+      <xs:element type="xs:string" name="Beta" minOccurs="0"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Head"/>
+      <xs:group ref="common" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_model_group_is_flattened_where_it_is_referenced(tmp_path):
+    """A group is not a member: its members are the type's members."""
+    emitted, source = _emit(tmp_path, GROUP)
+    record = _record(emitted, "root_type")
+    assert "std::string head" in record
+    assert "std::vector<std::string> alpha" in record
+    assert "std::vector<std::string> beta" in record
+
+
+SUBSTITUTION_INLINE = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="headGroup" abstract="true"/>
+  <xs:element name="Member" substitutionGroup="headGroup">
+    <xs:complexType>
+      <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element ref="headGroup" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_substitution_member_that_writes_its_own_type_is_a_record(tmp_path):
+    """The member carries its type inline, so the member is the record."""
+    emitted, _source = _emit(tmp_path, SUBSTITUTION_INLINE)
+    record = _record(emitted, "root_type")
+    assert "member member" in record
+    assert "std::string alpha" in _record(emitted, "member")
+
+
+UNTYPED = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element name="Free"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_an_element_with_no_type_is_carried_as_text(tmp_path):
+    """xs:anyType is not described by the schema, so it cannot be a record."""
+    emitted, _source = _emit(tmp_path, UNTYPED)
+    assert "std::string free" in _record(emitted, "root_type")
+
+
+def _wide_schema(fields):
+    body = "\n".join(
+        f'      <xs:element type="xs:string" name="F{i}" minOccurs="0"/>' for i in range(fields)
+    )
+    return f"""<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+{body}
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_type_with_more_than_one_mask_word_states_its_mask_as_an_array(tmp_path):
+    """A record with more than 64 fields needs more than one presence word."""
+    emitted, _source = _emit(tmp_path, _wide_schema(70))
+    record = _record(emitted, "root_type")
+    assert "std::uint64_t present[2] = {0" in record
+    narrow, _source = _emit(tmp_path, _wide_schema(3))
+    assert "std::uint64_t present = 0" in _record(narrow, "root_type")
+
+
+RECURSIVE_SCHEMA = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Head"/>
+      <xs:element type="node" name="Node" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="node">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Value" minOccurs="0"/>
+      <xs:element type="node" name="Child" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_type_that_holds_itself_loses_only_the_edge_that_closes_it(tmp_path):
+    """A record cannot hold itself, so the recursive member is left out."""
+    emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
+    node = _record(emitted, "node")
+    assert "std::string value" in node
+    assert "child" not in node
+    assert "std::string head" in _record(emitted, "root_type")

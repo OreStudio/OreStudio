@@ -4454,6 +4454,106 @@ const fr: SourceCatalogue = {
         },
     },
 
+    reporting: {
+        title: 'Rapports',
+        description:
+            "Les définitions de rapport que cette partie exécute, avec l'état de la dernière exécution de chacune.",
+        loading: 'Lecture des définitions de rapport…',
+        empty: "Cette partie ne possède aucune définition de rapport. Rien n'a été créé pour elle, donc aucune ligne ne peut être tracée.",
+        unread: "{cell} n'a pas pu être lu : {message}",
+        tally: {
+            title: 'État de la dernière exécution',
+            lead: 'cinq mots, dérivés de la dernière exécution de chaque définition',
+            unstated:
+                "aucune ligne n'énonce de mot d'état pour {count} d'entre elles : l'état de leur exécution est l'un de ceux que le serveur n'a pas encore associés.",
+        },
+        list: {
+            title: 'Définitions de rapport',
+            lead: '{count} définitions',
+            note: "Une ligne par définition. L'état est dérivé de la dernière exécution, jamais de la définition. La contance est séparée en erreurs et avertissements, afin qu'une ligne terminée avec des erreurs ne se lise pas comme propre.",
+        },
+        columns: {
+            report: 'Rapport',
+            party: 'Partie',
+            schedule: 'Calendrier',
+            latestRun: 'Début de la dernière exécution',
+            duration: 'Durée',
+            health: 'État',
+            problems: 'Erreurs et avertissements',
+        },
+        health: {
+            failed: 'échec',
+            completedWithErrors: 'terminé avec des erreurs',
+            running: 'en cours',
+            neverRun: 'jamais exécuté',
+            completedClean: 'terminé proprement',
+            noWord: 'aucun mot',
+        },
+        cell: {
+            nextFire: 'prochain {at}',
+            partyNotStated: 'non énoncée',
+            notStated: 'non énoncé',
+            noProblems: 'aucun',
+            unread: 'non lu',
+        },
+        duration: {
+            milliseconds: '{value} ms',
+            seconds: '{value} s',
+            minutes: '{value} min',
+            hours: '{value} h',
+        },
+        problems: {
+            errors: {
+                one: '{count} erreur',
+                other: '{count} erreurs',
+            },
+            warnings: {
+                one: '{count} avertissement',
+                other: '{count} avertissements',
+            },
+        },
+        detail: {
+            lead: "Une définition de rapport : ce qu'elle est, comment sa dernière exécution s'est passée, et les champs qu'une personne peut modifier.",
+            latestRun: 'Dernière exécution',
+            latestRunLead: "composée à partir de l'exécution, et jamais de la définition",
+            neverRun:
+                "Cette définition n'a jamais été exécutée. Rien n'a été vérifié, elle ne se lit donc pas comme propre.",
+            started: 'Début',
+            noNextFire: "Le planificateur n'énonce aucune prochaine exécution.",
+            record: 'La définition',
+            readOnly: 'lecture seule',
+            name: 'Nom',
+            reportType: 'Type de rapport',
+            party: 'Partie',
+            concurrencyPolicy: 'Politique de concurrence',
+            schedulerJob: 'Tâche du planificateur',
+            runGrant: "Autorisation d'exécution",
+            version: 'Version',
+            modifiedBy: 'Modifié par',
+            performedBy: 'Réalisé par',
+            changeReason: 'Motif du changement',
+            commentary: 'Commentaire',
+            recordedAt: 'Enregistré le',
+            edit: 'Modifier',
+            editLead:
+                "Seuls les champs présents ici sont écrits. Le reste de l'enregistrement garde la valeur lue.",
+            description: 'Description',
+            scheduleExpression: 'Expression de calendrier',
+            scheduleExpressionHint:
+                'Une expression cron. Le moment où le planificateur la déclenche est décidé par la tâche à laquelle la définition est liée.',
+            preparedInputKey: 'Entrée préparée',
+            preparedInputKeyHint: "La clé à laquelle l'exécution lit son entrée préparée.",
+            preProcessing: 'Prétraitement',
+            postProcessing: 'Post-traitement',
+            isOfficial: 'Officielle',
+            isOfficialHint: 'La définition officielle de son rapport pour cette partie.',
+            save: 'Enregistrer',
+            saved: "Enregistrée comme version {version}. L'écran ci-dessous énonce ce que le serveur détient maintenant.",
+            mayNotEdit:
+                'Vous pouvez lire cette définition sans pouvoir la modifier. La modification exige le droit de changer les définitions de rapport.',
+        },
+    },
+
     permissionWords: {
         loginInfoRead: 'voir la dernière connexion des personnes',
         partiesRead: 'voir les parties du locataire',
@@ -4476,6 +4576,8 @@ const fr: SourceCatalogue = {
         fxFeedsRead: 'voir les flux de prix FX synthétiques',
         irFeedsRead: 'voir les flux de courbes de taux synthétiques',
         feedsRun: 'démarrer et arrêter les flux synthétiques',
+        reportDefinitionsRead: 'voir les définitions de rapport de vos parties',
+        reportDefinitionsWrite: 'changer les définitions de rapport',
     },
 
     unavailable: {

@@ -152,6 +152,10 @@ import {
     type WorkflowProgress,
     type WireTimestamp,
     wireTimestampSchema,
+    reportDetailSchema,
+    reportsPageSchema,
+    type ReportDetail,
+    type ReportsPage,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
 
@@ -409,6 +413,16 @@ function selectionBody(selection: FeedSelection): Record<string, unknown> {
         feedIds: selection.feedIds ?? [],
         excludedIds: selection.excludedIds ?? [],
     };
+}
+
+/** The definition fields the edit form offers, and so the only ones a save may change. */
+export interface ReportEdit {
+    readonly description: string;
+    readonly schedule_expression: string;
+    readonly is_official: boolean;
+    readonly pre_processing: string;
+    readonly prepared_input_key: string;
+    readonly post_processing: string;
 }
 
 export const api = {
@@ -1182,6 +1196,55 @@ export const api = {
             headers: JSON_HEADERS,
             body: JSON.stringify(input),
         });
+    },
+
+    /**
+     * The reports the session's party runs, one row per definition.
+     *
+     * The BFF composes the definition, its latest run, the health of that run,
+     * its problem counts and its next fire, so a row arrives ready to draw. A
+     * read that failed leaves its own cells empty and is named in `unread`,
+     * which is why a row can be partial and still be a row.
+     */
+    async reports(): Promise<ReportsPage> {
+        return reportsPageSchema.parse(await request('/api/reporting/reports', { method: 'GET' }));
+    },
+
+    /** One definition, its composed row, and every field the detail screen states. */
+    async report(name: string): Promise<ReportDetail> {
+        return reportDetailSchema.parse(
+            await request(`/api/reporting/reports/${encodeURIComponent(name)}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * Writes the fields the edit form offers, and nothing else.
+     *
+     * The BFF rebuilds the record from the read it makes at write time, so a
+     * field the screen does not show keeps its stored value whatever is sent.
+     * The version is the one the form was filled from: a record somebody else
+     * changed in between is a conflict rather than a silent overwrite.
+     */
+    async saveReport(
+        name: string,
+        edit: {
+            readonly version: number;
+            readonly change: ReportEdit;
+            readonly reasonCode: string;
+            readonly commentary: string;
+        },
+    ): Promise<ReportDetail> {
+        return reportDetailSchema.parse(
+            await request(`/api/reporting/reports/${encodeURIComponent(name)}`, {
+                method: 'PUT',
+                headers: JSON_HEADERS,
+                body: JSON.stringify({
+                    version: edit.version,
+                    change: edit.change,
+                    intent: { reason_code: edit.reasonCode, commentary: edit.commentary },
+                }),
+            }),
+        );
     },
 
     /** The synthetic resources, with what each searches and sorts and the permissions each needs. */

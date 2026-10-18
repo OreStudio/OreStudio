@@ -4389,6 +4389,106 @@ export const en: SourceCatalogue = {
         },
     },
 
+    reporting: {
+        title: 'Reports',
+        description:
+            "The report definitions this party runs, with the health of each one's latest run.",
+        loading: 'Reading the report definitions…',
+        empty: 'This party owns no report definition. Nothing has been created for it, so there is no row to draw.',
+        unread: '{cell} could not be read: {message}',
+        tally: {
+            title: 'Health of the latest run',
+            lead: 'five words, derived from the latest run of each definition',
+            unstated:
+                '{count} rows state no health word: the state of their run is one the server has not mapped.',
+        },
+        list: {
+            title: 'Report definitions',
+            lead: '{count} definitions',
+            note: 'One row per definition. Health is derived from the latest run, never from the definition. The count is split into errors and warnings, so a row that completed carrying errors is not read as clean.',
+        },
+        columns: {
+            report: 'Report',
+            party: 'Party',
+            schedule: 'Schedule',
+            latestRun: 'Latest run started',
+            duration: 'Duration',
+            health: 'Health',
+            problems: 'Errors and warnings',
+        },
+        health: {
+            failed: 'failed',
+            completedWithErrors: 'completed with errors',
+            running: 'running',
+            neverRun: 'never run',
+            completedClean: 'completed clean',
+            noWord: 'no word',
+        },
+        cell: {
+            nextFire: 'next {at}',
+            partyNotStated: 'not stated',
+            notStated: 'not stated',
+            noProblems: 'none',
+            unread: 'not read',
+        },
+        duration: {
+            milliseconds: '{value} ms',
+            seconds: '{value} s',
+            minutes: '{value} min',
+            hours: '{value} h',
+        },
+        problems: {
+            errors: {
+                one: '{count} error',
+                other: '{count} errors',
+            },
+            warnings: {
+                one: '{count} warning',
+                other: '{count} warnings',
+            },
+        },
+        detail: {
+            lead: 'One report definition: what it is, how its latest run went, and the fields a person may change.',
+            latestRun: 'Latest run',
+            latestRunLead: 'composed from the run, and never from the definition',
+            neverRun:
+                'This definition has never run. Nothing was checked, so it does not read as clean.',
+            started: 'Started',
+            noNextFire: 'The scheduler states no next run.',
+            record: 'The definition',
+            readOnly: 'read only',
+            name: 'Name',
+            reportType: 'Report type',
+            party: 'Party',
+            concurrencyPolicy: 'Concurrency policy',
+            schedulerJob: 'Scheduler job',
+            runGrant: 'Run grant',
+            version: 'Version',
+            modifiedBy: 'Modified by',
+            performedBy: 'Performed by',
+            changeReason: 'Change reason',
+            commentary: 'Commentary',
+            recordedAt: 'Recorded at',
+            edit: 'Edit',
+            editLead:
+                'Only the fields here are written. The rest of the record keeps the value it was read with.',
+            description: 'Description',
+            scheduleExpression: 'Schedule expression',
+            scheduleExpressionHint:
+                'A cron expression. When the scheduler fires it is decided by the job the definition is bound to.',
+            preparedInputKey: 'Prepared input',
+            preparedInputKeyHint: 'The key the run reads its prepared input from.',
+            preProcessing: 'Pre-processing',
+            postProcessing: 'Post-processing',
+            isOfficial: 'Official',
+            isOfficialHint: 'The official definition of its report for this party.',
+            save: 'Save',
+            saved: 'Saved as version {version}. The screen below states what the server now holds.',
+            mayNotEdit:
+                'You may read this definition and not change it. Editing needs permission to change report definitions.',
+        },
+    },
+
     permissionWords: {
         loginInfoRead: 'see when people last signed in',
         partiesRead: 'see the parties of the tenant',
@@ -4411,6 +4511,8 @@ export const en: SourceCatalogue = {
         fxFeedsRead: 'see the synthetic FX price feeds',
         irFeedsRead: 'see the synthetic IR curve feeds',
         feedsRun: 'start and stop the synthetic feeds',
+        reportDefinitionsRead: 'see the report definitions of your parties',
+        reportDefinitionsWrite: 'change report definitions',
     },
 
     unavailable: {

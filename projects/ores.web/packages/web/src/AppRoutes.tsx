@@ -101,6 +101,8 @@ import { BindingsPage } from './marketdata/bindings/BindingsPage.js';
 import { SyntheticScreen } from './marketdata/synthetic/SyntheticScreen.js';
 import { TenantAccountPage } from './access/TenantAccountPage.js';
 import { PartiesPage, PartyPage } from './refdata/parties.js';
+import { ReportPage } from './reporting/ReportPage.js';
+import { ReportsPage } from './reporting/ReportsPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { TenantPage } from './pages/TenantPage.js';
 import { TenantRunPage } from './pages/TenantRunPage.js';
@@ -673,6 +675,36 @@ export function AppRoutes({
                     shell,
                     () => (
                         <PartyPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            {/*
+             * Reporting: the reports the session's party runs, and one
+             * definition's page. The list is the area's front door, so it is
+             * the area's own address and not a child of it. Both are tables,
+             * so they take the width.
+             */}
+            <Route
+                path={PATHS.reporting}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ReportsPage />
+                    ),
+                    'workspace',
+                )}
+            />
+            <Route
+                path={`${PATHS.reporting}/:name`}
+                element={signedIn(
+                    gate.version,
+                    session,
+                    shell,
+                    () => (
+                        <ReportPage />
                     ),
                     'workspace',
                 )}

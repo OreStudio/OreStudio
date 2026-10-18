@@ -47,6 +47,7 @@ export const PATHS = {
     fxFeed: '/market-data/synthetic/fx',
     irFeed: '/market-data/synthetic/ir',
     bindings: '/market-data/bindings',
+    reporting: '/reporting',
 } as const;
 
 /** The address of one person's page. */
@@ -67,6 +68,16 @@ export function gridMachinePath(machine: string): string {
 /** The address of the page of one compute node. */
 export function gridNodePath(hostId: string): string {
     return `/operations/grid/nodes/${encodeURIComponent(hostId)}`;
+}
+
+/**
+ * The address of one report definition's page.
+ *
+ * The definition's name is its key, so the address states it and no other read
+ * is needed to resolve it.
+ */
+export function reportPath(name: string): string {
+    return `${PATHS.reporting}/${encodeURIComponent(name)}`;
 }
 
 /** The address of the rescue screen for one account. */

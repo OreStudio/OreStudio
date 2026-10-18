@@ -4424,6 +4424,106 @@ const pt: SourceCatalogue = {
         },
     },
 
+    reporting: {
+        title: 'Relatórios',
+        description:
+            'As definições de relatório que esta parte executa, com o estado da última execução de cada uma.',
+        loading: 'A ler as definições de relatório…',
+        empty: 'Esta parte não possui qualquer definição de relatório. Nada foi criado para ela, pelo que não há linha a desenhar.',
+        unread: 'Não foi possível ler {cell}: {message}',
+        tally: {
+            title: 'Estado da última execução',
+            lead: 'cinco palavras, derivadas da última execução de cada definição',
+            unstated:
+                '{count} linhas não enunciam qualquer palavra de estado: o estado da sua execução é um dos que o servidor ainda não associou.',
+        },
+        list: {
+            title: 'Definições de relatório',
+            lead: '{count} definições',
+            note: 'Uma linha por definição. O estado é derivado da última execução, nunca da definição. A contagem é separada em erros e avisos, para que uma linha concluída com erros não se leia como limpa.',
+        },
+        columns: {
+            report: 'Relatório',
+            party: 'Parte',
+            schedule: 'Calendário',
+            latestRun: 'Início da última execução',
+            duration: 'Duração',
+            health: 'Estado',
+            problems: 'Erros e avisos',
+        },
+        health: {
+            failed: 'falhou',
+            completedWithErrors: 'concluído com erros',
+            running: 'em curso',
+            neverRun: 'nunca executado',
+            completedClean: 'concluído sem erros',
+            noWord: 'sem palavra',
+        },
+        cell: {
+            nextFire: 'próxima {fire}',
+            partyNotStated: 'não enunciada',
+            notStated: 'não enunciado',
+            noProblems: 'nenhum',
+            unread: 'não lido',
+        },
+        duration: {
+            milliseconds: '{value} ms',
+            seconds: '{value} s',
+            minutes: '{value} min',
+            hours: '{value} h',
+        },
+        problems: {
+            errors: {
+                one: '{count} erro',
+                other: '{count} erros',
+            },
+            warnings: {
+                one: '{count} aviso',
+                other: '{count} avisos',
+            },
+        },
+        detail: {
+            lead: 'Uma definição de relatório: o que é, como correu a sua última execução, e os campos que uma pessoa pode alterar.',
+            latestRun: 'Última execução',
+            latestRunLead: 'composta a partir da execução, e nunca da definição',
+            neverRun:
+                'Esta definição nunca foi executada. Nada foi verificado, pelo que não se lê como limpa.',
+            started: 'Início',
+            noNextFire: 'O agendador não enuncia qualquer próxima execução.',
+            record: 'A definição',
+            readOnly: 'apenas leitura',
+            name: 'Nome',
+            reportType: 'Tipo de relatório',
+            party: 'Parte',
+            concurrencyPolicy: 'Política de concorrência',
+            schedulerJob: 'Tarefa do agendador',
+            runGrant: 'Autorização de execução',
+            version: 'Versão',
+            modifiedBy: 'Modificado por',
+            performedBy: 'Executado por',
+            changeReason: 'Motivo da alteração',
+            commentary: 'Comentário',
+            recordedAt: 'Registado em',
+            edit: 'Editar',
+            editLead:
+                'Apenas os campos aqui presentes são escritos. O resto do registo mantém o valor lido.',
+            description: 'Descrição',
+            scheduleExpression: 'Expressão de calendário',
+            scheduleExpressionHint:
+                'Uma expressão cron. O momento em que o agendador a dispara é decidido pela tarefa a que a definição está ligada.',
+            preparedInputKey: 'Entrada preparada',
+            preparedInputKeyHint: 'A chave de onde a execução lê a sua entrada preparada.',
+            preProcessing: 'Pré-processamento',
+            postProcessing: 'Pós-processamento',
+            isOfficial: 'Oficial',
+            isOfficialHint: 'A definição oficial do seu relatório para esta parte.',
+            save: 'Guardar',
+            saved: 'Guardada como versão {version}. O ecrã abaixo enuncia o que o servidor detém agora.',
+            mayNotEdit:
+                'Pode ler esta definição sem a poder alterar. A alteração exige o direito de mudar definições de relatório.',
+        },
+    },
+
     permissionWords: {
         loginInfoRead: 'ver o último início de sessão das pessoas',
         partiesRead: 'ver as partes do inquilino',
@@ -4446,6 +4546,8 @@ const pt: SourceCatalogue = {
         fxFeedsRead: 'ver os fluxos de preços FX sintéticos',
         irFeedsRead: 'ver os fluxos de curvas de taxas sintéticos',
         feedsRun: 'iniciar e parar os feeds sintéticos',
+        reportDefinitionsRead: 'ver as definições de relatório das suas partes',
+        reportDefinitionsWrite: 'alterar definições de relatório',
     },
 
     unavailable: {

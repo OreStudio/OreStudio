@@ -719,6 +719,7 @@ Units 1 to 5 are merged, together with finding E15. The rest are not started.
 | E11 The basket's weight | merged | #3492 |
 | The cliquet fact table | merged | #3495 |
 | The outperformance fact table | merged | #3498 |
+| The TaRF fact table | merged | #3502 |
 | 6 to 8 Round trips | not started | |
 | 9 The common-date view | not started | |
 | 10 The corpus proof | not started | |

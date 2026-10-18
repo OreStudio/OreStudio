@@ -32,6 +32,7 @@ set(files
     "domain/curve_configuration_projection.cpp"
     "domain/domain.cpp"
     "domain/equity_instrument_mapper.cpp"
+    "domain/equity_instrument_projection.cpp"
     "domain/fx_instrument_mapper.cpp"
     "domain/fx_instrument_projection.cpp"
     "domain/portfolio_projection.cpp"

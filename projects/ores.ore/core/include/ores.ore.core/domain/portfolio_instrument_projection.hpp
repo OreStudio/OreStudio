@@ -154,6 +154,25 @@ write_credit_instrument(xml::record_writer& trade,
                         const portfolio_reference_curves& reference_curves) -> bool;
 
 /**
+ * @brief The equity family: one product row, plus the entries a position owns.
+ *
+ * Every equity product is one row of its own table, and the trade type states
+ * which of them the document holds. A position states its entries as child
+ * rows, which travel in the carrier beside the row rather than inside it, and
+ * an accumulator keeps its range bounds as JSON text because the table has no
+ * child table for them.
+ */
+ORES_ORE_CORE_EXPORT auto read_equity_instrument(xml::record_reader trade,
+                                                 std::string_view trade_type)
+    -> std::optional<trading::domain::trade_instrument>;
+
+ORES_ORE_CORE_EXPORT auto
+write_equity_instrument(xml::record_writer& trade,
+                        std::string_view trade_type,
+                        const trading::domain::trade_instrument& instrument,
+                        const portfolio_reference_curves& reference_curves) -> bool;
+
+/**
  * @brief The FX family: one carrier holding a row per product, and no header.
  *
  * The carrier states a product by the array its row sits in, so the reading

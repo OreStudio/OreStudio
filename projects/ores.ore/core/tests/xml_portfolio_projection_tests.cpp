@@ -439,6 +439,144 @@ const char* const fx_product_document_text = R"(<Portfolio>
   </Trade>
 </Portfolio>)";
 
+const char* const equity_option_document_text = R"(<Portfolio>
+  <Trade id="equity-option-1">
+    <TradeType>EquityOption</TradeType>
+    <Envelope>
+      <CounterParty>CPTY_E</CounterParty>
+      <NettingSetId>NS-9</NettingSetId>
+    </Envelope>
+    <EquityOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates><ExerciseDate>2025-06-20</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Name>RIC:.SPX</Name>
+      <Currency>USD</Currency>
+      <Quantity>775</Quantity>
+      <Strike>2800.5</Strike>
+    </EquityOptionData>
+  </Trade>
+</Portfolio>)";
+
+const char* const equity_position_document_text = R"(<Portfolio>
+  <Trade id="equity-position-1">
+    <TradeType>EquityPosition</TradeType>
+    <EquityPositionData>
+      <Quantity>5000</Quantity>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+      </Underlying>
+    </EquityPositionData>
+  </Trade>
+  <Trade id="equity-option-position-1">
+    <TradeType>EquityOptionPosition</TradeType>
+    <EquityOptionPositionData>
+      <Quantity>1000</Quantity>
+      <Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>.SPX</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+        <OptionData>
+          <LongShort>Long</LongShort>
+          <OptionType>Call</OptionType>
+          <Style>European</Style>
+          <Settlement>Cash</Settlement>
+        </OptionData>
+        <Strike>3300</Strike>
+      </Underlying>
+      <Underlying>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>.SX5E</Name>
+          <Weight>0.5</Weight>
+        </Underlying>
+        <OptionData>
+          <LongShort>Short</LongShort>
+          <OptionType>Put</OptionType>
+          <Style>American</Style>
+          <Settlement>Physical</Settlement>
+        </OptionData>
+        <Strike>3400</Strike>
+      </Underlying>
+    </EquityOptionPositionData>
+  </Trade>
+</Portfolio>)";
+
+const char* const equity_barrier_and_accumulator_document_text = R"(<Portfolio>
+  <Trade id="equity-barrier-1">
+    <TradeType>EquityBarrierOption</TradeType>
+    <EquityBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates><ExerciseDate>2026-08-15</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>UpAndOut</Type>
+        <Levels><Level>3500</Level></Levels>
+      </BarrierData>
+      <Name>RIC:.SPX</Name>
+      <Currency>USD</Currency>
+      <Strike>3200</Strike>
+      <Quantity>1000</Quantity>
+    </EquityBarrierOptionData>
+  </Trade>
+  <Trade id="equity-accumulator-1">
+    <TradeType>EquityAccumulator</TradeType>
+    <EquityAccumulatorData>
+      <Currency>EUR</Currency>
+      <FixingAmount>30</FixingAmount>
+      <Strike>4000</Strike>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.STOXX50</Name>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <PayoffType>Decumulator</PayoffType>
+      </OptionData>
+      <StartDate>2025-02-05</StartDate>
+      <ObservationDates>
+        <Rules>
+          <StartDate>2025-02-05</StartDate>
+          <EndDate>2026-02-05</EndDate>
+          <Tenor>1D</Tenor>
+          <Convention>F</Convention>
+        </Rules>
+      </ObservationDates>
+      <RangeBounds>
+        <RangeBound>
+          <RangeTo>4000</RangeTo>
+          <Leverage>1</Leverage>
+        </RangeBound>
+        <RangeBound>
+          <RangeFrom>4000</RangeFrom>
+          <Leverage>2</Leverage>
+        </RangeBound>
+      </RangeBounds>
+      <Barriers>
+        <BarrierData>
+          <Type>DownAndOut</Type>
+          <Levels><Level>3500</Level></Levels>
+        </BarrierData>
+        <BarrierData>
+          <Type>FixingFloor</Type>
+          <Levels><Level>1</Level></Levels>
+        </BarrierData>
+      </Barriers>
+    </EquityAccumulatorData>
+  </Trade>
+</Portfolio>)";
+
 auto date_of(int year, unsigned month, unsigned day) -> std::chrono::year_month_day {
     return {std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
 }
@@ -2203,4 +2341,209 @@ TEST_CASE("a_portfolio_document_projects_an_index_swap_option_and_its_wrapped_sw
     REQUIRE(round->constituents.size() == 1);
     CHECK(round->constituents[0].issuer_id == "ACME");
     CHECK(round->constituents[0].weight == std::optional<double>(1.0));
+}
+
+TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(equity_option_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 1);
+    CHECK(items[0].anchor.trade_type == "EquityOption");
+    CHECK(items[0].envelope.has_value());
+    CHECK(items[0].envelope->counter_party == std::optional<std::string>("CPTY_E"));
+
+    const auto* data = std::get_if<ores::trading::domain::equity_instrument_data>(&items[0].instrument);
+    REQUIRE(data != nullptr);
+    const auto* option = std::get_if<ores::trading::domain::equity_option_instrument>(&data->instrument);
+    REQUIRE(option != nullptr);
+    CHECK(option->identity.trade_type_code == "EquityOption");
+    CHECK(option->underlying_name == "RIC:.SPX");
+    CHECK(option->currency == "USD");
+    CHECK(option->notional.to_string() == "775");
+    CHECK(option->option_type == "Call");
+    CHECK(option->exercise_type == "European");
+    CHECK(option->expiry_date == date_of(2025, 6, 20));
+    CHECK(option->strike.to_string() == "2800.5");
+
+    const auto back = rebuild(items[0]);
+    CHECK(back.anchor.trade_type == "EquityOption");
+    CHECK(back.envelope.has_value());
+    CHECK(back.envelope->netting_set_id == std::optional<std::string>("NS-9"));
+    const auto* round_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&back.instrument);
+    REQUIRE(round_data != nullptr);
+    const auto* round =
+        std::get_if<ores::trading::domain::equity_option_instrument>(&round_data->instrument);
+    REQUIRE(round != nullptr);
+    CHECK(round->identity.trade_type_code == "EquityOption");
+    CHECK(round->underlying_name == "RIC:.SPX");
+    CHECK(round->currency == "USD");
+    CHECK(round->notional.to_string() == "775");
+    CHECK(round->option_type == "Call");
+    CHECK(round->exercise_type == "European");
+    CHECK(round->expiry_date == date_of(2025, 6, 20));
+    CHECK(round->strike.to_string() == "2800.5");
+}
+
+TEST_CASE("a_portfolio_document_projects_an_equity_position_and_its_option_entries", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(equity_position_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    CHECK(items[0].anchor.trade_type == "EquityPosition");
+    CHECK(items[1].anchor.trade_type == "EquityOptionPosition");
+
+    const auto* position =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&items[0].instrument);
+    REQUIRE(position != nullptr);
+    const auto* plain =
+        std::get_if<ores::trading::domain::equity_position_instrument>(&position->instrument);
+    REQUIRE(plain != nullptr);
+    CHECK(plain->identity.trade_type_code == "EquityPosition");
+    CHECK(plain->quantity == 5000.0);
+    CHECK(plain->underlying_name == ".SPX");
+    CHECK(position->underlyings.empty());
+
+    const auto* entries =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&items[1].instrument);
+    REQUIRE(entries != nullptr);
+    const auto* held =
+        std::get_if<ores::trading::domain::equity_position_instrument>(&entries->instrument);
+    REQUIRE(held != nullptr);
+    CHECK(held->identity.trade_type_code == "EquityOptionPosition");
+    CHECK(held->quantity == 1000.0);
+    CHECK(held->underlying_name == ".SPX");
+    REQUIRE(entries->underlyings.size() == 2);
+    CHECK(entries->underlyings[0].sequence_number == 1);
+    CHECK(entries->underlyings[0].underlying_name == ".SPX");
+    CHECK(entries->underlyings[0].strike.to_string() == "3300");
+    CHECK(entries->underlyings[0].weight == std::optional<double>(0.5));
+    CHECK(entries->underlyings[0].long_short == "Long");
+    CHECK(entries->underlyings[0].option_type == "Call");
+    CHECK(entries->underlyings[0].exercise_type == "European");
+    CHECK(entries->underlyings[0].settlement_type == "Cash");
+    CHECK(entries->underlyings[1].sequence_number == 2);
+    CHECK(entries->underlyings[1].underlying_name == ".SX5E");
+    CHECK(entries->underlyings[1].strike.to_string() == "3400");
+    CHECK(entries->underlyings[1].long_short == "Short");
+    CHECK(entries->underlyings[1].option_type == "Put");
+    CHECK(entries->underlyings[1].exercise_type == "American");
+    CHECK(entries->underlyings[1].settlement_type == "Physical");
+
+    const auto plain_again = rebuild(items[0]);
+    const auto* plain_round_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&plain_again.instrument);
+    REQUIRE(plain_round_data != nullptr);
+    const auto* plain_round = std::get_if<ores::trading::domain::equity_position_instrument>(
+        &plain_round_data->instrument);
+    REQUIRE(plain_round != nullptr);
+    CHECK(plain_again.anchor.trade_type == "EquityPosition");
+    CHECK(plain_round->identity.trade_type_code == "EquityPosition");
+    CHECK(plain_round->quantity == 5000.0);
+    CHECK(plain_round->underlying_name == ".SPX");
+    CHECK(plain_round_data->underlyings.empty());
+
+    const auto entries_again = rebuild(items[1]);
+    const auto* round_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&entries_again.instrument);
+    REQUIRE(round_data != nullptr);
+    const auto* round =
+        std::get_if<ores::trading::domain::equity_position_instrument>(&round_data->instrument);
+    REQUIRE(round != nullptr);
+    CHECK(entries_again.anchor.trade_type == "EquityOptionPosition");
+    CHECK(round->identity.trade_type_code == "EquityOptionPosition");
+    CHECK(round->quantity == 1000.0);
+    REQUIRE(round_data->underlyings.size() == 2);
+    CHECK(round_data->underlyings[0].sequence_number == 1);
+    CHECK(round_data->underlyings[0].underlying_name == ".SPX");
+    CHECK(round_data->underlyings[0].strike.to_string() == "3300");
+    CHECK(round_data->underlyings[0].weight == std::optional<double>(0.5));
+    CHECK(round_data->underlyings[0].settlement_type == "Cash");
+    CHECK(round_data->underlyings[1].sequence_number == 2);
+    CHECK(round_data->underlyings[1].underlying_name == ".SX5E");
+    CHECK(round_data->underlyings[1].strike.to_string() == "3400");
+    CHECK(round_data->underlyings[1].settlement_type == "Physical");
+}
+
+TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumulator", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(equity_barrier_and_accumulator_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 2);
+    CHECK(items[0].anchor.trade_type == "EquityBarrierOption");
+    CHECK(items[1].anchor.trade_type == "EquityAccumulator");
+
+    const auto* barrier_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&items[0].instrument);
+    REQUIRE(barrier_data != nullptr);
+    const auto* barrier =
+        std::get_if<ores::trading::domain::equity_barrier_option_instrument>(&barrier_data->instrument);
+    REQUIRE(barrier != nullptr);
+    CHECK(barrier->identity.trade_type_code == "EquityBarrierOption");
+    CHECK(barrier->underlying_name == "RIC:.SPX");
+    CHECK(barrier->currency == "USD");
+    CHECK(barrier->notional.to_string() == "1000");
+    CHECK(barrier->option_type == "Call");
+    CHECK(barrier->exercise_type == "European");
+    CHECK(barrier->expiry_date == date_of(2026, 8, 15));
+    CHECK(barrier->strike.to_string() == "3200");
+    CHECK(barrier->lower_barrier_type == "UpAndOut");
+    CHECK(barrier->lower_barrier.to_string() == "3500");
+    CHECK_FALSE(barrier->upper_barrier.has_value());
+
+    const auto* accumulator_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&items[1].instrument);
+    REQUIRE(accumulator_data != nullptr);
+    const auto* accumulator = std::get_if<ores::trading::domain::equity_accumulator_instrument>(
+        &accumulator_data->instrument);
+    REQUIRE(accumulator != nullptr);
+    CHECK(accumulator->identity.trade_type_code == "EquityAccumulator");
+    CHECK(accumulator->underlying_name == ".STOXX50");
+    CHECK(accumulator->currency == "EUR");
+    CHECK(accumulator->fixing_amount.to_string() == "30");
+    CHECK(accumulator->strike.to_string() == "4000");
+    CHECK(accumulator->start_date == date_of(2025, 2, 5));
+    REQUIRE(accumulator->knock_out_level.has_value());
+    CHECK(accumulator->knock_out_level->to_string() == "3500");
+    CHECK(accumulator->range_bounds_json ==
+          R"([{"RangeTo":4000,"Leverage":1},{"RangeFrom":4000,"Leverage":2}])");
+
+    const auto barrier_again = rebuild(items[0]);
+    const auto* barrier_round_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&barrier_again.instrument);
+    REQUIRE(barrier_round_data != nullptr);
+    const auto* barrier_round = std::get_if<ores::trading::domain::equity_barrier_option_instrument>(
+        &barrier_round_data->instrument);
+    REQUIRE(barrier_round != nullptr);
+    CHECK(barrier_again.anchor.trade_type == "EquityBarrierOption");
+    CHECK(barrier_round->identity.trade_type_code == "EquityBarrierOption");
+    CHECK(barrier_round->underlying_name == "RIC:.SPX");
+    CHECK(barrier_round->currency == "USD");
+    CHECK(barrier_round->notional.to_string() == "1000");
+    CHECK(barrier_round->option_type == "Call");
+    CHECK(barrier_round->exercise_type == "European");
+    CHECK(barrier_round->expiry_date == date_of(2026, 8, 15));
+    CHECK(barrier_round->strike.to_string() == "3200");
+    CHECK(barrier_round->lower_barrier_type == "UpAndOut");
+    CHECK(barrier_round->lower_barrier.to_string() == "3500");
+
+    const auto accumulator_again = rebuild(items[1]);
+    const auto* round_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&accumulator_again.instrument);
+    REQUIRE(round_data != nullptr);
+    const auto* round =
+        std::get_if<ores::trading::domain::equity_accumulator_instrument>(&round_data->instrument);
+    REQUIRE(round != nullptr);
+    CHECK(accumulator_again.anchor.trade_type == "EquityAccumulator");
+    CHECK(round->identity.trade_type_code == "EquityAccumulator");
+    CHECK(round->underlying_name == ".STOXX50");
+    CHECK(round->currency == "EUR");
+    CHECK(round->fixing_amount.to_string() == "30");
+    CHECK(round->strike.to_string() == "4000");
+    CHECK(round->start_date == date_of(2025, 2, 5));
+    CHECK(round->range_bounds_json ==
+          R"([{"RangeTo":4000,"Leverage":1},{"RangeFrom":4000,"Leverage":2}])");
 }

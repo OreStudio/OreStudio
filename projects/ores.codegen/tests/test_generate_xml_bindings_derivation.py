@@ -293,7 +293,7 @@ def _emit(tmp_path, schema_text, root_type="rootType"):
 
 def _record(emitted, name):
     record = emitted[emitted.index(f"struct {name} {{") :]
-    return record[: record.index("};")]
+    return record[: record.index("\n};")]
 
 
 def _row(source, name):
@@ -626,3 +626,299 @@ def test_an_enumeration_behind_a_restriction_chain_keeps_its_spellings(tmp_path)
     )
     assert "std::int16_t value" in _record(emitted, "entry")
     assert "scheme_spellings" in source
+
+
+GROUP = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:group name="common">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Alpha"/>
+      <xs:element type="xs:string" name="Beta" minOccurs="0"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Head"/>
+      <xs:group ref="common" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_model_group_is_flattened_where_it_is_referenced(tmp_path):
+    """A group is not a member: its members are the type's members."""
+    emitted, source = _emit(tmp_path, GROUP)
+    record = _record(emitted, "root_type")
+    assert "std::string head" in record
+    assert "std::vector<std::string> alpha" in record
+    assert "std::vector<std::string> beta" in record
+
+
+SUBSTITUTION_INLINE = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="headGroup" abstract="true"/>
+  <xs:element name="Member" substitutionGroup="headGroup">
+    <xs:complexType>
+      <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element ref="headGroup" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_substitution_member_that_writes_its_own_type_is_a_record(tmp_path):
+    """The member carries its type inline, so the member is the record."""
+    emitted, _source = _emit(tmp_path, SUBSTITUTION_INLINE)
+    record = _record(emitted, "root_type")
+    assert "member member" in record
+    assert "std::string alpha" in _record(emitted, "member")
+
+
+UNTYPED = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element name="Free"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_an_element_with_no_type_is_carried_as_text(tmp_path):
+    """xs:anyType is not described by the schema, so it cannot be a record."""
+    emitted, _source = _emit(tmp_path, UNTYPED)
+    assert "std::string free" in _record(emitted, "root_type")
+
+
+def _wide_schema(fields):
+    body = "\n".join(
+        f'      <xs:element type="xs:string" name="F{i}" minOccurs="0"/>' for i in range(fields)
+    )
+    return f"""<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+{body}
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_type_with_more_than_one_mask_word_states_its_mask_as_an_array(tmp_path):
+    """A record with more than 64 fields needs more than one presence word."""
+    emitted, _source = _emit(tmp_path, _wide_schema(70))
+    record = _record(emitted, "root_type")
+    assert "std::uint64_t present[2] = {0" in record
+    narrow, _source = _emit(tmp_path, _wide_schema(3))
+    assert "std::uint64_t present = 0" in _record(narrow, "root_type")
+
+
+RECURSIVE_SCHEMA = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Head"/>
+      <xs:element type="node" name="Node" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="node">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Value" minOccurs="0"/>
+      <xs:element type="node" name="Child" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_a_type_that_holds_itself_loses_only_the_edge_that_closes_it(tmp_path):
+    """A record cannot hold itself, so the recursive member is left out."""
+    emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
+    node = _record(emitted, "node")
+    assert "std::string value" in node
+    assert "child" not in node
+    assert "std::string head" in _record(emitted, "root_type")
+
+
+def _required(source, name):
+    row = source[source.index('{"' + name + '"') :]
+    row = row[: row.index("}")]
+    row = re.sub(r"offsetof\([^)]*\)", "offset", row)
+    return row.split(",")[6].strip()
+
+
+def test_a_required_member_of_a_sequence_group_stays_required(tmp_path):
+    """A group is not a choice: its required members are required."""
+    emitted, source = _emit(tmp_path, GROUP)
+    assert _required(source, "Head") == "true"
+    assert _required(source, "Alpha") == "true"
+
+
+GROUP_REUSED = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:group name="common">
+    <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+  </xs:group>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="oneType" name="One"/>
+      <xs:element type="twoType" name="Two"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="oneType">
+    <xs:sequence><xs:group ref="common" maxOccurs="unbounded"/></xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="twoType">
+    <xs:sequence><xs:group ref="common"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_one_group_referenced_twice_keeps_each_reference_cardinality(tmp_path):
+    """A reference states its own cardinality; the group is not changed by it."""
+    emitted, _source = _emit(tmp_path, GROUP_REUSED)
+    assert "std::vector<std::string> alpha" in _record(emitted, "one_type")
+    assert "std::string alpha" in _record(emitted, "two_type")
+
+
+CROSS_FILE = {
+    "first.xsd": """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Shared" type="sharedType"/>
+  <xs:complexType name="sharedType">
+    <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    "second.xsd": """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:include schemaLocation="first.xsd"/>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element ref="Shared"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+}
+
+
+def test_a_reference_to_a_global_element_of_an_earlier_schema(tmp_path):
+    """The globals of every schema read are one index."""
+    (tmp_path / "first.xsd").write_text(CROSS_FILE["first.xsd"])
+    (tmp_path / "second.xsd").write_text(CROSS_FILE["second.xsd"])
+    header = tmp_path / "out.hpp"
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "first.xsd"),
+            "--schema",
+            str(tmp_path / "second.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "rootType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "shared_type shared" in _record(header.read_text(), "root_type")
+
+
+def test_a_cut_member_is_named_in_the_generated_header(tmp_path):
+    """The file says which member a record cannot hold, and why."""
+    emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
+    assert "Child (node reaches itself)" in emitted
+    assert "A document that states it is refused" in emitted
+
+
+GROUP_ENUM = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:group name="colourGroup">
+    <xs:sequence>
+      <xs:element name="Colour">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="Red"/>
+            <xs:enumeration value="Blue"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:group>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:group ref="colourGroup"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_an_inline_enumeration_on_a_group_member_keeps_its_spellings(tmp_path):
+    """A group member is copied, and the copy carries its inline spellings."""
+    emitted, source = _emit(tmp_path, GROUP_ENUM)
+    assert "std::int16_t colour" in _record(emitted, "root_type")
+    assert "_colour_spellings[] = {" in source
+    assert "Red" in source and "Blue" in source
+
+
+def test_two_schemas_that_disagree_about_one_global_element_are_refused(tmp_path):
+    """One name must mean one type, whichever file declared it."""
+    (tmp_path / "first.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Shared" type="firstType"/>
+  <xs:complexType name="firstType">
+    <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    (tmp_path / "second.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Shared" type="secondType"/>
+  <xs:complexType name="secondType">
+    <xs:sequence><xs:element type="xs:string" name="Beta"/></xs:sequence>
+  </xs:complexType>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element ref="Shared"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "first.xsd"),
+            "--schema",
+            str(tmp_path / "second.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "rootType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(tmp_path / "out.hpp"),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "Shared" in result.stderr

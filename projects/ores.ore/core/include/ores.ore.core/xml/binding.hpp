@@ -150,17 +150,21 @@ inline constexpr std::uint8_t no_text = 0xFF;
  * @brief Whether a record's presence mask states the field's bit.
  *
  * The mask is the first member of every record the table describes, which is
- * what lets an offset and a bit describe a record the engine never names. Both
- * the engine and the projections that read records use these two functions, so
- * the layout is stated once.
+ * what lets an offset and a bit describe a record the engine never names. It is
+ * one 64-bit word per 64 fields: a type with more fields states its mask as an
+ * array, and the word a field's bit falls in is the bit divided by 64. Both the
+ * engine and the projections that read records use these two functions, so the
+ * layout is stated once.
  */
 inline auto bit_is_set(const void* record, const field& f) -> bool {
-    return (*static_cast<const std::uint64_t*>(record) & (1ull << f.bit)) != 0;
+    const auto* words = static_cast<const std::uint64_t*>(record);
+    return (words[f.bit / 64] & (1ull << (f.bit % 64))) != 0;
 }
 
 /// States the field's bit in the record's presence mask.
 inline void set_bit(void* record, const field& f) {
-    *static_cast<std::uint64_t*>(record) |= (1ull << f.bit);
+    auto* words = static_cast<std::uint64_t*>(record);
+    words[f.bit / 64] |= (1ull << (f.bit % 64));
 }
 
 /**

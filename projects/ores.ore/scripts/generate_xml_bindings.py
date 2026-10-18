@@ -15,6 +15,7 @@ with the tables. Both carry the generated marker so tooling skips them.
 """
 
 import argparse
+import copy
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -102,7 +103,15 @@ def register_substitutes(schema, root):
         group = node.get("substitutionGroup")
         if group is not None:
             schema.substitutes.setdefault(group, []).append(node)
-    schema.globals = globals_by_name
+    for name_, node_ in globals_by_name.items():
+        held = schema.globals.get(name_)
+        if held is not None and held.get("type") != node_.get("type") and (
+            node_.get("type") is not None or held.get("type") is not None
+        ):
+            raise SystemExit(
+                f"two schemas declare a global element named {name_} with different types"
+            )
+        schema.globals.setdefault(name_, node_)
 
 
 def register_inline(schema, root):
@@ -126,6 +135,30 @@ def register_inline(schema, root):
 
 def local(tag):
     return tag.split("}")[-1] if "}" in tag else tag
+
+
+def clone_with_identity(schema, node):
+    """A copy of a schema node that keeps the inline identity of the original.
+
+    A group or a substitution member is referenced from more than one type, and
+    each reference states its own cardinality. The node is copied so a reference
+    cannot change what the next one reads, and the names the generator gave the
+    original's inline types are carried to the copy, because they are keyed by
+    element identity.
+    """
+    duplicate = copy.deepcopy(node)
+    schema.clones.append(duplicate)
+
+    def transfer(original, cloned):
+        if id(original) in schema.inline_name:
+            schema.inline_name[id(cloned)] = schema.inline_name[id(original)]
+        if id(original) in schema.inline_enum:
+            schema.inline_enum[id(cloned)] = schema.inline_enum[id(original)]
+        for left, right in zip(list(original), list(cloned)):
+            transfer(left, right)
+
+    transfer(node, duplicate)
+    return duplicate
 
 
 def snake(name):
@@ -158,6 +191,23 @@ class Schema:
         # becomes its own optional field, which is how the model states a
         # variation without a polymorphic payload.
         self.substitutes = {}
+        # A model group written once and referenced by name: its members are
+        # flattened where it is referenced, which is what a record does with a
+        # group.
+        self.groups = {}
+        # The global elements of every schema read, by name. A reference names
+        # one of them, and the schemas are read in a list, so the index is
+        # accumulated rather than replaced per file.
+        self.globals = {}
+        # The (holder, member) pairs whose type closes a cycle. A record cannot
+        # hold itself, so those members are left out and a document that states
+        # one is refused by the reading.
+        self.cut_members = set()
+        # The types a document can reach after the cut edges are left out.
+        self.used_types = set()
+        # The node copies a group or a reference makes, held so their ids stay
+        # unique for the whole run: the inline tables are keyed by identity.
+        self.clones = []
         # An inline simpleType is an enumeration with no name of its own. Its
         # spellings are emitted under the type that holds it.
         self.inline_enum = {}
@@ -180,14 +230,19 @@ class Schema:
                     ]
                     if values:
                         self.enumerations[name] = values
+                elif local(node.tag) == "group" and name:
+                    self.groups.setdefault(name, node)
                 elif local(node.tag) == "element" and name:
                     self.elements.setdefault(name, node)
 
 
-# The presence mask is one 64-bit word per record, so a type may declare at
-# most this many fields. A record with more silently shares bits, which shows
-# up as a required field reported present when it never arrived.
-MAX_FIELDS = 64
+# The presence mask is one word per 64 fields. A type with more fields than one
+# word holds states its mask as an array, and the engine indexes the word a
+# field's bit falls in. The bound below is only a sanity limit.
+MASK_WORD_BITS = 64
+# A field's bit and a record's field count are std::uint8_t in the table, so 255
+# fields is the ceiling whatever the mask could say.
+MAX_MASK_BITS = 255
 
 # Elements that are alternatives inside an xs:choice. At most one of them
 # appears per iteration, so none is individually required however the schema
@@ -211,7 +266,7 @@ def simple_content_base(complex_type):
     return None
 
 
-UNSUPPORTED = ("group",)
+UNSUPPORTED = ("attributeGroup", "anyAttribute")
 
 
 def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
@@ -220,9 +275,32 @@ def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
     `bases` is the chain of types this walk has already flattened, so a
     derivation that reaches itself is refused instead of recursing.
     """
-    def walk(node, repeat_max=None, in_choice=False, optional=False):
+    def walk(node, repeat_max=None, in_choice=False, optional=False, groups=frozenset()):
         name = local(node.tag)
         if name == "annotation":
+            return
+        if name == "group":
+            reference = node.get("ref")
+            definition = schema.groups.get(reference) if schema is not None else None
+            if definition is None:
+                raise SystemExit(
+                    f"they type {complex_type.get('name')} references the group {reference}, "
+                    "which is not a group this generator read"
+                )
+            if reference in groups:
+                raise SystemExit(
+                    f"they type {complex_type.get('name')} references the group {reference} "
+                    "in a cycle"
+                )
+            own = node.get("maxOccurs", "1")
+            if own not in ("1",):
+                repeat_max = own
+            optional = optional or node.get("minOccurs", "1") == "0"
+            for child in definition:
+                cloned = clone_with_identity(schema, child)
+                if repeat_max is not None and cloned.get("maxOccurs", "1") in ("1",):
+                    cloned.set("maxOccurs", repeat_max)
+                walk(cloned, repeat_max, in_choice, optional, groups | {reference})
             return
         if name in ("sequence", "all", "choice"):
             # A compositor that repeats repeats its members: a document may
@@ -238,7 +316,7 @@ def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
             optional = optional or node.get("minOccurs", "1") == "0"
             alternatives = in_choice or name == "choice"
             for child in node:
-                walk(child, repeat_max, alternatives, optional)
+                walk(child, repeat_max, alternatives, optional, groups)
             return
         if name == "element":
             if repeat_max is not None and node.get("maxOccurs", "1") in ("1",):
@@ -292,10 +370,10 @@ def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
                     walk(child)
             return
         if name in UNSUPPORTED or name == "annotation":
-            # xs:group ref and nested model groups are shapes this generator
-            # does not read. Emitting nothing for them would produce a table
-            # that silently disagrees with the schema, so they stop the run
-            # instead.
+            # Attribute groups and wildcard attributes are shapes this
+            # generator does not read. Emitting nothing for them would produce a
+            # table that silently disagrees with the schema, so they stop the
+            # run instead.
             raise SystemExit(
                 f"they type {complex_type.get('name')} uses xs:{name}, which is not supported"
             )
@@ -518,6 +596,11 @@ def field_shape(schema, element):
     # produces. The generator registered it, possibly under a qualified name.
     if any(local(child.tag) == "complexType" for child in element):
         return "nested", schema.inline_name[id(element)]
+    if declared is None and not any(local(child.tag) == "simpleType" for child in element):
+        # An element with no type at all is xs:anyType, which the schema does
+        # not describe. It is carried as text: a document that puts children in
+        # it is refused by the reading rather than half stored.
+        return "text", None
     raise SystemExit(f"element {element.get('name')} has neither a type nor a complexType")
 
 
@@ -550,29 +633,70 @@ def collect(schema, type_name, seen):
     return seen
 
 
+def nested_target(schema, field):
+    """The complex type a member holds, or None when it holds a value."""
+    kind, target = field_shape(schema, field)
+    if kind != "nested" or target is None:
+        return None
+    return target
+
+
 def order_types(schema, root_type):
-    seen = collect(schema, root_type, dict())
-    ordered, done = [], set()
+    """The types a record can hold, dependencies first.
+
+    A record is a fixed layout, so a type is defined before the type that holds
+    it, and no type holds itself. An edge that closes a cycle is recorded in
+    schema.cut_members and left out of the record; the generated file names it,
+    so a document that states that member is refused by the reading.
+    """
+    reachable = collect(schema, root_type, dict())
+    edges = {}
+    for name in reachable:
+        complex_type = schema.complex_types.get(name)
+        if complex_type is None:
+            continue
+        targets = []
+        elements, _ = children_of(complex_type, schema)
+        for element in elements:
+            for field in expand(schema, element):
+                target = nested_target(schema, field)
+                if target is not None and target in schema.complex_types:
+                    targets.append((snake(field.get("name")), target))
+        edges[name] = targets
+
+    cut, ordered, done = set(), [], set()
 
     def visit(name, stack):
         if name in done or name not in schema.complex_types:
             return
-        if name in stack:
-            raise SystemExit(f"recursive type {name} is not supported")
         stack.add(name)
-        complex_type = schema.complex_types[name]
-        elements, _ = children_of(complex_type, schema)
-        for element in elements:
-            for field in expand(schema, element):
-                kind, nested = field_shape(schema, field)
-                if kind == "nested" and nested is not None:
-                    visit(nested, stack)
+        for member, target in edges.get(name, ()):
+            if target in stack:
+                cut.add((name, member, target))
+                continue
+            visit(target, stack)
         stack.discard(name)
         done.add(name)
         ordered.append(name)
 
-    for name in seen:
+    visit(root_type, set())
+    for name in reachable:
         visit(name, set())
+    schema.cut_members = cut
+
+    used = set()
+
+    def mark(name):
+        if name in used or name not in schema.complex_types:
+            return
+        used.add(name)
+        for member, target in edges.get(name, ()):
+            if (name, member, target) in cut:
+                continue
+            mark(target)
+
+    mark(root_type)
+    schema.used_types = used
     return ordered
 
 
@@ -593,25 +717,36 @@ def expand(schema, element):
     if members:
         for member in members:
             # Exactly one member appears in any document, so each is optional
-            # regardless of the cardinality written on the reference.
-            stand_in = ET.Element("xs:element")
-            for key, value in member.attrib.items():
-                stand_in.set(key, value)
+            # regardless of the cardinality written on the reference. The member
+            # itself is yielded rather than a copy: a member that writes its own
+            # type carries it inline, and the generator names inline types by
+            # element identity, so the member itself is used rather than a copy.
+            stand_in = clone_with_identity(schema, member)
             stand_in.set("minOccurs", "0")
             stand_in.set("maxOccurs", element.get("maxOccurs", "1"))
             yield stand_in
+        return
+    if head is not None and head.get("type") is None and id(head) in schema.inline_name:
+        # A member of another group may be referenced by name. It carries its
+        # type inline, so it is yielded as itself for the same reason.
+        head = clone_with_identity(schema, head)
+        head.set("minOccurs", element.get("minOccurs", "1"))
+        head.set("maxOccurs", element.get("maxOccurs", "1"))
+        yield head
         return
     if head is not None and head.get("type") is not None:
         # A plain global element: synthesise the element that names it.
         stand_in = ET.Element("xs:element")
         stand_in.set("name", ref)
         stand_in.set("type", head.get("type"))
-        for attribute in ("minOccurs", "maxOccurs"):
-            if element.get(attribute) is not None:
-                stand_in.set(attribute, element.get(attribute))
+        stand_in.set("minOccurs", element.get("minOccurs", "1"))
+        stand_in.set("maxOccurs", element.get("maxOccurs", "1"))
         yield stand_in
         return
-    raise SystemExit(f"element reference {ref} cannot be resolved")
+    detail = "no such global element"
+    if head is not None:
+        detail = "the global element states no type"
+    raise SystemExit(f"element reference {ref} cannot be resolved: {detail}")
 
 
 def spellings_of(schema, owner, element):
@@ -739,41 +874,76 @@ def shadowed_types(schema, ordered, names):
 def render(schema, root_element, root_type, namespace, accessor, money, include):
     ordered = order_types(schema, root_type)
     names = cpp_names(schema, ordered)
+    cut = {(holder, member) for holder, member, _target in schema.cut_members}
+    emitted = [name for name in ordered if name in schema.used_types]
     shadowed = shadowed_types(schema, ordered, names)
     header_name = accessor.replace("_document", "")
 
+    unresolved = []
+    cut_by_type = {}
     declarations = []
     declares = []
-    for type_name in ordered:
+    for type_name in emitted:
         complex_type = schema.complex_types[type_name]
         elements, attributes = children_of(complex_type, schema)
         declares.append(f"struct {names[type_name]};")
-        body = [f"struct {names[type_name]} {{", "    std::uint64_t present = 0;"]
+        body = [f"struct {names[type_name]} {{"]
+        field_count = 0
         own_kind = content_kind(schema, complex_type)
         if own_kind is not None:
             own_cpp = CPP_TYPE[own_kind]
             body.append(f"    {own_cpp} value{CPP_ZERO.get(own_cpp, '')};")
+            field_count += 1
         for attribute in attributes:
             body.append(f"    std::string {snake(attribute.get('name'))};")
+            field_count += 1
         for element in elements:
             for field in expand(schema, element):
                 member, kind, cpp, repeated = member_declaration(schema, field, money)
                 if kind == "nested":
                     target = field.get("type") or schema.inline_name.get(id(field), field.get("name"))
+                    if target not in names:
+                        unresolved.append((type_name, member, target))
+                        continue
+                    if (type_name, member) in cut:
+                        cut_by_type.setdefault(type_name, []).append(
+                            (field.get("name"), target)
+                        )
+                        continue
                     cpp = names[target]
                     if (type_name, target) in shadowed:
                         cpp = f"struct {cpp}"
                     if repeated:
                         cpp = f"std::vector<{cpp}>"
                 body.append(f"    {cpp} {member}{CPP_ZERO.get(cpp, '')};")
+                field_count += 1
         if is_residual(complex_type):
             body.append("    std::vector<residual_element> extras;")
+            field_count += 1
         body.append("};")
+        words = (field_count + MASK_WORD_BITS - 1) // MASK_WORD_BITS
+        if words <= 1:
+            body.insert(1, "    std::uint64_t present = 0;")
+        else:
+            body.insert(1, f"    std::uint64_t present[{words}] = {{0}};")
+        if type_name in cut_by_type:
+            held = ", ".join(
+                f"{member} ({target} reaches itself)" for member, target in cut_by_type[type_name]
+            )
+            declarations.append(
+                f"// Not a member of this record: {held}. A document that states it is refused."
+            )
         declarations.append("\n".join(body))
+
+    if unresolved:
+        holder, member, target = unresolved[0]
+        raise SystemExit(
+            f"{holder}.{member} holds {target}, which is not a complexType this generator read"
+        )
 
     tables = []
     repeated_members = []
-    for type_name in ordered:
+    for type_name in emitted:
         complex_type = schema.complex_types[type_name]
         elements, attributes = children_of(complex_type, schema)
         rows = []
@@ -805,6 +975,11 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
             required = element.get("minOccurs", "1") != "0" and id(element) not in CHOICE_CHILDREN
             scalar = SCALAR.get(kind, "scalar_kind::text")
             if kind == "nested":
+                target_name = element.get("type") or schema.inline_name.get(
+                    id(element), element.get("name")
+                )
+                if target_name not in names or (type_name, snake(element.get("name"))) in cut:
+                    continue
                 field_kind = "repeated_nested" if repeated else "nested"
                 nested = names[
                     element.get("type") or schema.inline_name.get(id(element), element.get("name"))
@@ -847,9 +1022,9 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
                 f"{bit}, false, false, nullptr, nullptr, scalar_kind::text, nullptr}},"
             )
             bit += 1
-        if bit > MAX_FIELDS:
+        if bit > MAX_MASK_BITS:
             raise SystemExit(
-                f"{type_name} has {bit} fields; the presence mask holds {MAX_FIELDS}"
+                f"{type_name} has {bit} fields; a table holds {MAX_MASK_BITS} at most"
             )
         text_field = "0" if own_kind is not None else "no_text"
         tables.append(
@@ -867,28 +1042,36 @@ def render(schema, root_element, root_type, namespace, accessor, money, include)
         )
 
     spellings = []
-    emitted = set()
+    emitted_spellings = set()
     for type_name in ordered:
         base = content_enumeration(schema, schema.complex_types[type_name])
-        if base is not None and base not in emitted:
-            emitted.add(base)
+        if base is not None and base not in emitted_spellings:
+            emitted_spellings.add(base)
             values = ", ".join(f'"{v}"' for v in schema.enumerations[base])
-            spellings.append(f"const char* {snake(base)}_spellings[] = {{{values}, nullptr}};")
+            spellings.append(
+                f"const char* {snake(base)}_spellings[] = {{{values}, nullptr}};"
+            )
     for type_name in ordered:
         for element in children_of(schema.complex_types[type_name], schema)[0]:
             for field in expand(schema, element):
+                # The spellings of an inline enumeration are registered when its
+                # shape is read, and a member reached here may not have been.
+                field_shape(schema, field)
                 declared = field.get("type")
                 if id(field) in schema.inline_enum:
                     name = spellings_of(schema, type_name, field)
-                    if name not in emitted:
-                        emitted.add(name)
+                    if name not in emitted_spellings:
+                        emitted_spellings.add(name)
                         values = ", ".join(f'"{v}"' for v in schema.inline_enum[id(field)])
-                        spellings.append(f"const char* {name}[] = {{{values}, nullptr}};")
-                elif declared in schema.enumerations and declared not in emitted:
-                    emitted.add(declared)
+                        spellings.append(
+                            f"const char* {name}[] = {{{values}, nullptr}};"
+                        )
+                elif declared in schema.enumerations and declared not in emitted_spellings:
+                    emitted_spellings.add(declared)
                     values = ", ".join(f'"{v}"' for v in schema.enumerations[declared])
                     spellings.append(
-                        f"const char* {snake(declared)}_spellings[] = {{{values}, nullptr}};"
+                        f"const char* {snake(declared)}_spellings[] = "
+                        f"{{{values}, nullptr}};"
                     )
 
     header = f'''{LICENCE}#ifndef ORES_ORE_CORE_XML_GENERATED_{header_name.upper()}_HPP

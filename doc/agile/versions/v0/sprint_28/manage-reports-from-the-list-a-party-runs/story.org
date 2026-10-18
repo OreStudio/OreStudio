@@ -76,6 +76,7 @@ door.
 | [[id:B15A20EA-29CD-4F01-9709-545BF9334A51][Specify the reports a party runs screen and its server gaps]] | DONE | 2026-10-17 | 2026-10-17 | Name the route, the BFF endpoint and the read subjects for the reports-a-party-runs screen, and carry the initial list of what the server cannot yet supply. |
 | [[id:66B7603A-16EE-4B5E-8A73-24784A73AB38][Close the gaps the reports a party runs screen records]] | STARTED | 2026-10-17 | | Close the fifteen server-side gaps the specification records, in three phases, starting with the reads and grants that unblock the screen. |
 | [[id:F0F1228A-A580-4AB6-A6F2-7B800CB7A8FC][Record the plotting requirements the reports screens inherit]] | DONE | 2026-10-18 | 2026-10-18 | File the capture that states the owner's three requirements for a time series plot, names what the two reporting prototypes meet today, and leaves the open questions for a future decision. Builds no plot. |
+| [[id:93EB4EB3-086F-40A7-9A10-3CB7848ECE0E][Build the reports a party runs screen and its endpoint]] | STARTED | 2026-10-18 | | Build reporting's front door for real: the BFF endpoint that composes a definition with its latest run, and the list and detail screens that draw it. |
 
 * Decisions
 

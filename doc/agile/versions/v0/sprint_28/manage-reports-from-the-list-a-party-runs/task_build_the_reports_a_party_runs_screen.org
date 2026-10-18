@@ -1,0 +1,175 @@
+:PROPERTIES:
+:ID: 93EB4EB3-086F-40A7-9A10-3CB7848ECE0E
+:END:
+#+title: Task: Build the reports a party runs screen and its endpoint
+#+description: Build reporting's front door for real: the BFF endpoint that composes a definition with its latest run, and the list and detail screens that draw it.
+#+type: task
+#+level: s1
+#+filetags: :reporting:web:bff:sprint_28:v0:manage-reports-from-the-list-a-party-runs:
+#+owner: marco
+#+branch: feature/the-reports-a-party-runs
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The first reporting screen, built on the reads the gap task closed. A person
+opens reporting and lands on the list of reports their party runs, one row per
+definition, and each row states the definition, its latest run, the health of
+that run, its problems and when it runs next. One row leads to the definition's
+own page, which states the record and offers the fields a person may change.
+
+The specification and the fifteen gaps are
+[[id:B15A20EA-29CD-4F01-9709-545BF9334A51][the specification task]] and
+[[id:66B7603A-16EE-4B5E-8A73-24784A73AB38][the gap task]]. This task builds the
+screen those two describe and closes nothing else.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] |
+| Now          | The branch builds the route, the three endpoints and the two screens, and the tests cover them. |
+| Waiting on   | A review of the pull request.          |
+| Next         | Close this task when the pull request merges. |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- Opening =/reporting= draws one row per definition the session's parties own,
+  with the party, the schedule, the latest run's start and duration, the health
+  word and the problem counts split into errors and warnings.
+- The health word is one of the five the story names, is derived from the
+  definition's latest run, and a definition that never ran reads as =never run=
+  rather than as clean.
+- The list composes six reads on the server and states, in words, any read that
+  failed, instead of failing the list.
+- Empty, loading and error are real states: a party that owns no definition is
+  stated in words, and a refused read states the refusal.
+- One row leads to =/reporting/<name>=, which states the record and fills an
+  edit form from the read.
+- A save writes the six fields the form offers and leaves every other field as
+  it was read, and then reads the definition again and states what the server
+  now holds.
+- A person who may not change a definition is offered no form.
+- No owner cell and no owner read: G10 is open.
+
+* Plan
+
+The BFF composes. The definitions read is the spine, so a refusal there fails
+the request; every other read is a decoration whose failure empties its own cell
+and is named in the response, which is the pattern =usageByParty= set in
+=operations.ts=. The three definitions-keyed reads run at once, and the two
+run-keyed reads follow the latest-run read.
+
+The detail's write is rebuilt from a read the BFF makes at write time, so the
+browser cannot blank a field the screen does not show, and the precondition is
+the version the form was drawn from.
+
+The web screens are pages of their own rather than entries in the record
+registry, because the row is a composition and not a record. They follow the
+operations pages: one query per read, =ScreenFrame= for the trail while the read
+is pending or refused, and the catalogue for every word.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| =@ores/bff= tests, with the eleven reporting cases | 801 passed, 68 files | =npm run test --workspace @ores/bff= | 35591886d6 |
+| =@ores/web= tests, with the eight reporting cases | 1665 passed, 147 files | =npm run test --workspace @ores/web= | 35591886d6 |
+| =@ores/wire-protocol= tests | 203 passed, 21 files | =npm run test --workspace @ores/wire-protocol= | 35591886d6 |
+| Build of the four web packages | clean | =npm run build= in =projects/ores.web= | 35591886d6 |
+| Typecheck of the BFF and the web | clean | =npm run typecheck --workspace @ores/bff=, =... @ores/web= | 35591886d6 |
+
+* Notes
+
+** The route and the endpoints
+
+=/reporting= is the area's own address, and one definition is at
+=/reporting/<name>=, in the shape =personPath= already uses. The BFF answers
+=GET /api/reporting/reports=, =GET /api/reporting/reports/:name= and
+=PUT /api/reporting/reports/:name= from =packages/bff/src/reporting.ts=.
+
+** The columns, and where each value comes from
+
+| Column | Source |
+|--------+--------|
+| Report, and its type | =reporting.v1.report_definitions.list= |
+| Party | =iam.v1.ops.get_my_parties=, by the row's =party_id=. A party the caller does not work in reads as "not stated" (G11) |
+| Schedule | the definition's =schedule_expression=, with the next fire under it from =reporting.v1.ops.get_next_fire= |
+| Latest run started | =reporting.v1.ops.get_latest_report_instances_by_definition= |
+| Duration | that run's =completed_at= less its =started_at=, in the browser, which owns the wire timestamp's reader |
+| Health | =reporting.v1.ops.get_report_instance_health=, or =never run= when the definition has no run |
+| Errors and warnings | =reporting.v1.ops.get_report_error_counts=, split by severity |
+
+** What the prototype draws and this does not
+
+- *Owner.* Nothing records one, and the decision is that a report is owned by a
+  team (G10), which no column can express yet.
+- *"On demand" and "paused".* Deriving them from =scheduler_job_id= is G14, and
+  the schedule cell states the expression only.
+- *A Kind column.* The definition has no kind: the seeded kinds are a run's,
+  and the prototype's =full= and =partial= do not exist. A constant column would
+  be worse than none.
+- *The run list and the error list.* Those are
+  [[id:969C14D2-4280-4D7C-8F51-1D395B521C83][Read what a run produced]] and
+  [[id:F58B0FB5-3FD8-4BEB-982E-E54D284C0539][Find out why a run went wrong]], and
+  they are reached from a row when they exist.
+
+** The grant this task added
+
+=reporting::report_definitions:write= is the code the put handler checks, and
+no person role held it: only =SuperAdmin=, =TenantAdmin= (both =*=) and
+=ReportingService= (=reporting::*=). Editing a definition is half of what this
+screen is for, so the code is granted to =Member= beside the five reads phase 1
+gave it, on the same reasoning: the row is party-scoped by row-level security,
+and a functional role adds nothing to a shared screen.
+
+** Two caveats a reader of the row should know
+
+- A definition whose run state has no health word (cancelled or skipped) is
+  drawn as "no word" with the state name beside it, because the mapping is G12
+  and this screen does not decide it.
+- The Party cell is empty for a definition whose party the caller's own account
+  does not work in. The list is scoped to the session's visible parties, which is
+  a wider set than the account's own parties, so the two can differ. G11 records
+  it.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The route, the three endpoints and the two screens are built. The list states
+seven cells per definition from six composed reads, and a read that fails costs
+its own cells and a line naming it. The detail states the whole record, fills
+the edit form from it, writes the six offered fields against the version read,
+and states the result of the save.

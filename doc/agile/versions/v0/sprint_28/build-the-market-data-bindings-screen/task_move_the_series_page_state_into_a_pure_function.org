@@ -72,7 +72,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Web typecheck | Clean, every workspace | =npm run typecheck= in =projects/ores.web= | 7e466fbbde |
+| Web test suite | 144 files, 1627 tests, all pass | =npm test --workspace @ores/web= | 7e466fbbde |
+| The state tests | 18 tests in one file | =npx vitest run packages/web/src/market/seriesState.test.ts= | 7e466fbbde |
+| Format | Every file uses the project style | =npm run format:check= | 7e466fbbde |
 
 * Notes
 

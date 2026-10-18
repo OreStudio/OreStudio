@@ -62,6 +62,8 @@
 #include "ores.trading.core/repository/instrument_schedule_mapper.hpp"
 #include "ores.trading.core/repository/instrument_strike_entity.hpp"
 #include "ores.trading.core/repository/instrument_strike_mapper.hpp"
+#include "ores.trading.core/repository/range_bound_entity.hpp"
+#include "ores.trading.core/repository/range_bound_mapper.hpp"
 #include <sqlgen/postgres.hpp>
 
 namespace ores::trading::repository {
@@ -456,6 +458,25 @@ read_option_exercise_prices_by_trade_ids(context ctx, const std::vector<std::str
         [](const auto& entities) { return instrument_option_exercise_price_mapper::map(entities); },
         lg(),
         "Reading instrument option exercise prices by instrument ids.");
+}
+
+std::vector<domain::range_bound>
+read_range_bounds_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids) {
+    if (trade_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<range_bound_entity>> |
+        where("tenant_id"_c == tid && "trade_id"_c.in(trade_ids) && "valid_to"_c == max.value()) |
+        order_by("trade_id"_c, "sequence_number"_c);
+
+    return execute_read_query<range_bound_entity, domain::range_bound>(
+        ctx,
+        query,
+        [](const auto& entities) { return range_bound_mapper::map(entities); },
+        lg(),
+        "Reading range bounds by instrument ids.");
 }
 
 std::vector<domain::instrument_strike>

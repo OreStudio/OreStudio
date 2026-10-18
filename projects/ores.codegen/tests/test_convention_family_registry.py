@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Tests for the generated convention family artefacts and their drift check.
+"""Tests for the convention family registry and the templates that render it.
 
-The registry header and the apply fragment are derived from the refdata entity
-models that declare ``#+convention_family: <key>``. Scope comes from the
-model's ``party_id`` column and the write mode from its scope or from
-``#+convention_write: by_id``. The check fails on a model the registry does not
-list, on an entry whose model is gone, and on either artefact edited by hand.
+The registry is derived from the refdata entity models that declare
+``#+convention_family: <key>``. Scope comes from the model's ``party_id``
+column and the write mode from its scope or from ``#+convention_write: by_id``.
+The derivation and the rendering are tested apart: the derivation decides what
+the families are, and the three templates of the
+``ores.cpp.convention-registry`` facet decide how they are written.
 """
 
-import importlib.util
 import sys
 from pathlib import Path
 
@@ -16,26 +16,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "projects/ores.codegen/src"))
 
 from codegen.convention_family_registry import (  # noqa: E402
-    FRAGMENT_RELATIVE_PATH,
-    HEADER_RELATIVE_PATH,
-    INCLUDES_RELATIVE_PATH,
     discover_entries,
     parse_header,
-    render_fragment,
-    render_header,
-    render_includes,
 )
+from codegen.core import convention_family_context, render_template  # noqa: E402
 
-SCRIPT = (
-    REPO_ROOT
-    / "projects/ores.codegen/scripts/check_convention_family_registry.py"
-)
-spec = importlib.util.spec_from_file_location(
-    "check_convention_family_registry", SCRIPT
-)
-check = importlib.util.module_from_spec(spec)
-sys.modules["check_convention_family_registry"] = check
-spec.loader.exec_module(check)
+TEMPLATES = REPO_ROOT / "projects/ores.codegen/library/templates"
 
 
 def _model(
@@ -90,16 +76,15 @@ def _tree(tmp_path: Path, models: dict[str, tuple]) -> Path:
     return tmp_path
 
 
-def _write_artefacts(root: Path, entries) -> None:
-    header = root / HEADER_RELATIVE_PATH
-    header.parent.mkdir(parents=True, exist_ok=True)
-    header.write_text(render_header(entries), encoding="utf-8")
-    fragment = root / FRAGMENT_RELATIVE_PATH
-    fragment.parent.mkdir(parents=True, exist_ok=True)
-    fragment.write_text(render_fragment(entries), encoding="utf-8")
-    includes = root / INCLUDES_RELATIVE_PATH
-    includes.parent.mkdir(parents=True, exist_ok=True)
-    includes.write_text(render_includes(entries), encoding="utf-8")
+def _render(template_name: str, project_root: Path) -> str:
+    """Render one registry template the way the generator does."""
+    return render_template(
+        str(TEMPLATES / template_name),
+        {
+            "cpp_license": "",
+            "convention_registry": convention_family_context(project_root),
+        },
+    )
 
 
 TWO = {
@@ -159,138 +144,57 @@ def test_an_unknown_write_mode_is_rejected(tmp_path):
         raise AssertionError("an unknown write mode must be rejected")
 
 
-def test_a_fresh_render_passes_the_check(tmp_path):
+def test_the_context_groups_each_family_by_its_write_mode(tmp_path):
+    context = convention_family_context(_tree(tmp_path, THREE))
+
+    assert [family["key"] for family in context["families"]] == [
+        "convention", "ibor_index", "ois"]
+    assert [family["key"] for family in context["party"]] == ["ois"]
+    assert [family["key"] for family in context["by_id"]] == ["convention"]
+    assert [family["key"] for family in context["world"]] == ["ibor_index"]
+    assert context["repositories"] == [
+        {"repository": "convention_repository"},
+        {"repository": "ibor_index_convention_repository"},
+        {"repository": "ois_convention_repository"},
+    ]
+
+
+def test_the_header_states_every_family_the_models_declare(tmp_path):
     root = _tree(tmp_path, THREE)
-    _write_artefacts(root, discover_entries(root))
 
-    assert check.check(root) == []
+    text = _render("cpp_convention_family_registry.hpp.mustache", root)
 
-
-def test_a_declared_entity_missing_from_the_registry_fails(tmp_path):
-    root = _tree(tmp_path, TWO)
-    entries = discover_entries(root)
-    _write_artefacts(root, [entries[1]])
-
-    problems = check.check(root)
-
-    assert any(
-        "ibor_index_convention" in problem and "missing from the registry" in problem
-        for problem in problems
-    )
+    stated = parse_header(text)
+    assert [entry.key for entry in stated] == ["convention", "ibor_index", "ois"]
+    assert [entry.write_mode for entry in stated] == ["by_id", "world", "party"]
+    assert stated[1].subject_stem == "refdata.v1.ibor_index_conventions"
+    assert stated[2].domain_type == "ores::refdata::domain::ois_convention"
 
 
-def test_a_registry_entry_whose_entity_is_gone_fails(tmp_path):
-    root = _tree(tmp_path, TWO)
-    _write_artefacts(root, discover_entries(root))
-    (root / "projects/ores.refdata/modeling/ores.refdata.ibor_index_convention.org").unlink()
-
-    problems = check.check(root)
-
-    assert any(
-        "registry entry ibor_index_convention" in problem
-        and "no longer declares" in problem
-        for problem in problems
-    )
-
-
-def test_a_scope_change_without_regeneration_fails(tmp_path):
-    root = _tree(tmp_path, TWO)
-    _write_artefacts(root, discover_entries(root))
-    modeling = root / "projects/ores.refdata/modeling"
-    (modeling / "ores.refdata.ois_convention.org").write_text(
-        _model("ois_convention", "ois", party_id=False), encoding="utf-8"
-    )
-
-    problems = check.check(root)
-
-    assert any(
-        "ois_convention" in problem and "party_scoped" in problem
-        for problem in problems
-    )
-
-
-def test_a_write_mode_change_without_regeneration_fails(tmp_path):
-    root = _tree(tmp_path, TWO)
-    _write_artefacts(root, discover_entries(root))
-    modeling = root / "projects/ores.refdata/modeling"
-    (modeling / "ores.refdata.ois_convention.org").write_text(
-        _model("ois_convention", "ois", party_id=True, write="by_id"),
-        encoding="utf-8",
-    )
-
-    problems = check.check(root)
-
-    assert any(
-        "ois_convention" in problem and "write_mode" in problem
-        for problem in problems
-    )
-
-
-def test_a_missing_fragment_fails(tmp_path):
-    root = _tree(tmp_path, TWO)
-    _write_artefacts(root, discover_entries(root))
-    (root / FRAGMENT_RELATIVE_PATH).unlink()
-
-    problems = check.check(root)
-
-    assert problems == [f"{FRAGMENT_RELATIVE_PATH} is missing"]
-
-
-def test_a_hand_edited_fragment_fails(tmp_path):
-    root = _tree(tmp_path, TWO)
-    _write_artefacts(root, discover_entries(root))
-    fragment = root / FRAGMENT_RELATIVE_PATH
-    fragment.write_text(
-        fragment.read_text(encoding="utf-8") + "// edited by hand\n",
-        encoding="utf-8",
-    )
-
-    problems = check.check(root)
-
-    assert any(
-        str(FRAGMENT_RELATIVE_PATH) in problem and "differs" in problem
-        for problem in problems
-    )
-
-
-def test_the_fragment_names_one_helper_call_per_family(tmp_path):
+def test_the_apply_fragment_calls_one_helper_per_family_in_its_mode(tmp_path):
     root = _tree(tmp_path, THREE)
-    text = render_fragment(discover_entries(root))
 
-    assert "replace_party_rows(ctx,\n                       ois_convention_repository()," in text
-    assert "replace_rows_by_id(ctx,\n                       convention_repository()," in text
-    assert "add_missing_world_rows(ctx,\n                           ibor_index_convention_repository()," in text
+    text = _render("cpp_convention_family_apply.inc.mustache", root)
+
     assert text.count("replace_party_rows(ctx,") == 2
     assert text.count("replace_rows_by_id(ctx,") == 2
     assert text.count("add_missing_world_rows(ctx,") == 2
     assert text.count(".read_latest(ctx);") == 3
     assert text.count("_repository()") == 9
-
-
-def test_the_fragment_emits_one_staged_branch_per_family(tmp_path):
-    root = _tree(tmp_path, THREE)
-    text = render_fragment(discover_entries(root))
-
-    assert text.count("bool apply_staged_family(") == 1
-    assert text.count('if (family == "convention")') == 1
-    assert text.count('if (family == "ibor_index")') == 1
     assert text.count('if (family == "ois")') == 1
-    assert text.count("rfl::json::read<") == 3
     assert text.count("return false;") == 1
-    assert (
-        "        add_missing_world_rows(ctx,\n"
-        "                               ibor_index_convention_repository(),\n"
-        "                               std::move(rows),\n"
-        "                               result.world_kept);" in text
-    )
 
 
-def test_the_header_states_every_field_the_entry_carries(tmp_path):
+def test_the_includes_name_each_repository_once_in_order(tmp_path):
     root = _tree(tmp_path, THREE)
-    text = render_header(discover_entries(root))
 
-    stated = parse_header(text)
+    text = _render("cpp_convention_family_apply_includes.inc.mustache", root)
 
-    assert len(stated) == 3
-    assert [entry.write_mode for entry in stated] == ["by_id", "world", "party"]
-    assert stated[1].subject_stem == "refdata.v1.ibor_index_conventions"
+    includes = [
+        line for line in text.splitlines() if line.startswith("#include")
+    ]
+    assert includes == [
+        '#include "ores.refdata.core/repository/convention_repository.hpp"',
+        '#include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"',
+        '#include "ores.refdata.core/repository/ois_convention_repository.hpp"',
+    ]

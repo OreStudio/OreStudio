@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: 3C32394B-24C1-4272-9E19-636FE63EE3F7
+:END:
+#+title: ores.trading.equity_tarf_instrument
+#+description: Codegen entity model for the trading equity_tarf_instruments table. One row per equity target redemption forward, keyed by the trade.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+entity_singular: equity_tarf_instrument
+#+entity_plural: equity_tarf_instruments
+#+entity_title: Equity Tarf Instrument
+#+brief: One row per equity target redemption forward, keyed by the trade.
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+One row per equity target redemption forward, keyed by the trade.
+
+The product's own subject matter is the target: the amount the holder aims to
+redeem and the points that measure progress towards it. An accumulator has
+neither, which is why the code cannot keep routing to
+=equity_accumulator_instruments=.
+
+The fixing amount and the target amount are money and so exact decimals. The
+strike is money too and is optional, because the document may state its
+strikes in a list instead, and the barrier that ends the product belongs with
+the shared strike child rather than here. Target points are a count of
+observations rather than an amount, so they stay a continuous quantity.
+
+The observation and settlement schedule belongs to the shared schedule
+children, so this table keeps only what is particular to the product.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Natural keys
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:supplied_by:  user
+:END:
+
+The trade this forward belongs to, and the row's key.
+
+** trade_activity_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+The activity that wrote this version.
+
+** underlying_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name of the equity underlying the forward is on.
+
+#+begin_src cpp :name generator
+std::string("ACME Corp")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Currency of the fixing amount, the target and the strike.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** fixing_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: ores::utility::decimal::decimal
+:nullable: false
+:END:
+
+The amount fixed at each observation. Money, so an exact numeric.
+
+#+begin_src cpp :name generator
+ores::utility::decimal::decimal::from_string("10000").value()
+#+end_src
+
+** target_amount
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The amount the holder aims to redeem, when the document states one.
+
+** target_points
+:PROPERTIES:
+:type:     double precision
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The number of observations that reaches the target, when the document states
+it. A count of observations rather than an amount, so a continuous quantity
+and not money.
+
+** strike
+:PROPERTIES:
+:type:     numeric(38, 12)
+:cpp_type: std::optional<ores::utility::decimal::decimal>
+:nullable: true
+:END:
+
+The single strike, when the document states one instead of a strike list.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_equity_tarf_instruments_tbl
+:rls_tenant_isolation: true
+:party_scoped_writes: true
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "underlying_name" <> '' |
+| "fixing_amount" >= 0 |
+| "target_amount" is null or "target_amount" >= 0 |
+| "target_points" is null or "target_points" >= 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: equity_tarf_instrument
+:entity_plural_short:   equity_tarf_instruments
+:entity_singular_words: equity target redemption forward
+:entity_plural_words:   equity target redemption forwards
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/decimal/decimal.hpp"
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: tarf
+:END:
+
+** Table display
+
+| column         | header        |
+|----------------+---------------|
+| underlying_name | Underlying   |
+| currency        | Currency     |
+| fixing_amount   | Fixing       |
+| target_amount   | Target       |
+| target_points   | Target Points |
+| strike          | Strike       |
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:9EBD0386-603F-4E0A-A9A3-57B4E390CE0F][ores.trading.equity_instrument]] — the family header these facts hang from.

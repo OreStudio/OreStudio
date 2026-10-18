@@ -24,6 +24,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import type { CurveEvolution, CurveSeriesList, CurveSnapshot } from '@ores/contracts';
+import { wireTimestamp } from '@ores/wire-protocol/browser';
 import { TranslationProvider } from '../i18n/Provider.js';
 import { EvolutionPage, MatrixPanel, NowPanel, SeriesPicker } from './EvolutionPage.js';
 
@@ -54,40 +55,40 @@ const evolution: CurveEvolution = {
         { coordinates: ['2Y', 'ATM'], status: 'never_quoted' },
     ],
     instants: [
-        { as_of: '2026-10-01 00:00:00Z', values: ['0.080', '', ''] },
-        { as_of: '2026-10-02 00:00:00Z', values: ['0.081', '0.011', ''] },
+        { as_of: wireTimestamp('2026-10-01 00:00:00Z'), values: ['0.080', '', ''] },
+        { as_of: wireTimestamp('2026-10-02 00:00:00Z'), values: ['0.081', '0.011', ''] },
     ],
 };
 
 const snapshot: CurveSnapshot = {
-    as_of: '2026-10-10 12:00:00Z',
+    as_of: wireTimestamp('2026-10-10 12:00:00Z'),
     coordinate_fields: ['expiry', 'strike_label'],
     nodes: [
         { coordinates: ['1Y', 'ATM'], status: '' },
         { coordinates: ['2Y', 'ATM'], status: '' },
     ],
     values: ['0.080', ''],
-    recorded_at: ['2026-10-10 09:00:00Z', '1970-01-01 00:00:00Z'],
+    recorded_at: [wireTimestamp('2026-10-10 09:00:00Z'), wireTimestamp('1970-01-01 00:00:00Z')],
     provenance: [
         {
             source_kind: 'derived',
             modified_by: '',
             change_reason_code: '',
             change_commentary: '',
-            recorded_at: '2026-10-10 09:00:00Z',
+            recorded_at: wireTimestamp('2026-10-10 09:00:00Z'),
             derivation_config_id: '12345678-aaaa-bbbb-cccc-1234567890ab',
             derivation_config_version: 3,
-            source_as_of: '2026-10-10 08:00:00Z',
+            source_as_of: wireTimestamp('2026-10-10 08:00:00Z'),
         },
         {
             source_kind: '',
             modified_by: '',
             change_reason_code: '',
             change_commentary: '',
-            recorded_at: '1970-01-01 00:00:00Z',
+            recorded_at: wireTimestamp('1970-01-01 00:00:00Z'),
             derivation_config_id: '',
             derivation_config_version: 0,
-            source_as_of: '1970-01-01 00:00:00Z',
+            source_as_of: wireTimestamp('1970-01-01 00:00:00Z'),
         },
     ],
     oldest_age_seconds: 10800,

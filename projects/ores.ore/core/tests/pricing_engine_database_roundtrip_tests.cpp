@@ -21,9 +21,9 @@
 #include "ores.analytics.core/service/pricing_engines_document_service.hpp"
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
-#include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
+#include "ores.ore.core/xml/generated/pricing_engines.hpp"
+#include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -48,9 +48,7 @@ std::filesystem::path ore_path(const std::string& relative) {
 }
 
 using ores::analytics::repository::pricing_model_config_repository;
-using ores::ore::domain::pricing_engine_mapper;
-using ores::ore::domain::pricingengines;
-using ores::ore::xml::parsed_text_difference;
+using ores::ore::domain::pricing_engine_projection;
 using ores::platform::filesystem::file;
 using ores::testing::scoped_database_helper;
 
@@ -70,13 +68,12 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     const auto f = ore_path("examples/InitialMargin/Input/DimValidation/pricingengine.xml");
     const std::string content = file::read_content(f);
 
-    pricingengines original;
-    ores::ore::domain::load_data(content, original);
+    const auto original = pricing_engine_projection::read(content);
 
     ores::analytics::messaging::pricing_engines_document mapped =
-        pricing_engine_mapper::map(original);
+        pricing_engine_projection::map(original);
     ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
-    REQUIRE(mapped.products.size() == original.Product.size());
+    REQUIRE(mapped.products.size() == original.product.size());
     REQUIRE(!mapped.parameters.empty());
 
     ores::analytics::service::pricing_engines_document_service(h.context()).save(mapped);
@@ -93,25 +90,26 @@ TEST_CASE("pricing_engines_roundtrip_through_the_database", tags) {
     REQUIRE(from_database.products.size() == mapped.products.size());
     REQUIRE(from_database.parameters.size() == mapped.parameters.size());
 
-    const pricingengines rebuilt = pricing_engine_mapper::reverse(from_database);
+    const auto rebuilt = pricing_engine_projection::reverse(from_database);
+    const auto exported =
+        pricing_engine_projection::read(pricing_engine_projection::write(rebuilt));
 
-    pricingengines exported;
-    ores::ore::domain::load_data(ores::ore::domain::save_data(rebuilt), exported);
-
-    const std::string difference = parsed_text_difference(original, exported, f.string());
-    INFO(difference);
-    CHECK(difference.empty());
+    const auto difference = ores::ore::xml::compare_records(
+        *ores::ore::xml::generated::pricing_engines::pricing_engines_document().root,
+        &original,
+        &exported);
+    INFO(f.string());
+    if (difference)
+        INFO(difference->path << ": " << difference->detail);
+    CHECK_FALSE(difference);
 }
 
 TEST_CASE("a party sees only its own pricing engine configuration", tags) {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
-    pricingengines original;
-    ores::ore::domain::load_data(
-        file::read_content(
-            ore_path("examples/InitialMargin/Input/DimValidation/pricingengine.xml")),
-        original);
-    auto mapped = pricing_engine_mapper::map(original);
+    const auto original = pricing_engine_projection::read(file::read_content(
+        ore_path("examples/InitialMargin/Input/DimValidation/pricingengine.xml")));
+    auto mapped = pricing_engine_projection::map(original);
     ores::database::domain::assign_party(mapped, parties.a);
 
     ores::analytics::repository::pricing_model_config_repository repo;

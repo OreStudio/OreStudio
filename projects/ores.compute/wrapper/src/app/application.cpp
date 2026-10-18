@@ -55,7 +55,6 @@
 #include <chrono>
 #include <csignal>
 #include <filesystem>
-#include <format>
 #include <fstream>
 #include <iterator>
 #include <mutex>
@@ -70,13 +69,6 @@ using namespace ores::logging;
 namespace {
 constexpr std::string_view service_name = "ores.compute.wrapper";
 constexpr std::string_view service_version = ORES_VERSION;
-
-/**
- * @brief Format a time_point as ISO-8601 UTC string (YYYY-MM-DDTHH:MM:SSZ).
- */
-std::string to_iso8601(std::chrono::system_clock::time_point tp) {
-    return std::format("{:%Y-%m-%dT%H:%M:%SZ}", tp);
-}
 
 /**
  * @brief Accumulates per-node execution metrics and publishes them to NATS
@@ -208,7 +200,7 @@ private:
         msg.tenant_id = tenant_id_;
         msg.host_id = host_id_;
         msg.machine = machine_;
-        msg.sampled_at = to_iso8601(std::chrono::system_clock::now());
+        msg.sampled_at = std::chrono::system_clock::now();
         msg.tasks_completed = tasks_completed_.load();
         msg.tasks_failed = tasks_failed_.load();
         msg.tasks_since_last = tasks_since_last;

@@ -159,9 +159,20 @@ inline constexpr auto fx_batch_arrays = std::tuple{
               &instrument_batch::fx_variance_swap_instruments}};
 
 /**
+ * The family's child arrays paired with the batch columns they land in, in the
+ * family's product order. A child states no product, so this list is separate
+ * from the product list the join uses to pick one.
+ *
+ * make_tuple, because tuple's pair deduction guide flattens a lone pair into
+ * its two members, and the walk reads one pair per child.
+ */
+inline constexpr auto fx_batch_child_arrays =
+    std::make_tuple(std::pair{&fx_instrument_data::range_bounds, &instrument_batch::range_bounds});
+
+/**
  * A family carrier whose parts are typed arrays rather than alternatives. Each
- * array is a part in its own right, so every one of them reaches the batch; a
- * carrier that states none leaves the batch alone.
+ * array, product or child, is a part in its own right, so every one of them
+ * reaches the batch; a carrier that states none leaves the batch alone.
  */
 void append_fx_arrays(instrument_batch& batch, const fx_instrument_data& carrier) {
     const auto append_one = [&](const auto& columns) {
@@ -169,7 +180,8 @@ void append_fx_arrays(instrument_batch& batch, const fx_instrument_data& carrier
         auto& column = batch.*(columns.second);
         column.insert(column.end(), rows.begin(), rows.end());
     };
-    std::apply([&](const auto... columns) { (append_one(columns), ...); }, fx_batch_arrays);
+    std::apply([&](const auto... columns) { (append_one(columns), ...); },
+               std::tuple_cat(fx_batch_arrays, fx_batch_child_arrays));
 }
 
 }
@@ -328,8 +340,16 @@ trade_instrument rebuild_instrument(const instrument_batch& batch, boost::uuids:
         }
     };
     std::apply([&](const auto... columns) { (take_one(columns), ...); }, fx_batch_arrays);
-    if (matched)
+    if (matched) {
+        const auto take_children = [&](const auto& columns) {
+            const auto& column = batch.*(columns.second);
+            auto& rows = fx.*(columns.first);
+            rows = find_all(column, trade_id);
+        };
+        std::apply([&](const auto... columns) { (take_children(columns), ...); },
+                   fx_batch_child_arrays);
         return fx;
+    }
 
     if (const auto* v = find(batch.equity_option_instruments, trade_id))
         return as_equity(batch, *v, trade_id);

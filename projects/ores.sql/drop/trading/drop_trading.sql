@@ -154,6 +154,8 @@
 -- Shared instrument-keyed tables and the trade envelope (task B753AD00)
 \ir ./trading_instrument_strikes_notify_trigger_drop.sql
 \ir ./trading_instrument_strikes_drop.sql
+\ir ./trading_range_bounds_notify_trigger_drop.sql
+\ir ./trading_range_bounds_drop.sql
 \ir ./trading_instrument_option_payment_dates_notify_trigger_drop.sql
 \ir ./trading_instrument_option_payment_dates_drop.sql
 \ir ./trading_instrument_option_exercise_fees_notify_trigger_drop.sql
@@ -238,6 +240,12 @@
 \ir ./trading_equity_barrier_option_instruments_drop.sql
 \ir ./trading_equity_digital_option_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_digital_option_instruments_drop.sql
+\ir ./trading_equity_cliquet_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_outperformance_option_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_tarf_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_tarf_instruments_drop.sql
+\ir ./trading_equity_outperformance_option_instruments_drop.sql
+\ir ./trading_equity_cliquet_option_instruments_drop.sql
 \ir ./trading_equity_option_instruments_notify_trigger_drop.sql
 \ir ./trading_equity_option_instruments_drop.sql
 

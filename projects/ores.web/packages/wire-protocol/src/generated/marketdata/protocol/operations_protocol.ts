@@ -1024,12 +1024,12 @@ export interface ListFeedBindingActivityRequest {}
  * A binding names a source and not a series, and a source writes one series, so the
  * series of the source's newest observation is the series the binding feeds. A
  * source that has written nothing for the party has neither a series nor a tick,
- * and both are empty.
+ * and both state null: there is no empty-string spelling of either.
  */
 export interface FeedBindingActivity {
     source_name: string;
-    series_id: string;
-    last_tick_at: string;
+    series_id: string | null;
+    last_tick_at: string | null;
 }
 
 /**

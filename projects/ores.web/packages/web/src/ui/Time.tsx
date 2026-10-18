@@ -20,7 +20,7 @@
  */
 
 import type { ReactNode } from 'react';
-import { isWireTimestamp } from '@ores/wire-protocol/browser';
+import { fromWireTimestamp, wireTimestamp } from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 
 const STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
@@ -33,32 +33,32 @@ const STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
 ];
 
 /**
- * A server timestamp, such as "2026-10-04 22:48:27Z", as a date; invalid when it is not one.
+ * The failure a screen reports when a value is not the wire timestamp.
  *
- * The database states an offset as whole hours, such as "2026-10-04 22:48:27+00",
- * which a date does not read, so the minutes are added to it.
+ * The schemas that hand a screen an instant have already branded it, so a value
+ * that reaches here unreadable is a defect somewhere, not a display choice. It
+ * is logged with the bytes and then thrown, never drawn as if it were a time.
  */
-export function parseTimestamp(at: string): Date {
-    const spaced = at.includes('T') ? at : at.replace(' ', 'T');
-    return new Date(spaced.replace(/(\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)([+-]\d{2})$/, '$1$2:00'));
+function refuseTimestamp(at: string, cause: unknown): never {
+    console.error('ores.web: not a wire timestamp', JSON.stringify(at), cause);
+    throw cause instanceof Error ? cause : new TypeError(`Not a wire timestamp: ${at}`);
 }
 
 /**
- * Whether a wire timestamp names no moment.
+ * A wire timestamp as a `Date`.
  *
- * An account that has never signed in carries the wire's zero instant,
- * `1970-01-01 00:00:00Z`, which is the epoch rather than a sign-in. An empty
- * value names no moment either. Every screen that draws a moment asks this
- * first, so the epoch is never drawn as a date.
+ * The conversion is the wire protocol's own, so a screen reads the same shape
+ * the server writes and the same rule the schema enforced. A value that is not
+ * that shape throws rather than being coerced.
+ *
+ * @throws {TypeError} when the value is not a wire timestamp.
  */
-export function isZeroTimestamp(value: string): boolean {
-    if (value === '') {
-        return true;
+export function parseTimestamp(at: string): Date {
+    try {
+        return fromWireTimestamp(wireTimestamp(at));
+    } catch (cause) {
+        return refuseTimestamp(at, cause);
     }
-    if (!isWireTimestamp(value)) {
-        return false;
-    }
-    return Date.parse(value.replace(' ', 'T')) === 0;
 }
 
 /** How long ago a moment was, in the person's language, such as "2 hours ago". */
@@ -88,9 +88,6 @@ export function relativeTime(at: Date, now: Date, language: string): string {
  */
 export function formatDateTime(at: string, language: string): string {
     const date = parseTimestamp(at);
-    if (Number.isNaN(date.getTime())) {
-        return at;
-    }
     return new Intl.DateTimeFormat(language, {
         dateStyle: 'medium',
         timeStyle: 'short',
@@ -101,9 +98,6 @@ export function formatDateTime(at: string, language: string): string {
 export function RelativeTime({ at }: { readonly at: string }): ReactNode {
     const { language } = useTranslation();
     const date = parseTimestamp(at);
-    if (Number.isNaN(date.getTime())) {
-        return <>{at}</>;
-    }
     return (
         <time dateTime={date.toISOString()} title={at}>
             {relativeTime(date, new Date(), language)}

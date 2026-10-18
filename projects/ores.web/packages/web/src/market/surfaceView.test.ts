@@ -21,6 +21,7 @@
 
 import { describe, expect, it } from 'vitest';
 import type { CurveSnapshot } from '@ores/contracts';
+import { wireTimestamp } from '@ores/wire-protocol/browser';
 import { slicesOf, surfaceOf } from './surfaceView.js';
 
 /**
@@ -37,11 +38,11 @@ function snapshotOf(
     values: readonly string[],
 ): CurveSnapshot {
     return {
-        as_of: '2026-10-10 12:00:00Z',
+        as_of: wireTimestamp('2026-10-10 12:00:00Z'),
         coordinate_fields: [...axes],
         nodes: nodes.map((coordinates) => ({ coordinates: [...coordinates], status: '' })),
         values: [...values],
-        recorded_at: values.map(() => '2026-10-10 09:00:00Z'),
+        recorded_at: values.map(() => wireTimestamp('2026-10-10 09:00:00Z')),
         provenance: [],
         oldest_age_seconds: 0,
         spread_seconds: 0,

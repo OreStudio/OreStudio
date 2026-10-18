@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF
+:END:
+#+title: ores.cpp.convention-registry
+#+description: The C++ face of the convention family registry: the header that enumerates every family, the apply fragment and the includes it needs. Opt-in.
+#+type: facet
+#+model_types: component
+#+default: disabled
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is the node for the =ores.cpp.convention-registry= facet of the
+codegen template library, part of the [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] [[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page — this page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+A convention family is an entity model that declares =#+convention_family:=.
+The family list is derived from those declarations, and three C++ artefacts
+are rendered from it: a registry header that enumerates every family and its
+write mode, an apply fragment that carries one write call per family, and the
+includes fragment that names the repositories the apply calls. The fragment
+lets the conventions service write every family from the registry instead of
+naming each one by hand, so a family added to the modelling tree arrives in
+the service on the next regeneration.
+
+The facet is opt-in and renders nothing by default. It is addressed to a
+/component/ model rather than to a family, because the artefacts are one set
+per component and not one file per entity: the header lands in the component's
+API and the two fragments in its core service. The archetypes therefore carry
+literal =#+output:= paths, which is the one place in the library a path names
+its component rather than spelling it from the model.
+
+The rendering reads the refdata modelling tree, so only =ores.refdata= opts
+in. A second component that enables this facet would render refdata's registry
+into its own tree, which no component wants.
+
+* Mustache incantations
+
+The archetypes read one context, =convention_registry=, which the generator
+builds only for the three templates of this facet. It exposes =component=, the
+=families= list in family-key order, the =repositories= list the includes
+fragment emits, and the three =party=, =by_id= and =world= groupings of the
+same entries. Each family states =key=, =entity=, =domain_type=,
+=subject_stem=, =party_scoped=, =write_mode= and the =is_party=, =is_by_id=,
+=is_world= one-hot flags the staged branch switches on.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:932062BD-9759-496E-B4F1-796A53DC2FF2][ores.cpp.convention-registry.apply_fragment]] | The apply, read and staged-import bodies of the conventions service, one call per convention family, compiled inside the service. |
+| [[id:5CC4694E-C342-41EB-9C9E-A3C6CDB264FE][ores.cpp.convention-registry.apply_includes]] | The repository includes the apply fragment needs, one per convention family, rendered outside the namespace that compiles the fragment. |
+| [[id:59F508CD-A259-4024-B5F9-BFC019E75ED6][ores.cpp.convention-registry.registry_header]] | The constexpr table of every convention family and its write mode, rendered from the refdata entity models that declare =#+convention_family:=. |
+
+* See also
+
+- [[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]] — the parent technical space's generated facet/archetype catalogue and shared Mustache conventions.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

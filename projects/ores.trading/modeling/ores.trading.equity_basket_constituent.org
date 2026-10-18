@@ -86,6 +86,21 @@ Name of the equity underlying this constituent names.
 The ORE document states it in the =Underlying/Name= element; the column
 refuses an empty name.
 
+** weight
+:PROPERTIES:
+:type:           double precision
+:cpp_type:       std::optional<double>
+:nullable:       true
+:END:
+
+The member's weight in the basket, when the document states one.
+
+A weight is a continuous quantity and not money, so it is a binary float, as
+the position underlying's weight is. The column is nullable because a basket
+that names its members without weighting them is a valid basket, and an
+absent weight must stay null rather than become a zero the document never
+wrote.
+
 * SQL
 
 ** Flags

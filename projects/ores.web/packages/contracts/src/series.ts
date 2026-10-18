@@ -19,6 +19,7 @@
  *
  */
 
+import { wireTimestampSchema } from '@ores/wire-protocol/time';
 import { z } from 'zod';
 
 /**
@@ -33,8 +34,8 @@ export const MAX_OBSERVATIONS = 1000;
 export const DEFAULT_OBSERVATIONS = 500;
 
 export const observationSchema = z.object({
-    /** The instant of the observation, as the wire writes it: YYYY-MM-DD HH:MM:SSZ. */
-    at: z.string(),
+    /** When the observation was made, in the one wire spelling. */
+    at: wireTimestampSchema,
     /** The value, as the text the server stored. It keeps every digit, so a reader parses it with Number. */
     value: z.string(),
     source: z.string(),

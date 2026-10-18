@@ -72,6 +72,7 @@
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
+#include "ores.trading.api/domain/range_bound.hpp"
 #include "ores.trading.api/domain/rate_instrument.hpp"
 #include "ores.trading.api/domain/risk_participation_agreement_instrument.hpp"
 #include "ores.trading.api/domain/scripted_instrument.hpp"
@@ -296,6 +297,10 @@ struct instrument_batch {
      * @brief The knock_out_swap_instrument rows, keyed by trade id.
      */
     std::vector<knock_out_swap_instrument> knock_out_swap_instruments;
+    /**
+     * @brief The range_bound rows, keyed by trade id.
+     */
+    std::vector<range_bound> range_bounds;
     /**
      * @brief The risk_participation_agreement_instrument rows, keyed by trade id.
      */
@@ -685,6 +690,13 @@ inline void append(instrument_batch& batch, instrument_strike v) {
  */
 inline void append(instrument_batch& batch, knock_out_swap_instrument v) {
     batch.knock_out_swap_instruments.push_back(std::move(v));
+}
+
+/**
+ * @brief Adds one range_bound to the array that holds its type.
+ */
+inline void append(instrument_batch& batch, range_bound v) {
+    batch.range_bounds.push_back(std::move(v));
 }
 
 /**

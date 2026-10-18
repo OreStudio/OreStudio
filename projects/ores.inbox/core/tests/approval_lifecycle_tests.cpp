@@ -424,7 +424,7 @@ TEST_CASE("the_progress_of_a_request_says_which_part_answered_which_waits_and_wh
     CHECK(after[0].state == "approved");
     CHECK(after[0].decided_by == boost::uuids::to_string(controller.id));
     CHECK(after[0].comment == "Fine");
-    CHECK_FALSE(after[0].decided_at.empty());
+    CHECK(after[0].decided_at.has_value());
     CHECK(after[1].state == "waiting");
 }
 

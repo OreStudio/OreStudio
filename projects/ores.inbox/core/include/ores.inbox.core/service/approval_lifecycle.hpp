@@ -94,7 +94,7 @@ struct part_progress {
     int answer_order = 0;
     std::string state;
     std::string decided_by;
-    std::string decided_at;
+    std::optional<std::chrono::system_clock::time_point> decided_at;
     std::string comment;
 };
 

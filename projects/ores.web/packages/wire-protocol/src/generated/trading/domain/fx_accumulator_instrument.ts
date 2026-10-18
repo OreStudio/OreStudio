@@ -41,7 +41,6 @@ export interface FxAccumulatorInstrument {
     long_short: string;
     start_date: string;
     knock_out_barrier: string | null;
-    range_bounds_json: string;
     description: string;
     audit: AuditRecord;
 }

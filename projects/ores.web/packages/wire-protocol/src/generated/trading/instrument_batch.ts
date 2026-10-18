@@ -71,6 +71,7 @@ import type { InstrumentSchedule } from './domain/instrument_schedule.js';
 import type { InstrumentScheduleDate } from './domain/instrument_schedule_date.js';
 import type { InstrumentStrike } from './domain/instrument_strike.js';
 import type { KnockOutSwapInstrument } from './domain/knock_out_swap_instrument.js';
+import type { RangeBound } from './domain/range_bound.js';
 import type { RiskParticipationAgreementInstrument } from './domain/risk_participation_agreement_instrument.js';
 import type { SwapLeg } from './domain/swap_leg.js';
 import type { SwapLegAmount } from './domain/swap_leg_amount.js';
@@ -137,6 +138,7 @@ export interface InstrumentBatch {
     instrument_schedule_dates: InstrumentScheduleDate[];
     instrument_strikes: InstrumentStrike[];
     knock_out_swap_instruments: KnockOutSwapInstrument[];
+    range_bounds: RangeBound[];
     risk_participation_agreement_instruments: RiskParticipationAgreementInstrument[];
     swap_legs: SwapLeg[];
     swap_leg_amounts: SwapLegAmount[];

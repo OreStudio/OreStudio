@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -24,7 +23,6 @@
 
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.utility/decimal/decimal.hpp"
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -38,37 +36,36 @@ struct counter_party_correlations;
 struct counterparty_information;
 
 struct counterparty {
-  std::uint64_t present = 0;
-  std::string counterparty_id;
-  std::string clearing_counterparty;
-  std::int16_t credit_quality = 0;
-  ores::utility::decimal::decimal ba_cva_risk_weight;
-  ores::utility::decimal::decimal sa_ccr_risk_weight;
-  ores::utility::decimal::decimal sa_cva_risk_bucket;
+    std::uint64_t present = 0;
+    std::string counterparty_id;
+    std::string clearing_counterparty;
+    std::int16_t credit_quality = 0;
+    ores::utility::decimal::decimal ba_cva_risk_weight;
+    ores::utility::decimal::decimal sa_ccr_risk_weight;
+    ores::utility::decimal::decimal sa_cva_risk_bucket;
 };
 struct counterparties {
-  std::uint64_t present = 0;
-  std::vector<counterparty> counterparty;
+    std::uint64_t present = 0;
+    std::vector<counterparty> counterparty;
 };
 struct correlation {
-  std::uint64_t present = 0;
-  double value = 0;
-  std::string cpty1;
-  std::string cpty2;
+    std::uint64_t present = 0;
+    double value = 0;
+    std::string cpty1;
+    std::string cpty2;
 };
 struct counter_party_correlations {
-  std::uint64_t present = 0;
-  std::vector<correlation> correlation;
+    std::uint64_t present = 0;
+    std::vector<correlation> correlation;
 };
 struct counterparty_information {
-  std::uint64_t present = 0;
-  counterparties counterparties;
-  counter_party_correlations correlations;
+    std::uint64_t present = 0;
+    counterparties counterparties;
+    counter_party_correlations correlations;
 };
 
-ORES_ORE_CORE_EXPORT auto counterparty_information_document()
-    -> const document_type &;
+ORES_ORE_CORE_EXPORT auto counterparty_information_document() -> const document_type&;
 
-} // namespace ores::ore::xml::generated::counterparty_information
+}
 
 #endif

@@ -101,7 +101,7 @@ units.
 
 *** raised_at
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::chrono::system_clock::time_point
 :END:
 
 *** link_route
@@ -128,7 +128,7 @@ units.
 
 *** read_at
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
 :END:
 
 #+begin_src cpp :name comment

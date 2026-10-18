@@ -89,8 +89,10 @@ TEST_CASE("a source that has written names its series and its last tick", tags) 
         "synthetic.bloomberg.audusd", observation("5d0f4a1e-9c2b-4a6e-8f31-0a7b1c2d3e4f", at));
 
     CHECK(activity.source_name == "synthetic.bloomberg.audusd");
-    CHECK(activity.series_id == "5d0f4a1e-9c2b-4a6e-8f31-0a7b1c2d3e4f");
-    CHECK(activity.last_tick_at == "2026-10-12 23:50:26.000000Z");
+    REQUIRE(activity.series_id.has_value());
+    CHECK(boost::uuids::to_string(*activity.series_id) == "5d0f4a1e-9c2b-4a6e-8f31-0a7b1c2d3e4f");
+    REQUIRE(activity.last_tick_at.has_value());
+    CHECK(*activity.last_tick_at == at);
 }
 
 TEST_CASE("a source that has written nothing names neither a series nor a tick", tags) {
@@ -98,6 +100,6 @@ TEST_CASE("a source that has written nothing names neither a series nor a tick",
         feed_binding_activity_reader::activity_of("synthetic.bloomberg.nzdusd", std::nullopt);
 
     CHECK(activity.source_name == "synthetic.bloomberg.nzdusd");
-    CHECK(activity.series_id.empty());
-    CHECK(activity.last_tick_at.empty());
+    CHECK_FALSE(activity.series_id.has_value());
+    CHECK_FALSE(activity.last_tick_at.has_value());
 }

@@ -20,6 +20,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { wireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
 import type { RecordRow } from '../api/client.js';
 import {
     formatText,
@@ -31,13 +32,17 @@ import {
     pointsOf,
 } from './seriesView.js';
 
-const obs = (at: string, value: string) => ({ at, value, source: 'feed' });
+const obs = (at: string, value: string) => ({
+    at: wireTimestamp(at) as WireTimestamp,
+    value,
+    source: 'feed',
+});
 
 describe('pointsOf', () => {
     it('reads the instant and the value, and keeps the order', () => {
         const points = pointsOf([
-            obs('2026-01-01 10:00:00', '1.25'),
-            obs('2026-01-01 11:00:00', '1.5'),
+            obs('2026-01-01 10:00:00Z', '1.25'),
+            obs('2026-01-01 11:00:00Z', '1.5'),
         ]);
         expect(points.map((p) => p.value)).toEqual([1.25, 1.5]);
         expect(points[0]!.at).toBeLessThan(points[1]!.at);
@@ -45,26 +50,26 @@ describe('pointsOf', () => {
 
     it('leaves out a value that is not a number, rather than draw it as zero', () => {
         const points = pointsOf([
-            obs('2026-01-01 10:00:00', ''),
-            obs('2026-01-01 11:00:00', 'n/a'),
+            obs('2026-01-01 10:00:00Z', ''),
+            obs('2026-01-01 11:00:00Z', 'n/a'),
         ]);
         expect(points).toEqual([]);
     });
 
-    it('reads an instant with no zone as UTC, so the viewer zone does not shift it', () => {
-        const [zoned] = pointsOf([obs('2026-01-01 10:00:00Z', '1')]);
-        const [bare] = pointsOf([obs('2026-01-01 10:00:00', '1')]);
-        expect(bare!.at).toBe(zoned!.at);
+    it('reads the wire instant as UTC, so the viewer zone does not shift it', () => {
+        const [point] = pointsOf([obs('2026-01-01 10:00:00Z', '1')]);
+        expect(point!.at).toBe(Date.UTC(2026, 0, 1, 10, 0, 0));
     });
 
-    it('leaves out an instant that is not a date', () => {
-        expect(pointsOf([obs('yesterday', '1')])).toEqual([]);
+    it('refuses an instant that is not the wire shape rather than placing it', () => {
+        const malformed = { at: 'yesterday', value: '1', source: 'feed' } as never;
+        expect(() => pointsOf([malformed])).toThrow(TypeError);
     });
 });
 
 describe('latestFirst', () => {
     it('takes the newest rows, newest first', () => {
-        const rows = ['a', 'b', 'c'].map((value, i) => obs(`2026-01-0${i + 1} 00:00:00`, value));
+        const rows = ['a', 'b', 'c'].map((value, i) => obs(`2026-01-0${i + 1} 00:00:00Z`, value));
         expect(latestFirst(rows, 2).map((r) => r.value)).toEqual(['c', 'b']);
     });
 });

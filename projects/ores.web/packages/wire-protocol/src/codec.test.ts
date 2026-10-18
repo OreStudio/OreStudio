@@ -23,6 +23,7 @@ import { describe, expect, it } from 'vitest';
 import { WireCodec } from './codec.js';
 import { MalformedResponseError } from './errors.js';
 import { z } from 'zod';
+import { nullableWireTimestampSchema } from './time.js';
 
 describe('WireCodec', () => {
     it('encodes an empty struct as the empty msgpack map', () => {
@@ -69,6 +70,14 @@ describe('WireCodec', () => {
         expect(() => codec.decodeAs(body, z.object({ success: z.boolean() }))).toThrow(
             MalformedResponseError,
         );
+    });
+
+    it('names the bad timestamp in the bytes and refuses the body', () => {
+        const codec = new WireCodec('msgpack');
+        const body = codec.encode({ end_time: '2026-10-05T10:00:00Z' });
+        expect(() =>
+            codec.decodeAs(body, z.object({ end_time: nullableWireTimestampSchema })),
+        ).toThrow(/Not a wire timestamp: "2026-10-05T10:00:00Z"/);
     });
 
     it('returns the validated value on a schema match', () => {

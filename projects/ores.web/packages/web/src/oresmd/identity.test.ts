@@ -27,6 +27,7 @@ import {
     seriesOfUrl,
     seriesPageOf,
     seriesRoute,
+    seriesTargetOf,
     seriesVerdict,
 } from './identity.js';
 import { SCHEMA } from './testSchema.js';
@@ -211,5 +212,58 @@ describe('seriesPageOf', () => {
 
     it('sends a series with no axis to the series page by its id', () => {
         expect(seriesPageOf({ ...base, axes: [] })).toBe('/market-data/series?series=a%20b%2Fc');
+    });
+});
+
+describe('seriesTargetOf', () => {
+    const uri = 'oresmd://ir/EUR?type=quote&instrument=capfloor&quote=rate&cap_floor=Cap';
+    const listed = (axes: readonly string[]): ListedSeries => ({
+        series_id: 'series-1',
+        axes: [...axes],
+        identity: {
+            asset: 'ir',
+            scope: 'EUR',
+            instrument_type: 'capfloor',
+            quote_type: 'rate',
+            fields: [{ name: 'cap_floor', text: 'Cap' }],
+        },
+    });
+    const listOf = (...series: ListedSeries[]): CurveSeriesList => ({ truncated: false, series });
+
+    it('links a series with an axis to the Evolution page that draws it', () => {
+        expect(seriesTargetOf(uri, SCHEMA, parts(), listOf(listed(['term'])))).toBe(
+            evolutionRoute(uri),
+        );
+    });
+
+    it('links a series with no axis to the series page that draws its values', () => {
+        expect(seriesTargetOf(uri, SCHEMA, parts(), listOf(listed([])))).toBe(seriesRoute(uri));
+    });
+
+    it('stays plain text for a series the party does not have', () => {
+        expect(seriesTargetOf(uri, SCHEMA, parts(), listOf())).toBeUndefined();
+    });
+
+    it('stays plain text for a URL the codec refused', () => {
+        expect(
+            seriesTargetOf(uri, SCHEMA, parts({ success: false, message: 'no way' }), listOf()),
+        ).toBeUndefined();
+    });
+
+    it('stays plain text for a fixing, which names no series', () => {
+        expect(
+            seriesTargetOf(uri, SCHEMA, parts({ kind: 'fixing' }), listOf(listed(['term']))),
+        ).toBeUndefined();
+    });
+
+    it('stays plain text for an instrument the schema does not hold', () => {
+        expect(
+            seriesTargetOf(
+                uri,
+                SCHEMA,
+                parts({ instrument: 'nonsense' }),
+                listOf(listed(['term'])),
+            ),
+        ).toBeUndefined();
     });
 });

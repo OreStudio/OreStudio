@@ -25,7 +25,7 @@
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/curve_configuration_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
@@ -150,8 +150,8 @@ void parse_document(std::string_view code,
         d.market =
             domain::todays_market_mapper::map(parse_file<domain::todaysmarket>(file, content));
     else if (code == "pricing_engines")
-        d.engines =
-            domain::pricing_engine_mapper::map(parse_file<domain::pricingengines>(file, content));
+        d.engines = domain::pricing_engine_projection::map(
+            domain::pricing_engine_projection::read(content, file));
 }
 
 // Hands one parsed document to the component that owns it. A document with a
@@ -196,7 +196,8 @@ std::string load_document(const context& ctx, const reporting::domain::report_co
     const auto& code = b.configuration_type_code;
     if (code == "pricing_engines") {
         analytics::service::pricing_engines_document_service s(ctx);
-        return domain::save_data(domain::pricing_engine_mapper::reverse(s.get(header_of(s, b))));
+        return domain::pricing_engine_projection::write(
+            domain::pricing_engine_projection::reverse(s.get(header_of(s, b))));
     }
     if (code == "todays_market") {
         analytics::service::todays_market_document_service s(ctx);

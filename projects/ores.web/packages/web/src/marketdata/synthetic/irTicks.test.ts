@@ -20,10 +20,16 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { wireTimestamp, type WireTimestamp } from '@ores/wire-protocol/browser';
 import { curvesCsv, curvesOf, pillarsOf, slopeOf, type PillarTick } from './irTicks.js';
 import { curveStyle } from './IrTicksPanel.js';
 
-const tick = (at: string, value: number): PillarTick => ({ at, value, uri: '' });
+/** The instants of a feed's batches, which the server writes in the one wire spelling. */
+const T0 = wireTimestamp('2026-10-11 08:59:00Z');
+const T1 = wireTimestamp('2026-10-11 09:00:00Z');
+const T2 = wireTimestamp('2026-10-11 09:01:00Z');
+
+const tick = (at: WireTimestamp, value: number): PillarTick => ({ at, value, uri: '' });
 
 describe('the pillars of a curve', () => {
     it('are the template entries in sequence order', () => {
@@ -38,32 +44,32 @@ describe('the pillars of a curve', () => {
 describe('the curves in a run of ticks', () => {
     it('are the ticks that share a time, one for each pillar', () => {
         const curves = curvesOf(
-            [tick('t1', 0.01), tick('t1', 0.02), tick('t2', 0.011), tick('t2', 0.021)],
+            [tick(T1, 0.01), tick(T1, 0.02), tick(T2, 0.011), tick(T2, 0.021)],
             2,
         );
         expect(curves).toEqual([
-            { at: 't1', rates: [0.01, 0.02] },
-            { at: 't2', rates: [0.011, 0.021] },
+            { at: T1, rates: [0.01, 0.02] },
+            { at: T2, rates: [0.011, 0.021] },
         ]);
     });
 
     it('drop a batch with a pillar missing, which the buffer heard only in part', () => {
         const curves = curvesOf(
-            [tick('t0', 0.02), tick('t1', 0.01), tick('t1', 0.02), tick('t2', 0.011)],
+            [tick(T0, 0.02), tick(T1, 0.01), tick(T1, 0.02), tick(T2, 0.011)],
             2,
         );
-        expect(curves.map((curve) => curve.at)).toEqual(['t1']);
+        expect(curves.map((curve) => curve.at)).toEqual([T1]);
     });
 
     it('are none when the template has no pillar', () => {
-        expect(curvesOf([tick('t1', 0.01)], 0)).toEqual([]);
+        expect(curvesOf([tick(T1, 0.01)], 0)).toEqual([]);
     });
 });
 
 describe('the slope of a curve', () => {
     it('is the long end over the short end in basis points', () => {
-        expect(slopeOf({ at: 't', rates: [0.01, 0.015, 0.03] })).toBeCloseTo(200, 6);
-        expect(slopeOf({ at: 't', rates: [] })).toBe(0);
+        expect(slopeOf({ at: T1, rates: [0.01, 0.015, 0.03] })).toBeCloseTo(200, 6);
+        expect(slopeOf({ at: T1, rates: [] })).toBe(0);
     });
 });
 
@@ -75,9 +81,9 @@ describe('the CSV of the curves', () => {
                 { start: 'SPOT', end: '3M' },
                 { start: 'SPOT', end: '5Y' },
             ],
-            [{ at: 't1', rates: [0.01, 0.02] }],
+            [{ at: T1, rates: [0.01, 0.02] }],
         );
-        expect(csv).toBe('source,time,SPOT-3M,SPOT-5Y\nusd.sofr,t1,0.01,0.02\n');
+        expect(csv).toBe('source,time,SPOT-3M,SPOT-5Y\nusd.sofr,2026-10-11 09:00:00Z,0.01,0.02\n');
     });
 });
 

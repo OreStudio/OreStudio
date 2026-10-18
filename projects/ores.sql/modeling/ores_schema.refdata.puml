@@ -501,6 +501,74 @@ package "refdata" #FFF3E0 {
     capital treatment. Must belong to exactly one portfolio.
     end note
 
+    entity ores_refdata_bundle_import_items_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * import_id : uuid <<FK>>
+        * family : text
+        * sequence : integer
+        * party_id : uuid <<FK>>
+        * payload : jsonb
+          checksum : text
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_bundle_import_items_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bundle Import Item Table
+    One row per family a staging message delivers. The payload is that family's
+    own generated value type, already serialised, so a stage of one family never
+    builds a message that carries every family.
+    The identity is the import, the family and the sequence together. A repeated
+    stage of the same three is refused rather than duplicated, so a retried stage
+    is safe. Each stage is its own local transaction, and nothing reaches the
+    live tables until a commit applies the rows.
+    end note
+
+    entity ores_refdata_bundle_imports_tbl <<temporal>> #C6F0D8 {
+        * tenant_id : uuid <<PK, FK>>
+        * id : uuid <<PK>>
+        --
+        * version : integer
+        * party_id : uuid <<FK>>
+          source : text
+        * state : text
+          families_expected : integer
+        * expires_at : timestamptz
+        * modified_by : text
+        * performed_by : text
+        * change_reason_code : text <<FK>>
+        * change_commentary : text
+        * valid_from : timestamptz
+        * valid_to : timestamptz
+    }
+
+    note right of ores_refdata_bundle_imports_tbl
+    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+    Template: sql_schema_domain_entity_create.mustache
+    To modify, update the template and regenerate.
+    Bundle Import Table
+    A bundle is applied in one unit_of_work, and the messages that
+    carry it cannot hold the whole bundle: a message carrying every family is the
+    aggregate that fails on MSVC. The import is the row the staging messages hang
+    off instead. It records that a bundle is being staged, who owns it, how many
+    families were promised, and when an abandoned session stops waiting.
+    The caller mints id, so a repeated begin with a known id returns the import
+    that already exists rather than opening a second one. The service stamps
+    party_id, state and expires_at from the session it runs in.
+    Nothing in this table is visible to a reader of the live tables
+    until a commit applies the staged rows.
+    end note
+
     entity ores_refdata_business_centres_tbl <<temporal>> #C6F0D8 {
         * tenant_id : uuid <<PK, FK>>
         * code : text <<PK>>
@@ -1460,74 +1528,6 @@ package "refdata" #FFF3E0 {
     closed set that says which kinds the central row may be.
     Batch-loaded reference data, refreshed from ORE's ore_types.xsd alongside the
     other coded refdata lookups.
-    end note
-
-    entity ores_refdata_conventions_import_items_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * import_id : uuid <<FK>>
-        * family : text
-        * sequence : integer
-        * party_id : uuid <<FK>>
-        * payload : jsonb
-          checksum : text
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_refdata_conventions_import_items_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Conventions Import Item Table
-    One row per family a staging message delivers. The payload is that family's
-    own generated value type, already serialised, so a stage of one family never
-    builds a message that carries every family.
-    The identity is the import, the family and the sequence together. A repeated
-    stage of the same three is refused rather than duplicated, so a retried stage
-    is safe. Each stage is its own local transaction, and nothing reaches the
-    live conventions tables until a commit applies the rows.
-    end note
-
-    entity ores_refdata_conventions_imports_tbl <<temporal>> #C6F0D8 {
-        * tenant_id : uuid <<PK, FK>>
-        * id : uuid <<PK>>
-        --
-        * version : integer
-        * party_id : uuid <<FK>>
-          source : text
-        * state : text
-          families_expected : integer
-        * expires_at : timestamptz
-        * modified_by : text
-        * performed_by : text
-        * change_reason_code : text <<FK>>
-        * change_commentary : text
-        * valid_from : timestamptz
-        * valid_to : timestamptz
-    }
-
-    note right of ores_refdata_conventions_imports_tbl
-    AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
-    Template: sql_schema_domain_entity_create.mustache
-    To modify, update the template and regenerate.
-    Conventions Import Table
-    A conventions bundle is applied in one unit_of_work, and the messages that
-    carry it cannot hold the whole bundle: a message carrying every family is the
-    aggregate that fails on MSVC. The import is the row the staging messages hang
-    off instead. It records that a bundle is being staged, who owns it, how many
-    families were promised, and when an abandoned session stops waiting.
-    The caller mints id, so a repeated begin with a known id returns the import
-    that already exists rather than opening a second one. The service stamps
-    party_id, state and expires_at from the session it runs in.
-    Nothing in this table is visible to a reader of the live conventions tables
-    until a commit applies the staged rows.
     end note
 
     entity ores_refdata_conventions_tbl <<temporal>> #C6F0D8 {
@@ -5839,6 +5839,7 @@ ores_refdata_parties_tbl ||--o{ ores_refdata_books_tbl : "has"
 ores_refdata_portfolios_tbl ||--o{ ores_refdata_books_tbl : "has"
 ores_refdata_business_units_tbl ||--o{ ores_refdata_books_tbl : "has"
 ores_refdata_sandboxes_tbl ||--o{ ores_refdata_books_tbl : "has"
+ores_refdata_bundle_imports_tbl ||--o{ ores_refdata_bundle_import_items_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_business_units_tbl : "has"
 ores_refdata_calendars_tbl ||--o{ ores_refdata_calendar_events_tbl : "has"
 ores_refdata_diary_entry_types_tbl ||--o{ ores_refdata_calendar_events_tbl : "has"
@@ -5856,7 +5857,6 @@ ores_refdata_curve_definitions_tbl ||--o{ ores_refdata_commodity_volatility_conf
 ores_refdata_day_counters_tbl ||--o{ ores_refdata_commodity_volatility_configs_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_conventions_tbl : "has"
 ores_refdata_convention_kinds_tbl ||--o{ ores_refdata_conventions_tbl : "has"
-ores_refdata_conventions_imports_tbl ||--o{ ores_refdata_conventions_import_items_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_contact_informations_tbl : "has"
 ores_refdata_counterparties_tbl ||--o{ ores_refdata_counterparty_identifiers_tbl : "has"
 ores_refdata_parties_tbl ||--o{ ores_refdata_credit_limits_tbl : "has"

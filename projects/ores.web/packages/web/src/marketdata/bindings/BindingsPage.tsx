@@ -132,7 +132,7 @@ function BindingsList(): ReactNode {
                         header: t('marketdata.bindings.lastTick'),
                         cell: (row) => {
                             const at = facts.lastTickOf(show(row['source_name']));
-                            return at === '' ? (
+                            return at === null ? (
                                 <span className="text-ink-faint">{'\u2014'}</span>
                             ) : (
                                 <RelativeTime at={at} />

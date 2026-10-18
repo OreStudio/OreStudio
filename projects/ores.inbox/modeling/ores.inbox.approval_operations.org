@@ -759,7 +759,7 @@ end.
 
 *** decided_at
 :PROPERTIES:
-:cpp_type: std::string
+:cpp_type: std::optional<std::chrono::system_clock::time_point>
 :END:
 
 *** comment

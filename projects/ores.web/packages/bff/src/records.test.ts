@@ -377,7 +377,13 @@ describe('GET /api/history for a record', () => {
         const { server, sessionId } = buildTestServer({
             'refdata.v1.history.get': {
                 success: true,
-                versions: [{ version: 1, modified_by: 'system' }],
+                versions: [
+                    {
+                        version: 1,
+                        modified_by: 'system',
+                        recorded_at: '2026-10-04 10:00:00.000000Z',
+                    },
+                ],
             },
         });
         const served = await send(

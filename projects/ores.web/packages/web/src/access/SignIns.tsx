@@ -26,7 +26,6 @@ import { useTranslation } from '../i18n/Provider.js';
 import { ApiFailure } from '../api/transport.js';
 import { AccountLockBadge } from '../ui/AccountLockBadge.js';
 import { Notice, Tag } from '../ui/Primitives.js';
-import { isZeroTimestamp } from '../ui/Time.js';
 import { DEFAULT_PAGE_SIZE, Pager, pageBounds } from '../ui/Pager.js';
 
 /**
@@ -109,7 +108,7 @@ function SignInsView({
                 <div>
                     <dt className="text-xs text-ink-faint">{t('signIns.lastSignIn')}</dt>
                     <dd className="mt-0.5">
-                        {loginInfo === null || isZeroTimestamp(loginInfo.lastLogin)
+                        {loginInfo === null || loginInfo.lastLogin === null
                             ? t('signIns.never')
                             : loginInfo.lastLogin}
                     </dd>
@@ -160,10 +159,10 @@ function SignInsView({
                                         className="border-b border-line-subtle last:border-b-0"
                                     >
                                         <td className="whitespace-nowrap px-4 py-2">
-                                            {isZeroTimestamp(row.startTime) ? '—' : row.startTime}
+                                            {row.startTime}
                                         </td>
                                         <td className="whitespace-nowrap px-4 py-2 text-ink-muted">
-                                            {isZeroTimestamp(row.endTime)
+                                            {row.endTime === null
                                                 ? t('signIns.noEnd')
                                                 : row.endTime}
                                         </td>

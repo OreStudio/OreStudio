@@ -38,31 +38,32 @@ inline constexpr const char* k_timestamp_format = "%Y-%m-%d %H:%M:%S";
  * @brief Utilities for date and time operations.
  *
  * Policy: all timestamps are stored and transmitted in UTC. Local time is used
- * only for display. The canonical wire/storage format is ISO 8601 with a 'Z'
- * suffix: "YYYY-MM-DD HH:MM:SSZ".
+ * only for display. The wire shape is stated once, in
+ * =doc/knowledge/architecture/time_architecture.org=; this class is its
+ * server-side implementation and does not restate the grammar.
  */
 class ORES_PLATFORM_EXPORT datetime final {
 public:
     /**
-     * @brief Serialises a time point to ISO 8601 UTC string with 'Z' suffix.
+     * @brief Serialises a time point in the project's wire shape.
      *
-     * Output format: "YYYY-MM-DD HH:MM:SS.ffffffZ", always six digits of
-     * microseconds, so the microsecond the database column keeps survives the
-     * round trip.
-     * Use this for all wire protocol and database writes.
+     * Writes the shape owned by
+     * =doc/knowledge/architecture/time_architecture.org=, always with six
+     * digits of microseconds, so the microsecond the database column keeps
+     * survives the round trip. Use this for every wire and database write.
      *
      * @param tp Time point to format (treated as UTC per C++20 definition).
-     * @return ISO 8601 UTC string, always ending with 'Z'.
+     * @return The wire timestamp.
      */
     static std::string to_iso8601_utc(const std::chrono::system_clock::time_point& tp);
 
     /**
-     * @brief Parses an ISO 8601 UTC string to a time point.
+     * @brief Parses the project's wire shape to a time point.
      *
-     * Accepted date/time separators: 'T' (ISO 8601 standard) or ' ' (relaxed).
-     * Accepted UTC designators: 'Z', '+00', '+00:00'.
-     * Throws std::invalid_argument if the designator is absent or the offset
-     * is non-zero — callers must not pass ambiguous local-time strings.
+     * It also tolerates the ISO 8601 'T' separator and the '+00' and '+00:00'
+     * designators PostgreSQL states. Throws std::invalid_argument if the
+     * designator is absent or the offset is non-zero — callers must not pass
+     * ambiguous local-time strings.
      *
      * @param str String to parse. Must include a UTC designator.
      * @return Parsed time point.

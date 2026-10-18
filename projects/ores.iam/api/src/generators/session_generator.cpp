@@ -44,7 +44,7 @@ domain::session generate_synthetic_session(utility::generation::generation_conte
     r.id = ctx.generate_uuid();
     r.start_time = ctx.past_timepoint();
     r.account_id = ctx.generate_uuid();
-    r.end_time = std::string("");
+    r.end_time = std::chrono::system_clock::now();
     r.client_ip = boost::asio::ip::make_address("192.168.1.100");
     r.client_identifier = std::string(faker::word::noun()) + " Client";
     r.client_version_major = 1;

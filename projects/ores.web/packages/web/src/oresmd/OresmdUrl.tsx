@@ -25,7 +25,7 @@ import { Link } from 'react-router';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button } from '../ui/Primitives.js';
 import { useActingPartyId } from '../session/SessionProvider.js';
-import { evolutionRoute, seriesOfUrl, seriesRoute, seriesVerdict } from './identity.js';
+import { seriesTargetOf } from './identity.js';
 import { OresmdEditorDialog } from './OresmdEditor.js';
 import { oresmdQueries } from './queries.js';
 import { OresmdViewDialog } from './OresmdView.js';
@@ -66,50 +66,78 @@ export function OresmdUrl({
         enabled: uri !== '' && partyId !== undefined,
     });
     if (uri === '') return '';
-    const named =
-        parsed.data === undefined || schema.data === undefined
+    // The target is undecided until the codec and the party's series list answer,
+    // and a URL that names no series has none. Both are drawn as plain text.
+    const to =
+        parsed.data === undefined || schema.data === undefined || list.data === undefined
             ? undefined
-            : seriesOfUrl(schema.data, parsed.data);
-    // A link is offered only where a page can open the series. Anything else is
-    // text, because a link that ends in an apology is worse than no link.
-    const verdict =
-        named?.ok === true && list.data !== undefined
-            ? seriesVerdict(list.data, named.form).kind
-            : undefined;
-    const target =
-        verdict === 'shown'
-            ? evolutionRoute(uri)
-            : verdict === 'no-shape'
-              ? seriesRoute(uri)
-              : undefined;
+            : seriesTargetOf(uri, schema.data, parsed.data, list.data);
+    if (onApply === undefined) return <OresmdUrlResolved uri={uri} to={to} />;
     return (
         <span className="flex flex-wrap items-center gap-2">
-            {target !== undefined ? (
-                <Link
-                    to={target}
-                    className={`${URL_CLASSES} underline decoration-line-strong underline-offset-2 hover:decoration-accent`}
-                >
-                    {uri}
-                </Link>
-            ) : (
-                <span className={URL_CLASSES}>{uri}</span>
-            )}
+            <UrlText uri={uri} to={to} />
             <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(true)}>
-                {t(onApply === undefined ? 'oresmd.inspect' : 'oresmd.edit')}
+                {t('oresmd.edit')}
             </Button>
-            {open &&
-                (onApply === undefined ? (
-                    <OresmdViewDialog url={uri} onClose={() => setOpen(false)} />
-                ) : (
-                    <OresmdEditorDialog
-                        url={uri}
-                        onApply={(edited) => {
-                            setOpen(false);
-                            onApply(edited);
-                        }}
-                        onClose={() => setOpen(false)}
-                    />
-                ))}
+            {open && (
+                <OresmdEditorDialog
+                    url={uri}
+                    onApply={(edited) => {
+                        setOpen(false);
+                        onApply(edited);
+                    }}
+                    onClose={() => setOpen(false)}
+                />
+            )}
         </span>
+    );
+}
+
+/**
+ * An oresmd URL whose target is already decided, with the Inspect button beside it.
+ *
+ * A list of records draws one of these a row. It decides the targets of its rows
+ * together, in one read, so a grid does not ask the codec about a URI a row, and
+ * this reference only draws what it was given.
+ */
+export function OresmdUrlResolved({
+    uri,
+    to,
+}: {
+    readonly uri: string;
+    readonly to: string | undefined;
+}): ReactNode {
+    const { t } = useTranslation();
+    const [open, setOpen] = useState(false);
+    // A row that keeps no URL has nothing to read, so it draws no button either.
+    if (uri === '') return '';
+    return (
+        <span className="flex flex-wrap items-center gap-2">
+            <UrlText uri={uri} to={to} />
+            <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(true)}>
+                {t('oresmd.inspect')}
+            </Button>
+            {open && <OresmdViewDialog url={uri} onClose={() => setOpen(false)} />}
+        </span>
+    );
+}
+
+/** The URL itself: a link where a page opens the series it names, and plain text otherwise. */
+function UrlText({
+    uri,
+    to,
+}: {
+    readonly uri: string;
+    readonly to: string | undefined;
+}): ReactNode {
+    return to === undefined ? (
+        <span className={URL_CLASSES}>{uri}</span>
+    ) : (
+        <Link
+            to={to}
+            className={`${URL_CLASSES} underline decoration-line-strong underline-offset-2 hover:decoration-accent`}
+        >
+            {uri}
+        </Link>
     );
 }

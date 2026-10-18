@@ -33,6 +33,7 @@ enum class document_kind {
     currency_config,
     calendar_adjustments,
     conventions,
+    pricing_engines,
 };
 
 /**

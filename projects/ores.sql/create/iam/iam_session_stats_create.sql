@@ -47,14 +47,14 @@ begin
                 public.time_bucket('1 day', start_time) as day,
                 account_id,
                 count(*) as session_count,
-                avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
+                avg(extract(epoch from (end_time - start_time))) as avg_duration_seconds,
                 sum(bytes_sent) as total_bytes_sent,
                 sum(bytes_received) as total_bytes_received,
                 avg(bytes_sent) as avg_bytes_sent,
                 avg(bytes_received) as avg_bytes_received,
                 count(distinct country_code) filter (where country_code != '') as unique_countries
             from ores_iam_sessions_tbl
-            where end_time != ''
+            where end_time is not null
             group by day, account_id
             with no data
         $sql$;
@@ -75,11 +75,11 @@ begin
                 public.time_bucket('1 hour', start_time) as hour,
                 account_id,
                 count(*) as session_count,
-                avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
+                avg(extract(epoch from (end_time - start_time))) as avg_duration_seconds,
                 sum(bytes_sent) as total_bytes_sent,
                 sum(bytes_received) as total_bytes_received
             from ores_iam_sessions_tbl
-            where end_time != ''
+            where end_time is not null
             group by hour, account_id
             with no data
         $sql$;
@@ -100,7 +100,7 @@ begin
                 public.time_bucket('1 day', start_time) as day,
                 count(*) as session_count,
                 count(distinct account_id) as unique_accounts,
-                avg(extract(epoch from (end_time::timestamp with time zone - start_time))) as avg_duration_seconds,
+                avg(extract(epoch from (end_time - start_time))) as avg_duration_seconds,
                 sum(bytes_sent) as total_bytes_sent,
                 sum(bytes_received) as total_bytes_received,
                 avg(bytes_sent) as avg_bytes_sent,
@@ -108,7 +108,7 @@ begin
                 count(distinct country_code) filter (where country_code != '') as unique_countries,
                 count(*) as sessions_started
             from ores_iam_sessions_tbl
-            where end_time != ''
+            where end_time is not null
             group by day
             with no data
         $sql$;
@@ -148,7 +148,7 @@ stable
 as $$
     select count(*)
     from ores_iam_sessions_tbl
-    where end_time = ''
+    where end_time is null
     and tenant_id = ores_iam_current_tenant_id_fn();
 $$;
 
@@ -160,7 +160,7 @@ as $$
     select count(*)
     from ores_iam_sessions_tbl
     where account_id = p_account_id
-    and end_time = ''
+    and end_time is null
     and tenant_id = ores_iam_current_tenant_id_fn();
 $$;
 
@@ -172,7 +172,7 @@ stable
 as $$
     select count(*)
     from ores_iam_sessions_tbl
-    where tenant_id = p_tenant_id and end_time = '';
+    where tenant_id = p_tenant_id and end_time is null;
 $$;
 
 -- -----------------------------------------------------------------------------
@@ -215,8 +215,7 @@ as $$
         date_trunc('day', s.start_time) as day,
         s.account_id::text,
         count(*) as session_count,
-        avg(extract(epoch from (nullif(s.end_time, '')::timestamp with time zone
-                                - s.start_time))) as avg_duration_seconds,
+        avg(extract(epoch from (s.end_time - s.start_time))) as avg_duration_seconds,
         sum(s.bytes_sent) as total_bytes_sent,
         sum(s.bytes_received) as total_bytes_received,
         avg(s.bytes_sent) as avg_bytes_sent,

@@ -141,3 +141,34 @@ export function seriesVerdict(list: CurveSeriesList, form: IdentityForm): Series
     if (listed === undefined) return { kind: 'not-listed' };
     return canBeShown(listed) ? { kind: 'shown', listed } : { kind: 'no-shape', listed };
 }
+
+/**
+ * Where the text of a URL points: the page of the series it names, or nowhere.
+ *
+ * A series with an axis opens on the Evolution page, which draws it. A series with
+ * no axis is a single value at each instant and opens on the series page. A URL
+ * that names no series, a fixing, a series the party does not have and a URL the
+ * codec refuses are all nowhere, and the caller draws plain text: a link that ends
+ * in an apology is worse than no link.
+ *
+ * This is the one rule the detail view of a record and a list of records share, so
+ * a URL behaves one way on both. They differ only in how they ask the codec: a
+ * record asks about its one URL, and a list asks about its rows together.
+ */
+export function seriesTargetOf(
+    uri: string,
+    schema: OresmdSchema,
+    parts: OresmdParseResult,
+    list: CurveSeriesList,
+): string | undefined {
+    const named = seriesOfUrl(schema, parts);
+    if (!named.ok) return undefined;
+    switch (seriesVerdict(list, named.form).kind) {
+        case 'shown':
+            return evolutionRoute(uri);
+        case 'no-shape':
+            return seriesRoute(uri);
+        case 'not-listed':
+            return undefined;
+    }
+}

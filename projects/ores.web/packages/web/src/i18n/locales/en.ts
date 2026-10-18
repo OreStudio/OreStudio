@@ -1326,6 +1326,7 @@ export const en: SourceCatalogue = {
         cancel: 'Cancel',
         copy: 'Copy',
         copied: 'Copied',
+        copyFailed: 'The browser refused the copy. Select the URL and copy it yourself.',
         apply: 'Apply',
         refused: 'The URL was refused: {message}',
         choose: 'Choose an instrument and a quote type.',

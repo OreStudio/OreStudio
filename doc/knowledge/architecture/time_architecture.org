@@ -73,12 +73,38 @@ The =stamp()= helper in =handler_helpers.hpp= fills =modified_by=,
   =TIMESTAMPTZ= values as ="YYYY-MM-DD HH:MM:SS.ffffff+00"=.
 - C++ domain layer: =std::chrono::system_clock::time_point= is UTC by
   definition (C++20).
-- NATS / JSON protocol: timestamps serialise as ISO 8601 UTC strings
-  with a =Z= suffix (e.g. ="2026-06-03 10:57:32Z"=).
+- NATS / JSON protocol: every instant crosses the wire in *The Wire Shape*
+  below and nowhere else.
 - User interface: Qt converts to local time only for *display*; all
   internal passing uses =time_point=.
 
 There is no local-time arithmetic anywhere in the codebase.
+
+* The Wire Shape
+
+Every instant that crosses the wire is written in exactly one shape:
+
+#+begin_example
+YYYY-MM-DD HH:MM:SS[.ffffff]Z
+#+end_example
+
+- A space separates the date from the time. A =T= is not the wire shape,
+  even though ISO 8601 permits it.
+- The =Z= UTC designator is always present.
+- The decimal fraction is optional and carries one to six digits of
+  microseconds. The server's writer (=to_iso8601_utc=) always states six
+  digits; its reader (=parse_utc_timestamp=) also accepts one to five, and
+  none, because a text column states none when the microsecond is zero.
+- The date and the time are UTC. The bytes do not depend on the timezone of
+  the process, the reading session, or the browser.
+
+This page is the single definition of the shape. The server implements it in
+=ores.platform/time/datetime.cpp= (writer) and =ores.utility/rfl/time_point_parser.hpp=
+(JSON and NATS). The TypeScript client mirrors it in
+=projects/ores.web/packages/wire-protocol/src/time.ts=. Neither reference
+restates the grammar. Where a client and this page disagree, this page and
+the server are right, and the client is the bug; a pattern widened to admit
+whatever happens to arrive is the same drift with a later alarm.
 
 * Time Types at Each Layer
 
@@ -209,20 +235,20 @@ if (domain.completed_at)
 ** NATS / JSON protocol: =time_point_parser.hpp=
 
 For over-the-wire serialisation, a custom rfl parser is registered in
-=ores.utility/rfl/time_point_parser.hpp=:
+=ores.utility/rfl/time_point_parser.hpp=. It delegates both directions to
+=datetime=, so the grammar is *The Wire Shape* above and is not restated
+there:
 
-- *Write*: =time_point= → =to_iso8601_utc= → ="2026-06-03 10:57:32.652076Z"=
-- *Read*: ISO 8601 string with =Z=, =+00=, or =+00:00= suffix →
-  =from_iso8601_utc= → =time_point=.  Throws on missing UTC designator.
-  A decimal fraction of one to six digits is read; PostgreSQL states none
-  when the microsecond is zero, so the dot is optional.
+- *Write*: =time_point= → =to_iso8601_utc= → the wire shape.
+- *Read*: the wire shape, or the same text with a =+00= or =+00:00=
+  designator that PostgreSQL states → =from_iso8601_utc= → =time_point=.
+  It throws on a missing UTC designator.
 
 ** Microsecond precision
 
-=to_iso8601_utc= and =parse_utc_timestamp= carry six digits of microseconds,
-and they travel as a pair: the writer always states six digits, and the reader
-consumes one to six. A =time_point= therefore survives a round trip through
-the database or the wire to the microsecond, and loses only what a
+The wire shape carries the microsecond, and the writer and reader travel as a
+pair (see *The Wire Shape*). A =time_point= therefore survives a round trip
+through the database or the wire to the microsecond, and loses only what a
 =microseconds= duration cannot hold.
 
 This is the platform and wire layers. The *entity* layer does not follow it,

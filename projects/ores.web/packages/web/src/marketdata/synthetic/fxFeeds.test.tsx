@@ -494,13 +494,13 @@ describe('the FX feed screens', () => {
             client.setQueryData(
                 ['history', 'ores.synthetic.fx_spot_generation_config', FEED_ID],
                 [
-                    version(2, '2026-10-11 09:00:00', [['Ticks Per Hour', '3600']]),
-                    version(1, '2026-10-10 09:00:00', [['Ticks Per Hour', '60']]),
+                    version(2, '2026-10-11 09:00:00Z', [['Ticks Per Hour', '3600']]),
+                    version(1, '2026-10-10 09:00:00Z', [['Ticks Per Hour', '60']]),
                 ],
             );
             client.setQueryData(
                 ['history', 'ores.synthetic.gmm_component', 'c0'],
-                [version(1, '2026-10-10 09:05:00', [['Weight', '1']])],
+                [version(1, '2026-10-10 09:05:00Z', [['Weight', '1']])],
             );
             client.setQueryData(['my-access'], access(['synthetic::*']));
         });

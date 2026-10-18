@@ -1490,7 +1490,7 @@ describe('GET /api/operations/logs', () => {
         expect(body.offset).toBe(0);
         // The read time is the deployment's, in the wire spelling the screens
         // label UTC.
-        expect(body.read_at).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z$/);
+        expect(body.read_at).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{6}Z$/);
 
         // One call, carrying every filter at once: the read combines them with
         // AND, so the BFF narrows nothing itself.

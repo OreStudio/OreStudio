@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -24,7 +23,6 @@
 
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.utility/decimal/decimal.hpp"
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -37,31 +35,30 @@ struct ibor_fallback_fallbacks;
 struct ibor_fallback_config;
 
 struct ibor_fallback_global_settings {
-  std::uint64_t present = 0;
-  std::int16_t enable_ibor_fallbacks = 0;
-  std::int16_t use_rfr_curve_in_todays_market = 0;
-  std::int16_t use_rfr_curve_in_simulation_market = 0;
+    std::uint64_t present = 0;
+    std::int16_t enable_ibor_fallbacks = 0;
+    std::int16_t use_rfr_curve_in_todays_market = 0;
+    std::int16_t use_rfr_curve_in_simulation_market = 0;
 };
 struct ibor_fallback_fallback {
-  std::uint64_t present = 0;
-  std::string ibor_index;
-  std::string rfr_index;
-  ores::utility::decimal::decimal spread;
-  std::string switch_date;
+    std::uint64_t present = 0;
+    std::string ibor_index;
+    std::string rfr_index;
+    ores::utility::decimal::decimal spread;
+    std::string switch_date;
 };
 struct ibor_fallback_fallbacks {
-  std::uint64_t present = 0;
-  std::vector<ibor_fallback_fallback> fallback;
+    std::uint64_t present = 0;
+    std::vector<ibor_fallback_fallback> fallback;
 };
 struct ibor_fallback_config {
-  std::uint64_t present = 0;
-  ibor_fallback_global_settings global_settings;
-  ibor_fallback_fallbacks fallbacks;
+    std::uint64_t present = 0;
+    ibor_fallback_global_settings global_settings;
+    ibor_fallback_fallbacks fallbacks;
 };
 
-ORES_ORE_CORE_EXPORT auto ibor_fallback_config_document()
-    -> const document_type &;
+ORES_ORE_CORE_EXPORT auto ibor_fallback_config_document() -> const document_type&;
 
-} // namespace ores::ore::xml::generated::ibor_fallback_config
+}
 
 #endif

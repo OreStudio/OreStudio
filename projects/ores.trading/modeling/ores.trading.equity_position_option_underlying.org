@@ -1,5 +1,6 @@
 :PROPERTIES:
 :ID: BC790632-BD5D-43DD-A32A-88B1D40C2B35
+:ores.cpp.eventing-integration-test.enabled: true
 :ores.cpp.shell-command.enabled: true
 :END:
 #+title: ores.trading.equity_position_option_underlying
@@ -79,6 +80,10 @@ The activity that wrote this version.
 :primary_key: true
 :END:
 
+#+begin_src cpp :name generator
+1
+#+end_src
+
 Ordinal of this entry within the document's list, counting from one.
 
 The schema declares the list unbounded and a document's order is the order
@@ -128,6 +133,7 @@ document that states no weight leaves it null.
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:generator_expr: std::string("Long")
 :END:
 
 Position direction of this entry's option: Long or Short.
@@ -142,6 +148,7 @@ Soft FK to ores_trading_long_short_types_tbl: the values are the closed ORE long
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:generator_expr: std::string("Call")
 :END:
 
 Call or Put, when the document states one.
@@ -153,6 +160,7 @@ Soft FK to ores_trading_option_types_tbl: the values are the closed ORE optionTy
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:generator_expr: std::string("European")
 :END:
 
 European, American, or Bermudan, when the document states one.
@@ -166,6 +174,7 @@ Soft FK to ores_trading_exercise_types_tbl: the values are the closed ORE exerci
 :type:     text
 :cpp_type: std::string
 :nullable: true
+:generator_expr: std::string("Cash")
 :END:
 
 Cash or Physical, when the document states one.
@@ -234,6 +243,7 @@ is immutable.
 :PROPERTIES:
 :tablename: ores_trading_equity_position_option_underlyings_tbl
 :rls_tenant_isolation: true
+:party_scoped_writes: true
 :END:
 
 ** Checks

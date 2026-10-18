@@ -186,6 +186,16 @@ public:
      */
     std::vector<domain::report_instance> get_instance_history(const std::string& key);
 
+    /**
+     * @brief The run of each named definition that started last.
+     *
+     * A definition that has never run has no entry, which is what the caller
+     * draws as "never run" rather than as a clean run.
+     */
+    messaging::get_latest_report_instances_by_definition_response
+    get_latest_report_instances_by_definition(
+        const messaging::get_latest_report_instances_by_definition_request& request);
+
 private:
     context ctx_;
     repository::report_instance_repository repo_;

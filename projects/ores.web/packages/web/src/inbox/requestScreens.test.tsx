@@ -55,7 +55,7 @@ function bookRequest(overrides: Partial<InboxRequestView> = {}): InboxRequestVie
         requestedBy: 'daniel',
         requestedAt: '2026-10-04 09:00:00Z',
         reason: 'Move the rates desk to operations.',
-        expiresAt: '',
+        expiresAt: null,
         roles: [],
         decision: null,
         parts: [

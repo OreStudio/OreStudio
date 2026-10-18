@@ -23,14 +23,14 @@
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/curve_configuration_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/pricing_engine_mapper.hpp"
+#include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_mapper.hpp"
 #include "ores.ore.core/domain/todays_market_mapper.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
-#include "ores.refdata.api/messaging/conventions_import_operations_protocol.hpp"
+#include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
@@ -227,7 +227,7 @@ void stage_conventions(nats_client& owners,
         for (const auto& row : *rows) {
             const auto staged =
                 call(owners,
-                     rd::stage_conventions_family_request{.import_id = import_id,
+                     rd::stage_bundle_family_request{.import_id = import_id,
                                                           .family = std::string(family.key),
                                                           .sequence = sequence++,
                                                           .payload = rfl::json::write(row)});
@@ -238,14 +238,14 @@ void stage_conventions(nats_client& owners,
 }
 
 // Begins an import, stages every family, then commits them in one transaction.
-rd::commit_conventions_import_response save_conventions(nats_client& owners,
+rd::commit_bundle_import_response save_conventions(nats_client& owners,
                                                         const rd::conventions_document& document) {
     const auto import_id = boost::uuids::random_generator()();
-    const auto begun = call(owners, rd::begin_conventions_import_request{.id = import_id});
+    const auto begun = call(owners, rd::begin_bundle_import_request{.id = import_id});
     if (!begun.success)
         throw std::runtime_error(begun.message);
     stage_conventions(owners, import_id, document);
-    auto committed = call(owners, rd::commit_conventions_import_request{.import_id = import_id});
+    auto committed = call(owners, rd::commit_bundle_import_request{.import_id = import_id});
     if (!committed.success)
         throw std::runtime_error(committed.message);
     return committed;
@@ -326,7 +326,7 @@ void parse_document(std::string_view code,
     else if (code == "todays_market")
         d.market = todays_market_mapper::map(parse_file<todaysmarket>(file, content));
     else if (code == "pricing_engines")
-        d.engines = pricing_engine_mapper::map(parse_file<pricingengines>(file, content));
+        d.engines = pricing_engine_projection::map(pricing_engine_projection::read(content, file));
 }
 
 // Hands one parsed document to the component that owns it. A document with a
@@ -515,7 +515,7 @@ input_files export_run(nats_client& owners, const std::string& report_definition
                                                             .party_id = run.party_id})
                     .document));
         else if (code == "pricing_engines")
-            files[*file] = save_data(pricing_engine_mapper::reverse(
+            files[*file] = pricing_engine_projection::write(pricing_engine_projection::reverse(
                 call(owners,
                      an::get_pricing_engines_document_request{.configuration_id = configuration,
                                                               .party_id = run.party_id})

@@ -430,3 +430,9 @@
 \ir ./refdata_curve_segment_curves_notify_trigger_create.sql
 \ir ./refdata_curve_quotes_create.sql
 \ir ./refdata_curve_quotes_notify_trigger_create.sql
+
+-- Bundle import staging, after every table it references
+\ir ./refdata_bundle_imports_create.sql
+\ir ./refdata_bundle_imports_notify_trigger_create.sql
+\ir ./refdata_bundle_import_items_create.sql
+\ir ./refdata_bundle_import_items_notify_trigger_create.sql

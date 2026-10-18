@@ -30,16 +30,18 @@
  */
 
 // Data and schemas.
+export { SYSTEM_TENANT_ID, isUuid, uuid } from './primitives.js';
+export type { Uuid } from './primitives.js';
+
 export {
-    SYSTEM_TENANT_ID,
     fromWireTimestamp,
-    isUuid,
     isWireTimestamp,
+    nullableWireTimestampSchema,
     toWireTimestamp,
-    uuid,
     wireTimestamp,
-} from './primitives.js';
-export type { Uuid, WireTimestamp } from './primitives.js';
+    wireTimestampSchema,
+} from './time.js';
+export type { WireTimestamp } from './time.js';
 
 export {
     ACCOUNT_TYPES,
@@ -259,7 +261,7 @@ export { loginInfoPageSchema, loginInfoSchema } from './domain.js';
 export type { LoginInfo, LoginInfoPage } from './domain.js';
 
 // The sessions the audit screen reads: one page of every session, and the open
-// ones on their own. An empty endTime is what makes a row active.
+// ones on their own. A null endTime is what makes a row open.
 export { sessionPageSchema, sessionSchema } from './domain.js';
 export type { Session, SessionPage } from './domain.js';
 

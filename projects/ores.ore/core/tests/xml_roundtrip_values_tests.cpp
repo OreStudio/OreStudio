@@ -71,6 +71,25 @@ auto read_file(const fs::path& path) -> std::string {
     return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
 }
 
+/// The root element of a document, without reading it through a binding.
+auto root_element(const std::string& text) -> std::string {
+    std::size_t at = 0;
+    while ((at = text.find('<', at)) != std::string::npos) {
+        if (at + 1 < text.size() && (text[at + 1] == '?' || text[at + 1] == '!')) {
+            at = text.find('>', at);
+            if (at == std::string::npos)
+                return {};
+            ++at;
+            continue;
+        }
+        const auto end = text.find_first_of(" \t\r\n>/", at + 1);
+        if (end == std::string::npos)
+            return {};
+        return text.substr(at + 1, end - at - 1);
+    }
+    return {};
+}
+
 /**
  * @brief The first value two fingerprints disagree about.
  */
@@ -165,7 +184,8 @@ auto sweep_values(const fs::path& root,
                   const std::vector<std::string_view>& prefixes,
                   std::size_t& documents,
                   std::string& report,
-                  std::size_t* swept = nullptr) -> std::size_t {
+                  std::size_t* swept = nullptr,
+                  std::string_view root_element_name = {}) -> std::size_t {
     std::size_t failures = 0;
     if (swept != nullptr)
         *swept = 0;
@@ -175,10 +195,16 @@ auto sweep_values(const fs::path& root,
         const auto name = entry.path().filename().string();
         if (!name.ends_with(".xml"))
             continue;
-        if (std::none_of(prefixes.begin(), prefixes.end(), [&name](std::string_view prefix) {
-                return name.starts_with(prefix);
-            }))
+        if (root_element_name.empty()) {
+            if (std::none_of(prefixes.begin(), prefixes.end(), [&name](std::string_view prefix) {
+                    return name.starts_with(prefix);
+                }))
+                continue;
+        } else if (root_element(read_file(entry.path())) != root_element_name) {
+            // The family is found by the root element, so a document under a
+            // name no prefix anticipates still counts.
             continue;
+        }
         ++documents;
         if (swept != nullptr)
             ++*swept;
@@ -290,10 +316,11 @@ TEST_CASE("every_generated_family_keeps_its_values_across_the_writing", tags) {
     failures += sweep_values<st::stresstesting>(root,
                                                 "stress_testing",
                                                 st::stress_testing_document(),
-                                                {"stresstest", "parstresstest"},
+                                                {},
                                                 documents,
                                                 report,
-                                                &stress_tests);
+                                                &stress_tests,
+                                                "StressTesting");
     INFO("stress tests: " << stress_tests);
     CHECK(stress_tests == 19);
     failures += sweep_values<ibor_fallback_config>(root,

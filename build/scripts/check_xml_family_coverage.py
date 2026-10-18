@@ -54,8 +54,8 @@ FAMILIES = {
     ),
     "StressTesting": (
         "supported",
-        "the value harness proves every corpus document; stress_test_mapper "
-        "is still the importer until the projection lands",
+        "table written and proved; nothing in the product reads the ORE XML, "
+        "and the analytics stress test store is modelled on the document",
     ),
     # Unused: nothing in the product reads the family. Its generated types
     # leave when xsdcpp does, and no XML family suite may name it.

@@ -562,3 +562,39 @@ def test_two_alternatives_with_different_inline_enumerations_are_refused(tmp_pat
     result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
     assert result.returncode != 0
     assert "Shared" in result.stderr
+
+
+def test_text_typed_by_an_enumerated_simple_type_keeps_its_spellings(tmp_path):
+    """xs:simpleContent over an enumeration stores the index, not the text."""
+    emitted, source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:simpleType name="scheme">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Forward"/>
+      <xs:enumeration value="Backward"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:complexType name="entry">
+    <xs:simpleContent>
+      <xs:extension base="scheme">
+        <xs:attribute type="xs:string" name="id"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="entry" name="Entry"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "entry")
+    assert "std::int16_t value" in record
+    # The row names the spellings, so the reading refuses other text.
+    own_row = source[source.index('{"", 0u, field_kind::enumeration'):]
+    own_row = own_row[: own_row.index("}")]
+    assert "scheme_spellings" in own_row
+    assert 'const char* scheme_spellings[] = {"Forward", "Backward", nullptr};' in source

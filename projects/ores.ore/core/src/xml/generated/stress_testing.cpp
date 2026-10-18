@@ -44,6 +44,8 @@ auto at_of(const void* container, std::size_t index) -> const void* {
     return &(*static_cast<const std::vector<T>*>(container))[index];
 }
 
+const char* shift_type_spellings[] = {"Relative", "Absolute", "EqualTo", nullptr};
+const char* shift_scheme_spellings[] = {"Forward", "Backward", "Central", nullptr};
 const char* bool_spellings[] = {"Y",
                                 "YES",
                                 "TRUE",
@@ -229,14 +231,14 @@ const record_type stresstestparshifts_record{
 const field shift_type_entry_fields[] = {
     {"",
      0u,
-     field_kind::text,
+     field_kind::enumeration,
      std::uint32_t(offsetof(shift_type_entry, value)),
      0,
      false,
      false,
+     shift_type_spellings,
      nullptr,
-     nullptr,
-     scalar_kind::text,
+     scalar_kind::enumeration,
      nullptr},
     {"key",
      1746258028u,
@@ -279,14 +281,14 @@ const record_type shift_size_entry_record{"shiftSizeEntry", shift_size_entry_fie
 const field shift_scheme_entry_fields[] = {
     {"",
      0u,
-     field_kind::text,
+     field_kind::enumeration,
      std::uint32_t(offsetof(shift_scheme_entry, value)),
      0,
      false,
      false,
+     shift_scheme_spellings,
      nullptr,
-     nullptr,
-     scalar_kind::text,
+     scalar_kind::enumeration,
      nullptr},
     {"key",
      1746258028u,

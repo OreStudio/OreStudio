@@ -82,7 +82,7 @@ struct stresstestparshifts {
 };
 struct shift_type_entry {
     std::uint64_t present = 0;
-    std::string value;
+    std::int16_t value = 0;
     std::string key;
 };
 struct shift_size_entry {
@@ -92,7 +92,7 @@ struct shift_size_entry {
 };
 struct shift_scheme_entry {
     std::uint64_t present = 0;
-    std::string value;
+    std::int16_t value = 0;
     std::string key;
 };
 struct convention {

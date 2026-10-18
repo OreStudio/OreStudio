@@ -196,6 +196,15 @@ public:
     get_latest_report_instances_by_definition(
         const messaging::get_latest_report_instances_by_definition_request& request);
 
+    /**
+     * @brief The health word of each named run.
+     *
+     * A run whose state has no word yet, or whose state the session cannot
+     * read, answers an empty word beside the state name it was read from.
+     */
+    messaging::get_report_instance_health_response
+    get_report_instance_health(const messaging::get_report_instance_health_request& request);
+
 private:
     context ctx_;
     repository::report_instance_repository repo_;

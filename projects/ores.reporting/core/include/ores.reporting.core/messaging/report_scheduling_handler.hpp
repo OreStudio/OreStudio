@@ -186,6 +186,49 @@ public:
         BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Completed " << msg.subject;
     }
 
+    /**
+     * @brief Serves reporting.v1.ops.get_next_fire.
+     *
+     * The read is about definitions, so it is gated by the code the definition
+     * reads are gated by. The scheduler's answer is then gated by the caller's
+     * own scheduler grant, because the client below carries the caller's
+     * session and not the service's.
+     */
+    void get_next_fire(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "reporting::report_definitions:read")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        auto req = decode<get_next_fire_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(report_scheduling_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
+        }
+        auto delegated = svc_nats_.with_delegation(ores::nats::service::extract_bearer(msg));
+        service::report_scheduling_service scheduler(ctx_, svc_nats_, delegated);
+        get_next_fire_response response;
+        try {
+            response = scheduler.next_fire_for_definitions(req->definition_ids);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_scheduling_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            response.result.outcome = ores::utility::domain::outcome::failed;
+            response.result.code = "internal_error";
+            response.result.message = e.what();
+        }
+        reply(nats_, msg, response);
+        BOOST_LOG_SEV(report_scheduling_handler_lg(), debug) << "Completed " << msg.subject;
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

@@ -387,6 +387,29 @@ struct ignore_compute_results_request {
     std::string batch_id;
 };
 
+struct definition_next_fire {
+    boost::uuids::uuid definition_id;
+    std::optional<std::string> next_fire_at;
+};
+
+struct get_next_fire_request {
+    using response_type = struct get_next_fire_response;
+    static constexpr std::string_view nats_subject = "reporting.v1.ops.get_next_fire";
+    /**
+     * @brief Whether the caller must have established a session first.
+     *
+     * An operation that produces the session cannot present one, so a client
+     * reads this rather than assuming every call carries a token.
+     */
+    static constexpr bool requires_session = true;
+    std::vector<std::string> definition_ids;
+};
+
+struct get_next_fire_response {
+    ores::utility::domain::result result;
+    std::vector<definition_next_fire> schedules;
+};
+
 }
 
 #endif

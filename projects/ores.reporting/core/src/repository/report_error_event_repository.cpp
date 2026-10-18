@@ -35,6 +35,7 @@
 #include "ores.reporting.core/repository/report_error_event_entity.hpp"
 #include "ores.reporting.core/repository/report_error_event_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
@@ -377,5 +378,53 @@ void report_error_event_repository::remove(context ctx, const std::vector<std::s
     execute_delete_query(ctx, query, lg(), "Batch removing report error events.");
 }
 
+
+std::vector<messaging::report_error_count>
+report_error_event_repository::read_counts_by_report_instance_ids(
+    context ctx, const std::vector<boost::uuids::uuid>& report_instance_ids) {
+    if (report_instance_ids.empty())
+        return {};
+
+    BOOST_LOG_SEV(lg(), debug) << "Counting the problems of " << report_instance_ids.size()
+                               << " run(s).";
+
+    // One bound array rather than one parameter per id, so a list of forty
+    // runs is still one statement.
+    std::string id_array("{");
+    for (std::size_t i = 0; i < report_instance_ids.size(); ++i) {
+        if (i > 0)
+            id_array += ',';
+        id_array += boost::uuids::to_string(report_instance_ids[i]);
+    }
+    id_array += '}';
+
+    // The tenant and the policy on the table narrow the rows exactly as they do
+    // for the generated reads; no party is stated here.
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx,
+        "SELECT report_instance_id::text,"
+        "       count(*) FILTER (WHERE severity = 'error')::text,"
+        "       count(*) FILTER (WHERE severity = 'warning')::text"
+        " FROM ores_reporting_report_error_events_tbl"
+        " WHERE tenant_id = $1::uuid"
+        "   AND report_instance_id = ANY($2::uuid[])"
+        " GROUP BY report_instance_id",
+        {ctx.tenant_id().to_string(), id_array},
+        lg(),
+        "Counting the problems of each run");
+
+    std::vector<messaging::report_error_count> counts;
+    counts.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 3 || !row[0] || !row[1] || !row[2])
+            continue;
+        messaging::report_error_count count;
+        count.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+        count.errors = std::stoll(*row[1]);
+        count.warnings = std::stoll(*row[2]);
+        counts.push_back(std::move(count));
+    }
+    return counts;
+}
 
 }

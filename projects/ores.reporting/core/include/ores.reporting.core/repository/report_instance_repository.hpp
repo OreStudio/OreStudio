@@ -40,6 +40,14 @@
 #include <vector>
 
 namespace ores::reporting::repository {
+/**
+ * @brief What a run's health word is derived from: its state and its errors.
+ */
+struct report_instance_health_facts {
+    boost::uuids::uuid report_instance_id;
+    std::string state_name;
+    std::int64_t error_count = 0;
+};
 
 /**
  * @brief Reads and writes report instances to data storage.
@@ -223,6 +231,17 @@ public:
     std::vector<domain::report_instance>
     read_latest_by_definition_ids(context ctx,
                                   const std::vector<boost::uuids::uuid>& definition_ids);
+
+    /**
+     * @brief Reads the state name and the error count of each run named.
+     *
+     * A run this session cannot read has no entry. The state name is empty when
+     * the run holds no state or holds one no machine declares, and the service
+     * states no word for it rather than inventing one.
+     */
+    std::vector<report_instance_health_facts>
+    read_health_facts_by_instance_ids(context ctx,
+                                      const std::vector<boost::uuids::uuid>& instance_ids);
 
 private:
     /**

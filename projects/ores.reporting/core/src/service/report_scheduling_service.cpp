@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
+#include "ores.database/domain/outcome_code.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/run_grant_operations_protocol.hpp"
@@ -27,6 +28,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include "ores.reporting.core/service/next_fire_plan.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 #include "ores.reporting.core/service/report_run_grant_service.hpp"
 #include "ores.reporting.core/service/scheduling_plan.hpp"
@@ -48,6 +50,8 @@
 namespace ores::reporting::service {
 
 using namespace ores::logging;
+using ores::database::domain::outcome_code;
+using ores::database::domain::refuse;
 
 namespace {
 
@@ -554,6 +558,49 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
                               << ", cleared: " << total_cleared << ", failed: " << total_failed
                               << ".";
     co_return;
+}
+
+messaging::get_next_fire_response report_scheduling_service::next_fire_for_definitions(
+    const std::vector<std::string>& definition_ids) {
+    messaging::get_next_fire_response response;
+    // The cap is the same one the generated filters state, so one caller cannot
+    // ask the store for more rows than the list reads allow.
+    if (definition_ids.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "definition_ids", .limit = "1000"});
+        return response;
+    }
+    if (definition_ids.empty())
+        return response;
+
+    if (!person_nats_) {
+        response.result.outcome = ores::utility::domain::outcome::failed;
+        response.result.code = "internal_error";
+        response.result.message =
+            "The next fire time is read with the caller's own session, and no session was "
+            "delegated.";
+        return response;
+    }
+
+    repository::report_definition_repository definitions;
+    const auto found = definitions.read_latest(ctx_, definition_ids);
+
+    // One status call answers every definition asked for. The caller's own
+    // session makes it, so the scheduler's grant decides whether it is answered.
+    const auto status =
+        call(*person_nats_, ores::scheduler::messaging::get_scheduler_status_request{});
+    if (!status) {
+        response.result.outcome = ores::utility::domain::outcome::failed;
+        response.result.code = "internal_error";
+        // The scheduler's own words, so a caller it refused reads the refusal
+        // rather than a report that the reporting service broke.
+        response.result.message = status.error();
+        BOOST_LOG_SEV(lg(), warn) << "Next fire times unavailable: " << status.error();
+        return response;
+    }
+
+    response.schedules = plan_next_fire(found, status->jobs);
+    return response;
 }
 
 }

@@ -168,6 +168,15 @@ public:
     void delete_errors(const std::vector<std::string>& ids);
 
 
+    /**
+     * @brief The problems of each named run, counted apart by severity.
+     *
+     * A run that recorded no problem has no entry, which is what the screen
+     * draws as no problems rather than as a row of zeroes.
+     */
+    messaging::get_report_error_counts_response
+    get_report_error_counts(const messaging::get_report_error_counts_request& request);
+
 private:
     context ctx_;
     repository::report_error_event_repository repo_;

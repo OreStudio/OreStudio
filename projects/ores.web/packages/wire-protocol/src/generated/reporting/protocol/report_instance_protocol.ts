@@ -202,6 +202,48 @@ export interface GetLatestReportInstancesByDefinitionResponse {
     instances: ReportInstance[];
 }
 
+export interface ReportInstanceHealth {
+    /** @brief The run the word is of. */
+    report_instance_id: string;
+    /**
+     * @brief The name of the run's lifecycle state, as the store holds it.
+     *
+     * Absent when the run has no state, or when the session cannot read the
+     * state: the word is then absent too, and the screen is told what the word
+     * was derived from rather than left guessing.
+     */
+    state_name: string;
+    /**
+     * @brief One of =failed=, =completed with errors=, =running= or
+     * =completed clean=, or empty when the state has no word.
+     *
+     * =never run= is not a word here: a definition that never ran has no run,
+     * so it has no entry in the reply.
+     */
+    health: string;
+}
+
+/**
+ * @brief Reads the health word of each named run.
+ *
+ * The caller asks once with the runs a read of the latest runs returned, so it
+ * pays for one row per run. The request names no party: the session scopes the
+ * answer through the row-level security on the tables.
+ */
+export interface GetReportInstanceHealthRequest {
+    /** @brief The runs to state the health of, in any order. */
+    instance_ids: string[];
+}
+
+export interface GetReportInstanceHealthResponse {
+    result: Result;
+    /**
+     * @brief One entry per run the session can read, and no entry for a run
+     * that does not exist or is not the caller's to read.
+     */
+    health: ReportInstanceHealth[];
+}
+
 export const subjects = {
     list_report_instances_request: 'reporting.v1.report_instances.list',
     get_report_instance_request: 'reporting.v1.report_instances.get',
@@ -213,7 +255,8 @@ export const subjects = {
     list_report_instance_versions_request: 'reporting.v1.report_instances_versions.list',
     get_report_instance_version_request: 'reporting.v1.report_instances_versions.get',
     get_latest_report_instances_by_definition_request:
-        'reporting.v1.ops.get_latest_report_instance_by_definition',
+        'reporting.v1.ops.get_latest_report_instances_by_definition',
+    get_report_instance_health_request: 'reporting.v1.ops.get_report_instance_health',
 } as const;
 /**
  * Whether a message needs an established session first. An operation that
@@ -231,6 +274,7 @@ export const requiresSession = {
     list_report_instance_versions_request: true,
     get_report_instance_version_request: true,
     get_latest_report_instances_by_definition_request: true,
+    get_report_instance_health_request: true,
 } as const;
 
 /**

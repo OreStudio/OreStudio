@@ -35,12 +35,14 @@
 #include "ores.reporting.core/repository/report_instance_entity.hpp"
 #include "ores.reporting.core/repository/report_instance_mapper.hpp"
 #include "ores.utility/domain/protocol.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/log/sources/severity_feature.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <map>
 #include <optional>
 #include <sqlgen/delete_from.hpp>
 #include <sqlgen/dynamic/Condition.hpp>
@@ -464,6 +466,93 @@ std::vector<domain::report_instance> report_instance_repository::read_latest_by_
     if (rows.empty())
         return {};
     return read_latest(ctx, rows);
+}
+
+std::vector<report_instance_health_facts>
+report_instance_repository::read_health_facts_by_instance_ids(
+    context ctx, const std::vector<boost::uuids::uuid>& instance_ids) {
+    if (instance_ids.empty())
+        return {};
+
+    BOOST_LOG_SEV(lg(), debug) << "Reading the health facts of " << instance_ids.size()
+                               << " run(s).";
+
+    std::string id_array("{");
+    for (std::size_t i = 0; i < instance_ids.size(); ++i) {
+        if (i > 0)
+            id_array += ',';
+        id_array += boost::uuids::to_string(instance_ids[i]);
+    }
+    id_array += '}';
+
+    // The runs and their errors are the caller's, so they are read under the
+    // caller's tenant and the policy on each table decides what the session
+    // may see. No party is stated here.
+    const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx,
+        "SELECT ri.id::text, coalesce(ri.fsm_state_id::text, ''), count(e.id)::text"
+        " FROM ores_reporting_report_instances_tbl ri"
+        " LEFT JOIN ores_reporting_report_error_events_tbl e"
+        "   ON e.tenant_id = ri.tenant_id"
+        "  AND e.report_instance_id = ri.id"
+        "  AND e.severity = 'error'"
+        " WHERE ri.tenant_id = $1::uuid"
+        "   AND ri.valid_to = ores_utility_infinity_timestamp_fn()"
+        "   AND ri.id = ANY($2::uuid[])"
+        " GROUP BY ri.id, ri.fsm_state_id",
+        {ctx.tenant_id().to_string(), id_array},
+        lg(),
+        "Reading the health facts of each run");
+
+    std::vector<report_instance_health_facts> facts;
+    std::vector<std::string> state_id_of;
+    state_id_of.reserve(rows.size());
+    std::string state_id_array("{");
+    for (const auto& row : rows) {
+        if (row.size() < 3 || !row[0] || !row[1] || !row[2])
+            continue;
+        report_instance_health_facts entry;
+        entry.report_instance_id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
+        entry.error_count = std::stoll(*row[2]);
+        facts.push_back(std::move(entry));
+        state_id_of.push_back(*row[1]);
+        if (row[1]->empty())
+            continue;
+        if (state_id_array.size() > 1)
+            state_id_array += ',';
+        state_id_array += *row[1];
+    }
+    state_id_array += '}';
+
+    if (facts.empty() || state_id_array == "{}")
+        return facts;
+
+    // The states are the system tenant's reference data, so they are read under
+    // that tenant. The caller's tenant cannot see them at all, which is why
+    // this read exists rather than the screen resolving a state id itself.
+    const auto state_names = ores::database::repository::execute_parameterized_multi_column_query(
+        ctx.with_tenant(ores::utility::uuid::tenant_id::system(), ctx.actor()),
+        "SELECT id::text, name"
+        " FROM ores_dq_fsm_states_tbl"
+        " WHERE id = ANY($1::uuid[])"
+        "   AND valid_to = ores_utility_infinity_timestamp_fn()",
+        {state_id_array},
+        lg(),
+        "Reading the lifecycle states of each run");
+
+    std::map<std::string, std::string> name_of;
+    for (const auto& row : state_names) {
+        if (row.size() >= 2 && row[0] && row[1])
+            name_of.emplace(*row[0], *row[1]);
+    }
+
+    for (std::size_t i = 0; i < facts.size(); ++i) {
+        if (state_id_of[i].empty())
+            continue;
+        if (const auto it = name_of.find(state_id_of[i]); it != name_of.end())
+            facts[i].state_name = it->second;
+    }
+    return facts;
 }
 
 }

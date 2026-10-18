@@ -90,6 +90,10 @@ register_report_instance_handlers(ores::nats::service::client& nats,
                              [h](ores::nats::message msg) {
                                  h->get_latest_report_instances_by_definition(std::move(msg));
                              }));
+    subs.push_back(nats.queue_subscribe(
+        get_report_instance_health_request::nats_subject,
+        queue_group,
+        [h](ores::nats::message msg) { h->get_report_instance_health(std::move(msg)); }));
     return subs;
 }
 

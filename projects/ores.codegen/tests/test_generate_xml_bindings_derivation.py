@@ -744,3 +744,102 @@ def test_a_type_that_holds_itself_loses_only_the_edge_that_closes_it(tmp_path):
     assert "std::string value" in node
     assert "child" not in node
     assert "std::string head" in _record(emitted, "root_type")
+
+
+def _required(source, name):
+    row = source[source.index('{"' + name + '"') :]
+    row = row[: row.index("}")]
+    row = re.sub(r"offsetof\([^)]*\)", "offset", row)
+    return row.split(",")[6].strip()
+
+
+def test_a_required_member_of_a_sequence_group_stays_required(tmp_path):
+    """A group is not a choice: its required members are required."""
+    emitted, source = _emit(tmp_path, GROUP)
+    assert _required(source, "Head") == "true"
+    assert _required(source, "Alpha") == "false"  # the group is minOccurs=0 here
+
+
+GROUP_REUSED = """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:group name="common">
+    <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+  </xs:group>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="oneType" name="One"/>
+      <xs:element type="twoType" name="Two"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="oneType">
+    <xs:sequence><xs:group ref="common" maxOccurs="unbounded"/></xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="twoType">
+    <xs:sequence><xs:group ref="common"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+"""
+
+
+def test_one_group_referenced_twice_keeps_each_reference_cardinality(tmp_path):
+    """A reference states its own cardinality; the group is not changed by it."""
+    emitted, _source = _emit(tmp_path, GROUP_REUSED)
+    assert "std::vector<std::string> alpha" in _record(emitted, "one_type")
+    assert "std::string alpha" in _record(emitted, "two_type")
+
+
+CROSS_FILE = {
+    "first.xsd": """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Shared" type="sharedType"/>
+  <xs:complexType name="sharedType">
+    <xs:sequence><xs:element type="xs:string" name="Alpha"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    "second.xsd": """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:include schemaLocation="first.xsd"/>
+  <xs:element type="rootType" name="Root"/>
+  <xs:complexType name="rootType">
+    <xs:sequence><xs:element ref="Shared"/></xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+}
+
+
+def test_a_reference_to_a_global_element_of_an_earlier_schema(tmp_path):
+    """The globals of every schema read are one index."""
+    (tmp_path / "first.xsd").write_text(CROSS_FILE["first.xsd"])
+    (tmp_path / "second.xsd").write_text(CROSS_FILE["second.xsd"])
+    header = tmp_path / "out.hpp"
+    subprocess.run(
+        [
+            sys.executable,
+            str(GENERATOR),
+            "--schema",
+            str(tmp_path / "first.xsd"),
+            "--schema",
+            str(tmp_path / "second.xsd"),
+            "--root-element",
+            "Root",
+            "--root-type",
+            "rootType",
+            "--accessor",
+            "root_document",
+            "--header",
+            str(header),
+            "--source",
+            str(tmp_path / "out.cpp"),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "shared_type shared" in _record(header.read_text(), "root_type")
+
+
+def test_a_cut_member_is_named_in_the_generated_header(tmp_path):
+    """The file says which member a record cannot hold, and why."""
+    emitted, _source = _emit(tmp_path, RECURSIVE_SCHEMA)
+    assert "Child (node reaches itself)" in emitted
+    assert "A document that states it is refused" in emitted

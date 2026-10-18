@@ -252,23 +252,31 @@ an element with no type, and it sizes a presence mask over more than 64 fields.
 Those changes are additive and leave every committed table byte-identical, but
 without a family that needs them they are not committed.
 
-* The portfolio table is blocked on the type ordering
+* The portfolio document is recursive, and a flat record cannot hold it
 
-The portfolio schema reaches five shapes the generator did not read, and four are
-done: a model group, a substitution member that writes its inline type, a
-reference to a global element of an earlier schema file, and an element with no
-type at all. The fifth is a recursive type, =cbodata=.
+The generator now reads every shape the portfolio schema uses: a model group, a
+substitution member that writes its own type, a reference to a global element of
+an earlier schema file, an element with no type, a presence mask over more than
+64 fields, and dependency-ordered types. Regenerating every committed table
+still produces identical files, and five regression tests cover the shapes.
 
-A record has a fixed layout and cannot hold itself, so the member that closes the
-cycle has to be left out. The first attempt did that while the reachable-type set
-had already been computed without the cut, so the emission named a type that was
-never generated (=powerLoadProfileDataType=) and the run stopped. The fix is to
-derive the emitted types from the table after the cut, and to state in the
-generated file which member was left out and why, so a document that uses it is
-refused by the reading rather than half stored.
+What it cannot read is the document's recursion. A composite trade holds a list
+of =subTradeGroup= entries whose =SubTrade= member is a =componentSubTrade=, and
+that type carries =oreTradeData=, which reaches the composite trade again. A
+record is a fixed layout, so the member that closes the cycle is left out and
+named in the generated file; a document that states it is refused. 18 corpus
+documents write =SubTrade= inside a composite, so the value harness cannot prove
+the family this way.
 
-Until that lands, the family has no table, no PR, and the census keeps it as the
-one migrating family.
+Two ways forward, and they are a decision rather than a fix:
+
+1. Represent the recursion explicitly: one flat table per document, with a
+   composite's components in a document-level vector linked by parent index, the
+   way the database already models them. The codec has no such member kind
+   today, so this is new engine and generator design.
+2. Keep Portfolio on the generated binding. The family then stays =migrating=,
+   clauses (a) and (b) cannot be satisfied, and the binding removal is scoped to
+   every other family.
 
 * Where the work stands
 
@@ -285,7 +293,7 @@ line.
 | Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 23 cases |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =[ore][xml]@, 501 cases and 45,220 assertions; the run document suite is 4 cases and the =[run_document]= selection 5 |
+| The XML suites pass | =[ore][xml]@, 502 cases and 45,237 assertions; the run document suite is 4 cases and the =[run_document]= selection 5 |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 
@@ -366,6 +374,11 @@ via its "Verifies task" field.
 | [[https://github.com/OreStudio/OreStudio/pull/3470][#3470]] | [ore] Read and write currency config through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3486][#3486]] | [ore] Delete the netting set XML mapper nothing reads |
 | [[https://github.com/OreStudio/OreStudio/pull/3532][#3532]] | [ore] Generate the curve configuration table |
+| [[https://github.com/OreStudio/OreStudio/pull/3544][#3544]] | [ore] Read and write the curve configuration through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3545][#3545]] | [ore] Generate the stress testing table |
+| [[https://github.com/OreStudio/OreStudio/pull/3547][#3547]] | [ore] Generate the run document table |
+| [[https://github.com/OreStudio/OreStudio/pull/3548][#3548]] | [ore] Read and write the run document through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3549][#3549]] | [ore] Read the schema shapes the portfolio document needs |
 
 * Review
 

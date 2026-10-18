@@ -2591,7 +2591,8 @@ package "trading" #E8F5E9 {
     FX Barrier Option Instrument Table
     Routes ORE product types: FxBarrierOption, FxDoubleBarrierOption,
     FxEuropeanBarrierOption, FxKIKOBarrierOption, FxGenericBarrierOption.
-    the level sits in lower_barrier or upper_barrier by the style's direction.
+    A row states at least one level, and the level sits in lower_barrier or
+    upper_barrier by the style's direction.
     end note
 
     entity ores_trading_fx_digital_option_instruments_tbl <<temporal>> #C6F0D8 {

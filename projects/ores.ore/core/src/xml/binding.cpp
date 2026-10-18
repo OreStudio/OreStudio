@@ -18,6 +18,7 @@
  */
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/document.hpp"
+#include "ores.ore.core/xml/lexical.hpp"
 #include "ores.ore.core/xml/scanner.hpp"
 #include "ores.utility/decimal/decimal.hpp"
 #include <array>
@@ -91,29 +92,27 @@ auto mark_present(void* record, const field& f) -> void {
 /**
  * @brief Writes one value into the member the field names.
  *
- * `append` says whether a second value for the same field joins the first.
- * Text accumulates, because a comment or a CDATA boundary splits a text node
- * into runs and the value is still one string. Every other kind replaces, and
- * a second value for a number is refused rather than silently overwriting the
- * first.
+ * The caller hands over the element's whole text. A comment or a CDATA
+ * boundary splits the text into runs, and the runs are one value, so they are
+ * concatenated before this point and a number split that way is the number its
+ * text states.
  */
-auto store(void* record, const field& f, std::string_view text, bool append, std::string& error)
-    -> bool {
-    static_cast<void>(append);
+auto store(void* record, const field& f, std::string_view text, std::string& error) -> bool {
+    // A document may write a number on its own line, so its text arrives with
+    // the indentation around it. A number's lexical space allows that space and
+    // the parser does not.
+    const auto number_text = &trim_space;
     auto* slot = static_cast<std::byte*>(record) + f.offset;
     switch (f.kind) {
-        case field_kind::text: {
-            auto* target = reinterpret_cast<std::string*>(slot);
-            if (append)
-                target->append(text);
-            else
-                *target = text;
+        case field_kind::text:
+            *reinterpret_cast<std::string*>(slot) = text;
             break;
-        }
         case field_kind::integer: {
+            const auto digits = number_text(text);
             std::int64_t value = 0;
-            const auto [stop, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
-            if (ec != std::errc{} || stop != text.data() + text.size()) {
+            const auto [stop, ec] =
+                std::from_chars(digits.data(), digits.data() + digits.size(), value);
+            if (ec != std::errc{} || stop != digits.data() + digits.size()) {
                 error = "an element declared as an integer does not hold one";
                 return false;
             }
@@ -121,7 +120,7 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
             break;
         }
         case field_kind::decimal: {
-            const auto parsed = utility::decimal::decimal::from_string(text);
+            const auto parsed = utility::decimal::decimal::from_string(number_text(text));
             if (!parsed) {
                 error = parsed.error();
                 return false;
@@ -130,9 +129,11 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
             break;
         }
         case field_kind::real: {
+            const auto digits = number_text(text);
             double value = 0;
-            const auto [stop, ec] = std::from_chars(text.data(), text.data() + text.size(), value);
-            if (ec != std::errc{} || stop != text.data() + text.size()) {
+            const auto [stop, ec] =
+                std::from_chars(digits.data(), digits.data() + digits.size(), value);
+            if (ec != std::errc{} || stop != digits.data() + digits.size()) {
                 error = "an element declared as a real does not hold one";
                 return false;
             }
@@ -163,10 +164,11 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
                     reinterpret_cast<std::vector<std::string>*>(slot)->emplace_back(text);
                     break;
                 case scalar_kind::integer: {
+                    const auto digits = number_text(text);
                     std::int64_t value = 0;
                     const auto [stop, ec] =
-                        std::from_chars(text.data(), text.data() + text.size(), value);
-                    if (ec != std::errc{} || stop != text.data() + text.size()) {
+                        std::from_chars(digits.data(), digits.data() + digits.size(), value);
+                    if (ec != std::errc{} || stop != digits.data() + digits.size()) {
                         error = "a repeated integer element does not hold one";
                         return false;
                     }
@@ -174,7 +176,7 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
                     break;
                 }
                 case scalar_kind::decimal: {
-                    const auto parsed = utility::decimal::decimal::from_string(text);
+                    const auto parsed = utility::decimal::decimal::from_string(number_text(text));
                     if (!parsed) {
                         error = parsed.error();
                         return false;
@@ -184,10 +186,11 @@ auto store(void* record, const field& f, std::string_view text, bool append, std
                     break;
                 }
                 case scalar_kind::real: {
+                    const auto digits = number_text(text);
                     double value = 0;
                     const auto [stop, ec] =
-                        std::from_chars(text.data(), text.data() + text.size(), value);
-                    if (ec != std::errc{} || stop != text.data() + text.size()) {
+                        std::from_chars(digits.data(), digits.data() + digits.size(), value);
+                    if (ec != std::errc{} || stop != digits.data() + digits.size()) {
                         error = "a repeated real element does not hold one";
                         return false;
                     }
@@ -299,11 +302,10 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
         const record_type* type;
         std::byte* record;
         const field* leaf;
-        /// Whether a value has been stored for this leaf. An element that
-        /// states no text still states a value, and for an enumeration that
-        /// spelling may be the empty one, so the absence of text is not the
-        /// absence of a value.
-        bool filled;
+        /// The element's text so far. A comment or a CDATA boundary splits it
+        /// into runs and the runs are one value, so they are joined here and
+        /// stored once when the element closes.
+        std::string text;
     };
 
     std::array<frame, max_depth> stack{};
@@ -358,7 +360,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     if (ev.name != doc.root_name)
                         return fail("the root element is not the one this binding names");
                     have_root = true;
-                    stack[depth++] = {doc.root, static_cast<std::byte*>(root), nullptr, false};
+                    stack[depth++] = {doc.root, static_cast<std::byte*>(root), nullptr, {}};
                     continue;
                 }
                 const auto& top = stack[depth - 1];
@@ -388,11 +390,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     // A nested member is a value inside its parent, so it is
                     // already constructed and is destroyed with the parent.
                     mark_present(top.record, *f);
-                    stack[depth++] = {f->type, slot, nullptr, false};
-                    if (f->type->text_field != no_text) {
-                        auto* target = &f->type->fields[f->type->text_field];
-                        mark_present(slot, *target);
-                    }
+                    stack[depth++] = {f->type, slot, nullptr, {}};
                     continue;
                 }
                 if (f->kind == field_kind::indexed_nested) {
@@ -416,11 +414,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     indices->push_back(index);
                     mark_present(top.record, *f);
                     auto* record = static_cast<std::byte*>(child);
-                    stack[depth++] = {f->type, record, nullptr, false};
-                    if (f->type->text_field != no_text) {
-                        auto* target = &f->type->fields[f->type->text_field];
-                        mark_present(record, *target);
-                    }
+                    stack[depth++] = {f->type, record, nullptr, {}};
                     continue;
                 }
                 if (f->kind == field_kind::repeated_nested) {
@@ -428,11 +422,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     f->repeated->append(slot, &child);
                     mark_present(top.record, *f);
                     auto* record = static_cast<std::byte*>(child);
-                    stack[depth++] = {f->type, record, nullptr, false};
-                    if (f->type->text_field != no_text) {
-                        auto* target = &f->type->fields[f->type->text_field];
-                        mark_present(record, *target);
-                    }
+                    stack[depth++] = {f->type, record, nullptr, {}};
                     continue;
                 }
                 // The bit means "this element appeared", not "it carried
@@ -440,7 +430,7 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                 // with no value, and a bit set only on text would report that
                 // as missing.
                 mark_present(top.record, *f);
-                stack[depth++] = {nullptr, top.record, f, false};
+                stack[depth++] = {nullptr, top.record, f, {}};
                 continue;
             }
             case event_type::attribute: {
@@ -455,48 +445,59 @@ auto binder::bind(const document_type& doc, std::string_view text, void* root)
                     return fail("unknown attribute '" + std::string(ev.name) + "' in '" +
                                 std::string(top.type->name) + "'");
                 std::string message;
-                if (!store(top.record, *f, ev.value, false, message))
+                if (!store(top.record, *f, ev.value, message))
                     return fail(std::move(message));
                 continue;
             }
             case event_type::text: {
-                if (is_blank(ev.value))
-                    continue;
-                if (depth == 0)
+                if (depth == 0) {
+                    if (is_blank(ev.value))
+                        continue;
                     return fail("text arrived outside the root element");
-                auto& top = stack[depth - 1];
-                std::string message;
-                if (top.type == nullptr) {
-                    if (!store(top.record, *top.leaf, ev.value, true, message))
-                        return fail(std::move(message));
-                    top.filled = true;
-                    continue;
                 }
-                if (top.type->text_field == no_text)
+                auto& top = stack[depth - 1];
+                const bool holds_text = top.type == nullptr || top.type->text_field != no_text;
+                if (!holds_text) {
+                    // Beside a record's children, whitespace is formatting.
+                    if (is_blank(ev.value))
+                        continue;
                     return fail("text where no field expects it, inside '" +
                                 std::string(top.type->name) + "'");
-                const auto& target = top.type->fields[top.type->text_field];
-                if (!store(top.record, target, ev.value, true, message))
-                    return fail(std::move(message));
-                top.filled = true;
+                }
+                // A leaf and a simpleContent record both keep every run: the
+                // runs are one value, and a blank run before a CDATA section is
+                // part of it.
+                top.text.append(ev.value);
                 continue;
             }
             case event_type::end_element: {
                 if (depth == 0)
                     return fail("an end tag arrived with nothing open");
                 const auto& top = stack[depth - 1];
+                // A blank-only text is the empty value an element with no text
+                // states: a text field keeps it and an enumeration may spell it.
+                const auto value =
+                    is_blank(top.text) ? std::string_view{} : std::string_view(top.text);
                 if (top.type == nullptr) {
-                    // An element that closed with no text states the empty
-                    // value, which a text field keeps and an enumeration may
-                    // spell. Nothing is stored for a leaf that already has a
-                    // value.
-                    if (!top.filled) {
-                        std::string message;
-                        if (!store(top.record, *top.leaf, {}, false, message))
-                            return fail(std::move(message));
-                    }
+                    std::string message;
+                    if (!store(top.record, *top.leaf, value, message))
+                        return fail(std::move(message));
                     --depth;
                     continue;
+                }
+                if (top.type->text_field != no_text) {
+                    const auto& target = top.type->fields[top.type->text_field];
+                    // A number cannot state an empty value, so an absent number
+                    // stays absent rather than becoming a default zero.
+                    const bool empty = value.empty();
+                    const bool states_empty =
+                        target.kind == field_kind::text || target.kind == field_kind::enumeration;
+                    if (!empty || states_empty) {
+                        std::string message;
+                        if (!store(top.record, target, value, message))
+                            return fail(std::move(message));
+                        mark_present(top.record, target);
+                    }
                 }
                 // An attribute is checked at the end of the element that
                 // carries it, exactly like a child: both are content the

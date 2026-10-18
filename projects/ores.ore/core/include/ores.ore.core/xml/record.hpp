@@ -84,7 +84,13 @@ public:
      */
     auto flag(std::string_view name) const -> std::optional<bool>;
 
-    /// The text an element of a type written as xs:simpleContent carries itself.
+    /**
+     * @brief The text an element of a type written as xs:simpleContent carries
+     * itself, in the spelling its field states.
+     *
+     * A numeric text is formatted from the number, so a decimal keeps every
+     * digit the document wrote.
+     */
     auto own_text() const -> std::optional<std::string>;
 
     /// A child element the document states, or nothing when it is absent.
@@ -170,7 +176,13 @@ public:
     /// States a flag only when the caller holds one.
     void set_optional_flag(std::string_view name, const std::optional<bool>& value);
 
-    /// States the text an element of a xs:simpleContent type carries itself.
+    /**
+     * @brief States the text an element of a xs:simpleContent type carries
+     * itself.
+     *
+     * A numeric text is parsed as the field's kind, and a text the kind cannot
+     * hold stops with the table's name rather than storing a wrong value.
+     */
     void set_own_text(std::string_view value);
 
     /// States a child element and returns the writer over it.

@@ -29,6 +29,7 @@
 #include "ores.ore.core/xml/generated/ibor_fallback_config.hpp"
 #include "ores.ore.core/xml/generated/netting_set_definitions.hpp"
 #include "ores.ore.core/xml/generated/ore.hpp"
+#include "ores.ore.core/xml/generated/portfolio.hpp"
 #include "ores.ore.core/xml/generated/stress_testing.hpp"
 #include "ores.ore.core/xml/generated/todays_market.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
@@ -36,6 +37,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -65,6 +67,7 @@ using cp::counterparty_information_document;
 namespace nsd = ores::ore::xml::generated::netting_set_definitions;
 namespace tm = ores::ore::xml::generated::todays_market;
 namespace rd = ores::ore::xml::generated::ore;
+namespace pf = ores::ore::xml::generated::portfolio;
 namespace st = ores::ore::xml::generated::stress_testing;
 using tm::todays_market_document;
 using tm::todaysmarket;
@@ -105,7 +108,10 @@ auto round_trip_values(const document_type& doc, std::string_view text, std::str
     Record first{};
     const auto bound = binder::bind(doc, text, &first);
     if (!bound) {
-        report = "the document does not bind: " + bound.error().message;
+        report = std::format("the document does not bind at line {} column {}: {}",
+                             bound.error().line,
+                             bound.error().column,
+                             bound.error().message);
         return false;
     }
 
@@ -306,6 +312,17 @@ TEST_CASE("every_generated_family_keeps_its_values_across_the_writing", tags) {
                                                 "StressTesting");
     INFO("stress tests: " << stress_tests);
     CHECK(stress_tests == 19);
+    std::size_t portfolios = 0;
+    failures += sweep_values<pf::portfolio>(root,
+                                           "portfolio",
+                                           pf::portfolio_document(),
+                                           {},
+                                           documents,
+                                           report,
+                                           &portfolios,
+                                           "Portfolio");
+    INFO("portfolios: " << portfolios);
+    CHECK(portfolios == 374);
     std::size_t run_documents = 0;
     failures += sweep_values<rd::ore>(
         root, "ore", rd::ore_document(), {}, documents, report, &run_documents, "ORE");

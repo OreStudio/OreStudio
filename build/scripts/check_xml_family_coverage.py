@@ -50,7 +50,11 @@ FAMILIES = {
         "run_document_projection reads and writes it; the value harness proves "
         "the table and the projection suite proves the projection",
     ),
-    "Portfolio": ("migrating", "importer and exporter read trades and their instruments"),
+    "Portfolio": (
+        "supported",
+        "the table binds, writes and keeps every value of the 374 corpus "
+        "documents, including the recursive trades; the projection is next",
+    ),
     "CurveConfiguration": (
         "supported",
         "curve_configuration_projection reads and writes it, and the value "

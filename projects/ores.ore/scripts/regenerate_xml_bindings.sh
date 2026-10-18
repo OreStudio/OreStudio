@@ -3,8 +3,9 @@
 # Regenerates the codec tables from ORE's schemas.
 #
 # One invocation per document family. The schemas are the authority for the
-# shape; the money list is the authority for what a numeric element means to
-# us, because ORE types the same money concept three different ways.
+# shape; the exact-decimal list is the authority for which numbers must keep the
+# digits the document wrote, because ORE types the same quantity as xs:float,
+# xs:double and xs:string in different places.
 #
 # XML_BINDINGS_OUT writes the same files under another root, which is how the
 # drift check compares what the schemas produce with what is committed.
@@ -42,7 +43,8 @@ generate \
     --source "$source/calendar_adjustments.cpp"
 
 # Spread is xs:float in the schema and money in our model, which is the same
-# shape as the bond review's defect and the reason the money list exists.
+# shape as the bond review's defect and the reason the exact-decimal list
+# exists.
 generate \
     --schema "$xsd/iborfallbackconfig.xsd" \
     --schema "$xsd/ore_types.xsd" \
@@ -53,7 +55,7 @@ generate \
     --include "ores.ore.core/xml/generated/ibor_fallback_config.hpp" \
     --header "$header/ibor_fallback_config.hpp" \
     --source "$source/ibor_fallback_config.cpp" \
-    --money Spread
+    --exact-decimal Spread
 
 # The correlation value type lives in simulation.xsd, so that schema is read
 # only to resolve it. Nothing else from it is emitted here.
@@ -129,8 +131,8 @@ generate \
     --source "$source/pricing_engines.cpp"
 
 # The curve configuration writes the IBOR fallback spread as xs:float as well,
-# and it is the same money amount the fallback configuration document states,
-# so it is carried as an exact decimal here too.
+# and it is the same amount the fallback configuration document states, so it is
+# carried as an exact decimal here too.
 generate \
     --schema "$xsd/curveconfig.xsd" \
     --schema "$xsd/ore_types.xsd" \
@@ -141,7 +143,40 @@ generate \
     --include "ores.ore.core/xml/generated/curve_configuration.hpp" \
     --header "$header/curve_configuration.hpp" \
     --source "$source/curve_configuration.cpp" \
-    --money Spread
+    --exact-decimal Spread
+
+# The portfolio document reaches the instrument types, which live in
+# instruments.xsd and reach the reference data, simulation, script library and
+# power load schemas, so all of them are read with input.xsd. It also reaches a
+# model group, substitution members that write their own types, and types that
+# hold themselves, which are carried as index rows into an arena.
+#
+# Every real in this family is carried as an exact decimal. ORE writes a rate,
+# a spread or a strike from a double, which spells 7342.8000000000002 and
+# 0.050000000000000003, and the shortest spelling of the same double is 7342.8
+# and 0.05. The value a document states is its text, so the table keeps the
+# digits rather than the nearest double. A text element is not a real and keeps
+# its text, which is how the same name can be a script variable in one type and
+# a number in another.
+generate \
+    --schema "$xsd/input.xsd" \
+    --schema "$xsd/instruments.xsd" \
+    --schema "$xsd/referencedata.xsd" \
+    --schema "$xsd/simulation.xsd" \
+    --schema "$xsd/scriptlibrary.xsd" \
+    --schema "$xsd/simmcalibration.xsd" \
+    --schema "$xsd/historicalreturnconfig.xsd" \
+    --schema "$xsd/counterparty.xsd" \
+    --schema "$xsd/intradaypowerloaddata.xsd" \
+    --schema "$xsd/ore_types.xsd" \
+    --root-element Portfolio \
+    --root-type portfolio \
+    --accessor portfolio_document \
+    --namespace ores::ore::xml::generated::portfolio \
+    --include "ores.ore.core/xml/generated/portfolio.hpp" \
+    --header "$header/portfolio.hpp" \
+    --source "$source/portfolio.cpp" \
+    --exact-decimal '*' 
 
 # The corpus names the run document 235 ways, six of them without the "ore"
 # prefix, so the harness finds the family by its root element. The family keeps

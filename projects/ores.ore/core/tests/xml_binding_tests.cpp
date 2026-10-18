@@ -89,6 +89,11 @@ struct level_list {
     std::vector<double> levels;
 };
 
+struct reading {
+    std::uint64_t present = 0;
+    double level = 0;
+};
+
 constexpr auto hash_name(std::string_view name) -> std::uint32_t {
     std::uint32_t h = 2166136261u;
     for (const char c : name) {
@@ -133,6 +138,21 @@ const field level_list_fields[] = {
 };
 const record_type level_list_type{"Levels", level_list_fields, 1};
 
+const field reading_fields[] = {
+    {"Level",
+     hash_name("Level"),
+     field_kind::real,
+     offsetof(reading, level),
+     0,
+     false,
+     false,
+     nullptr,
+     nullptr,
+     scalar_kind::text,
+     nullptr},
+};
+const record_type reading_type{"Reading", reading_fields, 1};
+
 }
 
 TEST_CASE("content_the_schema_does_not_name_is_captured", tags) {
@@ -173,6 +193,72 @@ TEST_CASE("a_repeated_numeric_leaf_fills_a_vector", tags) {
     REQUIRE(record.levels.size() == 2);
     CHECK(record.levels[0] == 1.5);
     CHECK(record.levels[1] == 2.5);
+}
+
+TEST_CASE("a_number_written_on_its_own_line_binds", tags) {
+    auto lg(make_logger(test_suite));
+
+    // ORE writes a value on its own indented line in places, and the number's
+    // lexical space allows the space around it.
+    reading one;
+    const document_type doc{"Reading", &reading_type};
+    const auto bound = binder::bind(doc, "<Reading><Level>\n   -3.25\n </Level></Reading>", &one);
+    INFO(diagnose(bound));
+    REQUIRE(bound);
+    CHECK(one.level == -3.25);
+
+    level_list many;
+    const document_type list{"Levels", &level_list_type};
+    const auto repeated =
+        binder::bind(list, "<Levels><Level>\n 1.5\n</Level><Level>\t2.5</Level></Levels>", &many);
+    INFO(diagnose(repeated));
+    REQUIRE(repeated);
+    REQUIRE(many.levels.size() == 2);
+    CHECK(many.levels[0] == 1.5);
+    CHECK(many.levels[1] == 2.5);
+
+    // The runs of one text are one value: a comment splits a number without
+    // splitting the number.
+    reading joined;
+    const auto joined_bound =
+        binder::bind(doc, "<Reading><Level>1.5<!-- a comment -->0</Level></Reading>", &joined);
+    INFO(diagnose(joined_bound));
+    REQUIRE(joined_bound);
+    CHECK(joined.level == 1.50);
+
+    // A money decimal takes the same text.
+    ibor_fallback_config config;
+    const std::string text = "<IborFallbackConfig><Fallbacks><Fallback>"
+                             "<IborIndex>CHF-LIBOR-SN</IborIndex>"
+                             "<RfrIndex>CHF-SARON</RfrIndex>"
+                             "<Spread>\n   0.1\n</Spread>"
+                             "<SwitchDate>2022-01-01</SwitchDate>"
+                             "</Fallback></Fallbacks></IborFallbackConfig>";
+    const auto decimal_bound = binder::bind(ibor_fallback_config_document(), text, &config);
+    INFO(diagnose(decimal_bound));
+    REQUIRE(decimal_bound);
+    REQUIRE(config.fallbacks.fallback.size() == 1);
+    CHECK(config.fallbacks.fallback[0].spread.to_string() == "0.1");
+
+    // An element whose only text is formatting states the empty value, which a
+    // text element keeps and a number cannot.
+    ibor_fallback_config empty;
+    const std::string blank = "<IborFallbackConfig><Fallbacks><Fallback>"
+                              "<IborIndex>\n  </IborIndex>"
+                              "<RfrIndex>CHF-SARON</RfrIndex><Spread>0.1</Spread>"
+                              "<SwitchDate>2022-01-01</SwitchDate>"
+                              "</Fallback></Fallbacks></IborFallbackConfig>";
+    const auto blank_bound = binder::bind(ibor_fallback_config_document(), blank, &empty);
+    INFO(diagnose(blank_bound));
+    REQUIRE(blank_bound);
+    CHECK(empty.fallbacks.fallback[0].ibor_index.empty());
+
+    // A number element that states no number is refused, because a number
+    // cannot state the empty value a text element can.
+    reading none;
+    const auto none_bound = binder::bind(doc, "<Reading><Level>\n</Level></Reading>", &none);
+    REQUIRE_FALSE(none_bound);
+    CHECK(diagnose(none_bound).find("does not hold one") != std::string::npos);
 }
 
 TEST_CASE("a_nested_document_binds_into_one_record", tags) {
@@ -605,6 +691,27 @@ TEST_CASE("text_split_by_a_comment_is_one_value", tags) {
     REQUIRE(bound);
     REQUIRE(record.fallbacks.fallback.size() == 1);
     CHECK(record.fallbacks.fallback[0].ibor_index == "CHF-LIBOR-SN");
+}
+
+TEST_CASE("a_blank_run_before_a_cdata_section_is_part_of_the_value", tags) {
+    auto lg(make_logger(test_suite));
+
+    // ORE writes a script as a blank text run, then its body in CDATA. The
+    // blank run is content: dropping it shortens the script the document
+    // states, even though the body still binds on its own.
+    const std::string text = "<IborFallbackConfig><Fallbacks><Fallback>"
+                             "<IborIndex>  <![CDATA[CHF-LIBOR-SN]]></IborIndex>"
+                             "<RfrIndex>CHF-SARON</RfrIndex><Spread>0.1</Spread>"
+                             "<SwitchDate>2022-01-01</SwitchDate>"
+                             "</Fallback></Fallbacks></IborFallbackConfig>";
+
+    ibor_fallback_config record;
+    const auto bound = binder::bind(ibor_fallback_config_document(), text, &record);
+
+    INFO(diagnose(bound));
+    REQUIRE(bound);
+    REQUIRE(record.fallbacks.fallback.size() == 1);
+    CHECK(record.fallbacks.fallback[0].ibor_index == "  CHF-LIBOR-SN");
 }
 
 TEST_CASE("a_document_without_a_root_or_with_two_is_refused", tags) {

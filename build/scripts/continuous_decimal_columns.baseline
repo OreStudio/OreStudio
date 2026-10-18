@@ -1,1 +1,4 @@
+# One offender per line: <model path>::<column>. The list is the debt
+# this guard records, and an empty list says the direction has none.
+# Regenerate with --write-baseline or --write-continuous-baseline.
 

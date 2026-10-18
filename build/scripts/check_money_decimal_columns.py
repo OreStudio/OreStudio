@@ -27,6 +27,12 @@ quantity typed two ways, and a conversion between them at every seam.
     volatility, a weight or a day-count fraction to twelve places states a
     precision the quantity does not have, and ORE's own schema reads those
     leaves as xs:float, so the binary float is the more faithful type.
+  * When the name rule reads a column as money and its economics are
+    continuous, the entity that states it decides. =CONTINUOUS_COLUMNS= names
+    such a column with its reason, so the column is checked in the continuous
+    direction -- reported when it is typed exact, silent when it is a double --
+    rather than hidden by the money baseline. The same mechanism covers a
+    money-named column that is a code, a quote or an identity.
 
 The rule is stated in
 doc/knowledge/architecture/exact_numbers_and_economic_change.org and checked
@@ -38,8 +44,10 @@ money baseline with its reason in that column's model prose, because the head
 noun is enough to name the quantity and not enough to say what it holds.
 Offenders that existed when the rule was written live in the same baseline,
 one per direction, so the debt stays visible and the check fails only on one
-that is not there. Regenerate with --write-baseline or
---write-continuous-baseline after deliberately fixing some.
+that is not there. A baseline that holds only its header records no debt in
+that direction, which is a statement the check then holds the tree to.
+Regenerate with --write-baseline or --write-continuous-baseline after
+deliberately fixing some.
 
 Usage:
   python3 build/scripts/check_money_decimal_columns.py [--write-baseline
@@ -243,13 +251,20 @@ def key(path: Path, line_no: int, name: str, sql_type: str, cpp_type: str):
     return f"{path.as_posix()}::{name}"
 
 
+BASELINE_HEADER = (
+    "# One offender per line: <model path>::<column>. The list is the debt\n"
+    "# this guard records, and an empty list says the direction has none.\n"
+    "# Regenerate with --write-baseline or --write-continuous-baseline.\n"
+)
+
+
 def read_baseline(path: Path) -> set[str]:
     if not path.exists():
         return set()
     return {
         line.strip()
         for line in path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
+        if line.strip() and not line.lstrip().startswith("#")
     }
 
 
@@ -300,13 +315,15 @@ def main() -> int:
                         key=lambda o: (o[0].as_posix(), o[2]))
 
     if args.write_baseline:
-        BASELINE.write_text("\n".join(key(*o) for o in money) + "\n",
-                            encoding="utf-8")
+        BASELINE.write_text(
+            BASELINE_HEADER + "\n".join(key(*o) for o in money) + "\n",
+            encoding="utf-8")
         print(f"wrote {len(money)} entries to {BASELINE.as_posix()}")
         return 0
     if args.write_continuous_baseline:
         CONTINUOUS_BASELINE.write_text(
-            "\n".join(key(*o) for o in continuous) + "\n", encoding="utf-8")
+            BASELINE_HEADER + "\n".join(key(*o) for o in continuous) + "\n",
+            encoding="utf-8")
         print(f"wrote {len(continuous)} entries to "
               f"{CONTINUOUS_BASELINE.as_posix()}")
         return 0

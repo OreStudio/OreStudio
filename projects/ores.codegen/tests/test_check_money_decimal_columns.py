@@ -7,9 +7,9 @@ Run::
 The check enforces both halves of the numeric rule: a money quantity is exact
 decimal in the domain and the column, and a continuous quantity is binary
 float. The second half was added because the first was gated while the mirror
-error went unnoticed -- ten columns were exact at rest, four of them with a
-`double` over a `numeric`, which is the shape that is exact at rest and lossy
-in the domain.
+error went unnoticed: a column typed exact at rest with a `double` in the
+domain, which is exact in the store and lossy where it is read. The count of
+those columns lives in the baselines, not here, because a copy in prose drifts.
 """
 import importlib.util
 import sys
@@ -124,6 +124,24 @@ def test_a_variance_strike_typed_exact_is_reported(tmp_path):
     root = tree(tmp_path, "ores.trading.fx_variance_swap_instrument",
                 column("strike", "numeric(38, 12)", "double"))
     assert names(check.continuous_offenders(root)) == ["strike"]
+
+
+def test_a_baseline_ignores_its_header_and_comments(tmp_path):
+    """A commented key is documentation, never a cover for an offender."""
+    path = tmp_path / "baseline"
+    path.write_text(
+        check.BASELINE_HEADER
+        + "# ores.trading.t::amount\n"
+        + "ores.trading.t::price\n",
+        encoding="utf-8")
+    assert check.read_baseline(path) == {"ores.trading.t::price"}
+
+
+def test_an_empty_baseline_states_no_debt(tmp_path):
+    """A header-only baseline covers nothing, so the next offender fails."""
+    path = tmp_path / "baseline"
+    path.write_text(check.BASELINE_HEADER, encoding="utf-8")
+    assert check.read_baseline(path) == set()
 
 
 def test_an_embedded_money_member_is_reported(tmp_path):

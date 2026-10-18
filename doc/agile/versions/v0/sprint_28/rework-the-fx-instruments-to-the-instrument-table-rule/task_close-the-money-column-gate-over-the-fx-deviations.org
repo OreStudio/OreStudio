@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :instruments-fx:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/close-the-money-column-gate-over-the-fx-deviations
 #+pr:
 +#+blocked_on:
 +#+blocked_since:
@@ -30,12 +30,12 @@ line, so the gate asserts nothing for this family in either direction.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E60E95CC-810E-4DC1-A4E3-6C07DB2A28D9][Rework the FX instruments to the instrument table rule]] |
-| Now          | Not yet started.                       |
-| Waiting on   | The digits task, which fixes the deviations the new gate would otherwise record as permanent debt. |
-| Next         | Teach the check, then seed the baselines. |
-| Last touched | 2026-10-16                               |
+| Now          | Implementation complete and the gate is green. Waiting on review and merge. |
+| Waiting on   | The review of its PR. |
+| Next         | Address the review, then merge. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -65,6 +65,10 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
+| Money offenders recorded | 5, all money typed text in other components | =python3 build/scripts/check_money_decimal_columns.py=, in =evidence/money-gate.txt= | the PR head |
+| Continuous offenders recorded | 0 | the same command | the PR head |
+| Columns read | 7523 | the same command | the PR head |
+| Money-gate pytest cases | 19 | =projects/ores.codegen/venv/bin/python -m pytest projects/ores.codegen/tests/test_check_money_decimal_columns.py= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -96,3 +100,39 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The gate now sees all three shapes the review named, and each is asserted.
+
+The first shape, a continuous quantity whose name reads as money, is decided by
+the entity that states it: =CONTINUOUS_COLUMNS= names the column and its
+reason, so =fx_variance_swap_instrument.strike= is checked in the continuous
+direction rather than hidden. The exclusion list no longer carries it. The
+second shape, money typed text, was already reported; the money baseline
+records the five that remain, all in other components. The third, a money value
+read through a binary float, is the =numeric= column with a =double= in the
+domain, and it is reported.
+
+Both baselines carry a header that states the format and what an empty list
+means. The continuous baseline holds only its header, so the direction records
+no debt and the next offender fails the check. The money baseline holds the
+five text columns.
+
+The exact-numbers page does not restate either baseline: it names the two files
+as the authoritative inventory and forbids a prose copy. It needed no change,
+and the claim that it still counts ten columns was stale when the task was
+written.
+
+* Decisions
+
+- *The check stays on the models.* It does not read the ORE binding. A money
+  value is lost at the binding only when a leaf is not a =moneyFloat=, and the
+  digit tests and the goldens cover that seam directly; teaching this check a
+  second input language would duplicate the binding's own drift guard.
+- *An empty baseline is a statement, not an absence.* The header says so, and a
+  test holds the reader to it, so the next offender in a clean direction fails
+  rather than being absorbed.
+- *The exclusion list stays for columns the name rule cannot classify.* It is
+  not the mechanism for a continuous quantity any more; it remains for a money
+  word that names a code or a quote, and each entry still needs its reason in
+  the model prose.
+#+environment: solid_dirac

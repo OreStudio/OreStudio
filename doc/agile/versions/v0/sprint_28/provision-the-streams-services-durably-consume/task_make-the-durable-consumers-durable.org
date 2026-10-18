@@ -84,8 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The durable push consumers are durable now. They are created explicitly with a
 name, a delivery subject and a delivery group derived from the stream and the
 service, and the subscription binds to that consumer instead of creating one of

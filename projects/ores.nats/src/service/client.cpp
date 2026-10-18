@@ -915,10 +915,16 @@ void ensure_durable_consumer(jsCtx* js,
         auto jerr = jsErrCode(0);
         const natsStatus s =
             js_GetConsumerInfo(&info, js, stream.c_str(), durable.c_str(), &opts, &jerr);
+        if (s == NATS_NOT_FOUND)
+            return nullptr;
+        // Any other failure is not "the consumer is absent": a permission or
+        // connection problem read as absent would silently try to create a
+        // consumer that already exists, and report the create's refusal.
         if (s != NATS_OK) {
             if (info != nullptr)
                 jsConsumerInfo_Destroy(info);
-            return nullptr;
+            throw std::runtime_error("js_GetConsumerInfo failed for '" + durable +
+                                     "': " + natsStatus_GetText(s));
         }
         return info;
     };

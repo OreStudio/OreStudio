@@ -84,8 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 No change was needed. Every durable step consumer already ensures its stream at startup through
 =serve_step_commands=, before it subscribes, and the pattern was implemented on main after this story
 was captured.

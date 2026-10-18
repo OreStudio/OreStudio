@@ -55,11 +55,17 @@ enum class stream_retention {
 struct consumer_status {
     /// UTC, in nanoseconds since the epoch.
     int64_t created_ns = 0;
+    /// How many messages this consumer has delivered since it was created.
     uint64_t delivered = 0;
+    /// The stream sequence every message up to here has been acknowledged.
     uint64_t ack_floor_stream = 0;
+    /// Delivered but not yet acknowledged, which is what a shutdown leaves.
     int64_t num_ack_pending = 0;
+    /// How many times a message was redelivered after going unanswered.
     int64_t num_redelivered = 0;
+    /// On the stream, matching this consumer, and not yet delivered.
     uint64_t num_pending = 0;
+    /// Whether a subscription is currently bound to this consumer.
     bool push_bound = false;
     /// How many times a message may be delivered before the server gives up.
     int64_t max_deliver = 0;

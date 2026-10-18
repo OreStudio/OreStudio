@@ -85,7 +85,8 @@ def raw_registrar(subject, stream_var, stream_suffix):
         "void register_handlers(ores::nats::service::client& nats) {\n"
         f'    const std::string {stream_var}(nats.make_stream_name("{stream_suffix}"));\n'
         f'    nats.js_queue_subscribe("{subject}", "raw", "q",'
-        f" [](ores::nats::message msg) {{}}, {stream_var}, 10);\n"
+        f" [](ores::nats::message msg) {{}}, {stream_var}, 10,"
+        f" std::chrono::milliseconds(30));\n"
         "}\n"
     )
 

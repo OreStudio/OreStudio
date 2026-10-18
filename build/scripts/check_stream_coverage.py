@@ -638,13 +638,17 @@ def scan(root: Path) -> Catalogue:
                             f"{where}: serve_step_commands: {error}"
                         )
 
-        if "js_queue_subscribe" in text:
-            for at in find_call_sites(text, "js_queue_subscribe"):
+        for call_name in ("js_queue_subscribe", "js_queue_subscribe_multi"):
+            # The step helper is modelled through serve_step_commands, so its
+            # own generic call is not a declaration to resolve.
+            if rel == STEP_HELPER or call_name not in text:
+                continue
+            for at in find_call_sites(text, call_name):
                 where = f"{rel}:{line_of(text, at)}"
                 try:
                     args = split_arguments(text, text.index("(", at))
-                    if len(args) < 5:
-                        raise Unresolved("js_queue_subscribe takes six arguments")
+                    if len(args) < 7:
+                        raise Unresolved(f"{call_name} takes seven arguments")
                     subjects = tuple(tree.resolve(args[0], rel))
                     named = tree.stream_suffix(args[4], rel)
                     catalogue.consumers.append(

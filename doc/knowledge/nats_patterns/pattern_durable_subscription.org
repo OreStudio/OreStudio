@@ -46,14 +46,18 @@ Publish to a subject a stream covers, and read it from a durable consumer:
 #+begin_src cpp :results verbatim
 const std::string engine_stream(nats.make_stream_name("workflow"));
 
+// The durable name is the reader's position, so it must not change between
+// runs. The stream reconciles the durable before the subscription attaches.
+// The last two arguments say how many deliveries the server makes before it
+// stops, and how long each delivery may stay unanswered.
 nats.js_queue_subscribe(
     messaging::step_completed_event::nats_subject,
-    "workflow-engine-step-completed",   // durable name: this reader's position
+    "workflow-engine-step-completed",
     queue_group,
     handler,
-    engine_stream,                      // reconciles the durable before attaching
-    step_max_deliver,                   // how many deliveries before the server stops
-    step_ack_wait);                     // how long each delivery may stay unanswered
+    engine_stream,
+    step_max_deliver,
+    step_ack_wait);
 #+end_src
 
 Three properties define the pattern:

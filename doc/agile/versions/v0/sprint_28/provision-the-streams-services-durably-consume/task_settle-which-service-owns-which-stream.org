@@ -84,8 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 No change was needed. With an empty JetStream the services recreated nineteen streams with no overlap,
 so the =JSStreamSubjectOverlapErr= that stopped the IAM service starting came from a store written
 before main split the step streams into one per service.

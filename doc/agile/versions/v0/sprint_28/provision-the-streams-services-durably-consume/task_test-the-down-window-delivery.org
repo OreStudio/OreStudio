@@ -84,8 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The down-window delivery is covered by a test that needs no service restart. It
 creates a consumer through the production path, leaves the subscription to drain
 as a shutdown would, and asserts against the server that the consumer still

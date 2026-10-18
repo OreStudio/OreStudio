@@ -21,16 +21,24 @@ Streams are not provisioned for the subjects services durably consume, and two d
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Not yet started.                       |
+| Now           | All seven tasks are done.               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-10-17                               |
+| Next          | None.                                   |
+| Last touched  | 2026-10-18                               |
 
 * Acceptance
 
--
+- Every durably consumed subject has exactly one stream covering it, and no
+  two streams overlap. Enforced by a check that fails on each defect.
+- A command published while its service is down is held and delivered when the
+  service returns, proven by a test that fails if the consumer is created
+  implicitly.
+- The delivery bound is stated rather than inherited, and a consumer that keeps
+  failing spans the stated window instead of spending its attempts in a burst.
+- Every from-DQ trigger has a generated constant, with the subject set proven
+  unchanged by comparing it rather than by two passing runs.
 
 * Tasks
 
@@ -46,6 +54,14 @@ Streams are not provisioned for the subjects services durably consume, and two d
 
 * Decisions
 
+- Stream provisioning was already implemented on main when this story started,
+  so the story changed shape to the consumer lifecycle and its consequences
+  rather than adding what was already there.
+- MaxDeliver stays at ten. It is the claim-takeover budget against a 120 second
+  lease, not a tolerance for downtime, and downtime spends no delivery.
+- Subject constants come from operation models. The protocol tables in each
+  component are documentation the generator never reads, which is why writing a
+  subject there produced no constant.
 * Out of scope
 
 -

@@ -84,8 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 A static check now applies the server's own two rules to every declaration it can
 read: every durably consumed subject is covered by exactly one stream filter, and
 no two differently named streams overlap. It reads the three declaration shapes

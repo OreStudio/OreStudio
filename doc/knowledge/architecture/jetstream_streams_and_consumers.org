@@ -72,7 +72,8 @@ admin.ensure_stream(stream_name, {subject_filter}, max_age_days, retention);
 
 // The reader side: name the stream so the durable is created on it explicitly,
 // then bind a queue subscription to it; both outlive a restart.
-nats.js_queue_subscribe(subject, durable_name, queue_group, handler, stream_name);
+nats.js_queue_subscribe(subject, durable_name, queue_group, handler, stream_name,
+                        max_deliver, ack_wait);
 
 // The service side: declare a family of step commands once, and serve the whole
 // family on one durable consumer.

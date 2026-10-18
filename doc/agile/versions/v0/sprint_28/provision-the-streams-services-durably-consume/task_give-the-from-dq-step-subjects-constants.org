@@ -84,8 +84,6 @@ via its "Verifies task" field.
 
 * Result
 
-* Result
-
 The four services now name a generated constant instead of a hand-written literal
 for every from-DQ trigger: refdata 47, dq 6, assets 1, marketdata 1.
 

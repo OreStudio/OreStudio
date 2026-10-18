@@ -8,7 +8,7 @@
 #+filetags: :reporting:plotting:sprint_28:v0:manage-reports-from-the-list-a-party-runs:
 #+owner: marco
 #+branch: docs/capture-time-series-plotting
-#+pr:
+#+pr: 3557
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-18
@@ -75,7 +75,7 @@ sprint, because the requirements wait on a decision and not on a sprint slot.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3557][#3557]] | [reporting] Capture what a time series plot must do |
 
 * Result
 

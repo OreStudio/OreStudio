@@ -41,9 +41,10 @@ A trade the document states as Short is stored as Short and exported as Short.
 
 * Plan
 
-1. Write the failing test first: a Short document through =forward_fra= and back
-   through =reverse_fra=, expecting Short both ways. The corpus states Long, so
-   the test changes the one binding member rather than inventing a document.
+1. Write the failing test first: an XML portfolio stating =<LongShort>Short</LongShort>=
+   through =forward_fra= and back through =reverse_fra=, expecting Short in the
+   row and in the exported document. The corpus states Long, so the document is
+   the suite's only Short witness and the codec's parse is part of the proof.
 2. Read the direction on import with =to_string=, and write it back with the
    mapper's own =parse_code=, which round-trips the generated =to_string= so the
    spelling has one source of truth.
@@ -63,10 +64,9 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Direction sites in the FRA mapper | 2 (one in, one out at :1434 and :1751) | =grep -n 'fra.LongShort\|fra.long_short' projects/ores.ore/core/src/domain/swap_instrument_mapper.cpp= | HEAD |
-| Money conversions in the FRA mapper | 4 in, 3 out, all lexical | =exact_decimal= at :1431, :1433, :1448, :1450; =set_exact= at :1742, :1750, :1756 | HEAD |
-| FRA cases in the IR mapper suite | 4, of which 1 new | =sed -n '/FRA mapper tests/,/InflationSwap mapper tests/p'= then =grep -c TEST_CASE= | HEAD |
-|      |       |         |        |
+| Direction sites in the FRA mapper | 2, one in and one out | =grep -n 'fra.LongShort\|fra.long_short' projects/ores.ore/core/src/domain/swap_instrument_mapper.cpp= | HEAD |
+| Money conversions in the FRA mapper | 4 in, 3 out, all lexical | =exact_decimal= at :1431, :1433, :1448, :1450; =set_exact= at :1742, :1754, :1759 | HEAD |
+| FRA cases in the IR mapper suite | 4, of which 1 new | =sed -n '/FRA mapper tests/,/CapFloor mapper tests/p'= then =grep -c TEST_CASE= | HEAD |
 
 * Notes
 
@@ -82,11 +82,8 @@ task and name that file in the Command column.
   it. Recorded because the first version of this note claimed the helper removed
   the second table, and it does not.
 - Money: this unit changes no money conversion, and the FRA's seven sites were
-  already exact. I added two lexical-form assertions to the reverse case on the
-  way past, then found that =mapper_fra_holds_the_digits_of_its_strike_and_notional=
-  already asserted them *and* the serialised =<Strike>0.005</Strike>=. The
-  duplicates were removed. Recording it because the first version of this note
-  claimed the coverage was missing, and it was not.
+  already exact. =mapper_fra_holds_the_digits_of_its_strike_and_notional= proves
+  it by asserting the lexical form and the serialised =<Strike>0.005</Strike>=
 
 * Test Scenarios
 
@@ -109,7 +106,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | The export parse sat inside the leg block, so a legless row exported the default | =swap_instrument_mapper.cpp:1751= | Fixed | The direction is the row's own; it is now written before the block. |
+| 1 | The export parse sat inside the leg block, so a legless row exported the default | =swap_instrument_mapper.cpp:1746= (was :1751) | Fixed | The direction is the row's own; it is now written before the block. |
 | 2 | =long_short_count= is hand-maintained, so the helper does not remove the second table | =swap_instrument_mapper.cpp:515= | Fixed in prose | The mechanism is one generated spelling table plus a count beside every other enum's. |
 | 3 | A data row written before the fix cannot be recovered | — | Recorded | Re-import the affected trades; the row holds a valid value, so nothing distinguishes it. |
 | 4 | The case set the binding by hand and never parsed the spelling | =xml_ir_mapper_roundtrip_tests.cpp:212= | Fixed | The case is now a Short document, and asserts the exported text as well. |
@@ -121,6 +118,9 @@ A short forward rate agreement is now stored, exported and read back as Short.
 The import reads =fra.LongShort= through the generated =to_string=, and the
 export writes the stored code back through =parse_code= outside the leg block,
 so a row whose leg children were never written still states its direction.
+=Index= and =Strike= still come from those leg rows, so such a row exports its
+direction and neither of those; that is the shared-leg design and the leg path
+belongs to the unit that sets the leg's own direction.
 
 The case is a document, not a hand-set binding:
 =mapper_fra_reads_a_short_document_and_writes_it_back= parses an XML portfolio
@@ -130,8 +130,10 @@ therefore part of what it proves, and the suite carries its only Short witness.
 
 Red then green, executed: with the mapper reverted to the merge base the case
 fails at =xml_ir_mapper_roundtrip_tests.cpp:236=; with the fix it passes. The
-same run also proves the second half, because the export assertion would fail on
-its own if the reverse wrote the constant back.
+same run also proves the second half, because the export assertion at =:244=
+would fail on its own if the reverse wrote the constant back. The CTest artefact
+holds only the last run, so the red half is reproduced by reverting the mapper
+rather than by reading a file.
 
 Money: the unit changes no conversion, and the FRA's four import and three
 export sites were already exact. The family already proves it:

@@ -1741,8 +1741,8 @@ trade swap_instrument_mapper::reverse_fra(
     fra.Currency = parse_currency_code(instr.currency);
     set_exact(fra.Notional, instr.notional);
     // The direction belongs to the instrument, so it is written whether or not
-    // the leg rows survived: a row stored before the children existed still
-    // states how the trade faces.
+    // the leg rows survived. Its Index and Strike still come from those rows,
+    // so a legless row states how the trade faces and nothing else.
     fra.LongShort = parse_code(instr.long_short, long_short_count, longShort::Long);
 
     if (!legs.empty()) {

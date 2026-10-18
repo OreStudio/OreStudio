@@ -110,6 +110,14 @@ public:
      */
     auto indexed(std::string_view name) const -> std::vector<record_reader>;
 
+    /**
+     * @brief The content the schema does not name, in document order.
+     *
+     * A type with an xs:any keeps the name and the text of every element the
+     * table does not declare.
+     */
+    auto residuals() const -> std::vector<residual_element>;
+
 private:
     const record_type* type_;
     const void* record_;
@@ -196,6 +204,13 @@ public:
 
     /// States an indexed member, appends a row to its arena and returns it.
     auto append_indexed(std::string_view name) -> record_writer;
+
+    /**
+     * @brief States content the schema does not name.
+     *
+     * @throws std::runtime_error when the table has no element that keeps it.
+     */
+    void append_residual(std::string_view name, std::string_view value);
 
 private:
     const field& field_of(std::string_view name) const;

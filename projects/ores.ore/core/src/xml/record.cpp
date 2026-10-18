@@ -388,6 +388,18 @@ void record_writer::set_own_text(std::string_view value) {
     set_bit(record_, f);
 }
 
+auto record_reader::residuals() const -> std::vector<residual_element> {
+    std::vector<residual_element> out;
+    for (std::uint8_t i = 0; i < type_->field_count; ++i) {
+        const auto& f = type_->fields[i];
+        if (f.kind != field_kind::residual || !bit_is_set(record_, f))
+            continue;
+        const auto* bag = static_cast<const std::vector<residual_element>*>(slot_of(record_, f));
+        out.insert(out.end(), bag->begin(), bag->end());
+    }
+    return out;
+}
+
 auto record_writer::child(std::string_view name) -> record_writer {
     const auto& f = require_kind(*type_, name, field_kind::nested, "a child element");
     set_bit(record_, f);
@@ -423,6 +435,20 @@ auto record_writer::append_indexed(std::string_view name) -> record_writer {
     f.repeated->append(arena, &slot);
     indices->push_back(index);
     return record_writer(*f.type, slot);
+}
+
+void record_writer::append_residual(std::string_view name, std::string_view value) {
+    for (std::uint8_t i = 0; i < type_->field_count; ++i) {
+        const auto& f = type_->fields[i];
+        if (f.kind != field_kind::residual)
+            continue;
+        set_bit(record_, f);
+        static_cast<std::vector<residual_element>*>(slot_of(f))->push_back(
+            residual_element{std::string(name), std::string(value)});
+        return;
+    }
+    throw std::runtime_error(
+        std::format("the {} table keeps no content the schema does not name", type_->name));
 }
 
 auto record_writer::append(std::string_view name) -> record_writer {

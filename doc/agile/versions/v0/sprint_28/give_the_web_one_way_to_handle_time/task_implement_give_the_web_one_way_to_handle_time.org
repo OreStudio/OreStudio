@@ -100,15 +100,15 @@ task and name that file in the Command column.
 | Web build | exit 0 | =npm run build= from =projects/ores.web= | =7f58f494a0= |
 | C++ build | exit 0 | =./compass.sh build -j6= after =compass services stop= | =7f58f494a0= |
 | Database recreate | exit 0; schema =2f65cff87e0740ae=; =end_time timestamp with time zone NULL= | =compass db recreate -y -k= | =7f58f494a0= |
-| Empty-string sentinel grep | no matches | =git grep -nE "(end_time|endTime)[[:space:]]*[:=][[:space:]]*(''|\"\")"= | =7f58f494a0= |
+| Empty-string sentinel grep | no matches | =git grep -nP "(end_time|endTime)\s*[:=]\s*(''|\"\")"= | =7f58f494a0= |
 | Live sessions endpoint | =endTime= is =null= for an open session and ="2026-10-17 22:09:39.000000Z"= for a closed one | =curl -b jar http://127.0.0.1:20402/api/sessions= | =7f58f494a0= |
 
 ** The four deferrals closed
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Empty-string sentinels gone | 2 matches, both a negative test asserting the refusal; no writer states one | =git grep -nE "(last_tick_at|series_id|from_time|to_time|last_login|lastLogin)[[:space:]]*[:=][[:space:]]*(''|\"\")"= | =7eb259350c= |
-| Empty-string sentinels gone, server side | no matches | =git grep -nE "(last_login|from_time|to_time|last_tick_at)[[:space:]]*=[[:space:]]*\"\""= | =7eb259350c= |
+| Empty-string sentinels gone | 2 matches, both a negative test asserting the refusal; no writer states one | =git grep -nP "(last_tick_at|series_id|from_time|to_time|last_login|lastLogin)\s*[:=]\s*(''|\"\")"= | =7eb259350c= |
+| Empty-string sentinels gone, server side | no matches | =git grep -nP "(last_login|from_time|to_time|last_tick_at)\s*=\s*\"\""= | =7eb259350c= |
 | The epoch display rule gone | =isZeroTimestamp= appears once, in the prose that records its deletion | =git grep -n "isZeroTimestamp"= | =7eb259350c= |
 | C++ build | exit 0, 816 targets | =./compass.sh build -j6= after =compass services stop= | =7eb259350c= |
 | Database recreate | exit 0; schema =bdd8287e08d04346=; =last_login timestamp with time zone= with no NOT NULL | =compass db recreate -y -k= | =7eb259350c= |
@@ -279,7 +279,7 @@ via its "Verifies task" field.
 - Every instant in =packages/wire-protocol/src= is typed with
   =wireTimestampSchema= or =nullableWireTimestampSchema=. The 50 field
   declarations are listed by
-  =git grep -nE "^[[:space:]]+[a-zA-Z_]+:[[:space:]]+(nullable)?wireTimestampSchema" -- 'projects/ores.web/packages/wire-protocol/src/*.ts'=.
+  =git grep -nP "^\s+[a-zA-Z_]+:\s+(nullable)?wireTimestampSchema" -- 'projects/ores.web/packages/wire-protocol/src/*.ts'=.
 - =wireTimestampOrAbsentSchema= is deleted: it admitted =''= as a second
   spelling of "no instant". =nullableWireTimestampSchema= is the only one.
 - The screen helper no longer parses timestamps itself. It delegates to the

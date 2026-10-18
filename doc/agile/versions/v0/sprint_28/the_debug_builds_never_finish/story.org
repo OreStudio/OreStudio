@@ -43,11 +43,11 @@ that was itself waiting for it:
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
-| Now           | Fix written; the logic is exercised against fixtures. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Merge, then read the next two scheduled runs. |
+| Next          | Nothing. |
 | Last touched  | 2026-10-19                               |
 
 * Acceptance
@@ -88,8 +88,8 @@ set that fits, an empty allowance, and a full allowance holding duplicates.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BED779B8-AA5C-46CC-B0CD-B9D37001536D][Scaffold story: Hotfix: the debug builds never finish]] | STARTED | 2026-10-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:EDE8E9BE-3C93-45D2-9530-ACFEED982A5D][Make the compiler cache turn over inside the repository quota]] | STARTED | 2026-10-19 | | Initial task for: Hotfix: the debug builds never finish |
+| [[id:BED779B8-AA5C-46CC-B0CD-B9D37001536D][Scaffold story: Hotfix: the debug builds never finish]] | DONE | 2026-10-19 | 2026-10-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:EDE8E9BE-3C93-45D2-9530-ACFEED982A5D][Make the compiler cache turn over inside the repository quota]] | DONE | 2026-10-19 | 2026-10-19 | Initial task for: Hotfix: the debug builds never finish |
 
 * Decisions
 

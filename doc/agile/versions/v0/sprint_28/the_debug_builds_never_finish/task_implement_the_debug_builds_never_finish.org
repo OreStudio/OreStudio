@@ -27,11 +27,11 @@ debug leg starts warm and finishes inside its step budget.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E4699215-6BAB-4416-98B0-2808F67ECE2F][Hotfix: the debug builds never finish]] |
-| Now          | Fix written; the logic is exercised against fixtures. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Merge, then read the next two scheduled runs. |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -113,3 +113,13 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The two Linux workflows cap sccache at 2 GB per variant, free room in the
+repository cache before saving, warn instead of failing when a save stores
+nothing, and give the build 350 minutes. The deletion logic is exercised against
+three cache layouts, and it was the fixtures that caught the subshell bug: the
+two deletion passes ran in pipes, so the running total reset between them and
+the step deleted another variant's cache before its own duplicates.
+
+The proof that matters is the next two scheduled runs: a warm cache should put
+the debug leg back at about four hours and its CDash row back to green.

@@ -20,28 +20,30 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The hotfix exists as agile record and PR: a story, two tasks, the sprint row,
+and PR #3559 carrying them.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E4699215-6BAB-4416-98B0-2808F67ECE2F][Hotfix: the debug builds never finish]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
 
--
+- Story, tasks and sprint row exist and lint clean.
+- PR #3559 is recorded here and on the implement task.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scaffolded with =compass story new --kind hotfix=. The story carries the
+timeouts, the cache accounting and the deadlock; the implement task carries the
+five changes and the fixtures.
 
 * Measurements
 
@@ -83,3 +85,6 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its two tasks and the sprint row exist, lint clean, and PR #3559
+carries them.

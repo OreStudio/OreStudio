@@ -29,7 +29,10 @@ import {
     seriesWindowSchema,
     type SeriesObservations,
 } from '@ores/contracts';
-import { subjects } from '@ores/wire-protocol/generated/marketdata/protocol/market_observation_protocol';
+import {
+    subjects,
+    type MarketObservationsFilter,
+} from '@ores/wire-protocol/generated/marketdata/protocol/market_observation_protocol';
 import { NO_ORDER, idSchema, input, refusal, resultSchema } from './refdata-calls.js';
 import { observedSince } from './series-window.js';
 import type { LiveSession } from './sessions.js';
@@ -92,7 +95,7 @@ export function registerSeriesRoutes(
                     observation_datetime_one_of: null,
                     observation_datetime_from: since,
                     observation_datetime_to: null,
-                },
+                } satisfies MarketObservationsFilter,
             },
             replySchema,
         );

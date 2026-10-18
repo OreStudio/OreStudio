@@ -26,7 +26,8 @@ import type { SeriesWindow } from '@ores/contracts';
  * How far back each window reaches, in seconds. A month is thirty days and a
  * year is three hundred and sixty five, so a window is a length and not a
  * calendar period: a read names one instant and the server compares the
- * observation times against it.
+ * observation times against it. The page labels these two windows by the span
+ * they reach, so the words a person reads name the length these numbers set.
  */
 const WINDOW_SECONDS: Readonly<Record<Exclude<SeriesWindow, 'all'>, number>> = {
     hour: 60 * 60,

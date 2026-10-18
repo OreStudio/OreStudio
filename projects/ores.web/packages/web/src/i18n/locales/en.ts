@@ -2083,8 +2083,8 @@ export const en: SourceCatalogue = {
             windows: {
                 hour: 'Last hour',
                 day: 'Last day',
-                month: 'Last month',
-                year: 'Last year',
+                month: 'Last 30 days',
+                year: 'Last 365 days',
                 all: 'All',
             },
             empty: 'This series holds no observations yet.',

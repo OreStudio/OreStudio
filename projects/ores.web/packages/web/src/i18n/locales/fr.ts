@@ -2104,8 +2104,8 @@ const fr: SourceCatalogue = {
             windows: {
                 hour: 'Dernière heure',
                 day: 'Dernier jour',
-                month: 'Dernier mois',
-                year: 'Dernière année',
+                month: '30 derniers jours',
+                year: '365 derniers jours',
                 all: 'Tout',
             },
             empty: 'Cette série ne contient pas encore d’observation.',

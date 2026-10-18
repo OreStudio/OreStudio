@@ -2096,8 +2096,8 @@ const pt: SourceCatalogue = {
             windows: {
                 hour: 'Última hora',
                 day: 'Último dia',
-                month: 'Último mês',
-                year: 'Último ano',
+                month: 'Últimos 30 dias',
+                year: 'Últimos 365 dias',
                 all: 'Tudo',
             },
             empty: 'Esta série ainda não tem observações.',

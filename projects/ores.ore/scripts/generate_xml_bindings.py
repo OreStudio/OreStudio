@@ -319,10 +319,12 @@ def children_of(complex_type, schema=None, bases=frozenset()):
     # agree. They are refused when they do not: one member cannot mean two
     # shapes.
     def shape(element):
-        """What a document sees of one element: its name, type and cardinality.
+        """What a document sees of one element: name, type, cardinality, inline shape.
 
         A `ref` names a global element, so the name and type come from there
-        while the cardinality stays on the reference.
+        while the cardinality stays on the reference. An element that writes its
+        own type has no type name of its own, so the inline type's generated
+        name and its spellings stand in for it.
         """
         reference = element.get("ref")
         target = element if reference is None else schema.elements.get(reference, element)

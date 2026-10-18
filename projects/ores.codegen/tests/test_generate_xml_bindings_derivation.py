@@ -493,3 +493,72 @@ def test_two_alternatives_with_different_inline_types_are_refused(tmp_path):
     result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
     assert result.returncode != 0
     assert "Shared" in result.stderr
+
+
+def test_a_reference_to_a_global_element_becomes_a_member_of_its_name(tmp_path):
+    """`ref` states the name through the global element it points at."""
+    emitted, _source = _emit(
+        tmp_path,
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:element type="xs:string" name="Gamma"/>
+  <xs:element type="xs:string" name="Delta"/>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element ref="Gamma"/>
+      <xs:element ref="Delta"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+""",
+    )
+    record = _record(emitted, "root_type")
+    assert "std::string gamma;" in record
+    assert "std::string delta;" in record
+
+
+def test_one_reference_with_two_cardinalities_is_refused(tmp_path):
+    """The same element referenced twice is one member only if it means one shape."""
+    (tmp_path / "refs.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="rootType" name="Root"/>
+  <xs:element type="xs:string" name="Gamma"/>
+  <xs:complexType name="rootType">
+    <xs:choice>
+      <xs:element ref="Gamma"/>
+      <xs:element ref="Gamma" maxOccurs="unbounded"/>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(tmp_path, "refs.xsd", root_type="rootType")
+    assert result.returncode != 0
+    assert "Gamma" in result.stderr
+
+
+def test_two_alternatives_with_different_inline_enumerations_are_refused(tmp_path):
+    """Two inline enumerations are two spellings, so they are two shapes."""
+    (tmp_path / "choice.xsd").write_text(
+        """<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element type="choiceType" name="Root"/>
+  <xs:complexType name="choiceType">
+    <xs:choice>
+      <xs:element name="Shared">
+        <xs:simpleType><xs:restriction base="xs:string">
+          <xs:enumeration value="A"/>
+        </xs:restriction></xs:simpleType>
+      </xs:element>
+      <xs:element name="Shared">
+        <xs:simpleType><xs:restriction base="xs:string">
+          <xs:enumeration value="B"/>
+        </xs:restriction></xs:simpleType>
+      </xs:element>
+    </xs:choice>
+  </xs:complexType>
+</xs:schema>
+"""
+    )
+    result = _generate(tmp_path, "choice.xsd", root_type="choiceType")
+    assert result.returncode != 0
+    assert "Shared" in result.stderr

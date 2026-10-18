@@ -29,8 +29,14 @@ namespace ores::nats::service {
 /**
  * @brief RAII handle for a NATS subscription.
  *
- * Automatically unsubscribes and frees cnats resources when destroyed.
- * Move-only — subscriptions cannot be shared or copied.
+ * Unsubscribes and frees cnats resources when destroyed. Move-only —
+ * subscriptions cannot be shared or copied.
+ *
+ * Destruction waits for the dispatch thread to return from a handler that is
+ * already running. A handler reaches the state of whatever owns the
+ * subscription, so an owner that destroyed that state as soon as this handle
+ * went out of scope would race the handler. That wait is what makes destroying
+ * the handle a safe point to tear the owner down.
  *
  * A subscription must not outlive the @c client that created it.
  *

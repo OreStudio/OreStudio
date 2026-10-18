@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: D858FF3F-2F55-4531-AE30-DCF734565361
+:END:
+#+title: Story: Hotfix: the services die on shutdown
+#+description: A service can destroy the state a NATS handler is still writing to, and dies on a core dump.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:nats:sprint_28:v0:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A service survives stopping. Every service that owns a NATS subscription can
+reach a handler that is already running while the state that handler writes to
+is being destroyed, and dies on a core dump instead of exiting. The fix goes at
+the subscription handle: destroying it must wait for the dispatch thread to
+return from the handler, because the handler reaches the owner's state.
+
+The recorded failure is =ores.marketdata.service= on 2026-10-18 at 09:55:24. The
+shutdown had already logged "Shutdown complete"; the ingest loop was then
+destroyed while a tick was still being handled, and the dispatch thread reached
+the freed rate engine:
+
+#+begin_example
+#2 ores::marketdata::service::app::crm_ingest_bridge::update
+#1 ores::analytics::quant::service::rate_engine::update
+#0 std::unordered_map::_M_locate_tr
+ores.marketdata.service-...: Main process exited, code=dumped, status=11/SEGV
+#+end_example
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Fix written; a full fleet start and stop is clean. |
+| Waiting on    | Nothing.                               |
+| Next          | Commit, then a PR.                     |
+| Last touched  | 2026-10-18                               |
+
+* Acceptance
+
+- Destroying a subscription returns only after the dispatch thread has left any
+  handler it was running.
+- =client::drain()= returns only after the connection has closed, as its
+  documentation already promised.
+- A full fleet start and stop leaves every unit stopped and none failed.
+- The suite still passes: 96 of 96 ctest cases.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:C09B7D64-B35D-4483-871A-C24D97AA9F11][Scaffold story: Hotfix: the services die on shutdown]] | STARTED | 2026-10-18 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:CFCDD541-DF78-4760-9F0B-30BCBFFBEB48][Wait for in-flight handlers when a subscription is destroyed]] | STARTED | 2026-10-18 | | Initial task for: Hotfix: the services die on shutdown |
+
+* Decisions
+
+* Out of scope
+
+-

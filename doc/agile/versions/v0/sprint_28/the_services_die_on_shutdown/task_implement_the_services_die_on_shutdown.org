@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: CFCDD541-DF78-4760-9F0B-30BCBFFBEB48
+:END:
+#+title: Task: Wait for in-flight handlers when a subscription is destroyed
+#+description: Initial task for: Hotfix: the services die on shutdown
+#+type: task
+#+level: s1
+#+filetags: :the_services_die_on_shutdown:sprint_28:v0:
+#+owner: marco
+#+branch: hotfix/the-services-die-on-shutdown
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D858FF3F-2F55-4531-AE30-DCF734565361][Hotfix: the services die on shutdown]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Destroying an =ores::nats::service::subscription= must not return while the
+dispatch thread is inside the handler that subscription carries. Once it does
+return, the owner is free to destroy everything the handler reaches.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D858FF3F-2F55-4531-AE30-DCF734565361][Hotfix: the services die on shutdown]] |
+| Now          | Fix built; a full fleet start and stop is clean. |
+| Waiting on   | Nothing.                               |
+| Next         | Commit.                                |
+| Last touched | 2026-10-18                               |
+
+* Acceptance
+
+- =~subscription= and move assignment drain, wait for that drain to complete,
+  and only then free the closure and destroy the NATS subscription. The wait is
+  bounded at 30s, the budget cnats itself uses for a drain.
+- =subscription::drain()= keeps its promise: it returns after in-flight
+  deliveries have been processed.
+- =client::drain()= waits for the connection's closed callback instead of
+  returning as soon as the drain was requested.
+- A fleet start and stop leaves 0 failed units.
+- ctest passes 96 of 96.
+
+* Plan
+
+=subscription= destroyed the cnats subscription through an asynchronous drain:
+it registered =natsSubscription_SetOnCompleteCB=, called
+=natsSubscription_Drain=, and returned. The closure the handler runs through
+was freed later, from the dispatch thread, which made destruction look safe to
+the caller. It is not: the closure calls into the owner's state, and the owner
+treats "the handle is gone" as "nothing will call me again".
+
+=service_lifecycle::announce_ready_and_drain= owns that order. It calls
+=nats.drain()=, logs "Shutdown complete", and returns; the coroutine's frame then
+destroys the subscription vector, the event bus and the service state. The
+marketdata ingest loop was destroyed in that window while a tick was in
+=handle_tick=, and the dispatch thread walked into a freed rate engine.
+
+Two changes, both at the seam the promise was made on:
+
+1. =drain_and_release= replaces the async helpers. It drains, calls
+   =natsSubscription_WaitForDrainCompletion=, then frees the closure and
+   destroys the subscription. =~subscription= and move assignment both use it,
+   and =subscription::drain()= waits the same way.
+2. =client::drain()= registers a closed callback through
+   =natsOptions_SetClosedCB= and waits on it, because =natsConnection_Drain=
+   only starts the drain. The latch lives in =client::impl= so it outlives the
+   connection, and every connect clears it.
+
+No call site creates a subscription per request: =request_sync= uses
+=natsConnection_RequestMsg=, so a blocking destruction touches only teardown and
+subscriber churn, not the request path.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ctest cases | 96 of 96 pass | =./compass.sh check --only ctest= | e6eeec37b5 + this task's diff |
+| gate sweep on untouched main | 61 of 61 pass | =./compass.sh check --all --json= | e6eeec37b5 |
+| fleet after start, 120s, stop | 23 stopped, 0 failed, 24 units active before the stop | =./compass.sh services start= then =stop= | e6eeec37b5 + this task's diff |
+| marketdata journal after that stop | no core dump; "Shutdown complete" then the event bus unsubscribes | =./compass.sh services logs ores.marketdata -n 25= | e6eeec37b5 + this task's diff |
+
+* Notes
+
+The crash is intermittent: it needs a delivery in flight at the moment the
+owner is destroyed. Two short start/stop cycles did not reproduce it, before or
+after the fix, so the evidence for the defect is the recorded core dump and the
+ordering above, not a repeatable trigger. What the fix changes is the ordering,
+which is checkable by reading the two functions.
+
+Two gates report this change while it is uncommitted, and neither report is
+about the code: =format= wants clang-format on the edited files, and
+=component-drift= fails on any =git diff= at all, because it regenerates the
+components and reads the working tree's diff as drift. Both pass on a committed
+tree.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

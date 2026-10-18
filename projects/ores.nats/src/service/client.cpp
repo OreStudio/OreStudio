@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstdint>
 #include <cstdlib>
 #include <filesystem>
@@ -128,8 +129,24 @@ struct buffered_subscription::impl {
 // client::impl
 // ---------------------------------------------------------------------------
 
+namespace {
+
+/**
+ * @brief What the connection's closed callback sets, and what drain() waits on.
+ *
+ * It exists so drain() can wait for a fact rather than for a time.
+ */
+struct connection_closed_latch {
+    std::mutex mu;
+    std::condition_variable cv;
+    bool closed = false;
+};
+
+}
+
 struct client::impl {
     config::nats_options opts;
+    connection_closed_latch closed_latch;
     natsConnection* conn = nullptr;
     jsCtx* js = nullptr;
     std::atomic<bool> connected{false};
@@ -211,6 +228,22 @@ void on_conn_reconnected(natsConnection* /*nc*/, void* /*closure*/) {
     } catch (...) {
         // Boost.Log may already be torn down on a NATS internal thread.
     }
+}
+
+/**
+ * @brief Reports that the connection has finished closing, and wakes drain().
+ *
+ * The connection object is still alive when this fires, so the latch it writes
+ * to is alive too: the client destroys the connection, and the latch belongs to
+ * the client.
+ */
+void on_conn_closed(natsConnection* /*nc*/, void* closure) {
+    auto* latch = static_cast<connection_closed_latch*>(closure);
+    {
+        std::lock_guard lock(latch->mu);
+        latch->closed = true;
+    }
+    latch->cv.notify_all();
 }
 
 /**
@@ -390,43 +423,37 @@ subscription::subscription(std::unique_ptr<impl> i)
     : impl_(std::move(i)) {}
 
 // ---------------------------------------------------------------------------
-// Async drain helpers — shared by ~subscription and operator=(subscription&&)
+// Drain helpers — shared by ~subscription and operator=(subscription&&)
 // ---------------------------------------------------------------------------
 
-// Heap-allocated context that keeps sub_closure alive until the NATS dispatch
-// thread has finished all in-flight on_msg calls for this subscription.
-struct sub_drain_ctx {
-    natsSubscription* sub;
-    std::unique_ptr<sub_closure> closure;
-};
-
-// C-linkage callback registered with natsSubscription_SetOnCompleteCB.
-// Fires from the dispatch thread after drain: all on_msg calls have returned,
-// so it is now safe to free the closure and destroy the NATS subscription.
-extern "C" void drain_cb(void* ud) noexcept {
-    auto* c = static_cast<sub_drain_ctx*>(ud);
-    c->closure.reset();
-    natsSubscription_Destroy(c->sub);
-    delete c;
+namespace {
+/// The longest a drain may take before shutdown carries on regardless. cnats
+/// drains a subscription with the same budget, so waiting past it buys nothing.
+constexpr int64_t drain_timeout_ms = 30'000;
 }
 
-// Initiates an async drain of impl_->sub and transfers ownership of both the
-// sub and closure to a heap context freed by drain_cb.  After this call,
-// impl_->sub is nullptr and impl_->closure is empty.
-static void drain_impl(subscription::impl* impl) noexcept {
+// A handler runs through the closure this handle owns, and that closure calls
+// into the state of whatever owns the subscription. cnats drains a subscription
+// asynchronously, so a destructor that only asks for a drain returns while the
+// dispatch thread is still inside a handler, and the owner is free to destroy
+// the state the handler is about to write to. That is a use-after-free, and it
+// took a service down on shutdown: marketdata's ingest loop was destroyed, a
+// tick that was already in flight reached the freed rate engine, and the
+// process died on a core dump while the client was closing the connection.
+// Waiting here is what makes the handle's lifetime mean what it says.
+static void drain_and_release(subscription::impl* impl) noexcept {
     if (!impl || !impl->sub)
         return;
-    auto* ctx = new (std::nothrow) sub_drain_ctx{impl->sub, std::move(impl->closure)};
-    if (ctx) {
-        natsSubscription_SetOnCompleteCB(impl->sub, drain_cb, ctx);
-        natsSubscription_Drain(impl->sub);
-    }
-    // On alloc failure: closure leaks (no crash), sub leaks (no crash).
+    natsSubscription* sub = impl->sub;
     impl->sub = nullptr;
+    natsSubscription_Drain(sub);
+    natsSubscription_WaitForDrainCompletion(sub, drain_timeout_ms);
+    impl->closure.reset();
+    natsSubscription_Destroy(sub);
 }
 
 subscription::~subscription() {
-    drain_impl(impl_.get());
+    drain_and_release(impl_.get());
 }
 
 
@@ -435,7 +462,7 @@ subscription::subscription(subscription&&) noexcept = default;
 subscription& subscription::operator=(subscription&& other) noexcept {
     if (this == &other)
         return *this;
-    drain_impl(impl_.get()); // drain old before taking ownership of new
+    drain_and_release(impl_.get()); // drain old before taking ownership of new
     impl_ = std::move(other.impl_);
     return *this;
 }
@@ -448,8 +475,10 @@ std::string subscription::subject() const {
 }
 
 void subscription::drain() {
-    if (impl_ && impl_->sub)
-        natsSubscription_Drain(impl_->sub);
+    if (!impl_ || !impl_->sub)
+        return;
+    natsSubscription_Drain(impl_->sub);
+    natsSubscription_WaitForDrainCompletion(impl_->sub, drain_timeout_ms);
 }
 
 // ---------------------------------------------------------------------------
@@ -496,12 +525,18 @@ void client::connect() {
     if (impl_->opts.subject_prefix.empty())
         throw std::runtime_error("NATS subject_prefix must be set in configuration");
 
+    {
+        std::lock_guard lock(impl_->closed_latch.mu);
+        impl_->closed_latch.closed = false;
+    }
+
     natsOptions* opts = nullptr;
     natsOptions_Create(&opts);
     natsOptions_SetURL(opts, impl_->opts.url.c_str());
     natsOptions_SetErrorHandler(opts, on_conn_error, nullptr);
     natsOptions_SetDisconnectedCB(opts, on_conn_disconnected, nullptr);
     natsOptions_SetReconnectedCB(opts, on_conn_reconnected, nullptr);
+    natsOptions_SetClosedCB(opts, on_conn_closed, &impl_->closed_latch);
 
     if (!impl_->opts.tls_ca_cert.empty()) {
         // Validate TLS files exist before attempting connection so we can log
@@ -1170,8 +1205,21 @@ subscription client::js_queue_subscribe_multi(std::span<const std::string_view> 
 }
 
 void client::drain() {
-    if (impl_->conn)
-        natsConnection_Drain(impl_->conn);
+    if (!impl_->conn)
+        return;
+    // natsConnection_Drain only asks the connection to drain: it returns while
+    // the dispatch threads are still handing messages to their handlers. The
+    // closed callback is what says every delivery has finished, so waiting on
+    // it is what makes this method's promise true.
+    natsConnection_Drain(impl_->conn);
+    std::unique_lock lock(impl_->closed_latch.mu);
+    const bool closed =
+        impl_->closed_latch.cv.wait_for(lock, std::chrono::milliseconds(drain_timeout_ms), [this] {
+            return impl_->closed_latch.closed;
+        });
+    if (!closed)
+        BOOST_LOG_SEV(lg(), warn) << "NATS drain did not complete within " << drain_timeout_ms
+                                  << "ms; shutting down with deliveries possibly still in flight.";
 }
 
 jetstream_admin client::make_admin() {

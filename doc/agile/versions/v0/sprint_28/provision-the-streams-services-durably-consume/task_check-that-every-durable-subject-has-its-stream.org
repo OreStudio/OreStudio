@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F540D226-8EEE-44F3-8BCB-16A08290C6E6][Streams are not provisioned for the subjects services durabl…]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -83,3 +83,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+* Result
+
+A static check now applies the server's own two rules to every declaration it can
+read: every durably consumed subject is covered by exactly one stream filter, and
+no two differently named streams overlap. It reads the three declaration shapes
+the transport offers, resolves subjects through constants, and fails closed on a
+shape it does not recognise or on a new transport call, so silence is only ever
+possible for a file it never sees.
+
+Shown failing before being accepted. A raw durable subscribe on an uncovered
+subject produced "durable subject with no stream", naming the site and explaining
+the five second timeout. A second stream over an existing filter produced "stream
+subject overlap", naming both streams and both sites and the server error the
+second would hit. Both reverts restored the tree to green.
+
+On the tree it reports 19 streams, 17 durable consumers and 87 subjects, and the
+stream count matches the number independently recorded when the streams were
+investigated, which is evidence the extraction is faithful rather than merely
+self-consistent.
+
+The honest limit, stated rather than papered over: a stale stream already on the
+broker cannot be seen statically. That was the actual cause of the overlap that
+stopped IAM starting, and only the owning service's ensure_stream catches it, as a
+fatal start. A service calling the cnats API directly is likewise outside the
+check's reach.

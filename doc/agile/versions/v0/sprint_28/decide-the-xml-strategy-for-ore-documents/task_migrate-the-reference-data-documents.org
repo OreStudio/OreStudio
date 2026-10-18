@@ -29,9 +29,9 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Calendar adjustments, currency config, pricing engines and credit simulation read and write through the codec; curve configuration has a table the harness proves; the netting set XML mapper is deleted. |
+| Now          | Calendar adjustments, currency config, pricing engines, credit simulation and curve configuration read and write through the codec; the netting set XML mapper is deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | The curve configuration projection, which reads the table into the reference data entities and deletes the 3,310-line mapper. |
+| Next         | Stress testing, whose mapper is the last one over a document the product still reads. |
 | Last touched | 2026-10-18                               |
 
 * Acceptance
@@ -165,6 +165,22 @@ That is the honest state of a two-step migration, and the evidence line in the
 census says so: the table reads and writes the document, and the projection
 replaces the mapper next.
 
+* The curve configuration moved once its table was proved
+
+The mapper was 3,310 lines and its input was the binding's generated types. The
+projection is the same mapping with the table's record as its input, so the
+schema's shape reaches it once instead of twice, and the mapper, its header and
+its suite are gone. Nothing about the mapping moved: an element it could not
+hold is still refused, and segments are still restored in the order the document
+wrote them.
+
+Two conversions the binding used to make silently are now stated where they
+happen. The table holds every attribute as text, so a priority attribute is
+parsed and formatted; and an element typed =xs:boolean= is text as well, because
+it is not the ORE =bool= enumeration, so it is read as a flag and written as
+=true= or =false=. A strike factor is a schema decimal in a double column, and
+the boundary converts it.
+
 * Where the work stands
 
 Verified on main at the time of writing, with the commands that prove each
@@ -176,6 +192,7 @@ line.
 | Eight families keep their values across the writing in the value harness; credit simulation and pricing engines are proved by their own suites | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= |
 | Three still read through xsdcpp: ORE, Portfolio, StressTesting | same |
 | Curve configuration documents bind, write and keep every value | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"=, 89 of 89 |
+| Curve configuration documents project and project back | =publish/bin/ores.ore.core.tests "[curveconfig]"=, 20 cases |
 | Seven families nothing reads are gone | same |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
 | The XML suites pass | =[ore][xml]@, 497 cases and 82,020 assertions |
@@ -215,6 +232,8 @@ task and name that file in the Command column.
 | Curve configurations that bind, write and keep every value | 89 of 89 | =publish/bin/ores.ore.core.tests "every_generated_family_keeps_its_values_across_the_writing"= | 4e8b75caec |
 | XML suites after the curve configuration table | 497 cases, 82,020 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 4e8b75caec |
 | Corpus documents the value harness sweeps | 335 | same | 4e8b75caec |
+| Curve configurations that project and project back | 89 of 89 | =publish/bin/ores.ore.core.tests "[curveconfig]"= | 98e8b5fdc1 |
+| XML suites after the curve configuration migration | 496 cases, 82,045 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | 98e8b5fdc1 |
 
 * Notes
 

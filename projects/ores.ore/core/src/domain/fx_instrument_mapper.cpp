@@ -502,10 +502,8 @@ fx_instrument_mapper::forward_fx_generic_barrier_option(const trade& t) {
         r.option_type = std::string(*d.OptionData.OptionType);
     r.expiry_date = expiry_date_from_single(d.OptionData);
 
-    // A KIKO or generic barrier states a level per side, so the pair stays
-    // positional here: the first group is the lower side, the second the upper.
-    // The directional rule names FxBarrierOption alone, which is the product
-    // whose style chooses one side.
+    // A two-sided product keeps the positional pair; see fill_barrier for the
+    // directional rule the single-sided products follow.
     if (!d.Barriers.BarrierData.empty()) {
         r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
         if (!d.Barriers.BarrierData.front().Levels.Level.empty())

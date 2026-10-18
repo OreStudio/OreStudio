@@ -105,12 +105,12 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Duplicated vocabulary checks removed | 10 | =git diff origin/main -- 'projects/ores.trading/modeling/*.org' \| grep -c '^-.* in ('=, in =evidence/fx-vocabularies.txt= | the PR head |
-| Level checks on the barrier table | 6 of its 13 | =grep -c "check (" projects/ores.sql/create/trading/trading_fx_barrier_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
+| Level checks on the barrier table | 6 of its 13 | =grep -c 'check (' projects/ores.sql/create/trading/trading_fx_barrier_option_instruments_create.sql= gives 13; the six level checks are the ones naming a barrier column, listed in =evidence/fx-vocabularies.txt= | the PR head |
 | Digital checks keyed on the trade type | 4 | =grep -c 'check (("trade_type_code"' projects/ores.sql/create/trading/trading_fx_digital_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
-| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests=; the economic-digest suite is outside the build (see Findings) | the PR head |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
 | ORE core suite | pass | the same command with =ores.ore.core.tests= | the PR head |
 | Refusing cases | 2 (an Up style with a lower level, a double barrier with one level) | =an_up_style_refuses_a_lower_level= in =projects/ores.trading/core/tests/repository_fx_barrier_option_instrument_repository_tests.cpp= | the PR head |
-| Economic-digest suite | rotted, not wired | =grep -rn digest_tests --include=CMakeLists.txt projects/ | wc -l= returns 0, so the suite is outside the build; a local wiring run failed four cases on an empty digest, recorded in =evidence/fx-digest-suite.txt= | the PR head |
+| Economic-digest suite | rotted, not wired | =grep -rn digest_tests --include=CMakeLists.txt projects/ \| wc -l= returns 0, so the suite is outside the build; a local wiring run failed four cases on an empty digest, recorded in =evidence/fx-digest-suite.txt= | the PR head |
 |      |       |         |        |
 
 * Notes

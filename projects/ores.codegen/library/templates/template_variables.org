@@ -143,6 +143,7 @@ Top-level boolean sections that enable/disable template blocks.
 | =has_tenant_id=   | Entity has a tenant_id column for multi-tenancy.          |
 | =nullable_tenant_id= | Entity's tenant is nullable; SQL NULL means no tenant. |
 | =has_batch_read=  | Repository exposes a batch read method.                   |
+| =service_batch_reads_by_trade_id= | The service reads a key set in one statement. The entity must be keyed by a single uuid trade id, which the batch path joins on. A typo silently renders the per-key path. |
 | =has_batch_remove=| Repository exposes a batch remove method.                 |
 | =has_uuid_columns=| At least one column has a UUID type.                      |
 | =has_base64_columns=| At least one column declares =:base64: true=, so the entity has a base64 hop to convert. |

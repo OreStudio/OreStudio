@@ -178,12 +178,30 @@ fx_vanilla_option_instrument_service::get_many_fx_vanilla_option_instruments(
     // positional and a caller reads absence from an empty entry rather than
     // from a missing one.
     response.entries.reserve(request.keys.size());
+    // One read for the whole key set. The store returns every row the keys
+    // name, and the reply joins them back to the order asked for, so a caller
+    // sees the same positional answer without a round trip per key. The set is
+    // capped for the reason the list filter's is: one statement carries every
+    // key, and the store's bind count is finite.
+    if (request.keys.size() > 1000) {
+        response.result =
+            refuse(outcome_code::filter_too_large, {.field = "keys", .limit = "1000"});
+        return response;
+    }
+    std::vector<std::string> keys;
+    keys.reserve(request.keys.size());
+    for (const auto& k : request.keys)
+        keys.push_back(boost::uuids::to_string(k.trade_id));
+    const auto rows = repo_.read_latest(ctx_, keys);
     for (const auto& k : request.keys) {
         messaging::fx_vanilla_option_instrument_lookup entry;
         entry.key = k;
-        auto found = read_one(repo_, ctx_, k);
-        if (!found.empty())
-            entry.fx_vanilla_option_instrument = std::move(found.front());
+        for (const auto& row : rows) {
+            if (row.identity.trade_id == k.trade_id) {
+                entry.fx_vanilla_option_instrument = row;
+                break;
+            }
+        }
         response.entries.push_back(std::move(entry));
     }
     return response;
@@ -230,10 +248,19 @@ fx_vanilla_option_instrument_service::put_many_fx_vanilla_option_instruments(
         claims.push_back(change.precondition);
     repo_.write(ctx_, batch, claims);
     response.fx_vanilla_option_instruments.reserve(batch.size());
+    // One read for the whole written set, for the same reason as the batch
+    // get: the store already holds every row the write just landed.
+    std::vector<std::string> written_keys;
+    written_keys.reserve(batch.size());
+    for (const auto& value : batch)
+        written_keys.push_back(boost::uuids::to_string(value.identity.trade_id));
+    const auto written_rows = repo_.read_latest(ctx_, written_keys);
     for (const auto& value : batch) {
-        auto written = read_one(repo_, ctx_, key_from(value));
-        response.fx_vanilla_option_instruments.push_back(
-            written.empty() ? value : std::move(written.front()));
+        const auto row =
+            std::find_if(written_rows.begin(), written_rows.end(), [&](const auto& candidate) {
+                return candidate.identity.trade_id == value.identity.trade_id;
+            });
+        response.fx_vanilla_option_instruments.push_back(row == written_rows.end() ? value : *row);
     }
     return response;
 }

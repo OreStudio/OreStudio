@@ -340,13 +340,19 @@ describe('the route table once the flag is clear', () => {
     it('offers the tenor resolution screen to a signed-in person', () => {
         const html = render('/refdata/tenors', ready, authenticated);
 
-        expect(html).toContain('Tenor resolution');
+        expect(html).toContain('Resolve a tenor');
+    });
+
+    it('offers the tenor authoring journey to a signed-in person', () => {
+        const html = render('/refdata/tenors/author', ready, authenticated);
+
+        expect(html).toContain('Define how tenors resolve');
     });
 
     it('sends a visitor to sign in rather than to the tenor resolution screen', () => {
         const html = render('/refdata/tenors', readyAnonymous, anonymous);
 
-        expect(html).not.toContain('Tenor resolution');
+        expect(html).not.toContain('Resolve a tenor');
     });
 
     it('sends a visitor to sign in rather than to the convention screen', () => {

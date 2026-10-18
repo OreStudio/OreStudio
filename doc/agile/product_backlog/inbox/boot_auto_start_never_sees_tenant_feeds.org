@@ -7,22 +7,64 @@
 #+level: cross
 #+filetags: :capture:
 #+created: 2026-10-11
-#+updated: 2026-10-11
+#+updated: 2026-10-18
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 
 * What
 
-(One paragraph: the idea.)
+The boot pass of the synthetic service should start every feed whose config says
+=enabled= and =auto_start=, in the context of the tenant and party that owns it.
+Today it starts only the configs the service's own database context can read,
+which is the installation's system tenant, and it starts nothing a tenant owns.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+The pass is =auto_start_feeds= in
+=projects/ores.synthetic/service/src/app/application.cpp=. It lists targets with
+=feed_kind_registry::targets=, which reads each kind's repository, and the
+repository selects =tenant_id = ctx.tenant_id() OR tenant_id = system_tenant_id=.
+=context_factory= defaults the context to the system tenant when the
+configuration names none, and the deployed unit passes no =--tenant=. So a config
+that belongs to a tenant is never read, never started, and never reported as
+skipped: a row that is not read is not a row that is skipped.
+
+Two symptoms follow, and both were measured on eager_maxwell on 2026-10-18.
+
+The feed goes quiet and stays quiet. The Acme tenant's AUD/USD synthetic feed
+ticked for five minutes and stopped at =2026-10-17 18:49:06=. The synthetic
+service restarted at =18:50:03=, logged =Auto-started 24 enabled feed(s)=, and
+every one of those 24 is a system-scope sandboxed feed. The 26 Bloomberg FX
+configs that AUD/USD needs belong to the Acme tenant's System Party and were not
+among them. The binding survived, the ticks did not.
+
+Nothing recovers it. Restarting the marketdata service moves nothing: the newest
+AUD/USD tick reads =2026-10-17 18:49:06.55001+01= before the restart at
+=11:49:48= and the same value after it at =11:51:47=. The ingest loop
+re-subscribes cleanly and holds 67 bound sources, and reports =ticks=0
+last_tick=never= for all 287 bindings, because no tick crosses the bus.
+
+A person cannot recover it either. The person who sees the quiet binding acts as
+Acme Corporation Plc, and the config belongs to that tenant's System Party, so
+the feed list is not in their view: =synthetic list feeds= lists the 24 sandboxed
+feeds, and =synthetic start feed synthetic.bloomberg.audusd= answers =No feed
+matching 'synthetic.bloomberg.audusd'=.
+
+The second candidate fix is a stored running set, so that a restart restores what
+was running. The evidence does not choose between the two, which is why this
+stays a capture. The cross-tenant walk needs a read that crosses tenants and a
+rule for a conflict between two tenants' feeds on one series; =feeds_conflict=
+would let the first tenant to start win and skip the second in silence.
 
 * References
 
--
+- =doc/agile/versions/v0/sprint_28/build-the-market-data-bindings-screen/task_find_why_the_synthetic_feed_went_quiet.org=, the investigation that traced the AUD/USD tick to this pass
+- =doc/agile/versions/v0/sprint_28/build-the-market-data-bindings-screen/evidence/quiet_feed_B110675F.txt=, the raw output of every command
+- =projects/ores.synthetic/service/src/app/application.cpp=, =auto_start_feeds=
+- =projects/ores.synthetic/core/src/repository/fx_spot_generation_config_repository.cpp=, =read_latest=
+- =projects/ores.database/src/service/context_factory.cpp=, the default to the system tenant
 
 * See also
 
--
+- [[id:4123F26A-4205-4062-B59A-68A13234D7FC][Restarting the synthetic producer stops the market data ingest]]
+- [[id:986CED57-341F-49DE-8F5D-F186771F10D8][Keep the market data feeds running]]

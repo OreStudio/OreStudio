@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :user_journey:operations:
 #+created: 2026-10-06
-#+updated: 2026-10-06
+#+updated: 2026-10-18
 #+startup: inlineimages
 
 This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A system administrator keeps the installation's market data feeds running: the bindings it holds, whether each source is running and when it last ticked, and how to start or stop one.
@@ -80,11 +80,45 @@ from what has been written; see /What is missing/.
    reads the ones that have not ticked within the interval their tick rate
    implies. The screen needs the last-tick read from step 5 and the tick rate
    from step 3; see /What is missing/.
-10. *Leave.* The person goes back to the *Operations* area.
+10. *Bring a quiet feed back.* The person starts the feed behind the quiet
+    binding, from the feed's own screen or from the shell, and reads the row
+    again after a tick interval. A feed that comes back is quiet no longer. A
+    feed the person cannot start is where the journey stops today; see /When a
+    feed goes quiet/.
+11. *Leave.* The person goes back to the *Operations* area.
 
 Start and stop act on the running service, not on stored rows, and the running
 set is not stored, so the effect is visible in the reply and a later visit
 re-reads it from the service.
+
+* When a feed goes quiet
+
+A feed has stopped by the time its binding reads quiet. The running set is the
+first thing to read, because it is not stored: it is the producer service's
+memory, and a restart empties it.
+
+The observed case, AUD/USD's synthetic feed on 2026-10-18, is the shape to
+expect. The ticks ran for five minutes and stopped at 18:49:06. The synthetic
+service restarted at 18:50:03 and did not start them again. The binding stayed
+enabled. The ingest loop stayed subscribed and reported =last_tick=never= for
+every binding it holds. The newest observation is still the one from the evening
+before.
+
+Two facts make the quiet row hard to act on. A feed started on demand lives only
+in the producer's memory, so a restart of any service loses it, and nothing
+stores that it was running. And the config behind the binding belongs to the
+party that wrote it, so a person acting as another party cannot start it: the
+shell answers =No feed matching '<source>'= for a source that is not in that
+person's feed list.
+
+So the person reads the row, confirms the source is absent from the running set,
+and then finds the party that owns the producer config and starts the feed from
+that session. Nothing in the product offers that route yet; see /What is
+missing/.
+
+The restart is the trigger that matters here: a service restart is what turns a
+running feed into a quiet binding, and it is the moment to re-read the running
+set rather than the moment to trust the previous reading of it.
 
 * Screens and wireframes
 
@@ -204,6 +238,22 @@ counters in memory and writes them to the status log once a minute; see
    can disagree. The candidate is a single stored field that says a feed is up,
    or a read that returns both together. Until then the screen shows both and
    says what each one means.
+8. *A restart does not bring a tenant's feed back.* The boot walk starts the
+   auto-start configs the producer service's own context can read, and that
+   context is the installation's system tenant, so a tenant's feed is neither
+   read nor started. A feed started on demand is held only in memory and nothing
+   stores that it was running. The candidate is a boot walk that reads every
+   tenant's configs, or a stored running set that a restart restores. Until then
+   the operator starts the feed again by hand, from a session that acts as the
+   party that owns the config, and a person acting as another party cannot: the
+   feed list is scoped to the caller's party. See the capture filed for this,
+   =a-restart-does-not-restore-a-tenant-feed=.
+9. *The screen says quiet but not why.* =statusOf= calls a binding quiet when its
+   last tick is older than 600 seconds or it has none, and it never looks at the
+   running set to say which of the two it is, so a stopped feed and a feed that
+   was never started read the same. The candidate is a second sentence beside the
+   status, from the same two facts the status already holds. Until then the
+   person reads the running set separately, in step 4.
 
 * Related journeys
 

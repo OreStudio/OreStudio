@@ -1,0 +1,112 @@
+Raw output: the audit that traced AUD/USD's quiet synthetic feed, 2026-10-18
+=============================================================================
+
+Environment: eager_maxwell (linux-clang-release-ninja), branch
+feature/find-why-the-synthetic-feed-went-quiet at 6e461205af.
+
+1. The newest tick of each synthetic source, before any restart
+----------------------------------------------------------------
+Command: ./compass.sh db sql -- -A -c "set row_security = off;" -c "select source,
+count(*) as rows, max(observation_datetime) as newest from
+ores_marketdata_market_observations_tbl where valid_to =
+ores_utility_infinity_timestamp_fn() group by source order by newest desc;"
+
+source                              rows    newest
+----------------------------------  ------  ---------------------------
+synthetic.bloomberg.audusd          750     2026-10-17 18:49:06.55001+01
+synthetic.bloomberg.eurusd          750     2026-10-17 18:49:06.79616+01
+... 39 further synthetic.bloomberg.* rows, every one of them 2026-10-17 18:49:0x
+synthetic.bound.cb6fc0fa            1       2026-10-18 10:35:27.142345+01
+synthetic.bound.407681b1            1       2026-10-18 10:35:25.976889+01
+synthetic.bound.03557aad            1       2026-10-18 05:21:21.264188+01
+synthetic.bound.7dfb5f8d            1       2026-10-18 05:21:20.720094+01
+synthetic.bound.a18efde3            1       2026-10-18 04:51:47.767354+01
+synthetic.bound.37228419            1       2026-10-18 04:51:44.121316+01
+synthetic.bound.bed0c6ab            1       2026-10-18 04:33:55.314256+01
+synthetic.bound.05c8eb95            1       2026-10-18 04:33:53.539867+01
+
+2. The experiment: restart the marketdata service, then re-read the tick
+-----------------------------------------------------------------------
+Before, measured 2026-10-18 11:49:48.036098+01:
+source                        rows  newest
+synthetic.bloomberg.audusd    750   2026-10-17 18:49:06.55001+01
+synthetic.bloomberg.eurusd    750   2026-10-17 18:49:06.79616+01
+
+Command: ./compass.sh services restart marketdata
+Result:  "wait 1 unit(s) (active) ... done"
+
+Marketdata service log after the restart:
+  11:50:11 [INFO] [feed_ingest_loop] Starting feed ingest loop: subscribing to
+                   'synthetic.v1.ops.tick.>'
+  11:50:11 [INFO] [feed_ingest_loop] Feed ingest loop: 67 bound source(s)
+
+After, measured 2026-10-18 11:51:47.984601+01:
+source                        rows  newest
+synthetic.bloomberg.audusd    750   2026-10-17 18:49:06.55001+01
+synthetic.bloomberg.eurusd    750   2026-10-17 18:49:06.79616+01
+
+Rows and newest time are unchanged, 17 hours after the last tick.
+
+3. The consumer side of the same minute
+---------------------------------------
+Command: journalctl --user -u ores.marketdata.service-eager_maxwell.service
+         --since 11:50
+  287 INGEST STATUS lines, one per binding, and every one of them reads
+  ticks=0 last_tick=never. Count of lines whose ticks are not 0: 0.
+
+4. The producer side
+--------------------
+Command: journalctl --user -u ores.synthetic.service-eager_maxwell.service
+         --since 11:52:03
+  11:52:04 [INFO] [app.auto_start] Auto-started 24 enabled feed(s).
+  11:52:04 [INFO] [application] Feed controller ready — 24 feed(s) auto-started
+
+Every published tick on the running instance names the sandbox subject, not the
+ingest subject:
+  SYNTHETIC PUBLISH: subject='synthetic.v1.ops.sandbox_tick.synthetic.refinitiv.euraud' ...
+
+The 24 running feeds are the 14 Refinitiv FX feeds and the 10 ICE and Tradeweb
+IR feeds. No synthetic.bloomberg.* feed runs.
+
+The instance stopped at 11:52:03 had been up for "17h 2min 1.706s", so it
+started at 18:50:03 on 2026-10-17, one minute after the last AUD/USD tick.
+
+5. What the product shows the tenant that holds the binding
+-----------------------------------------------------------
+Command: ./compass.sh shell -l <script with: synthetic list feeds>
+  Logged in as tenant_admin. Tenant Acme Corporation
+  (64927db6-6292-40bf-8ed7-e602fb91a590), party Acme Corporation Plc.
+  "24 feed(s), 24 running, 0 partial." None of them is synthetic.bloomberg.audusd.
+
+Command: feed_bindings get synthetic.bloomberg.audusd
+  {"version":1,"party_id":"245c13a0-e453-43f0-b655-b73314f4df8c",
+   "source_name":"synthetic.bloomberg.audusd","producer_kind":"SYNTHETIC",
+   "enabled":true,
+   "change_commentary":"Created by ACME provisioning: consumes the system-party
+   simulated market stream",
+   "recorded_at":"2026-10-17 17:44:03.000000Z"}
+
+Command: synthetic start feed synthetic.bloomberg.audusd
+  "No feed matching 'synthetic.bloomberg.audusd'."
+
+6. The ownership of the config behind the binding
+-------------------------------------------------
+Command: ./compass.sh db sql -- -A -c "set row_security = off;" -c "select
+c.name, c.scope, c.binding_mode, f.source_name, f.enabled, f.auto_start,
+f.tenant_id, f.party_id from ores_synthetic_fx_spot_generation_configs_tbl f
+join ores_synthetic_market_data_generation_configs_tbl c on c.id = f.config_id..."
+
+  config      scope  binding_mode  source_name                    enabled auto  tenant / party
+  Bloomberg   party  bound         synthetic.bloomberg.audusd     t       t     64927db6... / 9ef67391...
+  Refinitiv   system sandboxed     synthetic.refinitiv.audjpy     t       t     ffffffff... / c5599901...
+  ICE         system sandboxed     (no FX rows)
+  Tradeweb    system sandboxed     (no FX rows)
+
+Party 9ef67391-... is "System Party" (acme_corporation_system) of the Acme
+tenant. Party 245c13a0-... is "Acme Corporation Plc", which is the party the
+tenant_admin session acts as.
+
+Counts: 67 enabled feed bindings over 67 distinct sources; 103 bound FX feed
+configs and 14 sandboxed FX feed configs; 150 distinct observation times for
+AUD/USD (5 parties x 150 = 750 rows), spaced 2 seconds apart, which is the
+1800 ticks per hour the config asks for.

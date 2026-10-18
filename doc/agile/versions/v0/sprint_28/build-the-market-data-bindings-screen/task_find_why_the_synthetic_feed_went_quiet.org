@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-13
 #+updated: 2026-10-13
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ After the marketdata service was restarted the newest synthetic tick of AUD/USD 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0EF4BCEC-5D8B-4C83-A229-793962AEAFD2][Build the bindings screen and clear the oresmd snags]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-10-13                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -41,9 +41,44 @@ After the marketdata service was restarted the newest synthetic tick of AUD/USD 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** The question
+
+AUD/USD stopped advancing. Three answers are possible and each leads to a
+different fix: the feed does not restart with the service, the ingest loop lost
+its subscription, or a third thing. The work is to tell them apart, not to guess
+between them.
+
+** What settles it
+
+Three readings of one window. The observations table says when the last tick
+landed. The ingest loop's own status says whether ticks reach the consumer. The
+synthetic service's log says whether a producer publishes. If two of the three
+are healthy, the third names the layer that is not.
+
+The experiment is a restart of the marketdata service, the way the report did
+it, with the newest tick read before and after. A restart that moves the tick
+clears the ingest loop. A restart that leaves the tick where it was puts the
+cause downstream of the bus or upstream of it, and the two service logs then say
+which.
+
+** The method
+
+Read the newest observation of every synthetic source. Restart the marketdata
+service. Read again two minutes later. Read the ingest status lines and the
+producer status lines for the same minutes. Then read the code those lines point
+at: the ingest loop, the boot walk of the synthetic service, the read that feeds
+the walk, and the deployment of the service.
+
+The answer goes three places: the result of this task, a note in the journey,
+and the capture that owns the fix, because the fix is bigger than the time box.
+The capture is found by searching the backlog before it is written, so that one
+defect does not collect two of them.
+
+** What is not in scope
+
+The fix. It changes which configs a service reads at boot, and that choice is a
+design decision with its own trade-offs, so it needs its own task. This task
+records it and names it.
 
 * Measurements
 
@@ -55,11 +90,123 @@ code changing, and the reader of a bare number cannot tell which tree it came
 from. Where the raw output matters, put it in an =evidence/= file beside the
 task and name that file in the Command column.
 
+The raw output of every command below is in =evidence/quiet_feed_B110675F.txt=.
+
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| newest AUD/USD synthetic tick, before the restart | =2026-10-17 18:49:06.55001+01=, read at =2026-10-18 11:49:48.036098+01= | =compass db sql= over =public.ores_marketdata_market_observations_tbl= grouped by =source=, filtered to =synthetic.bloomberg.audusd= and =valid_to = ores_utility_infinity_timestamp_fn()= | =6e461205af= |
+| newest AUD/USD synthetic tick, after the restart | the same =2026-10-17 18:49:06.55001+01=, read at =2026-10-18 11:51:47.984601+01=. 750 rows before and after | the same query, run again after =compass services restart marketdata= | =6e461205af= |
+| ingest loop after the restart | subscribed to =synthetic.v1.ops.tick.>= and holding 67 bound sources, at 11:50:11 | =journalctl --user -u ores.marketdata.service-eager_maxwell.service= | =6e461205af= |
+| ticks the ingest loop has seen | 0, on all 287 bindings; every =INGEST STATUS= line reads =ticks=0 last_tick=never= | the same journal, counted over the lines whose =ticks= is not 0 | =6e461205af= |
+| feeds the synthetic service starts at boot | 24, all of them sandboxed; no =synthetic.bloomberg.*= among them | =journalctl --user -u ores.synthetic.service-eager_maxwell.service=, the =app.auto_start= lines | =6e461205af= |
+| feeds the tenant sees in the shell | 24 feeds, 24 running, 0 partial, and no AUD/USD feed | =./compass.sh shell -l <script with synthetic list feeds>= | =6e461205af= |
+| enabled feed bindings | 287 rows over 67 distinct sources | =compass db sql= over =public.ores_marketdata_feed_bindings_tbl= where =valid_to = ores_utility_infinity_timestamp_fn() and enabled= | =6e461205af= |
+| FX feed configs by binding mode | 103 =bound=, 14 =sandboxed= | =compass db sql= over =public.ores_synthetic_fx_spot_generation_configs_tbl= joined to =public.ores_synthetic_market_data_generation_configs_tbl= | =6e461205af= |
+| AUD/USD observation time span and rate | 150 distinct times from =18:44:07.971592+01= to =18:49:06.55001+01=, 2 seconds apart, which is the 1800 ticks per hour the config names; 750 rows is 5 parties times 150 | =compass db sql= over =public.ores_marketdata_market_observations_tbl=, distinct =observation_datetime= for =source='synthetic.bloomberg.audusd'= | =6e461205af= |
+| uptime of the synthetic service instance the restart replaced | 17h 2min 1.706s, so it started at =2026-10-17 18:50:03=, one minute after the last AUD/USD tick | =journalctl=, the systemd line that stops the unit | =6e461205af= |
 
 * Notes
+
+** 2026-10-18 — the two questions the report separates, answered
+
+The report offers two causes. The evidence rejects the first and confirms the
+second, with a correction: the service that matters is the synthetic service,
+not the marketdata service.
+
+The ingest loop did not lose its subscription. It subscribes at start, it holds
+67 bound sources, and it reports =last_tick=never= for every one of them, which
+is what a consumer that is listening and hearing nothing looks like. Restarting
+it changes nothing: the tick is at the same second before and after.
+
+The feed does not restart with the service. That is the cause, and it is one
+step worse than the report says: the feed does not restart with the synthetic
+service either, and the restart that killed it was the synthetic service's own.
+
+** 2026-10-18 — the timeline the logs give
+
+The last AUD/USD tick is at 18:49:06 on 2026-10-17. The synthetic service
+instance that was running until 11:52 today had been up for 17h 2min, so it
+started at 18:50:03. The tick stops one minute before that start. In other
+words the feed died when the synthetic service was last restarted, and it has
+been dead since, through every later restart of marketdata.
+
+The binding behind that source records its own creation at
+=2026-10-17 17:44:03Z=, which is 18:44:03 local, and its commentary says what
+made it: =Created by ACME provisioning: consumes the system-party simulated
+market stream=. So the sequence is: provisioning started the Bloomberg feeds by
+hand at 18:44, they ticked for five minutes, the service restarted at 18:50, and
+nothing started them again.
+
+** 2026-10-18 — why the boot walk cannot start them
+
+The synthetic service starts feeds at boot from one walk over the config rows it
+can read (=auto_start_feeds= in =ores.synthetic.service/src/app/application.cpp=).
+The walk reads them through =feed_kind_registry::targets=, which reads each kind's
+repository, and the repository selects
+=tenant_id = ctx.tenant_id() OR tenant_id = system_tenant_id=
+(=fx_spot_generation_config_repository::read_latest=). The context is built by
+=context_factory=, which defaults to the system tenant when the configuration
+names none, and the deployed unit passes no =--tenant=. So the walk sees the
+installation's own configs, which are the system-scope sandboxed feeds, and it
+cannot see a config that belongs to a tenant.
+
+The 26 Bloomberg FX configs belong to tenant =64927db6= (Acme) and to its System
+Party. The walk never reads them, so it never starts them, and the log says so by
+silence: it reports =Auto-started 24= and no skip line, because a row that is not
+read is not a row that is skipped.
+
+A feed started on demand through the control plane is held only in memory, in
+=feed_controller='s map of running feeds. Nothing stores that it was running.
+That is why the restart is fatal and why nothing restarts it afterwards.
+
+** 2026-10-18 — what a person sees, and what they cannot do
+
+The binding survives, so the person sees a row that is enabled, quiet, and last
+ticked seventeen hours ago. The bindings screen already says =quiet= for it,
+because =statusOf= calls a binding quiet when its last tick is older than
+=QUIET_AFTER_SECONDS= (600); the screen was read from its code and from the two
+reads it joins, not from a browser session. The running
+set does not hold the source, so the row reads quiet and not stopped. The series
+page shows the newest observation and does not compare it with the clock.
+
+What the person cannot do is start the feed behind the row. The config belongs
+to the tenant's System Party, and a session acting as Acme Corporation Plc does
+not see it: =synthetic list feeds= lists the 24 sandboxed feeds and
+=synthetic start feed synthetic.bloomberg.audusd= answers
+=No feed matching 'synthetic.bloomberg.audusd'=. Only the boot walk or a session
+acting as the System Party could start it, and the boot walk cannot read it.
+
+** 2026-10-18 — the third cause, ruled out
+
+Ticks published while the marketdata service is down are lost, because the
+ingest loop holds a plain subscription and no durable consumer. That is a real
+gap and it is not this one: the tick did not fall behind, it never arrived, and
+the producer published nothing at all. The synthetic log shows every running
+feed publishing on =synthetic.v1.ops.sandbox_tick.>=, a subject the ingest loop
+does not subscribe to by design, because a sandboxed feed is a dry run and never
+writes observations.
+
+** 2026-10-18 — the fix, and why it is not here
+
+The walk in =auto_start_feeds= says it starts every auto-startable feed of every
+kind. It cannot. It starts every auto-startable feed of the installation's own
+tenant. The candidate fix is a walk that reaches every tenant's auto-start
+configs, which needs a read that crosses tenants and a decision about what a
+conflict between two tenants' feeds on one series means. The other candidate is
+a stored running set, so a restart restores what was running.
+
+Both are bigger than this time box and neither is proved better than the other
+by this evidence, so the fix is not written here. The capture that owns it was
+already in the backlog, filed on 2026-10-11, and this task added the measurement
+that confirms it. See =Captures=.
+
+* Captures
+
+- [[id:83FF505F-F58B-4AA6-9FA6-98F4EE29A9B7][Boot auto-start never starts a tenant's feeds]], filed on 2026-10-11 from
+  swift_curie and still open. This task did not file a second one: it confirmed
+  the capture's cause on this environment and added the evidence to it, because
+  two captures of one defect cost the next reader a reconciliation. A draft
+  capture was written and then removed when the search found this one.
 
 * Test Scenarios
 
@@ -82,6 +229,44 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The task filed a second capture for a defect the backlog already held | this task's Notes and Result | Fixed | A =compass search= found =Boot auto-start never starts a tenant's feeds=, filed on 2026-10-11 from swift_curie. The duplicate file was removed and the existing capture now carries this environment's evidence. |
+| 2 | The Result said the boot walk is the only thing that could start the feed, which overlooks a session acting as the party that owns the config | this task's Result | Fixed | The sentence now says the boot walk is the only thing that starts a feed without a person, and the Notes name the session that could. |
+| 3 | The claim that the bindings screen reads quiet was made without opening the screen | this task's Notes | Accepted, recorded | The note says the screen was read from =statusOf= and from the two reads it joins: the activity read and the running set. The running set was read through =synthetic list feeds=. A browser check of the row is left to the task that checks the screen on the running server. |
+| 4 | The Goal repeats the report's premise that the marketdata restart stopped the feed, which the measurements contradict | this task's Goal | Accepted, recorded | The Goal is the report as it came in and is not rewritten; the Result answers it, and says the service that matters is the synthetic one. |
+| 5 | The identity of the session that started the feed at 18:44 is inferred, not read from an audit row | this task's Notes, "the timeline the logs give" | Accepted, recorded | The inference rests on the binding's =change_commentary= (=Created by ACME provisioning=) and on the ticks that follow it three seconds later. No row says which session called the start. The conclusion does not depend on it: the boot walk cannot start the feed after any restart, whoever started it. |
 
 * Result
+
+The feed does not restart with the service. That is the cause, and the service
+is the synthetic one, not the marketdata one.
+
+The synthetic service starts feeds at boot from one walk over the config rows
+its own database context can read, and that context is the installation's system
+tenant. The 26 Bloomberg FX configs behind AUD/USD belong to the Acme tenant's
+System Party, so the walk never reads them and never starts them. A feed started
+on demand lives only in the producer's memory, so the restart of the synthetic
+service at 2026-10-17 18:50:03 dropped it, and nothing has started it since.
+
+The ingest loop is not the cause. It subscribes at start, holds its 67 bound
+sources, and reports =last_tick=never= for all 287 bindings because no tick
+crosses the bus. Restarting the marketdata service moves nothing: the newest
+AUD/USD tick is =2026-10-17 18:49:06.55001+01= before the restart at 11:50:11
+and the same value after it at 11:51:47.
+
+What a person sees is an enabled binding that is quiet, whose last tick is
+seventeen hours old. The bindings screen says quiet already. What a person can
+do about it is nothing from their own session: the feed config belongs to the
+tenant's System Party, and a session acting as Acme Corporation Plc is told
+=No feed matching 'synthetic.bloomberg.audusd'=. The boot walk is the only thing
+that starts a feed without a person, and it cannot read the row.
+
+Acceptance is met. The cause is written above and traced to the line of code
+that holds it. The journey now says what a person sees when a feed stops and
+what the installation does and does not do about it. The investigation ran
+inside one working session, so no open question is carried.
+
+The fix is not in this task, and the record says why. Two candidates exist, a
+boot walk that crosses tenants and a stored running set, and this evidence does
+not choose between them. The capture that owns the defect was already open in
+the backlog, and this task added the evidence that proves it rather than filing
+a second copy.

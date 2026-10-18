@@ -41,6 +41,7 @@
 #include <rfl/json.hpp>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace {
 
@@ -506,7 +507,7 @@ TEST_CASE("the bundle read carries what the document read carries", tags) {
             }));
     };
 
-    // Every family the registry names. The three the case seeded are the ones
+    // Every family the registry names. The four the case seeded are the ones
     // whose comparison can fail on a dropped family; the rest are checked so a
     // read that invents a row is caught too.
     for (std::size_t i = 0; i < ores::refdata::domain::convention_family_count; ++i) {

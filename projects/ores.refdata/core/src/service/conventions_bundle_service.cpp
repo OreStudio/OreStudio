@@ -61,10 +61,19 @@ consteval std::size_t family_position(std::string_view key) {
     return domain::convention_family_count;
 }
 
-// The read and the apply rely on the shared family coming before its parts,
-// because a part is only kept when the bundle already carries its central row.
-static_assert(family_position(central_family) < family_position(pay_receive_family));
-static_assert(family_position(central_family) < family_position(long_short_family));
+// The read keeps a part only when it already carries that part's central row,
+// so each of the three keys must be in the registry and the shared family must
+// come first.
+static_assert(family_position(central_family) < domain::convention_family_count,
+              "The registry has no convention family.");
+static_assert(family_position(pay_receive_family) < domain::convention_family_count,
+              "The registry has no tenor basis swap pay receive family.");
+static_assert(family_position(long_short_family) < domain::convention_family_count,
+              "The registry has no tenor basis swap long short family.");
+static_assert(family_position(central_family) < family_position(pay_receive_family),
+              "The read needs the shared family before its pay receive part.");
+static_assert(family_position(central_family) < family_position(long_short_family),
+              "The read needs the shared family before its long short part.");
 
 bool belongs_to_the_tenor_bundle(const std::string& family) {
     return family == central_family || family == pay_receive_family || family == long_short_family;

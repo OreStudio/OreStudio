@@ -123,6 +123,26 @@ which reads as dead code, but the configuration type is seeded and stored, so
 the family is a product concept with a test-only XML path. It is migrated, not
 deleted: the projection into the five analytics tables is the work.
 
+* What still holds the generated domain
+
+Five product files include =domain/domain.hpp=, and each one belongs to a
+family or a path that has to move first. Verified with
+=grep -rl "domain/domain.hpp" projects/*/*/src --include=*.cpp=.
+
+| File | What keeps it there |
+|------+---------------------|
+| =domain/domain.cpp= | the generated serialiser itself; it goes with xsdcpp |
+| =xml/importer.cpp= | conventions, whose mapper is blocked on the registry refactor |
+| =xml/exporter.cpp= | conventions, for the same reason |
+| =store/run_store.cpp= | the run document and curve configuration |
+| =service/messaging/run_configuration_operations.cpp= | the run document |
+
+Fourteen mappers remain under =domain/=: the twelve instrument mappers plus
+=trade_mapper= (portfolio), =conventions_mapper=, =curve_configuration_mapper=,
+=run_document_mapper=, =stress_test_mapper= and =todays_market_mapper=. Each
+falls with its family. When the last one does, the generated domain, the
+sibling-checkout wiring and the two regeneration patches go in one change.
+
 * Where the work stands
 
 Verified on main at the time of writing, with the commands that prove each

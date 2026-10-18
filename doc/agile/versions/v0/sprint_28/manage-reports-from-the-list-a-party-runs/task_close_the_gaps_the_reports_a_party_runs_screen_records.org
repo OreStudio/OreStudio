@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-18
 #+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -78,8 +78,10 @@ read back from one.
 - [X] *G4.* Add the health word, derived from the run's state and its error
       count. Read =reporting.v1.ops.get_report_instance_health=.
 - [ ] *G10.* Record an owner for a definition, so the Owner cell is drawn.
-      Left open: what an owner is has not been decided. The decision, the
-      options and the recommendation are in * Notes, below.
+      Decided and not implemented: the owner is a team. See
+      [[id:312E7600-482B-4656-970B-63DE8C5C3CCA][A report is owned by a team, not by a person]]. Re-scope this gap to a
+      team when it is picked up. What a team is stays an open question, and the
+      decision, the options and the recommendation are in * Notes, below.
 - [X] *G5.* Add the next fire time of a definition's schedule. Read
       =reporting.v1.ops.get_next_fire=, which relays the caller's session to
       =scheduler.v1.ops.get_scheduler_status= with =scheduler::job_instances:read=.
@@ -318,7 +320,18 @@ The read that follows is =reporting.v1.report_definitions.list=, which already
 returns the definition, with the account name resolved beside it and
 =reporting::report_definitions:read= as its gate.
 
-Until that is decided, G10 stays open and the Owner cell has no source.
+*The decision, recorded elsewhere.* The recommendation above is superseded. A
+capture now records that ownership belongs to a *team* and not to a person —
+[[id:312E7600-482B-4656-970B-63DE8C5C3CCA][A report is owned by a team, not by a person]], filed in
+=doc/agile/product_backlog/inbox/=. The reason is that an individual owner
+answers "who last touched this" and not "who answers for this", breaks when the
+person moves, and in practice reports are run and repaired by a rota. The capture
+also records what a team is as an open question, so no column can be designed
+yet. *G10 must be re-scoped to a team when it is picked up:* the column names a
+team, and the reads and the cell follow that answer rather than
+=owner_account_id=.
+
+Until that is settled, G10 stays open and the Owner cell has no source.
 
 ** What the phase 2 tests call, and what they assert
 

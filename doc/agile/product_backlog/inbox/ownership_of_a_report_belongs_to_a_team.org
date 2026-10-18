@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 312E7600-482B-4656-970B-63DE8C5C3CCA
+:END:
+#+title: A report is owned by a team, not by a person
+#+description: ores_reporting_report_definitions_tbl records no owner: party_id names a legal entity and modified_by and performed_by are audit, not accountability. Decided, not implemented: ownership belongs to a team, because a team answers for a report, absorbs people leaving and is empty only by omission. What a team is in this system stays an open question.
+#+type: capture
+#+level: cross
+#+filetags: :reporting:ownership:iam:decision:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+A report is owned by a *team*, not by a person. The decision is reached and not
+implemented: no column holds it, no read returns it, and no cell draws it. What a
+team is in this system is still open, and the open questions are listed below so
+the future work starts from them and not from a guess.
+
+* Why
+
+=ores_reporting_report_definitions_tbl= records no owner. Its
+=projects/ores.sql/create/reporting/reporting_report_definitions_create.sql= states
+the columns, and none of them answers "who is answerable for this report":
+
+- =modified_by= and =performed_by= are audit. The insert trigger fills
+  =performed_by= from the service or =current_user= and validates =modified_by=
+  against an IAM account username. They name who wrote the row and who ran the
+  write, and audit records what happened, not who answers for the outcome.
+- =party_id= names a legal entity. A legal entity is not a group of people. It
+  cannot be asked a question and it cannot approve a change.
+
+So a failed run has no addressee, and a change to a definition has no approver.
+The Owner cell on the reports-a-party-runs screen has no source, which is why the
+gap stayed open rather than being filled with a second-best column.
+
+* Why a team, and not an individual
+
+An individual is the cheap option, because a nullable =owner_account_id= records
+one. It fails on three counts:
+
+1. It answers "who last touched this", not "who answers for this". A person who
+   last edited a definition is not thereby the person a failed run goes to.
+2. It breaks when the person moves. A resigning account leaves every definition
+   it owns unowned, and the handover is a write per row.
+3. Reports, in practice, are run and repaired by a rota. No one person holds the
+   report; the shift holds it.
+
+A team answers for the report, absorbs people leaving without a write to the
+definition, and can be empty only by a real omission — a definition nobody's team
+claims — rather than by someone resigning.
+
+* What a team is, left open
+
+These are questions, not answers. The future work settles them before a column
+exists.
+
+- What is a team in this system? IAM roles already exist, and a party already
+  exists, so "team" names a thing that overlaps two things already modelled.
+- Is a team a role, a new entity, or a group of accounts? Each has a different
+  cost to read and a different meaning for the cell.
+- Is ownership one team or several, with one that is primary? The screen draws one
+  Owner cell, and the model may hold more.
+- Does ownership need history, as the bitemporal entities carry? A change of owning
+  team is a fact with a time, and the rest of the tree records such facts.
+- How does ownership meet the request-and-approve path? That path needs a second
+  person, and so a second team. Whether the approver is drawn from the owning team
+  or from another is undecided.
+
+* Why it is deferred
+
+It is deferred for one reason and it is not urgency. It needs the answer to what
+a team is before a column can be designed, and the column is the first artefact.
+Phase 3 of the reporting gaps does not depend on it: the definition id on a run's
+event, the health word of a cancelled and a skipped run, the on-demand word and
+the party code in the session all proceed without an owner.
+
+* References
+
+- [[id:6F7F7843-0A12-443A-A8FB-1A0FFA25E6CC][Manage reports from the list a party runs]] — the story this decision
+  serves, and the screen whose Owner cell waits on it,
+  =doc/agile/versions/v0/sprint_28/manage-reports-from-the-list-a-party-runs/story.org=.
+- [[id:66B7603A-16EE-4B5E-8A73-24784A73AB38][Close the gaps the reports a party runs screen records]] — the task whose
+  G10 gap this decision closes the question on,
+  =doc/agile/versions/v0/sprint_28/manage-reports-from-the-list-a-party-runs/task_close_the_gaps_the_reports_a_party_runs_screen_records.org=.
+- =projects/ores.sql/create/reporting/reporting_report_definitions_create.sql= —
+  the table with no owner column.
+
+* See also
+
+- [[id:B15A20EA-29CD-4F01-9709-545BF9334A51][Specify the reports a party runs screen]] — the analysis that first
+  recorded the missing owner as G10, and the Owner column this decision gives a
+  meaning to.

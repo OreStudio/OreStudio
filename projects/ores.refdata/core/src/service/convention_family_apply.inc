@@ -559,3 +559,167 @@ ORES_REFDATA_CORE_EXPORT bool apply_staged_family(const ores::database::context&
     }
     return false;
 }
+
+// Payload reads: each branch reads one family's live rows and serialises each
+// as its own type, so an in-process caller sees the bytes the wire carries and
+// no branch touches another family's type.
+ORES_REFDATA_CORE_EXPORT std::vector<std::string>
+read_family_payloads(const ores::database::context& ctx, const std::string& family) {
+    if (family == "average_ois") {
+        std::vector<std::string> payloads;
+        for (const auto& row : average_ois_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "bma_basis_swap") {
+        std::vector<std::string> payloads;
+        for (const auto& row : bma_basis_swap_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "bond_yield") {
+        std::vector<std::string> payloads;
+        for (const auto& row : bond_yield_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "cds") {
+        std::vector<std::string> payloads;
+        for (const auto& row : cds_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "cms_spread_option") {
+        std::vector<std::string> payloads;
+        for (const auto& row : cms_spread_option_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "commodity_forward") {
+        std::vector<std::string> payloads;
+        for (const auto& row : commodity_forward_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "commodity_future") {
+        std::vector<std::string> payloads;
+        for (const auto& row : commodity_future_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "convention") {
+        std::vector<std::string> payloads;
+        for (const auto& row : convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "cross_currency_basis") {
+        std::vector<std::string> payloads;
+        for (const auto& row : cross_currency_basis_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "cross_currency_fix_float") {
+        std::vector<std::string> payloads;
+        for (const auto& row : cross_currency_fix_float_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "deposit") {
+        std::vector<std::string> payloads;
+        for (const auto& row : deposit_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "fra") {
+        std::vector<std::string> payloads;
+        for (const auto& row : fra_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "future") {
+        std::vector<std::string> payloads;
+        for (const auto& row : future_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "fx_option") {
+        std::vector<std::string> payloads;
+        for (const auto& row : fx_option_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "ibor_index") {
+        std::vector<std::string> payloads;
+        for (const auto& row : ibor_index_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "inflation_swap") {
+        std::vector<std::string> payloads;
+        for (const auto& row : inflation_swap_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "intraday_power_load") {
+        std::vector<std::string> payloads;
+        for (const auto& row : intraday_power_load_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "ois") {
+        std::vector<std::string> payloads;
+        for (const auto& row : ois_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "overnight_index") {
+        std::vector<std::string> payloads;
+        for (const auto& row : overnight_index_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "swap") {
+        std::vector<std::string> payloads;
+        for (const auto& row : swap_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "swap_index") {
+        std::vector<std::string> payloads;
+        for (const auto& row : swap_index_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "tenor_basis_swap_long_short") {
+        std::vector<std::string> payloads;
+        for (const auto& row : tenor_basis_swap_long_short_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "tenor_basis_swap_pay_receive") {
+        std::vector<std::string> payloads;
+        for (const auto& row : tenor_basis_swap_pay_receive_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "tenor_basis_two_swap") {
+        std::vector<std::string> payloads;
+        for (const auto& row : tenor_basis_two_swap_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "zero") {
+        std::vector<std::string> payloads;
+        for (const auto& row : zero_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    if (family == "zero_inflation_index") {
+        std::vector<std::string> payloads;
+        for (const auto& row : zero_inflation_index_convention_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+    throw std::logic_error("The registry does not know the convention family '" + family + "'.");
+}

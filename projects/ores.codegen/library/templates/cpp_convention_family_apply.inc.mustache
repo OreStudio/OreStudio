@@ -90,4 +90,20 @@ ORES_REFDATA_CORE_EXPORT bool apply_staged_family(const ores::database::context&
 {{/families}}
     return false;
 }
+
+// Payload reads: each branch reads one family's live rows and serialises each
+// as its own type, so an in-process caller sees the bytes the wire carries and
+// no branch touches another family's type.
+ORES_REFDATA_CORE_EXPORT std::vector<std::string>
+read_family_payloads(const ores::database::context& ctx, const std::string& family) {
+{{#families}}
+    if (family == "{{key}}") {
+        std::vector<std::string> payloads;
+        for (const auto& row : {{entity}}_repository().read_latest(ctx))
+            payloads.push_back(rfl::json::write(row));
+        return payloads;
+    }
+{{/families}}
+    throw std::logic_error("The registry does not know the convention family '" + family + "'.");
+}
 {{/convention_registry}}

@@ -19,6 +19,7 @@
 #include "conventions_identity.hpp"
 #include "conventions_row_helpers.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
+#include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
 #include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
 #include "ores.refdata.core/repository/convention_repository.hpp"
@@ -77,6 +78,27 @@ std::vector<Row> decode_family(const conventions_bundle& bundle,
 
 conventions_bundle_service::conventions_bundle_service(context ctx)
     : ctx_(std::move(ctx)) {}
+
+conventions_bundle conventions_bundle_service::read() {
+    conventions_bundle bundle;
+    for (std::size_t i = 0; i < domain::convention_family_count; ++i) {
+        const auto family = std::string(domain::convention_families[i].key);
+        const auto payloads = read_family_payloads(ctx_, family);
+        int sequence = 0;
+        for (const auto& payload : payloads) {
+            // The shared convention table carries every kind, and this bundle
+            // covers one of them.
+            if (family == central_family) {
+                const auto decoded = rfl::json::read<domain::convention>(payload);
+                if (!decoded || decoded->kind_code != tenor_basis_swap_kind)
+                    continue;
+            }
+            bundle.rows.push_back(conventions_bundle_row{
+                .family = family, .sequence = sequence++, .payload = payload});
+        }
+    }
+    return bundle;
+}
 
 conventions_apply_result conventions_bundle_service::apply(const conventions_bundle& bundle) {
     conventions_apply_result result;

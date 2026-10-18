@@ -180,9 +180,14 @@ def test_the_apply_fragment_calls_one_helper_per_family_in_its_mode(tmp_path):
     assert text.count("replace_rows_by_id(ctx,") == 2
     assert text.count("add_missing_world_rows(ctx,") == 2
     assert text.count(".read_latest(ctx);") == 3
-    assert text.count("_repository()") == 9
-    assert text.count('if (family == "ois")') == 1
+    assert text.count("_repository()") == 12
+    # Two dispatchers branch on the family, the apply and the payload read.
+    assert text.count('if (family == "ois")') == 2
     assert text.count("return false;") == 1
+    # The payload reader adds one branch per family, and each branch serialises
+    # the family's own rows.
+    assert text.count("read_family_payloads(") == 1
+    assert text.count("payloads.push_back(rfl::json::write(row))") == 3
 
 
 def test_the_includes_name_each_repository_once_in_order(tmp_path):

@@ -104,9 +104,15 @@ task and name that file in the Command column.
   explicit.
 - The run store has no unit of work, so the document path it uses is still not
   atomic. Task 4 closes that when it moves the run store onto the bundle.
-- The read side of step 2 is open. =conventions_bundle_service::read= does not
-  exist yet, and the per-family translation units are not generated, so the
-  staged apply still compiles every family's decode branch in one unit.
+- Step 2's read side is merged. The generated fragment now carries
+  =read_family_payloads=, one branch per family, and
+  =conventions_bundle_service::read= assembles every family the session sees
+  into one bundle of payloads. The shared convention family is narrowed to the
+  kind this bundle covers, because that one table carries every kind. A test
+  proves the bundle read carries the same rows as the document read, which is
+  the bridge the next step removes.
+- The per-family translation units are not generated yet, so the staged apply
+  and the payload read each compile one branch per family in a single unit.
 - The pin holds. Comparing the service's hand-written calls with the generated
   registry gives 26 families against 26 entries, no disagreement about which
   families are party-scoped and which are world-scoped, and no registry row the

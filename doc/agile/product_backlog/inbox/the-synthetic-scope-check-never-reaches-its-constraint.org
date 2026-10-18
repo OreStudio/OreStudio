@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 1774AC49-A216-471B-8921-328EBB10E584
+:END:
+#+title: The synthetic market data scope check never reaches its check constraint
+#+description: synthetic_market_data_generation_config_scope_test.sql test 6 expects error 23514 from the scope check constraint, but a tenant-existence trigger raises 23503 first, because the test uses a tenant id that does not exist. The suite fails on origin/main with no branch changes.
+#+type: capture
+#+level: cross
+#+filetags: :sql:pgtap:synthetic:
+#+created: 2026-10-18
+#+updated: 2026-10-18
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

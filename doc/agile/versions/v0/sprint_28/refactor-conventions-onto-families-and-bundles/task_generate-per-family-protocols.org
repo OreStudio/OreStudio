@@ -31,7 +31,7 @@ A convention family is reachable over the message bus by its own subjects, throu
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-10-17                               |
+| Last touched | 2026-10-18                               |
 
 * Acceptance
 
@@ -59,7 +59,6 @@ task and name that file in the Command column.
 |------+-------+---------+--------|
 |      |       |         |        |
 
-* Notes
 * Notes
 
 - The aggregate cannot be deleted before its replacement exists. Deleting

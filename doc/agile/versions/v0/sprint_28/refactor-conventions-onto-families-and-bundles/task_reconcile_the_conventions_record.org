@@ -57,7 +57,7 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Task state rows changed | 3 | =git diff origin/main -- 'doc/agile/versions/v0/sprint_28/refactor-conventions-onto-families-and-bundles/task_*.org'= piped through =grep -c '^\\+\\| State'= | 650caa39de |
 
 * Notes
 
@@ -65,6 +65,8 @@ task and name that file in the Command column.
 - Bringing the tasks that merged into line was not enough on its own. Two tasks had been marked STARTED while the story table said BACKLOG and the sprint said BACKLOG for the story. All three now agree.
 - Two tasks turned out to be part delivered rather than done. Task 1 still carries the aggregate, and task 4 still has the run store on the whole-document service. Both are marked STARTED with the remainder named, which is what the record should have said when the earlier work merged.
 - The story's Decisions section had never been written, so the seven decisions the tasks settled now live there and the task notes keep the local reasoning.
+- #3457 created the story and filed its tasks. It serves no single task, so no task table carries it.
+- The bundle task's reply declares =fx_skipped= and never fills it, so its acceptance is met in part. The reviewer of this change found that, and the "done" state stands on the rest of the task, with the gap recorded in its own notes.
 
 * Test Scenarios
 

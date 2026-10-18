@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-18
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -63,7 +63,7 @@ task and name that file in the Command column.
 * Notes
 
 - The investigation in [[id:9738A907-2C19-4B89-9B69-9411FA257F54][Fix the tenor basis swap convention model and the document TU]] found the failure is accumulated context in one handler translation unit, not one over-wide literal. That changes what this task waits for. The conventions document is already out of the handler, so the remaining pressure is the curve configuration document, which is task 8.
-- The flag =/constexpr:depth= is not an acceptable fix. A tree that needs it has a data model the compiler cannot reflect, and raising the limit hides that.
+- The flag =/constexpr:depth= is not an acceptable fix for these translation units. A tree that needs it there has a data model the compiler cannot reflect, and raising the limit hides that. =ores.trading.api= already sets the flag for its own sources, so the objection is scoped to the files this story moves.
 
 * Test Scenarios
 

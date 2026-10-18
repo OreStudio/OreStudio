@@ -355,6 +355,7 @@ refused on write.
 | "lower_barrier" is null or "lower_barrier" > 0 |
 | "upper_barrier" is null or "upper_barrier" > 0 |
 | "lower_barrier" is not null or "upper_barrier" is not null |
+| ("trade_type_code" <> 'FxDoubleBarrierOption') or ("lower_barrier" is not null and "upper_barrier" is not null) |
 | ("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('UpAndOut', 'UpAndIn', 'FixingCap')) or ("lower_barrier" is null and "upper_barrier" is not null) |
 | ("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('DownAndOut', 'DownAndIn', 'FixingFloor')) or ("lower_barrier" is not null and "upper_barrier" is null) |
 

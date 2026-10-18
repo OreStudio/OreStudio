@@ -67,7 +67,6 @@ fx_barrier_option_instrument make_instrument(database_helper& h) {
     return r;
 }
 
-
 TEST_CASE("an_up_style_refuses_a_lower_level", tags) {
     auto lg(make_logger(test_suite));
 
@@ -80,9 +79,14 @@ TEST_CASE("an_up_style_refuses_a_lower_level", tags) {
     auto instr = make_instrument(h);
     instr.lower_barrier = ores::utility::decimal::decimal::from_string("1.1").value();
 
+    // The refusal names a check constraint, so a different failure cannot pass.
     fx_barrier_option_instrument_repository repo;
-    REQUIRE_THROWS(repo.write(ctx, instr));
-    BOOST_LOG_SEV(lg, debug) << "Refused an Up style with a lower level.";
+    try {
+        repo.write(ctx, instr);
+        FAIL("the store accepted an Up style with a lower level");
+    } catch (const std::exception& e) {
+        CHECK(std::string(e.what()).find("violates check constraint") != std::string::npos);
+    }
 }
 
 } // namespace
@@ -158,4 +162,25 @@ TEST_CASE("fx_barrier_option_instrument_remove", tags) {
     const auto after = repo.read_latest(ctx, id_str);
     BOOST_LOG_SEV(lg, debug) << "After remove count: " << after.size();
     CHECK(after.size() == before.size() - 1);
+}
+
+TEST_CASE("a_double_barrier_refuses_a_single_level", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    const auto party_id = boost::uuids::random_generator()();
+    auto ctx = h.context().with_party(h.tenant_id(), party_id, {party_id}, h.db_user());
+
+    // A double barrier states a level per side, so one level is half a row.
+    auto instr = make_instrument(h);
+    instr.identity.trade_type_code = "FxDoubleBarrierOption";
+    instr.barrier_type = "KnockOut";
+
+    fx_barrier_option_instrument_repository repo;
+    try {
+        repo.write(ctx, instr);
+        FAIL("the store accepted a double barrier with one level");
+    } catch (const std::exception& e) {
+        CHECK(std::string(e.what()).find("violates check constraint") != std::string::npos);
+    }
 }

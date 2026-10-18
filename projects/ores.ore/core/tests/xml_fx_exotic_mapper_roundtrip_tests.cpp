@@ -151,10 +151,10 @@ TEST_CASE("fx_exotic_mapper_roundtrip_digital_barrier_option", tags) {
     REQUIRE(instr.strike.has_value());
     CHECK(instr.strike->to_double() > 0.0);
     CHECK(!instr.barrier_type.empty());
-    // The digital barrier states one level, placed by the style's direction.
-    REQUIRE((instr.lower_barrier.has_value() || instr.upper_barrier.has_value()));
-    CHECK((instr.lower_barrier.has_value() ? instr.lower_barrier->to_double()
-                                          : instr.upper_barrier->to_double()) > 0.0);
+    // The document states an Up style, so its level lands in the upper column.
+    REQUIRE(instr.upper_barrier.has_value());
+    CHECK(instr.upper_barrier->to_double() > 0.0);
+    CHECK(!instr.lower_barrier.has_value());
 
     const auto rt = fx_instrument_mapper::reverse_fx_digital_barrier_option(instr);
     const bool has_data = rt.FxDigitalBarrierOptionData.operator bool();

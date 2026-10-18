@@ -105,12 +105,12 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Duplicated vocabulary checks removed | 10 | =git diff origin/main -- 'projects/ores.trading/modeling/*.org' \| grep -c '^-.* in ('=, in =evidence/fx-vocabularies.txt= | the PR head |
-| Level checks on the barrier table | 5 of its 12 | =grep -c "check (" projects/ores.sql/create/trading/trading_fx_barrier_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
+| Level checks on the barrier table | 6 of its 13 | =grep -c "check (" projects/ores.sql/create/trading/trading_fx_barrier_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
 | Digital checks keyed on the trade type | 4 | =grep -c 'check (("trade_type_code"' projects/ores.sql/create/trading/trading_fx_digital_option_instruments_create.sql=, in =evidence/fx-vocabularies.txt= | the PR head |
-| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests= | the PR head |
+| Trading core suite | pass | =compass test run --preset linux-clang-release-ninja -- -R ores.trading.core.tests=; the economic-digest suite is outside the build (see Findings) | the PR head |
 | ORE core suite | pass | the same command with =ores.ore.core.tests= | the PR head |
-| Refusing case for the barrier direction | 1 | =an_up_style_refuses_a_lower_level= in =projects/ores.trading/core/tests/repository_fx_barrier_option_instrument_repository_tests.cpp= | the PR head |
-| Economic-digest suite | rotted, not wired | four cases fail on an empty digest, including =ScriptedTrade=, which this unit does not touch | the PR head |
+| Refusing cases | 2 (an Up style with a lower level, a double barrier with one level) | =an_up_style_refuses_a_lower_level= in =projects/ores.trading/core/tests/repository_fx_barrier_option_instrument_repository_tests.cpp= | the PR head |
+| Economic-digest suite | rotted, not wired | =grep -rn digest_tests --include=CMakeLists.txt projects/ | wc -l= returns 0, so the suite is outside the build; a local wiring run failed four cases on an empty digest, recorded in =evidence/fx-digest-suite.txt= | the PR head |
 |      |       |         |        |
 
 * Notes
@@ -144,12 +144,6 @@ via its "Verifies task" field.
 
 * Result
 
-The three findings are settled in the model and the mapper. The duplicated
-vocabularies are gone: ten =in (...)= checks named a set the lookup now
-validates. The vanilla option's exercise style is the lookup's set, and the
-model states it once. A single barrier holds its level in the column its
-direction names, and the mapper places it by direction.
-
 * Findings
 
 - *The economic-digest suite is rotted, and not by this unit.* No CMakeLists
@@ -165,8 +159,6 @@ direction names, and the mapper places it by direction.
   beside the lookup that holds them. Encoding the direction on
   =ores_trading_barrier_types_tbl= is the right shape and is captured as its
   own work.
-
-The three findings are settled and the tree enforces each one.
 
 The duplicated vocabularies are gone. Ten =in (...)= checks named a set the
 lookup table now validates, so the checks were the second copy and are removed.
@@ -186,10 +178,9 @@ is exempt, because its trade type says so.
 The digital option keys its checks on the trade type. Each of its four codes
 states the fields it engages: a plain digital a strike, a touch one barrier, a
 double touch both barriers, and a digital barrier a strike and a barrier. The
-checks require those fields and tolerate another code's, because one table
-serves four products and one generator writes a synthetic row for all four, so
-a check that refused the others would refuse the only row the generator can
-write.
+checks require those fields and tolerate another code's, because the one synthetic
+generator fills a strike and both barriers on its single row, so a check that
+refused a field the code does not engage would refuse that row.
 
 The decisions are in the parent story's =* Decisions=.
 #+environment: solid_dirac

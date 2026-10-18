@@ -70,6 +70,7 @@ create table if not exists "ores_trading_fx_barrier_option_instruments_tbl" (
     check ("lower_barrier" is null or "lower_barrier" > 0),
     check ("upper_barrier" is null or "upper_barrier" > 0),
     check ("lower_barrier" is not null or "upper_barrier" is not null),
+    check (("trade_type_code" <> 'FxDoubleBarrierOption') or ("lower_barrier" is not null and "upper_barrier" is not null)),
     check (("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('UpAndOut', 'UpAndIn', 'FixingCap')) or ("lower_barrier" is null and "upper_barrier" is not null)),
     check (("trade_type_code" <> 'FxBarrierOption') or ("barrier_type" not in ('DownAndOut', 'DownAndIn', 'FixingFloor')) or ("lower_barrier" is not null and "upper_barrier" is null))
 );

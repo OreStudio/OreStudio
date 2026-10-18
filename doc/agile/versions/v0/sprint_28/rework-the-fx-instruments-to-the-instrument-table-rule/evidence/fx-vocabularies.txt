@@ -1,7 +1,6 @@
-command: git diff --stat origin/main -- 'projects/ores.trading/modeling/*.org'
- 5 files changed, 23 insertions(+), 18 deletions(-)
-checks removed: 10
-barrier checks:
-12
+command: git diff origin/main -- 'projects/ores.trading/modeling/*.org' | grep -c '^-.* in ('
+10
+barrier check count:
+13
 digital trade-type checks:
 4

@@ -177,9 +177,9 @@ std::string option_type_from_single(const optionData& od) {
 /**
  * @brief Whether a barrier style names the direction it engages.
  *
- * An Up style or a cap engages the upper level, a Down style or a floor the
- * lower one. The styles that name no direction keep the level in the lower
- * column, which is the shape their readers expect.
+ * An Up style or a FixingCap engages the upper level, a Down style or a
+ * FixingFloor the lower one. The styles that name no direction keep the level
+ * in the lower column, which is the shape their readers expect.
  */
 bool is_up_barrier_style(const std::string& type) {
     return type == "UpAndOut" || type == "UpAndIn" || type == "FixingCap";
@@ -467,9 +467,7 @@ fx_instrument_mapper::forward_fx_kiko_barrier_option(const trade& t) {
     r.expiry_date = expiry_date_from_single(d.OptionData);
 
     // A KIKO or generic barrier states a level per side, so the pair stays
-    // positional here: the first group is the lower side, the second the upper.
-    // The directional rule names FxBarrierOption alone, which is the product
-    // whose style chooses one side.
+    // positional here (see fill_barrier for the directional rule).
     if (!d.Barriers.BarrierData.empty()) {
         r.barrier_type = to_string(d.Barriers.BarrierData.front().Type);
         if (!d.Barriers.BarrierData.front().Levels.Level.empty())

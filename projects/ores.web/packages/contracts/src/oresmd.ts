@@ -92,6 +92,24 @@ export const oresmdParseResultSchema = z.object({
 });
 export type OresmdParseResult = z.infer<typeof oresmdParseResultSchema>;
 
+/** The most URIs one batch read may carry: the widest page a paged list draws. */
+export const ORESMD_MAX_BATCH = 200;
+
+/**
+ * Asks the codec to read many URIs in one call. A list of rows names one URI each,
+ * and asks about them together rather than once a row.
+ */
+export const oresmdParseManyRequestSchema = z.strictObject({
+    uris: z.array(z.string().max(ORESMD_MAX_TEXT)).max(ORESMD_MAX_BATCH),
+});
+export type OresmdParseManyRequest = z.infer<typeof oresmdParseManyRequestSchema>;
+
+/** The parts of each URI, in the order asked. A refused URI takes its own answer. */
+export const oresmdParseManyResultSchema = z.object({
+    parts: z.array(oresmdParseResultSchema),
+});
+export type OresmdParseManyResult = z.infer<typeof oresmdParseManyResultSchema>;
+
 /**
  * The parts of a URI to write. The browser states the structure and the codec
  * decides whether the parts make a URI, so the kind, the instrument and the quote

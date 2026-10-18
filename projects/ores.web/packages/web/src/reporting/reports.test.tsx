@@ -81,6 +81,7 @@ const PAGE: ReportsPage = {
         running: 0,
         neverRun: 1,
         completedClean: 0,
+        unknown: 0,
         unstated: 0,
     },
     unread: [],
@@ -88,6 +89,7 @@ const PAGE: ReportsPage = {
 
 const DETAIL: ReportDetail = {
     report: DAILY,
+    unread: [],
     definition: {
         name: NAME,
         description: 'ACME daily PnL definition',
@@ -120,6 +122,16 @@ function list(seed: (client: QueryClient) => void = () => undefined): string {
             client.setQueryData(REPORTS_QUERY_KEY, PAGE);
             seed(client);
         },
+    );
+}
+
+/** The list drawn from a page that states its own rows and unread reads. */
+function listPage(page: ReportsPage): string {
+    return renderRecords(
+        '/reporting',
+        [],
+        <Route path="/reporting" element={<ReportsScreen />} />,
+        (client) => client.setQueryData(REPORTS_QUERY_KEY, page),
     );
 }
 
@@ -173,6 +185,23 @@ describe('the list of reports a party runs', () => {
         expect(page).toContain('never run');
     });
 
+    it('states a row it could not read as unknown, not as never run', () => {
+        const unchecked: ReportsPage = {
+            rows: [{ ...MONTH, health: null }],
+            tally: { ...PAGE.tally, neverRun: 0, unknown: 1 },
+            unread: [{ cell: 'latestRun', message: 'The latest run read was refused.' }],
+        };
+        const page = listPage(unchecked);
+        const row = rowText(page, MONTH_END);
+
+        expect(row).toContain('unknown');
+        expect(row).not.toContain('never run');
+        // The warning line names the read that failed, as it does for any cell.
+        expect(textOf(page)).toContain(
+            'Latest run started could not be read: The latest run read was refused.',
+        );
+    });
+
     it('states a party that owns no definition in words', () => {
         const page = textOf(
             renderRecords(
@@ -223,6 +252,30 @@ describe('one report definition', () => {
         expect(html).toContain('value="none"');
         expect(html).toContain('checked=""');
         expect(textOf(html)).toContain('Save');
+    });
+
+    it('says a run it could not read was not checked, not that it never ran', () => {
+        const page = textOf(
+            renderRecords(
+                `/reporting/${encodeURIComponent(MONTH_END)}`,
+                [],
+                <Route path="/reporting/:name" element={<ReportPage />} />,
+                (client) => {
+                    client.setQueryData(['my-access'], accessOf([]));
+                    client.setQueryData(reportKey(MONTH_END), {
+                        report: { ...MONTH, health: null },
+                        definition: { ...DETAIL.definition, name: MONTH_END },
+                        unread: [
+                            { cell: 'latestRun', message: 'The latest run read was refused.' },
+                        ],
+                    } satisfies ReportDetail);
+                },
+            ),
+        );
+
+        expect(page).toContain('could not be checked');
+        expect(page).toContain('does not read as never run');
+        expect(page).not.toContain('has never run');
     });
 
     it('states the fields the form does not write as read only', () => {

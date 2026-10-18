@@ -55,16 +55,24 @@ const HEALTH: Readonly<
  *
  * A stated `stateName` with no word is a state the server has not mapped to one
  * of the five, so the marker says that in words and names the state it came
- * from rather than borrowing a nearby word.
+ * from rather than borrowing a nearby word. A row whose latest-run read failed
+ * is `unknown`: the absence belongs to the read, so no state was seen and none
+ * can be named.
  */
 export function HealthTag({
     health,
     stateName,
+    checked = true,
 }: {
     readonly health: ReportHealthWord | null;
     readonly stateName: string;
+    /** False when the read that derives the word failed. */
+    readonly checked?: boolean;
 }): ReactNode {
     const { t } = useTranslation();
+    if (!checked) {
+        return <Tag tone="muted">{t('reporting.health.unknown')}</Tag>;
+    }
     if (health === null) {
         const state = stateName === '' ? '' : ` (${stateName})`;
         return (

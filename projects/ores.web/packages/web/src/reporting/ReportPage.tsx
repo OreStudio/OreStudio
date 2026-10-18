@@ -249,10 +249,29 @@ function EditForm({
     );
 }
 
-/** The latest run, as the list states it, so the detail and the list agree. */
-function LatestRun({ report }: { readonly report: ReportDetail['report'] }): ReactNode {
+/**
+ * The latest run, as the list states it, so the detail and the list agree.
+ *
+ * A page that saw no run says which it is: a definition that never ran, or a
+ * latest-run read that failed, in which case nothing about the run was checked.
+ */
+function LatestRun({
+    report,
+    unread,
+}: {
+    readonly report: ReportDetail['report'];
+    readonly unread: ReportDetail['unread'];
+}): ReactNode {
     const { t, language } = useTranslation();
     if (report.latestRun === null) {
+        const refusal = unread.find((entry) => entry.cell === 'latestRun');
+        if (refusal !== undefined) {
+            return (
+                <p className="text-sm text-ink-muted">
+                    {t('reporting.detail.couldNotCheck', { message: refusal.message })}
+                </p>
+            );
+        }
         return <p className="text-sm text-ink-muted">{t('reporting.detail.neverRun')}</p>;
     }
     const ms = runDuration(report.latestRun.startedAt, report.latestRun.completedAt);
@@ -329,7 +348,10 @@ export function ReportPage(): ReactNode {
         );
     }
 
-    const { report, definition } = detail.data;
+    const { report, definition, unread } = detail.data;
+    const healthChecked = !unread.some(
+        (entry) => entry.cell === 'latestRun' || entry.cell === 'health',
+    );
     return (
         <div className="space-y-6">
             <div>
@@ -337,7 +359,13 @@ export function ReportPage(): ReactNode {
                 <PageHeader
                     title={report.name}
                     description={t('reporting.detail.lead')}
-                    actions={<HealthTag health={report.health} stateName={report.stateName} />}
+                    actions={
+                        <HealthTag
+                            health={report.health}
+                            stateName={report.stateName}
+                            checked={healthChecked}
+                        />
+                    }
                 />
             </div>
 
@@ -354,7 +382,7 @@ export function ReportPage(): ReactNode {
                         {t('reporting.detail.latestRunLead')}
                     </span>
                 </header>
-                <LatestRun report={report} />
+                <LatestRun report={report} unread={unread} />
             </section>
 
             <section className="card space-y-4 p-4">

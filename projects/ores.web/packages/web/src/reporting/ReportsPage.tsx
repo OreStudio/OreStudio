@@ -145,13 +145,18 @@ function ScheduleCell({ row }: { readonly row: ReportRowView }): ReactNode {
 /** The five words, counted, so the shape of the party reads before any row does. */
 function Tally({ tally }: { readonly tally: ReportTallyView }): ReactNode {
     const { t, language } = useTranslation();
-    const cards: readonly (readonly [string, number])[] = [
+    const cards: (readonly [string, number])[] = [
         [t('reporting.health.failed'), tally.failed],
         [t('reporting.health.completedWithErrors'), tally.completedWithErrors],
         [t('reporting.health.running'), tally.running],
         [t('reporting.health.neverRun'), tally.neverRun],
         [t('reporting.health.completedClean'), tally.completedClean],
     ];
+    // Unknown rows are counted beside the five words rather than inside them: a
+    // run that could not be read is not a run that never happened.
+    if (tally.unknown > 0) {
+        cards.push([t('reporting.health.unknown'), tally.unknown]);
+    }
     return (
         <section className="card space-y-3 p-4">
             <header className="flex flex-wrap items-baseline justify-between gap-2">
@@ -175,7 +180,14 @@ function Tally({ tally }: { readonly tally: ReportTallyView }): ReactNode {
 }
 
 /** The rows, one per definition, in the order the server sorted them. */
-function Rows({ rows }: { readonly rows: readonly ReportRowView[] }): ReactNode {
+function Rows({
+    rows,
+    healthChecked,
+}: {
+    readonly rows: readonly ReportRowView[];
+    /** False when the read that derives the health word failed for every row. */
+    readonly healthChecked: boolean;
+}): ReactNode {
     const { t } = useTranslation();
     if (rows.length === 0) {
         return (
@@ -222,7 +234,11 @@ function Rows({ rows }: { readonly rows: readonly ReportRowView[] }): ReactNode 
                                 <DurationCell row={row} />
                             </td>
                             <td className="py-2">
-                                <HealthTag health={row.health} stateName={row.stateName} />
+                                <HealthTag
+                                    health={row.health}
+                                    stateName={row.stateName}
+                                    checked={healthChecked}
+                                />
                             </td>
                             <td className="py-2">
                                 {row.latestRun === null ? (
@@ -278,6 +294,9 @@ export function ReportsPage(): ReactNode {
     }
 
     const { rows, tally, unread } = reports.data;
+    const healthChecked = !unread.some(
+        (entry) => entry.cell === 'latestRun' || entry.cell === 'health',
+    );
     return (
         <div className="space-y-6">
             <div>
@@ -295,7 +314,7 @@ export function ReportsPage(): ReactNode {
                     <h2 className="text-sm font-medium">{t('reporting.list.title')}</h2>
                     <span className="text-xs text-ink-faint">{t('reporting.list.lead')}</span>
                 </header>
-                <Rows rows={rows} />
+                <Rows rows={rows} healthChecked={healthChecked} />
                 <p className="text-xs text-ink-faint">{t('reporting.list.note')}</p>
             </section>
         </div>

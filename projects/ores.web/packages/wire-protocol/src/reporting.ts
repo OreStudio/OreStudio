@@ -94,6 +94,8 @@ export const reportTallyViewSchema = z.object({
     running: z.int().nonnegative(),
     neverRun: z.int().nonnegative(),
     completedClean: z.int().nonnegative(),
+    /** The rows whose health could not be read, so nothing about them is known. */
+    unknown: z.int().nonnegative(),
     /** The rows whose run states a word no health word covers. */
     unstated: z.int().nonnegative(),
 });
@@ -152,10 +154,15 @@ export const reportDefinitionViewSchema = z.object({
 
 export type ReportDefinitionView = z.infer<typeof reportDefinitionViewSchema>;
 
-/** One definition, and the row the list would draw for it. */
+/**
+ * One definition, the row the list would draw for it, and the reads that
+ * failed. The detail screen names a failed read so that a run it did not see is
+ * not read as a definition that never ran.
+ */
 export const reportDetailSchema = z.object({
     report: reportRowViewSchema,
     definition: reportDefinitionViewSchema,
+    unread: z.array(reportUnreadSchema),
 });
 
 export type ReportDetail = z.infer<typeof reportDetailSchema>;

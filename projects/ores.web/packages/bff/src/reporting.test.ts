@@ -261,6 +261,7 @@ describe('reporting routes', () => {
                 running: 0,
                 neverRun: 1,
                 completedClean: 0,
+                unknown: 0,
                 unstated: 0,
             },
             unread: [],
@@ -294,6 +295,36 @@ describe('reporting routes', () => {
         ]);
     });
 
+    it('leaves health unknown and records the unread latest run when that read fails', async () => {
+        const replies = listReplies();
+        delete replies[LATEST];
+        const { server, sessionId } = buildTestServer(replies);
+
+        const response = await send(server, sessionId, 'GET', '/api/reporting/reports');
+
+        expect(response.statusCode).toBe(200);
+        const body = response.json();
+        // No run was observed, so there is no word to state: never run is a fact
+        // about the definition and this read is a fact about the request.
+        expect(body.rows.map((row: Record<string, unknown>) => row.health)).toEqual([null, null]);
+        expect(body.rows[0].latestRun).toBeNull();
+        // The cells the other reads filled survive the one that failed.
+        expect(body.rows[0].partyCode).toBe('ACMCOR');
+        expect(body.rows[0].nextFireAt).toBe('2026-10-18 09:00:00.000000Z');
+        expect(body.unread).toEqual([
+            { cell: 'latestRun', message: `No canned reply for ${LATEST}` },
+        ]);
+        expect(body.tally).toEqual({
+            failed: 0,
+            completedWithErrors: 0,
+            running: 0,
+            neverRun: 0,
+            completedClean: 0,
+            unknown: 2,
+            unstated: 0,
+        });
+    });
+
     it('refuses the list when the definitions themselves cannot be read', async () => {
         const { server, sessionId } = buildTestServer({
             [DEFINITIONS]: { result: { ...ok, outcome: 'denied', message: 'Refused.' } },
@@ -321,6 +352,7 @@ describe('reporting routes', () => {
                 running: 0,
                 neverRun: 0,
                 completedClean: 0,
+                unknown: 0,
                 unstated: 0,
             },
             unread: [],

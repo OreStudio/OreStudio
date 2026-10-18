@@ -4457,6 +4457,7 @@ const pt: SourceCatalogue = {
             running: 'em curso',
             neverRun: 'nunca executado',
             completedClean: 'concluído sem erros',
+            unknown: 'desconhecido',
             noWord: 'sem palavra',
         },
         cell: {
@@ -4488,6 +4489,8 @@ const pt: SourceCatalogue = {
             latestRunLead: 'composta a partir da execução, e nunca da definição',
             neverRun:
                 'Esta definição nunca foi executada. Nada foi verificado, pelo que não se lê como limpa.',
+            couldNotCheck:
+                'A última execução não pôde ser verificada: {message} Nada foi lido, pelo que não se lê como nunca executada.',
             started: 'Início',
             noNextFire: 'O agendador não enuncia qualquer próxima execução.',
             record: 'A definição',

@@ -22,6 +22,7 @@
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_error_event_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.api/messaging/report_operations_protocol.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
@@ -31,6 +32,7 @@
 #include "ores.reporting.core/messaging/publish_from_dq_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
 #include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
+#include "ores.reporting.core/messaging/report_error_event_handler.hpp"
 #include "ores.reporting.core/messaging/report_execution_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_trigger_handler.hpp"
@@ -233,6 +235,28 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_report_instance_version_request::nats_subject, group, [rih](ores::nats::message msg) {
             rih->get_report_instance_version(std::move(msg));
         }));
+    subs.push_back(nats.queue_subscribe(
+        get_latest_report_instances_by_definition_request::nats_subject,
+        group,
+        [rih](ores::nats::message msg) {
+            rih->get_latest_report_instances_by_definition(std::move(msg));
+        }));
+    subs.push_back(nats.queue_subscribe(
+        get_report_instance_health_request::nats_subject,
+        group,
+        [rih](ores::nats::message msg) { rih->get_report_instance_health(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Report error events. The list screen counts a run's problems
+    // through the counts read, so this handler serves that read.
+    // ----------------------------------------------------------------
+    {
+        auto reeh = std::make_shared<report_error_event_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_report_error_counts_request::nats_subject,
+            group,
+            [reeh](ores::nats::message msg) { reeh->get_report_error_counts(std::move(msg)); }));
+    }
 
     // ----------------------------------------------------------------
     // Report instance trigger (hand-crafted handler — not codegen)

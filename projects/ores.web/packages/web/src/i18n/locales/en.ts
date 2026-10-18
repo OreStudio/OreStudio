@@ -4422,6 +4422,7 @@ export const en: SourceCatalogue = {
             running: 'running',
             neverRun: 'never run',
             completedClean: 'completed clean',
+            unknown: 'unknown',
             noWord: 'no word',
         },
         cell: {
@@ -4453,6 +4454,8 @@ export const en: SourceCatalogue = {
             latestRunLead: 'composed from the run, and never from the definition',
             neverRun:
                 'This definition has never run. Nothing was checked, so it does not read as clean.',
+            couldNotCheck:
+                'The latest run could not be checked: {message} Nothing was read, so this definition does not read as never run.',
             started: 'Started',
             noNextFire: 'The scheduler states no next run.',
             record: 'The definition',

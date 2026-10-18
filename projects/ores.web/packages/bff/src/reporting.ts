@@ -96,6 +96,8 @@ interface Tally {
     readonly running: number;
     readonly neverRun: number;
     readonly completedClean: number;
+    /** The rows whose health could not be read, so nothing about them is known. */
+    readonly unknown: number;
     readonly unstated: number;
 }
 
@@ -279,6 +281,25 @@ function refusalOf(result: z.infer<typeof resultSchema>): HttpFailure {
     }
 }
 
+/**
+ * The health word of one row.
+ *
+ * A definition with no run is the one word its absence states, and it is not
+ * clean: nothing ran and nothing was checked. When the latest-run read itself
+ * failed, the absence belongs to the read and not to the definition, so the word
+ * is absent too and the page's unread entry names the read that refused.
+ */
+function healthOfRow(
+    run: Record<string, unknown> | undefined,
+    stated: { health: HealthWord | null } | undefined,
+    runs: ReadonlyMap<string, Record<string, unknown>> | undefined,
+): HealthWord | null {
+    if (run === undefined) {
+        return runs === undefined ? null : 'never run';
+    }
+    return stated?.health ?? null;
+}
+
 /** One definition and everything the list says about it. */
 function rowOf(
     definition: Record<string, unknown>,
@@ -307,9 +328,7 @@ function rowOf(
         partyId,
         partyCode: decorated.partyCodes?.get(partyId) ?? null,
         scheduleExpression: text(definition['schedule_expression']),
-        // A definition with no run is the one word its absence states, and it is
-        // not clean: nothing ran and nothing was checked.
-        health: run === undefined ? 'never run' : (stated?.health ?? null),
+        health: healthOfRow(run, stated, decorated.runs),
         stateName: stated?.stateName ?? '',
         latestRun:
             run === undefined
@@ -327,15 +346,21 @@ function rowOf(
     };
 }
 
-function tallyOf(rows: readonly ReportRow[]): Tally {
+function tallyOf(rows: readonly ReportRow[], unread: readonly Unread[]): Tally {
     const tally = {
         failed: 0,
         completedWithErrors: 0,
         running: 0,
         neverRun: 0,
         completedClean: 0,
+        unknown: 0,
         unstated: 0,
     };
+    // A word the server did not state because the read that derives it failed
+    // is unknown, not unstated: the state was never read, so no word covers it.
+    const healthUnread = unread.some(
+        (entry) => entry.cell === 'latestRun' || entry.cell === 'health',
+    );
     for (const row of rows) {
         switch (row.health) {
             case 'failed':
@@ -354,7 +379,11 @@ function tallyOf(rows: readonly ReportRow[]): Tally {
                 tally.completedClean += 1;
                 break;
             default:
-                tally.unstated += 1;
+                if (healthUnread) {
+                    tally.unknown += 1;
+                } else {
+                    tally.unstated += 1;
+                }
         }
     }
     return tally;
@@ -375,7 +404,7 @@ async function compose(
     const unread: Unread[] = [];
     const ids = definitions.map((definition) => text(definition['id'])).filter((id) => id !== '');
     if (ids.length === 0) {
-        return { rows: [], tally: tallyOf([]), unread };
+        return { rows: [], tally: tallyOf([], unread), unread };
     }
 
     const [partyCodes, runs, nextFires] = await Promise.all([
@@ -412,7 +441,7 @@ async function compose(
         )
         .sort((left, right) => left.name.localeCompare(right.name));
 
-    return { rows, tally: tallyOf(rows), unread };
+    return { rows, tally: tallyOf(rows, unread), unread };
 }
 
 /** The definition the address names, as the read returns it. */
@@ -506,17 +535,21 @@ function writeOf(
     };
 }
 
-/** One definition with the row the list would draw for it. */
+/**
+ * One definition with the row the list would draw for it, and the reads that
+ * failed, so the detail screen can say that a run could not be checked rather
+ * than that the definition never ran.
+ */
 async function detailOf(
     session: LiveSession,
     definition: Record<string, unknown>,
-): Promise<{ report: ReportRow; definition: DefinitionView }> {
+): Promise<{ report: ReportRow; definition: DefinitionView; unread: Unread[] }> {
     const composed = await compose(session, [definition]);
     const [report] = composed.rows;
     if (report === undefined) {
         throw notFound('The report definition could not be composed.');
     }
-    return { report, definition: definitionOf(definition) };
+    return { report, definition: definitionOf(definition), unread: composed.unread };
 }
 
 /**

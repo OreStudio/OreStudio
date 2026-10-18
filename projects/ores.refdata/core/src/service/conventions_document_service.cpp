@@ -18,6 +18,8 @@
  *
  */
 #include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "convention_family_apply.hpp"
+#include "conventions_row_helpers.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
@@ -58,8 +60,6 @@
 #include <rfl/json.hpp>
 #include <set>
 #include <string>
-#include "convention_family_apply.hpp"
-#include "conventions_row_helpers.hpp"
 #include <utility>
 #include <vector>
 

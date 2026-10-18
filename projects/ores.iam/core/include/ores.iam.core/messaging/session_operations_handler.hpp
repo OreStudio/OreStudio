@@ -211,14 +211,13 @@ public:
             // which the function reads as the bound not applying.
             const auto from_bound =
                 request->from_time.has_value() ?
-                    std::optional(ores::platform::time::datetime::to_iso8601_utc(
-                        *request->from_time)) :
+                    std::optional(
+                        ores::platform::time::datetime::to_iso8601_utc(*request->from_time)) :
                     std::nullopt;
-            const auto to_bound =
-                request->to_time.has_value() ?
-                    std::optional(ores::platform::time::datetime::to_iso8601_utc(
-                        *request->to_time)) :
-                    std::nullopt;
+            const auto to_bound = request->to_time.has_value() ?
+                                      std::optional(ores::platform::time::datetime::to_iso8601_utc(
+                                          *request->to_time)) :
+                                      std::nullopt;
             const auto rows = ores::database::repository::execute_parameterized_multi_column_query(
                 req_ctx,
                 "select day::text, account_id, session_count, avg_duration_seconds, "
@@ -228,11 +227,11 @@ public:
                 "$1::uuid, $2::text, $3::timestamp with time zone, "
                 "$4::timestamp with time zone, $5::integer, $6::integer)",
                 std::vector<std::optional<std::string>>{req_ctx.tenant_id().to_string(),
-                                                       request->account_id,
-                                                       from_bound,
-                                                       to_bound,
-                                                       std::to_string(request->limit),
-                                                       std::to_string(request->offset)},
+                                                        request->account_id,
+                                                        from_bound,
+                                                        to_bound,
+                                                        std::to_string(request->limit),
+                                                        std::to_string(request->offset)},
                 session_handler_lg(),
                 "Reading session statistics");
 

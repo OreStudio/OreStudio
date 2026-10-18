@@ -169,10 +169,8 @@ public:
         try {
             using ores::platform::time::datetime;
             repository::compute_telemetry_repository repo;
-            auto series = repo.grid_series_in_range(ctx,
-                                                    req->start_time,
-                                                    req->end_time,
-                                                    req->bucket_seconds);
+            auto series =
+                repo.grid_series_in_range(ctx, req->start_time, req->end_time, req->bucket_seconds);
             resp.start_time = series.start;
             resp.bucket_seconds = series.bucket_seconds;
             resp.bucket_count = series.bucket_count;
@@ -280,10 +278,8 @@ public:
         try {
             using ores::platform::time::datetime;
             repository::compute_telemetry_repository repo;
-            auto series = repo.node_series_in_range(ctx,
-                                                    req->start_time,
-                                                    req->end_time,
-                                                    req->bucket_seconds);
+            auto series =
+                repo.node_series_in_range(ctx, req->start_time, req->end_time, req->bucket_seconds);
             resp.start_time = series.start;
             resp.bucket_seconds = series.bucket_seconds;
             resp.bucket_count = series.bucket_count;

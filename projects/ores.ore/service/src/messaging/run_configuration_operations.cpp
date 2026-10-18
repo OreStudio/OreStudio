@@ -29,8 +29,8 @@
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.service/messaging/nats_call.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
-#include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.api/messaging/bundle_import_operations_protocol.hpp"
+#include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.reporting.api/domain/file_type_lookup.hpp"
 #include "ores.reporting.api/messaging/file_type_protocol.hpp"
 #include "ores.reporting.api/messaging/run_document_protocol.hpp"
@@ -228,9 +228,9 @@ void stage_conventions(nats_client& owners,
             const auto staged =
                 call(owners,
                      rd::stage_bundle_family_request{.import_id = import_id,
-                                                          .family = std::string(family.key),
-                                                          .sequence = sequence++,
-                                                          .payload = rfl::json::write(row)});
+                                                     .family = std::string(family.key),
+                                                     .sequence = sequence++,
+                                                     .payload = rfl::json::write(row)});
             if (!staged.success)
                 throw std::runtime_error(staged.message);
         }
@@ -239,7 +239,7 @@ void stage_conventions(nats_client& owners,
 
 // Begins an import, stages every family, then commits them in one transaction.
 rd::commit_bundle_import_response save_conventions(nats_client& owners,
-                                                        const rd::conventions_document& document) {
+                                                   const rd::conventions_document& document) {
     const auto import_id = boost::uuids::random_generator()();
     const auto begun = call(owners, rd::begin_bundle_import_request{.id = import_id});
     if (!begun.success)

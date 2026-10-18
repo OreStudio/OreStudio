@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: BED779B8-AA5C-46CC-B0CD-B9D37001536D
+:END:
+#+title: Task: Scaffold story: Hotfix: the debug builds never finish
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :the_debug_builds_never_finish:sprint_28:v0:
+#+owner: marco
+#+branch: hotfix/the-debug-builds-never-finish
+#+pr: 3559
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4699215-6BAB-4416-98B0-2808F67ECE2F][Hotfix: the debug builds never finish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The hotfix exists as agile record and PR: a story, two tasks, the sprint row,
+and PR #3559 carrying them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E4699215-6BAB-4416-98B0-2808F67ECE2F][Hotfix: the debug builds never finish]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- Story, tasks and sprint row exist and lint clean.
+- PR #3559 is recorded here and on the implement task.
+
+* Plan
+
+Scaffolded with =compass story new --kind hotfix=. The story carries the
+timeouts, the cache accounting and the deadlock; the implement task carries the
+five changes and the fixtures.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3559][#3559]] | [ci] Cap the compiler cache and free room before it is saved |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story, its two tasks and the sprint row exist, lint clean, and PR #3559
+carries them.

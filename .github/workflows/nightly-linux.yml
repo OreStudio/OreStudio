@@ -20,6 +20,11 @@ name: Nightly Build
 env:
   VCPKG_BINARY_SOURCES: 'clear;files,${{ github.workspace }}/vcpkg-cache,readwrite'
   SCCACHE_DIR: '${{ github.workspace }}/.sccache'
+  # sccache defaults to a 10 GB disk cache, the whole of the repository's cache
+  # allowance, and one debug variant alone filled it to 3.9 GB. Four variants
+  # cannot share that, so cap each one: the four then fit with room for vcpkg
+  # and cmake beside them.
+  SCCACHE_CACHE_SIZE: '2G'
 
 on:  # yamllint disable-line rule:truthy
   schedule:
@@ -262,7 +267,7 @@ jobs:
         # ran to exactly 6h0m0s and was killed, leaving the cache steps below
         # roughly thirty seconds, which cannot upload a compiler cache. Cap it
         # as continuous-linux.yml does and leave the rest of the job to them.
-        timeout-minutes: 320
+        timeout-minutes: 350
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
           export CTEST_PARALLEL_LEVEL=$(nproc)
@@ -290,6 +295,7 @@ jobs:
           size_mb=$(du -sm "${SCCACHE_DIR}" 2>/dev/null | cut -f1)
           size_mb=${size_mb:-0}
           echo "local compiler cache: ${size_mb} MB"
+          echo "size_mb=${size_mb}" >> "$GITHUB_OUTPUT"
           if [ "$size_mb" -ge 1000 ]; then
             echo "worth_saving=true" >> "$GITHUB_OUTPUT"
           else
@@ -304,6 +310,68 @@ jobs:
         if: ${{ always() && steps.ctest.outcome != 'skipped' }}
         run: sccache --show-stats
 
+      - name: Make room in the repository cache
+        # The repository gets 10 GB of cache and this project needs four sccache
+        # variants in it. A run-unique key means every save adds an entry, and
+        # the prune that removes the old ones ran only after a save that was
+        # itself waiting for the room: once the allowance filled, the save was
+        # rejected, the prune saw no new entry and deleted nothing, and every
+        # later run restored the same stale entry, missed and timed out. Free
+        # the space before saving, which is the only order that can.
+        if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
+          size_mb=${{ steps.sccache_worth.outputs.size_mb }}
+          # Below the real 10 GB allowance, because the vcpkg caches and the
+          # cmake caches share it and this step sees only the sccache entries.
+          budget_mb=9000
+          list="${RUNNER_TEMP}/sccache-caches.tsv"
+          gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
+            --jq '.actions_caches[]
+                  | select(.key | startswith("sccache-"))
+                  | [.id, (.size_in_bytes / 1048576 | floor), .created_at, .key]
+                  | @tsv' > "${list}"
+          total_mb=$(awk -F'\t' '{ s += $2 } END { print s + 0 }' "${list}")
+          echo "stored ${total_mb} MB in $(wc -l < "${list}") sccache entries; this run holds ${size_mb} MB"
+
+          deleted="${RUNNER_TEMP}/sccache-deleted.txt"
+          : > "${deleted}"
+          delete_until_it_fits() {
+            while IFS=$'\t' read -r id mb created key; do
+              [ -n "${id}" ] || continue
+              if [ $((total_mb + size_mb)) -le "${budget_mb}" ]; then
+                return 0
+              fi
+              if grep -qxF "${id}" "${deleted}"; then
+                continue
+              fi
+              echo "Deleting ${key} (${mb} MB, ${created}) to make room."
+              gh api --method DELETE "/repos/${GITHUB_REPOSITORY}/actions/caches/${id}" >/dev/null || true
+              echo "${id}" >> "${deleted}"
+              total_mb=$((total_mb - mb))
+            done
+          }
+
+          if [ $((total_mb + size_mb)) -le "${budget_mb}" ]; then
+            echo "Fits in the allowance; nothing to delete."
+            exit 0
+          fi
+
+          # This variant's own entries go first, oldest first: the run has
+          # already replaced them with what it just compiled, and leaving them
+          # in place is what doubles the variant's footprint at save time.
+          # Process substitution, not a pipe: a pipe would run the loop in a
+          # subshell and the running total would not survive it.
+          delete_until_it_fits < <(
+            awk -F'\t' -v p="${prefix}" 'index($4, p) == 1' "${list}" | sort -t$'\t' -k3
+          )
+
+          # Still short: the oldest entries of any variant, so the allowance is
+          # honoured rather than silently rejecting the upload.
+          delete_until_it_fits < <(sort -t$'\t' -k3 "${list}")
+
       - name: Stop the compiler cache
         # actions/cache tars the cache directory, and a tar that reads a file
         # while sccache writes it exits non-zero. actions/cache reports that tar
@@ -315,46 +383,37 @@ jobs:
 
       - name: Save sccache
         id: save_sccache
-        # The key is unique per run, so the save never collides, and it happens
-        # before any pruning. A save that fails leaves the stored entries
-        # untouched, where deleting first would have destroyed them.
+        # The key is unique per run, so the save never collides.
         if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         uses: actions/cache/save@v6
         with:
           path: ${{ env.SCCACHE_DIR }}
           key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.run_id }}
 
-      - name: Prune older sccache entries
-        # Saves use a run-unique key, so entries accumulate: two clang-debug runs
-        # cost 5 GB of the 10 GB repository cap, and the gcc cache was evicted
-        # for want of room. Drop every older entry of this variant now that the
-        # new one is stored. This delete runs only after the new entry is really
-        # there, so it cannot destroy the cache the way deleting first did.
+      - name: Verify the compiler cache was stored, and prune the older entries
+        # actions/cache turns a rejected upload into a warning and exits zero, so
+        # the save step cannot be trusted on its own. Ask the service whether
+        # this run's key is really there, and prune only when it is. A cache
+        # that was not stored is a warning, not a red build: the build it
+        # describes has already passed, and reddening the job only hides that.
         #
-        # One entry per variant is the goal, and Continuous Linux prunes the
-        # same prefix, so whichever tier runs last leaves the newest entry for
-        # both. Keeping only this run's key is therefore right even though the
-        # other tier may have stored the entry this one restored.
-        #
-        # The save step cannot be trusted for that: actions/cache turns a tar
-        # that raced the cache into a warning and exits zero, so the step
-        # reports success while storing nothing. Ask the cache service whether
-        # this run's key exists instead, and prune nothing when it does not.
+        # One entry per variant is the goal, and both tiers prune the same
+        # prefix, so whichever runs last leaves the newest entry for both.
         if: ${{ always() && steps.sccache_worth.outputs.worth_saving == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           prefix="sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-"
           keep="${prefix}${{ github.run_id }}"
-          stored=$(gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
-            --jq '.actions_caches[].key' | grep -cxF "${keep}" || true)
-          if [ "${stored}" -eq 0 ]; then
-            echo "::error::${keep} was not stored, so the older entries are left alone."
-            exit 1
+          if ! gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
+               --jq '.actions_caches[].key' | grep -qxF "${keep}"; then
+            echo "::warning::${keep} was not stored, so the older entries are left alone."
+            exit 0
           fi
-          gh api "/repos/${{ github.repository }}/actions/caches?per_page=100" \
+          echo "Stored ${keep}."
+          gh api --paginate "/repos/${GITHUB_REPOSITORY}/actions/caches?per_page=100" \
             --jq ".actions_caches[] | select(.key | startswith(\"${prefix}\")) | select(.key != \"${keep}\") | .id" \
           | while read -r id; do
               [ -n "$id" ] && gh api --method DELETE \
-                "/repos/${{ github.repository }}/actions/caches/${id}" || true
+                "/repos/${GITHUB_REPOSITORY}/actions/caches/${id}" >/dev/null || true
             done

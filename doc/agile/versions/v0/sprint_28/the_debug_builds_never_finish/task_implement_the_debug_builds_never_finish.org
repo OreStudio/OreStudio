@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: EDE8E9BE-3C93-45D2-9530-ACFEED982A5D
+:END:
+#+title: Task: Make the compiler cache turn over inside the repository quota
+#+description: Initial task for: Hotfix: the debug builds never finish
+#+type: task
+#+level: s1
+#+filetags: :the_debug_builds_never_finish:sprint_28:v0:
+#+owner: marco
+#+branch: hotfix/the-debug-builds-never-finish
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E4699215-6BAB-4416-98B0-2808F67ECE2F][Hotfix: the debug builds never finish]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The compiler cache turns over inside the repository's allowance, so each Linux
+debug leg starts warm and finishes inside its step budget.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E4699215-6BAB-4416-98B0-2808F67ECE2F][Hotfix: the debug builds never finish]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- =SCCACHE_CACHE_SIZE= caps each variant at 2 GB in both Linux workflows.
+- A step frees room before the save, oldest entries of the same variant first,
+  and only spills onto other variants when that is not enough.
+- The verification step warns when nothing was stored, and prunes only when the
+  new key is really there.
+- The build step gets 350 minutes.
+
+* Plan
+
+Five changes, all in =.github/workflows/continuous-linux.yml= and
+=nightly-linux.yml=, which carry the same cache block:
+
+1. =SCCACHE_CACHE_SIZE: '2G'= in the workflow environment. sccache defaults to
+   10 GB, which is the whole repository allowance.
+2. A new =Make room in the repository cache= step before the save. It lists the
+   sccache entries, and while this run's cache would not fit under a 9 GB
+   budget it deletes, oldest first: this variant's own entries, then any other
+   variant's. It runs the loop through process substitution, because a pipe
+   would run it in a subshell and the running total would not survive.
+3. The prune step becomes a verification step: it asks the cache service whether
+   this run's key is there, warns when it is not, and prunes the older entries
+   only when it is.
+4. The step cap moves from 320 to 350 minutes, still under the 360 a hosted
+   runner allows, which leaves room for the cache save after a slow build.
+5. The CI document gains the rule and why the older order could not work.
+
+* Measurements
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| stored sccache entries before the fix | 7.31 GB of 10 GB, newest debug entry four runs stale | =gh api /repos/OreStudio/OreStudio/actions/caches= | 41f1bffadd |
+| debug cache directory the run wanted to store | 3,938 MB | run log, =local compiler cache:= line | 39129116185 |
+| the two legs that timed out | 320 min, at 3,378 of 7,663 targets | =gh run view --job ... --log= | 117680593454, 117570668215 |
+| deletion logic against fixtures | 3 layouts, expected deletions in each | the extracted step body under a stub =gh= | this commit |
+
+* Notes
+
+The logic was exercised locally by extracting the step out of the parsed YAML
+and running it against a stub =gh= that served a fixture and logged deletes. The
+first attempt deleted another variant's cache before its own stale entries,
+which is what the fixtures caught: the deletion passes ran in subshells, so the
+running total reset between them.
+
+The real proof is the next two scheduled runs: a warm cache should return the
+debug leg to about four hours, and its CDash row to green.
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Test Scenarios
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The two Linux workflows cap sccache at 2 GB per variant, free room in the
+repository cache before saving, warn instead of failing when a save stores
+nothing, and give the build 350 minutes. The deletion logic is exercised against
+three cache layouts, and it was the fixtures that caught the subshell bug: the
+two deletion passes ran in pipes, so the running total reset between them and
+the step deleted another variant's cache before its own duplicates.
+
+The proof that matters is the next two scheduled runs: a warm cache should put
+the debug leg back at about four hours and its CDash row back to green.

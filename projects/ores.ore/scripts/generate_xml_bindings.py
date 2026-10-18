@@ -158,6 +158,10 @@ class Schema:
         # becomes its own optional field, which is how the model states a
         # variation without a polymorphic payload.
         self.substitutes = {}
+        # A model group written once and referenced by name. Its members are
+        # flattened where it is referenced, which is what a record does with a
+        # group: the document states the members, not the group.
+        self.groups = {}
         # An inline simpleType is an enumeration with no name of its own. Its
         # spellings are emitted under the type that holds it.
         self.inline_enum = {}
@@ -180,6 +184,8 @@ class Schema:
                     ]
                     if values:
                         self.enumerations[name] = values
+                elif local(node.tag) == "group" and name:
+                    self.groups.setdefault(name, node)
                 elif local(node.tag) == "element" and name:
                     self.elements.setdefault(name, node)
 
@@ -211,7 +217,7 @@ def simple_content_base(complex_type):
     return None
 
 
-UNSUPPORTED = ("group",)
+UNSUPPORTED = ("attributeGroup", "anyAttribute")
 
 
 def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
@@ -220,9 +226,35 @@ def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
     `bases` is the chain of types this walk has already flattened, so a
     derivation that reaches itself is refused instead of recursing.
     """
-    def walk(node, repeat_max=None, in_choice=False, optional=False):
+    def walk(node, repeat_max=None, in_choice=False, optional=False, groups=frozenset()):
         name = local(node.tag)
         if name == "annotation":
+            return
+        if name == "group":
+            reference = node.get("ref")
+            definition = schema.groups.get(reference) if schema is not None else None
+            if definition is None:
+                raise SystemExit(
+                    f"they type {complex_type.get('name')} references the group {reference}, "
+                    "which is not a group this generator read"
+                )
+            if reference in groups:
+                raise SystemExit(
+                    f"they type {complex_type.get('name')} references the group {reference} "
+                    "in a cycle"
+                )
+            own = node.get("maxOccurs", "1")
+            if own not in ("1",):
+                repeat_max = own
+            optional = optional or node.get("minOccurs", "1") == "0"
+            for child in definition:
+                walk(
+                    child,
+                    repeat_max,
+                    in_choice or True,
+                    optional,
+                    groups | {reference},
+                )
             return
         if name in ("sequence", "all", "choice"):
             # A compositor that repeats repeats its members: a document may
@@ -238,7 +270,7 @@ def _collect_children(nodes, schema, complex_type, elements, attributes, bases):
             optional = optional or node.get("minOccurs", "1") == "0"
             alternatives = in_choice or name == "choice"
             for child in node:
-                walk(child, repeat_max, alternatives, optional)
+                walk(child, repeat_max, alternatives, optional, groups)
             return
         if name == "element":
             if repeat_max is not None and node.get("maxOccurs", "1") in ("1",):
@@ -593,10 +625,11 @@ def expand(schema, element):
     if members:
         for member in members:
             # Exactly one member appears in any document, so each is optional
-            # regardless of the cardinality written on the reference.
-            stand_in = ET.Element("xs:element")
-            for key, value in member.attrib.items():
-                stand_in.set(key, value)
+            # regardless of the cardinality written on the reference. The member
+            # itself is yielded rather than a copy: a member that writes its own
+            # type carries it inline, and the generator names inline types by
+            # element identity, so the member itself is used rather than a copy.
+            stand_in = member
             stand_in.set("minOccurs", "0")
             stand_in.set("maxOccurs", element.get("maxOccurs", "1"))
             yield stand_in

@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-17
+#+updated: 2026-10-18
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -235,19 +235,76 @@ What it cannot read is the document's recursion. A composite trade holds a list
 of =subTradeGroup= entries whose =SubTrade= member is a =componentSubTrade=, and
 that type carries =oreTradeData=, which reaches the composite trade again. A
 record is a fixed layout, so the member that closes the cycle is left out and
-named in the generated file; a document that states it is refused. 18 corpus
-documents write =SubTrade= inside a composite, so the value harness cannot prove
-the family this way.
+named in the generated file; a document that states it is refused. 18 corpus files write a
+sub-trade at all, and eight nest one under =CompositeTradeData/Components= (six
+a =SubTrade=, two a =Trade=), so the value harness cannot prove the family this
+way. The count is from =grep -rc "<SubTrade" external/ore/examples= and a scan of
+the nesting; the other ten use the recursion through TRS, CFD and CBO data.
 
-Two ways forward, and they are a decision rather than a fix:
+Two ways forward, and they are a decision rather than a fix. The first is
+written out below, because it is the one that finishes the task; the second is
+recorded so the choice is visible.
 
 1. Represent the recursion explicitly: one flat table per document, with a
    composite's components in a document-level vector linked by parent index, the
-   way the database already models them. The codec has no such member kind
-   today, so this is new engine and generator design.
+   way the database already models them.
 2. Keep Portfolio on the generated binding. The family then stays =migrating=,
    clauses (a) and (b) cannot be satisfied, and the binding removal is scoped to
    every other family.
+
+*The arena design, in the order it would be built.*
+
+The arena lives in the record that holds the index, not in the root. That is the
+decision the design turns on: every record that has a recursive member also owns
+the rows of that member, so a nested frame reaches its arena through the same
+`offsetof` the engine already uses, and no root-relative locator is needed. It
+also keeps frame pointers valid: a frame holds a pointer into its parent's arena,
+and while that frame is open the binder appends only to the child's own arena,
+so the parent's rows never move under it.
+
+- *Member kind.* `field_kind::indexed_nested`. The member at `offset` is a
+  `std::vector<std::uint32_t>` of indices; `arena_offset` names a
+  `std::vector<T>` in the same record, `T` being the type the row's `type`
+  points at, and `repeat` carries the arena's vector operations. This is the
+  only kind whose index points at a row in another vector; a repeated
+  enumerated leaf also stores indices, but into its spelling table.
+- *Generator.* A cut edge stops being dropped: the member becomes the index
+  vector plus an arena member, the table gains one `indexed_nested` row, and the
+  "not a member of this record" comment for that type goes away. Every cut edge
+  in a cycle converts, not only `SubTrade`: `Trade` and `SubTrade` in
+  `compositeTradeComponents`, `CBOData` in `componentTrade`, and the
+  TRS/CFD/CBO members of `componentSubTrade`. Two edges that point at one type
+  share its arena.
+- *Binder.* On entering an indexed element it appends a default row to the
+  parent's arena, pushes its index, and descends into that row. Frames keep a
+  pointer to the row, which is stable for the reasons above.
+- *Emitter.* Writes the indices in index order, and refuses an index that names
+  no row or that is already on the current path. A row shared by two siblings is
+  written twice, which is what the indices say.
+- *Comparison.* `record_diff` follows the indices and compares the rows in
+  order; `value_fingerprint` is unaffected, because it compares the document
+  tape and not the record.
+- *Projections.* A projection reads an indexed member through a generated
+  accessor or through a reader method that follows the indices; it does not
+  name a root arena, because there is none.
+- *Tests, one stage each.* A synthetic table with an index member binds a
+  two-level document and writes it back; a three-level one does too, under
+  ASAN; an index with no row and an index already on the path are refused by
+  the writer; `record_diff` reports a difference inside a second-level row; a
+  generated recursive schema produces the `indexed_nested` row and the arena
+  and loses the cut comment; a group member with an inline enumeration still
+  resolves (already covered); then the portfolio table is generated and
+  registered in the wrapper and the drift check, and its corpus walk runs; then
+  `portfolio_projection` replaces `importer`/`exporter`/`trade_mapper` and the
+  census flips.
+
+The task is finished by the last stage, not by the corpus walk. The work is
+staged so each stage is reviewable on its own.
+
+On the architecture note: no amendment is needed. It already says a
+document-shaped payload is transient and exempt from the flat-message rules, and
+the XML wire does not change; what stays flat is the record. It is worth one
+sentence in that section naming the arena, nothing more.
 
 * Where the work stands
 
@@ -350,6 +407,7 @@ via its "Verifies task" field.
 | [[https://github.com/OreStudio/OreStudio/pull/3547][#3547]] | [ore] Generate the run document table |
 | [[https://github.com/OreStudio/OreStudio/pull/3548][#3548]] | [ore] Read and write the run document through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3549][#3549]] | [ore] Read the schema shapes the portfolio document needs |
+| [[https://github.com/OreStudio/OreStudio/pull/3552][#3552]] | [agile] Record the arena design for recursive documents |
 
 * Review
 

@@ -33,6 +33,7 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -73,26 +74,20 @@ boost::uuids::uuid new_uuid() {
 }
 
 /**
- * @brief Where a family sits in the registry, or the end when it is not there.
- *
- * A bundle writes the shared convention row before the part rows that name it,
- * and the registry happens to list the central family first, so applying in
- * registry order satisfies the foreign key.
+ * @brief Where the registry lists a family, or nothing when it does not.
  */
-std::size_t family_rank(const std::string& family) {
+std::optional<std::size_t> family_position(const std::string& family) {
     for (std::size_t i = 0; i < domain::convention_family_count; ++i)
         if (domain::convention_families[i].key == family)
             return i;
-    return domain::convention_family_count;
+    return std::nullopt;
 }
 
 /**
  * @brief Whether the registry names the family a stage or commit carries.
  */
 bool known_family(const std::string& family) {
-    return std::any_of(std::begin(domain::convention_families),
-                       std::end(domain::convention_families),
-                       [&family](const auto& entry) { return entry.key == family; });
+    return family_position(family).has_value();
 }
 
 }
@@ -240,8 +235,9 @@ bundle_import_operations_service::commit(const messaging::commit_bundle_import_r
         }
 
         // The staged rows become one bundle, and the bundle is what the caller
-        // wrote. Registry order puts the shared convention family before the
-        // part families that name it, so the foreign key holds.
+        // wrote. Applying it in registry order rather than in id order makes
+        // both the writes and the reported outcomes the same for the same
+        // import, whichever order the stages landed in.
         const auto staged =
             items_.read_latest_by_import_id(ctx, key, 0, std::numeric_limits<std::uint32_t>::max());
         conventions_bundle bundle;
@@ -251,8 +247,10 @@ bundle_import_operations_service::commit(const messaging::commit_bundle_import_r
                 .family = item.family, .sequence = item.sequence, .payload = item.payload});
         std::stable_sort(
             bundle.rows.begin(), bundle.rows.end(), [](const auto& lhs, const auto& rhs) {
-                const auto lhs_rank = family_rank(lhs.family);
-                const auto rhs_rank = family_rank(rhs.family);
+                const auto lhs_rank =
+                    family_position(lhs.family).value_or(domain::convention_family_count);
+                const auto rhs_rank =
+                    family_position(rhs.family).value_or(domain::convention_family_count);
                 if (lhs_rank != rhs_rank)
                     return lhs_rank < rhs_rank;
                 return lhs.sequence < rhs.sequence;

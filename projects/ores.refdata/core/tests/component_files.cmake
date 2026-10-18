@@ -33,6 +33,7 @@ set(files
     "book_eventing_integration_tests.cpp"
     "book_purpose_type_eventing_integration_tests.cpp"
     "book_status_eventing_integration_tests.cpp"
+    "bundle_import_commit_tests.cpp"
     "bundle_import_operations_service_tests.cpp"
     "business_centre_eventing_integration_tests.cpp"
     "business_day_convention_type_eventing_integration_tests.cpp"

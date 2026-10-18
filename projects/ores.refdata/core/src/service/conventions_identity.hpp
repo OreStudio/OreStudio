@@ -37,10 +37,12 @@ namespace ores::refdata::service {
 inline constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
 
 /**
- * @brief What a bundle carries of the one convention family that spans a central row and two parts.
+ * @brief The identities and leg forms of the one convention family that spans a central row and two
+ * parts.
  *
- * The leg forms are read before the rows move, because a write takes them, and
- * the closure step needs to know which form the caller carried.
+ * Both write paths take this snapshot before the rows move, because a write
+ * consumes them, and the closure step needs to know which form the caller
+ * carried.
  */
 struct tenor_basis_swap_forms {
     std::vector<boost::uuids::uuid> central;

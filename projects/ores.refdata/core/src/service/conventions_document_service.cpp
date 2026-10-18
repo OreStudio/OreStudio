@@ -51,10 +51,6 @@
 #include "ores.refdata.core/repository/zero_inflation_index_convention_repository.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <rfl/json.hpp>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -62,13 +58,6 @@ namespace ores::refdata::service {
 
 
 using namespace ores::refdata::repository;
-
-namespace {
-
-// A world convention is the tenant's, whoever imports a document naming it, so
-// one the tenant holds is never replaced by an import.
-
-}
 
 // The generated per-family apply lives in convention_family_apply.cpp.
 

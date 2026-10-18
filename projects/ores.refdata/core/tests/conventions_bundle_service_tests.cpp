@@ -32,6 +32,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <rfl/json.hpp>
+#include <stdexcept>
 #include <string>
 
 namespace {
@@ -115,12 +116,16 @@ TEST_CASE("a bundle resolves the identity the party already holds", tags) {
     const auto held = conventions.read_latest(ctx);
     REQUIRE(held.size() == 1);
     CHECK(held.front().id == resolved_id);
+    // A second bundle that resolved to the first row replaced it, rather than
+    // adding another version of a row it minted itself.
+    CHECK(held.front().version > after_first.front().version);
 
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository parts;
     const auto held_parts = parts.read_latest(ctx);
     REQUIRE(held_parts.size() == 1);
     CHECK(held_parts.front().id == resolved_part.id);
     CHECK(held_parts.front().convention_id == resolved_id);
+    CHECK(held_parts.front().version > resolved_part.version);
 }
 
 TEST_CASE("a bundle that changes leg form closes the other form", tags) {
@@ -166,7 +171,13 @@ TEST_CASE("a bundle that changes leg form closes the other form", tags) {
     ores::refdata::repository::tenor_basis_swap_pay_receive_repository pay_receives;
     ores::refdata::repository::tenor_basis_swap_long_short_repository long_shorts;
     CHECK(pay_receives.read_latest(ctx).empty());
-    CHECK(long_shorts.read_latest(ctx).size() == 1);
+    const auto held_long_shorts = long_shorts.read_latest(ctx);
+    REQUIRE(held_long_shorts.size() == 1);
+
+    ores::refdata::repository::convention_repository conventions;
+    const auto held_conventions = conventions.read_latest(ctx);
+    REQUIRE(held_conventions.size() == 1);
+    CHECK(held_long_shorts.front().convention_id == held_conventions.front().id);
 }
 
 TEST_CASE("a bundle refuses a family the registry does not know", tags) {

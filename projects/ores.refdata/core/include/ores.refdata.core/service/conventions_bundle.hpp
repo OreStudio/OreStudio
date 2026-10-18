@@ -40,10 +40,12 @@ struct conventions_bundle_row {
 };
 
 /**
- * @brief The related families of one owner, applied as one unit.
+ * @brief The related families of one import, applied as one unit.
  *
- * A bundle is the largest atomic unit. The rows are applied in the order the
- * bundle carries them, inside one unit of work the caller owns.
+ * A bundle is the largest atomic unit. The shared convention family and its
+ * two part families are written first, because a part names its central row.
+ * Every other family is applied in the order the bundle carries it, inside one
+ * unit of work the caller owns.
  */
 struct conventions_bundle {
     std::vector<conventions_bundle_row> rows;
@@ -61,12 +63,11 @@ struct conventions_apply_result {
 };
 
 /**
- * @brief Applies and reads the related families of one owner.
+ * @brief Applies the related families of one import.
  *
- * One writer and one reader, so a second caller cannot skip a step the first
- * performs. The service does not open a unit of work: the caller's transaction
- * covers the whole bundle, and a family that fails rolls back every other
- * family in it.
+ * One writer, so a second caller cannot skip a step the first performs. The
+ * service does not open a unit of work: the caller's transaction covers the
+ * whole bundle, and a family that fails rolls back every other family in it.
  */
 class ORES_REFDATA_CORE_EXPORT conventions_bundle_service {
 public:
@@ -75,12 +76,12 @@ public:
     explicit conventions_bundle_service(context ctx);
 
     /**
-     * @brief Applies every row the bundle carries, in the order it carries them.
+     * @brief Applies every row the bundle carries.
      *
-     * The conventions the document path could only write as a whole are written
-     * here as one family bundle: the shared convention row and its two part
-     * rows are resolved and written together, before the families that go
-     * through the generated apply.
+     * The shared convention row and its two part rows are resolved and written
+     * together first, because a part names its central row. Every other family
+     * is applied in the order the bundle carries it, through the generated
+     * apply.
      *
      * @throws std::runtime_error when the registry does not know a family, or
      * when a payload does not decode into its family's type.

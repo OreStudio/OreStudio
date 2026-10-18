@@ -100,8 +100,8 @@ conventions_apply_result conventions_bundle_service::apply(const conventions_bun
         if (belongs_to_the_tenor_bundle(row.family))
             continue;
         if (!apply_staged_family(ctx_, row.family, row.payload, applied))
-            throw std::runtime_error("The registry does not know the convention family \"" +
-                                     row.family + "\".");
+            throw std::runtime_error("The registry does not know the convention family '" +
+                                     row.family + "'.");
     }
 
     close_omitted_leg_forms(ctx_, forms);

@@ -79,8 +79,9 @@ auto number_text(std::string_view value) -> double {
 }
 
 auto make_params_json(std::string_view put_call, double notional, double strike) -> std::string {
-    return "{\"PutCall\":\"" + std::string(put_call) + "\",\"Notional\":" +
-           std::to_string(notional) + ",\"Strike\":" + std::to_string(strike) + "}";
+    return "{\"PutCall\":\"" + std::string(put_call) +
+           "\",\"Notional\":" + std::to_string(notional) + ",\"Strike\":" + std::to_string(strike) +
+           "}";
 }
 
 auto parse_json_string_array(std::string_view json) -> std::vector<std::string> {
@@ -178,11 +179,50 @@ auto own_text(const xml::record_reader& record, std::string_view name) -> std::s
     return child->own_text().value_or("");
 }
 
-auto vector_values(const xml::record_reader& record, std::string_view name) -> std::vector<std::string> {
+auto vector_values(const xml::record_reader& record, std::string_view name)
+    -> std::vector<std::string> {
     const auto child = record.child(name);
     if (!child)
         return {};
     return child->values("Value");
+}
+
+/**
+ * @brief The parameter key that carries one underlying's type.
+ *
+ * The schema requires an underlying to state a type and the flat table has no
+ * column for it, so the type travels in the parameters beside the names the
+ * underlying list carries.
+ */
+auto underlying_type_key(std::size_t index) -> std::string {
+    return "Underlying" + std::to_string(index + 1) + "Type";
+}
+
+/// The underlying a parameter key names the type of, when the key is one.
+auto underlying_of_type_key(std::string_view key) -> std::optional<std::string> {
+    constexpr std::string_view prefix = "Underlying";
+    constexpr std::string_view suffix = "Type";
+    if (!key.starts_with(prefix) || !key.ends_with(suffix) ||
+        key.size() <= prefix.size() + suffix.size())
+        return std::nullopt;
+    return std::string(key.substr(0, key.size() - suffix.size()));
+}
+
+/// The type entries a parameter list states, in the order it states them.
+auto underlying_types_of(const std::vector<std::pair<std::string, std::string>>& params)
+    -> std::vector<std::string> {
+    std::vector<std::string> types;
+    for (const auto& [key, value] : params)
+        if (underlying_of_type_key(key))
+            types.push_back(value);
+    return types;
+}
+
+/// States the type each appended underlying requires, empty when none is known.
+void set_underlying_type(xml::record_writer& underlying,
+                         const std::vector<std::string>& types,
+                         std::size_t index) {
+    underlying.set_text("Type", index < types.size() ? types[index] : std::string{});
 }
 
 }
@@ -202,9 +242,8 @@ auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_t
         if (const auto named = trade.child("AverageStrikeBasketOptionData")) {
             r.script_name = "AverageStrikeBasketOption";
             r.underlyings_json = json_array(vector_values(*named, "Underlyings"));
-            r.parameters_json = make_params_json(own_text(*named, "PutCall"),
-                                                 number_text(own_text(*named, "Notional")),
-                                                 0.0);
+            r.parameters_json = make_params_json(
+                own_text(*named, "PutCall"), number_text(own_text(*named, "Notional")), 0.0);
             return trading::domain::trade_instrument{std::move(r)};
         }
         if (const auto data = trade.child("ScriptedTradeData")) {
@@ -254,25 +293,32 @@ auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_t
         r.script_name = "DoubleDigitalOption";
         if (const auto d = trade.child("DoubleDigitalOptionData")) {
             std::vector<std::string> names;
+            std::vector<std::string> types;
             for (const auto* name : {"Underlying1", "Underlying2", "Underlying3", "Underlying4"}) {
                 if (const auto u = d->child(name)) {
-                    if (const auto n = u->text("Name"))
+                    if (const auto n = u->text("Name")) {
                         names.push_back(*n);
+                        types.push_back(u->text("Type").value_or(""));
+                    }
                 }
             }
             r.underlyings_json = json_array(names);
-            r.parameters_json =
-                "{\"BinaryPayout\":" +
-                std::to_string(number_text(own_text(*d, "BinaryPayout"))) +
-                ",\"BinaryLevel1\":" +
-                std::to_string(number_text(own_text(*d, "BinaryLevel1"))) +
-                ",\"BinaryLevel2\":" +
-                std::to_string(number_text(own_text(*d, "BinaryLevel2"))) + ",\"Type1\":\"" +
-                own_text(*d, "Type1") + "\"" + ",\"Type2\":\"" + own_text(*d, "Type2") + "\"" +
-                ",\"Position\":\"" + d->spelling("Position").value_or("") + "\"" +
-                ",\"Expiry\":\"" + own_text(*d, "Expiry") + "\"" + ",\"Settlement\":\"" +
-                own_text(*d, "Settlement") + "\"" + ",\"PayCcy\":\"" +
-                d->spelling("PayCcy").value_or("") + "\"}";
+            const auto number = [&](std::string_view name) {
+                return std::to_string(decimal_as_double(*d, name).value_or(0));
+            };
+            std::string params = "{\"BinaryPayout\":" + number("BinaryPayout") +
+                                 ",\"BinaryLevel1\":" + number("BinaryLevel1") +
+                                 ",\"BinaryLevel2\":" + number("BinaryLevel2") + ",\"Type1\":\"" +
+                                 d->text("Type1").value_or("") + "\"" + ",\"Type2\":\"" +
+                                 d->text("Type2").value_or("") + "\"" + ",\"Position\":\"" +
+                                 d->spelling("Position").value_or("") + "\"" + ",\"Expiry\":\"" +
+                                 d->text("Expiry").value_or("") + "\"" + ",\"Settlement\":\"" +
+                                 d->text("Settlement").value_or("") + "\"" + ",\"PayCcy\":\"" +
+                                 d->spelling("PayCcy").value_or("") + "\"";
+            for (std::size_t i = 0; i < types.size(); ++i)
+                if (!types[i].empty())
+                    params += ",\"" + underlying_type_key(i) + "\":\"" + types[i] + "\"";
+            r.parameters_json = params + "}";
         }
         return trading::domain::trade_instrument{std::move(r)};
     }
@@ -282,31 +328,38 @@ auto read_scripted_instrument(xml::record_reader trade, std::string_view trade_t
         r.script_name = "PerformanceOption_01";
         if (const auto d = trade.child("PerformanceOption01Data")) {
             std::vector<std::string> names;
+            std::vector<std::string> types;
             if (const auto underlyings = d->child("Underlyings"))
-                for (const auto& u : underlyings->children("Underlying"))
+                for (const auto& u : underlyings->children("Underlying")) {
                     names.push_back(u.text("Name").value_or(""));
+                    types.push_back(u.text("Type").value_or(""));
+                }
             r.underlyings_json = json_array(names);
 
-            std::string params = "{\"NotionalAmount\":" +
-                                 std::to_string(number_text(own_text(*d, "NotionalAmount"))) +
-                                 ",\"ParticipationRate\":" +
-                                 std::to_string(number_text(own_text(*d, "ParticipationRate"))) +
-                                 ",\"Strike\":" + std::to_string(number_text(own_text(*d, "Strike"))) +
-                                 ",\"ValuationDate\":\"" + own_text(*d, "ValuationDate") + "\"" +
-                                 ",\"SettlementDate\":\"" + own_text(*d, "SettlementDate") + "\"" +
-                                 ",\"Position\":\"" + d->spelling("Position").value_or("") + "\"" +
-                                 ",\"PayCcy\":\"" + d->spelling("PayCcy").value_or("") + "\"";
-            std::vector<std::string> strikes;
-            if (const auto prices = d->child("StrikePrices"))
-                strikes = prices->values("StrikePrice");
+            const auto number = [&](std::string_view name) {
+                return std::to_string(decimal_as_double(*d, name).value_or(0));
+            };
+            std::string params = "{\"NotionalAmount\":" + number("NotionalAmount") +
+                                 ",\"ParticipationRate\":" + number("ParticipationRate") +
+                                 ",\"Strike\":" + number("Strike") + ",\"ValuationDate\":\"" +
+                                 d->text("ValuationDate").value_or("") + "\"" +
+                                 ",\"SettlementDate\":\"" + d->text("SettlementDate").value_or("") +
+                                 "\"" + ",\"Position\":\"" + d->spelling("Position").value_or("") +
+                                 "\"" + ",\"PayCcy\":\"" + d->spelling("PayCcy").value_or("") +
+                                 "\"";
             std::string joined;
-            for (const auto& strike : strikes) {
-                if (!joined.empty())
-                    joined += ",";
-                joined += strike;
+            if (const auto prices = d->child("StrikePrices")) {
+                for (const auto& strike : prices->decimals("StrikePrice")) {
+                    if (!joined.empty())
+                        joined += ",";
+                    joined += strike.to_string();
+                }
             }
-            params += ",\"StrikePrices\":\"" + joined + "\"}";
-            r.parameters_json = params;
+            params += ",\"StrikePrices\":\"" + joined + "\"";
+            for (std::size_t i = 0; i < types.size(); ++i)
+                if (!types[i].empty())
+                    params += ",\"" + underlying_type_key(i) + "\":\"" + types[i] + "\"";
+            r.parameters_json = params + "}";
         }
         return trading::domain::trade_instrument{std::move(r)};
     }
@@ -329,24 +382,24 @@ auto write_scripted_instrument(xml::record_writer& trade,
         if (!r->script_body.empty())
             data.child("Script").set_text("Code", r->script_body);
 
+        // The schema requires the data element even when the row states no
+        // parameter, so it is stated before anything fills it.
+        auto values = data.child("Data");
         const auto numbers = parse_json_object(r->parameters_json);
         for (const auto& [name, value] : numbers) {
             if (name == "NPV") {
                 data.child("Script").set_text("NPV", value);
                 continue;
             }
-            auto number = data.child("Data").append("Number");
+            auto number = values.append("Number");
             number.set_text("Name", name);
             number.set_text("Value", value);
         }
         const auto indices = parse_json_string_array(r->underlyings_json);
-        if (!indices.empty()) {
-            auto values = data.child("Data");
-            for (const auto& value : indices) {
-                auto index = values.append("Index");
-                index.set_text("Name", "Underlying");
-                index.set_text("Value", value);
-            }
+        for (const auto& value : indices) {
+            auto index = values.append("Index");
+            index.set_text("Name", "Underlying");
+            index.set_text("Value", value);
         }
         return true;
     }
@@ -355,21 +408,23 @@ auto write_scripted_instrument(xml::record_writer& trade,
         auto d = trade.child("DoubleDigitalOptionData");
         const auto params = parse_json_object(r->parameters_json);
         for (const auto& [key, value] : params) {
-            if (key == "Type1" || key == "Type2")
-                d.child(key).set_own_text(value);
+            if (key == "Type1" || key == "Type2" || key == "Expiry" || key == "Settlement")
+                d.set_text(key, value);
             else if (key == "Position")
                 d.set_spelling("Position", value, "long short");
-            else if (key == "Expiry" || key == "Settlement")
-                d.child(key).set_own_text(value);
             else if (key == "PayCcy")
                 d.set_spelling("PayCcy", value, "currency");
+            else if (underlying_of_type_key(key))
+                continue;
             else
-                d.child(key).set_own_text(value);
+                set_decimal_from_double(d, key, std::stod(value));
         }
         const auto names = parse_json_string_array(r->underlyings_json);
+        const auto types = underlying_types_of(params);
         for (std::size_t i = 0; i < names.size() && i < 4; ++i) {
-            const auto name = "Underlying" + std::to_string(i + 1);
-            d.child(name).set_text("Name", names[i]);
+            auto underlying = d.child("Underlying" + std::to_string(i + 1));
+            underlying.set_text("Name", names[i]);
+            set_underlying_type(underlying, types, i);
         }
         return true;
     }
@@ -377,16 +432,20 @@ auto write_scripted_instrument(xml::record_writer& trade,
     if (trade_type == "PerformanceOption_01") {
         auto d = trade.child("PerformanceOption01Data");
         std::vector<std::string> strike_prices;
-        for (const auto& [key, value] : parse_json_object(r->parameters_json)) {
+        const auto params = parse_json_object(r->parameters_json);
+        for (const auto& [key, value] : params) {
             if (key == "Position")
                 d.set_spelling("Position", value, "long short");
             else if (key == "PayCcy")
                 d.set_spelling("PayCcy", value, "currency");
+            else if (key == "ValuationDate" || key == "SettlementDate")
+                d.set_text(key, value);
             else if (key == "StrikePrices") {
                 std::size_t start = 0;
                 while (start < value.size()) {
                     const auto comma = value.find(',', start);
-                    const auto length = comma == std::string::npos ? value.size() - start : comma - start;
+                    const auto length =
+                        comma == std::string::npos ? value.size() - start : comma - start;
                     const auto token = value.substr(start, length);
                     if (!token.empty())
                         strike_prices.push_back(token);
@@ -394,19 +453,27 @@ auto write_scripted_instrument(xml::record_writer& trade,
                         break;
                     start = comma + 1;
                 }
-            } else
-                d.child(key).set_own_text(value);
+            } else if (underlying_of_type_key(key))
+                continue;
+            else
+                set_decimal_from_double(d, key, std::stod(value));
         }
         if (!strike_prices.empty()) {
             auto prices = d.child("StrikePrices");
-            for (const auto& price : strike_prices)
-                prices.append_value("StrikePrice", price);
+            for (const auto& price : strike_prices) {
+                if (const auto parsed = ores::utility::decimal::decimal::from_string(price))
+                    prices.append_decimal("StrikePrice", *parsed);
+            }
         }
         const auto names = parse_json_string_array(r->underlyings_json);
         if (!names.empty()) {
+            const auto types = underlying_types_of(params);
             auto underlyings = d.child("Underlyings");
-            for (const auto& name : names)
-                underlyings.append("Underlying").set_text("Name", name);
+            for (std::size_t i = 0; i < names.size(); ++i) {
+                auto underlying = underlyings.append("Underlying");
+                underlying.set_text("Name", names[i]);
+                set_underlying_type(underlying, types, i);
+            }
         }
         return true;
     }

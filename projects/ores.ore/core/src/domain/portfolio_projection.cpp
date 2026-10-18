@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore.core/domain/portfolio_projection.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.trading.api/domain/instrument_batch_mapper.hpp"
@@ -27,6 +28,12 @@
 namespace ores::ore::domain {
 
 namespace {
+
+inline auto& lg() {
+    using namespace ores::logging;
+    static auto instance = make_logger("ores.ore.domain.portfolio_projection");
+    return instance;
+}
 
 namespace pf = xml::generated::portfolio;
 
@@ -151,12 +158,21 @@ std::vector<xml::trade_import_item> portfolio_projection::map(const document& v)
         item.anchor.trade_type = *trade_type;
         item.envelope = read_envelope(trade);
 
-        for (const auto& family : instrument_projections()) {
-            auto instrument = family.read(trade, *trade_type);
-            if (!instrument)
-                continue;
-            item.instrument = std::move(*instrument);
-            break;
+        // A trade whose product no mapping can hold still imports: the anchor
+        // and the envelope are the trade's, and the instrument is the part the
+        // mapping failed on. The import reports it rather than losing the
+        // trade, which is what the old boundary did.
+        try {
+            for (const auto& family : instrument_projections()) {
+                auto instrument = family.read(trade, *trade_type);
+                if (!instrument)
+                    continue;
+                item.instrument = std::move(*instrument);
+                break;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Failed to map the instrument of trade " << item.ore_id << ": " << e.what();
         }
         r.push_back(std::move(item));
     }

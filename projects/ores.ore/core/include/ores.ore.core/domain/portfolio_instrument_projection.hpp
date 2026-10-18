@@ -68,6 +68,23 @@ inline void set_decimal_from_double(xml::record_writer& w, std::string_view name
 }
 
 /**
+ * @brief States one rule of a schedule, and hands the rule back.
+ *
+ * The schema requires a start date, a tenor and a convention, and a row that
+ * holds no date states the element empty rather than dropping it. The
+ * convention is the one every mapper in the tree falls back to.
+ */
+inline auto write_schedule_rule(xml::record_writer schedule,
+                                std::string_view start_date,
+                                std::string_view tenor) -> xml::record_writer {
+    auto rule = schedule.append("Rules");
+    rule.set_text("StartDate", start_date);
+    rule.set_text("Tenor", tenor);
+    rule.set_spelling("Convention", "MF", "business day convention");
+    return rule;
+}
+
+/**
  * @brief One instrument family's two directions.
  *
  * The reading returns nothing when the trade type is not the family's, and the
@@ -110,11 +127,11 @@ ORES_ORE_CORE_EXPORT auto read_rate_instrument(xml::record_reader trade,
                                                std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument>;
 
-ORES_ORE_CORE_EXPORT auto
-write_rate_instrument(xml::record_writer& trade,
-                      std::string_view trade_type,
-                      const trading::domain::trade_instrument& instrument,
-                      const portfolio_reference_curves& reference_curves) -> bool;
+ORES_ORE_CORE_EXPORT auto write_rate_instrument(xml::record_writer& trade,
+                                                std::string_view trade_type,
+                                                const trading::domain::trade_instrument& instrument,
+                                                const portfolio_reference_curves& reference_curves)
+    -> bool;
 
 /**
  * @brief The bond family: an issue row shared by the products built on it.
@@ -128,11 +145,11 @@ ORES_ORE_CORE_EXPORT auto read_bond_instrument(xml::record_reader trade,
                                                std::string_view trade_type)
     -> std::optional<trading::domain::trade_instrument>;
 
-ORES_ORE_CORE_EXPORT auto
-write_bond_instrument(xml::record_writer& trade,
-                      std::string_view trade_type,
-                      const trading::domain::trade_instrument& instrument,
-                      const portfolio_reference_curves& reference_curves) -> bool;
+ORES_ORE_CORE_EXPORT auto write_bond_instrument(xml::record_writer& trade,
+                                                std::string_view trade_type,
+                                                const trading::domain::trade_instrument& instrument,
+                                                const portfolio_reference_curves& reference_curves)
+    -> bool;
 
 /**
  * @brief The credit family: a routed header, one fact row per product and legs

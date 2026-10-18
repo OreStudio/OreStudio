@@ -722,6 +722,95 @@ const char* const composite_document_text = R"(<Portfolio>
   </Trade>
 </Portfolio>)";
 
+const char* const required_terms_document_text = R"(<Portfolio>
+  <Trade id="scripted-bare-1">
+    <TradeType>ScriptedTrade</TradeType>
+    <ScriptedTradeData>
+      <ScriptName>heston</ScriptName>
+      <Script><NPV>Option</NPV><Code>Payoff = 1;</Code></Script>
+      <Data/>
+    </ScriptedTradeData>
+  </Trade>
+  <Trade id="double-digital-1">
+    <TradeType>DoubleDigitalOption</TradeType>
+    <DoubleDigitalOptionData>
+      <Expiry>2027-07-24</Expiry>
+      <Settlement>2027-07-26</Settlement>
+      <BinaryPayout>1000000</BinaryPayout>
+      <BinaryLevel1>1.2</BinaryLevel1>
+      <BinaryLevel2>0.009</BinaryLevel2>
+      <Type1>Call</Type1>
+      <Type2>Put</Type2>
+      <Position>Long</Position>
+      <Underlying1><Type>FX</Type><Name>TR20H-EUR-USD</Name></Underlying1>
+      <Underlying2><Type>Commodity</Type><Name>NYMEX:CL</Name></Underlying2>
+      <PayCcy>USD</PayCcy>
+    </DoubleDigitalOptionData>
+  </Trade>
+  <Trade id="cliquet-1">
+    <TradeType>EquityCliquetOption</TradeType>
+    <EquityCliquetOptionData>
+      <Name>RIC:.SPX</Name>
+      <Currency>USD</Currency>
+      <Notional>1000</Notional>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <Moneyness>1</Moneyness>
+      <ScheduleData/>
+    </EquityCliquetOptionData>
+  </Trade>
+  <Trade id="digital-1">
+    <TradeType>EquityDigitalOption</TradeType>
+    <EquityDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates><ExerciseDate>2026-07-17</ExerciseDate></ExerciseDates>
+      </OptionData>
+      <Strike>3300</Strike>
+      <PayoffAmount>1000</PayoffAmount>
+      <Name>RIC:.SPX</Name>
+      <Quantity>1000</Quantity>
+    </EquityDigitalOptionData>
+  </Trade>
+  <Trade id="worst-of-1">
+    <TradeType>EquityWorstOfBasketSwap</TradeType>
+    <EquityWorstOfBasketSwapData>
+      <LongShort>Long</LongShort>
+      <Currency>USD</Currency>
+      <Quantity>1000</Quantity>
+      <Underlyings>
+        <Underlying><Type>Equity</Type><Name>RIC:.SPX</Name></Underlying>
+        <Underlying><Type>Equity</Type><Name>RIC:.NDX</Name></Underlying>
+      </Underlyings>
+      <InitialPrices>
+        <InitialPrice>3200</InitialPrice>
+        <InitialPrice>11500</InitialPrice>
+      </InitialPrices>
+      <FloatingPeriodSchedule>
+        <Rules>
+          <StartDate>2025-02-11</StartDate>
+          <Tenor>6M</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </FloatingPeriodSchedule>
+      <FloatingPayDates>
+        <Rules>
+          <StartDate>2025-02-11</StartDate>
+          <Tenor>6M</Tenor>
+          <Convention>MF</Convention>
+        </Rules>
+      </FloatingPayDates>
+      <KnockOutLevels><KnockOutLevel>3500</KnockOutLevel></KnockOutLevels>
+      <FixedTriggerLevels><FixedTriggerLevel>3400</FixedTriggerLevel></FixedTriggerLevels>
+      <FixedRate>0.01</FixedRate>
+      <FloatingIndex>USD-LIBOR-3M</FloatingIndex>
+      <FloatingDayCountFraction>Actual/360</FloatingDayCountFraction>
+    </EquityWorstOfBasketSwapData>
+  </Trade>
+</Portfolio>)";
+
 auto date_of(int year, unsigned month, unsigned day) -> std::chrono::year_month_day {
     return {std::chrono::year{year}, std::chrono::month{month}, std::chrono::day{day}};
 }
@@ -2498,9 +2587,11 @@ TEST_CASE("a_portfolio_document_projects_an_equity_option_and_its_underlying", t
     CHECK(items[0].envelope.has_value());
     CHECK(items[0].envelope->counter_party == std::optional<std::string>("CPTY_E"));
 
-    const auto* data = std::get_if<ores::trading::domain::equity_instrument_data>(&items[0].instrument);
+    const auto* data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&items[0].instrument);
     REQUIRE(data != nullptr);
-    const auto* option = std::get_if<ores::trading::domain::equity_option_instrument>(&data->instrument);
+    const auto* option =
+        std::get_if<ores::trading::domain::equity_option_instrument>(&data->instrument);
     REQUIRE(option != nullptr);
     CHECK(option->identity.trade_type_code == "EquityOption");
     CHECK(option->underlying_name == "RIC:.SPX");
@@ -2624,8 +2715,8 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     const auto* barrier_data =
         std::get_if<ores::trading::domain::equity_instrument_data>(&items[0].instrument);
     REQUIRE(barrier_data != nullptr);
-    const auto* barrier =
-        std::get_if<ores::trading::domain::equity_barrier_option_instrument>(&barrier_data->instrument);
+    const auto* barrier = std::get_if<ores::trading::domain::equity_barrier_option_instrument>(
+        &barrier_data->instrument);
     REQUIRE(barrier != nullptr);
     CHECK(barrier->identity.trade_type_code == "EquityBarrierOption");
     CHECK(barrier->underlying_name == "RIC:.SPX");
@@ -2660,8 +2751,9 @@ TEST_CASE("a_portfolio_document_projects_an_equity_barrier_option_and_an_accumul
     const auto* barrier_round_data =
         std::get_if<ores::trading::domain::equity_instrument_data>(&barrier_again.instrument);
     REQUIRE(barrier_round_data != nullptr);
-    const auto* barrier_round = std::get_if<ores::trading::domain::equity_barrier_option_instrument>(
-        &barrier_round_data->instrument);
+    const auto* barrier_round =
+        std::get_if<ores::trading::domain::equity_barrier_option_instrument>(
+            &barrier_round_data->instrument);
     REQUIRE(barrier_round != nullptr);
     CHECK(barrier_again.anchor.trade_type == "EquityBarrierOption");
     CHECK(barrier_round->identity.trade_type_code == "EquityBarrierOption");
@@ -2937,4 +3029,126 @@ TEST_CASE("a_portfolio_document_projects_a_total_return_swap_and_a_contract_for_
     CHECK(cfd_again.anchor.trade_type == "ContractForDifference");
     CHECK(std::get<ores::trading::domain::composite_instrument_data>(cfd_again.instrument)
               .instrument.identity.trade_type_code == "ContractForDifference");
+}
+
+TEST_CASE("a_written_product_states_the_terms_the_schema_requires", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto document = portfolio_projection::read(required_terms_document_text);
+    const auto items = portfolio_projection::map(document);
+    REQUIRE(items.size() == 5);
+
+    // A writing that leaves a required element unstated does not bind again, so
+    // each of these products is written and read back before the values are
+    // compared.
+    for (const auto& item : items) {
+        INFO("trade " << item.ore_id);
+        const auto written = portfolio_projection::write(exported(item));
+        const auto again = portfolio_projection::map(portfolio_projection::read(written));
+        REQUIRE(again.size() == 1);
+        CHECK(again.front().ore_id == item.ore_id);
+        CHECK(again.front().anchor.trade_type == item.anchor.trade_type);
+    }
+
+    // The scripted row states no parameter of its own, so the data element the
+    // schema requires carries the script's own result and nothing else.
+    const auto* scripted =
+        std::get_if<ores::trading::domain::scripted_instrument>(&items[0].instrument);
+    REQUIRE(scripted != nullptr);
+    CHECK(scripted->script_name == "heston");
+    CHECK(scripted->parameters_json == R"({"NPV":"Option"})");
+    CHECK(scripted->underlyings_json.empty());
+
+    // The flat table has no column for an underlying's type, so the type rides
+    // in the parameters and comes back out of the document it is written to.
+    const auto* double_digital =
+        std::get_if<ores::trading::domain::scripted_instrument>(&items[1].instrument);
+    REQUIRE(double_digital != nullptr);
+    CHECK(double_digital->underlyings_json == R"(["TR20H-EUR-USD","NYMEX:CL"])");
+    CHECK(double_digital->parameters_json.find(R"("Underlying2Type":"Commodity")") !=
+          std::string::npos);
+
+    const auto double_digital_round = rebuild(items[1]);
+    const auto* double_digital_again =
+        std::get_if<ores::trading::domain::scripted_instrument>(&double_digital_round.instrument);
+    REQUIRE(double_digital_again != nullptr);
+    CHECK(double_digital_again->underlyings_json == double_digital->underlyings_json);
+    CHECK(double_digital_again->parameters_json == double_digital->parameters_json);
+
+    // The cliquet row keeps no frequency, so the schedule element the schema
+    // requires is stated without a rule rather than dropped.
+    const auto* cliquet_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&items[2].instrument);
+    REQUIRE(cliquet_data != nullptr);
+    const auto* cliquet =
+        std::get_if<ores::trading::domain::equity_option_instrument>(&cliquet_data->instrument);
+    REQUIRE(cliquet != nullptr);
+    CHECK(cliquet->underlying_name == "RIC:.SPX");
+    CHECK(cliquet->currency == "USD");
+    CHECK(cliquet->notional.to_string() == "1000");
+    CHECK(cliquet->option_type == "Call");
+    CHECK(cliquet->cliquet_frequency.empty());
+
+    const auto cliquet_round = rebuild(items[2]);
+    const auto* cliquet_again_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&cliquet_round.instrument);
+    REQUIRE(cliquet_again_data != nullptr);
+    const auto* cliquet_again = std::get_if<ores::trading::domain::equity_option_instrument>(
+        &cliquet_again_data->instrument);
+    REQUIRE(cliquet_again != nullptr);
+    CHECK(cliquet_again->underlying_name == cliquet->underlying_name);
+    CHECK(cliquet_again->notional.to_string() == cliquet->notional.to_string());
+    CHECK(cliquet_again->option_type == cliquet->option_type);
+
+    // The row keeps the payoff amount, and the quantity the schema requires
+    // states the one unit the export pays out.
+    const auto* digital_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&items[3].instrument);
+    REQUIRE(digital_data != nullptr);
+    const auto* digital = std::get_if<ores::trading::domain::equity_digital_option_instrument>(
+        &digital_data->instrument);
+    REQUIRE(digital != nullptr);
+    CHECK(digital->underlying_name == "RIC:.SPX");
+    CHECK(digital->notional.to_string() == "1000");
+    REQUIRE(digital->strike.has_value());
+    CHECK(digital->strike->to_string() == "3300");
+    CHECK(digital->option_type == "Call");
+
+    const auto digital_round = rebuild(items[3]);
+    const auto* digital_again_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&digital_round.instrument);
+    REQUIRE(digital_again_data != nullptr);
+    const auto* digital_again =
+        std::get_if<ores::trading::domain::equity_digital_option_instrument>(
+            &digital_again_data->instrument);
+    REQUIRE(digital_again != nullptr);
+    CHECK(digital_again->underlying_name == digital->underlying_name);
+    CHECK(digital_again->notional.to_string() == digital->notional.to_string());
+    REQUIRE(digital_again->strike.has_value());
+    CHECK(digital_again->strike->to_string() == digital->strike->to_string());
+
+    // Each level list spells its leaf its own way, so the lists survive only
+    // when the writing names the leaf the schema names.
+    const auto* worst_of_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&items[4].instrument);
+    REQUIRE(worst_of_data != nullptr);
+    const auto* worst_of =
+        std::get_if<ores::trading::domain::equity_swap_instrument>(&worst_of_data->instrument);
+    REQUIRE(worst_of != nullptr);
+    CHECK(worst_of->basket_json == R"(["RIC:.SPX","RIC:.NDX"])");
+    CHECK(worst_of->initial_prices_json == "[3200,11500]");
+    CHECK(worst_of->knock_out_levels_json == "[3500]");
+    CHECK(worst_of->fixed_trigger_levels_json == "[3400]");
+
+    const auto worst_of_round = rebuild(items[4]);
+    const auto* worst_of_again_data =
+        std::get_if<ores::trading::domain::equity_instrument_data>(&worst_of_round.instrument);
+    REQUIRE(worst_of_again_data != nullptr);
+    const auto* worst_of_again = std::get_if<ores::trading::domain::equity_swap_instrument>(
+        &worst_of_again_data->instrument);
+    REQUIRE(worst_of_again != nullptr);
+    CHECK(worst_of_again->basket_json == worst_of->basket_json);
+    CHECK(worst_of_again->initial_prices_json == worst_of->initial_prices_json);
+    CHECK(worst_of_again->knock_out_levels_json == worst_of->knock_out_levels_json);
+    CHECK(worst_of_again->fixed_trigger_levels_json == worst_of->fixed_trigger_levels_json);
 }

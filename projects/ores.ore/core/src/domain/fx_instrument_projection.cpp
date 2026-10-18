@@ -699,7 +699,7 @@ void write_fx_average_forward(record_writer& trade, const fx_asian_forward_instr
     data.set_decimal("SettlementNotional", v.settlement_notional.value_or(decimal{}));
     data.set_text("FXIndex", v.fx_index);
     data.set_flag("FixedPayer", false);
-    data.child("ObservationDates").append("Rules").set_text("Tenor", "1M");
+    write_schedule_rule(data.child("ObservationDates"), "", "1M");
 }
 
 void write_fx_accumulator(record_writer& trade,
@@ -726,10 +726,7 @@ void write_fx_accumulator(record_writer& trade,
     if (v.start_date.ok())
         data.set_text("StartDate", to_ore_date(v.start_date));
 
-    auto rule = data.child("ObservationDates").append("Rules");
-    if (v.start_date.ok())
-        rule.set_text("StartDate", to_ore_date(v.start_date));
-    rule.set_text("Tenor", "1D");
+    write_schedule_rule(data.child("ObservationDates"), to_ore_date(v.start_date), "1D");
 
     std::vector<const range_bound*> ordered;
     ordered.reserve(rows.size());
@@ -776,7 +773,7 @@ void write_fx_tarf(record_writer& trade, const fx_asian_forward_instrument& v) {
     // The mapper states the direction the document it writes needs rather than
     // the one the row carries.
     data.child("OptionData").set_text("LongShort", "Long");
-    data.child("ScheduleData").append("Rules").set_text("Tenor", "1Y");
+    write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
     if (v.target_amount.has_value())
         push_barrier(

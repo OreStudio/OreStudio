@@ -122,12 +122,6 @@ auto write_composite_trade(xml::record_writer& trade, const composite_instrument
         data.set_text("BasketName", r.description);
 }
 
-auto write_shell(xml::record_writer& trade, std::string_view element) {
-    // The old mapper rebuilt these products from their type alone, so the
-    // document states the data element and none of its content.
-    trade.child(element);
-}
-
 }
 
 auto read_composite_instrument(xml::record_reader trade, std::string_view trade_type)
@@ -167,10 +161,10 @@ auto write_composite_instrument(xml::record_writer& trade,
 
     if (trade_type == "CompositeTrade")
         write_composite_trade(trade, r->instrument);
-    else if (trade_type == "TotalReturnSwap")
-        write_shell(trade, "TotalReturnSwapData");
-    else
-        write_shell(trade, "ContractForDifferenceData");
+    // A total return swap and a contract for difference state an underlying and
+    // a return leg, and the row holds neither: it keeps only the underlying's
+    // type, which the schema cannot state without the leg beside it. Both
+    // elements are optional, so the trade carries its type and envelope alone.
     return true;
 }
 

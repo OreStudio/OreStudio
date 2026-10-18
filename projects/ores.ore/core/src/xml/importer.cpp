@@ -20,7 +20,7 @@
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/trade_mapper.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
 #include "ores.ore.core/xml/generated/currency_config.hpp"
@@ -219,36 +219,12 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                                << path.generic_string();
 
     using namespace ores::platform::filesystem;
-    const std::string c(file::read_content(path));
-    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
+    const auto text = file::read_content(path);
+    auto r = domain::portfolio_projection::map(
+        domain::portfolio_projection::read(text, path.generic_string()));
 
-    domain::portfolio p;
-    domain::load_data(c, p);
-
-    std::vector<trade_import_item> r;
-    r.reserve(p.Trade.size());
-
-    for (const auto& t : p.Trade) {
-        const auto nil = boost::uuids::nil_uuid();
-        trade_import_item item;
-        item.ore_id = std::string(t.id);
-        item.anchor.id = nil;
-        item.anchor.party_id = nil;
-        item.anchor.trade_type = to_string(t.TradeType);
-        item.booking.trade_id = nil;
-        item.booking.book_id = nil;
-        item.envelope = domain::trade_mapper::map_envelope(t);
+    for (auto& item : r)
         item.source_file = path;
-
-        try {
-            item.instrument = domain::trade_mapper::map_instrument(t);
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to map instrument for trade " << std::string(t.id) << ": " << e.what();
-        }
-
-        r.push_back(std::move(item));
-    }
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size() << " trades with context.";
     return r;

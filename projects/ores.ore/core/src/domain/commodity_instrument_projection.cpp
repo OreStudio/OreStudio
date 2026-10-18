@@ -419,9 +419,9 @@ void write_quantity(record_writer quantities, double value) {
 }
 
 void write_commodity_leg_header(record_writer leg,
-                               std::string_view leg_type,
-                               bool payer,
-                               const commodity_instrument& v) {
+                                std::string_view leg_type,
+                                bool payer,
+                                const commodity_instrument& v) {
     leg.set_spelling("LegType", leg_type, "leg type");
     leg.set_text("Payer", flag_text(payer));
     if (!v.currency.empty())
@@ -492,11 +492,10 @@ void write_commodity_swap(record_writer& trade, const commodity_instrument& v) {
     floating_data.set_spelling("PriceType", "FutureSettlement", "price type");
     write_quantity(floating_data.child("Quantities"), v.quantity);
     if (v.start_date) {
-        auto rule = floating_leg.child("ScheduleData").append("Rules");
-        rule.set_text("StartDate", to_ore_date(v.start_date));
+        auto rule = write_schedule_rule(
+            floating_leg.child("ScheduleData"), to_ore_date(v.start_date), "1M");
         if (v.maturity_date)
             rule.set_text("EndDate", to_ore_date(v.maturity_date));
-        rule.set_text("Tenor", "1M");
     }
 }
 
@@ -539,7 +538,8 @@ void write_commodity_option_strip(record_writer& trade, const commodity_instrume
     floating_data.set_spelling("PriceType", "FutureSettlement", "price type");
     write_quantity(floating_data.child("Quantities"), v.quantity);
     if (!v.strip_frequency_code.empty())
-        leg.child("ScheduleData").append("Rules").set_text("Tenor", v.strip_frequency_code);
+        write_schedule_rule(
+            leg.child("ScheduleData"), to_ore_date(v.start_date), v.strip_frequency_code);
 }
 
 void write_commodity_basket_option(record_writer& trade,

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.ore.core/domain/payment_frequency_conversion.hpp"
+#include "ores.ore.core/domain/portfolio_instrument_projection.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <algorithm>
 #include <chrono>
@@ -762,12 +762,13 @@ void write_range_bounds(record_writer& data, std::string_view json) {
 
 void write_levels(record_writer& data,
                   std::string_view element,
+                  std::string_view leaf,
                   const std::vector<decimal>& values) {
     if (values.empty())
         return;
     auto list = data.child(element);
     for (const auto& value : values)
-        list.append_decimal("Level", value);
+        list.append_decimal(leaf, value);
 }
 
 auto numbers_of(std::string_view json) -> std::vector<decimal> {
@@ -913,6 +914,9 @@ void write_equity_digital_option(record_writer& trade, const equity_digital_opti
     data.set_text("Name", v.underlying_name);
     data.set_decimal("Strike", v.strike.value_or(decimal{}));
     data.set_decimal("PayoffAmount", v.notional);
+    // The schema requires a quantity and the row keeps the payoff amount alone,
+    // which the export states as the payout of one unit.
+    data.set_decimal("Quantity", decimal_from_double(1.0));
 }
 
 void write_equity_touch_option(record_writer& trade, const equity_digital_option_instrument& v) {
@@ -948,6 +952,12 @@ void write_equity_outperformance_option(record_writer& trade, const equity_optio
     auto underlying2 = data.child("Underlying2");
     underlying2.set_text("Name", second);
     underlying2.set_text("Type", "Equity");
+
+    // The schema requires both initial prices and the row keeps neither, so the
+    // export states the zero the rest of the writing states for a term the row
+    // holds no column for.
+    data.set_decimal("InitialPrice1", decimal{});
+    data.set_decimal("InitialPrice2", decimal{});
 }
 
 void write_equity_accumulator(record_writer& trade, const equity_accumulator_instrument& v) {
@@ -963,10 +973,7 @@ void write_equity_accumulator(record_writer& trade, const equity_accumulator_ins
     if (v.start_date.ok())
         data.set_text("StartDate", to_ore_date(v.start_date));
 
-    auto rule = data.child("ObservationDates").append("Rules");
-    if (v.start_date.ok())
-        rule.set_text("StartDate", to_ore_date(v.start_date));
-    rule.set_text("Tenor", "1D");
+    write_schedule_rule(data.child("ObservationDates"), to_ore_date(v.start_date), "1D");
 
     // The mapper restores no barrier for an accumulator, so the knock-out level
     // the row keeps has no element to go back into. Barriers is optional, so
@@ -984,7 +991,7 @@ void write_equity_tarf(record_writer& trade, const equity_accumulator_instrument
     underlying.set_text("Name", v.underlying_name);
     underlying.set_text("Type", "Equity");
     data.child("OptionData").set_text("LongShort", "Long");
-    data.child("ScheduleData").append("Rules").set_text("Tenor", "1Y");
+    write_schedule_rule(data.child("ScheduleData"), "", "1Y");
 
     // The schema requires a barrier, and the cap the row keeps is the one the
     // document states.
@@ -1005,8 +1012,11 @@ void write_equity_cliquet_option(record_writer& trade, const equity_option_instr
         throw std::runtime_error("an EquityCliquetOption cannot state the option type '" +
                                  v.option_type + "': the schema has no such type");
     set_decimal_from_double(data, "Moneyness", 1.0);
+    // The schema requires a schedule, and a row that keeps no frequency states
+    // the element without a rule rather than dropping it.
+    auto schedule = data.child("ScheduleData");
     if (!v.cliquet_frequency.empty())
-        data.child("ScheduleData").append("Rules").set_text("Tenor", v.cliquet_frequency);
+        write_schedule_rule(schedule, "", v.cliquet_frequency);
 }
 
 void write_equity_worst_of_basket_swap(record_writer& trade, const equity_swap_instrument& v) {
@@ -1031,12 +1041,15 @@ void write_equity_worst_of_basket_swap(record_writer& trade, const equity_swap_i
     }
 
     // The schema requires a rule on each schedule and the row states none.
-    data.child("FloatingPeriodSchedule").append("Rules").set_text("Tenor", "6M");
-    data.child("FloatingPayDates").append("Rules").set_text("Tenor", "6M");
+    write_schedule_rule(data.child("FloatingPeriodSchedule"), "", "6M");
+    write_schedule_rule(data.child("FloatingPayDates"), "", "6M");
 
-    write_levels(data, "InitialPrices", numbers_of(v.initial_prices_json));
-    write_levels(data, "KnockOutLevels", numbers_of(v.knock_out_levels_json));
-    write_levels(data, "FixedTriggerLevels", numbers_of(v.fixed_trigger_levels_json));
+    // Each list spells its leaf its own way, and the schema names none of them
+    // Level.
+    write_levels(data, "InitialPrices", "InitialPrice", numbers_of(v.initial_prices_json));
+    write_levels(data, "KnockOutLevels", "KnockOutLevel", numbers_of(v.knock_out_levels_json));
+    write_levels(
+        data, "FixedTriggerLevels", "FixedTriggerLevel", numbers_of(v.fixed_trigger_levels_json));
 }
 
 void write_equity_position(record_writer& trade, const equity_position_instrument& v) {

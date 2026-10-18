@@ -86,6 +86,19 @@ task and name that file in the Command column.
 | Families in the generated registry | 26 | =grep -c 'convention_write_mode::' projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp= | 8d7c38449c |
 
 * Notes
+- Step 1 is merged: the export of all seventy-two corpus files is pinned by
+  digest, and the rows an example import writes are pinned by reading the
+  tables directly.
+- Step 2's write side is merged. =conventions_bundle_service= applies a bundle
+  of family payloads in the caller's transaction, the two tenor basis swap
+  obligations now live in =conventions_identity= and are called by both write
+  paths, and the commit sorts its staged rows into registry order so the shared
+  convention family is written before the parts that name it. The staged path
+  gains the obligations it lacked, which is a behaviour change and the one this
+  step declares.
+- The read side of step 2 is open. =conventions_bundle_service::read= does not
+  exist yet, and the per-family translation units are not generated, so the
+  staged apply still compiles every family's decode branch in one unit.
 - The pin holds. Comparing the service's hand-written calls with the generated
   registry gives 26 families against 26 entries, no disagreement about which
   families are party-scoped and which are world-scoped, and no registry row the

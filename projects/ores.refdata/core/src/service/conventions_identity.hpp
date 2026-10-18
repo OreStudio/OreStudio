@@ -51,10 +51,10 @@ struct tenor_basis_swap_forms {
 /**
  * @brief The identities and leg forms a set of tenor basis swap rows carries.
  */
-tenor_basis_swap_forms tenor_basis_swap_forms_of(
-    const std::vector<domain::convention>& central,
-    const std::vector<domain::tenor_basis_swap_pay_receive>& pay_receive,
-    const std::vector<domain::tenor_basis_swap_long_short>& long_short);
+tenor_basis_swap_forms
+tenor_basis_swap_forms_of(const std::vector<domain::convention>& central,
+                          const std::vector<domain::tenor_basis_swap_pay_receive>& pay_receive,
+                          const std::vector<domain::tenor_basis_swap_long_short>& long_short);
 
 /**
  * @brief Resolves the identity of every tenor basis swap the rows carry.

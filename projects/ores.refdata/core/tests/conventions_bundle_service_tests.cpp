@@ -77,9 +77,8 @@ TEST_CASE("a bundle resolves the identity the party already holds", tags) {
     part.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle first;
-    first.rows.push_back({.family = "convention",
-                          .sequence = 0,
-                          .payload = rfl::json::write(central)});
+    first.rows.push_back(
+        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
     first.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                           .sequence = 0,
                           .payload = rfl::json::write(part)});
@@ -106,9 +105,8 @@ TEST_CASE("a bundle resolves the identity the party already holds", tags) {
     second_part.convention_id = second_central.id;
 
     ores::refdata::service::conventions_bundle second;
-    second.rows.push_back({.family = "convention",
-                           .sequence = 0,
-                           .payload = rfl::json::write(second_central)});
+    second.rows.push_back(
+        {.family = "convention", .sequence = 0, .payload = rfl::json::write(second_central)});
     second.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                            .sequence = 0,
                            .payload = rfl::json::write(second_part)});
@@ -143,9 +141,8 @@ TEST_CASE("a bundle that changes leg form closes the other form", tags) {
     pay_receive.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle first;
-    first.rows.push_back({.family = "convention",
-                          .sequence = 0,
-                          .payload = rfl::json::write(central)});
+    first.rows.push_back(
+        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
     first.rows.push_back({.family = "tenor_basis_swap_pay_receive",
                           .sequence = 0,
                           .payload = rfl::json::write(pay_receive)});
@@ -159,9 +156,8 @@ TEST_CASE("a bundle that changes leg form closes the other form", tags) {
     long_short.change_reason_code = "system.test";
 
     ores::refdata::service::conventions_bundle second;
-    second.rows.push_back({.family = "convention",
-                           .sequence = 0,
-                           .payload = rfl::json::write(central)});
+    second.rows.push_back(
+        {.family = "convention", .sequence = 0, .payload = rfl::json::write(central)});
     second.rows.push_back({.family = "tenor_basis_swap_long_short",
                            .sequence = 0,
                            .payload = rfl::json::write(long_short)});

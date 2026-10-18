@@ -33,7 +33,6 @@
 #include <cstdint>
 #include <iterator>
 #include <limits>
-#include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -250,15 +249,14 @@ bundle_import_operations_service::commit(const messaging::commit_bundle_import_r
         for (const auto& item : staged)
             bundle.rows.push_back(conventions_bundle_row{
                 .family = item.family, .sequence = item.sequence, .payload = item.payload});
-        std::stable_sort(bundle.rows.begin(),
-                         bundle.rows.end(),
-                         [](const auto& lhs, const auto& rhs) {
-                             const auto lhs_rank = family_rank(lhs.family);
-                             const auto rhs_rank = family_rank(rhs.family);
-                             if (lhs_rank != rhs_rank)
-                                 return lhs_rank < rhs_rank;
-                             return lhs.sequence < rhs.sequence;
-                         });
+        std::stable_sort(
+            bundle.rows.begin(), bundle.rows.end(), [](const auto& lhs, const auto& rhs) {
+                const auto lhs_rank = family_rank(lhs.family);
+                const auto rhs_rank = family_rank(rhs.family);
+                if (lhs_rank != rhs_rank)
+                    return lhs_rank < rhs_rank;
+                return lhs.sequence < rhs.sequence;
+            });
 
         conventions_apply_result applied;
         std::vector<messaging::bundle_import_family_outcome> outcomes;

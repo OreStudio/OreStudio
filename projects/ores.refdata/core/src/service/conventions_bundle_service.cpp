@@ -16,7 +16,6 @@
  * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "conventions_identity.hpp"
 #include "conventions_row_helpers.hpp"
 #include "ores.refdata.api/domain/convention.hpp"
@@ -25,6 +24,7 @@
 #include "ores.refdata.core/repository/convention_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
@@ -48,8 +48,7 @@ constexpr std::string_view pay_receive_family = "tenor_basis_swap_pay_receive";
 constexpr std::string_view long_short_family = "tenor_basis_swap_long_short";
 
 bool belongs_to_the_tenor_bundle(const std::string& family) {
-    return family == central_family || family == pay_receive_family ||
-           family == long_short_family;
+    return family == central_family || family == pay_receive_family || family == long_short_family;
 }
 
 /**
@@ -84,19 +83,17 @@ conventions_apply_result conventions_bundle_service::apply(const conventions_bun
     conventions_save_result applied;
 
     auto central = decode_family<domain::convention>(bundle, central_family, ctx_);
-    auto pay_receive = decode_family<domain::tenor_basis_swap_pay_receive>(
-        bundle, pay_receive_family, ctx_);
-    auto long_short = decode_family<domain::tenor_basis_swap_long_short>(
-        bundle, long_short_family, ctx_);
+    auto pay_receive =
+        decode_family<domain::tenor_basis_swap_pay_receive>(bundle, pay_receive_family, ctx_);
+    auto long_short =
+        decode_family<domain::tenor_basis_swap_long_short>(bundle, long_short_family, ctx_);
 
     resolve_tenor_basis_swap_identity(ctx_, central, pay_receive, long_short);
     const auto forms = tenor_basis_swap_forms_of(central, pay_receive, long_short);
 
     // The central row is written before its parts, because a part names it.
     replace_rows_by_id(ctx_, convention_repository(), std::move(central));
-    replace_rows_by_id(ctx_,
-                       tenor_basis_swap_pay_receive_repository(),
-                       std::move(pay_receive));
+    replace_rows_by_id(ctx_, tenor_basis_swap_pay_receive_repository(), std::move(pay_receive));
     replace_rows_by_id(ctx_, tenor_basis_swap_long_short_repository(), std::move(long_short));
 
     for (const auto& row : bundle.rows) {

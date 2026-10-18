@@ -77,16 +77,13 @@ conventions_document_service::conventions_document_service(context ctx)
 
 conventions_save_result conventions_document_service::save(messaging::conventions_document v) {
     ores::service::messaging::stamp_document(v, ctx_);
-    resolve_tenor_basis_swap_identity(ctx_,
-                                      v.convention,
-                                      v.tenor_basis_swap_pay_receive,
-                                      v.tenor_basis_swap_long_short);
+    resolve_tenor_basis_swap_identity(
+        ctx_, v.convention, v.tenor_basis_swap_pay_receive, v.tenor_basis_swap_long_short);
 
     // The leg forms the document carries, read before the parts move into the
     // write calls below, and the conventions they belong to.
-    const auto forms = tenor_basis_swap_forms_of(v.convention,
-                                                 v.tenor_basis_swap_pay_receive,
-                                                 v.tenor_basis_swap_long_short);
+    const auto forms = tenor_basis_swap_forms_of(
+        v.convention, v.tenor_basis_swap_pay_receive, v.tenor_basis_swap_long_short);
 
     conventions_save_result r;
     apply_party_families(ctx_, v);

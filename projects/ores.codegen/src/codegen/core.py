@@ -41,6 +41,18 @@ _SHELL_AGGREGATOR_TEMPLATES = {
     "cpp_shell_command_aggregator_impl.cpp.mustache",
 }
 
+# Templates whose context needs the convention family list injected at render
+# time. No model file states that list: it is derived from the reference-data
+# entity models that declare ``#+convention_family:``, so the generator reads
+# the modelling tree and hands the templates one projection of it. The facet
+# renders once per component, not once per family; see
+# :func:`convention_family_context`.
+_CONVENTION_REGISTRY_TEMPLATES = {
+    "cpp_convention_family_registry.hpp.mustache",
+    "cpp_convention_family_apply.inc.mustache",
+    "cpp_convention_family_apply_includes.inc.mustache",
+}
+
 # Maps #+type: frontmatter values to model-type strings.
 _ORG_TYPE_TO_MODEL_TYPE = {
     "ores.codegen.entity":            "domain_entity",
@@ -314,12 +326,14 @@ def generated_marker(template_name, cmake=False):
 
 def _emits_cpp(template_name):
     """
-    Whether a template produces a C++ translation unit or header.
+    Whether a template produces C++ source: a header, a translation unit or a
+    fragment compiled into one.
 
     The marker is a C comment, so it must not reach a template whose
     output is not C++ even if that template carries the C++ licence.
     """
-    return template_name.endswith(('.hpp.mustache', '.cpp.mustache'))
+    return template_name.endswith(('.hpp.mustache', '.cpp.mustache',
+                                   '.inc.mustache'))
 
 
 def _emits_cmake(template_name):
@@ -2682,6 +2696,48 @@ def shell_command_surface(projects_dir, component):
     local_units = tuple(
         (frontmatter.get("shell_command_local_units") or "").split())
     return enabled, local_units
+
+
+def convention_family_context(project_root):
+    """The convention family list, projected for the registry templates.
+
+    The list itself is derived by
+    :func:`convention_family_registry.discover_entries` from the reference-data
+    entity models that declare ``#+convention_family:``. This function only
+    projects it onto the shape the templates read: one ``families`` list in
+    family-key order, the ``repositories`` the includes fragment emits, and the
+    ``party``, ``by_id`` and ``world`` groupings the apply and read bodies loop
+    over. Each family carries the one-hot mode flags a Mustache section needs,
+    because the mustache language has no equality test.
+    """
+    # Deferred import: the registry module reads the modelling tree, and the
+    # facet is one of many the generator loads.
+    from . import convention_family_registry
+
+    families = []
+    for entry in convention_family_registry.discover_entries(Path(project_root)):
+        families.append({
+            'key': entry.key,
+            'entity': entry.entity,
+            'domain_type': entry.domain_type,
+            'subject_stem': entry.subject_stem,
+            'party_scoped': entry.party_scoped,
+            'write_mode': entry.write_mode,
+            'is_party': entry.write_mode == 'party',
+            'is_by_id': entry.write_mode == 'by_id',
+            'is_world': entry.write_mode == 'world',
+        })
+    return {
+        'component': convention_family_registry.COMPONENT,
+        'families': families,
+        'repositories': [
+            {'repository': repository}
+            for repository in sorted(
+                f"{family['entity']}_repository" for family in families)],
+        'party': [family for family in families if family['is_party']],
+        'by_id': [family for family in families if family['is_by_id']],
+        'world': [family for family in families if family['is_world']],
+    }
 
 
 # The templates whose body reads the composite family's service view. The
@@ -6485,6 +6541,16 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 'units': [{'unit': name, 'local': is_local}
                           for name, is_local in sorted(units.items())],
             }
+
+    # The convention registry templates state a family list no model file
+    # carries: it is derived from the modelling tree that holds the family
+    # declarations, so the generator reads that tree and injects one
+    # projection of it. The facet renders from a component model because the
+    # three artefacts are one set per component.
+    if (target_template in _CONVENTION_REGISTRY_TEMPLATES
+            and model_type == 'component'):
+        data['convention_registry'] = convention_family_context(
+            _repo_root_from(model_path))
 
     # Find the git directory to calculate relative paths
     current_path = Path.cwd()

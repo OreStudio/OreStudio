@@ -119,6 +119,10 @@ via its "Verifies task" field.
 | 3 | =conventions_diff.cpp= kept its own tenor kind and tenor family test in an anonymous namespace. A unibuild would make them ambiguous with the shared ones. | conventions_diff.cpp | Accepted, fixed | The diff now uses the definitions in =conventions_family_units.hpp=. |
 | 4 | Helpers that only one family uses have external linkage and no declaration. | conventions_family_*.cpp | Declined | They sit in a named namespace and carry unique names. A second definition of one fails the link, and an anonymous namespace would give the unibuild collision this task removes. |
 | 5 | The pack and join units could come from the registry, as the refdata ones do. | conventions_package.cpp | Declined | The registry would need each family's ORE element name, and refdata must not know ORE. The =static_assert= ties the table to the registry instead. |
+| 6 | #3573: the tenor join treats any remaining row as a long short row. | conventions_family_tenor_basis_swap.cpp | Accepted, fixed | The branch is explicit, and another family now throws. |
+| 7 | #3573: =provisional_uuid= is in the fields namespace but one unit uses it. | conventions_family_tenor_basis_swap.cpp | Declined | Same as row 4. A named namespace with a unique name fails loudly on a duplicate, and an unnamed one is the collision this task removes. |
+| 8 | #3573: the comment says the family table is ordered, and nothing enforces it. | conventions_package.cpp | Accepted, fixed | The comment no longer says it. Lookup does not use the order. |
+| 9 | #3573: no MSVC build was run. | PR body | Accepted, recorded | The PR lists it under limitations. GitHub runs no check, so the Windows proof stays the task prove-the-windows-build. |
 
 * Result
 

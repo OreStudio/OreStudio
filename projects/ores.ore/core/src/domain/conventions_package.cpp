@@ -33,7 +33,7 @@ namespace xg = xml::generated::conventions;
 
 namespace conventions_family {
 
-/// Every family that is a document element of its own, ordered by family key.
+/// Every family that is a document element of its own.
 constexpr family_codec family_codecs[] = {
     {"average_ois", &pack_average_ois, &join_average_ois},
     {"bma_basis_swap", &pack_bma_basis_swap, &join_bma_basis_swap},

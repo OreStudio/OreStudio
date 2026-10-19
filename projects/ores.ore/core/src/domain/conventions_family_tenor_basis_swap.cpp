@@ -22,6 +22,8 @@
 #include "conventions_fields.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
+#include <format>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -162,8 +164,11 @@ void join_tenor_basis_swap(const std::vector<const package_row*>& rows, record_w
                 central.push_back(std::move(c));
         } else if (row->family == "tenor_basis_swap_pay_receive") {
             pay_receives.push_back(unpack_row<refdata::domain::tenor_basis_swap_pay_receive>(*row));
-        } else {
+        } else if (row->family == "tenor_basis_swap_long_short") {
             long_shorts.push_back(unpack_row<refdata::domain::tenor_basis_swap_long_short>(*row));
+        } else {
+            throw std::runtime_error(
+                std::format("Family \"{}\" is not a tenor basis swap family.", row->family));
         }
     }
 

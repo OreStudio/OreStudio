@@ -128,7 +128,7 @@ struct commit_bundle_import_request {
 /**
  * @brief What the commit stored, and what it did not.
  *
- * The world conventions the tenant already held are kept, as the document save
+ * The world conventions the tenant already held are kept, as a bundle apply
  * keeps them. The family outcomes list one entry per applied staged family.
  */
 struct commit_bundle_import_response {

@@ -218,18 +218,18 @@ namespace ores #F2F2F2 {
 ' parse_ore_log and roundtrip. Only the mappers, the importer, the exporter,
 ' the planner and the scanner are classes.
 
-' trade_mapper dispatches one ORE trade to the instrument mapper that owns its
-' asset class. Each instrument mapper carries a forward_* and a reverse_* pair
-' per trade type it handles.
+' portfolio_projection owns a Portfolio document, its envelope and its trade
+' list. Each instrument family carries a read_* and a write_* pair for the trade
+' types it holds.
 
 ' The importer reads four document kinds; the exporter writes all four. The
-' exporter reaches the instrument mappers as well as the document mappers,
-' because it serialises any trade the importer produced.
-ores::ore::xml::importer --> ores::ore::domain::trade_mapper : uses
+' exporter reaches the projection as well as the document mappers, because it
+' serialises any trade the importer produced.
+ores::ore::xml::importer --> ores::ore::domain::portfolio_projection : uses
 ores::ore::xml::importer --> ores::ore::domain::conventions_mapper : uses
 ores::ore::xml::importer --> ores::ore::domain::currency_mapper : uses
 ores::ore::xml::importer --> ores::ore::domain::calendar_adjustment_mapper : uses
-ores::ore::xml::exporter --> ores::ore::domain::trade_mapper : uses
+ores::ore::xml::exporter --> ores::ore::domain::portfolio_projection : uses
 ores::ore::xml::exporter --> ores::ore::domain::conventions_mapper : uses
 ores::ore::xml::exporter --> ores::ore::domain::currency_mapper : uses
 ores::ore::xml::exporter --> ores::ore::domain::calendar_adjustment_mapper : uses

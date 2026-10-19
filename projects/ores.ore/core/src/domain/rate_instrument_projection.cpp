@@ -1542,10 +1542,13 @@ void write_capfloor(record_writer& trade, const swap_instrument_data& v) {
     for (const auto& row : ordered) {
         if (!row.bare_value)
             continue;
-        if (row.strike_role == "floor")
+        if (row.strike_role == "floor") {
             data.child("Floors").append("Floor").set_own_text(row.bare_value->to_string());
-        else if (row.strike_role == "cap")
+        } else {
+            // A row that states no arm was read before the arm existed, and the
+            // old mapper wrote that row as a cap.
             data.child("Caps").append("Cap").set_own_text(row.bare_value->to_string());
+        }
     }
 }
 

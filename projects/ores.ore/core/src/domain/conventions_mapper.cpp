@@ -18,10 +18,14 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <algorithm>
 #include <cmath>
+#include <format>
 #include <map>
+#include <rfl/json.hpp>
 #include <sstream>
 #include <stdexcept>
 
@@ -2970,6 +2974,319 @@ conventions conventions_mapper::reverse(const ores::refdata::messaging::conventi
 
     BOOST_LOG_SEV(lg(), debug) << "Finished reverse-mapping conventions.";
     return r;
+}
+
+// ---------------------------------------------------------------------------
+// The package — the document as the families it carries
+// ---------------------------------------------------------------------------
+
+namespace {
+
+using package_row = refdata::service::conventions_bundle_row;
+
+/**
+ * @brief One family's elements, mapped and packed in document order.
+ */
+template <typename Rows, typename Convert>
+void pack_family(refdata::service::conventions_bundle& bundle,
+                 std::string_view family,
+                 const Rows& rows,
+                 Convert convert) {
+    for (std::size_t i = 0; i < rows.size(); ++i)
+        bundle.rows.push_back(
+            {std::string(family), static_cast<int>(i), rfl::json::write(convert(rows[i]))});
+}
+
+void pack_row(refdata::service::conventions_bundle& bundle,
+              std::string_view family,
+              int sequence,
+              const auto& row) {
+    bundle.rows.push_back({std::string(family), sequence, rfl::json::write(row)});
+}
+
+/**
+ * @brief One payload as the family's own type.
+ *
+ * A payload that does not decode is a family that cannot be written, so it
+ * throws rather than disappearing from the document.
+ */
+template <typename Row>
+Row unpack_row(const package_row& row) {
+    auto decoded = rfl::json::read<Row>(row.payload);
+    if (!decoded)
+        throw std::runtime_error(
+            std::format("Conventions payload for family \"{}\" does not decode.", row.family));
+    return std::move(*decoded);
+}
+
+/**
+ * @brief How one family's payload becomes the document's elements.
+ *
+ * The three tenor basis swap families are absent because they are one document
+ * element, and the FX conventions are absent because they are a projection and
+ * never enter the bundle.
+ */
+struct family_joiner {
+    std::string_view family;
+    void (*join)(const package_row& row, conventions& v);
+};
+
+constexpr family_joiner joiners[] = {
+    {"average_ois",
+     [](const package_row& row, conventions& v) {
+         v.AverageOIS.push_back(
+             reverse_average_ois(unpack_row<refdata::domain::average_ois_convention>(row)));
+     }},
+    {"bma_basis_swap",
+     [](const package_row& row, conventions& v) {
+         v.BMABasisSwap.push_back(
+             reverse_bma_basis_swap(unpack_row<refdata::domain::bma_basis_swap_convention>(row)));
+     }},
+    {"bond_yield",
+     [](const package_row& row, conventions& v) {
+         v.BondYield.push_back(
+             reverse_bond_yield(unpack_row<refdata::domain::bond_yield_convention>(row)));
+     }},
+    {"cds",
+     [](const package_row& row, conventions& v) {
+         v.CDS.push_back(reverse_cds(unpack_row<refdata::domain::cds_convention>(row)));
+     }},
+    {"cms_spread_option",
+     [](const package_row& row, conventions& v) {
+         v.CmsSpreadOption.push_back(reverse_cms_spread_option(
+             unpack_row<refdata::domain::cms_spread_option_convention>(row)));
+     }},
+    {"commodity_forward",
+     [](const package_row& row, conventions& v) {
+         v.CommodityForward.push_back(reverse_commodity_forward(
+             unpack_row<refdata::domain::commodity_forward_convention>(row)));
+     }},
+    {"commodity_future",
+     [](const package_row& row, conventions& v) {
+         v.CommodityFuture.push_back(reverse_commodity_future(
+             unpack_row<refdata::domain::commodity_future_convention>(row)));
+     }},
+    {"cross_currency_basis",
+     [](const package_row& row, conventions& v) {
+         v.CrossCurrencyBasis.push_back(reverse_cross_currency_basis(
+             unpack_row<refdata::domain::cross_currency_basis_convention>(row)));
+     }},
+    {"cross_currency_fix_float",
+     [](const package_row& row, conventions& v) {
+         v.CrossCurrencyFixFloat.push_back(reverse_cross_currency_fix_float(
+             unpack_row<refdata::domain::cross_currency_fix_float_convention>(row)));
+     }},
+    {"deposit",
+     [](const package_row& row, conventions& v) {
+         v.Deposit.push_back(reverse_deposit(unpack_row<refdata::domain::deposit_convention>(row)));
+     }},
+    {"fra",
+     [](const package_row& row, conventions& v) {
+         v.FRA.push_back(reverse_fra(unpack_row<refdata::domain::fra_convention>(row)));
+     }},
+    {"future",
+     [](const package_row& row, conventions& v) {
+         v.Future.push_back(reverse_future(unpack_row<refdata::domain::future_convention>(row)));
+     }},
+    {"fx_option",
+     [](const package_row& row, conventions& v) {
+         v.FxOption.push_back(
+             reverse_fx_option(unpack_row<refdata::domain::fx_option_convention>(row)));
+     }},
+    {"ibor_index",
+     [](const package_row& row, conventions& v) {
+         v.IborIndex.push_back(
+             reverse_ibor_index(unpack_row<refdata::domain::ibor_index_convention>(row)));
+     }},
+    {"inflation_swap",
+     [](const package_row& row, conventions& v) {
+         v.InflationSwap.push_back(
+             reverse_inflation_swap(unpack_row<refdata::domain::inflation_swap_convention>(row)));
+     }},
+    {"intraday_power_load",
+     [](const package_row& row, conventions& v) {
+         v.IntradayPowerLoad.push_back(reverse_intraday_power_load(
+             unpack_row<refdata::domain::intraday_power_load_convention>(row)));
+     }},
+    {"ois",
+     [](const package_row& row, conventions& v) {
+         v.OIS.push_back(reverse_ois(unpack_row<refdata::domain::ois_convention>(row)));
+     }},
+    {"overnight_index",
+     [](const package_row& row, conventions& v) {
+         v.OvernightIndex.push_back(
+             reverse_overnight_index(unpack_row<refdata::domain::overnight_index_convention>(row)));
+     }},
+    {"swap",
+     [](const package_row& row, conventions& v) {
+         v.Swap.push_back(reverse_swap(unpack_row<refdata::domain::swap_convention>(row)));
+     }},
+    {"swap_index",
+     [](const package_row& row, conventions& v) {
+         v.SwapIndex.push_back(
+             reverse_swap_index(unpack_row<refdata::domain::swap_index_convention>(row)));
+     }},
+    {"tenor_basis_two_swap",
+     [](const package_row& row, conventions& v) {
+         v.TenorBasisTwoSwap.push_back(reverse_tenor_basis_two_swap(
+             unpack_row<refdata::domain::tenor_basis_two_swap_convention>(row)));
+     }},
+    {"zero",
+     [](const package_row& row, conventions& v) {
+         v.Zero.push_back(reverse_zero(unpack_row<refdata::domain::zero_convention>(row)));
+     }},
+    {"zero_inflation_index",
+     [](const package_row& row, conventions& v) {
+         v.ZeroInflationIndex.push_back(reverse_zero_inflation_index(
+             unpack_row<refdata::domain::zero_inflation_index_convention>(row)));
+     }},
+};
+
+}
+
+conventions_package split_conventions(const conventions& v) {
+    conventions_package p;
+
+    pack_family(p.bundle, "average_ois", v.AverageOIS, &conventions_mapper::map_average_ois);
+    pack_family(
+        p.bundle, "bma_basis_swap", v.BMABasisSwap, &conventions_mapper::map_bma_basis_swap);
+    pack_family(p.bundle, "bond_yield", v.BondYield, &conventions_mapper::map_bond_yield);
+    pack_family(p.bundle, "cds", v.CDS, &conventions_mapper::map_cds);
+    pack_family(p.bundle,
+                "cms_spread_option",
+                v.CmsSpreadOption,
+                &conventions_mapper::map_cms_spread_option);
+    pack_family(p.bundle,
+                "commodity_forward",
+                v.CommodityForward,
+                &conventions_mapper::map_commodity_forward);
+    pack_family(
+        p.bundle, "commodity_future", v.CommodityFuture, &conventions_mapper::map_commodity_future);
+
+    // A tenor basis swap is one central convention row plus the parts the
+    // document's form populated, and the three are three families.
+    int conventions_seen = 0;
+    int pay_receives_seen = 0;
+    int long_shorts_seen = 0;
+    for (const auto& x : v.TenorBasisSwap) {
+        auto item = conventions_mapper::map_tenor_basis_swap(x);
+        if (item.convention)
+            pack_row(p.bundle, "convention", conventions_seen++, *item.convention);
+        for (const auto& part : item.pay_receive)
+            pack_row(p.bundle, "tenor_basis_swap_pay_receive", pay_receives_seen++, part);
+        for (const auto& part : item.long_short)
+            pack_row(p.bundle, "tenor_basis_swap_long_short", long_shorts_seen++, part);
+    }
+
+    pack_family(p.bundle,
+                "cross_currency_basis",
+                v.CrossCurrencyBasis,
+                &conventions_mapper::map_cross_currency_basis);
+    pack_family(p.bundle,
+                "cross_currency_fix_float",
+                v.CrossCurrencyFixFloat,
+                &conventions_mapper::map_cross_currency_fix_float);
+    pack_family(p.bundle, "deposit", v.Deposit, &conventions_mapper::map_deposit);
+    pack_family(p.bundle, "fra", v.FRA, &conventions_mapper::map_fra);
+    pack_family(p.bundle, "future", v.Future, &conventions_mapper::map_future);
+    pack_family(p.bundle, "fx_option", v.FxOption, &conventions_mapper::map_fx_option);
+    pack_family(p.bundle, "ibor_index", v.IborIndex, &conventions_mapper::map_ibor_index);
+    pack_family(
+        p.bundle, "inflation_swap", v.InflationSwap, &conventions_mapper::map_inflation_swap);
+    pack_family(p.bundle,
+                "intraday_power_load",
+                v.IntradayPowerLoad,
+                &conventions_mapper::map_intraday_power_load);
+    pack_family(p.bundle, "ois", v.OIS, &conventions_mapper::map_ois);
+    pack_family(
+        p.bundle, "overnight_index", v.OvernightIndex, &conventions_mapper::map_overnight_index);
+    pack_family(p.bundle, "swap", v.Swap, &conventions_mapper::map_swap);
+    pack_family(p.bundle, "swap_index", v.SwapIndex, &conventions_mapper::map_swap_index);
+    pack_family(p.bundle,
+                "tenor_basis_two_swap",
+                v.TenorBasisTwoSwap,
+                &conventions_mapper::map_tenor_basis_two_swap);
+    pack_family(p.bundle, "zero", v.Zero, &conventions_mapper::map_zero);
+    pack_family(p.bundle,
+                "zero_inflation_index",
+                v.ZeroInflationIndex,
+                &conventions_mapper::map_zero_inflation_index);
+
+    // An FX convention is a projection of a currency pair, that pair's
+    // convention and its advance calendars, so it is kept aside and never
+    // packed into a family of its own.
+    p.fx.reserve(v.FX.size());
+    for (const auto& x : v.FX)
+        p.fx.push_back(conventions_mapper::map_fx(x));
+
+    return p;
+}
+
+conventions join_conventions(const conventions_package& p) {
+    conventions r;
+
+    std::vector<refdata::domain::convention> central;
+    std::vector<refdata::domain::tenor_basis_swap_pay_receive> pay_receives;
+    std::vector<refdata::domain::tenor_basis_swap_long_short> long_shorts;
+
+    for (const auto& row : p.bundle.rows) {
+        // The one table carries every kind, and only this kind's rows have a
+        // document element. A row of another kind is a convention with no
+        // element to be written as, so it is dropped rather than written as a
+        // tenor basis swap that carries no legs.
+        if (row.family == "convention") {
+            auto c = unpack_row<refdata::domain::convention>(row);
+            if (c.kind_code == tenor_basis_swap_kind)
+                central.push_back(std::move(c));
+            continue;
+        }
+        if (row.family == "tenor_basis_swap_pay_receive") {
+            pay_receives.push_back(unpack_row<refdata::domain::tenor_basis_swap_pay_receive>(row));
+            continue;
+        }
+        if (row.family == "tenor_basis_swap_long_short") {
+            long_shorts.push_back(unpack_row<refdata::domain::tenor_basis_swap_long_short>(row));
+            continue;
+        }
+
+        const auto joiner = std::ranges::find(joiners, row.family, &family_joiner::family);
+        if (joiner == std::end(joiners))
+            throw std::runtime_error(std::format(
+                "Conventions payload names family \"{}\", which no ORE document element carries.",
+                row.family));
+        joiner->join(row, r);
+    }
+
+    // The three families are one document element, so a central row takes back
+    // the parts that name it. The row order is the bundle's order; the sequence
+    // each row carries orders a family within a bundle, and the join does not
+    // need it because a family's rows are appended in the order they arrive.
+    for (const auto& c : central) {
+        refdata::messaging::tenor_basis_swap_convention_item item;
+        item.key.id = c.id;
+        item.convention = c;
+        for (const auto& part : pay_receives)
+            if (part.convention_id == c.id)
+                item.pay_receive.push_back(part);
+        for (const auto& part : long_shorts)
+            if (part.convention_id == c.id)
+                item.long_short.push_back(part);
+        r.TenorBasisSwap.push_back(reverse_tenor_basis_swap(item));
+    }
+
+    r.FX.reserve(p.fx.size());
+    for (const auto& fx : p.fx)
+        r.FX.push_back(reverse_fx(fx));
+
+    return r;
+}
+
+std::vector<std::string> skipped_fx_conventions(const conventions_package& p) {
+    std::vector<std::string> names;
+    names.reserve(p.fx.size());
+    for (const auto& fx : p.fx)
+        names.push_back(fx_convention_id(fx.pair.base_currency, fx.pair.quote_currency));
+    return names;
 }
 
 }

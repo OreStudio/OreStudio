@@ -8,11 +8,11 @@
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
 #+branch: feature/model-each-convention-family
-#+pr: 3554
+#+pr: 3562
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
-#+updated: 2026-10-18
+#+updated: 2026-10-19
 #+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,10 +28,10 @@ Every convention family is declared once, in its own entity, and carries only it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | The per-family entities, the generated registry and the generated per-family apply are merged. The aggregate =conventions_document= still exists and still has callers. |
+| Now          | The per-family entities, the generated registry, the generated per-family apply and read, and the ORE boundary package are merged. The aggregate =conventions_document= remains, and the two run import paths no longer use it. |
 | Waiting on   | Nothing.                               |
-| Next         | Delete the aggregate, which moves the whole-document service, the six generated apply and read functions, the mapper pair, the legacy importer and exporter, the diff, the service import and the run store in one wave. |
-| Last touched | 2026-10-18                               |
+| Next         | Delete the aggregate, which moves its tests onto the package and removes the whole-document service, the six generated apply and read functions, the mapper pair and the model section in one wave. |
+| Last touched | 2026-10-19                               |
 
 * Acceptance
 
@@ -70,6 +70,8 @@ The plan is five steps.
 4. Delete the aggregate, the service, the six bulk functions and the model section, retiring the bridge.
 5. The translation-unit gate, and the measurements this task records.
 
+Step 3 arrived in one change. The package, its two directions, the tests that compare it with the document and the move of both production callers all came together, so the new shape had callers from the first commit. The bridge is the mapper pair itself: =map= and =reverse= still turn a document into the rows the legacy file importer and exporter, the diff and the tests work in, and step 4 removes them with the type.
+
 * Measurements
 
 
@@ -84,6 +86,7 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Families in the generated registry | 26 | =grep -c 'convention_write_mode::' projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp= | 8d7c38449c |
+| Corpus files the package writes as the document writes them | 72 | =./build/output/linux-clang-release-ninja/publish/bin/ores.ore.core.tests 'a_corpus_file_leaves_the_package_as_the_document_leaves_it'= | dfd9acee52 |
 
 * Notes
 - Step 1 is merged: the export of all seventy-two corpus files is pinned by
@@ -102,8 +105,10 @@ task and name that file in the Command column.
   sorts by the registry's alphabetical order. A registry field that states the
   dependency order would remove the hand list and make the ordering rule
   explicit.
-- The run store has no unit of work, so the document path it uses is still not
-  atomic. Task 4 closes that when it moves the run store onto the bundle.
+- The run store has no unit of work, so it applies a bundle without one and
+  the import is still not atomic. The bundle service takes the caller's
+  transaction, so the fix is the run store opening one, not a change in the
+  service.
 - Step 2's read side is merged. The generated fragment now carries
   =read_family_payloads=, one branch per family, and
   =conventions_bundle_service::read= assembles every family the session sees
@@ -111,6 +116,25 @@ task and name that file in the Command column.
   kind this bundle covers, because that one table carries every kind. A test
   proves the bundle read carries the same rows as the document read, which is
   the bridge the next step removes.
+- Step 3 is in review as #3562. =ores::ore::domain::conventions_package= holds
+  one bundle and the FX projection, and =split_conventions= and
+  =join_conventions= are the two directions over it. The package is now what
+  crosses the boundary: the run store and the run configuration operations both
+  read into it and write from it, and neither of them assembles a document any
+  more. The run configuration operations lost the whole-document reflection that
+  turned a document into generic JSON and back; per-row =rfl::json= remains,
+  because a payload is a row.
+- An import now applies one row at a time: =apply_staged_family= decodes one
+  payload and writes it, and the row helpers read the family's table on every
+  call. The document path read a family once and wrote its rows together, so a
+  family of many rows costs a read per row where it used to cost one. That is
+  the shape the staging path already had, and the fix is the per-family apply
+  the next two steps write: one call per family carrying its rows.
+- The FX convention is the only part of the package that does not enter the
+  bundle, and that is what the projection means. It comes back on the export
+  only when the same package is joined, which is why the store never returns
+  one: the three entities it is a projection of are the store, and the read
+  does not assemble them.
 - The per-family translation units are not generated yet, so the staged apply
   and the payload read each compile one branch per family in a single unit.
 - The pin holds. Comparing the service's hand-written calls with the generated
@@ -176,6 +200,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3562][#3562]] | [ore] Split the conventions document into a bundle of families |
 | [[https://github.com/OreStudio/OreStudio/pull/3554][#3554]] | [refdata] Read a family's rows as the payloads the wire carries |
 | [[https://github.com/OreStudio/OreStudio/pull/3542][#3542]] | [refdata] Apply a conventions bundle in the caller's transaction |
 | [[https://github.com/OreStudio/OreStudio/pull/3459][#3459]] | [codegen] Generate the convention family registry |
@@ -194,9 +219,18 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The python renderer dropped its 100 column wrap when the templates took over. | convention_family_registry facet | Accepted, no change | The generated header's longest line is 80 columns, so nothing exceeds the limit today. The fix, if a name grows, is in the template. |
 | 2 | The facet hardcodes the refdata output paths, so a second component opting in would overwrite them. | convention-registry facets | Accepted, recorded | A second component needs the address parameterised before it enables the facet. The facet page states the limit. |
+| 3 | #3562: =join_conventions= wrote a central convention row of any kind as a tenor basis swap, where =reverse= filters on the kind. The RPC read hands it rows of every kind, so an export could carry a leg-less element for a convention no document element names. | conventions_mapper.cpp | Fixed | The join keeps only rows whose kind is the tenor basis swap, which is what the path it replaces did. A test writes a central row of another kind and asserts no element comes back. |
+| 4 | #3562: the row-count test covered six of the twenty-six families. | conventions_package_tests.cpp | Fixed | A test now walks the corpus, refuses a family the registry does not name, and requires the corpus to name every family the registry does. |
+| 5 | #3562: an import applies one row at a time, so the row helpers read the family's table once per row where the document path read it once per family. | conventions_row_helpers.hpp | Accepted, recorded | The staging path already had this shape. The fix is the per-family apply the next two steps write, and the note above says so. |
+| 6 | #3562: the package header says one row per element, when a tenor basis swap element is a central row plus its part rows. | conventions_package.hpp | Fixed | The header now says one row per stored row and names the element that is more than one. |
+| 7 | #3562: =conventions_document_service::save= is production-dead, with only tests calling it. | conventions_document_service.cpp | Accepted, recorded | Step 4 deletes it with the type it takes. |
+| 8 | #3562: the benchmark rows and the generated shell script are unrelated to a conventions refactor. | benchmarks, shell scripts | Accepted, explained | The gate asks for a benchmark row after a change to the XML code, and it fails on trunk without the shell script, so neither can wait for a separate branch. |
+| 9 | #3562: the skipped FX convention name was spelled by hand in the run store and in the run configuration operations, where the mapper already owned the name. | run_store.cpp, run_configuration_operations.cpp | Fixed | =skipped_fx_conventions= builds the list from a package, and both callers use it. |
+| 10 | #3562: the row count test checked five of twenty-three families by name. | conventions_package_tests.cpp | Fixed | The test now compares every row outside the three tenor basis swap families with the sum of all other elements in the document. |
+| 11 | #3562: =ores.ore.core= links =ores.refdata.core= publicly because the package header exposes =conventions_bundle=. | CMakeLists.txt | Accepted, recorded | The bundle is the boundary's own type. The link goes private again if the bundle moves to the api component. |
 
 * Result
 
-Not yet complete. Merged so far are the per-family entities, the generated registry, the generated per-family apply in its own translation unit, and the retirement of the python renderer. The aggregate itself is still present, so the task's headline acceptance criterion is not met.
+Not yet complete. Merged so far are the per-family entities, the generated registry, the generated per-family apply in its own translation unit, and the generated per-family read. The ORE boundary package is in review as #3562. The aggregate itself is still present, so the task's headline acceptance criterion is not met.
 
-The deletion is in progress. It needs the whole-document service and the six generated apply and read functions gone, the mapper pair and the run store and the diff and the legacy importer and exporter and the service import on per-family values, and the type removed from the model and its protocol.
+The boundary is what step 3 changes, and it changes it in the direction the deletion needs. The two run import paths no longer move conventions through the document: the run store and the run configuration operations each split a file into a package and apply its bundle, and each joins the bundle the read returns. What still names the type is the legacy file importer and exporter in ores.ore, =conventions_difference=, the whole-document service in refdata, and the tests that compare the package with the document. Those are step 4's work, and they go with the type rather than before it, because a comparison against the old shape is what proved the new one.

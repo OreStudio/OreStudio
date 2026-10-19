@@ -4474,11 +4474,9 @@ const fr: SourceCatalogue = {
         filter: {
             allParties: 'Toutes les parties',
         },
-        gaps: {
-            search: 'Le serveur ne recherche pas les définitions de rapport, donc cette liste n’a pas de champ de recherche.',
-            order: 'Aucune colonne de définition de rapport n’est déclarée triable, donc la liste ne peut pas être ordonnée par l’une d’elles.',
-            healthCount:
-                'Le serveur ne compte aucune définition par état, donc cette liste ne porte pas de décompte des cinq mots.',
+        tally: {
+            label: 'Rapports selon l’état de leur dernière exécution',
+            unread: 'Le décompte des rapports par état n’a pas pu être lu : {message}',
         },
         columns: {
             report: 'Rapport',

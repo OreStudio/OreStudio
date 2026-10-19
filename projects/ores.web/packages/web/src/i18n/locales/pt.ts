@@ -4444,11 +4444,9 @@ const pt: SourceCatalogue = {
         filter: {
             allParties: 'Todas as partes',
         },
-        gaps: {
-            search: 'O servidor não pesquisa definições de relatório, pelo que esta lista não tem campo de pesquisa.',
-            order: 'Nenhuma coluna de definição de relatório é declarada ordenável, pelo que a lista não pode ser ordenada por uma delas.',
-            healthCount:
-                'O servidor não conta definições por estado, pelo que esta lista não traz a contagem das cinco palavras.',
+        tally: {
+            label: 'Relatórios segundo o estado da sua última execução',
+            unread: 'A contagem de relatórios por estado não pôde ser lida: {message}',
         },
         columns: {
             report: 'Relatório',

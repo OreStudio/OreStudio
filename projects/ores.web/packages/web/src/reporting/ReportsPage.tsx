@@ -35,9 +35,11 @@
  * specification draws: it names what it holds in its lead sentence, tags each
  * party by name, and filters on the server.
  *
- * Three things the standard asks for have no server answer, and the screen says
- * so rather than reading every row to work them out: the generated read declares
- * no searchable and no sortable field, and nothing counts the rows by health.
+ * The server answers all three things the standard asks of a list. It searches
+ * the name and the description, it orders by the columns the model declares
+ * sortable, and it counts the definitions by health for the party and the search
+ * the list is narrowed to, so no row is read in the browser to work one out.
+ * The columns of a run have no order of their own: the order is the definition's.
  */
 
 import type { ReactNode } from 'react';
@@ -59,7 +61,14 @@ import {
 import { Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
 import { REPORTS_EVENTS } from './store.js';
-import { Absent, HealthTag, formatCount, formatDuration, runDuration } from './shared.js';
+import {
+    Absent,
+    HealthSummary,
+    HealthTag,
+    formatCount,
+    formatDuration,
+    runDuration,
+} from './shared.js';
 
 /** The key the list's pages are cached under, and the prefix its load state reads. */
 export const REPORTS_QUERY_KEY = ['records', 'reports'] as const;
@@ -130,31 +139,61 @@ function usePartyFilter(): {
     };
 }
 
+/** The fields of a definition the server orders by, which are the columns that can be clicked. */
+const SORTABLE_FIELDS = ['name', 'report_type', 'schedule_expression'] as const;
+
 /** The parties the rows come from, read one page at a time. */
 function useReportSource(party: ListFilter | undefined): ListSource<ReportRowView> {
     const { t } = useTranslation();
     return {
         key: 'reports',
         read: async (page) => {
-            const answer = await api.reports({
-                offset: page.offset,
-                limit: page.limit,
-                sort: page.sort,
-                descending: page.descending,
-                partyId: page.filters['party'] ?? null,
-            });
+            const partyId = page.filters['party'] ?? null;
+            // The tally is of every report the party and the search match, so it
+            // is read with the page and not added up from it. It is read apart
+            // from the rows: a tally that cannot be read costs the strip and the
+            // list still draws.
+            const [answer, tally] = await Promise.all([
+                api.reports({
+                    offset: page.offset,
+                    limit: page.limit,
+                    sort: page.sort,
+                    descending: page.descending,
+                    partyId,
+                    search: page.search,
+                }),
+                api
+                    .reportHealth({ partyId, search: page.search })
+                    .then((counted) => ({ counted }))
+                    .catch((error: unknown) => ({
+                        failure: error instanceof Error ? error.message : String(error),
+                    })),
+            ]);
             // A read that failed costs its own cell, and the list says which one
             // above the table rather than losing the rows it could compose.
+            const notes = unreadNotes(answer.unread, t);
+            if ('failure' in tally) {
+                return {
+                    rows: answer.rows,
+                    total: answer.total,
+                    notes: [
+                        ...notes,
+                        {
+                            tone: 'warn' as const,
+                            text: t('reporting.tally.unread', { message: tally.failure }),
+                        },
+                    ],
+                };
+            }
             return {
                 rows: answer.rows,
                 total: answer.total,
-                notes: unreadNotes(answer.unread, t),
+                notes,
+                summary: <HealthSummary tally={tally.counted} />,
             };
         },
-        // The generated read searches and orders no field of a definition, so
-        // the list offers neither rather than filtering its own page.
-        search: false,
-        sortable: [],
+        search: true,
+        sortable: SORTABLE_FIELDS,
         ...(party === undefined ? {} : { filters: [party] }),
         mayAdd: false,
         watches: [REPORTS_EVENTS],
@@ -229,6 +268,7 @@ function useColumns(): readonly ListColumn<ReportRowView>[] {
     return [
         {
             id: 'name',
+            sort: 'name',
             header: t('reporting.columns.report'),
             cell: (row) => (
                 <Link to={reportPath(row.id)} className="text-accent">
@@ -243,12 +283,14 @@ function useColumns(): readonly ListColumn<ReportRowView>[] {
         },
         {
             id: 'reportType',
+            sort: 'report_type',
             header: t('reporting.columns.reportType'),
             cell: (row) => row.reportType,
             mono: true,
         },
         {
             id: 'schedule',
+            sort: 'schedule_expression',
             header: t('reporting.columns.schedule'),
             cell: (row) => <ScheduleCell row={row} />,
         },
@@ -331,8 +373,7 @@ export function ReportsPage(): ReactNode {
 /**
  * The list itself, drawn once the parties it filters by are known.
  *
- * The notes above the table are the page's gaps, said once and not faked: a
- * read that refused, and the three things the generated read cannot do.
+ * The notes above the table say what a read that refused could not fill.
  */
 function ReportsList({
     source,
@@ -351,26 +392,6 @@ function ReportsList({
             crumbs={trail}
             columns={columns}
             pathOf={(row) => reportPath(row.id)}
-            notes={gapNotes(t)}
         />
     );
-}
-
-/**
- * What the page knows before any row is read, and what the reads that decorate
- * the rows could not say.
- *
- * The generated read declares no searchable field, no sortable field and no
- * count by health, so the list has no search box, no column order and no tally
- * until the contract gains them. The screen states that instead of reading every
- * row to work it out in the browser.
- */
-function gapNotes(
-    t: (key: string) => string,
-): readonly { readonly tone: 'info'; readonly text: string }[] {
-    return [
-        { tone: 'info' as const, text: t('reporting.gaps.search') },
-        { tone: 'info' as const, text: t('reporting.gaps.order') },
-        { tone: 'info' as const, text: t('reporting.gaps.healthCount') },
-    ];
 }

@@ -33,6 +33,7 @@ import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { accessOf, renderRecords } from '../refdata/testSupport.js';
 import { reportKey } from './ReportPage.js';
 import { MY_PARTIES_QUERY_KEY, ReportsPage as ReportsScreen, unreadNotes } from './ReportsPage.js';
+import { HealthSummary } from './shared.js';
 import { ReportPage } from './ReportPage.js';
 
 /**
@@ -361,12 +362,74 @@ describe('the list of reports the parties run', () => {
         expect(rowText(html, AUDIT_NAME)).toContain('Unknown');
     });
 
-    it('says what the server cannot do, so a missing control is a stated gap', () => {
-        const page = textOf(list());
+    it('searches on the server, so the list has a search box and no sentence about a gap', () => {
+        const html = list();
 
-        expect(page).toContain('The server does not search report definitions');
-        expect(page).toContain('No column of a report definition is declared sortable');
-        expect(page).toContain('The server counts no definition by health');
+        expect(html).toContain('type="search"');
+        expect(textOf(html)).not.toContain('The server does not search');
+    });
+
+    it('orders by the columns the server orders by, and by no other', () => {
+        const html = list();
+        const headers = html.match(/<th[^>]*>.*?<\/th>/gs) ?? [];
+        const sortable = headers
+            .filter((header) => header.includes('<button'))
+            .map((header) => textOf(header));
+
+        // The run columns belong to another read, so they carry no order of their own.
+        expect(sortable).toEqual(['Report', 'Type', 'Schedule']);
+        expect(textOf(html)).not.toContain('is declared sortable');
+    });
+
+    it('draws the health the server counted above the table, with the words in order', () => {
+        const tally = {
+            counts: [
+                { health: 'failed', count: 2 },
+                { health: 'completed with errors', count: 1 },
+                { health: 'running', count: 0 },
+                { health: 'never run', count: 1234 },
+                { health: 'completed clean', count: 3 },
+                { health: '', count: 0 },
+            ],
+            total: 1240,
+        };
+        const html = list((client) =>
+            client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+                ...PAGE,
+                summary: <HealthSummary tally={tally} />,
+            }),
+        );
+
+        expect(html.indexOf('Reports by the health of their latest run')).toBeLessThan(
+            html.indexOf('<tbody'),
+        );
+        const strip = textOf(
+            html.match(/<ul aria-label="Reports by the health.*?<\/ul>/s)?.[0] ?? '',
+        );
+        expect(strip).toBe('Failed2Completed with errors1Running0Never run1,234Completed clean3');
+        expect(textOf(html)).not.toContain('The server counts no definition');
+    });
+
+    it('counts a report whose run has no word yet apart, so no report goes missing', () => {
+        const html = list((client) =>
+            client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+                ...PAGE,
+                summary: (
+                    <HealthSummary
+                        tally={{
+                            counts: [
+                                { health: 'failed', count: 0 },
+                                { health: 'never run', count: 1 },
+                                { health: '', count: 2 },
+                            ],
+                            total: 3,
+                        }}
+                    />
+                ),
+            }),
+        );
+
+        expect(textOf(html)).toContain('No word2');
     });
 
     it('offers the party filter, with the parties the session works in', () => {

@@ -54,6 +54,9 @@ const DEFAULT_PAGE_SIZE = 15;
 /** The largest page a caller may ask for, as the generated read allows. */
 const MAX_PAGE_SIZE = 1000;
 
+/** The longest text a search may carry, which is the limit the server states for it. */
+const SEARCH_LIMIT = 256;
+
 /** The words a row's health cell can hold. The server derives them; this only names them. */
 const HEALTH_WORDS = [
     'failed',
@@ -138,6 +141,14 @@ const pageQuerySchema = z.object({
         .transform((value) => value === 'true'),
     /** The party the list is narrowed to, from a filter of the page. */
     party_id: z.uuid().optional(),
+    /** The text the name and the description of a definition are searched for. */
+    search: z.string().trim().max(SEARCH_LIMIT).default(''),
+});
+
+/** What narrows the definitions a health tally counts: the party and the search of the list. */
+const healthQuerySchema = z.object({
+    party_id: z.uuid().optional(),
+    search: z.string().trim().max(SEARCH_LIMIT).default(''),
 });
 
 const idSchema = z.uuid();
@@ -155,17 +166,20 @@ interface DefinitionFilter {
     readonly party_id: string | null;
     readonly id_one_of: readonly string[] | null;
     readonly party_id_one_of: readonly string[] | null;
+    readonly search: string | null;
 }
 
-/** The filter that narrows to one party, or to one definition by its id. */
+/** The filter that narrows to one party, to one definition by its id, or to a search. */
 function definitionFilter(members: {
     readonly partyId?: string;
     readonly idOneOf?: readonly string[];
+    readonly search?: string;
 }): DefinitionFilter {
     return {
         party_id: members.partyId ?? null,
         id_one_of: members.idOneOf ?? null,
         party_id_one_of: null,
+        search: members.search === undefined || members.search === '' ? null : members.search,
     };
 }
 
@@ -231,9 +245,16 @@ async function readDefinitionsPage(
         readonly sort: string;
         readonly descending: boolean;
         readonly partyId: string | null;
+        readonly search: string;
     },
 ): Promise<DefinitionPage> {
-    const filter = page.partyId === null ? null : definitionFilter({ partyId: page.partyId });
+    const filter =
+        page.partyId === null && page.search === ''
+            ? null
+            : definitionFilter({
+                  ...(page.partyId === null ? {} : { partyId: page.partyId }),
+                  search: page.search,
+              });
     const reply = await session.client.callAuthenticated(
         definitionSubjects.list_report_definitions_request,
         {
@@ -253,6 +274,50 @@ async function readDefinitionsPage(
         throw refusalOf(reply.result);
     }
     return { definitions: reply.definitions, total: reply.total };
+}
+
+/** How many definitions sit at one health word, as the server counted them. */
+interface HealthCount {
+    readonly health: string;
+    readonly count: number;
+}
+
+/** The tally of the definitions a party and a search narrow the list to. */
+interface HealthTally {
+    readonly counts: readonly HealthCount[];
+    readonly total: number;
+}
+
+/**
+ * The definitions of the session's parties counted by the word their latest run
+ * reads as.
+ *
+ * The count is the server's, because the words are its vocabulary and the party
+ * and the search are its filter. A page of rows cannot be added up to this: the
+ * rows of the other pages carry words too.
+ */
+async function readHealthTally(
+    session: LiveSession,
+    narrow: { readonly partyId: string | null; readonly search: string },
+): Promise<HealthTally> {
+    const reply = await session.client.callAuthenticated(
+        instanceSubjects.count_report_definitions_by_health_request,
+        {
+            party_id: narrow.partyId,
+            search: narrow.search === '' ? null : narrow.search,
+        },
+        z.looseObject({
+            result: resultSchema,
+            counts: z
+                .array(z.object({ health: z.string(), count: z.int().nonnegative() }))
+                .default([]),
+            total: z.int().nonnegative().default(0),
+        }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusalOf(reply.result);
+    }
+    return { counts: reply.counts, total: reply.total };
 }
 
 /**
@@ -336,7 +401,10 @@ async function choicesFor(
     named: readonly Record<string, unknown>[],
 ): Promise<readonly NameChoice[]> {
     const composed = await compose(session, named);
-    return composed.rows.map((row) => ({
+    const byParty = [...composed.rows].sort((left, right) =>
+        left.partyName.localeCompare(right.partyName),
+    );
+    return byParty.map((row) => ({
         id: row.id,
         name: row.name,
         partyName: row.partyName,
@@ -606,18 +674,17 @@ async function compose(
         (runs ?? []).map((run) => [text(run['definition_id']), run] as const),
     );
 
-    const rows = definitions
-        .map((definition) =>
-            rowOf(definition, {
-                parties,
-                runs: runs === undefined ? undefined : byDefinition,
-                health,
-                counts,
-                nextFires,
-            }),
-        )
-        .sort((left, right) => left.name.localeCompare(right.name));
-
+    // The rows keep the order the definitions were read in, which is the order
+    // the server was asked for, so a sorted page is not sorted again here.
+    const rows = definitions.map((definition) =>
+        rowOf(definition, {
+            parties,
+            runs: runs === undefined ? undefined : byDefinition,
+            health,
+            counts,
+            nextFires,
+        }),
+    );
     return { rows, unread, parties };
 }
 
@@ -751,9 +818,28 @@ export function registerReportingRoutes(
             sort: page.sort,
             descending: page.descending,
             partyId: page.party_id ?? null,
+            search: page.search,
         });
         const composed = await compose(session, read.definitions);
         return { rows: composed.rows, total: read.total, unread: composed.unread };
+    });
+
+    /*
+     * How many of the definitions the list would read sit at each health word.
+     * The server counts, narrowed by the same party and search as the list, so
+     * the five words add up to the list's own total.
+     */
+    server.get('/api/reporting/report-health', async (request) => {
+        const session = requireSession(request);
+        const query = parseInput(
+            healthQuerySchema,
+            request.query,
+            'A health tally names a party and a search of at most 256 characters.',
+        );
+        return readHealthTally(session, {
+            partyId: query.party_id ?? null,
+            search: query.search,
+        });
     });
 
     /*

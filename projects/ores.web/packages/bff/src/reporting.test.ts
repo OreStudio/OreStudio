@@ -361,7 +361,45 @@ describe('the list of reports the parties run', () => {
             party_id: OTHER_PARTY,
             id_one_of: null,
             party_id_one_of: null,
+            search: null,
         });
+    });
+
+    it('sends the search and the order to the server and keeps the order it answers in', async () => {
+        const replies = listReplies();
+        const newestFirst = [...ALL_DEFINITIONS].reverse();
+        const { server, sessionId, calls } = buildTestServer({
+            ...replies,
+            [DEFINITIONS]: { result: ok, definitions: newestFirst, total: newestFirst.length },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/reports?sort=name&descending=true&search=%20audit%20',
+        );
+
+        expect(response.statusCode).toBe(200);
+        // The server decided the order, so a page is not sorted by name again here.
+        expect(response.json().rows.map((row: { id: string }) => row.id)).toEqual(
+            newestFirst.map((definition) => definition['id']),
+        );
+        const read = calls.find((call) => call.subject === DEFINITIONS);
+        const body = read?.body as { order: unknown; filter: { search: unknown } };
+        expect(body.order).toEqual({ field: 'name', descending: true });
+        expect(body.filter.search).toBe('audit');
+    });
+
+    it('refuses a search longer than the server allows', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports?search=${'x'.repeat(257)}`,
+        );
+
+        expect(response.statusCode).toBe(400);
     });
 
     it('refuses a page a caller may not ask for', async () => {
@@ -479,6 +517,75 @@ describe('the list of reports the parties run', () => {
     });
 });
 
+describe('the health tally of the reports', () => {
+    const TALLY = 'reporting.v1.ops.count_report_definitions_by_health';
+    const counts = [
+        { health: 'failed', count: 2 },
+        { health: 'completed with errors', count: 1 },
+        { health: 'running', count: 0 },
+        { health: 'never run', count: 4 },
+        { health: 'completed clean', count: 3 },
+        { health: '', count: 0 },
+    ];
+
+    it('states the counts the server made, narrowed by the party and the search', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [TALLY]: { result: ok, counts, total: 10 },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/report-health?party_id=${OTHER_PARTY}&search=audit`,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ counts, total: 10 });
+        expect(calls.find((call) => call.subject === TALLY)?.body).toEqual({
+            party_id: OTHER_PARTY,
+            search: 'audit',
+        });
+    });
+
+    it('asks for every party and no search when the list names none', async () => {
+        const { server, sessionId, calls } = buildTestServer({
+            [TALLY]: { result: ok, counts, total: 10 },
+        });
+        await send(server, sessionId, 'GET', '/api/reporting/report-health');
+
+        expect(calls.find((call) => call.subject === TALLY)?.body).toEqual({
+            party_id: null,
+            search: null,
+        });
+    });
+
+    it('reports a refused count with the status the server stated', async () => {
+        const { server, sessionId } = buildTestServer({
+            [TALLY]: {
+                result: { outcome: 'denied', code: 'forbidden', message: 'You may not read runs.' },
+                counts: [],
+                total: 0,
+            },
+        });
+        const response = await send(server, sessionId, 'GET', '/api/reporting/report-health');
+
+        expect(response.statusCode).toBe(403);
+        expect(response.json().message).toBe('You may not read runs.');
+    });
+
+    it('refuses a party that is not an id', async () => {
+        const { server, sessionId } = buildTestServer({});
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/report-health?party_id=nonsense',
+        );
+
+        expect(response.statusCode).toBe(400);
+    });
+});
+
 describe('one report definition', () => {
     it('reads the definition the id names, and not one of the same name elsewhere', async () => {
         const { server, sessionId, calls } = buildTestServer(listReplies());
@@ -521,7 +628,12 @@ describe('one report definition', () => {
                 offset: 0,
                 limit: 1,
                 order: { field: '', descending: false },
-                filter: { party_id: null, id_one_of: [AUDIT_ELSEWHERE], party_id_one_of: null },
+                filter: {
+                    party_id: null,
+                    id_one_of: [AUDIT_ELSEWHERE],
+                    party_id_one_of: null,
+                    search: null,
+                },
                 as_of: null,
             },
         });

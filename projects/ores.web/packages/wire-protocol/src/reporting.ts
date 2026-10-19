@@ -121,6 +121,20 @@ export const reportsPageSchema = z.object({
 export type ReportsPage = z.infer<typeof reportsPageSchema>;
 
 /**
+ * How many definitions sit at each health word, as the server counted them.
+ *
+ * The server states one entry per word and one for the definitions whose latest
+ * run is in a state with no word yet, which has the empty word, so the counts add
+ * up to the total.
+ */
+export const reportHealthTallySchema = z.object({
+    counts: z.array(z.object({ health: z.string(), count: z.int().nonnegative() })),
+    total: z.int().nonnegative(),
+});
+
+export type ReportHealthTally = z.infer<typeof reportHealthTallySchema>;
+
+/**
  * The definition as the detail screen reads it, under the field names the record
  * holds.
  *

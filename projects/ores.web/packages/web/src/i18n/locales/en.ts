@@ -4409,11 +4409,9 @@ export const en: SourceCatalogue = {
         filter: {
             allParties: 'All parties',
         },
-        gaps: {
-            search: 'The server does not search report definitions, so this list has no search box.',
-            order: 'No column of a report definition is declared sortable, so the list cannot be ordered by one.',
-            healthCount:
-                'The server counts no definition by health, so this list carries no tally of the five words.',
+        tally: {
+            label: 'Reports by the health of their latest run',
+            unread: 'The count of reports by health could not be read: {message}',
         },
         columns: {
             report: 'Report',

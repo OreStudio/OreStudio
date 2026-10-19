@@ -20,7 +20,11 @@
  */
 
 import type { ReactNode } from 'react';
-import type { ReportHealthWord } from '@ores/wire-protocol/browser';
+import {
+    reportHealthWordSchema,
+    type ReportHealthTally,
+    type ReportHealthWord,
+} from '@ores/wire-protocol/browser';
 import { useTranslation } from '../i18n/Provider.js';
 import type { Translator } from '../i18n/translate.js';
 import { useBadge } from '../ui/AccountLockBadge.js';
@@ -111,6 +115,45 @@ function HealthBadge({
 }): ReactNode {
     const badge = useBadge(HEALTH_BADGES[word] ?? UNMAPPED);
     return <Label text={text} badge={badge} />;
+}
+
+/**
+ * How many reports sit at each of the five health words, as the server counted
+ * them.
+ *
+ * The counts are the server's, for every report the list's party and search
+ * match and not only the page on screen, so they add up to the list's total.
+ * The reports whose latest run is in a state with no word yet are counted apart
+ * and shown only when there are some, so the strip never hides a report.
+ */
+export function HealthSummary({ tally }: { readonly tally: ReportHealthTally }): ReactNode {
+    const { t, language } = useTranslation();
+    const countOf = (word: string): number =>
+        tally.counts.find((entry) => entry.health === word)?.count ?? 0;
+    const unstated = countOf('');
+    return (
+        <ul
+            aria-label={t('reporting.tally.label')}
+            className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm"
+        >
+            {reportHealthWordSchema.options.map((word) => (
+                <li key={word} className="flex items-center gap-2">
+                    <HealthBadge word={word} text={t(HEALTH_KEY[word])} />
+                    <span className="font-mono tabular-nums">
+                        {formatCount(countOf(word), language)}
+                    </span>
+                </li>
+            ))}
+            {unstated > 0 && (
+                <li className="flex items-center gap-2">
+                    <Label text={t('reporting.health.noWord')} badge={undefined} />
+                    <span className="font-mono tabular-nums">
+                        {formatCount(unstated, language)}
+                    </span>
+                </li>
+            )}
+        </ul>
+    );
 }
 
 /** How long a run took, in milliseconds, or nothing when it has not finished. */

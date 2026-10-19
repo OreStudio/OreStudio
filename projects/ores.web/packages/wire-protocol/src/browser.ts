@@ -353,6 +353,7 @@ export {
     REPORT_HEALTH_WORDS,
     reportDefinitionViewSchema,
     reportDetailSchema,
+    reportHealthTallySchema,
     reportHealthWordSchema,
     reportIdReplySchema,
     reportNameChoiceSchema,
@@ -365,6 +366,7 @@ export {
 export type {
     ReportDefinitionView,
     ReportDetail,
+    ReportHealthTally,
     ReportHealthWord,
     ReportId,
     ReportNameChoice,

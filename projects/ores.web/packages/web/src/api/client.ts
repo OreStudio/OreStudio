@@ -153,9 +153,11 @@ import {
     type WireTimestamp,
     wireTimestampSchema,
     reportDetailSchema,
+    reportHealthTallySchema,
     reportNameChoicesSchema,
     reportsPageSchema,
     type ReportDetail,
+    type ReportHealthTally,
     type ReportNameChoice,
     type ReportsPage,
 } from '@ores/wire-protocol/browser';
@@ -1231,6 +1233,8 @@ export const api = {
         readonly descending: boolean;
         /** The party the list is narrowed to, or null for every party in scope. */
         readonly partyId: string | null;
+        /** The text the name and the description are searched for, or empty for none. */
+        readonly search: string;
     }): Promise<ReportsPage> {
         const query = new URLSearchParams({
             offset: String(page.offset),
@@ -1241,8 +1245,33 @@ export const api = {
         if (page.partyId !== null) {
             query.set('party_id', page.partyId);
         }
+        if (page.search !== '') {
+            query.set('search', page.search);
+        }
         return reportsPageSchema.parse(
             await request(`/api/reporting/reports?${query.toString()}`, { method: 'GET' }),
+        );
+    },
+
+    /**
+     * How many of the reports the list would show sit at each health word.
+     *
+     * The server counts, narrowed by the same party and search as the list, so
+     * the words add up to the list's own total.
+     */
+    async reportHealth(narrow: {
+        readonly partyId: string | null;
+        readonly search: string;
+    }): Promise<ReportHealthTally> {
+        const query = new URLSearchParams();
+        if (narrow.partyId !== null) {
+            query.set('party_id', narrow.partyId);
+        }
+        if (narrow.search !== '') {
+            query.set('search', narrow.search);
+        }
+        return reportHealthTallySchema.parse(
+            await request(`/api/reporting/report-health?${query.toString()}`, { method: 'GET' }),
         );
     },
 

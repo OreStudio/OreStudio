@@ -110,6 +110,24 @@ read back from one.
       caller's own parties; =refdata.v1.parties.list= would need
       =refdata::parties:read=.
 
+** The list's own controls
+
+The list could not draw three controls, because the server answered none of
+them. Each now has a server answer, and the screen says nothing about a gap.
+
+- [X] Search the name and the description on the server. The model declares
+      both columns =:searchable:=, and the generated filter gains the =search=
+      member. Read =reporting.v1.report_definitions.list=.
+- [X] Order the list by name, type or schedule on the server. The model declares
+      the three columns =:sortable:=. The BFF keeps the order it is given, so it
+      no longer sorts a page by name. Read =reporting.v1.report_definitions.list=.
+- [X] Count the definitions by health. The new read
+      =reporting.v1.ops.count_report_definitions_by_health= takes the party and
+      the search of the list, so the five words add up to the list total. It
+      reads the definitions through the definition service, which gives both
+      filters the same meaning as on the list. Read
+      =reporting::report_instances:read= and =reporting::report_definitions:read=.
+
 * Plan
 
 Phase 1 closes the grants first, because a read no person role may call is not a

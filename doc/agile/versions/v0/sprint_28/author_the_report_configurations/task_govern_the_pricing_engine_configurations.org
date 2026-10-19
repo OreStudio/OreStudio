@@ -8,7 +8,7 @@
 #+filetags: :author_the_report_configurations:sprint_28:v0:
 #+owner: marco
 #+branch: feature/govern-the-pricing-engine-configurations
-#+pr:
+#+pr: 3582
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-20
@@ -103,7 +103,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3582 | Govern the pricing engine configurations |
 
 * Review
 

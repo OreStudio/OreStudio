@@ -60,6 +60,47 @@ task and name that file in the Command column.
 
 * Notes
 
+** Trade page review, 2026-10-19
+
+Read at =6b0451ee62=: =doc/prototypes/trades/trade-page/prototype.js= and
+=common.js= against [[id:BD492939-118E-4B55-AE5B-300F7A1C3B41][Entity screen specification]], the record standard, the menu
+structure and the NATS entity protocol. The code was read, not run. =common.js=
+is the same in four prototypes, so a fix there goes to all four.
+
+What already matches: tabs in the specified order and held in the address; the
+card layout, the dash for an empty value and the fixed-field reason; the Edit
+pattern with the kind of change first, the effect notice, the version precondition
+and the conflict notice; Refresh gold with the pulse and the loaded-at line; the
+Workflows menu rules; the system-activity toggle; the author photo, link and
+note line in the history.
+
+| # | Difference | Where | Action |
+|---+------------+-------+--------|
+| 1 | The request line names =trades.list= with a state member and =trades.list_by_book_id= with =scope=subtree=. The settled design reads the =trade_summary= read model: =book_id= equals or one-of, state, identifier search, =_from= and =_to= dates. A portfolio resolves to its books on the client, limit 1000. No date filter is drawn | =prototype.js:62=, =:81-89= | Fix. The target mode follows the settled design. Depends on story [[id:F4F4EF12-F013-4429-8863-28344510CED8][Find a trade by its identifiers, state, book and date from one list]] |
+| 2 | A card the reader may not change has no Read only mark. Only the identity card has it. A reader, and a cancelled or expired trade, show unmarked cards | =prototype.js:174=, =:178=, =:182=; =common.js:447= | Fix |
+| 3 | The Edit dialog draws every field as free text. Book and State are editable, but State moves only by a lifecycle event and Book only by a book move. Optional fields have no Clear control. Reference values are not combo boxes | =prototype.js:233=, =:170= | Fix |
+| 4 | Party, Book, currency, calendar, bond issue, netting set, portfolio, composite leg trade and counterparty contact are plain text. The Book is a link in the list and text on the page. No currency or calendar shows its flag. =ref: 'bond_issue'= is set and ignored | =common.js:434=, =:260=, =:286=; =prototype.js:170= | Fix. Use one reference helper in =common.js= |
+| 5 | The party roles card shows a raw username with no photo | =common.js:286= | Fix. Use =person()= |
+| 6 | The line under the title is two lines: the identifier, then a row of chips that also carries the structure. The specification allows one line: identifier, state, internal and external version | =prototype.js:154=, =common.js:380= | Fix. Decide whether the structure chip stays |
+| 7 | The page says it is stale twice: a gold Refresh and a strip. A strip belongs to a list. The Refresh tooltip gives no time. The list always shows the strip with the pulsing row | =prototype.js:104=, =:158=; =common.js:388= | Fix |
+| 8 | A tab is a link that reloads the page. The pending save, the stale mark and the new history entry live in memory, so they are lost. A person cannot save and then read the new entry on History. The specification keeps an opened tab drawn | =common.js:439=; =prototype.js:16-21= | Fix. Switch the tab in place |
+| 9 | The history chart has day bars only, with no empty buckets, no first and last time, and no hour bars. Two current-version emblems show on one entry | =common.js:471=, =:493=, =:502= | Fix |
+| 10 | The history holds trade versions only. The child tables and the links are neither entries nor a stated gap | =common.js:300= | Fix. State each gap in words |
+| 11 | ="?state=empty"= shows "No trade matches. Clear filters". It should say that there are no trades and point to Book a trade | =prototype.js:102= | Fix |
+| 12 | The request line states an empty order, and the rows sort by update time. No header sorts. Story "Sort every list by when it was updated" settles the order | =prototype.js:50=, =:63= | Fix |
+| 13 | Page, size and search are held in memory. The record standard holds them in the address. The sizes are 15, 25 and 50. The standard adds 100 | =prototype.js:23=; =common.js:402= | Fix |
+| 14 | The page has no loading, error or refused-tab state. The list has the first two | =prototype.js:30= | Fix |
+| 15 | Record a lifecycle event runs in a dialog. The specification gives a workflow its own address and trail. "Book a similar trade" is an Add, not a workflow | =prototype.js:150=, =:313= | Decide |
+| 16 | The Edit dialog for a child table has no Add a row or Remove. The booking page has both | =prototype.js:231= | Decide |
+| 17 | The prose says the Workflows menu is the door to Book a trade. The menu structure and the code make Book a trade a button | =trade-page.org:20=, =:48= | Fix the prose |
+| 18 | The footer lacks the client, server and environment. The top bar shows the role beside the name | =common.js:348=, =:352= | Fix once in =common.js=. The role switch is prototype chrome |
+
+Gaps in the specification, to settle before the blotter:
+
+- Which permission shows each trade tab. Every tab is drawn for every role today.
+- Whether a trade history entry offers Revert. The rail says it does. Trade Versioning says to undo with the mirror event.
+- Whether the title of a trade page is its code or its trade type. The breadcrumb ends in the code and the title is the type, so two swaps read the same.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

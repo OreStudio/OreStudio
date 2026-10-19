@@ -93,7 +93,7 @@ the retention register. The web UI has no export route.
 |--------+---------------------+-------|
 | =trade=, =instrument= | The trades and their economics | |
 | =portfolio=, =book=, =business_unit= | The tree the export walks | |
-| =conventions_document= | The 27 convention families | |
+| =conventions_bundle= | The 27 convention families | |
 | =run_document=, =configuration_binding= | The report configuration | |
 | =market_observation=, =market_fixing= | The market data | |
 

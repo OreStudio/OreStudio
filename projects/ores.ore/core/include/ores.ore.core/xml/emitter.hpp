@@ -59,9 +59,8 @@ public:
      * @return Nothing on success, or the first element that could not be
      * written and why.
      */
-    static auto emit(const document_type& doc,
-                     const void* root,
-                     std::string& out) -> std::expected<void, emit_error>;
+    static auto emit(const document_type& doc, const void* root, std::string& out)
+        -> std::expected<void, emit_error>;
 };
 
 }

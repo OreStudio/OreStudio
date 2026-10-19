@@ -314,13 +314,13 @@ TEST_CASE("every_generated_family_keeps_its_values_across_the_writing", tags) {
     CHECK(stress_tests == 19);
     std::size_t portfolios = 0;
     failures += sweep_values<pf::portfolio>(root,
-                                           "portfolio",
-                                           pf::portfolio_document(),
-                                           {},
-                                           documents,
-                                           report,
-                                           &portfolios,
-                                           "Portfolio");
+                                            "portfolio",
+                                            pf::portfolio_document(),
+                                            {},
+                                            documents,
+                                            report,
+                                            &portfolios,
+                                            "Portfolio");
     INFO("portfolios: " << portfolios);
     CHECK(portfolios == 374);
     std::size_t run_documents = 0;

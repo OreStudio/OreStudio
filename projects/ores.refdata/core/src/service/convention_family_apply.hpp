@@ -24,26 +24,12 @@
 #include <string>
 #include <vector>
 
-namespace ores::refdata::messaging {
-struct conventions_document;
-}
-
 namespace ores::refdata::service {
-
-struct conventions_save_result;
 
 // Declarations for the generated bodies in convention_family_apply.inc, which
 // are owned by convention_family_apply.cpp. The generator emits the bodies; if
 // a signature here stops matching, the link fails, which is the point.
 
-void apply_party_families(const ores::database::context& ctx, messaging::conventions_document& v);
-void apply_families_by_id(const ores::database::context& ctx, messaging::conventions_document& v);
-void apply_world_families(const ores::database::context& ctx,
-                          messaging::conventions_document& v,
-                          conventions_save_result& result);
-
-void read_party_families(const ores::database::context& ctx, messaging::conventions_document& v);
-void read_families_by_id(const ores::database::context& ctx, messaging::conventions_document& v);
 /**
  * @brief Reads one family's live rows as the payloads the wire carries them in.
  *
@@ -55,13 +41,6 @@ void read_families_by_id(const ores::database::context& ctx, messaging::conventi
  */
 ORES_REFDATA_CORE_EXPORT std::vector<std::string>
 read_family_payloads(const ores::database::context& ctx, const std::string& family);
-
-void read_world_families(const ores::database::context& ctx, messaging::conventions_document& v);
-
-bool apply_staged_family(const ores::database::context& ctx,
-                         const std::string& family,
-                         const std::string& payload,
-                         conventions_save_result& result);
 
 }
 

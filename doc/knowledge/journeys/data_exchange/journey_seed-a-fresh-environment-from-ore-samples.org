@@ -103,7 +103,7 @@ action.
 | =currency= | The currencies the sample config names | |
 | =portfolio=, =book= | The tree built from the directory layout | |
 | =trade= | The sample trades and their ORE identifiers | |
-| =conventions_document= | The sample's convention families | |
+| =conventions_bundle= | The sample's convention families | |
 | =run_document= | The sample's run settings and file bindings | |
 | =market_observation= | The sample's quotes | |
 

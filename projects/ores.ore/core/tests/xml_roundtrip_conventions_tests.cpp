@@ -16,7 +16,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "conventions_rows.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.testing/project_root.hpp"
@@ -43,6 +45,8 @@
  * files each one costs.
  */
 
+using ores::ore::tests::rows_of;
+
 namespace {
 
 const std::string tags("[ore][xml][roundtrip][conventions]");
@@ -67,12 +71,11 @@ conventions load(const std::filesystem::path& path) {
 }
 
 ores::ore::xml::roundtrip_kind conventions_kind() {
-    return ores::ore::xml::make_roundtrip_kind<conventions,
-                                               ores::refdata::messaging::conventions_document>(
+    return ores::ore::xml::make_roundtrip_kind<conventions, ores::ore::domain::conventions_package>(
         "conventions",
         "conventions",
-        &conventions_mapper::map,
-        &conventions_mapper::reverse,
+        &ores::ore::domain::split_conventions,
+        &ores::ore::domain::join_conventions,
         conventions_difference);
 }
 
@@ -103,17 +106,21 @@ TEST_CASE("conventions_swap_index_round_trips", tags) {
             continue;
 
         ++files_with_swap_index;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.swap_index.size() == document.SwapIndex.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(
+            rows_of<ores::refdata::domain::swap_index_convention>(mapped, "swap_index").size() ==
+            document.SwapIndex.size());
 
         for (std::size_t i = 0; i < document.SwapIndex.size(); ++i) {
             const std::string id(document.SwapIndex[i].Id);
-            CHECK(mapped.swap_index[i].id == id);
-            CHECK(mapped.swap_index[i].conventions ==
-                  std::string(document.SwapIndex[i].Conventions));
+            CHECK(
+                rows_of<ores::refdata::domain::swap_index_convention>(mapped, "swap_index")[i].id ==
+                id);
+            CHECK(rows_of<ores::refdata::domain::swap_index_convention>(mapped, "swap_index")[i]
+                      .conventions == std::string(document.SwapIndex[i].Conventions));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "SwapIndex");
         INFO(path.string() + ": the document has " + std::to_string(document.SwapIndex.size()) +
              " SwapIndex element(s), the export " + std::to_string(written));
@@ -133,22 +140,26 @@ TEST_CASE("conventions_future_round_trips", tags) {
             continue;
 
         ++files_with_future;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.future.size() == document.Future.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::future_convention>(mapped, "future").size() ==
+                document.Future.size());
 
         for (std::size_t i = 0; i < document.Future.size(); ++i) {
             const std::string id(document.Future[i].Id);
-            CHECK(mapped.future[i].id == id);
-            CHECK(mapped.future[i].index == std::string(document.Future[i].Index));
+            CHECK(rows_of<ores::refdata::domain::future_convention>(mapped, "future")[i].id == id);
+            CHECK(rows_of<ores::refdata::domain::future_convention>(mapped, "future")[i].index ==
+                  std::string(document.Future[i].Index));
             if (document.Future[i].DateGenerationRule)
-                CHECK(mapped.future[i].date_generation_rule ==
+                CHECK(rows_of<ores::refdata::domain::future_convention>(mapped, "future")[i]
+                          .date_generation_rule ==
                       to_string(*document.Future[i].DateGenerationRule));
             if (document.Future[i].OvernightIndexFutureNettingType)
-                CHECK(mapped.future[i].netting_type ==
+                CHECK(rows_of<ores::refdata::domain::future_convention>(mapped, "future")[i]
+                          .netting_type ==
                       to_string(*document.Future[i].OvernightIndexFutureNettingType));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "Future");
         INFO(path.string() + ": the document has " + std::to_string(document.Future.size()) +
              " Future element(s), the export " + std::to_string(written));
@@ -168,16 +179,20 @@ TEST_CASE("conventions_fx_option_round_trips", tags) {
             continue;
 
         ++files_with_fx_option;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.fx_option.size() == document.FxOption.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::fx_option_convention>(mapped, "fx_option").size() ==
+                document.FxOption.size());
 
         for (std::size_t i = 0; i < document.FxOption.size(); ++i) {
-            CHECK(mapped.fx_option[i].id == std::string(document.FxOption[i].Id));
-            CHECK(mapped.fx_option[i].atm_type == std::string(document.FxOption[i].AtmType));
-            CHECK(mapped.fx_option[i].delta_type == std::string(document.FxOption[i].DeltaType));
+            CHECK(rows_of<ores::refdata::domain::fx_option_convention>(mapped, "fx_option")[i].id ==
+                  std::string(document.FxOption[i].Id));
+            CHECK(rows_of<ores::refdata::domain::fx_option_convention>(mapped, "fx_option")[i]
+                      .atm_type == std::string(document.FxOption[i].AtmType));
+            CHECK(rows_of<ores::refdata::domain::fx_option_convention>(mapped, "fx_option")[i]
+                      .delta_type == std::string(document.FxOption[i].DeltaType));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "FxOption");
         INFO(path.string() + ": the document has " + std::to_string(document.FxOption.size()) +
              " FxOption element(s), the export " + std::to_string(written));
@@ -197,17 +212,21 @@ TEST_CASE("conventions_average_ois_round_trips", tags) {
             continue;
 
         ++files_with_average_ois;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.average_ois.size() == document.AverageOIS.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(
+            rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois").size() ==
+            document.AverageOIS.size());
 
         for (std::size_t i = 0; i < document.AverageOIS.size(); ++i) {
-            CHECK(mapped.average_ois[i].id == std::string(document.AverageOIS[i].Id));
-            CHECK(mapped.average_ois[i].index == std::string(document.AverageOIS[i].Index));
-            CHECK(mapped.average_ois[i].spot_lag ==
-                  static_cast<int>(document.AverageOIS[i].SpotLag));
+            CHECK(rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois")[i]
+                      .id == std::string(document.AverageOIS[i].Id));
+            CHECK(rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois")[i]
+                      .index == std::string(document.AverageOIS[i].Index));
+            CHECK(rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois")[i]
+                      .spot_lag == static_cast<int>(document.AverageOIS[i].SpotLag));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "AverageOIS");
         INFO(path.string() + ": the document has " + std::to_string(document.AverageOIS.size()) +
              " AverageOIS element(s), the export " + std::to_string(written));
@@ -228,12 +247,15 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
             continue;
 
         ++files_with_basis;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.cross_currency_basis.size() == document.CrossCurrencyBasis.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::cross_currency_basis_convention>(
+                    mapped, "cross_currency_basis")
+                    .size() == document.CrossCurrencyBasis.size());
 
         for (std::size_t i = 0; i < document.CrossCurrencyBasis.size(); ++i) {
             const auto& in = document.CrossCurrencyBasis[i];
-            const auto& out = mapped.cross_currency_basis[i];
+            const auto out = rows_of<ores::refdata::domain::cross_currency_basis_convention>(
+                mapped, "cross_currency_basis")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.flat_index == std::string(in.FlatIndex));
             CHECK(out.spread_index == std::string(in.SpreadIndex));
@@ -244,7 +266,7 @@ TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
                 CHECK(out.flat_rate_cutoff == static_cast<int>(*in.FlatRateCutoff));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "CrossCurrencyBasis");
         INFO(path.string() + ": the document has " +
              std::to_string(document.CrossCurrencyBasis.size()) +
@@ -268,12 +290,15 @@ TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
 
         ++files_with_intraday_power;
         elements_with_intraday_power += document.IntradayPowerLoad.size();
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.intraday_power_load.size() == document.IntradayPowerLoad.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::intraday_power_load_convention>(
+                    mapped, "intraday_power_load")
+                    .size() == document.IntradayPowerLoad.size());
 
         for (std::size_t i = 0; i < document.IntradayPowerLoad.size(); ++i) {
             const auto& in = document.IntradayPowerLoad[i];
-            const auto& out = mapped.intraday_power_load[i];
+            const auto out = rows_of<ores::refdata::domain::intraday_power_load_convention>(
+                mapped, "intraday_power_load")[i];
             CHECK(out.id == std::string(in.Id));
             if (in.PowerLoadProfileData) {
                 const auto& profile = *in.PowerLoadProfileData;
@@ -288,7 +313,7 @@ TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
         // not report the category as skipped.
         CHECK(conventions_mapper::unmodelled(document).empty());
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "IntradayPowerLoad");
         INFO(path.string() + ": the document has " +
              std::to_string(document.IntradayPowerLoad.size()) +
@@ -299,10 +324,13 @@ TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.IntradayPowerLoad.size() == document.IntradayPowerLoad.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.IntradayPowerLoad.size(); ++i) {
             INFO(path.string() + ": IntradayPowerLoad element " + std::to_string(i));
-            CHECK(remapped.intraday_power_load[i] == mapped.intraday_power_load[i]);
+            CHECK(rows_of<ores::refdata::domain::intraday_power_load_convention>(
+                      remapped, "intraday_power_load")[i] ==
+                  rows_of<ores::refdata::domain::intraday_power_load_convention>(
+                      mapped, "intraday_power_load")[i]);
         }
     }
 
@@ -320,12 +348,15 @@ TEST_CASE("conventions_commodity_forward_round_trips", tags) {
             continue;
 
         ++files_with_commodity_forward;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.commodity_forward.size() == document.CommodityForward.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::commodity_forward_convention>(mapped,
+                                                                             "commodity_forward")
+                    .size() == document.CommodityForward.size());
 
         for (std::size_t i = 0; i < document.CommodityForward.size(); ++i) {
             const auto& in = document.CommodityForward[i];
-            const auto& out = mapped.commodity_forward[i];
+            const auto out = rows_of<ores::refdata::domain::commodity_forward_convention>(
+                mapped, "commodity_forward")[i];
             CHECK(out.id == std::string(in.Id));
             if (in.SpotDays)
                 CHECK(out.spot_days == static_cast<int>(*in.SpotDays));
@@ -335,7 +366,7 @@ TEST_CASE("conventions_commodity_forward_round_trips", tags) {
                 CHECK(out.advance_calendar == std::string(*in.AdvanceCalendar));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "CommodityForward");
         INFO(path.string() + ": the document has " +
              std::to_string(document.CommodityForward.size()) +
@@ -350,10 +381,13 @@ TEST_CASE("conventions_commodity_forward_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.CommodityForward.size() == document.CommodityForward.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.CommodityForward.size(); ++i) {
             INFO(path.string() + ": CommodityForward element " + std::to_string(i));
-            CHECK(remapped.commodity_forward[i] == mapped.commodity_forward[i]);
+            CHECK(rows_of<ores::refdata::domain::commodity_forward_convention>(
+                      remapped, "commodity_forward")[i] ==
+                  rows_of<ores::refdata::domain::commodity_forward_convention>(
+                      mapped, "commodity_forward")[i]);
         }
     }
 
@@ -372,12 +406,15 @@ TEST_CASE("conventions_bond_yield_round_trips", tags) {
 
         ++files_with_bond_yield;
         elements_with_bond_yield += document.BondYield.size();
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.bond_yield.size() == document.BondYield.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(
+            rows_of<ores::refdata::domain::bond_yield_convention>(mapped, "bond_yield").size() ==
+            document.BondYield.size());
 
         for (std::size_t i = 0; i < document.BondYield.size(); ++i) {
             const auto& in = document.BondYield[i];
-            const auto& out = mapped.bond_yield[i];
+            const auto out =
+                rows_of<ores::refdata::domain::bond_yield_convention>(mapped, "bond_yield")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.compounding == std::string(in.Compounding));
             if (in.PriceType)
@@ -388,7 +425,7 @@ TEST_CASE("conventions_bond_yield_round_trips", tags) {
                 CHECK(out.guess == static_cast<double>(*in.Guess));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "BondYield");
         INFO(path.string() + ": the document has " + std::to_string(document.BondYield.size()) +
              " BondYield element(s), the export " + std::to_string(written));
@@ -402,10 +439,12 @@ TEST_CASE("conventions_bond_yield_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.BondYield.size() == document.BondYield.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.BondYield.size(); ++i) {
             INFO(path.string() + ": BondYield element " + std::to_string(i));
-            CHECK(remapped.bond_yield[i] == mapped.bond_yield[i]);
+            CHECK(
+                rows_of<ores::refdata::domain::bond_yield_convention>(remapped, "bond_yield")[i] ==
+                rows_of<ores::refdata::domain::bond_yield_convention>(mapped, "bond_yield")[i]);
         }
     }
 
@@ -423,12 +462,15 @@ TEST_CASE("conventions_commodity_future_round_trips", tags) {
             continue;
 
         ++files_with_commodity_future;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.commodity_future.size() == document.CommodityFuture.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(
+            rows_of<ores::refdata::domain::commodity_future_convention>(mapped, "commodity_future")
+                .size() == document.CommodityFuture.size());
 
         for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
             const auto& in = document.CommodityFuture[i];
-            const auto& out = mapped.commodity_future[i];
+            const auto out = rows_of<ores::refdata::domain::commodity_future_convention>(
+                mapped, "commodity_future")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.contract_frequency == to_string(in.ContractFrequency));
             CHECK(out.calendar == std::string(in.Calendar));
@@ -449,7 +491,7 @@ TEST_CASE("conventions_commodity_future_round_trips", tags) {
             CHECK(name.rfind("CommodityFuture.", 0) != 0);
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "CommodityFuture");
         INFO(path.string() + ": the document has " +
              std::to_string(document.CommodityFuture.size()) +
@@ -464,10 +506,13 @@ TEST_CASE("conventions_commodity_future_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.CommodityFuture.size() == document.CommodityFuture.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
             INFO(path.string() + ": CommodityFuture element " + std::to_string(i));
-            CHECK(remapped.commodity_future[i] == mapped.commodity_future[i]);
+            CHECK(rows_of<ores::refdata::domain::commodity_future_convention>(
+                      remapped, "commodity_future")[i] ==
+                  rows_of<ores::refdata::domain::commodity_future_convention>(
+                      mapped, "commodity_future")[i]);
         }
     }
 
@@ -485,12 +530,15 @@ TEST_CASE("conventions_cms_spread_option_round_trips", tags) {
             continue;
 
         ++files_with_cms;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.cms_spread_option.size() == document.CmsSpreadOption.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::cms_spread_option_convention>(mapped,
+                                                                             "cms_spread_option")
+                    .size() == document.CmsSpreadOption.size());
 
         for (std::size_t i = 0; i < document.CmsSpreadOption.size(); ++i) {
             const auto& in = document.CmsSpreadOption[i];
-            const auto& out = mapped.cms_spread_option[i];
+            const auto out = rows_of<ores::refdata::domain::cms_spread_option_convention>(
+                mapped, "cms_spread_option")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.forward_start == std::string(in.ForwardStart));
             CHECK(out.spot_days == std::string(in.SpotDays));
@@ -499,7 +547,7 @@ TEST_CASE("conventions_cms_spread_option_round_trips", tags) {
             CHECK(out.calendar == std::string(in.Calendar));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "CmsSpreadOption");
         INFO(path.string() + ": the document has " +
              std::to_string(document.CmsSpreadOption.size()) +
@@ -514,10 +562,13 @@ TEST_CASE("conventions_cms_spread_option_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.CmsSpreadOption.size() == document.CmsSpreadOption.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.CmsSpreadOption.size(); ++i) {
             INFO(path.string() + ": CmsSpreadOption element " + std::to_string(i));
-            CHECK(remapped.cms_spread_option[i] == mapped.cms_spread_option[i]);
+            CHECK(rows_of<ores::refdata::domain::cms_spread_option_convention>(
+                      remapped, "cms_spread_option")[i] ==
+                  rows_of<ores::refdata::domain::cms_spread_option_convention>(
+                      mapped, "cms_spread_option")[i]);
         }
     }
 
@@ -535,12 +586,15 @@ TEST_CASE("conventions_cross_currency_fix_float_round_trips", tags) {
             continue;
 
         ++files_with_fix_float;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.cross_currency_fix_float.size() == document.CrossCurrencyFixFloat.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+                    mapped, "cross_currency_fix_float")
+                    .size() == document.CrossCurrencyFixFloat.size());
 
         for (std::size_t i = 0; i < document.CrossCurrencyFixFloat.size(); ++i) {
             const auto& in = document.CrossCurrencyFixFloat[i];
-            const auto& out = mapped.cross_currency_fix_float[i];
+            const auto out = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+                mapped, "cross_currency_fix_float")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.settlement_days == static_cast<int>(in.SettlementDays));
             CHECK(out.settlement_calendar == std::string(in.SettlementCalendar));
@@ -548,7 +602,7 @@ TEST_CASE("conventions_cross_currency_fix_float_round_trips", tags) {
             CHECK(out.index == std::string(in.Index));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "CrossCurrencyFixFloat");
         INFO(path.string() + ": the document has " +
              std::to_string(document.CrossCurrencyFixFloat.size()) +
@@ -563,10 +617,13 @@ TEST_CASE("conventions_cross_currency_fix_float_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.CrossCurrencyFixFloat.size() == document.CrossCurrencyFixFloat.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.CrossCurrencyFixFloat.size(); ++i) {
             INFO(path.string() + ": CrossCurrencyFixFloat element " + std::to_string(i));
-            CHECK(remapped.cross_currency_fix_float[i] == mapped.cross_currency_fix_float[i]);
+            CHECK(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+                      remapped, "cross_currency_fix_float")[i] ==
+                  rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+                      mapped, "cross_currency_fix_float")[i]);
         }
     }
 
@@ -608,9 +665,12 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) 
     load_data(text, document);
     REQUIRE(document.CrossCurrencyFixFloat.size() == 1);
 
-    const auto mapped = conventions_mapper::map(document);
-    REQUIRE(mapped.cross_currency_fix_float.size() == 1);
-    const auto& out = mapped.cross_currency_fix_float[0];
+    const auto mapped = split_conventions(document);
+    REQUIRE(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+                mapped, "cross_currency_fix_float")
+                .size() == 1);
+    const auto out = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+        mapped, "cross_currency_fix_float")[0];
     CHECK(out.eom.has_value());
     CHECK(out.is_resettable.has_value());
     CHECK(out.float_index_is_resettable.has_value());
@@ -624,12 +684,15 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) 
     CHECK(out.is_averaged.has_value());
     CHECK(out.observation_shift.has_value());
 
-    const std::string exported = save_data(conventions_mapper::reverse(mapped));
+    const std::string exported = save_data(join_conventions(mapped));
     conventions reparsed;
     load_data(exported, reparsed);
-    const auto remapped = conventions_mapper::map(reparsed);
-    REQUIRE(remapped.cross_currency_fix_float.size() == 1);
-    CHECK(remapped.cross_currency_fix_float[0] == out);
+    const auto remapped = split_conventions(reparsed);
+    REQUIRE(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+                remapped, "cross_currency_fix_float")
+                .size() == 1);
+    CHECK(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+              remapped, "cross_currency_fix_float")[0] == out);
 }
 
 TEST_CASE("conventions_inflation_swap_round_trips", tags) {
@@ -642,13 +705,15 @@ TEST_CASE("conventions_inflation_swap_round_trips", tags) {
             continue;
 
         ++files_with_inflation_swap;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.inflation_swap.size() == document.InflationSwap.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::inflation_swap_convention>(mapped, "inflation_swap")
+                    .size() == document.InflationSwap.size());
 
         bool carries_a_schedule = false;
         for (std::size_t i = 0; i < document.InflationSwap.size(); ++i) {
             const auto& in = document.InflationSwap[i];
-            const auto& out = mapped.inflation_swap[i];
+            const auto out = rows_of<ores::refdata::domain::inflation_swap_convention>(
+                mapped, "inflation_swap")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.index == std::string(in.Index));
             CHECK(out.fix_calendar == std::string(in.FixCalendar));
@@ -663,13 +728,14 @@ TEST_CASE("conventions_inflation_swap_round_trips", tags) {
             ++files_with_a_publication_schedule;
             CHECK(conventions_mapper::unmodelled(document).count(
                       "InflationSwap.PublicationSchedule") == 0);
-            for (const auto& out : mapped.inflation_swap) {
+            for (const auto& out : rows_of<ores::refdata::domain::inflation_swap_convention>(
+                     mapped, "inflation_swap")) {
                 if (out.publication_schedule_rules)
                     CHECK(!out.publication_schedule_rules->empty());
             }
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "InflationSwap");
         INFO(path.string() + ": the document has " + std::to_string(document.InflationSwap.size()) +
              " InflationSwap element(s), the export " + std::to_string(written));
@@ -683,10 +749,13 @@ TEST_CASE("conventions_inflation_swap_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.InflationSwap.size() == document.InflationSwap.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.InflationSwap.size(); ++i) {
             INFO(path.string() + ": InflationSwap element " + std::to_string(i));
-            CHECK(remapped.inflation_swap[i] == mapped.inflation_swap[i]);
+            CHECK(rows_of<ores::refdata::domain::inflation_swap_convention>(remapped,
+                                                                            "inflation_swap")[i] ==
+                  rows_of<ores::refdata::domain::inflation_swap_convention>(mapped,
+                                                                            "inflation_swap")[i]);
         }
     }
 
@@ -706,18 +775,20 @@ TEST_CASE("conventions_bma_basis_swap_round_trips", tags) {
             continue;
 
         ++files_with_bma;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.bma_basis_swap.size() == document.BMABasisSwap.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::bma_basis_swap_convention>(mapped, "bma_basis_swap")
+                    .size() == document.BMABasisSwap.size());
 
         for (std::size_t i = 0; i < document.BMABasisSwap.size(); ++i) {
             const auto& in = document.BMABasisSwap[i];
-            const auto& out = mapped.bma_basis_swap[i];
+            const auto out = rows_of<ores::refdata::domain::bma_basis_swap_convention>(
+                mapped, "bma_basis_swap")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.index == std::string(in.Index));
             CHECK(out.bma_index == std::string(in.BMAIndex));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "BMABasisSwap");
         INFO(path.string() + ": the document has " + std::to_string(document.BMABasisSwap.size()) +
              " BMABasisSwap element(s), the export " + std::to_string(written));
@@ -731,10 +802,13 @@ TEST_CASE("conventions_bma_basis_swap_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.BMABasisSwap.size() == document.BMABasisSwap.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.BMABasisSwap.size(); ++i) {
             INFO(path.string() + ": BMABasisSwap element " + std::to_string(i));
-            CHECK(remapped.bma_basis_swap[i] == mapped.bma_basis_swap[i]);
+            CHECK(rows_of<ores::refdata::domain::bma_basis_swap_convention>(remapped,
+                                                                            "bma_basis_swap")[i] ==
+                  rows_of<ores::refdata::domain::bma_basis_swap_convention>(mapped,
+                                                                            "bma_basis_swap")[i]);
         }
     }
 
@@ -752,12 +826,15 @@ TEST_CASE("conventions_zero_inflation_index_round_trips", tags) {
             continue;
 
         ++files_with_inflation_index;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.zero_inflation_index.size() == document.ZeroInflationIndex.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::zero_inflation_index_convention>(
+                    mapped, "zero_inflation_index")
+                    .size() == document.ZeroInflationIndex.size());
 
         for (std::size_t i = 0; i < document.ZeroInflationIndex.size(); ++i) {
             const auto& in = document.ZeroInflationIndex[i];
-            const auto& out = mapped.zero_inflation_index[i];
+            const auto out = rows_of<ores::refdata::domain::zero_inflation_index_convention>(
+                mapped, "zero_inflation_index")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.region_name == std::string(in.RegionName));
             CHECK(out.region_code == std::string(in.RegionCode));
@@ -766,7 +843,7 @@ TEST_CASE("conventions_zero_inflation_index_round_trips", tags) {
             CHECK(out.currency == to_string(in.Currency));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "ZeroInflationIndex");
         INFO(path.string() + ": the document has " +
              std::to_string(document.ZeroInflationIndex.size()) +
@@ -781,10 +858,13 @@ TEST_CASE("conventions_zero_inflation_index_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.ZeroInflationIndex.size() == document.ZeroInflationIndex.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.ZeroInflationIndex.size(); ++i) {
             INFO(path.string() + ": ZeroInflationIndex element " + std::to_string(i));
-            CHECK(remapped.zero_inflation_index[i] == mapped.zero_inflation_index[i]);
+            CHECK(rows_of<ores::refdata::domain::zero_inflation_index_convention>(
+                      remapped, "zero_inflation_index")[i] ==
+                  rows_of<ores::refdata::domain::zero_inflation_index_convention>(
+                      mapped, "zero_inflation_index")[i]);
         }
     }
 
@@ -833,21 +913,26 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
             continue;
 
         ++files_with_basis_swap;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.convention.size() == document.TenorBasisSwap.size());
+        const auto mapped = split_conventions(document);
+        const auto mapped_centrals =
+            rows_of<ores::refdata::domain::convention>(mapped, "convention");
+        const auto mapped_pay_receives =
+            rows_of<ores::refdata::domain::tenor_basis_swap_pay_receive>(
+                mapped, "tenor_basis_swap_pay_receive");
+        const auto mapped_long_shorts = rows_of<ores::refdata::domain::tenor_basis_swap_long_short>(
+            mapped, "tenor_basis_swap_long_short");
+        REQUIRE(mapped_centrals.size() == document.TenorBasisSwap.size());
 
         for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
             const auto& in = document.TenorBasisSwap[i];
-            const auto& central = mapped.convention[i];
+            const auto& central = mapped_centrals[i];
             CHECK(central.kind_code == "TENOR_BASIS_SWAP");
             CHECK(central.name == std::string(in.Id));
 
-            const auto pay_receive =
-                std::ranges::find_if(mapped.tenor_basis_swap_pay_receive,
-                                     [&](const auto& p) { return p.convention_id == central.id; });
-            const auto long_short =
-                std::ranges::find_if(mapped.tenor_basis_swap_long_short,
-                                     [&](const auto& l) { return l.convention_id == central.id; });
+            const auto pay_receive = std::ranges::find_if(
+                mapped_pay_receives, [&](const auto& p) { return p.convention_id == central.id; });
+            const auto long_short = std::ranges::find_if(
+                mapped_long_shorts, [&](const auto& l) { return l.convention_id == central.id; });
             if (in.PayIndex)
                 CHECK(pay_receive->pay_index == std::string(*in.PayIndex));
             if (in.ReceiveIndex)
@@ -858,7 +943,7 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
                 CHECK(long_short->short_index == std::string(*in.ShortIndex));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "TenorBasisSwap");
         INFO(path.string() + ": the document has " +
              std::to_string(document.TenorBasisSwap.size()) +
@@ -873,22 +958,32 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.TenorBasisSwap.size() == document.TenorBasisSwap.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
+        const auto remapped_centrals =
+            rows_of<ores::refdata::domain::convention>(remapped, "convention");
+        const auto remapped_pay_receives =
+            rows_of<ores::refdata::domain::tenor_basis_swap_pay_receive>(
+                remapped, "tenor_basis_swap_pay_receive");
+        const auto remapped_long_shorts =
+            rows_of<ores::refdata::domain::tenor_basis_swap_long_short>(
+                remapped, "tenor_basis_swap_long_short");
         for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
             INFO(path.string() + ": TenorBasisSwap element " + std::to_string(i));
             // The mapper mints a provisional key for each convention so its part
             // can reach it inside one mapped document. Two maps of one document
             // agree on the stated key, not on that key, so the comparison pairs
             // the rows by the convention they belong to and drops the keys.
-            auto mapped_central = mapped.convention[i];
-            auto remapped_central = remapped.convention[i];
+            auto mapped_central = mapped_centrals[i];
+            auto remapped_central = remapped_centrals[i];
             mapped_central.id = boost::uuids::uuid{};
             remapped_central.id = boost::uuids::uuid{};
             CHECK(remapped_central == mapped_central);
 
-            const auto parts_of = [](const auto& doc, const boost::uuids::uuid& convention_id) {
+            const auto parts_of = [](const auto& pay_receives,
+                                     const auto& long_shorts,
+                                     const boost::uuids::uuid& convention_id) {
                 std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> pay_receive;
-                for (const auto& p : doc.tenor_basis_swap_pay_receive) {
+                for (const auto& p : pay_receives) {
                     if (p.convention_id != convention_id)
                         continue;
                     auto part = p;
@@ -897,7 +992,7 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
                     pay_receive.push_back(part);
                 }
                 std::vector<ores::refdata::domain::tenor_basis_swap_long_short> long_short;
-                for (const auto& l : doc.tenor_basis_swap_long_short) {
+                for (const auto& l : long_shorts) {
                     if (l.convention_id != convention_id)
                         continue;
                     auto part = l;
@@ -907,8 +1002,8 @@ TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
                 }
                 return std::make_pair(pay_receive, long_short);
             };
-            CHECK(parts_of(remapped, remapped.convention[i].id) ==
-                  parts_of(mapped, mapped.convention[i].id));
+            CHECK(parts_of(remapped_pay_receives, remapped_long_shorts, remapped_centrals[i].id) ==
+                  parts_of(mapped_pay_receives, mapped_long_shorts, mapped_centrals[i].id));
         }
     }
 
@@ -926,19 +1021,22 @@ TEST_CASE("conventions_tenor_basis_two_swap_round_trips", tags) {
             continue;
 
         ++files_with_two_swap;
-        const auto mapped = conventions_mapper::map(document);
-        REQUIRE(mapped.tenor_basis_two_swap.size() == document.TenorBasisTwoSwap.size());
+        const auto mapped = split_conventions(document);
+        REQUIRE(rows_of<ores::refdata::domain::tenor_basis_two_swap_convention>(
+                    mapped, "tenor_basis_two_swap")
+                    .size() == document.TenorBasisTwoSwap.size());
 
         for (std::size_t i = 0; i < document.TenorBasisTwoSwap.size(); ++i) {
             const auto& in = document.TenorBasisTwoSwap[i];
-            const auto& out = mapped.tenor_basis_two_swap[i];
+            const auto out = rows_of<ores::refdata::domain::tenor_basis_two_swap_convention>(
+                mapped, "tenor_basis_two_swap")[i];
             CHECK(out.id == std::string(in.Id));
             CHECK(out.calendar == std::string(in.Calendar));
             CHECK(out.long_index == std::string(in.LongIndex));
             CHECK(out.short_index == std::string(in.ShortIndex));
         }
 
-        const std::string exported = save_data(conventions_mapper::reverse(mapped));
+        const std::string exported = save_data(join_conventions(mapped));
         const int written = element_count(exported, "TenorBasisTwoSwap");
         INFO(path.string() + ": the document has " +
              std::to_string(document.TenorBasisTwoSwap.size()) +
@@ -953,10 +1051,13 @@ TEST_CASE("conventions_tenor_basis_two_swap_round_trips", tags) {
         load_data(exported, reparsed);
         REQUIRE(reparsed.TenorBasisTwoSwap.size() == document.TenorBasisTwoSwap.size());
 
-        const auto remapped = conventions_mapper::map(reparsed);
+        const auto remapped = split_conventions(reparsed);
         for (std::size_t i = 0; i < document.TenorBasisTwoSwap.size(); ++i) {
             INFO(path.string() + ": TenorBasisTwoSwap element " + std::to_string(i));
-            CHECK(remapped.tenor_basis_two_swap[i] == mapped.tenor_basis_two_swap[i]);
+            CHECK(rows_of<ores::refdata::domain::tenor_basis_two_swap_convention>(
+                      remapped, "tenor_basis_two_swap")[i] ==
+                  rows_of<ores::refdata::domain::tenor_basis_two_swap_convention>(
+                      mapped, "tenor_basis_two_swap")[i]);
         }
     }
 
@@ -1061,7 +1162,7 @@ std::filesystem::path digests_path() {
  * store's shape, and write that shape back out.
  */
 std::string exported_bytes(const std::filesystem::path& path) {
-    return save_data(conventions_mapper::reverse(conventions_mapper::map(load(path))));
+    return save_data(join_conventions(split_conventions(load(path))));
 }
 
 /**

@@ -94,7 +94,7 @@ session, not the import.
 |--------+---------------------+-------|
 | =party= | The scope of every row the import writes | |
 | =account=, =role=, =permission= | Who may run which import | |
-| =conventions_document= | The party rows, plus the tenant's world rows | |
+| =conventions_bundle= | The party rows, plus the tenant's world rows | |
 | =trade=, =portfolio=, =book= | The trade data the session owns | |
 | =sandbox= | The sample sandbox the trade import lands in | |
 

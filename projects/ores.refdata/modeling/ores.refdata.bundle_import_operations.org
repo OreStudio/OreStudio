@@ -217,7 +217,7 @@ family and sequence is refused. A commit applies only a staging import.
 /**
  * @brief What the commit stored, and what it did not.
  *
- * The world conventions the tenant already held are kept, as the document save
+ * The world conventions the tenant already held are kept, as a bundle apply
  * keeps them. The family outcomes list one entry per applied staged family.
  */
 #+end_src

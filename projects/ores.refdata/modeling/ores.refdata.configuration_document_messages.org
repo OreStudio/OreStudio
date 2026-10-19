@@ -2,7 +2,7 @@
 :ID: BB690F37-423E-4FBC-AC93-5F5577DF7B10
 :END:
 #+title: ores.refdata.configuration_document_messages
-#+description: Codegen operation model for the configuration documents refdata owns: save, get and delete a curve configuration document. The conventions document type stays here for the ORE mapper, but its wire operations live in the bundle import model.
+#+description: Codegen operation model for the configuration documents refdata owns: save, get and delete a curve configuration document. The FX convention projection stays here for the ORE boundary.
 #+type: ores.codegen.operation
 #+component: refdata
 #+subcomponent: api
@@ -18,32 +18,21 @@ configuration. Another service reaches it only through these, never through
 refdata's tables. The handler stamps the session's party on every row it
 stores.
 
-The conventions document type stays in this model because the ORE mapper
-builds it at the file boundary. It is not a message: the conventions import
-operations carry one family per stage, and no request or response carries the
-whole document.
+The FX convention stays in this model because the ORE boundary projects it
+from a currency pair, that pair's convention and its calendars. It is not a
+message, and no family of conventions has a type here.
 
 * Includes
 
 #+begin_src cpp :name includes
-#include "ores.refdata.api/domain/average_ois_convention.hpp"
 #include "ores.refdata.api/domain/base_correlation_config.hpp"
-#include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
 #include "ores.refdata.api/domain/bond_future_volatility_config.hpp"
-#include "ores.refdata.api/domain/bond_yield_convention.hpp"
 #include "ores.refdata.api/domain/cap_floor_volatility_config.hpp"
-#include "ores.refdata.api/domain/cds_convention.hpp"
 #include "ores.refdata.api/domain/cds_volatility_config.hpp"
 #include "ores.refdata.api/domain/cds_volatility_term.hpp"
-#include "ores.refdata.api/domain/cms_spread_option_convention.hpp"
 #include "ores.refdata.api/domain/commodity_curve_config.hpp"
-#include "ores.refdata.api/domain/commodity_forward_convention.hpp"
-#include "ores.refdata.api/domain/commodity_future_convention.hpp"
 #include "ores.refdata.api/domain/commodity_price_segment.hpp"
 #include "ores.refdata.api/domain/commodity_volatility_config.hpp"
-#include "ores.refdata.api/domain/convention.hpp"
-#include "ores.refdata.api/domain/cross_currency_basis_convention.hpp"
-#include "ores.refdata.api/domain/cross_currency_fix_float_convention.hpp"
 #include "ores.refdata.api/domain/currency_pair.hpp"
 #include "ores.refdata.api/domain/currency_pair_convention.hpp"
 #include "ores.refdata.api/domain/curve_bootstrap_config.hpp"
@@ -62,32 +51,16 @@ whole document.
 #include "ores.refdata.api/domain/curve_volatility_config.hpp"
 #include "ores.refdata.api/domain/default_curve_config.hpp"
 #include "ores.refdata.api/domain/default_curve_configuration.hpp"
-#include "ores.refdata.api/domain/deposit_convention.hpp"
 #include "ores.refdata.api/domain/equity_curve_config.hpp"
 #include "ores.refdata.api/domain/equity_volatility_config.hpp"
-#include "ores.refdata.api/domain/fra_convention.hpp"
-#include "ores.refdata.api/domain/future_convention.hpp"
-#include "ores.refdata.api/domain/fx_option_convention.hpp"
 #include "ores.refdata.api/domain/fx_volatility_config.hpp"
-#include "ores.refdata.api/domain/ibor_index_convention.hpp"
 #include "ores.refdata.api/domain/inflation_cap_floor_volatility_config.hpp"
 #include "ores.refdata.api/domain/inflation_curve_config.hpp"
 #include "ores.refdata.api/domain/inflation_seasonality_factor.hpp"
-#include "ores.refdata.api/domain/inflation_swap_convention.hpp"
 #include "ores.refdata.api/domain/intraday_power_curve_config.hpp"
-#include "ores.refdata.api/domain/intraday_power_load_convention.hpp"
-#include "ores.refdata.api/domain/ois_convention.hpp"
-#include "ores.refdata.api/domain/overnight_index_convention.hpp"
-#include "ores.refdata.api/domain/swap_convention.hpp"
-#include "ores.refdata.api/domain/swap_index_convention.hpp"
 #include "ores.refdata.api/domain/swaption_volatility_config.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_long_short.hpp"
-#include "ores.refdata.api/domain/tenor_basis_swap_pay_receive.hpp"
-#include "ores.refdata.api/domain/tenor_basis_two_swap_convention.hpp"
 #include "ores.refdata.api/domain/yield_curve_config.hpp"
 #include "ores.refdata.api/domain/yield_volatility_config.hpp"
-#include "ores.refdata.api/domain/zero_convention.hpp"
-#include "ores.refdata.api/domain/zero_inflation_index_convention.hpp"
 #include <string>
 #include <string_view>
 #include <vector>
@@ -123,152 +96,6 @@ whole document.
 *** advance_calendars
 :PROPERTIES:
 :cpp_type: std::vector<std::string>
-:END:
-
-** conventions_document
-
-#+begin_src cpp :name comment
-/**
- * @brief One ORE conventions document as the rows refdata stores.
- *
- * The instrument conventions belong to a party. The index and FX conventions
- * are world data, which every party in the tenant shares.
- */
-#+end_src
-
-*** zero
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::zero_convention>
-:END:
-
-*** average_ois
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::average_ois_convention>
-:END:
-
-*** bma_basis_swap
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::bma_basis_swap_convention>
-:END:
-
-*** cross_currency_basis
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::cross_currency_basis_convention>
-:END:
-
-*** cross_currency_fix_float
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::cross_currency_fix_float_convention>
-:END:
-
-*** convention
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::convention>
-:END:
-
-*** tenor_basis_swap_pay_receive
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive>
-:END:
-
-*** tenor_basis_swap_long_short
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::tenor_basis_swap_long_short>
-:END:
-
-*** tenor_basis_two_swap
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::tenor_basis_two_swap_convention>
-:END:
-
-*** deposit
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::deposit_convention>
-:END:
-
-*** swap
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::swap_convention>
-:END:
-
-*** swap_index
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::swap_index_convention>
-:END:
-
-*** future
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::future_convention>
-:END:
-
-*** fx_option
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::fx_option_convention>
-:END:
-
-*** inflation_swap
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::inflation_swap_convention>
-:END:
-
-*** intraday_power_load
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::intraday_power_load_convention>
-:END:
-
-*** ois
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::ois_convention>
-:END:
-
-*** fra
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::fra_convention>
-:END:
-
-*** ibor_index
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::ibor_index_convention>
-:END:
-
-*** overnight_index
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::overnight_index_convention>
-:END:
-
-*** zero_inflation_index
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::zero_inflation_index_convention>
-:END:
-
-*** fx
-:PROPERTIES:
-:cpp_type: std::vector<fx_convention>
-:END:
-
-*** cds
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::cds_convention>
-:END:
-
-*** cms_spread_option
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::cms_spread_option_convention>
-:END:
-
-*** commodity_future
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::commodity_future_convention>
-:END:
-
-*** commodity_forward
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::commodity_forward_convention>
-:END:
-
-*** bond_yield
-:PROPERTIES:
-:cpp_type: std::vector<ores::refdata::domain::bond_yield_convention>
 :END:
 
 ** curve_configuration_document

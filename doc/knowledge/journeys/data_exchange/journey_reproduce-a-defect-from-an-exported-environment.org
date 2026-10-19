@@ -107,7 +107,7 @@ UI shows conventions and market data but has no import or export route.
 |--------+---------------------+-------|
 | =trade= | The imported trades and their ORE identifiers | |
 | =portfolio=, =book= | The tree the import builds from the directory | |
-| =conventions_document= | The 27 convention families the run import stores | |
+| =conventions_bundle= | The 27 convention families the run import stores | |
 | =run_document= | The run settings, files and bindings | |
 | =market_observation=, =market_fixing= | The quotes and fixings the defect needs | |
 | =workunit=, =app_version_platform= | The job input and the engine package | |

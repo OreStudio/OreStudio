@@ -95,7 +95,7 @@ one-shot imports, and the web UI has no import route at all.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =conventions_document= | The families and rows a preview summarises | |
+| =conventions_bundle= | The families and rows a preview summarises | |
 | =trade=, =portfolio= | The rows a trade preview would compare | |
 | =curve_configuration_document= | The curves a run preview would compare | |
 | =market_observation= | The points a market preview would compare | |

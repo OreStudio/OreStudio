@@ -22,24 +22,14 @@
  * Template: ts_protocol.ts.mustache
  * To modify, update the template and regenerate.
  */
-import type { AverageOisConvention } from '../domain/average_ois_convention.js';
 import type { BaseCorrelationConfig } from '../domain/base_correlation_config.js';
-import type { BmaBasisSwapConvention } from '../domain/bma_basis_swap_convention.js';
 import type { BondFutureVolatilityConfig } from '../domain/bond_future_volatility_config.js';
-import type { BondYieldConvention } from '../domain/bond_yield_convention.js';
 import type { CapFloorVolatilityConfig } from '../domain/cap_floor_volatility_config.js';
-import type { CdsConvention } from '../domain/cds_convention.js';
 import type { CdsVolatilityConfig } from '../domain/cds_volatility_config.js';
 import type { CdsVolatilityTerm } from '../domain/cds_volatility_term.js';
-import type { CmsSpreadOptionConvention } from '../domain/cms_spread_option_convention.js';
 import type { CommodityCurveConfig } from '../domain/commodity_curve_config.js';
-import type { CommodityForwardConvention } from '../domain/commodity_forward_convention.js';
-import type { CommodityFutureConvention } from '../domain/commodity_future_convention.js';
 import type { CommodityPriceSegment } from '../domain/commodity_price_segment.js';
 import type { CommodityVolatilityConfig } from '../domain/commodity_volatility_config.js';
-import type { Convention } from '../domain/convention.js';
-import type { CrossCurrencyBasisConvention } from '../domain/cross_currency_basis_convention.js';
-import type { CrossCurrencyFixFloatConvention } from '../domain/cross_currency_fix_float_convention.js';
 import type { CurrencyPair } from '../domain/currency_pair.js';
 import type { CurrencyPairConvention } from '../domain/currency_pair_convention.js';
 import type { CurveBootstrapConfig } from '../domain/curve_bootstrap_config.js';
@@ -58,32 +48,16 @@ import type { CurveSegmentCurve } from '../domain/curve_segment_curve.js';
 import type { CurveVolatilityConfig } from '../domain/curve_volatility_config.js';
 import type { DefaultCurveConfig } from '../domain/default_curve_config.js';
 import type { DefaultCurveConfiguration } from '../domain/default_curve_configuration.js';
-import type { DepositConvention } from '../domain/deposit_convention.js';
 import type { EquityCurveConfig } from '../domain/equity_curve_config.js';
 import type { EquityVolatilityConfig } from '../domain/equity_volatility_config.js';
-import type { FraConvention } from '../domain/fra_convention.js';
-import type { FutureConvention } from '../domain/future_convention.js';
-import type { FxOptionConvention } from '../domain/fx_option_convention.js';
 import type { FxVolatilityConfig } from '../domain/fx_volatility_config.js';
-import type { IborIndexConvention } from '../domain/ibor_index_convention.js';
 import type { InflationCapFloorVolatilityConfig } from '../domain/inflation_cap_floor_volatility_config.js';
 import type { InflationCurveConfig } from '../domain/inflation_curve_config.js';
 import type { InflationSeasonalityFactor } from '../domain/inflation_seasonality_factor.js';
-import type { InflationSwapConvention } from '../domain/inflation_swap_convention.js';
 import type { IntradayPowerCurveConfig } from '../domain/intraday_power_curve_config.js';
-import type { IntradayPowerLoadConvention } from '../domain/intraday_power_load_convention.js';
-import type { OisConvention } from '../domain/ois_convention.js';
-import type { OvernightIndexConvention } from '../domain/overnight_index_convention.js';
-import type { SwapConvention } from '../domain/swap_convention.js';
-import type { SwapIndexConvention } from '../domain/swap_index_convention.js';
 import type { SwaptionVolatilityConfig } from '../domain/swaption_volatility_config.js';
-import type { TenorBasisSwapLongShort } from '../domain/tenor_basis_swap_long_short.js';
-import type { TenorBasisSwapPayReceive } from '../domain/tenor_basis_swap_pay_receive.js';
-import type { TenorBasisTwoSwapConvention } from '../domain/tenor_basis_two_swap_convention.js';
 import type { YieldCurveConfig } from '../domain/yield_curve_config.js';
 import type { YieldVolatilityConfig } from '../domain/yield_volatility_config.js';
-import type { ZeroConvention } from '../domain/zero_convention.js';
-import type { ZeroInflationIndexConvention } from '../domain/zero_inflation_index_convention.js';
 
 /**
  * @brief An FX convention as a conventions document carries it: the pair, its
@@ -94,42 +68,6 @@ export interface FxConvention {
     convention: CurrencyPairConvention;
     spot_days: number;
     advance_calendars: string[];
-}
-
-/**
- * @brief One ORE conventions document as the rows refdata stores.
- *
- * The instrument conventions belong to a party. The index and FX conventions
- * are world data, which every party in the tenant shares.
- */
-export interface ConventionsDocument {
-    zero: ZeroConvention[];
-    average_ois: AverageOisConvention[];
-    bma_basis_swap: BmaBasisSwapConvention[];
-    cross_currency_basis: CrossCurrencyBasisConvention[];
-    cross_currency_fix_float: CrossCurrencyFixFloatConvention[];
-    convention: Convention[];
-    tenor_basis_swap_pay_receive: TenorBasisSwapPayReceive[];
-    tenor_basis_swap_long_short: TenorBasisSwapLongShort[];
-    tenor_basis_two_swap: TenorBasisTwoSwapConvention[];
-    deposit: DepositConvention[];
-    swap: SwapConvention[];
-    swap_index: SwapIndexConvention[];
-    future: FutureConvention[];
-    fx_option: FxOptionConvention[];
-    inflation_swap: InflationSwapConvention[];
-    intraday_power_load: IntradayPowerLoadConvention[];
-    ois: OisConvention[];
-    fra: FraConvention[];
-    ibor_index: IborIndexConvention[];
-    overnight_index: OvernightIndexConvention[];
-    zero_inflation_index: ZeroInflationIndexConvention[];
-    fx: FxConvention[];
-    cds: CdsConvention[];
-    cms_spread_option: CmsSpreadOptionConvention[];
-    commodity_future: CommodityFutureConvention[];
-    commodity_forward: CommodityForwardConvention[];
-    bond_yield: BondYieldConvention[];
 }
 
 /**

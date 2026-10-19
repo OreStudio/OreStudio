@@ -12,11 +12,10 @@
 #+updated: 2026-10-18
 
 The bodies the conventions service compiles instead of writing one call per
-family by hand: three apply functions, one per write mode; three read
-functions, one per write mode; the staged-import dispatcher, which decodes one
-family's payload into its own type; and the payload reader, which serialises
-one family's rows the way the wire carries them. No instantiation sees the
-whole document.
+family by hand: the staged-import dispatcher, which decodes one family's
+payload into its own type, and the payload reader, which serialises one
+family's rows the way the wire carries them. No instantiation reflects more
+than one family.
 
 The fragment is an include, not a translation unit. It is compiled where the
 row helpers (=replace_party_rows=, =replace_rows_by_id=,
@@ -42,66 +41,12 @@ The full template source. Edit here and re-tangle with
 {{#convention_registry}}
 
 
-// Party families: the import replaces the rows the party holds.
-void apply_party_families(const ores::database::context& ctx,
-                          messaging::conventions_document& v) {
-{{#party}}
-    replace_party_rows(ctx,
-                       {{entity}}_repository(),
-                       std::move(v.{{key}}));
-{{/party}}
-}
-
-// By-id families: the import replaces the rows the document names.
-void apply_families_by_id(const ores::database::context& ctx,
-                         messaging::conventions_document& v) {
-{{#by_id}}
-    replace_rows_by_id(ctx,
-                       {{entity}}_repository(),
-                       std::move(v.{{key}}));
-{{/by_id}}
-}
-
-// World families: the import adds only the rows the tenant is missing.
-void apply_world_families(const ores::database::context& ctx,
-                          messaging::conventions_document& v,
-                          conventions_save_result& result) {
-{{#world}}
-    add_missing_world_rows(ctx,
-                           {{entity}}_repository(),
-                           v.{{key}},
-                           result.world_kept);
-{{/world}}
-}
-
-// The document reads each mode back from the same registry.
-void read_party_families(const ores::database::context& ctx,
-                         messaging::conventions_document& v) {
-{{#party}}
-    v.{{key}} = {{entity}}_repository().read_latest(ctx);
-{{/party}}
-}
-
-void read_families_by_id(const ores::database::context& ctx,
-                         messaging::conventions_document& v) {
-{{#by_id}}
-    v.{{key}} = {{entity}}_repository().read_latest(ctx);
-{{/by_id}}
-}
-
-void read_world_families(const ores::database::context& ctx,
-                         messaging::conventions_document& v) {
-{{#world}}
-    v.{{key}} = {{entity}}_repository().read_latest(ctx);
-{{/world}}
-}
-
 // Staged families: each branch decodes one family's payload into its own
-// type, so no instantiation sees the whole document.
+// type, so no instantiation reflects more than one family.
 ORES_REFDATA_CORE_EXPORT bool apply_staged_family(const ores::database::context& ctx,
                                                   const std::string& family,
                                                   const std::string& payload,
-                                                  conventions_save_result& result) {
+                                                  conventions_apply_result& result) {
 {{#families}}
     if (family == "{{key}}") {
         const auto decoded =

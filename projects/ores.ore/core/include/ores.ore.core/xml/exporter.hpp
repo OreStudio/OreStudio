@@ -23,6 +23,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
@@ -67,7 +68,7 @@ public:
     static std::string
     export_calendar_adjustments(const std::vector<refdata::messaging::calendar_adjustment>& v);
 
-    static std::string export_conventions(const ores::refdata::messaging::conventions_document& mc);
+    static std::string export_conventions(const domain::conventions_package& package);
 
     /**
      * @brief Reconstructs an ORE portfolio XML from the trades and the

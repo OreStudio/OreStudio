@@ -177,11 +177,14 @@ def test_the_apply_fragment_calls_one_helper_per_family_in_its_mode(tmp_path):
 
     text = _render("cpp_convention_family_apply.inc.mustache", root)
 
-    assert text.count("replace_party_rows(ctx,") == 2
-    assert text.count("replace_rows_by_id(ctx,") == 2
-    assert text.count("add_missing_world_rows(ctx,") == 2
-    assert text.count(".read_latest(ctx);") == 3
-    assert text.count("_repository()") == 12
+    assert text.count("replace_party_rows(ctx,") == 1
+    assert text.count("replace_rows_by_id(ctx,") == 1
+    assert text.count("add_missing_world_rows(ctx,") == 1
+    assert text.count("_repository()") == 6
+    # No function takes the whole set of families at once.
+    for bulk in ("apply_party_families", "apply_families_by_id", "apply_world_families",
+                 "read_party_families", "read_families_by_id", "read_world_families"):
+        assert bulk not in text
     # Two dispatchers branch on the family, the apply and the payload read.
     assert text.count('if (family == "ois")') == 2
     assert text.count("return false;") == 1

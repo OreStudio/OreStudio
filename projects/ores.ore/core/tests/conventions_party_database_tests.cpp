@@ -17,8 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "conventions_rows.hpp"
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/deposit_convention_repository.hpp"
@@ -30,6 +32,8 @@
 #include <set>
 #include <string>
 
+using ores::ore::tests::rows_of;
+
 namespace {
 
 const std::string tags("[ore][conventions][party]");
@@ -40,7 +44,8 @@ std::vector<ores::refdata::domain::deposit_convention> corpus_deposits() {
         ores::platform::filesystem::file::read_content(ores::testing::project_root::resolve(
             "external/ore/examples/Legacy/Example_62/Input/conventions.xml")),
         c);
-    return ores::ore::domain::conventions_mapper::map(c).deposit;
+    return ores::ore::tests::rows_of<ores::refdata::domain::deposit_convention>(
+        ores::ore::domain::split_conventions(c), "deposit");
 }
 
 std::set<std::string> ids_of(const std::vector<ores::refdata::domain::deposit_convention>& rows,

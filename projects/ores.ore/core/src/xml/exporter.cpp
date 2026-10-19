@@ -19,8 +19,8 @@
  */
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/emitter.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
@@ -177,9 +177,9 @@ std::string exporter::export_calendar_adjustments(
     return out;
 }
 
-std::string exporter::export_conventions(const ores::refdata::messaging::conventions_document& mc) {
+std::string exporter::export_conventions(const domain::conventions_package& package) {
     BOOST_LOG_SEV(lg(), debug) << "Exporting conventions.";
-    const auto xsd = domain::conventions_mapper::reverse(mc);
+    const auto xsd = domain::join_conventions(package);
     return domain::save_data(xsd);
 }
 

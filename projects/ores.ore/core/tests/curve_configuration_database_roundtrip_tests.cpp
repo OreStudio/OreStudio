@@ -17,8 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "conventions_rows.hpp"
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/generated/curve_configuration.hpp"
@@ -56,6 +58,8 @@
  * tables hold what the projection produces, and that the database refuses what the model
  * says it must: a convention, a day counter or a segment type it does not hold.
  */
+
+using ores::ore::tests::rows_of;
 
 namespace {
 
@@ -141,10 +145,16 @@ void write_missing(const ores::database::context& ctx,
 // can resolve them. Only these three kinds are written, because the curves
 // name nothing else.
 void write_conventions(const ores::database::context& ctx) {
-    const auto mapped = conventions_mapper::map(load<conventions>("conventions.xml"));
-    write_missing(ctx, deposit_convention_repository(), mapped.deposit);
-    write_missing(ctx, ois_convention_repository(), mapped.ois);
-    write_missing(ctx, average_ois_convention_repository(), mapped.average_ois);
+    const auto mapped = split_conventions(load<conventions>("conventions.xml"));
+    write_missing(ctx,
+                  deposit_convention_repository(),
+                  rows_of<ores::refdata::domain::deposit_convention>(mapped, "deposit"));
+    write_missing(ctx,
+                  ois_convention_repository(),
+                  rows_of<ores::refdata::domain::ois_convention>(mapped, "ois"));
+    write_missing(ctx,
+                  average_ois_convention_repository(),
+                  rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois"));
 }
 
 // The inflation and default curves of the equity example name inflation swap
@@ -154,9 +164,14 @@ void write_input_conventions(const ores::database::context& ctx) {
     load_data(file::read_content(ores::testing::project_root::resolve(
                   "external/ore/examples/Input/conventions.xml")),
               c);
-    const auto mapped = conventions_mapper::map(c);
-    write_missing(ctx, inflation_swap_convention_repository(), mapped.inflation_swap);
-    write_missing(ctx, cds_convention_repository(), mapped.cds);
+    const auto mapped = split_conventions(c);
+    write_missing(
+        ctx,
+        inflation_swap_convention_repository(),
+        rows_of<ores::refdata::domain::inflation_swap_convention>(mapped, "inflation_swap"));
+    write_missing(ctx,
+                  cds_convention_repository(),
+                  rows_of<ores::refdata::domain::cds_convention>(mapped, "cds"));
 }
 
 // A curve configuration belongs to a party, so every document a case writes is
@@ -298,7 +313,8 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
               c);
     write_missing(h.context(),
                   commodity_future_convention_repository(),
-                  conventions_mapper::map(c).commodity_future);
+                  rows_of<ores::refdata::domain::commodity_future_convention>(split_conventions(c),
+                                                                              "commodity_future"));
 
     const auto full = load_document(products_example);
     curve_document original;

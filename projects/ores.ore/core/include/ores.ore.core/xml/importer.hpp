@@ -23,10 +23,11 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.ore.core/xml/trade_import_item.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
-#include "ores.ore.core/xml/trade_import_item.hpp"
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -118,11 +119,9 @@ public:
      * skipped.
      *
      * @param path Path to the conventions.xml file
-     * @return @c ores::refdata::messaging::conventions_document struct containing one vector per
-     * convention type
+     * @return The document split into the families it carries.
      */
-    static ores::refdata::messaging::conventions_document
-    import_conventions(const std::filesystem::path& path);
+    static domain::conventions_package import_conventions(const std::filesystem::path& path);
 
     /**
      * @brief Imports trades from an ORE portfolio XML file with mapping context.

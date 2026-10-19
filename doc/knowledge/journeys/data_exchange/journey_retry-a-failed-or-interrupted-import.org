@@ -98,7 +98,7 @@ screen lists past imports for a party.
 |--------+---------------------+-------|
 | =workflow_instance=, =workflow_step= | The first attempt, its outcome and its saved ids | |
 | =trade= | The rows a trade retry can duplicate | |
-| =conventions_document= | The rows a run retry replaces | |
+| =conventions_bundle= | The rows a run retry replaces | |
 | =market_observation=, =market_fixing= | The rows a market retry reports | |
 
 * Operations and messages

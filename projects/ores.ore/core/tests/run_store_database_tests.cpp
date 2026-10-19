@@ -17,7 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "conventions_rows.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/todays_market_projection.hpp"
 #include "ores.ore.core/store/run_store.hpp"
@@ -29,25 +31,28 @@
 #include "ores.refdata.core/repository/swap_convention_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
-#include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
 #include "ores.reporting.core/repository/report_configuration_repository.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "party_fixture.hpp"
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <filesystem>
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 
 namespace {
 
 const std::string tags("[ore][store][database]");
 
 using namespace ores::ore;
+using ores::ore::tests::rows_of;
 using ores::platform::filesystem::file;
 
 const std::string example = "external/ore/examples/ORE-Python/Notebooks/Example_1/Input/";
@@ -179,20 +184,25 @@ TEST_CASE("a run's configuration imports and exports as the same files", tags) {
     // The export holds every convention the party sees, so it may hold more
     // than the document did, but never less. FX conventions are not stored yet.
     const auto conventions =
-        domain::conventions_mapper::map(parse<domain::conventions>(original.at("conventions.xml")));
+        domain::split_conventions(parse<domain::conventions>(original.at("conventions.xml")));
     const auto exported_conventions =
-        domain::conventions_mapper::map(parse<domain::conventions>(exported.at("conventions.xml")));
-    const auto holds_all = [](const auto& written, const auto& read) {
-        const auto read_ids = ids_of(read);
-        return std::ranges::all_of(written, [&](const auto& r) { return read_ids.contains(r.id); });
+        domain::split_conventions(parse<domain::conventions>(exported.at("conventions.xml")));
+    const auto holds_all = []<typename Row>(const domain::conventions_package& written,
+                                            const domain::conventions_package& read,
+                                            std::string_view family) {
+        const auto read_ids = ids_of(rows_of<Row>(read, family));
+        const auto rows = rows_of<Row>(written, family);
+        return std::ranges::all_of(rows, [&](const auto& r) { return read_ids.contains(r.id); });
     };
-    CHECK(holds_all(conventions.deposit, exported_conventions.deposit));
-    CHECK(holds_all(conventions.swap, exported_conventions.swap));
-    CHECK(holds_all(conventions.ois, exported_conventions.ois));
-    CHECK(holds_all(conventions.fra, exported_conventions.fra));
-    CHECK(holds_all(conventions.zero, exported_conventions.zero));
-    CHECK(holds_all(conventions.swap_index, exported_conventions.swap_index));
-    CHECK(holds_all(conventions.cds, exported_conventions.cds));
+    using namespace ores::refdata::domain;
+    CHECK(holds_all.operator()<deposit_convention>(conventions, exported_conventions, "deposit"));
+    CHECK(holds_all.operator()<swap_convention>(conventions, exported_conventions, "swap"));
+    CHECK(holds_all.operator()<ois_convention>(conventions, exported_conventions, "ois"));
+    CHECK(holds_all.operator()<fra_convention>(conventions, exported_conventions, "fra"));
+    CHECK(holds_all.operator()<zero_convention>(conventions, exported_conventions, "zero"));
+    CHECK(holds_all.operator()<swap_index_convention>(
+        conventions, exported_conventions, "swap_index"));
+    CHECK(holds_all.operator()<cds_convention>(conventions, exported_conventions, "cds"));
 
     std::set<std::string> slots;
     for (const auto& b : ores::reporting::repository::report_configuration_repository().read_latest(
@@ -261,9 +271,14 @@ TEST_CASE("a party imports the same run twice", tags) {
     // it to the convention the first wrote by its stated key rather than add a
     // second one under a fresh key. The part is resolved the same way, so the
     // convention keeps one part rather than gaining a second.
-    const auto held = ores::refdata::service::conventions_document_service(parties.a_context).get();
-    CHECK(held.convention.size() == 1);
-    CHECK(held.tenor_basis_swap_pay_receive.size() + held.tenor_basis_swap_long_short.size() == 1);
+    const auto held = ores::refdata::service::conventions_bundle_service(parties.a_context).read();
+    const auto rows_held = [&held](const std::string& family) {
+        return std::ranges::count_if(held.rows,
+                                     [&family](const auto& row) { return row.family == family; });
+    };
+    CHECK(rows_held("convention") == 1);
+    CHECK(rows_held("tenor_basis_swap_pay_receive") + rows_held("tenor_basis_swap_long_short") ==
+          1);
 }
 
 TEST_CASE("an import naming a file the input lacks is refused before it writes", tags) {

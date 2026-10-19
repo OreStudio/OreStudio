@@ -101,6 +101,38 @@ Gaps in the specification, to settle before the blotter:
 - Whether a trade history entry offers Revert. The rail says it does. Trade Versioning says to undo with the mirror event.
 - Whether the title of a trade page is its code or its trade type. The breadcrumb ends in the code and the title is the type, so two swaps read the same.
 
+** Book a trade review, 2026-10-19
+
+Read at =3f107b24d7=: =doc/prototypes/trades/book-a-trade/prototype.js= against the
+section "Booking a trade" of the specification and the general rules. The code was
+read, not run.
+
+What already matches: four tabs in the specified order, held in the address and
+switched in place; Book in the header, disabled while the review has a refusal;
+the trade type as a combo box grouped by product, with the types that have no
+instrument table listed and not choosable; a tab for each part of the instrument;
+Add a row and Remove; the digest gap said where it is edited; the virtual book
+rule on the Review tab; the half-booked and duplicate outcomes.
+
+| # | Difference | Where | Action |
+|---+------------+-------+--------|
+| 1 | Every term on the Instrument tab is free text. A currency, a day count, a calendar, an option type, an exercise style and a yield convention are values that exist and need a combo box. A date needs a date input. An optional field has no Clear | =prototype.js:88= | Fix. Extract the value input of the Edit dialog into =common.js= and use it here |
+| 2 | The Review tab and the result draw the counterparty, the book and the trade type as text. The party is a disabled input | =prototype.js:70=, =:112= | Fix. Use =ref()= |
+| 3 | A currency in a combo box shows no flag | =prototype.js:88= | Fix, with the shared value input |
+| 4 | Booking writes through =put= with a change intent, and the page asks for no reason or commentary. The Edit pattern asks for both in the same place the change is made | =prototype.js:106= | Fix. Ask for them on the Review tab |
+| 5 | A saved link for a reader without the right says to ask for the Trader role, with no link. The specification offers a link that opens the request, already filled in | =prototype.js:149= | Fix |
+| 6 | A refused booking and a half-booked trade do not name the operation, the status or the request id | =prototype.js:123=, =:136= | Fix |
+| 7 | Book is disabled and the reason shows only on the Review tab | =prototype.js:147= | Fix. Count the refusals on the Review tab and say the first in the button's tooltip |
+| 8 | Leaving the page with a filled form asks nothing | =prototype.js:144= | Fix. Ask "You have unsaved changes. Close anyway?" |
+| 9 | Narration of what is absent: the count of types that cannot be booked, the hint repeating it, and the note that Holding North America Inc is closed. The option text already says it | =prototype.js:61=, =:62=, =:71= | Fix. Remove |
+| 10 | The mode choice shows activity codes, =new_booking= and =draft_capture=, in its labels | =prototype.js:77= | Fix. Show the activity on the Review tab in words |
+| 11 | A booked trade is always in EUR, whatever currency the terms hold | =prototype.js:127= | Fix |
+| 12 | The "+ Add a row" label carries a plus. The specification verb is Add | =prototype.js:95= | Fix |
+
+No new gap in the specification. Decision 15 of the trade page review, a
+workflow with its own address, does not apply here: booking is the Add of the
+list and the page is its own address.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

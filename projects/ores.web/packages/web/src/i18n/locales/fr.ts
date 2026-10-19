@@ -4541,6 +4541,48 @@ const fr: SourceCatalogue = {
         },
     },
 
+    cron: {
+        build: 'Construire…',
+        open: 'Ouvrir le constructeur cron',
+        title: "Constructeur d'expression cron",
+        apply: 'Utiliser ce calendrier',
+        cancel: 'Annuler',
+        invalid:
+            "Ce n'est pas une expression cron. Il faut cinq parties : minute, heure, jour du mois, mois et jour de la semaine.",
+        kept: 'Cette partie indique « {value} », que le constructeur ne sait pas montrer. Choisissez une façon de la dire pour la remplacer.',
+        every: 'Chaque / à',
+        each: 'Chaque',
+        starting: 'À partir de',
+        from: 'De',
+        to: 'À',
+        fields: {
+            minute: 'Minutes',
+            hour: 'Heures',
+            day: 'Jours du mois',
+            month: 'Mois',
+            weekday: 'Jours de la semaine',
+        },
+        modes: { frequency: 'Fréquence', range: 'Plage', choice: 'Choix' },
+        days: {
+            0: 'dimanche',
+            1: 'lundi',
+            2: 'mardi',
+            3: 'mercredi',
+            4: 'jeudi',
+            5: 'vendredi',
+            6: 'samedi',
+        },
+        says: {
+            everyMinute: 'Chaque minute',
+            everyHour: 'Chaque heure',
+            daily: 'À {time}, chaque jour',
+            weekdays: 'À {time}, du lundi au vendredi',
+            weekly: 'À {time}, chaque {day}',
+            monthly: 'À {time}, le {day} de chaque mois',
+            other: 'Un calendrier que le constructeur ne met pas en mots.',
+        },
+    },
+
     permissionWords: {
         loginInfoRead: 'voir la dernière connexion des personnes',
         partiesRead: 'voir les parties du locataire',

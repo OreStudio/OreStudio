@@ -109,7 +109,7 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         field: 'schedule_expression',
         history: 'Schedule Expression',
         labelKey: 'reporting.fields.schedule_expression',
-        kind: { kind: 'text', max: 200 },
+        kind: { kind: 'cron' },
         help: 'reporting.detail.scheduleExpressionHint',
     },
     {

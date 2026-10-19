@@ -4476,6 +4476,48 @@ export const en: SourceCatalogue = {
         },
     },
 
+    cron: {
+        build: 'Build…',
+        open: 'Open the cron builder',
+        title: 'Cron expression builder',
+        apply: 'Use this schedule',
+        cancel: 'Cancel',
+        invalid:
+            'Not a cron expression. It needs five parts: minute, hour, day of month, month and day of week.',
+        kept: 'This part reads "{value}", which the builder cannot show. Pick a way to state it to replace it.',
+        every: 'Every / at',
+        each: 'Every',
+        starting: 'Starting',
+        from: 'From',
+        to: 'To',
+        fields: {
+            minute: 'Minutes',
+            hour: 'Hours',
+            day: 'Days of month',
+            month: 'Month',
+            weekday: 'Days of week',
+        },
+        modes: { frequency: 'Frequency', range: 'Range', choice: 'Choice' },
+        days: {
+            0: 'Sunday',
+            1: 'Monday',
+            2: 'Tuesday',
+            3: 'Wednesday',
+            4: 'Thursday',
+            5: 'Friday',
+            6: 'Saturday',
+        },
+        says: {
+            everyMinute: 'Every minute',
+            everyHour: 'Every hour',
+            daily: 'At {time}, every day',
+            weekdays: 'At {time}, Monday through Friday',
+            weekly: 'At {time}, every {day}',
+            monthly: 'At {time}, on day {day} of every month',
+            other: 'A schedule the builder does not put in words.',
+        },
+    },
+
     permissionWords: {
         loginInfoRead: 'see when people last signed in',
         partiesRead: 'see the parties of the tenant',

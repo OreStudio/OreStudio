@@ -35,6 +35,8 @@ import { api, type RecordRow } from '../api/client.js';
 import { ApiFailure } from '../api/transport.js';
 import { useTranslation } from '../i18n/Provider.js';
 import { Button, Dialog, Field, Input, Notice, PageHeader, Select } from '../ui/Primitives.js';
+import { CronField } from '../ui/CronField.js';
+import { cronValid } from '../ui/cron.js';
 import { RelativeTime } from '../ui/Time.js';
 import { Tooltip } from '../ui/Tooltip.js';
 import { useTabs } from '../ui/Tabs.js';
@@ -70,6 +72,7 @@ export type FieldKind =
     | { readonly kind: 'bool' }
     | { readonly kind: 'image' }
     | { readonly kind: 'date' }
+    | { readonly kind: 'cron' }
     | { readonly kind: 'choice'; readonly options: readonly string[]; readonly numeric?: boolean }
     | { readonly kind: 'classification'; readonly list: string }
     | {
@@ -423,6 +426,19 @@ export function FieldInput({
             </Field>
         );
     }
+    if (spec.kind.kind === 'cron') {
+        return (
+            <CronField
+                label={label}
+                value={value}
+                disabled={disabled}
+                onBlur={onBlur}
+                onChange={onChange}
+                hint={help.hint}
+                error={error}
+            />
+        );
+    }
     if (spec.kind.kind === 'bool') {
         return (
             <Field label={label} {...help} {...(error === undefined ? {} : { error })}>
@@ -476,6 +492,9 @@ export function invalidFields(specs: readonly FieldSpec[], values: FieldValues):
                     number < (spec.kind.min ?? Number.MIN_SAFE_INTEGER) ||
                     number > (spec.kind.max ?? Number.MAX_SAFE_INTEGER)
                 );
+            }
+            if (spec.kind.kind === 'cron') {
+                return !cronValid(raw);
             }
             if (spec.kind.kind === 'decimal') {
                 const number = Number(raw);

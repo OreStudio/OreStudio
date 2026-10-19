@@ -63,7 +63,7 @@ inline std::string date_part(std::chrono::system_clock::time_point tp) {
  */
 inline std::expected<double, std::string>
 find_vintage_observation(ores::nats::service::nats_client& auth_nats,
-                         const std::string& caller_bearer_token,
+                         const std::string& run_token,
                          const std::string& series_uri,
                          const std::string& datum_uri,
                          const std::string& vintage_source,
@@ -73,7 +73,7 @@ find_vintage_observation(ores::nats::service::nats_client& auth_nats,
                          const std::string& party_id = {}) {
     const auto& label = lookup_label.empty() ? series_uri : lookup_label;
 
-    auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
+    auto delegated_nats = auth_nats.with_delegation(run_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
 
     auto series = md_client.find_series_by_uri(series_uri, party_id);

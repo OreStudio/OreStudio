@@ -21,7 +21,7 @@ A feed acts for its owning tenant with the narrowest authority, whoever or whate
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -41,7 +41,7 @@ A feed acts for its owning tenant with the narrowest authority, whoever or whate
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:06026B39-A688-4B6C-AD79-FDC5C0C1A2F1][Scaffold story: A feed runs as the tenant that owns it]] | DONE | 2026-10-19 | 2026-10-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:054CDCEB-C107-4DA2-9E32-057D7B43A391][Implement run-grant identity for feeds]] | STARTED | 2026-10-19 | | Initial task for: A feed runs as the tenant that owns it |
+| [[id:054CDCEB-C107-4DA2-9E32-057D7B43A391][Implement run-grant identity for feeds]] | DONE | 2026-10-19 | 2026-10-19 | Initial task for: A feed runs as the tenant that owns it |
 
 * Decisions
 

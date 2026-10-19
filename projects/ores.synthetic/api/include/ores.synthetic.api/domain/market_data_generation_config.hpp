@@ -120,6 +120,16 @@ struct market_data_generation_config final {
     std::string provider_code;
 
     /**
+     * @brief The collection's standing consent to run. It is the IAM run grant that every feed of
+     * this collection acts under, whoever or whatever starts the feed. The first Start of the
+     * collection by a person creates it, and a restart of the service reuses it. It is not a
+     * credential: the service exchanges it for a run token at each start. IAM owns the grant, so
+     * this column is not a checked foreign key. See [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The
+     * identity a feed runs as]].
+     */
+    std::optional<boost::uuids::uuid> run_grant_id;
+
+    /**
      * @brief Username of the person who last modified this market data generation config.
      */
     std::string modified_by;

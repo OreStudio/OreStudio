@@ -61,6 +61,9 @@ market_data_generation_config_mapper::map(const market_data_generation_config_en
                        std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.dataset_id)) :
                        std::nullopt;
     r.provider_code = v.provider_code;
+    r.run_grant_id = v.run_grant_id.has_value() ?
+                         std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.run_grant_id)) :
+                         std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -90,6 +93,9 @@ market_data_generation_config_mapper::map(const domain::market_data_generation_c
                        std::optional(boost::uuids::to_string(*v.dataset_id)) :
                        std::nullopt;
     r.provider_code = v.provider_code;
+    r.run_grant_id = v.run_grant_id.has_value() ?
+                         std::optional(boost::uuids::to_string(*v.run_grant_id)) :
+                         std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

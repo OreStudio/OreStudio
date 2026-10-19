@@ -41,6 +41,7 @@ export interface MarketDataGenerationConfigWrite {
     enabled: boolean;
     dataset_id: string | null;
     provider_code: string;
+    run_grant_id: string | null;
 }
 
 export interface MarketDataGenerationConfigChange {

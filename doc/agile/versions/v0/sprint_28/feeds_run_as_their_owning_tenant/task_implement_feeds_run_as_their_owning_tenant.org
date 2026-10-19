@@ -26,11 +26,11 @@ A feed acts for its owning tenant with the narrowest authority, whoever or whate
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7BD95E98-55F2-4A23-8A4F-F437723E7453][A feed runs as the tenant that owns it]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -43,9 +43,20 @@ A feed acts for its owning tenant with the narrowest authority, whoever or whate
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The notes in =feed_execution_identity.org= are the target. The code follows them.
+
+- =run_grant_id= is a new nullable column of the collection model. Codegen
+  regenerates the domain, the entity, the protocol, the SQL, the shell commands
+  and the web types.
+- =iam_roles_populate.sql= adds the =SyntheticFeedRun= role and gives the
+  =SyntheticService= role =iam::run_grants:exchange=.
+- =feed_run_identity= holds the rules. Its ports are the exchange, the grant
+  create and the record on the collection, so a test drives the rules without IAM.
+  The controller owns one identity, so every start shares one run token cache.
+- =ores.iam.client= gains =create_run_grant=, the request that a person's consent needs.
+- The Start verbs and the restore ask the identity for a run token per feed, and
+  put it in =feed_build_context.run_token=. The caller's token still creates the
+  caller's binding.
 
 * Measurements
 
@@ -87,3 +98,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+A feed that starts from a vintage price now runs under its collection's run
+grant. A restart starts every enabled auto-start feed of every active tenant.
+
+- Build: =compass build= passes. Tests: =ctest -R synthetic= and =-R iam= pass,
+  including the seven new cases of =[feed_run_identity]=.
+- Environment proof, brave_hopper, after a fresh =db recreate= and ACME
+  provisioning: the Start of provisioning recorded a run grant on the Bloomberg
+  collection. After =compass services stop= and =start=, the log reads 24 feeds
+  for the system tenant and 54 for ACME, 78 in all. The 13 vintage-priced feeds
+  that failed with =forbidden= now start. Observations grew from 7177 to 9159 in
+  about 20 seconds, from =synthetic.bloomberg.*= sources.
+- Not covered: a lapsed grant against a live IAM. The identity tests cover the
+  rule with fakes. A Start on the web client was not run.

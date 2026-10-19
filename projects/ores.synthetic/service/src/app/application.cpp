@@ -72,9 +72,9 @@ auto& auto_start_lg() {
 }
 
 int auto_start_feeds(feed_controller& ctrl,
-                      const feed_kind_registry& registry,
-                      const ores::synthetic::feed::feed_build_context& bctx,
-                      const ores::database::context& ctx) {
+                     const feed_kind_registry& registry,
+                     const ores::synthetic::feed::feed_build_context& bctx,
+                     const ores::database::context& ctx) {
     int started = 0;
     for (const auto& target : registry.targets(ctx)) {
         const auto& c = target.row.candidate;
@@ -86,17 +86,25 @@ int auto_start_feeds(feed_controller& ctrl,
             !feed_kind_registry::is_system_caller(ctx))
             continue;
         try {
-            auto attempt = registry.make_feed(target, bctx);
+            // A restore has no person, so the grant that a person gave stands in
+            // for them. A feed that starts from a fixed price needs none.
+            const auto token = ctrl.identity().run_token_for(target, ctx, {});
+            if (!token) {
+                BOOST_LOG_SEV(auto_start_lg(), warn)
+                    << "Skipping enabled feed " << c.display_name << " — " << token.error();
+                continue;
+            }
+            auto context = bctx;
+            context.run_token = *token;
+            auto attempt = registry.make_feed(target, context);
             if (!attempt.feed) {
                 BOOST_LOG_SEV(auto_start_lg(), warn)
                     << "Skipping enabled feed " << c.display_name << " — " << attempt.failure;
                 continue;
             }
             std::string conflicting_source_name;
-            if (ctrl.add(std::move(attempt.feed),
-                         target.binding_mode,
-                         bctx.caller_bearer_token,
-                         &conflicting_source_name)) {
+            if (ctrl.add(
+                    std::move(attempt.feed), target.binding_mode, {}, &conflicting_source_name)) {
                 ++started;
             } else if (!conflicting_source_name.empty()) {
                 // A genuine seed-data misconfiguration (two auto-start
@@ -116,8 +124,8 @@ int auto_start_feeds(feed_controller& ctrl,
         }
     }
     BOOST_LOG_SEV(auto_start_lg(), info)
-        << "Auto-started " << started << " enabled feed(s) for tenant " << ctx.tenant_id().to_string()
-        << ".";
+        << "Auto-started " << started << " enabled feed(s) for tenant "
+        << ctx.tenant_id().to_string() << ".";
     return started;
 }
 
@@ -235,8 +243,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // control-plane verb and the boot walk below read.
     const auto registry = make_default_feed_kind_registry();
 
-    // The shared inputs every producer builder needs. Auto-start has no
-    // end-user session, so the caller bearer token is empty.
+    // The shared inputs every producer builder needs. The run token of each
+    // feed is set when the feed starts.
     const ores::synthetic::feed::feed_build_context bctx{nats, svc_nats, {}};
 
     // Autonomous, config-driven generation: one boot-time walk starts every

@@ -51,7 +51,7 @@ auto& lg() {
 // @throws vintage_data_missing_error if no matching observation is found.
 double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
                                      const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                                     const std::string& caller_bearer_token) {
+                                     const std::string& run_token) {
     const auto missing_message = "No vintage data found for source=" + cfg.vintage_source +
                                  ", date=" + cfg.vintage_date + ", datum=" + cfg.oresmd_uri + ".";
 
@@ -67,7 +67,7 @@ double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats
             .value();
 
     const auto found = find_vintage_observation(auth_nats,
-                                                caller_bearer_token,
+                                                run_token,
                                                 series_uri,
                                                 datum_uri,
                                                 cfg.vintage_source,
@@ -88,7 +88,7 @@ make_fx_spot_feed(ores::nats::service::client& nats,
                   const ores::synthetic::domain::fx_spot_generation_config& cfg,
                   const std::vector<ores::synthetic::domain::gmm_component>& components,
                   ores::synthetic::domain::binding_mode binding_mode,
-                  const std::string& caller_bearer_token) {
+                  const std::string& run_token) {
     // The config states the pair twice, as two currencies and as a URI. They must agree.
     const auto expected =
         "oresmd://fx/" + cfg.base_currency_code +
@@ -115,10 +115,9 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     // "vintage" resolves the initial price from a real market_observation, overriding the stored
     // gmm_initial_price (0 for vintage configs, per the check constraint); "fixed" uses the
     // stored value as-is. See make_fx_spot_feed's doc comment for the vintage semantics.
-    const double initial_price =
-        cfg.price_source == "vintage" ?
-            resolve_vintage_initial_price(auth_nats, cfg, caller_bearer_token) :
-            cfg.gmm_initial_price;
+    const double initial_price = cfg.price_source == "vintage" ?
+                                     resolve_vintage_initial_price(auth_nats, cfg, run_token) :
+                                     cfg.gmm_initial_price;
 
     // Persistent random_device so the OS entropy pool is not re-seeded between rapid
     // successive calls (which can produce equal values on some platforms when called on

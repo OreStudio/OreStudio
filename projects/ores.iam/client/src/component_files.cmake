@@ -20,6 +20,7 @@
 # Template: cmake_component_files_src.mustache
 # To modify, update the template and regenerate.
 set(files
+    "client/run_grant_creator.cpp"
     "client/run_token_minter.cpp"
     "client/service_token_provider.cpp"
     "client/storage_capability_minter.cpp"
@@ -27,6 +28,7 @@ set(files
 
 # The headers are listed for the install and IDE targets.
 set(HEADERS
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/run_grant_creator.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/run_token_minter.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/service_token_provider.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.client/client/storage_capability_minter.hpp"

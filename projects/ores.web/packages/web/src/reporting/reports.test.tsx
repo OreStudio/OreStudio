@@ -24,6 +24,8 @@ import type { QueryClient } from '@tanstack/react-query';
 import { Route } from 'react-router';
 import { wireTimestamp } from '@ores/wire-protocol/browser';
 import type { ReportDetail, ReportsPage } from '@ores/wire-protocol/browser';
+import type { ReportOpen } from '../api/client.js';
+import { ApiFailure } from '../api/transport.js';
 import { textOf } from '../textOf.js';
 import { createTranslator } from '../i18n/translate.js';
 import { enFlat } from '../i18n/locales/en.js';
@@ -177,10 +179,68 @@ function detail(codes: string[] = ['reporting::report_definitions:write']): stri
         <Route path="/reporting/reports/:id" element={<ReportPage />} />,
         (client) => {
             client.setQueryData(['my-access'], accessOf(codes));
-            client.setQueryData(reportKey(AUDIT_ELSEWHERE), DETAIL);
+            client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
+                kind: 'record',
+                detail: DETAIL,
+            } satisfies ReportOpen);
         },
     );
 }
+
+/** A report page opened by an address segment, from a cache the test seeds. */
+function openedBy(
+    segment: string,
+    seed: (client: QueryClient) => void,
+    codes: string[] = ['reporting::report_definitions:write'],
+): string {
+    return renderRecords(
+        `/reporting/reports/${encodeURIComponent(segment)}`,
+        [],
+        <Route path="/reporting/reports/:id" element={<ReportPage />} />,
+        (client) => {
+            client.setQueryData(['my-access'], accessOf(codes));
+            seed(client);
+        },
+    );
+}
+
+/** The record a unique name resolves to. */
+const UNIQUE_NAME = 'ACME daily PnL';
+const UNIQUE_DETAIL: ReportDetail = {
+    report: DAILY_ROW,
+    unread: [],
+    definition: {
+        ...DETAIL.definition,
+        id: DAILY,
+        name: UNIQUE_NAME,
+        party_id: HOME,
+        party_name: 'ACME Corporation',
+        party_code: 'ACMCOR',
+        schedule_expression: '0 0 9 * * ?',
+    },
+};
+
+/** The choices a shared name offers, as the BFF answers them. */
+const SHARED_CHOICES = [
+    {
+        id: AUDIT_AT_HOME,
+        name: AUDIT_NAME,
+        partyName: 'ACME Corporation',
+        scheduleExpression: '0 0 9 * * ?',
+        health: 'completed with errors' as const,
+        stateName: 'completed',
+        hasRun: true,
+    },
+    {
+        id: AUDIT_ELSEWHERE,
+        name: AUDIT_NAME,
+        partyName: 'ACME Hong Kong',
+        scheduleExpression: '0 0 9 L * ?',
+        health: 'never run' as const,
+        stateName: '',
+        hasRun: false,
+    },
+];
 
 describe('the list of reports the parties run', () => {
     it('renders the trail Home, Reporting, Reports', () => {
@@ -379,12 +439,18 @@ describe('one report definition', () => {
                 (client) => {
                     client.setQueryData(['my-access'], accessOf([]));
                     client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
-                        report: { ...AUDIT_ROW, health: null },
-                        definition: DETAIL.definition,
-                        unread: [
-                            { cell: 'latestRun', message: 'The latest run read was refused.' },
-                        ],
-                    } satisfies ReportDetail);
+                        kind: 'record',
+                        detail: {
+                            report: { ...AUDIT_ROW, health: null },
+                            definition: DETAIL.definition,
+                            unread: [
+                                {
+                                    cell: 'latestRun',
+                                    message: 'The latest run read was refused.',
+                                },
+                            ],
+                        },
+                    } satisfies ReportOpen);
                 },
             ),
         );
@@ -405,5 +471,71 @@ describe('one report definition', () => {
         expect(textOf(detail())).toContain(
             'This page offers no Delete and no Add: no route removes a definition yet',
         );
+    });
+});
+
+describe('an address that names a definition', () => {
+    it('opens the record when one definition carries the name', () => {
+        const html = openedBy(UNIQUE_NAME, (client) => {
+            client.setQueryData(reportKey(UNIQUE_NAME), {
+                kind: 'record',
+                detail: UNIQUE_DETAIL,
+            } satisfies ReportOpen);
+        });
+
+        // The record is drawn at the name's address, so the page lands on it
+        // while the address is replaced by the id's own.
+        expect(trailOf(html)).toBe(`Home › Reporting › Reports › ${UNIQUE_NAME}`);
+        expect(textOf(html)).toContain(UNIQUE_NAME);
+        expect(textOf(html)).toContain('ACME Corporation');
+        expect(textOf(html)).toContain('55555555 · version 3');
+        expect(textOf(html)).not.toContain('No record matches');
+    });
+
+    it('offers one linked row per definition when several carry the name', () => {
+        const html = openedBy(AUDIT_NAME, (client) => {
+            client.setQueryData(reportKey(AUDIT_NAME), {
+                kind: 'choice',
+                name: AUDIT_NAME,
+                choices: SHARED_CHOICES,
+            } satisfies ReportOpen);
+        });
+        const page = textOf(html);
+
+        expect(trailOf(html)).toBe(`Home › Reporting › Reports › ${AUDIT_NAME}`);
+        expect(page).toContain('2 reports have this name. Choose the one you meant.');
+        // Each row names its own party, schedule and latest run, so the rows are
+        // told apart by what a person knows rather than by an identifier.
+        expect(rowText(html, 'ACME Corporation')).toContain('0 0 9 * * ?');
+        expect(rowText(html, 'ACME Corporation')).toContain('Completed with errors');
+        expect(rowText(html, 'ACME Hong Kong')).toContain('0 0 9 L * ?');
+        expect(rowText(html, 'ACME Hong Kong')).toContain('Never run');
+        // One link each, to the address that names that definition exactly.
+        expect(html).toContain(`href="/reporting/reports/${AUDIT_AT_HOME}"`);
+        expect(html).toContain(`href="/reporting/reports/${AUDIT_ELSEWHERE}"`);
+    });
+
+    it('says the record is not there, and offers the list, for a name nobody has', () => {
+        const html = openedBy('CVA/DVA/FVA', (client) => {
+            client.setQueryDefaults(reportKey('CVA/DVA/FVA'), { retryOnMount: false });
+            const query = client
+                .getQueryCache()
+                .build(client, { queryKey: reportKey('CVA/DVA/FVA') });
+            query.setState({
+                status: 'error',
+                error: new ApiFailure(404, {
+                    code: 'not-found',
+                    message: 'The report_definition does not exist.',
+                }),
+                fetchStatus: 'idle',
+            });
+        });
+        const page = textOf(html);
+
+        expect(page).toContain('There is no such record, or you may not see it.');
+        expect(page).toContain('Back to the list');
+        expect(html).toContain('href="/reporting/reports"');
+        // The entity's own name is not a word a person reads.
+        expect(page).not.toContain('report_definition');
     });
 });

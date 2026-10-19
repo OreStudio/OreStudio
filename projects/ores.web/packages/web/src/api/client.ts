@@ -153,9 +153,10 @@ import {
     type WireTimestamp,
     wireTimestampSchema,
     reportDetailSchema,
-    reportIdReplySchema,
+    reportNameChoicesSchema,
     reportsPageSchema,
     type ReportDetail,
+    type ReportNameChoice,
     type ReportsPage,
 } from '@ores/wire-protocol/browser';
 import { ApiFailure, request } from './transport.js';
@@ -425,6 +426,21 @@ export interface ReportEdit {
     readonly prepared_input_key: string;
     readonly post_processing: string;
 }
+
+/**
+ * What an address for a report definition opens.
+ *
+ * An address names one definition by its id, or by the name an older link
+ * saved. A name that several definitions carry does not open a record: it opens
+ * the choice between them, which is a page rather than a failure.
+ */
+export type ReportOpen =
+    | { readonly kind: 'record'; readonly detail: ReportDetail }
+    | {
+          readonly kind: 'choice';
+          readonly name: string;
+          readonly choices: readonly ReportNameChoice[];
+      };
 
 export const api = {
     /**
@@ -1230,26 +1246,32 @@ export const api = {
         );
     },
 
-    /** One definition by its id, its composed row, and every field the detail screen states. */
-    async report(id: string): Promise<ReportDetail> {
-        return reportDetailSchema.parse(
-            await request(`/api/reporting/reports/${encodeURIComponent(id)}`, { method: 'GET' }),
-        );
-    },
-
     /**
-     * The id of the one definition of the parties in scope that carries a name.
+     * One definition's page, by whatever the address segment is.
      *
-     * A definition is opened by its id, because the same report in two parties is
-     * two records of one name. An address saved before that still names a name,
-     * and the server answers it only when one definition carries it.
+     * An id opens that definition. A name is what an older link saved, and the
+     * server resolves it: one definition of the parties in scope answers with
+     * the record, and several answer with the choices, because a name is only
+     * unique within a party. The shared error contract cannot state the choices,
+     * so the refusal's own body is read before any other failure is raised.
      */
-    async reportIdByName(name: string): Promise<string> {
-        return reportIdReplySchema.parse(
-            await request(`/api/reporting/reports/by-name/${encodeURIComponent(name)}`, {
-                method: 'GET',
-            }),
-        ).id;
+    async report(segment: string): Promise<ReportOpen> {
+        try {
+            const detail = reportDetailSchema.parse(
+                await request(`/api/reporting/reports/${encodeURIComponent(segment)}`, {
+                    method: 'GET',
+                }),
+            );
+            return { kind: 'record', detail };
+        } catch (error) {
+            if (error instanceof ApiFailure && error.status === 409) {
+                const shared = reportNameChoicesSchema.safeParse(error.payload);
+                if (shared.success) {
+                    return { kind: 'choice', name: segment, choices: shared.data.choices };
+                }
+            }
+            throw error;
+        }
     },
 
     /**

@@ -657,7 +657,7 @@ export function buildServer(dependencies: ServerDependencies): FastifyInstance {
         } else {
             request.log.warn(context, 'request refused');
         }
-        await reply.status(failure.status).send(failure.body);
+        await reply.status(failure.status).send({ ...failure.details, ...failure.body });
     });
 
     void server.register(cookie);

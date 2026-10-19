@@ -41,11 +41,21 @@ export class ApiFailure extends Error {
     readonly operation: string;
     /** The id the BFF gave the request, which is on its log lines for it. */
     readonly requestId: string;
+    /**
+     * The body as it arrived, when there was one.
+     *
+     * The shared error contract states a code and a sentence. A refusal can
+     * also carry the values that let the screen act on it, such as the records
+     * an ambiguous address could have meant, and those travel in the body the
+     * contract does not name.
+     */
+    readonly payload: unknown;
 
     constructor(
         status: number,
         body: ApiError,
         context?: { operation: string; requestId: string },
+        payload?: unknown,
     ) {
         super(body.message);
         this.name = 'ApiFailure';
@@ -53,6 +63,7 @@ export class ApiFailure extends Error {
         this.status = status;
         this.operation = context?.operation ?? '';
         this.requestId = context?.requestId ?? '';
+        this.payload = payload;
     }
 }
 
@@ -119,6 +130,7 @@ export async function request(path: string, init: RequestInit): Promise<unknown>
                 ? parsed.data
                 : { code: 'internal', message: `Request failed with status ${response.status}` },
             { operation, requestId: response.headers.get('x-request-id') ?? '' },
+            payload,
         );
         recordFailure(failure);
         throw failure;

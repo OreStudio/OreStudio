@@ -4402,6 +4402,9 @@ export const en: SourceCatalogue = {
         },
         title: 'Reports',
         lead: 'The report definitions the parties you work in own, with the health of each latest run.',
+        choose: {
+            lead: '{count} reports have this name. Choose the one you meant.',
+        },
         unread: '{cell} could not be read: {message}',
         filter: {
             allParties: 'All parties',

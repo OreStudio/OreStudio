@@ -4437,6 +4437,9 @@ const pt: SourceCatalogue = {
         },
         title: 'Relatórios',
         lead: 'As definições de relatório que as partes onde trabalha possuem, com o estado da última execução de cada uma.',
+        choose: {
+            lead: '{count} relatórios têm este nome. Escolha o que quer abrir.',
+        },
         unread: 'Não foi possível ler {cell}: {message}',
         filter: {
             allParties: 'Todas as partes',

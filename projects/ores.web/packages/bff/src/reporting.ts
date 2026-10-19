@@ -65,6 +65,13 @@ const HEALTH_WORDS = [
 
 type HealthWord = (typeof HEALTH_WORDS)[number];
 
+/**
+ * What a person is told when an address names a record their parties do not
+ * have. It is the standard's sentence for nothing found, and it names no entity
+ * the interface does not otherwise speak of.
+ */
+const ABSENT = 'There is no such record, or you may not see it.';
+
 /** The parts of a row that a separate read fills, and so the parts that can be unread. */
 type Cell = 'parties' | 'latestRun' | 'health' | 'errors' | 'nextFire';
 
@@ -134,6 +141,9 @@ const pageQuerySchema = z.object({
 });
 
 const idSchema = z.uuid();
+
+/** The name an address may carry instead of an id, as long as the definition's own field. */
+const nameSchema = z.string().trim().min(1).max(200);
 
 /**
  * The generated definition filter, with every member stated.
@@ -270,43 +280,102 @@ async function readDefinition(session: LiveSession, id: string): Promise<Record<
     }
     const [definition] = reply.definitions;
     if (definition === undefined) {
-        throw notFound(
-            'That report definition does not exist, or it belongs to a party you do not work in.',
-        );
+        throw notFound(ABSENT);
     }
     return definition;
 }
 
 /**
- * The id the retired name-based address resolves to.
+ * One definition that carries a name an address asked for.
  *
- * An address saved before definitions were opened by id names a name, and a name
- * is only unique within a party. The generated read filters on no name, so the
- * definitions in the session's scope are read and matched here. It answers only
- * when exactly one of them carries the name; two definitions of one name are two
- * records, and guessing one of them is the defect this route exists to retire.
+ * A name is unique only within a party, so an address that names one can match
+ * several records. Each choice states the party that owns the definition, when
+ * it is scheduled and what its latest run did, which is what a person needs to
+ * pick the one they meant.
  */
-async function idForName(session: LiveSession, name: string): Promise<string> {
+interface NameChoice {
+    readonly id: string;
+    readonly name: string;
+    readonly partyName: string;
+    readonly scheduleExpression: string;
+    readonly health: HealthWord | null;
+    readonly stateName: string;
+    readonly hasRun: boolean;
+}
+
+/** What an address segment names, when it is not an id. */
+type NameResolution =
+    | { readonly kind: 'one'; readonly definition: Record<string, unknown> }
+    | { readonly kind: 'many'; readonly choices: readonly NameChoice[] }
+    | { readonly kind: 'none' };
+
+/**
+ * The definitions of the parties in scope that carry a name.
+ *
+ * The generated read filters on no name, so the definitions the session can see
+ * are read and matched here. A name that matches none is absent, one is the
+ * record the address meant, and several are a choice the page must offer rather
+ * than a row this side may guess at.
+ */
+async function definitionsNamed(
+    session: LiveSession,
+    name: string,
+): Promise<readonly Record<string, unknown>[]> {
     const definitions = await readAll(
         session,
         definitionSubjects.list_report_definitions_request,
         'definitions',
         { filter: null, as_of: null },
     );
-    const named = definitions.filter((definition) => text(definition['name']) === name);
+    return definitions.filter((definition) => text(definition['name']) === name);
+}
+
+/** The choices a shared name offers, each with what the list would say about it. */
+async function choicesFor(
+    session: LiveSession,
+    named: readonly Record<string, unknown>[],
+): Promise<readonly NameChoice[]> {
+    const composed = await compose(session, named);
+    return composed.rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        partyName: row.partyName,
+        scheduleExpression: row.scheduleExpression,
+        health: row.health,
+        stateName: row.stateName,
+        hasRun: row.latestRun !== null,
+    }));
+}
+
+/** What the name an address asked for resolves to. */
+async function resolveName(session: LiveSession, name: string): Promise<NameResolution> {
+    const named = await definitionsNamed(session, name);
     const [only] = named;
     if (only === undefined) {
-        throw notFound(
-            'No report definition of the parties you work in has that name. It may have been renamed.',
-        );
+        return { kind: 'none' };
     }
-    if (named.length > 1) {
-        throw new HttpFailure(409, {
+    if (named.length === 1) {
+        return { kind: 'one', definition: only };
+    }
+    return { kind: 'many', choices: await choicesFor(session, named) };
+}
+
+/**
+ * A refusal that carries the definitions the name could have meant.
+ *
+ * The address does not name one record, and the person cannot be told to find
+ * an id: the choices are the answer, so they travel in the refusal rather than
+ * as a second response.
+ */
+function sharedName(name: string, choices: readonly NameChoice[]): HttpFailure {
+    return new HttpFailure(
+        409,
+        {
             code: 'conflict',
-            message: `${named.length} report definitions of the parties you work in are named ${name}. Opening one of them needs its id: choose the row in the list instead.`,
-        });
-    }
-    return text(only['id']);
+            message: `${choices.length} reports of the parties you work in are named ${name}. Choose the one you want.`,
+        },
+        { choices },
+    );
 }
 
 /** The latest run of each definition named, one entry per definition that has run. */
@@ -649,7 +718,7 @@ async function detailOf(
     const composed = await compose(session, [definition]);
     const [report] = composed.rows;
     if (report === undefined) {
-        throw notFound('The report definition could not be composed.');
+        throw notFound(ABSENT);
     }
     return {
         report,
@@ -689,22 +758,53 @@ export function registerReportingRoutes(
 
     /*
      * The retired name-based address. It answers with the id of the one
-     * definition that carries the name, and refuses when the name is shared, so
-     * a saved link still arrives while a shared name is never guessed.
+     * definition that carries the name, and refuses with the choices when the
+     * name is shared, so a saved link still arrives while a shared name is never
+     * guessed. The page itself calls the address route below, which answers a
+     * name with the whole record; this stays as the cheap lookup for a caller
+     * that only wants the id.
      */
     server.get('/api/reporting/reports/by-name/:name', async (request) => {
         const session = requireSession(request);
         const name = parseInput(
-            z.string().trim().min(1).max(200),
+            nameSchema,
             (request.params as { name: string }).name,
-            'A definition is named by a name of 1 to 200 characters.',
+            'A report is named by a name of 1 to 200 characters.',
         );
-        return { id: await idForName(session, name) };
+        const resolved = await resolveName(session, name);
+        switch (resolved.kind) {
+            case 'one':
+                return { id: text(resolved.definition['id']) };
+            case 'many':
+                throw sharedName(name, resolved.choices);
+            case 'none':
+                throw notFound(ABSENT);
+        }
     });
 
-    server.get('/api/reporting/reports/:id', async (request) => {
+    /*
+     * One definition's page, by whatever the address segment is: an id opens
+     * that record, and anything else is the name an older address saved. A name
+     * that one definition carries answers with that record, so the page lands on
+     * it and the browser replaces the address with the id. A shared name answers
+     * with the choices, because a person cannot be told to find an id they were
+     * never shown.
+     */
+    server.get('/api/reporting/reports/:segment', async (request) => {
         const session = requireSession(request);
-        return detailOf(session, await readDefinition(session, idParam(request)));
+        const segment = (request.params as { segment: string }).segment;
+        if (idSchema.safeParse(segment).success) {
+            return detailOf(session, await readDefinition(session, segment));
+        }
+        const resolved = await resolveName(session, segment);
+        switch (resolved.kind) {
+            case 'one':
+                return detailOf(session, resolved.definition);
+            case 'many':
+                throw sharedName(segment, resolved.choices);
+            case 'none':
+                throw notFound(ABSENT);
+        }
     });
 
     server.put('/api/reporting/reports/:id', async (request) => {

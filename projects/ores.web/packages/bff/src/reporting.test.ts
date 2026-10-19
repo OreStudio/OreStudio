@@ -562,11 +562,62 @@ describe('one report definition', () => {
         expect(response.json().code).toBe('not-found');
     });
 
-    it('refuses an address that is not an id', async () => {
+    it('opens the definition a unique name in the address names', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/reports/ACME%20daily%20PnL',
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().definition.id).toBe(DAILY);
+        expect(response.json().definition.name).toBe('ACME daily PnL');
+    });
+
+    it('answers a name several definitions carry with the choices, and not an id', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${encodeURIComponent('Audit Trail Summary')}`,
+        );
+
+        expect(response.statusCode).toBe(409);
+        const body = response.json();
+        expect(body.code).toBe('conflict');
+        expect(body.message).not.toContain('report_definition');
+        expect(body.choices).toEqual([
+            {
+                id: AUDIT_AT_HOME,
+                name: AUDIT_NAME,
+                partyName: 'ACME Corporation',
+                scheduleExpression: '0 0 9 * * ?',
+                health: 'never run',
+                stateName: '',
+                hasRun: false,
+            },
+            {
+                id: AUDIT_ELSEWHERE,
+                name: AUDIT_NAME,
+                partyName: 'ACME Hong Kong',
+                scheduleExpression: '0 0 9 * * ?',
+                health: 'never run',
+                stateName: '',
+                hasRun: false,
+            },
+        ]);
+    });
+
+    it('answers a name no definition carries as absent, in the standard words', async () => {
         const { server, sessionId } = buildTestServer(listReplies());
         const response = await send(server, sessionId, 'GET', '/api/reporting/reports/not-an-id');
 
-        expect(response.statusCode).toBe(400);
+        expect(response.statusCode).toBe(404);
+        expect(response.json().code).toBe('not-found');
+        expect(response.json().message).toBe('There is no such record, or you may not see it.');
     });
 
     it('resolves a retired name-based address to the one definition that carries it', async () => {
@@ -582,7 +633,7 @@ describe('one report definition', () => {
         expect(response.json()).toEqual({ id: DAILY });
     });
 
-    it('refuses to guess when two parties share a name', async () => {
+    it('answers a shared name-based address with the choices, not a refusal to guess', async () => {
         const { server, sessionId } = buildTestServer(listReplies());
         const response = await send(
             server,
@@ -592,7 +643,11 @@ describe('one report definition', () => {
         );
 
         expect(response.statusCode).toBe(409);
-        expect(response.json().message).toContain('2 report definitions');
+        expect(response.json().message).not.toContain('report_definition');
+        expect(response.json().choices.map((choice: { id: string }) => choice.id)).toEqual([
+            AUDIT_AT_HOME,
+            AUDIT_ELSEWHERE,
+        ]);
     });
 
     it('writes the record it read, and not another party row of the same name', async () => {

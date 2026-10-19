@@ -4467,6 +4467,9 @@ const fr: SourceCatalogue = {
         },
         title: 'Rapports',
         lead: "Les définitions de rapport que possèdent les parties où vous travaillez, avec l'état de la dernière exécution de chacune.",
+        choose: {
+            lead: '{count} rapports portent ce nom. Choisissez celui que vous voulez.',
+        },
         unread: "{cell} n'a pas pu être lu : {message}",
         filter: {
             allParties: 'Toutes les parties',

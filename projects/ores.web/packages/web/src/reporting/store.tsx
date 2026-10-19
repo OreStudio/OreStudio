@@ -85,7 +85,18 @@ export const reportingStore: RecordStore = {
     records: async () => {
         throw new Error('The reports list reads its own page.');
     },
-    record: async (_resource, id): Promise<RecordRow> => (await api.report(id)).definition,
+    /*
+     * The dialog and the revert read one record by the id the page is open on,
+     * so a name is never handed here: a shared name is a choice the page has
+     * already resolved.
+     */
+    record: async (_resource, id): Promise<RecordRow> => {
+        const opened = await api.report(id);
+        if (opened.kind !== 'record') {
+            throw new Error('A name that several reports carry has no record to open.');
+        }
+        return opened.detail.definition;
+    },
     save: async (_resource, { write, version, reasonCode, commentary }) => {
         if (version === null) {
             throw new Error('A report definition is amended, never created here.');

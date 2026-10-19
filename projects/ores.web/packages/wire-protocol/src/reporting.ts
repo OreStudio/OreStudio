@@ -181,3 +181,40 @@ export type ReportDetail = z.infer<typeof reportDetailSchema>;
 export const reportIdReplySchema = z.object({ id: z.string() });
 
 export type ReportId = z.infer<typeof reportIdReplySchema>;
+
+/**
+ * One definition that carries the name an address asked for.
+ *
+ * A name belongs to the same report in several parties, so an address that
+ * names one rather than an id can match more than one record. Each choice says
+ * which party owns the definition and what its latest run did, which is what a
+ * person needs to tell the rows apart and pick the one they meant.
+ */
+export const reportNameChoiceSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    partyName: z.string(),
+    scheduleExpression: z.string(),
+    health: reportHealthWordSchema.nullable(),
+    stateName: z.string(),
+    /** Whether the definition has a run at all, which a health word alone cannot say. */
+    hasRun: z.boolean(),
+});
+
+export type ReportNameChoice = z.infer<typeof reportNameChoiceSchema>;
+
+/**
+ * The refusal of an address whose name several definitions carry.
+ *
+ * The refusal is a 409 because the address does not name one record, and it
+ * carries the choices so the page draws them rather than telling a person to
+ * find the id somewhere else. The `code` is the shared error contract's, so a
+ * caller that only knows that contract still reads it as a conflict.
+ */
+export const reportNameChoicesSchema = z.object({
+    code: z.literal('conflict'),
+    message: z.string(),
+    choices: z.array(reportNameChoiceSchema),
+});
+
+export type ReportNameChoices = z.infer<typeof reportNameChoicesSchema>;

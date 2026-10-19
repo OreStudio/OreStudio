@@ -37,11 +37,12 @@
  * runs it lists, so the page offers none of those actions.
  */
 
-import { useState, type ReactNode } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link, useNavigate, useParams } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ReportDetail } from '@ores/wire-protocol/browser';
+import type { ReportDetail, ReportNameChoice } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
+import { ApiFailure } from '../api/transport.js';
 import { useHolds } from '../access/holds.js';
 import { PERMISSION } from '../access/permissions.js';
 import { useTranslation } from '../i18n/Provider.js';
@@ -50,13 +51,14 @@ import { RecordStoreProvider } from '../refdata/store.js';
 import { useEntityChanges } from '../events/useEntityChanges.js';
 import { useLoadState } from '../events/useLoadState.js';
 import { Crumbs } from '../refdata/shared.js';
+import { ScreenFrame } from '../shell/ScreenFrame.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { PATHS, reportPath } from '../shell/paths.js';
 import { AccessMark } from '../ui/AccessMark.js';
 import { RefreshButton } from '../ui/RefreshButton.js';
-import { Detail, Notice, PageHeader } from '../ui/Primitives.js';
+import { Detail, Notice, Tag } from '../ui/Primitives.js';
 import { RelativeTime } from '../ui/Time.js';
-import { REPORTS_EVENTS, REPORTS_RESOURCE, REPORTING, reportingStore } from './store.js';
+import { REPORTS_EVENTS, REPORTS_RESOURCE, reportingStore } from './store.js';
 import { Absent, HealthTag, formatDuration, runDuration } from './shared.js';
 
 /** Where one definition's record is cached. */
@@ -67,6 +69,11 @@ export function reportKey(id: string): readonly unknown[] {
 /** The eight characters a person reads to tell one identifier from another. */
 function shortId(id: string): string {
     return id.slice(0, 8);
+}
+
+/** Whether an address segment names a record by id rather than by name. */
+function isId(segment: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment);
 }
 
 /**
@@ -163,47 +170,94 @@ function ReportBody(): ReactNode {
     const holds = useHolds();
     const mayEdit = holds(PERMISSION.reportDefinitionsWrite);
     const queries = useQueryClient();
+    const navigate = useNavigate();
     const [editing, setEditing] = useState(false);
-    const detail = useQuery({ queryKey: reportKey(id), queryFn: () => api.report(id) });
+    const area = useAreaRoot('reporting');
+    /*
+     * The address is whatever a link or a bookmark carried: an id, or the name
+     * an older address saved. The server resolves both, so this page never
+     * answers a name with a refusal. A name that one definition carries comes
+     * back as that record, and its id is seeded too, so the address can settle
+     * on the canonical one without reading the record a second time.
+     *
+     * The page states its own failures, so the reads here are quiet and one
+     * failure is one message rather than a notice and a banner both.
+     */
+    const open = useQuery({
+        queryKey: reportKey(id),
+        queryFn: async () => {
+            const opened = await api.report(id);
+            if (opened.kind === 'record' && opened.detail.definition.id !== id) {
+                queries.setQueryData(reportKey(opened.detail.definition.id), opened);
+            }
+            return opened;
+        },
+        meta: { quiet: true },
+    });
     const load = useLoadState([['records', REPORTS_RESOURCE]]);
     const news = useEntityChanges([REPORTS_EVENTS], load);
-    /*
-     * A definition is opened by its id. An address saved before that names the
-     * definition's name, and the name is shared by the same report in other
-     * parties, so it is resolved to one id and the page is reopened at it.
-     */
-    if (detail.isError) {
-        return (
-            <div className="space-y-4">
-                <Crumbs
-                    parts={[
-                        ...useAreaRoot('reporting'),
-                        { label: t('reporting.title'), to: PATHS.reports },
-                    ]}
-                />
-                <Notice tone="error">{detail.error.message}</Notice>
-                <LegacyName id={id} />
-            </div>
-        );
-    }
+    const opened = open.data;
+    const record = opened?.kind === 'record' ? opened.detail : undefined;
+    const canonical = record?.definition.id;
 
-    if (detail.isPending) {
+    /*
+     * A name that one definition carries replaces the address with that
+     * definition's own, so a person who followed a stale link ends on the
+     * address the list links to. The record is already drawn while this runs.
+     */
+    useEffect(() => {
+        if (canonical !== undefined && canonical !== id) {
+            void navigate(reportPath(canonical), { replace: true });
+        }
+    }, [canonical, id, navigate]);
+
+    const trail = [...area, { label: t('reporting.title'), to: PATHS.reports }];
+    const title = isId(id) ? shortId(id) : id;
+
+    if (open.isPending) {
         return (
-            <div className="space-y-4">
-                <Crumbs
-                    parts={[
-                        ...useAreaRoot('reporting'),
-                        { label: t('reporting.title'), to: PATHS.reports },
-                    ]}
-                />
+            <ScreenFrame
+                trail={<Crumbs parts={trail} />}
+                title={id}
+                description={t('reporting.lead')}
+            >
                 <p className="text-sm text-ink-muted" role="status">
                     {t('common.loading')}
                 </p>
-            </div>
+            </ScreenFrame>
         );
     }
 
-    const { definition, report, unread } = detail.data;
+    if (open.isError) {
+        const missing = open.error instanceof ApiFailure && open.error.status === 404;
+        return (
+            <ScreenFrame
+                trail={<Crumbs parts={[...trail, { label: title }]} />}
+                title={title}
+                description={t('reporting.lead')}
+            >
+                {missing ? (
+                    <div className="space-y-3">
+                        <Notice tone="info">{t('refdata.records.notFound')}</Notice>
+                        <Link
+                            to={PATHS.reports}
+                            className="text-sm text-accent hover:text-accent-bright"
+                        >
+                            {t('refdata.records.backToList')}
+                        </Link>
+                    </div>
+                ) : (
+                    <Notice tone="error">{open.error.message}</Notice>
+                )}
+            </ScreenFrame>
+        );
+    }
+
+    if (open.data.kind === 'choice') {
+        return <NameChooser name={id} choices={open.data.choices} />;
+    }
+
+    const { definition, report, unread } = open.data.detail;
     /*
      * Refresh reads again what the page shows and nothing else. It does not
      * reload the page, because a save's own change event turns this button gold
@@ -215,11 +269,7 @@ function ReportBody(): ReactNode {
     return (
         <div className="space-y-4">
             <RecordHeader
-                crumbs={[
-                    ...useAreaRoot('reporting'),
-                    { label: t('reporting.title'), to: PATHS.reports },
-                    { label: definition.name },
-                ]}
+                crumbs={[...trail, { label: definition.name }]}
                 title={definition.name}
                 recordKey={shortId(definition.id)}
                 version={definition.version}
@@ -239,7 +289,7 @@ function ReportBody(): ReactNode {
                     extra={[
                         [
                             t('reporting.detail.party'),
-                            <PartyDetail detail={detail.data} />,
+                            <PartyDetail detail={open.data.detail} />,
                             t('reporting.detail.partyHint'),
                         ],
                         [
@@ -258,7 +308,7 @@ function ReportBody(): ReactNode {
                         <h2 className="text-sm font-medium">{t('reporting.detail.latestRun')}</h2>
                         <AccessMark canWrite={false} />
                     </header>
-                    <LatestRun detail={detail.data} unread={unread} />
+                    <LatestRun detail={open.data.detail} unread={unread} />
                 </section>
                 <Notice tone="info">{t('reporting.detail.gaps')}</Notice>
             </div>
@@ -377,40 +427,91 @@ function LatestRun({
 }
 
 /**
- * The retired name-based address, resolved to the id the page is opened by.
+ * The definitions a shared name offers, as a page a person chooses from.
  *
- * The server answers only when one definition in scope carries the name, so a
- * name shared between parties is never guessed at. A name that resolves sends
- * the reader to the id's own address, which is the address a link should hold.
+ * A name is unique only within a party, so an address that names one can stand
+ * for several records. The page states the name it was asked for, then one row
+ * per definition: the party that owns it, its schedule and what its latest run
+ * did. Each row links to its own id, which is what settles the address. It owns
+ * the trail because it is a page in its own right and not a record page.
  */
-function LegacyName({ id }: { readonly id: string }): ReactNode {
+function NameChooser({
+    name,
+    choices,
+}: {
+    readonly name: string;
+    readonly choices: readonly ReportNameChoice[];
+}): ReactNode {
     const { t } = useTranslation();
-    const navigate = useNavigate();
-    const resolved = useQuery({
-        queryKey: ['reporting', 'by-name', id],
-        queryFn: () => api.reportIdByName(id),
-        retry: false,
-    });
-    if (resolved.data !== undefined) {
-        return <Navigate to={reportPath(resolved.data)} replace />;
-    }
-    if (resolved.isError) {
-        return (
-            <Notice tone="info">
-                <span className="mr-3">{resolved.error.message}</span>
-                <Link to={PATHS.reports} className="text-accent hover:text-accent-bright">
+    const area = useAreaRoot('reporting');
+    const trail = [...area, { label: t('reporting.title'), to: PATHS.reports }, { label: name }];
+    return (
+        <ScreenFrame
+            trail={<Crumbs parts={trail} />}
+            title={name}
+            description={t('reporting.choose.lead', { count: String(choices.length) })}
+        >
+            <div className="space-y-4">
+                <section className="overflow-hidden rounded-md border border-line">
+                    <table className="w-full text-left text-sm">
+                        <thead>
+                            <tr className="border-b border-line text-xs text-ink-muted">
+                                <th className="px-4 py-2 font-medium">
+                                    {t('reporting.columns.report')}
+                                </th>
+                                <th className="px-4 py-2 font-medium">
+                                    {t('reporting.columns.party')}
+                                </th>
+                                <th className="px-4 py-2 font-medium">
+                                    {t('reporting.columns.schedule')}
+                                </th>
+                                <th className="px-4 py-2 font-medium">
+                                    {t('reporting.columns.health')}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {choices.map((choice) => (
+                                <tr
+                                    key={choice.id}
+                                    className="border-b border-line-subtle last:border-b-0 hover:bg-surface-hover"
+                                >
+                                    <td className="px-4 py-2">
+                                        <Link
+                                            to={reportPath(choice.id)}
+                                            className="text-accent hover:text-accent-bright"
+                                        >
+                                            {choice.name}
+                                        </Link>
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        {choice.partyName === '' ? (
+                                            <span className="text-ink-faint">
+                                                {t('reporting.cell.partyNotStated')}
+                                            </span>
+                                        ) : (
+                                            <Tag>{choice.partyName}</Tag>
+                                        )}
+                                    </td>
+                                    <td className="px-4 py-2 font-mono text-xs">
+                                        {choice.scheduleExpression}
+                                    </td>
+                                    <td className="px-4 py-2">
+                                        <HealthTag
+                                            health={choice.health}
+                                            stateName={choice.stateName}
+                                            hasRun={choice.hasRun}
+                                        />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </section>
+                <Link to={PATHS.reports} className="text-sm text-accent hover:text-accent-bright">
                     {t('refdata.records.backToList')}
                 </Link>
-            </Notice>
-        );
-    }
-    return (
-        <button
-            type="button"
-            className="text-sm text-accent"
-            onClick={() => void navigate(PATHS.reports)}
-        >
-            {t('refdata.records.backToList')}
-        </button>
+            </div>
+        </ScreenFrame>
     );
 }

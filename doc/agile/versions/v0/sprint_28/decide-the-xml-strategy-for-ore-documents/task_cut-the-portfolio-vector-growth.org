@@ -62,7 +62,7 @@ task and name that file in the Command column.
 | Instructions, portfolio import test, before | 4,028,918,281; =import_portfolio_with_context= 2,910,831,513 | =valgrind --tool=callgrind ores.ore.core.tests "import_portfolio_all_ore_example_files_can_be_parsed"= | =7515c50292= |
 | Instructions, same test, after | 3,070,700,246; =import_portfolio_with_context= 1,952,347,014 | same command | =a6c7e6f7da= |
 | Instructions, same test, reserve only (throwaway) | 3,027,004,932 | same command, with a fixed =reserve= in =append_to= | =7515c50292= plus a hand edit |
-| XML benchmark | scan, tape and pugi unchanged | =./benchmarks/xml/run.sh= | =a6c7e6f7da= |
+| XML benchmark | scan, tape and pugi unchanged | =./benchmarks/xml/run.sh= | =16f7dfda83= |
 | Full test binary | 376 cases, 475,402 assertions, all pass | =ores.ore.core.tests= | =a6c7e6f7da= |
 
 * Notes

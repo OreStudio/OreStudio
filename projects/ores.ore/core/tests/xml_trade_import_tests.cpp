@@ -19,7 +19,6 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include <boost/uuid/nil_generator.hpp>
@@ -293,17 +292,3 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
     BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.issue.issuer;
 }
 
-TEST_CASE("unmapped_trade_type_is_monostate", tags) {
-    auto lg(make_logger(test_suite));
-
-    // Every document in the examples tree maps now that Ascot has a
-    // mapper, so the guard builds the trade the tree cannot supply. A
-    // BondPosition is a sub-trade type that no document states on its
-    // own and no dispatcher covers.
-    ores::ore::domain::trade t;
-    t.TradeType = ores::ore::domain::oreTradeType::BondPosition;
-    CHECK(
-        std::holds_alternative<std::monostate>(ores::ore::domain::trade_mapper::map_instrument(t)));
-
-    BOOST_LOG_SEV(lg, info) << "Unmapped trade type correctly yields monostate";
-}

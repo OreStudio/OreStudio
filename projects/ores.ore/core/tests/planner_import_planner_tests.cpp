@@ -18,14 +18,6 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
-#include "ores.ore.core/domain/commodity_instrument_mapper.hpp"
-#include "ores.ore.core/domain/composite_instrument_mapper.hpp"
-#include "ores.ore.core/domain/credit_instrument_mapper.hpp"
-#include "ores.ore.core/domain/equity_instrument_mapper.hpp"
-#include "ores.ore.core/domain/fx_instrument_mapper.hpp"
-#include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
-#include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.testing/project_root.hpp"

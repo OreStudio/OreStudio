@@ -19,7 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/trade_mapper.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
@@ -82,7 +82,6 @@ make_export_payload(const std::vector<ores::ore::xml::trade_import_item>& import
 
 }
 
-using ores::ore::domain::trade_mapper;
 using ores::ore::xml::exporter;
 using ores::ore::xml::importer;
 using ores::refdata::domain::currency;
@@ -396,20 +395,18 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
   </Trade>
 </Portfolio>
 )";
-    ores::ore::domain::portfolio p;
-    ores::ore::domain::load_data(doc, p);
-    REQUIRE(p.Trade.size() == 1);
-
-    auto r = trade_mapper::map_bond_instrument(p.Trade.front());
-    REQUIRE(r.has_value());
+    const auto imported =
+        ores::ore::domain::portfolio_projection::map(ores::ore::domain::portfolio_projection::read(doc));
+    REQUIRE(imported.size() == 1);
+    auto instrument = imported.front().instrument;
 
     ores::trading::domain::instrument_batch instruments;
     trade_export_item item;
-    item.ore_id = "RoundtripBondFuture001";
+    item.ore_id = imported.front().ore_id;
     item.anchor.id = boost::uuids::random_generator{}();
-    item.anchor.trade_type = "BondFuture";
-    ores::trading::domain::stamp_ids(*r, item.anchor.id);
-    ores::trading::domain::append_instrument(instruments, *r);
+    item.anchor.trade_type = imported.front().anchor.trade_type;
+    ores::trading::domain::stamp_ids(instrument, item.anchor.id);
+    ores::trading::domain::append_instrument(instruments, instrument);
 
     const auto xml = exporter::export_portfolio({item}, instruments);
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;

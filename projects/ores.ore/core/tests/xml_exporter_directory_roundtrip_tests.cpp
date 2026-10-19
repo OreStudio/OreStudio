@@ -78,9 +78,8 @@ struct scratch_dir {
  * The walk reports success for these, so the list is the only record. It is
  * asserted for equality rather than tolerance: a name that starts failing
  * fails this suite, and a name that stops failing also fails it until the list
- * shrinks. The five that remain each need a value the domain instrument does
- * not hold, so they close with the domain rather than with the mapper; the
- * defect is tracked as task 67277DBB-5ABD-4C36-934B-E97144E8910B.
+ * shrinks. The list is empty, which is the state to defend: every family writes
+ * what the schema requires, and a first entry means a writer regressed.
  */
 const std::set<std::string>& known_export_gaps() {
     static const std::set<std::string> gaps = {};
@@ -133,7 +132,9 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", tags) {
                   << " mapped=" << summary.trades_mapped
                   << " passthrough=" << summary.trades_passthrough);
 
-    CHECK(summary.total_xml_files > 0);
+    // The count pins the corpus the claim is made over: a dropped directory
+    // must fail here rather than shrink the proof quietly.
+    CHECK(summary.total_xml_files == 132);
     CHECK(summary.output_files_written + summary.unsupported + summary.failed ==
           summary.total_xml_files);
     CHECK(summary.trades_mapped > 0);

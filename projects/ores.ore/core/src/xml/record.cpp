@@ -209,6 +209,23 @@ auto record_reader::values(std::string_view name) const -> std::vector<std::stri
     return out;
 }
 
+auto record_reader::decimals(std::string_view name) const
+    -> std::vector<ores::utility::decimal::decimal> {
+    const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
+    if (f.scalar != scalar_kind::decimal)
+        throw std::runtime_error(
+            std::format("'{}' of the {} table does not hold exact decimals", name, type_->name));
+    std::vector<ores::utility::decimal::decimal> out;
+    if (!bit_is_set(record_, f) || f.repeated == nullptr)
+        return out;
+    const auto count = f.repeated->count(slot_of(record_, f));
+    out.reserve(count);
+    for (std::size_t i = 0; i < count; ++i)
+        out.push_back(*static_cast<const ores::utility::decimal::decimal*>(
+            f.repeated->at(slot_of(record_, f), i)));
+    return out;
+}
+
 auto record_reader::indexed(std::string_view name) const -> std::vector<record_reader> {
     const auto& f = require_kind(*type_, name, field_kind::indexed_nested, "an indexed child");
     if (f.repeated == nullptr || f.type == nullptr || f.arena_offset == no_arena)
@@ -388,6 +405,18 @@ void record_writer::set_own_text(std::string_view value) {
     set_bit(record_, f);
 }
 
+auto record_reader::residuals() const -> std::vector<residual_element> {
+    std::vector<residual_element> out;
+    for (std::uint8_t i = 0; i < type_->field_count; ++i) {
+        const auto& f = type_->fields[i];
+        if (f.kind != field_kind::residual || !bit_is_set(record_, f))
+            continue;
+        const auto* bag = static_cast<const std::vector<residual_element>*>(slot_of(record_, f));
+        out.insert(out.end(), bag->begin(), bag->end());
+    }
+    return out;
+}
+
 auto record_writer::child(std::string_view name) -> record_writer {
     const auto& f = require_kind(*type_, name, field_kind::nested, "a child element");
     set_bit(record_, f);
@@ -403,6 +432,18 @@ void record_writer::append_value(std::string_view name, std::string_view value) 
     void* slot = nullptr;
     f.repeated->append(slot_of(f), &slot);
     *static_cast<std::string*>(slot) = std::string(value);
+}
+
+void record_writer::append_decimal(std::string_view name,
+                                   const ores::utility::decimal::decimal& value) {
+    const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
+    if (f.scalar != scalar_kind::decimal)
+        throw std::runtime_error(
+            std::format("'{}' of the {} table does not hold exact decimals", name, type_->name));
+    set_bit(record_, f);
+    void* slot = nullptr;
+    f.repeated->append(slot_of(f), &slot);
+    *static_cast<ores::utility::decimal::decimal*>(slot) = value;
 }
 
 auto record_writer::append_indexed(std::string_view name) -> record_writer {
@@ -423,6 +464,20 @@ auto record_writer::append_indexed(std::string_view name) -> record_writer {
     f.repeated->append(arena, &slot);
     indices->push_back(index);
     return record_writer(*f.type, slot);
+}
+
+void record_writer::append_residual(std::string_view name, std::string_view value) {
+    for (std::uint8_t i = 0; i < type_->field_count; ++i) {
+        const auto& f = type_->fields[i];
+        if (f.kind != field_kind::residual)
+            continue;
+        set_bit(record_, f);
+        static_cast<std::vector<residual_element>*>(slot_of(f))->push_back(
+            residual_element{std::string(name), std::string(value)});
+        return;
+    }
+    throw std::runtime_error(
+        std::format("the {} table keeps no content the schema does not name", type_->name));
 }
 
 auto record_writer::append(std::string_view name) -> record_writer {

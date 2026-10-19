@@ -103,12 +103,28 @@ public:
     auto values(std::string_view name) const -> std::vector<std::string>;
 
     /**
+     * @brief Every value of a repeated exact-decimal leaf, in document order.
+     *
+     * A money list such as a barrier's levels is a repeated element whose
+     * value is a decimal rather than text, so the text accessor refuses it.
+     */
+    auto decimals(std::string_view name) const -> std::vector<ores::utility::decimal::decimal>;
+
+    /**
      * @brief Every row an indexed member names, in index order.
      *
      * A table whose member names no arena is refused rather than read at the
      * offset the sentinel would produce.
      */
     auto indexed(std::string_view name) const -> std::vector<record_reader>;
+
+    /**
+     * @brief The content the schema does not name, in document order.
+     *
+     * A type with an xs:any keeps the name and the text of every element the
+     * table does not declare.
+     */
+    auto residuals() const -> std::vector<residual_element>;
 
 private:
     const record_type* type_;
@@ -194,8 +210,18 @@ public:
     /// States a repeated leaf and appends one value to it.
     void append_value(std::string_view name, std::string_view value);
 
+    /// States a repeated exact-decimal leaf and appends one value to it.
+    void append_decimal(std::string_view name, const ores::utility::decimal::decimal& value);
+
     /// States an indexed member, appends a row to its arena and returns it.
     auto append_indexed(std::string_view name) -> record_writer;
+
+    /**
+     * @brief States content the schema does not name.
+     *
+     * @throws std::runtime_error when the table has no element that keeps it.
+     */
+    void append_residual(std::string_view name, std::string_view value);
 
 private:
     const field& field_of(std::string_view name) const;

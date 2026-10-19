@@ -279,10 +279,44 @@ or =PowerLoadProfileData=, mandatory, and a portfolio document that states none
 of them binds. The values are not lost; the reading is looser than the schema.
 Teaching the table a required group is its own change.
 
+* The projection follows the instrument families
+
+The product still reads a portfolio through the old binding: =importer.cpp=,
+=exporter.cpp=, =trade_mapper= and one mapper per instrument family. The
+projection is the same mapping with the codec record as its input, so the
+schema's shape reaches the product once.
+
+The shell owns the document, the envelope and the trade list. Each family owns
+the trade types it holds, and a family that does not handle a type returns
+nothing so the next one is asked. A projection names the elements it takes
+(the table is asked for the offsets), reads a money value as the exact decimal
+the table keeps and converts at the boundary, and refuses an element the
+mapping cannot hold rather than dropping it.
+
+The scripted family came first because it is the smallest. The script's =NPV= is
+a name the schema requires and the instrument's flat table has no column for, so
+it rides in the parameters JSON the table does carry. Rates, FX, bonds, credit,
+equity, commodities and composites followed, and the importer and the exporter
+now ask the projection for the document and the trades. The nine mappers and
+their thirteen suites are gone, so the product never runs both paths.
+
+Three things the port changes on purpose. A quantity the old binding read as
+=float= is now the document's exact decimal, so a stored amount no longer
+carries float noise. An FX forward or swap settlement is written back, which the
+old mapper read and dropped. A required element the trading domain holds no
+value for is stated at its structural minimum (one unit of quantity, an absent
+date, a zero initial price) rather than left out: the old binding tolerated the
+absence, and the document it produced did not bind.
+
+The export is the part the old boundary never proved. Thirty-one of the 132
+corpus documents used to export a document the reading refused, because a
+writer left a required element unstated. Every corpus document now exports and
+reads back, and the directory round trip asserts it.
+
 * Where the work stands
 
-Verified at the head of the portfolio table branch, with the commands that prove
-each line.
+Verified at the head of the portfolio projection branch, with the commands that
+prove each line.
 
 | Claim | Evidence |
 |-------+----------|
@@ -292,9 +326,10 @@ each line.
 | Stress testing documents bind, write and keep every value, and nothing reads the XML | same, 19 of 19 |
 | Run documents bind, write and keep every value | same, 422 of 422 |
 | Every emitted document validates | =./scripts/validate_ore_examples.sh build/output/linux-clang-release-ninja/xml-roundtrip/emitted external/ore/xsd=, 246 of 246 |
-| The XML suites pass | =publish/bin/ores.ore.core.tests "[ore][xml]"=, 508 cases and 45,275 assertions |
+| The XML suites pass | =publish/bin/ores.ore.core.tests "[ore][xml]"=, 372 cases and 44,364 assertions |
 | The tables match their schemas, deterministically | =python3 build/scripts/check_xml_bindings_drift.py= |
-| Legacy readers the product still calls: Portfolio, conventions and today's market | =grep -rn "load_data" projects/ores.ore/*/src= |
+| Legacy readers the product still calls: conventions and today's market | =grep -rn "load_data" projects/ores.ore/*/src= |
+| Every corpus portfolio exports a document that binds | =publish/bin/ores.ore.core.tests "roundtrip mirrors every portfolio in the ORE example corpus"=, 132 of 132 |
 | Five product files still include the generated domain | =grep -rc "domain/domain.hpp" projects/*/*/src --include=*.cpp= |
 
 *What each remaining family needs.* Portfolio's table is proved, and its
@@ -332,6 +367,10 @@ task and name that file in the Command column.
 | Corpus documents the value harness sweeps | 1150, with each family's count asserted | same | e39030319c |
 | Families supported after the portfolio table | 13 supported, 0 migrating | =python3 build/scripts/check_xml_family_coverage.py= | e39030319c |
 | XML suites after the portfolio table | 508 cases, 45,275 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | e39030319c |
+| Portfolio projection suites | 1172 assertions in 28 cases | =publish/bin/ores.ore.core.tests "[portfolio][projection]"= | cb494c4e8c |
+| XML suites after the portfolio projection | 372 cases, 44,364 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | cb494c4e8c |
+| Corpus portfolios that export and read back | 132 of 132 | =publish/bin/ores.ore.core.tests "roundtrip mirrors every portfolio in the ORE example corpus"= | cb494c4e8c |
+| Mapper files and suites deleted with the portfolio path | 9 mappers, 13 suites | =git show --stat cb494c4e8c= | cb494c4e8c |
 
 * Notes
 

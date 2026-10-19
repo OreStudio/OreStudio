@@ -26,39 +26,13 @@
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.refdata.api/messaging/calendar_adjustment_protocol.hpp"
-#include "ores.trading.api/domain/trade.hpp"
-#include "ores.trading.api/domain/trade_booking.hpp"
-#include "ores.trading.api/domain/trade_envelope_data.hpp"
-#include "ores.trading.api/domain/trade_instrument.hpp"
+#include "ores.ore.core/xml/trade_import_item.hpp"
 #include <filesystem>
-#include <optional>
 #include <string>
 #include <vector>
 
 namespace ores::ore::xml {
 
-/**
- * @brief A trade read from an ORE document, ready to book.
- *
- * Carries what the import books: the trade's anchor and booking, the
- * activity that books it, and its ORE id, which the import writes as the
- * trade's ORE identifier. The importer fills the ORE id and the trade type;
- * the planner mints the trade id and fills the party, the book and the
- * dates. The counterparty and the netting set are resolved from the
- * envelope when the trade is booked.
- *
- * The source file lets a batch import report each trade's provenance
- * without keeping a separate index.
- */
-struct trade_import_item {
-    std::string ore_id;
-    trading::domain::trade anchor;
-    trading::domain::trade_booking booking;
-    std::string activity_type_code = "new_booking";
-    std::optional<trading::domain::trade_envelope_data> envelope;
-    std::filesystem::path source_file;
-    trading::domain::trade_instrument instrument;
-};
 
 /**
  * @brief Imports domain objects from their ORE XML representation.

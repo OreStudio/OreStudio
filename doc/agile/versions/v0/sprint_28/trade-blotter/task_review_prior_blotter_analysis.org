@@ -5,14 +5,14 @@
 #+description: Re-read the prior blotter/import design analysis (Data Import Session and Workflow Partial-Success plan), re-establish its connection to workspaces (Track 2: a temporary holding location for trades -- the Pending Book -- before promotion into the Live workspace), and produce an updated design reflecting the current codebase state before implementation is scoped.
 #+type: task
 #+level: s1
-#+filetags: :trade_blotter:inbox:product_backlog:
+#+filetags: :trade_blotter:sprint_28:v0:
 #+owner: marco
 #+branch:
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-10-19
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 

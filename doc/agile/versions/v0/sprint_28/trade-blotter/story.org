@@ -5,13 +5,13 @@
 #+description: Build the Trade Blotter: the primary front-office screen for viewing, booking, amending, and routing trades through their lifecycle. Depends on the workspace story -- production trade import needs a temporary holding location (Pending Book) for trades before they are promoted into the Live workspace. Requires additional design work; first task is to recover and re-validate the prior analysis before scoping implementation.
 #+type: story
 #+level: s2
-#+filetags: :trading:blotter:workspace:product_backlog:inbox:
+#+filetags: :trading:blotter:workspace:sprint_28:v0:
 #+created: 2026-08-04
-#+updated: 2026-08-04
-#+environment:
+#+updated: 2026-10-19
+#+environment: jolly_knuth
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
-This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
@@ -35,8 +35,8 @@ story is where it gets built, alongside the wider blotter UI.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
-| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
 | Now           | Not yet started; blocked on the workspace story's audit landing first. |
 | Waiting on    | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]] |
 | Next          | Recover and re-validate the prior design analysis. |
@@ -59,6 +59,7 @@ story is where it gets built, alongside the wider blotter UI.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:9B6C15D0-C393-43FC-AA5C-D33BB0BF0974][Design: recover and re-validate the prior blotter/import analysis]] | BACKLOG | | | Re-read the prior blotter/import design analysis (Data Import Session and Workflow Partial-Success plan), re-establish its connection to workspaces (Track 2: a temporary holding location for trades -- the Pending Book -- before promotion into the Live workspace), and produce an updated design reflecting the current codebase state before implementation is scoped. |
+| [[id:D474C495-9628-4E8C-B8F6-5432ABD1F504][Check the trade prototypes against the entity screen specification]] | STARTED | 2026-10-19 | | Check each trade prototype against the entity screen specification and fix the differences, starting with the trade page, then book a trade, the structure page, the ORE portfolio and trade entry. |
 
 * Decisions
 

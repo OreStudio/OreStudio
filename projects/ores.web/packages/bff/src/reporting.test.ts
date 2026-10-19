@@ -576,6 +576,23 @@ describe('one report definition', () => {
         expect(response.json().definition.name).toBe('ACME daily PnL');
     });
 
+    it('opens a unique name that holds slashes, sent as one encoded segment', async () => {
+        const slashed = definition('dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'CVA/DVA/FVA', 'risk');
+        const { server, sessionId } = buildTestServer({
+            ...listReplies(),
+            [DEFINITIONS]: { result: ok, definitions: [slashed], total: 1 },
+        });
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${encodeURIComponent('CVA/DVA/FVA')}`,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().definition.id).toBe(slashed['id']);
+    });
+
     it('answers a name several definitions carry with the choices, and not an id', async () => {
         const { server, sessionId } = buildTestServer(listReplies());
         const response = await send(

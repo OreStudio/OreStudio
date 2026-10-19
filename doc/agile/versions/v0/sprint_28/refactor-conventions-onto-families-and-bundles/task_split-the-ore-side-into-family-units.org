@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 795E541C-1D22-4CFE-9686-2AD7E019560D
+:END:
+#+title: Task: Split the ORE side into per-family units
+#+description: Task for: Refactor conventions onto families and bundles
+#+type: task
+#+level: s1
+#+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
+#+owner: marco
+#+branch: feature/per-family-ore-codec
+#+pr: 3573
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give each convention family a translation unit of its own on the ORE side, as the refdata side has, so the mapper no longer names all twenty-three document families in one file and no anonymous namespace carries the per-family functions.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- conventions_mapper.cpp holds only read, write and unmodelled
+- Each family has a unit that defines map, reverse, pack and join for its own type
+- The dispatch unit includes declarations only and a static_assert ties its table to the registry
+- The translation unit budget gate no longer lists the mapper
+
+* Plan
+
+The refdata side already has the shape: one unit per family, a header of
+declarations, and a dispatch table. The ORE side copies it.
+
+- =conventions_mapper= keeps =read=, =write= and =unmodelled=. Its =map_<key>=
+  methods stay public, and each gains a =reverse_<key>= beside it. Both are
+  defined in the family's own unit. The reverse functions are no longer in an
+  anonymous namespace, so no unit holds private functions that a unibuild could
+  merge or collide.
+- =conventions_fields.hpp= and =.cpp= hold the field helpers that two or more
+  families share, in a named namespace, defined once. A helper that only one
+  family uses lives in that family's unit, in the same namespace. The codemod
+  decided which is which by reading who uses each helper.
+- Each family has =conventions_family_<key>.cpp=. It defines =map=, =reverse=,
+  =pack_<key>= and =join_<key>= for its own type. The pack and join templates
+  are in =conventions_family_pack.hpp=, so reflecting a type happens in the unit
+  that names it.
+- =conventions_package.cpp= holds the table of =family_codecs=, =split_conventions=
+  and =join_conventions=. It includes declarations only and reflects nothing.
+  A =static_assert= requires one row for each registry family that is not a
+  tenor basis swap family, so a new family stops the build until it has a unit.
+- The tenor basis swap trio and the FX projection are not table rows. The trio
+  is one document element, so it has one unit. The FX conventions are a
+  projection that no family holds.
+- =conventions_diff.cpp= shares the tenor kind and the tenor family test with
+  the trio's unit, so the two cannot disagree.
+- The budget gate counts a unit that includes =conventions_family_pack.hpp= as
+  reflecting, because the templates in it reflect for the unit. Without that the
+  gate would not see the new units at all.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| Lines in the mapper before | 2207 | =git show origin/main:projects/ores.ore/core/src/domain/conventions_mapper.cpp, then wc -l= | 3360e55725 |
+| Lines in the mapper after | 72 | =wc -l projects/ores.ore/core/src/domain/conventions_mapper.cpp= | this branch |
+| Family units | 24, the 23 families and the tenor trio | =ls projects/ores.ore/core/src/domain/conventions_family_*.cpp= | this branch |
+| Largest family unit | 315 lines, inflation swap | =wc -l projects/ores.ore/core/src/domain/conventions_family_*.cpp= | this branch |
+| Files over the budget of one family | 3, all about the tenor basis swap | =python3 build/scripts/check_translation_unit_budget.py --list= | this branch |
+| Mapper ceiling in the budget gate | removed, was 26 | =build/scripts/check_translation_unit_budget.py= | this branch |
+| ore core suite | passes | =ctest -R ores.ore.core.tests= in =build/output/linux-clang-release-ninja= | this branch |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3573][#3573]] | [ore] Split the conventions mapper into per-family units |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The bundle's row order changes, because the tenor rows now come last. | conventions_package.cpp | Accepted, checked | Apply writes the tenor families first and every other family on its own, and a family keeps the order of its rows. Nothing reads the order across families. The round-trip suites pass. |
+| 2 | The gate saw none of the new units, because they reflect through the pack header and name no rfl header. | check_translation_unit_budget.py | Accepted, fixed | A unit that includes =conventions_family_pack.hpp= now counts as reflecting, and a test covers the rule. |
+| 3 | =conventions_diff.cpp= kept its own tenor kind and tenor family test in an anonymous namespace. A unibuild would make them ambiguous with the shared ones. | conventions_diff.cpp | Accepted, fixed | The diff now uses the definitions in =conventions_family_units.hpp=. |
+| 4 | Helpers that only one family uses have external linkage and no declaration. | conventions_family_*.cpp | Declined | They sit in a named namespace and carry unique names. A second definition of one fails the link, and an anonymous namespace would give the unibuild collision this task removes. |
+| 5 | The pack and join units could come from the registry, as the refdata ones do. | conventions_package.cpp | Declined | The registry would need each family's ORE element name, and refdata must not know ORE. The =static_assert= ties the table to the registry instead. |
+| 6 | #3573: the tenor join treats any remaining row as a long short row. | conventions_family_tenor_basis_swap.cpp | Accepted, fixed | The branch is explicit, and another family now throws. |
+| 7 | #3573: =provisional_uuid= is in the fields namespace but one unit uses it. | conventions_family_tenor_basis_swap.cpp | Declined | Same as row 4. A named namespace with a unique name fails loudly on a duplicate, and an unnamed one is the collision this task removes. |
+| 8 | #3573: the comment says the family table is ordered, and nothing enforces it. | conventions_package.cpp | Accepted, fixed | The comment no longer says it. Lookup does not use the order. |
+| 9 | #3573: no MSVC build was run. | PR body | Accepted, recorded | The PR lists it under limitations. GitHub runs no check, so the Windows proof stays the task prove-the-windows-build. |
+
+* Result
+
+The mapper no longer holds the families. =conventions_mapper.cpp= went from 2207 lines to 72 and keeps =read=, =write= and =unmodelled=. Each of the 23 document families has a unit of its own that defines =map=, =reverse=, =pack= and =join= for its own type. The tenor basis swap trio has one unit, because it is one document element. The FX projection has a unit too.
+
+No anonymous namespace carries a per-family function. The reverse functions are public members beside the map functions. The shared field helpers are declared once in =conventions_fields.hpp= and defined once. A helper that only one family uses sits in that family's unit.
+
+The table of families is in =conventions_package.cpp=, which includes declarations only. A =static_assert= requires one row for each registry family outside the tenor trio. A new family therefore stops the build until it has a unit.
+
+All four acceptance points are met. The budget gate lost its mapper entry, and it now sees the new units. The ore core suite passes, including the XML round trips. The one open item is the tenor trio, which stays at a ceiling of 3 with the diff and the bundle service.

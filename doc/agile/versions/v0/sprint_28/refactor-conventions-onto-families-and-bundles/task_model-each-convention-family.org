@@ -159,7 +159,7 @@ task and name that file in the Command column.
   budget and recorded with a ceiling that can only go down: the package's pack
   and join tables in =conventions_mapper.cpp= at 26, and the two units that
   handle the three tenor basis swap families together, which are one document
-  element. The first is the capture split-the-conventions-package-per-family.
+  element. The first is now closed by the task [[id:795E541C-1D22-4CFE-9686-2AD7E019560D][Split the ORE side into per-family units]].
 - The pin holds. Comparing the service's hand-written calls with the generated
   registry gives 26 families against 26 entries, no disagreement about which
   families are party-scoped and which are world-scoped, and no registry row the
@@ -261,7 +261,7 @@ via its "Verifies task" field.
 | 17 | #3566: only =.cpp= and =.inc= files are measured, so a reflecting inline template in a header escapes. | check_translation_unit_budget.py | Fixed | The scan covers headers and the two include trees. It finds no new file over budget. |
 | 18 | #3566: a comment containing =rfl::= makes a file count as reflecting. | check_translation_unit_budget.py | Declined | It can only raise a count in a file that also names families, and the failure is loud. |
 | 19 | #3566: the dispatch looks a family up by a linear scan of 26 rows. | convention_family_dispatch.cpp | Declined | Nothing here is hot, and a map would add a type for no gain. |
-| 20 | #3566: make sure the ceiling of 26 on the mapper is not forgotten. | check_translation_unit_budget.py | Accepted, recorded | The capture split-the-conventions-package-per-family owns it, and the ceiling check fails if the file improves without the entry being lowered. |
+| 20 | #3566: make sure the ceiling of 26 on the mapper is not forgotten. | check_translation_unit_budget.py | Accepted, recorded | The task [[id:795E541C-1D22-4CFE-9686-2AD7E019560D][Split the ORE side into per-family units]] owns it, and the ceiling check fails if the file improves without the entry being lowered. |
 | 21 | #3566: the 96 benchmark rows may be stray. | benchmarks/xml/history.tsv | Accepted, explained | They are the one run the gate asked for after the codec move changed the XML code. |
 
 * Result
@@ -281,7 +281,7 @@ Acceptance, point by point:
 - Each family is its own entity with its own fields. Met.
 - One generated registry names every family, its scope and its repository. Met.
 - The apply code is generated from the same registry. Met, and the read is too.
-- No reflected type in refdata carries every family, and no translation unit instantiates one. Met for the types, and for the refdata units. The ORE package's pack and join tables still name every family in one unit, so the budget check records =conventions_mapper.cpp= at a ceiling of 26. The capture split-the-conventions-package-per-family owns the rest, and it waits on the mapper moving to the codec records.
+- No reflected type in refdata carries every family, and no translation unit instantiates one. Met for the types, and for the refdata units. The ORE package's pack and join tables still name every family in one unit, so the budget check records =conventions_mapper.cpp= at a ceiling of 26. The task [[id:795E541C-1D22-4CFE-9686-2AD7E019560D][Split the ORE side into per-family units]] owns the rest.
 - =conventions_document=, its service and the whole-document protocol operations no longer exist. Met.
 
 The decision to leave the ORE side for later is a dependency, not a gap. Another environment is moving the mapper onto the codec records, and splitting the same file at the same time would collide. The ceiling in the check keeps the debt visible and lets it only go down.

@@ -29,6 +29,13 @@ def test_only_a_file_that_reflects_is_counted():
     assert not budget.reflects("domain::zero_convention z;")
 
 
+def test_a_unit_that_includes_the_reflecting_header_reflects():
+    unit = '#include "conventions_family_pack.hpp"\nrefdata::domain::zero_convention z;'
+
+    assert budget.reflects(unit)
+    assert not budget.reflects("refdata::domain::zero_convention z;")
+
+
 def test_a_file_over_its_budget_fails_and_one_at_it_passes():
     counts = {"a.cpp": 2, "b.cpp": 1}
 

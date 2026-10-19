@@ -64,7 +64,9 @@ namespace ores::ore::domain {
  *
  * The mapper normalises all ORE enum aliases (e.g. "F", "Following",
  * "FOLLOWING") to canonical FpML/CDM codes before storing them in the domain
- * types. Individual @c map_* methods are exposed for unit testing.
+ * types. Each family has a @c map_ method that reads one element and a
+ * @c reverse_ method that writes one back. Both are defined in the family's
+ * own unit and are exposed for unit testing.
  */
 class ORES_ORE_CORE_EXPORT conventions_mapper {
 private:
@@ -99,66 +101,140 @@ public:
      */
     static std::map<std::string, std::size_t> unmodelled(const conventions& v);
 
-    static refdata::domain::zero_convention map_zero(const xml::record_reader& v);
-
-    static refdata::domain::deposit_convention map_deposit(const xml::record_reader& v);
-
-    static refdata::domain::swap_convention map_swap(const xml::record_reader& v);
-
-    static refdata::domain::swap_index_convention map_swap_index(const xml::record_reader& v);
-
-    static refdata::domain::future_convention map_future(const xml::record_reader& v);
-
-    static refdata::domain::fx_option_convention map_fx_option(const xml::record_reader& v);
-
     static refdata::domain::average_ois_convention map_average_ois(const xml::record_reader& v);
 
-    static refdata::domain::cross_currency_basis_convention
-    map_cross_currency_basis(const xml::record_reader& v);
+    static void reverse_average_ois(const refdata::domain::average_ois_convention& v,
+                                    xml::record_writer w);
 
-    static refdata::domain::cross_currency_fix_float_convention
-    map_cross_currency_fix_float(const xml::record_reader& v);
+    static refdata::domain::bma_basis_swap_convention
+    map_bma_basis_swap(const xml::record_reader& v);
 
-    static ores::refdata::messaging::tenor_basis_swap_convention_item
-    map_tenor_basis_swap(const xml::record_reader& v);
+    static void reverse_bma_basis_swap(const refdata::domain::bma_basis_swap_convention& v,
+                                       xml::record_writer w);
 
-    static refdata::domain::tenor_basis_two_swap_convention
-    map_tenor_basis_two_swap(const xml::record_reader& v);
+    static refdata::domain::bond_yield_convention map_bond_yield(const xml::record_reader& v);
 
-    static refdata::domain::ois_convention map_ois(const xml::record_reader& v);
-
-    static refdata::domain::fra_convention map_fra(const xml::record_reader& v);
-
-    static refdata::domain::ibor_index_convention map_ibor_index(const xml::record_reader& v);
-
-    static refdata::domain::inflation_swap_convention
-    map_inflation_swap(const xml::record_reader& v);
-
-    static refdata::domain::intraday_power_load_convention
-    map_intraday_power_load(const xml::record_reader& v);
-
-    static refdata::domain::overnight_index_convention
-    map_overnight_index(const xml::record_reader& v);
-
-    static refdata::domain::zero_inflation_index_convention
-    map_zero_inflation_index(const xml::record_reader& v);
-
-    static refdata::domain::bma_basis_swap_convention map_bma_basis_swap(const xml::record_reader& v);
-
-    static ores::refdata::messaging::fx_convention map_fx(const xml::record_reader& v);
+    static void reverse_bond_yield(const refdata::domain::bond_yield_convention& v,
+                                   xml::record_writer w);
 
     static refdata::domain::cds_convention map_cds(const xml::record_reader& v);
+
+    static void reverse_cds(const refdata::domain::cds_convention& v, xml::record_writer w);
 
     static refdata::domain::cms_spread_option_convention
     map_cms_spread_option(const xml::record_reader& v);
 
-    static refdata::domain::commodity_future_convention
-    map_commodity_future(const xml::record_reader& v);
+    static void reverse_cms_spread_option(const refdata::domain::cms_spread_option_convention& v,
+                                          xml::record_writer w);
 
     static refdata::domain::commodity_forward_convention
     map_commodity_forward(const xml::record_reader& v);
 
-    static refdata::domain::bond_yield_convention map_bond_yield(const xml::record_reader& v);
+    static void reverse_commodity_forward(const refdata::domain::commodity_forward_convention& v,
+                                          xml::record_writer w);
+
+    static refdata::domain::commodity_future_convention
+    map_commodity_future(const xml::record_reader& v);
+
+    static void reverse_commodity_future(const refdata::domain::commodity_future_convention& v,
+                                         xml::record_writer w);
+
+    static refdata::domain::cross_currency_basis_convention
+    map_cross_currency_basis(const xml::record_reader& v);
+
+    static void
+    reverse_cross_currency_basis(const refdata::domain::cross_currency_basis_convention& v,
+                                 xml::record_writer w);
+
+    static refdata::domain::cross_currency_fix_float_convention
+    map_cross_currency_fix_float(const xml::record_reader& v);
+
+    static void
+    reverse_cross_currency_fix_float(const refdata::domain::cross_currency_fix_float_convention& v,
+                                     xml::record_writer w);
+
+    static refdata::domain::deposit_convention map_deposit(const xml::record_reader& v);
+
+    static void reverse_deposit(const refdata::domain::deposit_convention& v, xml::record_writer w);
+
+    static refdata::domain::fra_convention map_fra(const xml::record_reader& v);
+
+    static void reverse_fra(const refdata::domain::fra_convention& v, xml::record_writer w);
+
+    static refdata::domain::future_convention map_future(const xml::record_reader& v);
+
+    static void reverse_future(const refdata::domain::future_convention& v, xml::record_writer w);
+
+    static ores::refdata::messaging::fx_convention map_fx(const xml::record_reader& v);
+
+    static void reverse_fx(const ores::refdata::messaging::fx_convention& v, xml::record_writer w);
+
+    static refdata::domain::fx_option_convention map_fx_option(const xml::record_reader& v);
+
+    static void reverse_fx_option(const refdata::domain::fx_option_convention& v,
+                                  xml::record_writer w);
+
+    static refdata::domain::ibor_index_convention map_ibor_index(const xml::record_reader& v);
+
+    static void reverse_ibor_index(const refdata::domain::ibor_index_convention& v,
+                                   xml::record_writer w);
+
+    static refdata::domain::inflation_swap_convention
+    map_inflation_swap(const xml::record_reader& v);
+
+    static void reverse_inflation_swap(const refdata::domain::inflation_swap_convention& v,
+                                       xml::record_writer w);
+
+    static refdata::domain::intraday_power_load_convention
+    map_intraday_power_load(const xml::record_reader& v);
+
+    static void
+    reverse_intraday_power_load(const refdata::domain::intraday_power_load_convention& v,
+                                xml::record_writer w);
+
+    static refdata::domain::ois_convention map_ois(const xml::record_reader& v);
+
+    static void reverse_ois(const refdata::domain::ois_convention& v, xml::record_writer w);
+
+    static refdata::domain::overnight_index_convention
+    map_overnight_index(const xml::record_reader& v);
+
+    static void reverse_overnight_index(const refdata::domain::overnight_index_convention& v,
+                                        xml::record_writer w);
+
+    static refdata::domain::swap_convention map_swap(const xml::record_reader& v);
+
+    static void reverse_swap(const refdata::domain::swap_convention& v, xml::record_writer w);
+
+    static refdata::domain::swap_index_convention map_swap_index(const xml::record_reader& v);
+
+    static void reverse_swap_index(const refdata::domain::swap_index_convention& v,
+                                   xml::record_writer w);
+
+    static ores::refdata::messaging::tenor_basis_swap_convention_item
+    map_tenor_basis_swap(const xml::record_reader& v);
+
+    static void
+    reverse_tenor_basis_swap(const ores::refdata::messaging::tenor_basis_swap_convention_item& v,
+                             xml::record_writer w);
+
+    static refdata::domain::tenor_basis_two_swap_convention
+    map_tenor_basis_two_swap(const xml::record_reader& v);
+
+    static void
+    reverse_tenor_basis_two_swap(const refdata::domain::tenor_basis_two_swap_convention& v,
+                                 xml::record_writer w);
+
+    static refdata::domain::zero_convention map_zero(const xml::record_reader& v);
+
+    static void reverse_zero(const refdata::domain::zero_convention& v, xml::record_writer w);
+
+    static refdata::domain::zero_inflation_index_convention
+    map_zero_inflation_index(const xml::record_reader& v);
+
+    static void
+    reverse_zero_inflation_index(const refdata::domain::zero_inflation_index_convention& v,
+                                 xml::record_writer w);
 };
 
 /**

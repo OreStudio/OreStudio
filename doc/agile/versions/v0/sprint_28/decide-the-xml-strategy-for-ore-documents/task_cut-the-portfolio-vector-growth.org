@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/cut-the-portfolio-vector-growth
-#+pr: 3576
+#+pr: 3579
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
@@ -95,6 +95,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3579][#3579]] | [ore] Hold the repeated children of a wide record in a deque |
 | [[https://github.com/OreStudio/OreStudio/pull/3576][#3576]] | [agile] Scaffold the portfolio vector growth task |
 
 * Review

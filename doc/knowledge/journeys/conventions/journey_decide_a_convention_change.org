@@ -94,13 +94,9 @@ the new value is not a request a person can decide.
 
 * Prototype
 
-No prototype exists in this journey's name. The prototype
-[[file:../../prototypes/conventions/define-the-conventions-for-an-instrument/][Instrument conventions]]
-draws a second person's approval for every write: the request waits, Market Risk
-decides, and a decline leaves the convention alone. The story
-[[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of
-conventions]] draws this journey as its own prototype, with the four kinds of
-request in one queue.
+A clickable prototype draws this journey: [[file:../../../prototypes/conventions/decide-a-convention-change/][prototype]], with its design note
+[[file:../../../prototypes/conventions/decide-a-convention-change.org][decide-a-convention-change]]. It opens with no
+build and reads mock data only. The page marks each server gap this journey names.
 
 * Entities composed
 

@@ -97,9 +97,9 @@ only thing that makes it safe is knowing what else reads the row.
 
 * Prototype
 
-No prototype exists yet. The story
-[[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of
-conventions]] draws one in =doc/prototypes/conventions/=.
+A clickable prototype draws this journey: [[file:../../../prototypes/conventions/retire-a-convention/][prototype]], with its design note
+[[file:../../../prototypes/conventions/retire-a-convention.org][retire-a-convention]]. It opens with no
+build and reads mock data only. The page marks each server gap this journey names.
 
 * Entities composed
 

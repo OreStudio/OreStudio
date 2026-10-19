@@ -83,11 +83,9 @@ only.
 
 * Prototype
 
-No prototype exists yet. The story
-[[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of
-conventions]] draws one in =doc/prototypes/conventions/=. The search is also a
-panel in the prototypes of the other journeys, and the prototype for this journey
-is the full screen.
+A clickable prototype draws this journey: [[file:../../../prototypes/conventions/find-a-convention-by-its-terms/][prototype]], with its design note
+[[file:../../../prototypes/conventions/find-a-convention-by-its-terms.org][find-a-convention-by-its-terms]]. It opens with no
+build and reads mock data only. The page marks each server gap this journey names.
 
 * Entities composed
 

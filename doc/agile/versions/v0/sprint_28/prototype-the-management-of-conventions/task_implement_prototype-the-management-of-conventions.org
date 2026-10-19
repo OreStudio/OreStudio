@@ -26,11 +26,11 @@ A person can see, from clickable prototypes, how conventions are managed. Each p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of conventions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -149,3 +149,5 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Four journeys are written, each with a wireframe and a coverage table: find a convention by its terms, name a convention set, retire a convention and decide a convention change. The owner agreed the catalogue first. The approver role exists, and the missing piece is an approval kind for a convention. Two captures hold the server gaps that no story holds.

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 353B80C3-FAEA-4BA5-884B-678D6FD6B230
+:END:
+#+title: Decide a convention change prototype
+#+description: A four step journey in the Requests area: the queue of requests a Market Risk approver may decide, one change read as old term beside new term, the decision, and the outcome.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:conventions:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+| Item          | Where                                      |
+|---------------+--------------------------------------------|
+| Prototype     | [[file:decide-a-convention-change/][the prototype]] |
+| Gemini review | none                                       |
+| Group         | [[file:index.org][Conventions prototypes]]       |
+
+* Summary
+
+This prototype argues how the second person decides a convention write. The change panel shows the old value beside the new one, because a request that shows only the new value cannot be decided. The queue never lists a request that the person raised, and a person who cannot decide sees only their own requests. A decline needs a comment. It answers to
+[[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention change]].
+
+It is throwaway. It reads no server, opens with no build and no session, and
+draws mock data. The page marks each place where the server does not provide
+what the screen needs. A toggle in the bar at the foot hides those notes.
+
+* Detail
+
+** The steps
+
+1. *The queue.* A list of requests with search, a filter on the kind of change, sort and a pager. The four kinds of change are a change to one document, a new document, a delete and a new set.
+2. *The change.* The reason, the change as a table of old and new terms, what it reaches, and the rule. A new set shows its name, purpose, description and documents.
+3. *The decision.* Approve, decline or hold, and a comment. A decline without a comment is refused under the field.
+4. *The outcome.* The state and what happened to the record.
+
+** The UX rules it follows
+
+The screen follows [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]],
+[[id:166B2D77-6D04-47D5-A651-5431E1F2E082][UX Language]] and
+[[id:6743F6E3-578C-4E4B-9DD6-D5A0DF6734C8][UI design principles]]. It is one
+screen with a rail of steps. A list has a search, a sort, a pager that starts at
+15 rows and states for loading, no records, no match and an error. A write that
+a second person must approve says Propose and not Save, and the dialog says that
+nothing changes until the other person approves. An action a person may not take
+is not drawn. The access mark says Editable or Read only, and no permission code
+appears on a screen. A reason is a choice from a list. A time is relative, with
+the exact time on hover. A key is monospace, and an empty value is a muted dash.
+Colour carries meaning only: green, amber and red are status, grey is inactive,
+and violet marks a classification. No native select is used. Every string is in
+English only; the product needs French and Portuguese before a screen ships.
+
+** States, by query string
+
+=?step=0..3=, =?actor=j.ruiz|t.brandt|m.okafor|k.mori=, =?request=r1|r2|r3|r4=, =?decision=approve|decline|hold=, =?comment=.
+
+** What is fake
+
+The four requests are fixtures. No approval kind exists for a convention and a request holds no pending change, so the change panel reads fixture data. Nothing applies an approved change.
+
+** Where the code lives
+
+=doc/prototypes/conventions/decide-a-convention-change/=. The page is =index.html= with its own
+=prototype.js=. =management.css= and =management.js= are shared by copy with the
+other three management prototypes, and the inventory check keeps the copies
+identical. The icons are the Fluent paths of the application's own icon set.
+
+** Verdict
+
+Open. The question for review is whether the four kinds of change belong in one queue or in four. The Requests area is the one place for every kind of request, so the prototype draws one.
+
+* See also
+
+- [[id:7D36D29C-426D-4E7E-9D16-F46364B9818E][Decide a convention change]] — the journey this prototype answers.
+- [[file:index.org][Conventions prototypes]] — the group page.
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the method and the rules.

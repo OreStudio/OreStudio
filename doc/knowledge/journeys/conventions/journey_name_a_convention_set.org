@@ -100,11 +100,9 @@ terms of each document in words so that the person can tell the documents apart.
 
 * Prototype
 
-No prototype exists yet. The story
-[[id:7A76B61E-DAE9-4187-AE07-98A175F907E2][Prototype the management of
-conventions]] draws one in =doc/prototypes/conventions/=. The report side of the
-choice is already drawn in the two report prototypes, and they draw a fixture
-list.
+A clickable prototype draws this journey: [[file:../../../prototypes/conventions/name-a-convention-set/][prototype]], with its design note
+[[file:../../../prototypes/conventions/name-a-convention-set.org][name-a-convention-set]]. It opens with no
+build and reads mock data only. The page marks each server gap this journey names.
 
 * Entities composed
 

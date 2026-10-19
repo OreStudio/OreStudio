@@ -135,8 +135,11 @@ about the server and are recorded in /What is missing/.
 
 Conventions are named convention sets: a set carries a name, a purpose and a
 description, a system holds few of them, and a report binds one by choosing it.
-Authoring a set is its own UX, and its prototype is deferred to its own work. It
-is not in this MR, and nothing here draws it. The decision, and the gaps that
+Authoring a set is its own journey,
+[[id:EDAA4AE6-6F35-49DA-BE5C-C2B2B67AE4E4][Name a convention set]], and its
+prototype is
+[[file:../../prototypes/conventions/name-a-convention-set/][Name a convention set]].
+Nothing here draws it. The decision, and the gaps that
 block it, are recorded in the story
 [[file:../../../agile/versions/v0/sprint_28/name-the-convention-sets-a-report-chooses/story.org][Name
 the convention sets a report chooses]] (DE6C0BDA-D12A-4E31-AA86-C323F5A7E016).

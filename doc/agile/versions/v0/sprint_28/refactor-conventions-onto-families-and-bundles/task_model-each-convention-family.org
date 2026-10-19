@@ -28,9 +28,9 @@ Every convention family is declared once, in its own entity, and carries only it
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | The per-family entities, the generated registry, the generated per-family apply and read, and the ORE boundary package are merged. The aggregate =conventions_document= remains, and the two run import paths no longer use it. |
+| Now          | The aggregate, the whole-document service, the six bulk functions and the model section are deleted in step 4. The package is the only shape that crosses the ORE boundary. |
 | Waiting on   | Nothing.                               |
-| Next         | Delete the aggregate, which moves its tests onto the package and removes the whole-document service, the six generated apply and read functions, the mapper pair and the model section in one wave. |
+| Next         | Step 5: generate the bundle service per family, one translation unit each, and add the codegen unit budget gate. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -86,7 +86,8 @@ task and name that file in the Command column.
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
 | Families in the generated registry | 26 | =grep -c 'convention_write_mode::' projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp= | 8d7c38449c |
-| Corpus files the package writes as the document writes them | 72 | =./build/output/linux-clang-release-ninja/publish/bin/ores.ore.core.tests 'a_corpus_file_leaves_the_package_as_the_document_leaves_it'= | dfd9acee52 |
+| Corpus files the package carries one row per element for | 72 | =ctest -R ores.ore.core.tests --test-dir build/output/linux-clang-release-ninja= | ebcf187bca |
+| Lines the aggregate deletion removed, net | -1077 across 53 files | =git diff --shortstat origin/main...ebcf187bca= | ebcf187bca |
 
 * Notes
 - Step 1 is merged: the export of all seventy-two corpus files is pinned by
@@ -116,7 +117,7 @@ task and name that file in the Command column.
   kind this bundle covers, because that one table carries every kind. A test
   proves the bundle read carries the same rows as the document read, which is
   the bridge the next step removes.
-- Step 3 is in review as #3562. =ores::ore::domain::conventions_package= holds
+- Step 3 merged as #3562. =ores::ore::domain::conventions_package= holds
   one bundle and the FX projection, and =split_conventions= and
   =join_conventions= are the two directions over it. The package is now what
   crosses the boundary: the run store and the run configuration operations both
@@ -135,6 +136,15 @@ task and name that file in the Command column.
   only when the same package is joined, which is why the store never returns
   one: the three entities it is a projection of are the store, and the read
   does not assemble them.
+- Step 4 deleted the aggregate. =conventions_document=, =conventions_document_service=,
+  the six bulk apply and read functions, =conventions_mapper::map= and =reverse=,
+  and the model section no longer exist. The importer returns a package, the
+  exporter writes one, and the diff compares two packages by their family rows.
+  =apply_staged_family= lives in the bundle header, and =conventions_save_result=
+  is gone because =conventions_apply_result= carried the only field callers read.
+  The tests read a family through =rows_of=, which names the family and its type.
+  The pinned export digests judge the package, so the test that compared the
+  package with the aggregate was removed with the aggregate.
 - The per-family translation units are not generated yet, so the staged apply
   and the payload read each compile one branch per family in a single unit.
 - The pin holds. Comparing the service's hand-written calls with the generated

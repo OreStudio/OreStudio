@@ -256,6 +256,13 @@ via its "Verifies task" field.
 | 12 | #3564: the diff drops every row of the =convention= family, so a changed deposit, swap or FRA convention is no longer compared. | conventions_diff.cpp | Declined, proved | In the package the =convention= family holds only tenor basis swap central rows. Every other kind packs into a family of its own, as it did in the aggregate. Two tests pin it: a document differs from itself by nothing, and a changed deposit id is reported. |
 | 13 | #3564: the diff compares raw payload strings and the sequence, so a different row or field order gives a false difference. | conventions_diff.cpp | Declined | Both sides come from the one =split_conventions=, whose order is the document order, and reflection writes fields in declaration order. The aggregate comparison was order sensitive in the same way. |
 | 14 | #3564: =apply= now fills the caller-facing result directly, so nothing before the loop may write it. | conventions_bundle_service.cpp | Accepted, no change | Nothing before the loop writes the result. |
+| 15 | #3566: the dispatch names =std::size_t= and does not include =<cstddef>=. | convention_family_dispatch.cpp | Fixed | The template and the generated unit include it. |
+| 16 | #3566: the budget match is =domain::<type>= with no namespace, so another namespace's =swap= could collide. | check_translation_unit_budget.py | Declined | The refdata services name the types unqualified inside their own namespace, so anchoring on =refdata::domain::= would miss them. A collision gives a loud false positive, not a silent pass. |
+| 17 | #3566: only =.cpp= and =.inc= files are measured, so a reflecting inline template in a header escapes. | check_translation_unit_budget.py | Fixed | The scan covers headers and the two include trees. It finds no new file over budget. |
+| 18 | #3566: a comment containing =rfl::= makes a file count as reflecting. | check_translation_unit_budget.py | Declined | It can only raise a count in a file that also names families, and the failure is loud. |
+| 19 | #3566: the dispatch looks a family up by a linear scan of 26 rows. | convention_family_dispatch.cpp | Declined | Nothing here is hot, and a map would add a type for no gain. |
+| 20 | #3566: make sure the ceiling of 26 on the mapper is not forgotten. | check_translation_unit_budget.py | Accepted, recorded | The capture split-the-conventions-package-per-family owns it, and the ceiling check fails if the file improves without the entry being lowered. |
+| 21 | #3566: the 96 benchmark rows may be stray. | benchmarks/xml/history.tsv | Accepted, explained | They are the one run the gate asked for after the codec move changed the XML code. |
 
 * Result
 

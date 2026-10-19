@@ -8,7 +8,7 @@
 #+filetags: :size_the_compiler_cache_per_variant:sprint_28:v0:
 #+owner: marco
 #+branch: feature/implement-size-the-compiler-cache-per-variant
-#+pr:
+#+pr: 3571
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3571][#3571]] | [ci] Size the compiler cache per variant and stop the gcc debug build |
 
 * Review
 

@@ -8,7 +8,7 @@
 #+filetags: :feeds_run_as_their_owning_tenant:sprint_28:v0:
 #+owner: marco
 #+branch: feature/feeds-run-as-their-owning-tenant
-#+pr:
+#+pr: 3577
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
@@ -89,7 +89,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3577][#3577]] | [synthetic] Restore every tenant's feeds and run them as their owning tenant |
 
 * Review
 

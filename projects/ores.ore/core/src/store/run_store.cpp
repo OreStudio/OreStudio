@@ -176,9 +176,7 @@ void store_document(const context& ctx,
         const auto applied =
             refdata::service::conventions_bundle_service(ctx).apply(d.conventions->bundle);
         r.world_conventions_kept = applied.world_kept;
-        for (const auto& fx : d.conventions->fx)
-            r.fx_conventions_skipped.push_back(fx.pair.base_currency + "-" +
-                                               fx.pair.quote_currency + "-FX-CONVENTIONS");
+        r.fx_conventions_skipped = domain::skipped_fx_conventions(*d.conventions);
     }
 }
 

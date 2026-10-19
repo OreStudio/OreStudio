@@ -24,6 +24,7 @@
 #include "ores.ore.core/export.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/service/conventions_bundle.hpp"
+#include <string>
 #include <vector>
 
 namespace ores::ore::domain {
@@ -64,6 +65,12 @@ ORES_ORE_CORE_EXPORT conventions_package split_conventions(const conventions& v)
  * because a family that cannot be written must not be written as nothing.
  */
 ORES_ORE_CORE_EXPORT conventions join_conventions(const conventions_package& p);
+
+/**
+ * @brief The names of the FX conventions the package carries and the store
+ * does not keep.
+ */
+ORES_ORE_CORE_EXPORT std::vector<std::string> skipped_fx_conventions(const conventions_package& p);
 
 }
 

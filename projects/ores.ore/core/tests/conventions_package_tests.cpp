@@ -121,6 +121,24 @@ TEST_CASE("the_package_carries_one_row_for_every_document_element", tags) {
 
         // The one document element that is three families.
         CHECK(rows_of("convention") == document.TenorBasisSwap.size());
+
+        // Every other family packs one row per element, so the rows outside
+        // the three tenor basis swap families equal all the elements.
+        const std::size_t elements =
+            document.AverageOIS.size() + document.BMABasisSwap.size() + document.BondYield.size() +
+            document.CDS.size() + document.CmsSpreadOption.size() +
+            document.CommodityForward.size() + document.CommodityFuture.size() +
+            document.CrossCurrencyBasis.size() + document.CrossCurrencyFixFloat.size() +
+            document.Deposit.size() + document.FRA.size() + document.Future.size() +
+            document.FxOption.size() + document.IborIndex.size() + document.InflationSwap.size() +
+            document.IntradayPowerLoad.size() + document.OIS.size() +
+            document.OvernightIndex.size() + document.Swap.size() + document.SwapIndex.size() +
+            document.TenorBasisTwoSwap.size() + document.Zero.size() +
+            document.ZeroInflationIndex.size();
+        const std::size_t outside_tenor_basis_swap =
+            package.bundle.rows.size() - rows_of("convention") -
+            rows_of("tenor_basis_swap_pay_receive") - rows_of("tenor_basis_swap_long_short");
+        CHECK(outside_tenor_basis_swap == elements);
         ++checked;
     }
 

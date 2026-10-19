@@ -3281,4 +3281,12 @@ conventions join_conventions(const conventions_package& p) {
     return r;
 }
 
+std::vector<std::string> skipped_fx_conventions(const conventions_package& p) {
+    std::vector<std::string> names;
+    names.reserve(p.fx.size());
+    for (const auto& fx : p.fx)
+        names.push_back(fx_convention_id(fx.pair.base_currency, fx.pair.quote_currency));
+    return names;
+}
+
 }

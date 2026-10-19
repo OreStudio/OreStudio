@@ -324,9 +324,7 @@ void store_document(nats_client& owners,
     if (code == "conventions") {
         auto committed = save_conventions(owners, *d.conventions);
         r.world_conventions_kept = std::move(committed.world_kept);
-        for (const auto& fx : d.conventions->fx)
-            r.fx_conventions_skipped.push_back(fx.pair.base_currency + "-" +
-                                               fx.pair.quote_currency + "-FX-CONVENTIONS");
+        r.fx_conventions_skipped = domain::skipped_fx_conventions(*d.conventions);
         return;
     }
     if (code == "curve_configuration")

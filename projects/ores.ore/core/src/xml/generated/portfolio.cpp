@@ -27,21 +27,21 @@ namespace {
 
 constexpr std::uint8_t no_text = 0xFF;
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto append_to(void* container, void** slot) -> void {
-    auto* vector = static_cast<std::vector<T>*>(container);
-    vector->emplace_back();
-    *slot = &vector->back();
+    auto* held = static_cast<Container*>(container);
+    held->emplace_back();
+    *slot = &held->back();
 }
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto count_of(const void* container) -> std::size_t {
-    return static_cast<const std::vector<T>*>(container)->size();
+    return static_cast<const Container*>(container)->size();
 }
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto at_of(const void* container, std::size_t index) -> const void* {
-    return &(*static_cast<const std::vector<T>*>(container))[index];
+    return &(*static_cast<const Container*>(container))[index];
 }
 
 const char* currency_code_spellings[] = {
@@ -398,9 +398,13 @@ const char* ore_trade_type_spellings[] = {"CompositeTrade",
 const char* trs_notional_type_spellings[] = {"PeriodReset", "DailyReset", "Fixed", nullptr};
 
 constexpr vector_ops composite_trade_components_trade_arena_ops{
-    &append_to<component_trade>, &count_of<component_trade>, &at_of<component_trade>};
+    &append_to<component_trade, std::deque<component_trade>>,
+    &count_of<component_trade, std::deque<component_trade>>,
+    &at_of<component_trade, std::deque<component_trade>>};
 constexpr vector_ops composite_trade_components_sub_trade_arena_ops{
-    &append_to<component_sub_trade>, &count_of<component_sub_trade>, &at_of<component_sub_trade>};
+    &append_to<component_sub_trade, std::deque<component_sub_trade>>,
+    &count_of<component_sub_trade, std::deque<component_sub_trade>>,
+    &at_of<component_sub_trade, std::deque<component_sub_trade>>};
 constexpr vector_ops component_sub_trade_cbo_data_arena_ops{
     &append_to<cbodata>, &count_of<cbodata>, &at_of<cbodata>};
 constexpr vector_ops component_sub_trade_total_return_swap_data_arena_ops{
@@ -412,9 +416,13 @@ constexpr vector_ops component_sub_trade_contract_for_difference_data_arena_ops{
     &count_of<total_return_swap_data>,
     &at_of<total_return_swap_data>};
 constexpr vector_ops derivative_trade_arena_ops{
-    &append_to<component_trade>, &count_of<component_trade>, &at_of<component_trade>};
+    &append_to<component_trade, std::deque<component_trade>>,
+    &count_of<component_trade, std::deque<component_trade>>,
+    &at_of<component_trade, std::deque<component_trade>>};
 constexpr vector_ops trs_underlying_data_trade_arena_ops{
-    &append_to<component_trade>, &count_of<component_trade>, &at_of<component_trade>};
+    &append_to<component_trade, std::deque<component_trade>>,
+    &count_of<component_trade, std::deque<component_trade>>,
+    &at_of<component_trade, std::deque<component_trade>>};
 constexpr vector_ops component_trade_cbo_data_arena_ops{
     &append_to<cbodata>, &count_of<cbodata>, &at_of<cbodata>};
 constexpr vector_ops portfolio_ids_portfolio_id_ops{
@@ -808,9 +816,13 @@ constexpr vector_ops st_free_style_currency_vector_value_ops{
 constexpr vector_ops knock_out_swap_data_leg_data_ops{
     &append_to<leg_data>, &count_of<leg_data>, &at_of<leg_data>};
 constexpr vector_ops trs_underlying_data_derivative_ops{
-    &append_to<derivative>, &count_of<derivative>, &at_of<derivative>};
+    &append_to<derivative, std::deque<derivative>>,
+    &count_of<derivative, std::deque<derivative>>,
+    &at_of<derivative, std::deque<derivative>>};
 constexpr vector_ops trs_underlying_data_sub_trade_ops{
-    &append_to<component_sub_trade>, &count_of<component_sub_trade>, &at_of<component_sub_trade>};
+    &append_to<component_sub_trade, std::deque<component_sub_trade>>,
+    &count_of<component_sub_trade, std::deque<component_sub_trade>>,
+    &at_of<component_sub_trade, std::deque<component_sub_trade>>};
 constexpr vector_ops trs_underlying_data_portfolio_index_trade_data_ops{
     &append_to<portfolio_index_trade_data>,
     &count_of<portfolio_index_trade_data>,
@@ -824,12 +836,18 @@ constexpr vector_ops trs_funding_data_notional_type_ops{
 constexpr vector_ops trs_funding_data_leg_data_ops{
     &append_to<leg_data>, &count_of<leg_data>, &at_of<leg_data>};
 constexpr vector_ops cbo_bond_basket_data_trade_ops{
-    &append_to<component_trade>, &count_of<component_trade>, &at_of<component_trade>};
+    &append_to<component_trade, std::deque<component_trade>>,
+    &count_of<component_trade, std::deque<component_trade>>,
+    &at_of<component_trade, std::deque<component_trade>>};
 constexpr vector_ops cbo_bond_basket_data_sub_trade_ops{
-    &append_to<component_sub_trade>, &count_of<component_sub_trade>, &at_of<component_sub_trade>};
+    &append_to<component_sub_trade, std::deque<component_sub_trade>>,
+    &count_of<component_sub_trade, std::deque<component_sub_trade>>,
+    &at_of<component_sub_trade, std::deque<component_sub_trade>>};
 constexpr vector_ops cbotranches_tranche_ops{
     &append_to<cbotranche>, &count_of<cbotranche>, &at_of<cbotranche>};
-constexpr vector_ops portfolio_trade_ops{&append_to<trade>, &count_of<trade>, &at_of<trade>};
+constexpr vector_ops portfolio_trade_ops{&append_to<trade, std::deque<trade>>,
+                                         &count_of<trade, std::deque<trade>>,
+                                         &at_of<trade, std::deque<trade>>};
 
 // A row that indexes an arena names a record, and the edge that closes
 // a type cycle is always a back edge, so the record is defined later in

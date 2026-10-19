@@ -27,21 +27,21 @@ namespace {
 
 constexpr std::uint8_t no_text = 0xFF;
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto append_to(void* container, void** slot) -> void {
-    auto* vector = static_cast<std::vector<T>*>(container);
-    vector->emplace_back();
-    *slot = &vector->back();
+    auto* held = static_cast<Container*>(container);
+    held->emplace_back();
+    *slot = &held->back();
 }
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto count_of(const void* container) -> std::size_t {
-    return static_cast<const std::vector<T>*>(container)->size();
+    return static_cast<const Container*>(container)->size();
 }
 
-template <typename T>
+template <typename T, typename Container = std::vector<T>>
 auto at_of(const void* container, std::size_t index) -> const void* {
-    return &(*static_cast<const std::vector<T>*>(container))[index];
+    return &(*static_cast<const Container*>(container))[index];
 }
 
 const char* independent_amount_type_spellings[] = {"FIXED", nullptr};

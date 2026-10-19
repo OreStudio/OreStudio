@@ -245,6 +245,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_report_instance_health_request::nats_subject,
         group,
         [rih](ores::nats::message msg) { rih->get_report_instance_health(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(count_report_definitions_by_health_request::nats_subject,
+                                        group,
+                                        [rih](ores::nats::message msg) {
+                                            rih->count_report_definitions_by_health(std::move(msg));
+                                        }));
 
     // ----------------------------------------------------------------
     // Report error events. The list screen counts a run's problems

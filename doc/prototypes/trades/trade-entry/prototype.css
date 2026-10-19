@@ -809,3 +809,12 @@ dialog .dialog-body { padding: 1rem; overflow-y: auto; max-height: 62vh; }
     border-radius: var(--radius-chip); padding: .3rem .55rem; font: inherit; font-size: .85rem;
 }
 .app input:disabled, .app select:disabled, dialog input:disabled { opacity: .5; cursor: not-allowed; }
+
+/* the line under a title, sortable headers, the event chart's axis, a static value in a dialog */
+.head .id .meta{display:inline-flex;gap:.4rem;margin-left:.6rem;vertical-align:middle;font-family:var(--sans)}
+.grid th button.sort{background:none;border:none;padding:0;color:inherit;font:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}
+.grid th button.sort:hover{color:var(--ink)}
+.axis{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.62rem;color:var(--ink-faint);margin-bottom:.3rem}
+.static{padding:.3rem 0;color:var(--ink-dim)}
+.withclear{display:flex;gap:.4rem;align-items:center}.withclear>input,.withclear>select{flex:1}
+.rowtools{display:flex;gap:.5rem;margin-top:.5rem}

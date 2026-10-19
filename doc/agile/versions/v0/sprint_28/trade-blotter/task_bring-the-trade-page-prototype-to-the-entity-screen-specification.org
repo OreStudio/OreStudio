@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 21E7C1F3-8657-4869-8C7C-EDA18F343DC5
+:END:
+#+title: Task: Bring the trade page prototype to the entity screen specification
+#+description: Fix the differences the review of the trade page prototype recorded, and carry the shared fixes to the four prototypes that share common.js.
+#+type: task
+#+level: s1
+#+filetags: :trade-blotter:sprint_28:v0:
+#+owner: marco
+#+branch: feature/trade-blotter
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: jolly_knuth
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Fix the eighteen differences recorded in the review task's notes, so the trade page prototype follows doc/knowledge/ui/entity_screen_specification.org. Apply the decisions: the lifecycle event becomes a workflow with its own address, Book a similar trade leaves the Workflows menu, the child table dialog gains Add a row and Remove, the page title is the trade code, and a trade history entry offers no Revert.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- Each of the eighteen differences is fixed, or recorded with a reason.
+- The shared common.js is identical in the prototypes that share it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+** What changed, 2026-10-19
+
+The numbers are those of the review in the task "Check the trade prototypes
+against the entity screen specification".
+
+| # | Fix |
+|---+-----|
+| 1 | The list reads =trading.v1.trade_summaries.list= with =book_id_one_of=, state, counterparty, type, search and =trade_date_from= and =_to=. A date range is drawn. The =server=today= mode keeps =trades.list= with a trade id filter |
+| 2 | Every card the reader may not change shows Read only, including the links cards |
+| 3 | Book and State are fixed fields that name the workflow that changes them. Values that exist are combo boxes, dates are date inputs, and optional fields have Clear |
+| 4 | =ref()=, =ccyRef()=, =calendarRef()=, =moneyRef()= and =tradeLink()= in =common.js= draw each reference as a link with its flag. =bond_issue= and the netting set link |
+| 5 | The party roles card draws =person()=, with the photo |
+| 6 | One line under the title: the identifier, the state, and the two versions. The structure moved to the booking card as a field |
+| 7 | The page has no stale strip. The Refresh tooltip gives the time. The list shows the strip only when the news names a trade that is off the page |
+| 8 | A tab switches in place and puts its address in the history, so a save and the stale mark stay. Back returns to the earlier tab |
+| 9 | The chart draws hour bars up to two days and day bars after, every bucket including the empty ones, and the first and last time. One emblem marks the newest version of each record |
+| 10 | The identifiers, party roles and additional fields have entries of their own, and each entry names its record |
+| 11 | An empty list says there are no trades and links to Book a trade |
+| 12 | Headers sort. The request line states the order, =updated_at= descending by default |
+| 13 | The page, size, search, filters and order are in the address. The sizes add 100 |
+| 14 | The page has loading, error and a refused History tab |
+| 15 | Recording a lifecycle event is a page with its own address and trail. Book a similar trade is a header button, not a menu line |
+| 16 | The child table dialog has Add a row and Remove |
+| 17 | =trade-page.org= says Book a trade is the Add of the list |
+| 18 | The footer pills state the client, the server and the environment. The role is out of the top bar |
+
+The decisions applied: the page title is the trade code, and a trade history
+entry offers no Revert. The specification still lacks a line for which
+permission shows each trade tab, and the prototype still draws every tab.
+
+Checked in headless Chrome at =6b0451ee62= plus this change. The nine pages of
+the five prototypes load without a console error. Scripted runs of the list, the
+edit-then-History flow, the lifecycle workflow, the empty state and the stale
+state pass. The scripts are not kept.
+
+=common.js= is identical in all five prototype folders and =prototype.css= got
+the same appended rules. The other four prototypes were not reviewed against the
+specification. They get the shared =timeline=, header and footer changes only.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

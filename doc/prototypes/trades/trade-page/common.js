@@ -74,7 +74,7 @@ function person(username) {
     const p = PEOPLE[username];
     if (!p) return h('span', { class: 'muted' }, 'Someone outside your view');
     const label = p.service ? p.name : p.name + ' (' + username + ')';
-    return h('span', { class: 'person' }, avatar(username, 's'),
+    return h('span', { class: 'person', 'data-text': label }, avatar(username, 's'),
         p.service ? label : h('a', { href: '#', 'data-ref': 'person:' + username }, label));
 }
 /* The signed-in person decides what is drawn: a control that is not allowed is not drawn. */
@@ -85,6 +85,20 @@ const CAN = {
     reader: {}
 }[ROLE];
 const ME = { trader: 'ada.lovelace', operations: 'grace.hopper', reader: 'tomas' }[ROLE];
+
+/* ---------- references ----------
+ * A value that names another record is a link to that record's page, with the
+ * record's flag where it has one. The text a link carries is kept in data-text so
+ * that an edit dialog can read the value back. */
+const FLAGS = { EUR: '🇪🇺', USD: '🇺🇸', GBP: '🇬🇧', CHF: '🇨🇭', JPY: '🇯🇵', TARGET: '🇪🇺', GBLO: '🇬🇧', USNY: '🇺🇸' };
+function ref(kind, key, text, flag) {
+    return h('a', { class: 'ref', href: '#', 'data-ref': kind + ':' + key, 'data-text': text || key }, flag ? h('span', { class: 'flag' }, flag) : null, text || key);
+}
+const ccyRef = code => ref('currency', code, code, FLAGS[code]);
+const calendarRef = code => ref('calendar', code, code, FLAGS[code]);
+function moneyRef(n, ccy) { return h('span', { 'data-text': money(n, ccy) }, money(n), ' ', ccyRef(ccy)); }
+const tradeLink = (code, text) => h('a', { href: '../trade-page/?trade=' + code, 'data-text': text || code }, text || code);
+const plain = x => x && x.nodeType ? (x.dataset.text || x.textContent) : x;
 
 /* ---------- reference data ---------- */
 const TENANT = 'Acme Corporation';
@@ -158,6 +172,9 @@ const USED_TYPES = ['Swap', 'CrossCurrencySwap', 'Swaption', 'CapFloor', 'FxForw
     'CallableBond', 'EquityOption', 'EquityForward', 'CreditDefaultSwap', 'CompositeTrade'];
 const BOOK_FOR = { swap: 'EMEA-RATES', fx: 'EMEA-FX', credit: 'EMEA-CREDIT', bond: 'EMEA-CREDIT', equity: 'EMEA-EQ', composite: 'EMEA-RATES' };
 const CCYS = ['EUR', 'USD', 'GBP', 'CHF', 'JPY'];
+const DAY_COUNTS = ['30/360', 'ACT/360', 'ACT/365', 'ACT/ACT'];
+const CALENDARS = ['TARGET', 'GBLO', 'USNY'];
+const BOND_ISSUES = ['Acme 3.25 % 2031', 'Acme 2.10 % 2029'];
 
 function buildTrades() {
     const trades = [];
@@ -210,29 +227,29 @@ function instrumentCards(t) {
                     f('notional', 'Notional', t.notional, { ...E, type: 'money' }), f('currency', 'Currency', t.ccy, { ...E, type: 'ccy' }),
                     f('effective_date', 'Effective date', d, { ...E, type: 'date' }), f('maturity_date', 'Maturity date', '2031-09-14', { ...E, type: 'date' }),
                     f('fixed_rate', 'Fixed rate', '2.8500', { ...E, type: 'decimal', unit: '%' }), f('floating_index', 'Floating index', 'EUR-EURIBOR-6M', { ...E }),
-                    f('spread', 'Spread', '0.0000', { ...E, type: 'decimal', unit: '%' }), f('day_count', 'Day count', '30/360', { ...E }),
-                    f('payment_calendar', 'Payment calendar', 'TARGET', { ...E }), f('pay_receive', 'Fixed leg', 'Pay', { ...E }),
-                    f('description', 'Internal description', 'Five year receiver, hedges the Q3 bond issue')
+                    f('spread', 'Spread', '0.0000', { ...E, type: 'decimal', unit: '%' }), f('day_count', 'Day count', '30/360', { ...E, options: DAY_COUNTS }),
+                    f('payment_calendar', 'Payment calendar', 'TARGET', { ...E, type: 'calendar', options: CALENDARS }), f('pay_receive', 'Fixed leg', 'Pay', { ...E, options: ['Pay', 'Receive'] }),
+                    f('description', 'Internal description', 'Five year receiver, hedges the Q3 bond issue', { optional: true })
                 ]
             }, {
                 id: 'legs', title: 'Legs', table: 'swap_leg', version: t.ver, child: true,
                 ...rows(['Leg', 'Type', 'Notional', 'Rate / index', 'Frequency'], [
-                    ['1', 'Fixed', money(t.notional, t.ccy), '2.8500 %', 'Annual'],
-                    ['2', 'Floating', money(t.notional, t.ccy), 'EUR-EURIBOR-6M + 0.00 %', 'Semi-annual']]), economic: true
+                    ['1', 'Fixed', moneyRef(t.notional, t.ccy), '2.8500 %', 'Annual'],
+                    ['2', 'Floating', moneyRef(t.notional, t.ccy), 'EUR-EURIBOR-6M + 0.00 %', 'Semi-annual']]), economic: true
             }];
         case 'fx_vanilla_option_instrument':
             return [{
                 id: 'instrument', title: 'FX vanilla option', table: 'fx_vanilla_option_instrument', version: t.ver,
                 fields: [
-                    f('option_type', 'Option type', 'Call', { ...E }), f('bought_currency', 'Bought currency', 'EUR', { ...E, type: 'ccy' }),
+                    f('option_type', 'Option type', 'Call', { ...E, options: ['Call', 'Put'] }), f('bought_currency', 'Bought currency', 'EUR', { ...E, type: 'ccy' }),
                     f('bought_amount', 'Bought amount', t.notional, { ...E, type: 'money' }), f('sold_currency', 'Sold currency', 'USD', { ...E, type: 'ccy' }),
                     f('sold_amount', 'Sold amount', t.notional * 1.0842, { ...E, type: 'money' }), f('strike', 'Strike', '1.0842', { ...E, type: 'decimal' }),
                     f('expiry_date', 'Expiry date', '2027-01-15', { ...E, type: 'date' }), f('delivery_date', 'Delivery date', '2027-01-19', { ...E, type: 'date' }),
-                    f('exercise_style', 'Exercise style', 'European', { ...E }), f('description', 'Internal description', 'Client hedge')
+                    f('exercise_style', 'Exercise style', 'European', { ...E, options: ['European', 'American', 'Bermudan'] }), f('description', 'Internal description', 'Client hedge', { optional: true })
                 ]
             }, {
                 id: 'premium', title: 'Premium', table: 'fx_option_premium', version: 1, child: true,
-                ...rows(['Currency', 'Amount', 'Payment date'], [['USD', money(112500), '2026-10-10']]), economic: true
+                ...rows(['Currency', 'Amount', 'Payment date'], [[ccyRef('USD'), money(112500), '2026-10-10']]), economic: true
             }, {
                 id: 'exercise_prices', title: 'Exercise prices', table: 'option_exercise_price', version: 1, child: true,
                 ...rows(['Exercise date', 'Strike'], [['2027-01-15', '1.0842']]), economic: true, digestGap: !DIGEST_FIXED
@@ -241,23 +258,23 @@ function instrumentCards(t) {
             return [{
                 id: 'instrument', title: 'Bond', table: 'bond_instrument', version: t.ver,
                 fields: [
-                    f('issue', 'Bond issue', 'Acme 3.25 % 2031', { ref: 'bond_issue' }), f('face_amount', 'Face amount', t.notional, { ...E, type: 'money' }),
+                    f('issue', 'Bond issue', 'Acme 3.25 % 2031', { ref: 'bond_issue', options: BOND_ISSUES }), f('face_amount', 'Face amount', t.notional, { ...E, type: 'money' }),
                     f('currency', 'Currency', t.ccy, { ...E, type: 'ccy' }), f('coupon', 'Coupon', '3.2500', { ...E, type: 'decimal', unit: '%' }),
                     f('maturity_date', 'Maturity date', '2031-08-02', { ...E, type: 'date' }), f('settlement_days', 'Settlement days', '2', { ...E }),
-                    f('day_count', 'Day count', 'ACT/ACT', { ...E }), f('yield_convention', 'Yield convention', 'Street', { ...E }),
-                    f('description', 'Internal description', t.type === 'BondRepo' ? 'Overnight repo against the Acme 2031' : 'Held to maturity')
+                    f('day_count', 'Day count', 'ACT/ACT', { ...E, options: DAY_COUNTS }), f('yield_convention', 'Yield convention', 'Street', { ...E, options: ['Street', 'ISMA', 'Japanese'] }),
+                    f('description', 'Internal description', t.type === 'BondRepo' ? 'Overnight repo against the Acme 2031' : 'Held to maturity', { optional: true })
                 ]
             }, {
                 id: 'legs', title: 'Legs', table: 'bond_leg', version: t.ver, child: true,
-                ...rows(['Leg', 'Type', 'Notional', 'Rate', 'Frequency'], [['1', 'Fixed', money(t.notional, t.ccy), '3.2500 %', 'Annual']]), economic: true
+                ...rows(['Leg', 'Type', 'Notional', 'Rate', 'Frequency'], [['1', 'Fixed', moneyRef(t.notional, t.ccy), '3.2500 %', 'Annual']]), economic: true
             }];
         case 'composite_instrument':
             return [{
                 id: 'instrument', title: 'Composite trade', table: 'composite_instrument', version: t.ver,
-                fields: [f('aggregation', 'Notional aggregation', 'Sum'), f('description', 'Internal description', 'Receiver swap and cap as one package')]
+                fields: [f('aggregation', 'Notional aggregation', 'Sum'), f('description', 'Internal description', 'Receiver swap and cap as one package', { optional: true })]
             }, {
                 id: 'composite_legs', title: 'Legs', table: 'composite_leg', version: t.ver, child: true,
-                ...rows(['Leg', 'Trade', 'Weight'], [['1', 'ACME-100201 Interest rate swap', '1.00'], ['2', 'ACME-100210 Cap or floor', '1.00']]),
+                ...rows(['Leg', 'Trade', 'Weight'], [['1', tradeLink('ACME-100201', 'ACME-100201 Interest rate swap'), '1.00'], ['2', tradeLink('ACME-100210', 'ACME-100210 Cap or floor'), '1.00']]),
                 economic: true, digestGap: !DIGEST_FIXED
             }];
         default:
@@ -266,7 +283,7 @@ function instrumentCards(t) {
                 fields: [
                     f('notional', 'Notional', t.notional, { ...E, type: 'money' }), f('currency', 'Currency', t.ccy, { ...E, type: 'ccy' }),
                     f('start_date', 'Start date', t.date, { ...E, type: 'date' }), f('end_date', 'End date', '2028-' + t.date.slice(5), { ...E, type: 'date' }),
-                    f('description', 'Internal description', '')
+                    f('description', 'Internal description', '', { optional: true })
                 ]
             }];
     }
@@ -283,11 +300,11 @@ function otherCards(t) {
         },
         roles: {
             id: 'roles', title: 'Party roles', table: 'trade_party_role', version: 1, child: true,
-            columns: ['Role', 'Party'], rows: [['Executing trader', 'ada.lovelace'], ['Counterparty contact', cpty(t.cp).name]]
+            columns: ['Role', 'Party'], rows: [['Executing trader', person('ada.lovelace')], ['Counterparty contact', ref('counterparty', t.cp, cpty(t.cp).name)]]
         },
         portfolios: {
             id: 'portfolios', title: 'Portfolios', table: 'trade_portfolio', version: 1, child: true,
-            columns: ['Portfolio'], rows: [[t.product === 'fx' ? 'FX flow' : 'Rates and credit']]
+            columns: ['Portfolio'], rows: [[ref('portfolio', t.product === 'fx' ? 'FX flow' : 'Rates and credit')]]
         },
         additional: {
             id: 'additional', title: 'Additional fields', table: 'trade_additional_field', version: 1, child: true,
@@ -305,6 +322,17 @@ function historyOf(t) {
         id: 'a1', at: day(t.ver * 6 + 4, 9, 41), kind: first === 'draft_capture' ? 'booked' : 'booked', activity: first, version: 1, ext: 1, actor: 'ada.lovelace',
         reason: 'trade.client_request', note: first === 'draft_capture' ? 'Recorded from a phone call, awaiting counterparty details' : 'Booked from the confirmation',
         diffs: [['trade_type', '', t.type], ['counterparty', '', cpty(t.cp).name], ['book', '', book(t.book).name], ['notional', '', money(t.notional, t.ccy)]]
+    });
+    entries.push({
+        id: 'c1', at: day(t.ver * 6 + 4, 9, 42), kind: 'booked', activity: 'draft_capture', record: 'Identifiers', what: 'Identifiers recorded', version: 1, ext: 1, actor: 'ada.lovelace',
+        reason: 'trade.client_request', note: '', diffs: [['firm_trade_id', '', t.code]]
+    }, {
+        id: 'c2', at: day(t.ver * 6 + 4, 9, 43), kind: 'booked', activity: 'draft_capture', record: 'Party roles', what: 'Party roles recorded', version: 1, ext: 1, actor: 'ada.lovelace',
+        reason: 'trade.client_request', note: '', diffs: [['executing_trader', '', 'ada.lovelace']]
+    });
+    if (t.ver >= 3) entries.push({
+        id: 'c3', at: day(t.ver * 3 - 0.2, 12, 10), kind: 'amended', activity: 'amendment_reference', record: 'Additional fields', what: 'Additional field added', version: 2, ext: 1, actor: 'ada.lovelace',
+        reason: 'trade.client_request', note: 'EMIR reporting flag', diffs: [['regulatory_reporting', '', 'EMIR']]
     });
     if (t.ver >= 2) entries.push({
         id: 'a2', at: day(t.ver * 5, 14, 12), kind: 'amended', activity: 'amendment_reference', version: 2, ext: 1, actor: 'ada.lovelace',
@@ -345,12 +373,11 @@ function shell(opts) {
     const menu = h('nav', { class: 'menu', 'aria-label': 'Areas' }, AREAS.map(([a, href]) => h('a', { href, class: a === 'Trades' ? 'on' : '', 'data-ref': href === '#' ? 'area:' + a : false }, a)));
     const top = h('header', { class: 'topbar' }, h('span', { class: 'brand' }, 'ORE Studio'), menu,
         h('span', { class: 'bell', title: 'Notifications' }, '🔔'),
-        h('span', { class: 'me' }, avatar(ME, 's'), PEOPLE[ME].name, h('span', { class: 'access' }, ROLE)));
-    const crumbs = h('nav', { class: 'crumbs', 'aria-label': 'Breadcrumb' },
-        opts.crumbs.flatMap(([label, href], i) => [i ? h('span', { class: 'sep' }, '›') : null, href ? h('a', { href }, label) : h('span', null, label)]));
+        h('span', { class: 'me' }, avatar(ME, 's'), PEOPLE[ME].name));
+    const crumbs = h('nav', { class: 'crumbs', 'aria-label': 'Breadcrumb' }, crumbList(opts.crumbs));
     const main = h('main', { class: 'page' }, crumbs);
     const pills = h('div', { class: 'pills' }, h('span', { class: 'pill' }, 'Tenant ' + TENANT), h('span', { class: 'pill' }, 'Party ' + PARTY),
-        h('span', { class: 'pill' }, 'Prototype build'));
+        h('span', { class: 'pill' }, 'Client prototype'), h('span', { class: 'pill' }, 'Server mock'), h('span', { class: 'pill' }, 'Environment local'));
     const bar = h('div', { class: 'proto-bar' }, h('span', { class: 'label' }, opts.name),
         (opts.states || []).map(([label, change, on]) => h('a', { href: typeof change === 'string' ? change : qs(change), class: on ? 'on' : '' }, label)),
         opts.noRoles ? null : [h('span', { class: 'sep' }, '|'), h('span', { class: 'label' }, 'as'),
@@ -370,14 +397,21 @@ function shell(opts) {
     });
     return main;
 }
+function crumbList(list) {
+    return list.flatMap(([label, href], i) => [i ? h('span', { class: 'sep' }, '›') : null, href ? h('a', { href }, label) : h('span', null, label)]).filter(Boolean);
+}
+function setCrumbs(list, title) {
+    $('.crumbs').replaceChildren(...crumbList(list));
+    if (title) document.title = title + ' — Trades prototype';
+}
 function toast(msg, tone) {
     const old = $('.toast'); if (old) old.remove();
     const t = h('div', { class: 'toast', role: 'status' }, msg);
     document.body.append(t);
     setTimeout(() => t.remove(), 3800);
 }
-function pageHead({ title, lead, id, actions }) {
-    return h('div', { class: 'head' }, h('div', null, h('h1', null, title), id ? h('div', { class: 'id' }, id) : null, lead ? h('p', { class: 'lead' }, lead) : null),
+function pageHead({ title, lead, id, meta, actions }) {
+    return h('div', { class: 'head' }, h('div', null, h('h1', null, title), id || meta ? h('div', { class: 'id' }, id, meta ? h('span', { class: 'meta' }, meta) : null) : null, lead ? h('p', { class: 'lead' }, lead) : null),
         h('div', { class: 'actions' }, actions));
 }
 
@@ -385,7 +419,7 @@ function pageHead({ title, lead, id, actions }) {
 let LOADED = new Date(NOW.getTime() - 4 * 60000);
 function iso(d) { return new Date(d.getTime() + 3600000).toISOString().slice(0, 19) + '+01:00'; }
 function refreshButton({ stale, onClick }) {
-    const b = h('button', { class: 'btn' + (stale ? ' stale pulse' : ''), title: stale ? 'Data changed on the server. Refresh to see it.' : 'Refresh', onclick: onClick }, '↻ Refresh');
+    const b = h('button', { class: 'btn' + (stale ? ' stale pulse' : ''), title: stale ? 'The data changed on the server at ' + iso(NOW) + '. Refresh to read it.' : 'Refresh', onclick: onClick }, '↻ Refresh');
     return h('div', null, b, h('span', { class: 'loaded', title: 'Loaded' }, iso(LOADED)));
 }
 function workflowMenu(items) {
@@ -399,7 +433,7 @@ function workflowMenu(items) {
     document.addEventListener('click', e => { if (!e.target.closest('.wf')) list.hidden = true; });
     return h('div', { class: 'wf' }, btn, list);
 }
-const PAGE_SIZES = [15, 25, 50];
+const PAGE_SIZES = [15, 25, 50, 100];
 function pager({ offset, limit, total, onChange }) {
     const last = Math.max(0, Math.floor((total - 1) / limit) * limit);
     const from = total ? offset + 1 : 0, to = Math.min(total, offset + limit);
@@ -432,12 +466,18 @@ function select(options, value, onchange) {
 
 /* ---------- cards and fields ---------- */
 function showValue(fd) {
+    if (fd.node) return fd.node;
+    if (fd.value === '' || fd.value == null) return dash();
     if (fd.type === 'money') return money(fd.value);
     if (fd.type === 'decimal' && fd.unit) return fd.value + ' ' + fd.unit;
+    if (fd.type === 'ccy') return ccyRef(fd.value);
+    if (fd.type === 'calendar') return calendarRef(fd.value);
+    if (fd.ref) return ref(fd.ref, fd.value, fd.value);
     return ivalue(fd.value);
 }
-function tabs(list, current, hrefFor) {
-    return h('nav', { class: 'tabs', role: 'tablist' }, list.map(([id, label]) => h('a', { href: hrefFor(id), class: id === current ? 'on' : '', role: 'tab' }, label)));
+function tabs(list, current, hrefFor, onSelect) {
+    return h('nav', { class: 'tabs', role: 'tablist' }, list.map(([id, label]) => h('a', { href: hrefFor(id), class: id === current ? 'on' : '', role: 'tab',
+        onclick: onSelect ? e => { e.preventDefault(); onSelect(id); } : false }, label)));
 }
 function econMark(fd) { return fd.economic ? h('span', { class: 'econ', title: 'The model declares this field economic: a change moves the external version.' }, 'economic') : null; }
 function gapMark(card) {
@@ -466,14 +506,26 @@ function timeline(entries, { isService, flash } = {}) {
     function draw() {
         wrap.replaceChildren();
         const shown = entries.filter(e => !(hideSystem && PEOPLE[e.actor] && PEOPLE[e.actor].service)).slice().sort((a, b) => b.at.localeCompare(a.at));
-        const days = {};
-        for (const e of shown) { const k = e.at.slice(0, 10); (days[k] = days[k] || []).push(e); }
-        const buckets = Object.entries(days).sort((a, b) => a[0].localeCompare(b[0]));
-        const chart = h('div', { class: 'chart', role: 'img', 'aria-label': 'Events over time' }, buckets.map(([day, list]) => {
-            const counts = {}; list.forEach(e => counts[e.kind] = (counts[e.kind] || 0) + 1);
-            return h('div', { class: 'bar', title: day + ': ' + list.length, onclick: () => { const t = wrap.querySelector('[data-day="' + day + '"]'); if (t) t.scrollIntoView({ block: 'center' }); } },
+        const HOUR = 3600000, DAY = 86400000, OFF = 3600000;
+        const ms = e => new Date(e.at).getTime();
+        const times = shown.map(ms);
+        const lo = times.length ? Math.min(...times) : 0, hi = times.length ? Math.max(...times) : 0;
+        const step = hi - lo > 2 * DAY ? DAY : HOUR;
+        const keyOf = b => new Date(b).toISOString().slice(0, step === DAY ? 10 : 13);
+        const buckets = [];
+        if (shown.length) for (let b = Math.floor((lo + OFF) / step) * step; b <= hi + OFF; b += step) buckets.push({ start: b, key: keyOf(b), list: [] });
+        for (const e of shown) { const b = buckets.find(x => x.key === keyOf(ms(e) + OFF)); if (b) b.list.push(e); }
+        const jump = mid => {
+            const near = shown.slice().sort((a, b) => Math.abs(ms(a) + OFF - mid) - Math.abs(ms(b) + OFF - mid))[0];
+            const el = near && wrap.querySelector('[data-entry="' + near.id + '"]');
+            if (el) { el.scrollIntoView({ block: 'center' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1500); }
+        };
+        const chart = h('div', { class: 'chart', role: 'img', 'aria-label': 'Events over time' }, buckets.map(b => {
+            const counts = {}; b.list.forEach(e => counts[e.kind] = (counts[e.kind] || 0) + 1);
+            return h('div', { class: 'bar', title: b.list.length ? b.key.replace('T', ' ') + (step === HOUR ? ':00' : '') + ': ' + b.list.length : false, onclick: () => jump(b.start + step / 2) },
                 Object.entries(counts).map(([k, n]) => h('i', { class: 'k-' + k, style: 'height:' + n * 18 + 'px', title: KINDS[k] + ': ' + n })));
         }));
+        const axis = shown.length ? h('div', { class: 'axis' }, h('span', null, shown[shown.length - 1].at.slice(0, 16).replace('T', ' ')), h('span', null, shown[0].at.slice(0, 16).replace('T', ' '))) : null;
         const kinds = {}; shown.forEach(e => kinds[e.kind] = (kinds[e.kind] || 0) + 1);
         const legend = h('div', { class: 'legend' }, Object.entries(kinds).map(([k, n]) => h('span', null, h('i', { class: 'k-' + k }), KINDS[k] + ' ' + n)),
             h('span', { class: 'sp', style: 'flex:1' }),
@@ -488,21 +540,21 @@ function timeline(entries, { isService, flash } = {}) {
             const det = e.diffs && e.diffs.length ? h('details', { class: 'det' }, h('summary', null, 'Details'), h('div', { class: 'diff' }, e.diffs.map(([n, o, v]) => [
                 o !== '' ? h('div', { class: 'dl old' }, h('span', { class: 'sign' }, '−'), h('span', { class: 'fname' }, n), h('span', null, o)) : null,
                 h('div', { class: 'dl new' }, h('span', { class: 'sign' }, '+'), h('span', { class: 'fname' }, n), h('span', null, v))]))) : h('span', { class: 'faint small' }, 'No changes');
-            rail.append(h('div', { class: 'entry' + (e.current ? ' cur' : '') + (flash === e.id ? ' flash' : '') },
+            rail.append(h('div', { class: 'entry' + (e.current ? ' cur' : '') + (flash === e.id ? ' flash' : ''), 'data-entry': e.id },
                 h('div', { class: 'at', title: e.at.replace('T', ' ') }, e.at.slice(11, 19)),
                 h('div', { class: 'dot' }, h('i', { title: e.current ? 'Current version' : '' })),
                 h('div', { class: 'main' }, avatar(e.actor, 'm'), h('div', null,
                     h('div', { class: 'line1' }, chip(KINDS[e.kind], e.kind === 'cancelled' ? 'bad' : e.kind === 'event' ? 'flow' : e.kind === 'booked' ? 'acc' : 'warn'),
-                        h('b', null, a ? a.label : e.activity), e.noVersion ? chip('no version', '', 'This entry moves neither version.') : chip('v' + e.version, 'v'),
+                        h('b', null, e.what || (a ? a.label : e.activity)), e.noVersion ? chip('no version', '', 'This entry moves neither version.') : chip((e.record || 'Trade') + ' v' + e.version, 'v'),
                         a && a.economic && a.real ? chip('economic', 'acc', 'Moves the external version') : null,
                         a && a.confirmable ? chip('confirmable', '', 'A new confirmation is issued') : null,
                         e.economic && e.ext ? chip('external v' + e.ext, 'v') : null,
                         PEOPLE[e.actor] && PEOPLE[e.actor].service ? h('span', null, PEOPLE[e.actor].name) : person(e.actor),
                         h('span', { class: 'faint small' }, REASON_CODES.find(r => r[0] === e.reason) ? REASON_CODES.find(r => r[0] === e.reason)[1] : e.reason),
-                        e.current ? h('span', { class: 'cur-emblem', title: 'Current version' }, '●') : null),
+                        null),
                     e.note ? h('div', { class: 'note' }, e.note) : null, det))));
         }
-        wrap.append(chart, legend, rail);
+        wrap.append(chart, axis, legend, rail);
     }
     draw();
     return wrap;

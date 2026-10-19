@@ -60,6 +60,7 @@ story is where it gets built, alongside the wider blotter UI.
 |------+-------+-------+-----+-------------|
 | [[id:9B6C15D0-C393-43FC-AA5C-D33BB0BF0974][Design: recover and re-validate the prior blotter/import analysis]] | BACKLOG | | | Re-read the prior blotter/import design analysis (Data Import Session and Workflow Partial-Success plan), re-establish its connection to workspaces (Track 2: a temporary holding location for trades -- the Pending Book -- before promotion into the Live workspace), and produce an updated design reflecting the current codebase state before implementation is scoped. |
 | [[id:D474C495-9628-4E8C-B8F6-5432ABD1F504][Check the trade prototypes against the entity screen specification]] | STARTED | 2026-10-19 | | Check each trade prototype against the entity screen specification and fix the differences, starting with the trade page, then book a trade, the structure page, the ORE portfolio and trade entry. |
+| [[id:21E7C1F3-8657-4869-8C7C-EDA18F343DC5][Bring the trade page prototype to the entity screen specification]] | STARTED | 2026-10-19 | | Fix the differences the review of the trade page prototype recorded, and carry the shared fixes to the four prototypes that share common.js. |
 
 * Decisions
 

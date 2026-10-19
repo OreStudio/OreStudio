@@ -104,8 +104,7 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         field: 'report_type',
         history: 'Report Type',
         labelKey: 'reporting.fields.report_type',
-        kind: { kind: 'text', max: 100 },
-        fixed: true,
+        kind: { kind: 'choice', options: ['risk'] },
         means: { key: 'reporting.means.reportType', values: ['risk'] },
     },
     {
@@ -120,7 +119,6 @@ const DEFINITION_FIELDS: readonly FieldSpec[] = [
         history: 'Concurrency Policy',
         labelKey: 'reporting.fields.concurrency_policy',
         kind: { kind: 'choice', options: ['skip', 'queue', 'fail'] },
-        fixed: true,
         means: { key: 'reporting.means.concurrencyPolicy', values: ['skip', 'queue', 'fail'] },
     },
     {

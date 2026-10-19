@@ -3610,6 +3610,7 @@ export const en: SourceCatalogue = {
             component_index: 'Index',
         },
         choices: {
+            report_type: { risk: 'Risk report' },
             pre_processing: { execute: 'Execute', substitute: 'Substitute' },
             post_processing: { execute: 'Execute', ignore: 'Ignore' },
             concurrency_policy: { skip: 'Skip', queue: 'Queue', fail: 'Fail' },

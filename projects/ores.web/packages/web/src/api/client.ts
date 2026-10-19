@@ -422,6 +422,8 @@ function selectionBody(selection: FeedSelection): Record<string, unknown> {
 /** The definition fields the edit form offers, and so the only ones a save may change. */
 export interface ReportEdit {
     readonly description: string;
+    readonly report_type: string;
+    readonly concurrency_policy: string;
     readonly schedule_expression: string;
     readonly is_official: boolean;
     readonly pre_processing: string;

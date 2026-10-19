@@ -3637,6 +3637,7 @@ const pt: SourceCatalogue = {
             component_index: 'Índice',
         },
         choices: {
+            report_type: { risk: 'Relatório de risco' },
             pre_processing: { execute: 'Executar', substitute: 'Substituir' },
             post_processing: { execute: 'Executar', ignore: 'Ignorar' },
             concurrency_policy: { skip: 'Ignorar', queue: 'Pôr em fila', fail: 'Falhar' },

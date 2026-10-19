@@ -728,6 +728,8 @@ function definitionRowOf(
 /** The fields the edit form offers, and the only ones a save may change. */
 const editSchema = z.object({
     description: z.string().max(2000),
+    report_type: z.string().trim().min(1).max(100),
+    concurrency_policy: z.string().trim().min(1).max(100),
     schedule_expression: z.string().trim().min(1).max(200),
     is_official: z.boolean(),
     pre_processing: z.string().max(2000),
@@ -744,7 +746,7 @@ const editBodySchema = z.object({
 /**
  * The write the edit form makes, rebuilt from the read.
  *
- * The form offers six fields and the record has eighteen, so the write is
+ * The form offers eight fields and the record has eighteen, so the write is
  * assembled from the definition just read and only the offered fields are
  * replaced. A save therefore cannot blank a field the screen does not show,
  * whatever the browser sends. The version is the one the form was drawn from,
@@ -760,10 +762,10 @@ function writeOf(
         name: text(definition['name']),
         party_id: text(definition['party_id']),
         description: change.description,
-        report_type: text(definition['report_type']),
+        report_type: change.report_type,
         fsm_state_id: nullableText(definition['fsm_state_id']),
         schedule_expression: change.schedule_expression,
-        concurrency_policy: text(definition['concurrency_policy']),
+        concurrency_policy: change.concurrency_policy,
         scheduler_job_id: nullableText(definition['scheduler_job_id']),
         run_grant_id: nullableText(definition['run_grant_id']),
         pre_processing: change.pre_processing,

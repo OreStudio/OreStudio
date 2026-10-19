@@ -800,6 +800,8 @@ describe('one report definition', () => {
                 version: 3,
                 change: {
                     description: 'Audit trail, month end',
+                    report_type: 'risk',
+                    concurrency_policy: 'queue',
                     schedule_expression: '0 30 8 * * ?',
                     is_official: false,
                     pre_processing: 'none',
@@ -825,7 +827,7 @@ describe('one report definition', () => {
             report_type: 'risk',
             fsm_state_id: null,
             schedule_expression: '0 30 8 * * ?',
-            concurrency_policy: 'forbid',
+            concurrency_policy: 'queue',
             scheduler_job_id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
             run_grant_id: null,
             pre_processing: 'none',
@@ -846,6 +848,8 @@ describe('one report definition', () => {
             version: 3,
             change: {
                 description: '',
+                report_type: 'risk',
+                concurrency_policy: 'forbid',
                 schedule_expression: '0 0 9 * * ?',
                 is_official: true,
                 pre_processing: 'none',
@@ -868,6 +872,8 @@ describe('one report definition', () => {
             version: 3,
             change: {
                 description: '',
+                report_type: 'risk',
+                concurrency_policy: 'forbid',
                 schedule_expression: '0 0 9 * * ?',
                 is_official: true,
                 pre_processing: 'none',

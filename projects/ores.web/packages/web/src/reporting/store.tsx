@@ -44,7 +44,7 @@ export const REPORTS_EVENTS = { component: 'reporting', entity: 'report_definiti
 export const REPORTING = 'reporting';
 
 /**
- * The six fields an edit writes, from the record the form was filled with.
+ * The eight fields an edit writes, from the record the form was filled with.
  *
  * The field table also holds the fields a save cannot change, so the write is
  * narrowed here: the server rebuilds the rest of the record from the read it
@@ -53,6 +53,8 @@ export const REPORTING = 'reporting';
 function editOf(row: Readonly<Record<string, unknown>>): ReportEdit {
     return {
         description: String(row['description'] ?? ''),
+        report_type: String(row['report_type'] ?? ''),
+        concurrency_policy: String(row['concurrency_policy'] ?? ''),
         schedule_expression: String(row['schedule_expression'] ?? ''),
         is_official: row['is_official'] === true,
         pre_processing: String(row['pre_processing'] ?? ''),

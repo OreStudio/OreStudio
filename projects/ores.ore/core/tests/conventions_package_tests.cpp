@@ -197,3 +197,41 @@ TEST_CASE("every_family_the_package_names_is_one_the_registry_names", tags) {
     // exercises is a family the package has never been shown to carry.
     CHECK(seen == registry);
 }
+
+// The central convention family holds only the tenor basis swap rows, because
+// every other kind packs into a family of its own. The difference therefore
+// still sees a changed deposit, which is what these two cases pin.
+TEST_CASE("the_difference_of_a_document_with_itself_is_empty", tags) {
+    int walked = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        const auto document = load(path);
+        if (!conventions_mapper::unmodelled(document).empty())
+            continue;
+
+        ++walked;
+        INFO(path.string());
+        CHECK(conventions_difference(document, document, path.string()).empty());
+    }
+
+    CHECK(walked > 0);
+}
+
+TEST_CASE("the_difference_reports_a_changed_non_tenor_convention", tags) {
+    int changed = 0;
+
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+        auto document = load(path);
+        if (document.Deposit.empty() || !conventions_mapper::unmodelled(document).empty())
+            continue;
+
+        auto edited = document;
+        static_cast<std::string&>(edited.Deposit.front().Id) += "-CHANGED";
+
+        ++changed;
+        INFO(path.string());
+        CHECK_FALSE(conventions_difference(document, edited, path.string()).empty());
+    }
+
+    CHECK(changed > 0);
+}

@@ -239,6 +239,9 @@ via its "Verifies task" field.
 | 9 | #3562: the skipped FX convention name was spelled by hand in the run store and in the run configuration operations, where the mapper already owned the name. | run_store.cpp, run_configuration_operations.cpp | Fixed | =skipped_fx_conventions= builds the list from a package, and both callers use it. |
 | 10 | #3562: the row count test checked five of twenty-three families by name. | conventions_package_tests.cpp | Fixed | The test now compares every row outside the three tenor basis swap families with the sum of all other elements in the document. |
 | 11 | #3562: =ores.ore.core= links =ores.refdata.core= publicly because the package header exposes =conventions_bundle=. | CMakeLists.txt | Accepted, recorded | The bundle is the boundary's own type. The link goes private again if the bundle moves to the api component. |
+| 12 | #3564: the diff drops every row of the =convention= family, so a changed deposit, swap or FRA convention is no longer compared. | conventions_diff.cpp | Declined, proved | In the package the =convention= family holds only tenor basis swap central rows. Every other kind packs into a family of its own, as it did in the aggregate. Two tests pin it: a document differs from itself by nothing, and a changed deposit id is reported. |
+| 13 | #3564: the diff compares raw payload strings and the sequence, so a different row or field order gives a false difference. | conventions_diff.cpp | Declined | Both sides come from the one =split_conventions=, whose order is the document order, and reflection writes fields in declaration order. The aggregate comparison was order sensitive in the same way. |
+| 14 | #3564: =apply= now fills the caller-facing result directly, so nothing before the loop may write it. | conventions_bundle_service.cpp | Accepted, no change | Nothing before the loop writes the result. |
 
 * Result
 

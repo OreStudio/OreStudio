@@ -29,9 +29,9 @@ and it has nothing to do with XML, so it stands on its own.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | Probably moot, and not measured. The mappers that formatted the line are deleted. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Measure the import path once. Close this task if no per-record formatting shows. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -61,6 +61,15 @@ task and name that file in the Command column.
 |      |       |         |        |
 
 * Notes
+
+The investigation blamed the hand-written mappers for the cost. Those mappers
+went with the codec moves. On main at =7515c50292=, a search of
+=projects/ores.ore/core/src= and =projects/ores.ore/service/src= finds no log
+line that serialises a record. The remaining per-record trace lines in the
+conventions files stream a single id, inside the logging macro. That is a
+reading of the code, not a measurement. The first step is a profile of
+=import_portfolio_with_context= and the conventions import at default log
+level.
 
 * Test Scenarios
 

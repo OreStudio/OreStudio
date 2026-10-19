@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ so it is the test of whether the table shape generalises.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -77,7 +77,13 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3489][#3489]] | [ore] Read and write pricing engines through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3532][#3532]] | [ore] Generate the curve configuration table |
+| [[https://github.com/OreStudio/OreStudio/pull/3544][#3544]] | [ore] Read and write the curve configuration through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3545][#3545]] | [ore] Generate the stress testing table |
+| [[https://github.com/OreStudio/OreStudio/pull/3547][#3547]] | [ore] Generate the run document table |
+| [[https://github.com/OreStudio/OreStudio/pull/3548][#3548]] | [ore] Read and write the run document through the codec |
+| [[https://github.com/OreStudio/OreStudio/pull/3563][#3563]] | [ore] Read and write today's market through the codec |
 
 * Review
 
@@ -86,3 +92,14 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+This task was done inside the reference data task. Its PRs are listed there.
+
+All five families are on the codec. Curve configuration landed in [[https://github.com/OreStudio/OreStudio/pull/3532][#3532]] and
+[[https://github.com/OreStudio/OreStudio/pull/3544][#3544]]. Pricing engines landed in [[https://github.com/OreStudio/OreStudio/pull/3489][#3489]]. The ORE run document landed in
+[[https://github.com/OreStudio/OreStudio/pull/3547][#3547]] and [[https://github.com/OreStudio/OreStudio/pull/3548][#3548]]. Today's market landed in [[https://github.com/OreStudio/OreStudio/pull/3563][#3563]].
+
+Stress testing is the exception to the acceptance wording. Its table was
+generated in [[https://github.com/OreStudio/OreStudio/pull/3545][#3545]] and the harness proves it, but nothing in the product
+reads the stress test XML, so there is no projection to write. The old stress
+testing mapper had no caller and was deleted. The census records this.

@@ -8,12 +8,12 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/generate-tables-for-every-document-family
-#+pr: 3440
+#+pr: 3574
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -28,11 +28,11 @@ disagree.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -61,10 +61,11 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-| Families generated | 7 of the corpus's 20 root elements | =./projects/ores.ore/scripts/regenerate_xml_bindings.sh= | =49af9884de= |
-| Corpus documents bound | 296 of 1,623 | =ores.ore.core.tests "[ore][xml]"= | =49af9884de= |
-| Suite size | 530 cases, 63,607 assertions | =ores.ore.core.tests "[ore][xml]"= | review fix |
-| Generator determinism | two runs, different hash seeds, identical | =build/scripts/check_xml_bindings_drift.py= | review fix |
+| Families with a table | 13 supported, 7 unused, over 20 root elements | =python3 build/scripts/check_xml_family_coverage.py= | =7515c50292= |
+| Generator determinism | tables match the schemas, generator deterministic | =python3 build/scripts/check_xml_bindings_drift.py= | =7515c50292= |
+
+The earlier rows for corpus documents bound and suite size described a tree with
+7 families. They are removed, not updated, because nothing re-measured them.
 
 * Notes
 
@@ -83,6 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3574][#3574]] | [agile] Reconcile the open XML tasks with the tree |
 | [[https://github.com/OreStudio/OreStudio/pull/3440][#3440]] | [ore] Generate one family's records and tables from its schema |
 
 * Review
@@ -206,3 +208,17 @@ All four are corrected above. The money vocabulary is the one that still needs
 work: every family generated so far that carries money takes it from
 =xs:decimal=, which is the schema deciding the kind, and the investigation says
 the schema must not decide it.
+
+* Closing check
+
+Measured on main at =7515c50292=. The census script reports 13 supported
+families and 7 unused, over 20 corpus root elements. The generated directory
+holds one table per supported family. The drift check passes.
+
+The 7 unused families have no table by decision. The census checks that none
+gains one. The acceptance line "every complex type the corpus reaches has a
+table" holds for the families the product reads.
+
+One point is still open. The exact-decimal list, the money vocabulary, is still
+an argument to the generator. The schema does not decide it. The review above
+named this, and it is a known limit, not a defect in the shipped tables.

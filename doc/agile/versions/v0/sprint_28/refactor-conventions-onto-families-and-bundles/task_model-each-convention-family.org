@@ -8,7 +8,7 @@
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
 #+branch: feature/model-each-convention-family
-#+pr: 3562
+#+pr: 3564
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -210,6 +210,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3564][#3564]] | [ore] Delete the conventions aggregate and the whole-document service |
 | [[https://github.com/OreStudio/OreStudio/pull/3562][#3562]] | [ore] Split the conventions document into a bundle of families |
 | [[https://github.com/OreStudio/OreStudio/pull/3554][#3554]] | [refdata] Read a family's rows as the payloads the wire carries |
 | [[https://github.com/OreStudio/OreStudio/pull/3542][#3542]] | [refdata] Apply a conventions bundle in the caller's transaction |

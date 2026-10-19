@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: 08AF99AB-425F-43C3-A07E-72ACDB1BB17F
+:END:
+#+title: Change how a product is priced prototype
+#+description: Changing one product of a pricing engine configuration: the reach, the difference before and after, and the choice between changing the shared configuration and making a copy for one report.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:change-how-a-product-is-priced/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype draws the change of one product row as the Record screen standard draws an amend: the record page, the Edit dialog with a change reason, the stale-version refusal and the History tab with Revert. The one dialog adds three things the standard leaves open, because the configuration is shared: the *reach*, the *difference* and the *scope choice*.
+
+The page answers to the journey [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
+
+* Detail
+
+** The question the screen answers
+
+"The desk says my Bermudan swaption price is off, so I want to price it another way, and I want to know what else that moves." A product row belongs to a configuration that several reports bind. A change to it is a change to all of them, and a person who owns one report may not own the others. The dialog says so before anything is typed, shows the difference as the history will draw it, and offers a copy for one report.
+
+** States and switches
+
+- =?bound=0|1|4=: how many reports bind the configuration. With none the dialog says the change reaches no run. With one, *Change this configuration* is selected. With four, *Make a copy for this report* is selected, because the safe choice is the default when others are affected.
+- =?conflict=1=: the first save is refused as a stale version, with Reload, as the standard says for a 409.
+- =?config=c1|c2|c3&open=<product type>= opens the dialog on a product.
+- Changing the model marks the engine for review. A pair not known to work is marked, never refused.
+- A setting the new pair does not take is shown as *will be dropped* with a *Drop* tick, and a setting the pair usually needs is shown as *usually needed* with an *Add* tick. Nothing is dropped or added until the person ticks it.
+
+** The scope choice
+
+*Change this configuration* writes the document and moves the version. *Make a copy for this report* copies the whole configuration with the change, asks for a name, and rebinds only the report the person came from. The other reports keep the configuration they have. The copy and the rebinding are two requests, and no operation makes a copy: the prototype states both.
+
+** What is fake
+
+Every value. The reports are names, because no read lists the reports that bind a configuration. The usual pair and the settings are the same fixture as the authoring prototype. A save writes to the page's memory, marks the row for three seconds, and the History tab then shows the new version. The page cannot say which version of a configuration a run used, because no operation returns it, and it says so in the reach.
+
+** Where the code lives
+
+=doc/prototypes/reporting/change-how-a-product-is-priced/index.html=. One file, plain HTML, CSS and JavaScript, with the style and the script inline, no modules, no fetch and no build step.
+
+** What it argues
+
+- The reach, the difference and the scope choice belong inside one dialog, because the change is one write.
+- A copy for one report is the safe default when more than one report binds the configuration.
+- Nothing is dropped or added by the pair change until the person ticks it.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+- Whether a copy should be a server operation. The page writes two requests and states the gap in between.
+- Whether the history of a configuration should show a change to one product as the change of a row. The document write moves the version of the whole document.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and what each prototype argues.
+- [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — the journey this prototype answers.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list, the page and the dialogs.
+- [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.

@@ -1,0 +1,209 @@
+:PROPERTIES:
+:ID: 386DD47E-DA9E-4EA7-B925-852048EE47B7
+:END:
+#+title: User Journey: See the pricing engines a party holds
+#+description: A market-risk owner or tenant administrator reads the pricing engine configurations the party holds, what each one prices with, which reports bind it, and what it leaves unpriced.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or tenant administrator reads the pricing engine configurations the party holds, what each one prices with, which reports bind it, and what it leaves unpriced.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"Which engine prices my swaptions, and which of my reports use it?" The person
+owns reports for a party. A figure looks wrong, or a new product type is now
+traded, and the question is not about one report. It is about the configuration
+that decides how every report prices a product. The journey is done when the
+person has found the configuration, read the model and the engine it gives each
+product, read which reports bind it, and knows whether any product the party
+trades has no row.
+
+* Actor and trigger
+
+A market-risk owner or a tenant administrator runs this journey. The person acts
+inside their own tenant and reads the configurations their party owns. A
+configuration is party-scoped by row-level security, so nobody sees another
+party's.
+
+The trigger is one of three. A figure disagrees with the desk and the person
+suspects the pricing. A report binds a configuration and the person wants to know
+what is in it. Or a new product type is booked and the person wants to know if
+anything prices it. The journey starts on the list and ends on a configuration's
+page, or on one of the three journeys that change a configuration.
+
+This journey reads. It writes nothing. Adding, changing and importing are the
+journeys it links to.
+
+* Steps
+
+** Step 1: the list
+
+1. *Open the list.* The person opens *Pricing engines* under the reporting area.
+   The screen is a record list as the
+   [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] draws one:
+   breadcrumb, the plural as the title, one sentence, *Refresh* and *Add*, a
+   search, a filter, a paged table, and the four states.
+2. *Read a row.* A row is one configuration: its name, its variant tag, the count
+   of products it covers, the count of reports that bind it, and when it last
+   changed. The variant tag is the ORE file family the configuration came from,
+   such as =AMC=, =SABR= or =delta-gamma=; a configuration with no variant shows a
+   dash.
+3. *Find one.* The search runs on the server over the name and the description.
+   A filter narrows by variant. A second filter, *Used by reports*, shows only
+   the configurations a report binds, or only the ones no report binds.
+4. *Start a change from the list.* *Add* opens
+   [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]].
+   The *Workflows* menu offers
+   [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]].
+
+** Step 2: one configuration
+
+5. *Open the page.* A click opens the record page: the name as the title, the
+   lead line =<variant> · version <n>=, the access mark, and *Edit* and *Delete*
+   for a person who may take them. The tabs are held in the address.
+6. *Read Details.* The name, the description, the variant, and the last-changed
+   line. A configuration carries a link to the reporting configuration row it is
+   bound through, and the page names it, because that row is what a report
+   definition binds.
+7. *Read Products.* One row for each pricing engine type the configuration
+   covers, in =position= order: the product type with its description, the model,
+   the engine, and the count of parameters the row carries. The product type is a
+   code from the pricing engine type vocabulary, and the row shows the instrument
+   type it maps to. The tab offers *Add* under the table and *Edit* on a row, as
+   the standard draws a parts panel.
+8. *Read Parameters.* The settings in three groups: the *global* parameters of
+   the whole document, the *model* parameters of each product and the *engine*
+   parameters of each product. A parameter is a name and a text value. The tab
+   says where each one applies, because the same name can sit in two scopes.
+9. *Read Reports.* The report definitions that bind this configuration, each with
+   a link to its page. The tab states the reach in one sentence: a change to the
+   configuration reaches the next run of each of these reports, and a run
+   already produced keeps what it ran with.
+10. *Read History.* The shared timeline of the configuration and its products,
+    newest first, with *Revert* on any older version, as the standard draws it.
+
+** Step 3: what the configuration leaves unpriced
+
+11. *Read the coverage strip.* Above the Products table, one line states how many
+    of the product types the party trades have a row here. A product type the
+    party trades and the configuration does not cover is named, because a product
+    with no row has no model in a run: the run fails or skips it, and the result
+    is smaller than the book. The strip is a reading, not a fix. It links to
+    *Add* on the Products tab, and to
+    [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]].
+12. *Leave.* The person goes to a report that binds the configuration, or on to
+    change it.
+
+* Screens and wireframes
+
+Two screens: the list, and the record page with five tabs. A journey is one
+screen composed around a goal, so the Products tab carries the coverage strip and
+the Reports tab carries the reach, rather than a separate screen for each.
+
+#+caption: The pricing engines list and one configuration's page: the Products tab with the coverage strip, and the Reports tab.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_see_the_pricing_engines_a_party_holds.png]]
+
+* Prototype
+
+The [[file:../../prototypes/reporting/see-the-pricing-engines-a-party-holds/][see the pricing engines a party holds prototype]] owns this journey, and
+[[file:../../prototypes/reporting/see-the-pricing-engines-a-party-holds.org][its design note]] says what it argues, which states it can reach and what is
+fake. It belongs at =doc/prototypes/reporting/see-the-pricing-engines-a-party-holds/=.
+
+It must draw the list and the record page as the Record screen standard draws
+them, with no layout of its own. The list must show the name, variant, product
+count, report count and last change, a server search, a variant filter and a
+used-by filter, the pager, and the states first load, empty, nothing matches and
+error. The record page must carry Details, Products, Parameters, Reports and
+History. The Products tab must carry the coverage strip with a product type the
+party trades and the configuration does not cover. The Reports tab must state the
+reach. Every value is a fixture and the page says so.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =pricing_model_config= | The configuration: =name=, =description=, =config_variant= and the link to the reporting configuration | [[id:044AB81F-3FEF-4AAC-96FB-D9226B009C62][ores.analytics.pricing_model_config]] |
+| =pricing_model_product= | One row for each product type: =pricing_engine_type_code=, =model=, =engine=, =position= | [[id:BDECF3A4-4A7C-4F64-94C1-A106E215F88D][ores.analytics.pricing_model_product]] |
+| =pricing_model_product_parameter= | One setting: =parameter_scope=, =parameter_name=, =parameter_value=, =position= | [[id:4B17A175-E34F-45A2-AADB-D61517A53578][ores.analytics.pricing_model_product_parameter]] |
+| =pricing_engine_type= | The vocabulary of product types, and the instrument type each maps to | [[id:93F6A725-496B-4BE8-9AC0-BA5BC1B7CAB0][ores.analytics.pricing_engine_type]] |
+| =configuration= | The reporting row a definition binds, of type =pricing_engines= | [[id:6B3D9E27-5C41-4A86-8F19-2E7B0D4C6A53][ores.reporting.configuration]] |
+| =report_configuration= | The slot that binds a configuration to a definition | [[id:7F2C8A41-6E93-4B57-A0D4-3C9E1B5D7826][ores.reporting.report_configuration]] |
+
+The three analytics tables are the three parts of one document. A product and a
+parameter belong to one configuration. The three carry =party_id= and are
+party-scoped.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1, the list | List the configurations, paged and searched | =analytics.v1.pricing_model_configs.list= | exists; the search and variant filter need checking against the list contract |
+| 2, the page | Read the whole document: configuration, products, parameters | =analytics.v1.pricing_engines_documents.get= | exists |
+| 2, Products | List the product types and their instrument types | =analytics.v1.pricing_engine_types.list= | exists |
+| 2, Products | List the products of one configuration | =analytics.v1.pricing_model_products.list= | partial; no read by configuration |
+| 2, Parameters | List the parameters of one configuration | (the parameters subject for =pricing_model_product_parameter=) | partial; no read by configuration |
+| 2, Reports | Read the definitions that bind a configuration | =reporting.v1.report_configurations.list= | partial; no read by configuration id |
+| 2, Reports | Read the reporting row | =reporting.v1.configurations.list_by_configuration_type_code= | exists |
+| 2, History | Read the versions of a configuration and its parts | (the generic history request) | partial; one stream over the parts is missing |
+| 3, coverage | Read the product types the party trades | (no operation) | missing |
+| The screen | Read pricing engines from the browser | (no BFF route) | missing |
+
+* What is missing
+
+1. *A route and a screen.* No BFF route serves pricing engines and no screen
+   reads them. The list and the page are new. The configuration is reachable from
+   the browser today only through the shell.
+2. *Reads of the parts by configuration.* The document read returns the whole
+   document, which is enough for a page. The list of configurations needs a count
+   of products and a count of reports for each row, and no operation returns a
+   count. Until one does, the list reads one page of configurations and the counts
+   come from a second read, or the column is dropped.
+3. *The reports that bind a configuration.* =report_configurations.list= lists
+   the bindings of a definition. Nothing lists the definitions that bind one
+   configuration, which is the question the Reports tab asks and the question
+   [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] asks as
+   "who else is bound". The tab needs the read by configuration id.
+4. *The products the party trades.* The coverage strip compares the configuration
+   with the instrument types of the party's trades. No operation returns the
+   distinct instrument types of a party's book. Until one does, the strip is a
+   fixture and says so.
+5. *A variant is a tag, not a thing.* =config_variant= is free text. The filter
+   offers the values the page has read, and cannot offer a vocabulary.
+6. *No purpose or status.* The record carries a name and a description, and
+   nothing that says a configuration is draft, approved or retired. A person
+   cannot tell the configuration a report should bind from one that is a
+   leftover.
+
+* Related journeys
+
+- [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] — when the party needs a configuration that does not exist
+- [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — when a row is wrong
+- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — when the configuration lives in an ORE file
+- [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] — step 4 binds a pricing engine configuration, and links here once this screen exists
+- [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]] — step 1 names the pricing engines a definition binds, and links here
+- [[id:891DE3CB-2374-4FD9-B7FB-D8892F5174A1][See the reports a party runs]] — the reports this configuration reaches
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the =pricingengine.xml= document and how it maps to these tables
+- [[id:91F2CF85-B743-4CAD-99B3-E635DA075499][Investigation: the ORE report configuration vocabulary]] — who owns each configuration document
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list and the page
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows

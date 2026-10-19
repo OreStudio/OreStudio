@@ -1,0 +1,240 @@
+:PROPERTIES:
+:ID: 0D39E4B7-75FD-480A-A996-2234BCC7BCC8
+:END:
+#+title: User Journey: Author a pricing engine configuration
+#+description: A market-risk owner or tenant administrator builds a pricing engine configuration step by step: the products it covers, the model and engine for each, their parameters, and a check of what the configuration leaves unpriced.
+#+type: user_journey
+#+level: cross
+#+filetags: :knowledge:user_journey:reporting:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+startup: inlineimages
+
+This page documents a [[id:F44766FA-1E9C-416F-849A-E131101B2ECA][user journey]]: A market-risk owner or tenant administrator builds a pricing engine configuration step by step: the products it covers, the model and engine for each, their parameters, and a check of what the configuration leaves unpriced.
+
+A user journey describes what one person is trying to do, before anything is
+built. It is a design document that outlives any sprint, so it names the
+screens, the entity fields each screen shows, and the operations and messages
+each step needs.
+
+* Goal
+
+"I need a configuration that prices what we trade, the way we want it priced."
+The person knows the products the party trades and has a view on how each should
+be priced, but a pricing engine document is a long list of product types, each
+with a model, an engine and settings, and the names are ORE's own. The person
+should not need to know which engines exist or which settings a model needs. The
+journey is done when a configuration is saved that covers the products the
+person chose, with a model, an engine and every setting the pair needs, and the
+person has read what it still leaves unpriced.
+
+* Actor and trigger
+
+A market-risk owner or a tenant administrator runs this journey, inside their own
+tenant, for their own party.
+
+The trigger is a party with no configuration for a set of products, a new
+desk that trades a product type the existing configurations do not cover, or a
+report that needs a variant of an existing configuration that must not move the
+other reports bound to it. The journey starts from *Add* on the list in
+[[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]]
+and ends on the new configuration's page, ready to bind to a report.
+
+The journey writes one configuration, its products and its parameters. It binds
+nothing to a report. Binding is a step of
+[[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]].
+
+* Steps
+
+The journey is a wizard of six steps on the standard steps UI, titled *Author a
+pricing engine configuration*. The rail is drawn from one computed list, and the
+last step is final.
+
+** Step 1: name it and choose where to start
+
+1. *Name the configuration.* The person writes a =name=, a =description= that
+   says what it prices and for whom, and an optional =config_variant= tag. The
+   name must be new in the party; a name in use is refused where it is typed.
+2. *Choose a starting point.* Three choices, one panel: *Start empty*, *Start from
+   a copy of* a configuration the party holds, or *Start from an ORE file*, which
+   hands the person to
+   [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]]
+   and returns with the rows read. A copy carries the products and parameters of
+   the source and nothing else; it does not carry the source's report bindings.
+
+** Step 2: choose the products
+
+3. *Pick the product types.* The panel lists the pricing engine types the system
+   knows, grouped by asset class (rates, FX, credit, equity, commodity), each
+   with its description and the instrument type it maps to. The person ticks the
+   ones the configuration covers. A search runs over the code and the description.
+4. *See what a product is.* A row says in plain words what the code means. A code
+   such as =BermudanSwaption= is not self-evident to everyone who owns a report.
+5. *Start from the party's book.* A button, *Select the products the party trades*,
+   ticks every type the party's trades use. It is offered only when the book can
+   be read, and the panel says so when it cannot.
+6. *Read the count.* The panel states how many types are chosen, and that a type
+   not chosen will have no model in a run.
+
+** Step 3: choose the model and the engine
+
+7. *One row for each chosen type.* Each row has two combo boxes: the *model* and
+   the *engine*. Both are searchable. The engine list narrows to the engines that
+   are known to run the model chosen.
+8. *Take the usual pair.* Each row offers *Use the usual* for its product, which
+   fills the model and the engine most configurations in the system use for it.
+   The pair is a suggestion the person can change, and the row says where the
+   suggestion comes from.
+9. *Say what the pair means.* Beside a row, one sentence says what the pair does
+   in plain words, for example that =LGM= with the =Grid= engine prices a Bermudan
+   swaption by a lattice on a calibrated one-factor model. A pair that is not
+   known to work is marked, never refused: the person may know better than the
+   list.
+10. *Order the rows.* The rows are written in =position= order. The person drags
+    a row, or leaves the order alone.
+
+** Step 4: set the parameters
+
+11. *Three groups.* The *global* parameters of the whole document, then for each
+    product its *model* parameters and its *engine* parameters. A product with no
+    parameter says so.
+12. *Add a setting by name.* Each group offers the settings the pair is known to
+    take, with a note on what the setting means and a usual value, and a way to
+    add a setting by name when the person knows one the list does not. A value is
+    text, because ORE reads text.
+13. *Fill what the pair needs.* A pair such as =LGM= with =Grid= needs
+    calibration settings. The step marks a setting the pair usually needs and the
+    row does not have, as a prompt, not a refusal.
+14. *Read the global settings.* The global group holds document-wide settings
+    such as =ContinueOnCalibrationError=. It states what each one changes for
+    every product.
+
+** Step 5: check it
+
+15. *Coverage.* One table: each product type the party trades, and whether the
+    configuration covers it. A product the party trades and the configuration does
+    not cover is named. The step offers to go back to step 2.
+16. *Completeness.* One table of the rows that look unfinished: a pair that is
+    not known to work, a setting the pair usually needs and the row lacks, and a
+    row whose model or engine is empty.
+17. *Nothing here blocks.* A finding is a statement. The person may save a
+    configuration with findings, and the review step repeats them. The server
+    does not check any of them today, so the screen is the only reader.
+
+** Step 6: review and save
+
+18. *Read it back.* The final step names every value: the name, the products in
+    order with their model and engine, every parameter with its scope, and the
+    findings. It offers no Back, because it is final; the rail goes back.
+19. *Save.* *Save* writes the document in one request. The change reason is
+    =system.new_record=, stated in a note and not asked for. A name that exists is
+    refused and the refusal names it.
+20. *See the result.* The screen opens the new configuration's page. It offers
+    *Bind to a report*, which opens
+    [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] or
+    [[id:87B9678E-2085-4968-8AEA-7184D1384F1D][Change what a report runs]].
+
+* Screens and wireframes
+
+One screen, drawn as six steps on the rail. The rail shows position, not
+readiness, so a step with findings is not marked on the rail; the step 5 table
+carries that state.
+
+#+caption: Author a pricing engine configuration: the rail, and step 3 with a model and an engine for each chosen product.
+#+attr_html: :width 100%
+[[proj:doc/knowledge/journeys/reporting/wireframe_author_a_pricing_engine_configuration.png]]
+
+* Prototype
+
+The [[file:../../prototypes/reporting/author-a-pricing-engine-configuration/][author a pricing engine configuration prototype]] owns this journey, and
+[[file:../../prototypes/reporting/author-a-pricing-engine-configuration.org][its design note]] says what it argues, which states it can reach and what is
+fake. It belongs at
+=doc/prototypes/reporting/author-a-pricing-engine-configuration/=.
+
+It must draw the six steps on the standard steps UI, copied from the first-run
+prototype. Step 3 must carry =?variant=A|B|C= as three readings of the
+model-and-engine step, because that layout is the open question: a table with two
+combo boxes in a row, a card for each product, and a guided walk one product at a
+time. It must show a pair that is not known to work as a mark and not a refusal,
+the coverage table with a product the party trades and the configuration does not
+cover, and the final step reading every value back. It must state that no server
+check stands behind any finding. Every value is a fixture.
+
+* Entities composed
+
+#+ATTR_HTML: :class hug-leading
+| Entity | What it contributes | Model |
+|--------+---------------------+-------|
+| =pricing_model_config= | Step 1: =name=, =description=, =config_variant= | [[id:044AB81F-3FEF-4AAC-96FB-D9226B009C62][ores.analytics.pricing_model_config]] |
+| =pricing_engine_type= | Step 2: the product types, and the instrument type each maps to | [[id:93F6A725-496B-4BE8-9AC0-BA5BC1B7CAB0][ores.analytics.pricing_engine_type]] |
+| =pricing_model_product= | Step 3: =model=, =engine= and =position= for each chosen type | [[id:BDECF3A4-4A7C-4F64-94C1-A106E215F88D][ores.analytics.pricing_model_product]] |
+| =pricing_model_product_parameter= | Step 4: =parameter_scope=, =parameter_name=, =parameter_value= | [[id:4B17A175-E34F-45A2-AADB-D61517A53578][ores.analytics.pricing_model_product_parameter]] |
+
+The three tables are one document, =pricing_engines_document=. The configuration
+is created together with its products and parameters, and the document message
+carries all three as arrays.
+
+* Operations and messages
+
+#+ATTR_HTML: :class hug-leading
+| Step | Operation | Subject | Status |
+|------+-----------+---------+--------|
+| 1, name in use | List the configurations | =analytics.v1.pricing_model_configs.list= | exists |
+| 1, copy | Read the source document | =analytics.v1.pricing_engines_documents.get= | exists |
+| 2, the types | List the product types | =analytics.v1.pricing_engine_types.list= | exists |
+| 2, the book | Read the instrument types the party trades | (no operation) | missing |
+| 3, models and engines | Read the models and engines the system knows | (no operation) | missing |
+| 3, the usual pair | Read the pair other configurations use | (no operation) | missing |
+| 4, known settings | Read the settings a pair takes, with notes and usual values | (no operation) | missing |
+| 5, checks | Check a document before saving | (no operation) | missing |
+| 6, save | Write the document | =analytics.v1.pricing_engines_documents.put= | exists |
+| The screen | Author from the browser | (no BFF route) | missing |
+
+* What is missing
+
+1. *A vocabulary of models and engines.* =model= and =engine= are free text in the
+   table. Nothing returns the models and engines the system knows, so the combo
+   boxes in step 3 have nothing to read. The prototype draws them from a fixture
+   built from the ORE pricing engine files the project holds. A vocabulary read,
+   or two lookup tables, is the first thing to add.
+2. *The pairs that work.* Which engine runs which model is ORE's knowledge, and
+   no table stores it. The narrowing in step 3 and the marked pair both depend on
+   it. A table of known pairs, with the product types each pair prices, would
+   serve both.
+3. *The settings a pair takes.* The same gap as the analytics parameters: a
+   parameter's name, kind, usual value and note live in ORE's documentation and
+   in the files, and no operation returns them. Step 4 draws a text field where it
+   does not know a setting, and a select where the fixture does.
+4. *No check on write.* Nothing validates a document when it is written: not an
+   empty model, not a pair that does not work, not a missing calibration setting.
+   Every finding in step 5 is the screen's own, and the failure arrives in the
+   run. This is the same silence the analytics screen defends against.
+5. *The write is not one transaction.* The document service writes the
+   configuration, then the products, then the parameters in sequence, with no unit
+   of work, so a failure part way leaves a configuration without its parameters.
+   The [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][bundle catalogue]] records it as
+   B3, "wrongly shaped". The screen cannot repair it, and the final step says what
+   it would do after a failed write: read the document back and show what landed.
+6. *The party's book.* Steps 2 and 5 need the instrument types of the party's
+   trades, and no operation returns them.
+7. *A copy has no operation.* The copy is the screen reading a document and
+   writing a new one with new identifiers. Nothing makes a copy on the server.
+
+* Related journeys
+
+- [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] — where this journey starts and ends
+- [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] — the way to start from an ORE file
+- [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] — the way to change one row after the configuration exists
+- [[id:7FBF8F6F-AF26-4E73-85DE-8AF72C7ED0D6][Create a report]] — step 4 binds the configuration this journey saves
+
+* Related knowledge
+
+- [[id:38D55527-A968-41BD-8C51-FFBC184DEC5B][Reporting journeys]] — the group this journey belongs to
+- [[id:A3B7C9E1-4F2D-8A6B-5E1C-9D3F7A0B2E4C][ORE Model Configuration]] — the =pricingengine.xml= schema, and the layers it feeds
+- [[id:BA57E2D2-553B-4A06-9295-E792D1E29487][Bundle catalogue]] — the document write and its shape
+- [[id:D602E114-F896-42CA-893A-841AD6FC3221][User Journeys]] — the index
+
+* See also
+
+- [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
+- [[id:00BA1689-B060-4BD8-BC46-67034D663B7F][UX]] — the standard the screen follows

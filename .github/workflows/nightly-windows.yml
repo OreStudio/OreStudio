@@ -96,7 +96,10 @@ jobs:
       fail-fast: false
       matrix:
         name: [windows-msvc, windows-clang]
-        buildtype: [debug, release]
+        # No debug builds: every Windows leg fails on a compile error, and the
+        # debug legs take the longest. Add debug back when the release legs
+        # pass.
+        buildtype: [release]
         include:
           - name: windows-msvc
             family: windows

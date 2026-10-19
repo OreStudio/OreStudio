@@ -167,7 +167,7 @@ One screen, drawn as six steps on the rail. The rail shows position, not
 readiness, so a step with findings is not marked on the rail; the step 5 table
 carries that state.
 
-#+caption: Author a pricing engine configuration: the rail, the purpose, the coverage against what the reports need, and the submit.
+#+caption: Author a pricing engine configuration: the rail, the purpose, the model and engine of each product, the coverage against what the reports need, and the submit.
 #+attr_html: :width 100%
 [[proj:doc/knowledge/journeys/reporting/wireframe_author_a_pricing_engine_configuration.png]]
 

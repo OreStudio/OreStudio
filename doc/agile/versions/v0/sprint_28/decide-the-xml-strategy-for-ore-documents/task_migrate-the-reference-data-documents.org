@@ -8,7 +8,7 @@
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
 #+branch: feature/project-todays-market
-#+pr:
+#+pr: 3563
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -424,6 +424,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3563][#3563]] | [ore] Read and write today's market through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3456][#3456]] | [ore] Read and write calendar adjustments through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3470][#3470]] | [ore] Read and write currency config through the codec |
 | [[https://github.com/OreStudio/OreStudio/pull/3486][#3486]] | [ore] Delete the netting set XML mapper nothing reads |

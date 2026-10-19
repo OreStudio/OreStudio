@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-17
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -27,11 +27,11 @@ because nothing may depend on the generated binding by then.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Done in the conventions change: the domain, the scripts, the patches and the knowledge page are deleted. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-10-17                               |
 
 * Acceptance
@@ -78,7 +78,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/3565][#3565]] | Read conventions through the codec and remove the generated domain |
 
 * Review
 
@@ -87,3 +87,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The generated domain, the sibling-checkout wiring, the two regeneration
+patches, the golden dataset and the knowledge page are deleted. PR #3565 did
+this together with the conventions move. No product file includes the generated
+domain. The XML suites, the family census and the drift check pass.

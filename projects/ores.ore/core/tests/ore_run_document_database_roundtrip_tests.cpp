@@ -18,7 +18,6 @@
  *
  */
 #include "ores.database/domain/party_scope.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.reporting.core/repository/configuration_repository.hpp"

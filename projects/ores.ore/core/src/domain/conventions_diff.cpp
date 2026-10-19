@@ -145,8 +145,8 @@ std::string conventions_difference(const conventions& original,
     // export may not invent an element the document did not have. This is what
     // catches a category the mapper reads and does not model: the mapper is
     // free to normalise a value, and not free to drop one.
-    const auto from_document = element_counts(save_data(original));
-    const auto from_export = element_counts(save_data(exported));
+    const auto from_document = element_counts(conventions_mapper::write(original));
+    const auto from_export = element_counts(conventions_mapper::write(exported));
     for (const auto& [name, count] : from_document) {
         const auto found = from_export.find(name);
         const int written = found == from_export.end() ? 0 : found->second;

@@ -20,14 +20,17 @@
 #ifndef ORES_ORE_CORE_DOMAIN_CONVENTIONS_PACKAGE_HPP
 #define ORES_ORE_CORE_DOMAIN_CONVENTIONS_PACKAGE_HPP
 
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.ore.core/xml/generated/conventions.hpp"
 #include "ores.refdata.api/messaging/configuration_document_protocol.hpp"
 #include "ores.refdata.core/service/conventions_bundle.hpp"
 #include <string>
 #include <vector>
 
 namespace ores::ore::domain {
+
+/// The codec's record for one ORE conventions document.
+using conventions = xml::generated::conventions::conventions;
 
 /**
  * @brief One ORE conventions document, split at the family boundary.

@@ -21,8 +21,9 @@
 #define ORES_ORE_CORE_DOMAIN_CONVENTIONS_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/export.hpp"
+#include "ores.ore.core/xml/record.hpp"
 #include "ores.refdata.api/domain/average_ois_convention.hpp"
 #include "ores.refdata.api/domain/bma_basis_swap_convention.hpp"
 #include "ores.refdata.api/domain/bond_yield_convention.hpp"
@@ -53,12 +54,13 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::ore::domain {
 
 /**
- * @brief Maps between ORE XML convention types and refdata domain types.
+ * @brief Maps between the codec's convention records and refdata domain types.
  *
  * The mapper normalises all ORE enum aliases (e.g. "F", "Following",
  * "FOLLOWING") to canonical FpML/CDM codes before storing them in the domain
@@ -74,16 +76,18 @@ private:
         return instance;
     }
 
-    // Normalisation helpers — collapse ORE aliases to canonical codes.
-    static std::string normalize_bdc(domain::businessDayConvention v);
-    static std::string normalize_day_counter(domain::dayCounter v);
-    static std::string normalize_frequency(domain::frequencyType v);
-    static std::string normalize_compounding(domain::compounding v);
-    static std::string normalize_date_rule(domain::dateRule v);
-
-    static bool parse_bool(domain::bool_ v);
-
 public:
+    /**
+     * @brief Reads one ORE conventions document into the codec's record.
+     *
+     * @param origin Names the document in the refusal, a file or a service.
+     * @throws std::invalid_argument when the text is not a conventions document.
+     */
+    static conventions read(std::string_view text, std::string_view origin = {});
+
+    /// Writes the record as an ORE conventions document.
+    static std::string write(const conventions& v);
+
     /**
      * @brief The categories the document carries that no entity models, and how
      * many elements each holds.
@@ -95,66 +99,66 @@ public:
      */
     static std::map<std::string, std::size_t> unmodelled(const conventions& v);
 
-    static refdata::domain::zero_convention map_zero(const zeroType& v);
+    static refdata::domain::zero_convention map_zero(const xml::record_reader& v);
 
-    static refdata::domain::deposit_convention map_deposit(const depositType& v);
+    static refdata::domain::deposit_convention map_deposit(const xml::record_reader& v);
 
-    static refdata::domain::swap_convention map_swap(const swapType& v);
+    static refdata::domain::swap_convention map_swap(const xml::record_reader& v);
 
-    static refdata::domain::swap_index_convention map_swap_index(const swapIndexType& v);
+    static refdata::domain::swap_index_convention map_swap_index(const xml::record_reader& v);
 
-    static refdata::domain::future_convention map_future(const futureType& v);
+    static refdata::domain::future_convention map_future(const xml::record_reader& v);
 
-    static refdata::domain::fx_option_convention map_fx_option(const fxOption& v);
+    static refdata::domain::fx_option_convention map_fx_option(const xml::record_reader& v);
 
-    static refdata::domain::average_ois_convention map_average_ois(const averageOISType& v);
+    static refdata::domain::average_ois_convention map_average_ois(const xml::record_reader& v);
 
     static refdata::domain::cross_currency_basis_convention
-    map_cross_currency_basis(const crossCurrencyBasisType& v);
+    map_cross_currency_basis(const xml::record_reader& v);
 
     static refdata::domain::cross_currency_fix_float_convention
-    map_cross_currency_fix_float(const crossCurrencyFixFloatType& v);
+    map_cross_currency_fix_float(const xml::record_reader& v);
 
     static ores::refdata::messaging::tenor_basis_swap_convention_item
-    map_tenor_basis_swap(const tenorBasisSwapType& v);
+    map_tenor_basis_swap(const xml::record_reader& v);
 
     static refdata::domain::tenor_basis_two_swap_convention
-    map_tenor_basis_two_swap(const tenorBasisTwoSwapType& v);
+    map_tenor_basis_two_swap(const xml::record_reader& v);
 
-    static refdata::domain::ois_convention map_ois(const oisType& v);
+    static refdata::domain::ois_convention map_ois(const xml::record_reader& v);
 
-    static refdata::domain::fra_convention map_fra(const fraType& v);
+    static refdata::domain::fra_convention map_fra(const xml::record_reader& v);
 
-    static refdata::domain::ibor_index_convention map_ibor_index(const iborIndexType& v);
+    static refdata::domain::ibor_index_convention map_ibor_index(const xml::record_reader& v);
 
     static refdata::domain::inflation_swap_convention
-    map_inflation_swap(const inflationswapType& v);
+    map_inflation_swap(const xml::record_reader& v);
 
     static refdata::domain::intraday_power_load_convention
-    map_intraday_power_load(const intradayPowerLoad& v);
+    map_intraday_power_load(const xml::record_reader& v);
 
     static refdata::domain::overnight_index_convention
-    map_overnight_index(const overnightIndexType& v);
+    map_overnight_index(const xml::record_reader& v);
 
     static refdata::domain::zero_inflation_index_convention
-    map_zero_inflation_index(const zeroInflationIndexType& v);
+    map_zero_inflation_index(const xml::record_reader& v);
 
-    static refdata::domain::bma_basis_swap_convention map_bma_basis_swap(const bmaBasisSwapType& v);
+    static refdata::domain::bma_basis_swap_convention map_bma_basis_swap(const xml::record_reader& v);
 
-    static ores::refdata::messaging::fx_convention map_fx(const fxType& v);
+    static ores::refdata::messaging::fx_convention map_fx(const xml::record_reader& v);
 
-    static refdata::domain::cds_convention map_cds(const cdsConventionsType& v);
+    static refdata::domain::cds_convention map_cds(const xml::record_reader& v);
 
     static refdata::domain::cms_spread_option_convention
-    map_cms_spread_option(const cmsSpreadOptionType& v);
+    map_cms_spread_option(const xml::record_reader& v);
 
     static refdata::domain::commodity_future_convention
-    map_commodity_future(const commodityFutureType& v);
+    map_commodity_future(const xml::record_reader& v);
 
     static refdata::domain::commodity_forward_convention
-    map_commodity_forward(const commodityForwardType& v);
+    map_commodity_forward(const xml::record_reader& v);
 
-    static refdata::domain::bond_yield_convention map_bond_yield(const bondYield& v);
+    static refdata::domain::bond_yield_convention map_bond_yield(const xml::record_reader& v);
 };
 
 /**

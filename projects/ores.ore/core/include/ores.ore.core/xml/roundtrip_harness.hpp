@@ -19,7 +19,6 @@
 #ifndef ORES_ORE_CORE_XML_ROUNDTRIP_HARNESS_HPP
 #define ORES_ORE_CORE_XML_ROUNDTRIP_HARNESS_HPP
 
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include <filesystem>
 #include <fstream>
@@ -27,6 +26,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -50,10 +50,9 @@ struct roundtrip_outcome {
  * returning empty when they agree.
  *
  * A kind supplies this because equality as parsed documents is not text
- * equality. The binding holds some numbers as text, and the mapper writes them
- * back in its own spelling, so ORE's =t0="0.0"= and our =t0="0"= are the same
- * bound. A generic text comparison would fail on that pair; a rule that
- * ignored text would hide a lost value. Only the kind can say which
+ * equality. The mapper collapses ORE's spellings to its own canonical codes, so
+ * a generic text comparison would fail on a document that lost nothing, and a
+ * rule that ignored text would hide a lost value. Only the kind can say which
  * differences are normalisation and which are loss.
  *
  * The path is handed over so the message can name the file that disagreed.
@@ -83,46 +82,29 @@ struct roundtrip_kind {
 ORES_ORE_CORE_EXPORT std::string first_difference(const std::string& lhs, const std::string& rhs);
 
 /**
- * @brief Compares two parsed documents by the canonical form of each.
+ * @brief Builds a kind from a reader, a writer, a mapper pair and a comparison.
  *
- * The comparison for a kind whose mapper preserves every value in the spelling
- * it was written in. A kind whose mapper normalises a field, because the
- * binding holds it as text and the type holds it as a number, supplies its own
- * comparison instead, so that the normalisation is stated rather than
- * discovered as a failure.
- */
-template <typename Document>
-std::string
-parsed_text_difference(const Document& lhs, const Document& rhs, const std::string& path) {
-    const std::string left = save_data(lhs);
-    const std::string right = save_data(rhs);
-    if (left == right)
-        return {};
-    return path + ": " + first_difference(left, right);
-}
-
-/**
- * @brief Builds a kind from a mapper pair and a comparison.
- *
- * Import loads the file into the ORE binding, maps it to the entities, maps
- * them back and exports. The comparison then decides whether the export, read
- * back in, is the same document as the import, so a mapper is free to normalise
- * a document and is not free to lose a field.
+ * Import reads the file into the codec's record, maps it to the entities, maps
+ * them back and writes. The comparison then decides whether the written
+ * document, read back in, is the same document as the import, so a mapper is
+ * free to normalise a document and is not free to lose a field.
  *
  * The export is read back rather than compared in memory, because a document
- * that cannot survive its own save and load is not a round trip. That cycle is
- * also what proves the binding decodes the text it escapes.
+ * that cannot survive its own write and read is not a round trip. That cycle is
+ * also what proves the codec decodes the text it escapes.
  */
 template <typename Document, typename Mapped>
 roundtrip_kind make_roundtrip_kind(std::string name,
                                    std::string file_prefix,
+                                   Document (*read)(std::string_view, std::string_view),
+                                   std::string (*write)(const Document&),
                                    Mapped (*map)(const Document&),
                                    Document (*reverse)(const Mapped&),
                                    document_comparison<Document> compare) {
     roundtrip_kind kind;
     kind.name = std::move(name);
     kind.file_prefix = std::move(file_prefix);
-    kind.check = [map, reverse, compare](const std::filesystem::path& path) -> roundtrip_outcome {
+    kind.check = [read, write, map, reverse, compare](const std::filesystem::path& path) -> roundtrip_outcome {
         std::ifstream in(path, std::ios::binary);
         if (!in)
             return {false, path.string() + ": cannot be read"};
@@ -131,14 +113,12 @@ roundtrip_kind make_roundtrip_kind(std::string name,
         const std::string content = buffer.str();
 
         try {
-            Document original;
-            load_data(content, original);
+            const Document original = read(content, path.string());
 
             const Mapped mapped = map(original);
             const Document rebuilt = reverse(mapped);
 
-            Document exported;
-            load_data(save_data(rebuilt), exported);
+            const Document exported = read(write(rebuilt), path.string());
 
             const std::string detail = compare(original, exported, path.string());
             if (detail.empty())

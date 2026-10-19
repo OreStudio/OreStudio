@@ -23,16 +23,16 @@
 * Summary
 
 =ores.ore.core= is the engine that moves ORE documents in and out of the
-ORES domain model. It holds the =xsdcpp=-generated bindings for ORE's whole
-XML vocabulary, twelve hand-written mappers between those bindings and the
-=ores.trading= and =ores.refdata= domain types, the importer, the exporter
+ORES domain model. It holds the codec that reads and writes ORE's XML
+vocabulary, the projections and mappers between the codec's records and the
+=ores.trading=, =ores.refdata= and =ores.analytics= domain types, the importer, the exporter
 and the directory round trip, readers for ORE's market data text formats,
 the import planner and directory scanner, and the generated series key
 shape entity with its repository.
 
-The XSD bindings are the largest part of the component by far and are
-produced by a generator outside the build. See
-[[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] before regenerating them.
+The record tables are generated from the vendored schemas by
+=projects/ores.ore/scripts/regenerate_xml_bindings.sh=, and a drift check
+fails when the committed tables differ from what the schemas produce.
 
 * Inputs
 
@@ -52,7 +52,7 @@ produced by a generator outside the build. See
 
 * Entry points
 
-- =include/ores.ore.core/domain/= — the =xsdcpp= bindings and the mappers.
+- =include/ores.ore.core/domain/= — the projections and the mappers.
 - =include/ores.ore.core/xml/= — the importer, the exporter and the round trip.
 - =include/ores.ore.core/market/= — the ORE market data readers and the FX
   quote convention checker.
@@ -94,35 +94,9 @@ into its generated file after the profile's baseline.
 
 * CMake
 
-domain.cpp is 104k lines emitted by xsdcpp from ORE's schemas. It declares
-info tables nothing references and serialization helpers marked
-XSDCPP_MAYBE_UNUSED, a macro that resolves to the unused attribute only under
-__GNUC__. The Windows compilers therefore see them as ordinary unused
-functions and -Werror rejects them; GCC adds a fallthrough and a set-but-unused
-diagnostic of its own. The fix belongs upstream in xsdcpp, so the warnings are
-silenced for that one file rather than the tree.
-
-#+begin_src cmake :name cmake_prologue :implements E0158572-D743-43E2-B5CD-D93BF6223ABA
-set(domain_cpp_warnings "")
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    list(APPEND domain_cpp_warnings "-Wno-unused-const-variable")
-    if(WIN32)
-        list(APPEND domain_cpp_warnings "-Wno-unused-function")
-    endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        list(APPEND domain_cpp_warnings
-            "-Wno-implicit-fallthrough"
-            "-Wno-unused-but-set-variable")
-    endif()
-elseif(MSVC)
-    list(APPEND domain_cpp_warnings "/wd4505")
-endif()
-set_source_files_properties(
-    ${CMAKE_CURRENT_SOURCE_DIR}/domain/domain.cpp
-    PROPERTIES COMPILE_OPTIONS "${domain_cpp_warnings}")
-#+end_src
-
-domain.cpp also needs /bigobj on MSVC.
+The generated record tables and the larger projections are big translation
+units, and MSVC needs /bigobj for them. The flag predates the codec and stays
+until a Windows build shows it is not needed.
 
 #+begin_src cmake :name cmake_finalize :implements FDEE629F-F8BA-4940-AA1B-6671AF332D82
 if(MSVC)

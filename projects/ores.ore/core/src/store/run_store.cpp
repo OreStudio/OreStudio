@@ -22,9 +22,9 @@
 #include "ores.analytics.core/service/pricing_engines_document_service.hpp"
 #include "ores.analytics.core/service/todays_market_document_service.hpp"
 #include "ores.database/repository/document_operations.hpp"
+#include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/pricing_engine_projection.hpp"
 #include "ores.ore.core/domain/run_document_projection.hpp"
 #include "ores.ore.core/domain/todays_market_projection.hpp"
@@ -115,17 +115,6 @@ const document_kind* find_kind(const std::vector<document_kind>& kinds, std::str
     return nullptr;
 }
 
-template <typename Document>
-Document parse_file(const std::string& file, const std::string& content) {
-    Document d;
-    try {
-        domain::load_data(content, d);
-    } catch (const std::exception& e) {
-        throw std::invalid_argument(std::format("{}: {}", file, e.what()));
-    }
-    return d;
-}
-
 /**
  * @brief The configuration documents a run names, parsed and mapped.
  */
@@ -141,7 +130,7 @@ void parse_document(std::string_view code,
                     const std::string& content,
                     parsed_documents& d) {
     if (code == "conventions")
-        d.conventions = domain::split_conventions(parse_file<domain::conventions>(file, content));
+        d.conventions = domain::split_conventions(domain::conventions_mapper::read(content, file));
     else if (code == "curve_configuration")
         d.curves = domain::curve_configuration_projection::map(
             domain::curve_configuration_projection::read(content, file));
@@ -211,7 +200,7 @@ std::string load_document(const context& ctx, const reporting::domain::report_co
     }
     // A package is read from the session's rows alone, so it carries no FX
     // convention, exactly as the store holds none.
-    return domain::save_data(domain::join_conventions(
+    return domain::conventions_mapper::write(domain::join_conventions(
         domain::conventions_package{refdata::service::conventions_bundle_service(ctx).read(), {}}));
 }
 

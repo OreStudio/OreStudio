@@ -209,6 +209,30 @@ auto record_reader::values(std::string_view name) const -> std::vector<std::stri
     return out;
 }
 
+auto record_reader::spellings(std::string_view name) const -> std::vector<std::string> {
+    const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
+    if (f.scalar != scalar_kind::enumeration || f.tokens == nullptr)
+        throw std::runtime_error(std::format(
+            "'{}' of the {} table does not hold enumerated values", name, type_->name));
+    std::vector<std::string> out;
+    if (!bit_is_set(record_, f) || f.repeated == nullptr)
+        return out;
+    const auto count = f.repeated->count(slot_of(record_, f));
+    out.reserve(count);
+    for (std::size_t i = 0; i < count; ++i) {
+        const auto index = *static_cast<const std::int16_t*>(f.repeated->at(slot_of(record_, f), i));
+        if (index < 0)
+            throw std::runtime_error(std::format(
+                "'{}' of the {} table holds a value with no spelling", name, type_->name));
+        for (std::int16_t k = 0; k <= index; ++k)
+            if (f.tokens[k] == nullptr)
+                throw std::runtime_error(std::format(
+                    "'{}' of the {} table holds a value with no spelling", name, type_->name));
+        out.emplace_back(f.tokens[index]);
+    }
+    return out;
+}
+
 auto record_reader::decimals(std::string_view name) const
     -> std::vector<ores::utility::decimal::decimal> {
     const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
@@ -432,6 +456,25 @@ void record_writer::append_value(std::string_view name, std::string_view value) 
     void* slot = nullptr;
     f.repeated->append(slot_of(f), &slot);
     *static_cast<std::string*>(slot) = std::string(value);
+}
+
+void record_writer::append_spelling(std::string_view name,
+                                    std::string_view value,
+                                    std::string_view what) {
+    const auto& f = require_kind(*type_, name, field_kind::repeated_leaf, "a repeated value");
+    if (f.scalar != scalar_kind::enumeration || f.tokens == nullptr)
+        throw std::runtime_error(std::format(
+            "'{}' of the {} table does not hold enumerated values", name, type_->name));
+    for (std::int16_t i = 0; f.tokens[i] != nullptr; ++i) {
+        if (value != f.tokens[i])
+            continue;
+        set_bit(record_, f);
+        void* slot = nullptr;
+        f.repeated->append(slot_of(f), &slot);
+        *static_cast<std::int16_t*>(slot) = i;
+        return;
+    }
+    throw std::runtime_error(std::format("'{}' is not a valid {}", value, what));
 }
 
 void record_writer::append_decimal(std::string_view name,

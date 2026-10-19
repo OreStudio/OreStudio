@@ -22,10 +22,8 @@
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/curve_configuration_projection.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/generated/curve_configuration.hpp"
 #include "ores.ore.core/xml/record_diff.hpp"
-#include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.refdata.core/repository/average_ois_convention_repository.hpp"
 #include "ores.refdata.core/repository/cds_convention_repository.hpp"
@@ -101,11 +99,9 @@ compare_documents(const curve_document& lhs, const curve_document& rhs, const st
 }
 
 
-template <typename Document>
-Document load(const std::string& name) {
-    Document d;
-    load_data(file::read_content(ores::testing::project_root::resolve(example + name)), d);
-    return d;
+conventions load_conventions(const std::string& path) {
+    return conventions_mapper::read(
+        file::read_content(ores::testing::project_root::resolve(path)), path);
 }
 
 const std::string equity_example = "external/ore/examples/Input/curveconfig.xml";
@@ -145,7 +141,7 @@ void write_missing(const ores::database::context& ctx,
 // can resolve them. Only these three kinds are written, because the curves
 // name nothing else.
 void write_conventions(const ores::database::context& ctx) {
-    const auto mapped = split_conventions(load<conventions>("conventions.xml"));
+    const auto mapped = split_conventions(load_conventions(example + "conventions.xml"));
     write_missing(ctx,
                   deposit_convention_repository(),
                   rows_of<ores::refdata::domain::deposit_convention>(mapped, "deposit"));
@@ -160,11 +156,8 @@ void write_conventions(const ores::database::context& ctx) {
 // The inflation and default curves of the equity example name inflation swap
 // and CDS conventions, which the example's own conventions file defines.
 void write_input_conventions(const ores::database::context& ctx) {
-    conventions c;
-    load_data(file::read_content(ores::testing::project_root::resolve(
-                  "external/ore/examples/Input/conventions.xml")),
-              c);
-    const auto mapped = split_conventions(c);
+    const auto mapped =
+        split_conventions(load_conventions("external/ore/examples/Input/conventions.xml"));
     write_missing(
         ctx,
         inflation_swap_convention_repository(),
@@ -307,10 +300,7 @@ TEST_CASE("equity and commodity volatility configurations and the report configu
           tags) {
     ores::testing::scoped_database_helper h;
 
-    conventions c;
-    load_data(file::read_content(ores::testing::project_root::resolve(
-                  "external/ore/examples/Products/Input/conventions.xml")),
-              c);
+    const auto c = load_conventions("external/ore/examples/Products/Input/conventions.xml");
     write_missing(h.context(),
                   commodity_future_convention_repository(),
                   rows_of<ores::refdata::domain::commodity_future_convention>(split_conventions(c),

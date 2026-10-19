@@ -61,7 +61,7 @@ in xsdcpp's own source if it's still broken on a fresh build.
 
 * See also
 
-- [[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] — the tool, its pin, and how the bindings are generated.
+- =xsdcpp= — the tool, its pin, and how the bindings are generated.
 
 * Why discarded
 

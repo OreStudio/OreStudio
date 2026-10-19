@@ -20,7 +20,7 @@ Every claim in the list has been re-checked against
 
 The generator has moved on as well. The 2026-09-26 regeneration took `domain.cpp`
 from 108,655 lines to 40,095. See
-[[id:2DB7C1A3-3191-4D6E-8355-B8BE30BB7809][xsdcpp]] for the pin and the invocation.
+`xsdcpp` for the pin and the invocation.
 
 For the gaps that are real today, read
 [[id:67277DBB-5ABD-4C36-934B-E97144E8910B][ORE export drops required elements from 17 example documents]]

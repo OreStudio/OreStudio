@@ -18,7 +18,6 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"

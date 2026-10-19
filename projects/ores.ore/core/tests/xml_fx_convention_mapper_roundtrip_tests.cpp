@@ -20,7 +20,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/xml/record.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include <catch2/catch_approx.hpp>
@@ -32,8 +32,8 @@ using Catch::Approx;
 /**
  * @file xml_fx_convention_mapper_roundtrip_tests.cpp
  * @brief Round-trips ORE's conventions.xml <FX> element through
- * conventions_mapper::map_fx/reverse against a real example file, not just
- * the migration task's unit-level acceptance criteria.
+ * conventions_mapper::map_fx and the package join against a real example file,
+ * not just the migration task's unit-level acceptance criteria.
  *
  * The real example file (external/ore/examples/Input/conventions.xml)
  * surfaces a genuine data-loss case: two <FX> entries
@@ -51,27 +51,8 @@ const std::string tags("[ore][xml][mapper][roundtrip][fx_convention]");
 
 using ores::ore::domain::conventions;
 using ores::ore::domain::conventions_mapper;
+using ores::ore::xml::record_reader;
 using namespace ores::logging;
-
-/**
- * @brief Local mirror of conventions_mapper::parse_bool (private, not
- * usable from tests) — same truthy-variant switch, for comparing bool_
- * values by meaning rather than by exact enum variant.
- */
-bool bool_value(ores::ore::domain::bool_ v) {
-    using b = ores::ore::domain::bool_;
-    switch (v) {
-        case b::Y:
-        case b::YES:
-        case b::TRUE_:
-        case b::True:
-        case b::true_:
-        case b::_1:
-            return true;
-        default:
-            return false;
-    }
-}
 
 std::filesystem::path conventions_path() {
     return ores::testing::project_root::resolve("external/ore/examples/Input/conventions.xml");
@@ -79,25 +60,28 @@ std::filesystem::path conventions_path() {
 
 conventions load_conventions() {
     using ores::platform::filesystem::file;
-    const std::string content = file::read_content(conventions_path());
-    conventions c;
-    ores::ore::domain::load_data(content, c);
-    return c;
+    return conventions_mapper::read(file::read_content(conventions_path()),
+                                    conventions_path().string());
+}
+
+record_reader root_of(const conventions& document) {
+    return record_reader(*ores::ore::xml::generated::conventions::conventions_document().root,
+                         &document);
 }
 
 /**
- * @brief Round-trip a single fxType through map_fx then back through the
+ * @brief Round-trip a single FX element through map_fx then back through the
  * package join (individual reverse_fx is not exposed publicly).
  */
-ores::ore::domain::fxType roundtrip_single(const ores::ore::domain::fxType& original) {
+conventions roundtrip_single(const record_reader& original) {
     const ores::refdata::messaging::fx_convention mapped = conventions_mapper::map_fx(original);
 
     ores::ore::domain::conventions_package wrapper;
     wrapper.fx.push_back(mapped);
-    const conventions reversed = ores::ore::domain::join_conventions(wrapper);
+    auto reversed = ores::ore::domain::join_conventions(wrapper);
 
-    REQUIRE(reversed.FX.size() == 1);
-    return reversed.FX.front();
+    REQUIRE(reversed.fx.size() == 1);
+    return reversed;
 }
 
 } // namespace
@@ -109,29 +93,29 @@ ores::ore::domain::fxType roundtrip_single(const ores::ore::domain::fxType& orig
 TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", tags) {
     auto lg(make_logger(test_suite));
     const auto original = load_conventions();
-    REQUIRE(!original.FX.empty());
+    const auto entries = root_of(original).children("FX");
+    REQUIRE(!entries.empty());
 
-    for (const auto& fx : original.FX) {
-        const auto roundtripped = roundtrip_single(fx);
+    for (const auto& fx : entries) {
+        const auto reversed = roundtrip_single(fx);
+        const auto roundtripped = root_of(reversed).children("FX").front();
 
-        CHECK(ores::ore::domain::to_string(roundtripped.SourceCurrency) ==
-              ores::ore::domain::to_string(fx.SourceCurrency));
-        CHECK(ores::ore::domain::to_string(roundtripped.TargetCurrency) ==
-              ores::ore::domain::to_string(fx.TargetCurrency));
-        CHECK(static_cast<int64_t>(roundtripped.SpotDays) == static_cast<int64_t>(fx.SpotDays));
-        CHECK(static_cast<double>(roundtripped.PointsFactor) ==
-              Approx(static_cast<double>(fx.PointsFactor)).epsilon(1e-9));
+        CHECK(roundtripped.spelling("SourceCurrency") == fx.spelling("SourceCurrency"));
+        CHECK(roundtripped.spelling("TargetCurrency") == fx.spelling("TargetCurrency"));
+        CHECK(roundtripped.integer("SpotDays") == fx.integer("SpotDays"));
+        CHECK(roundtripped.decimal("PointsFactor")->to_double() ==
+              Approx(fx.decimal("PointsFactor")->to_double()).epsilon(1e-9));
 
-        if (fx.AdvanceCalendar) {
-            REQUIRE(roundtripped.AdvanceCalendar);
-            CHECK(std::string(*roundtripped.AdvanceCalendar) == std::string(*fx.AdvanceCalendar));
+        if (fx.has("AdvanceCalendar")) {
+            REQUIRE(roundtripped.has("AdvanceCalendar"));
+            CHECK(roundtripped.text("AdvanceCalendar") == fx.text("AdvanceCalendar"));
         } else {
-            CHECK(!roundtripped.AdvanceCalendar);
+            CHECK(!roundtripped.has("AdvanceCalendar"));
         }
 
-        if (fx.SpotRelative) {
-            REQUIRE(roundtripped.SpotRelative);
-            CHECK(bool_value(*roundtripped.SpotRelative) == bool_value(*fx.SpotRelative));
+        if (fx.has("SpotRelative")) {
+            REQUIRE(roundtripped.has("SpotRelative"));
+            CHECK(roundtripped.flag("SpotRelative") == fx.flag("SpotRelative"));
         }
 
         // Id is NOT preserved: reverse_fx regenerates it as
@@ -141,7 +125,7 @@ TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", tags) {
     }
 
     BOOST_LOG_SEV(lg, info) << "Field-by-field FX convention round-trip passed for "
-                            << original.FX.size() << " entries";
+                            << entries.size() << " entries";
 }
 
 // =============================================================================
@@ -151,11 +135,11 @@ TEST_CASE("fx_convention_roundtrip_real_example_file_field_values", tags) {
 TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", tags) {
     auto lg(make_logger(test_suite));
     const auto original = load_conventions();
+    const auto entries = root_of(original).children("FX");
 
     std::map<std::pair<std::string, std::string>, int> pair_counts;
-    for (const auto& fx : original.FX)
-        ++pair_counts[{ores::ore::domain::to_string(fx.SourceCurrency),
-                       ores::ore::domain::to_string(fx.TargetCurrency)}];
+    for (const auto& fx : entries)
+        ++pair_counts[{*fx.spelling("SourceCurrency"), *fx.spelling("TargetCurrency")}];
 
     // The real example file (as of this writing) has exactly one colliding
     // pair: EUR/USD, entered twice (EUR-USD-FX-CONVENTIONS with SpotDays=0
@@ -175,7 +159,7 @@ TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", tags
     }
 
     CHECK(duplicated_pairs == 1);
-    CHECK(original.FX.size() == 24);
+    CHECK(entries.size() == 24);
     CHECK(pair_counts.size() == 23);
 }
 
@@ -184,19 +168,22 @@ TEST_CASE("fx_convention_roundtrip_duplicate_pair_collision_is_documented", tags
 // =============================================================================
 
 TEST_CASE("fx_convention_roundtrip_synthetic_eom_and_business_day_convention", tags) {
-    ores::ore::domain::fxType fx;
-    static_cast<std::string&>(fx.Id) = "EUR-USD-FX-CONVENTIONS";
-    fx.SpotDays = 2;
-    fx.SourceCurrency = ores::ore::domain::currencyCode::EUR;
-    fx.TargetCurrency = ores::ore::domain::currencyCode::USD;
-    fx.PointsFactor = 10000.0;
-    fx.EOM = ores::ore::domain::bool_::true_;
-    fx.Convention = ores::ore::domain::businessDayConvention::Following;
+    const auto original = conventions_mapper::read(
+        "<Conventions>"
+        "<FX>"
+        "<Id>EUR-USD-FX-CONVENTIONS</Id>"
+        "<SpotDays>2</SpotDays>"
+        "<SourceCurrency>EUR</SourceCurrency>"
+        "<TargetCurrency>USD</TargetCurrency>"
+        "<PointsFactor>10000</PointsFactor>"
+        "<EOM>true</EOM>"
+        "<Convention>Following</Convention>"
+        "</FX>"
+        "</Conventions>");
 
-    const auto roundtripped = roundtrip_single(fx);
+    const auto reversed = roundtrip_single(root_of(original).children("FX").front());
+    const auto roundtripped = root_of(reversed).children("FX").front();
 
-    REQUIRE(roundtripped.EOM);
-    CHECK(bool_value(*roundtripped.EOM) == true);
-    REQUIRE(roundtripped.Convention);
-    CHECK(*roundtripped.Convention == ores::ore::domain::businessDayConvention::Following);
+    CHECK(roundtripped.flag("EOM") == true);
+    CHECK(roundtripped.spelling("Convention") == "Following");
 }

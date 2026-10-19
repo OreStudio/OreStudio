@@ -27,9 +27,9 @@ because nothing may depend on the generated binding by then.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Not yet started.                       |
+| Now          | Done in the conventions change: the domain, the scripts, the patches and the knowledge page are deleted. |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-10-17                               |

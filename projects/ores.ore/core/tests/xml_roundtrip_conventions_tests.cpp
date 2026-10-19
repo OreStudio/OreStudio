@@ -19,7 +19,7 @@
 #include "conventions_rows.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
-#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/xml/record.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.utility/crypto/sha256.hpp"
@@ -27,6 +27,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+#include <functional>
 #include <map>
 #include <sstream>
 #include <string>
@@ -39,10 +40,9 @@
  *
  * The document carries twenty-six convention categories and the mapper models
  * twenty-five. The files that use only those twenty-five round trip, and all
- * seventy-two of them do.
- * because a category the mapper does not model is content the export cannot
- * write, and the measurement below says which categories those are and how many
- * files each one costs.
+ * seventy-two of them do. A category the mapper does not model is content the
+ * export cannot write, and the measurement below says which categories those
+ * are and how many files each one costs.
  */
 
 using ores::ore::tests::rows_of;
@@ -65,15 +65,20 @@ std::string read(const std::filesystem::path& path) {
 }
 
 conventions load(const std::filesystem::path& path) {
-    conventions document;
-    load_data(read(path), document);
-    return document;
+    return conventions_mapper::read(read(path), path.string());
+}
+
+ores::ore::xml::record_reader root_of(const conventions& document) {
+    return ores::ore::xml::record_reader(
+        *ores::ore::xml::generated::conventions::conventions_document().root, &document);
 }
 
 ores::ore::xml::roundtrip_kind conventions_kind() {
     return ores::ore::xml::make_roundtrip_kind<conventions, ores::ore::domain::conventions_package>(
         "conventions",
         "conventions",
+        &conventions_mapper::read,
+        &conventions_mapper::write,
         &ores::ore::domain::split_conventions,
         &ores::ore::domain::join_conventions,
         conventions_difference);
@@ -92,551 +97,166 @@ int element_count(const std::string& xml, const std::string& name) {
     return count;
 }
 
+/**
+ * @brief One family a document element packs into: how to read its ids and rows
+ * back out of a package, and how many corpus files carry it.
+ *
+ * A family that has no pinned file count carries -1, and the case that walks
+ * the families only measures it.
+ */
+struct family {
+    std::string key;
+    std::string element;
+    int files;
+    std::function<std::vector<std::string>(const conventions_package&)> ids;
+    std::function<bool(const conventions_package&, const conventions_package&, std::size_t)>
+        same_row;
+};
+
+template <typename Row>
+family make_family(std::string key, std::string element, int files) {
+    return {key,
+            std::move(element),
+            files,
+            [key](const conventions_package& package) {
+                std::vector<std::string> ids;
+                for (const auto& row : rows_of<Row>(package, key))
+                    ids.push_back(row.id);
+                return ids;
+            },
+            [key](const conventions_package& left, const conventions_package& right, std::size_t i) {
+                return rows_of<Row>(left, key)[i] == rows_of<Row>(right, key)[i];
+            }};
 }
 
-// A category lands one at a time, and each one asserts its own elements survive
-// the export. The whole kind cannot be asserted until every category has, so a
-// case per category is how the work is proven as it goes.
-TEST_CASE("conventions_swap_index_round_trips", tags) {
-    int files_with_swap_index = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.SwapIndex.empty())
-            continue;
-
-        ++files_with_swap_index;
-        const auto mapped = split_conventions(document);
-        REQUIRE(
-            rows_of<ores::refdata::domain::swap_index_convention>(mapped, "swap_index").size() ==
-            document.SwapIndex.size());
-
-        for (std::size_t i = 0; i < document.SwapIndex.size(); ++i) {
-            const std::string id(document.SwapIndex[i].Id);
-            CHECK(
-                rows_of<ores::refdata::domain::swap_index_convention>(mapped, "swap_index")[i].id ==
-                id);
-            CHECK(rows_of<ores::refdata::domain::swap_index_convention>(mapped, "swap_index")[i]
-                      .conventions == std::string(document.SwapIndex[i].Conventions));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "SwapIndex");
-        INFO(path.string() + ": the document has " + std::to_string(document.SwapIndex.size()) +
-             " SwapIndex element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.SwapIndex.size()));
-    }
-
-    // Forty-seven of the seventy-two at the commit this was written at.
-    CHECK(files_with_swap_index == 47);
+std::vector<family> families() {
+    namespace rd = ores::refdata::domain;
+    return {
+        make_family<rd::average_ois_convention>("average_ois", "AverageOIS", 36),
+        make_family<rd::bma_basis_swap_convention>("bma_basis_swap", "BMABasisSwap", 16),
+        make_family<rd::bond_yield_convention>("bond_yield", "BondYield", 1),
+        make_family<rd::cds_convention>("cds", "CDS", 40),
+        make_family<rd::cms_spread_option_convention>("cms_spread_option", "CmsSpreadOption", 12),
+        make_family<rd::commodity_forward_convention>("commodity_forward", "CommodityForward", 2),
+        make_family<rd::commodity_future_convention>("commodity_future", "CommodityFuture", 5),
+        make_family<rd::cross_currency_basis_convention>(
+            "cross_currency_basis", "CrossCurrencyBasis", 49),
+        make_family<rd::cross_currency_fix_float_convention>(
+            "cross_currency_fix_float", "CrossCurrencyFixFloat", 18),
+        make_family<rd::deposit_convention>("deposit", "Deposit", 67),
+        make_family<rd::fra_convention>("fra", "FRA", 53),
+        make_family<rd::future_convention>("future", "Future", 39),
+        make_family<rd::fx_option_convention>("fx_option", "FxOption", 36),
+        make_family<rd::ibor_index_convention>("ibor_index", "IborIndex", 6),
+        make_family<rd::inflation_swap_convention>("inflation_swap", "InflationSwap", 22),
+        make_family<rd::intraday_power_load_convention>(
+            "intraday_power_load", "IntradayPowerLoad", 1),
+        make_family<rd::ois_convention>("ois", "OIS", 68),
+        make_family<rd::overnight_index_convention>("overnight_index", "OvernightIndex", 7),
+        make_family<rd::swap_convention>("swap", "Swap", 54),
+        make_family<rd::swap_index_convention>("swap_index", "SwapIndex", 47),
+        make_family<rd::tenor_basis_two_swap_convention>(
+            "tenor_basis_two_swap", "TenorBasisTwoSwap", 46),
+        make_family<rd::zero_convention>("zero", "Zero", 37),
+        make_family<rd::zero_inflation_index_convention>(
+            "zero_inflation_index", "ZeroInflationIndex", 6),
+    };
 }
 
-TEST_CASE("conventions_future_round_trips", tags) {
-    int files_with_future = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.Future.empty())
-            continue;
-
-        ++files_with_future;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::future_convention>(mapped, "future").size() ==
-                document.Future.size());
-
-        for (std::size_t i = 0; i < document.Future.size(); ++i) {
-            const std::string id(document.Future[i].Id);
-            CHECK(rows_of<ores::refdata::domain::future_convention>(mapped, "future")[i].id == id);
-            CHECK(rows_of<ores::refdata::domain::future_convention>(mapped, "future")[i].index ==
-                  std::string(document.Future[i].Index));
-            if (document.Future[i].DateGenerationRule)
-                CHECK(rows_of<ores::refdata::domain::future_convention>(mapped, "future")[i]
-                          .date_generation_rule ==
-                      to_string(*document.Future[i].DateGenerationRule));
-            if (document.Future[i].OvernightIndexFutureNettingType)
-                CHECK(rows_of<ores::refdata::domain::future_convention>(mapped, "future")[i]
-                          .netting_type ==
-                      to_string(*document.Future[i].OvernightIndexFutureNettingType));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "Future");
-        INFO(path.string() + ": the document has " + std::to_string(document.Future.size()) +
-             " Future element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.Future.size()));
-    }
-
-    // Thirty-nine of the seventy-two at the commit this was written at.
-    CHECK(files_with_future == 39);
+std::vector<std::string> ids_in(const conventions& document, const std::string& element) {
+    std::vector<std::string> ids;
+    for (const auto& x : root_of(document).children(element))
+        ids.push_back(x.text("Id").value_or(std::string()));
+    return ids;
 }
 
-TEST_CASE("conventions_fx_option_round_trips", tags) {
-    int files_with_fx_option = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.FxOption.empty())
-            continue;
-
-        ++files_with_fx_option;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::fx_option_convention>(mapped, "fx_option").size() ==
-                document.FxOption.size());
-
-        for (std::size_t i = 0; i < document.FxOption.size(); ++i) {
-            CHECK(rows_of<ores::refdata::domain::fx_option_convention>(mapped, "fx_option")[i].id ==
-                  std::string(document.FxOption[i].Id));
-            CHECK(rows_of<ores::refdata::domain::fx_option_convention>(mapped, "fx_option")[i]
-                      .atm_type == std::string(document.FxOption[i].AtmType));
-            CHECK(rows_of<ores::refdata::domain::fx_option_convention>(mapped, "fx_option")[i]
-                      .delta_type == std::string(document.FxOption[i].DeltaType));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "FxOption");
-        INFO(path.string() + ": the document has " + std::to_string(document.FxOption.size()) +
-             " FxOption element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.FxOption.size()));
-    }
-
-    // Thirty-six of the seventy-two at the commit this was written at.
-    CHECK(files_with_fx_option == 36);
 }
 
-TEST_CASE("conventions_average_ois_round_trips", tags) {
-    int files_with_average_ois = 0;
+// Every family of the package lands one row per document element, in document
+// order, and the export writes as many elements as the document held. The rows
+// that come back from the export are the rows that went in, field for field,
+// because the mapper stores canonical spellings and the value is what has to
+// survive.
+TEST_CASE("every_conventions_family_round_trips", tags) {
+    for (const auto& f : families()) {
+        INFO("family " << f.key);
+        int files = 0;
+        for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
+            const auto document = load(path);
+            const auto expected_ids = ids_in(document, f.element);
+            if (expected_ids.empty())
+                continue;
 
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.AverageOIS.empty())
-            continue;
+            ++files;
+            const auto mapped = split_conventions(document);
+            INFO(path.string());
+            CHECK(f.ids(mapped) == expected_ids);
 
-        ++files_with_average_ois;
-        const auto mapped = split_conventions(document);
-        REQUIRE(
-            rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois").size() ==
-            document.AverageOIS.size());
+            const std::string exported = conventions_mapper::write(join_conventions(mapped));
+            CHECK(element_count(exported, f.element) == static_cast<int>(expected_ids.size()));
 
-        for (std::size_t i = 0; i < document.AverageOIS.size(); ++i) {
-            CHECK(rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois")[i]
-                      .id == std::string(document.AverageOIS[i].Id));
-            CHECK(rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois")[i]
-                      .index == std::string(document.AverageOIS[i].Index));
-            CHECK(rows_of<ores::refdata::domain::average_ois_convention>(mapped, "average_ois")[i]
-                      .spot_lag == static_cast<int>(document.AverageOIS[i].SpotLag));
+            const auto reparsed = conventions_mapper::read(exported, path.string());
+            REQUIRE(ids_in(reparsed, f.element).size() == expected_ids.size());
+
+            const auto remapped = split_conventions(reparsed);
+            for (std::size_t i = 0; i < expected_ids.size(); ++i) {
+                INFO(f.element << " element " << i);
+                CHECK(f.same_row(remapped, mapped, i));
+            }
         }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "AverageOIS");
-        INFO(path.string() + ": the document has " + std::to_string(document.AverageOIS.size()) +
-             " AverageOIS element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.AverageOIS.size()));
+        if (f.files >= 0)
+            CHECK(files == f.files);
+        else
+            WARN(f.key << " in " << files << " file(s)");
     }
-
-    // Thirty-six of the seventy-two at the commit this was written at, and the
-    // seven that carried nothing else unmodelled are why it went in first.
-    CHECK(files_with_average_ois == 36);
-}
-
-TEST_CASE("conventions_cross_currency_basis_round_trips", tags) {
-    int files_with_basis = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.CrossCurrencyBasis.empty())
-            continue;
-
-        ++files_with_basis;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::cross_currency_basis_convention>(
-                    mapped, "cross_currency_basis")
-                    .size() == document.CrossCurrencyBasis.size());
-
-        for (std::size_t i = 0; i < document.CrossCurrencyBasis.size(); ++i) {
-            const auto& in = document.CrossCurrencyBasis[i];
-            const auto out = rows_of<ores::refdata::domain::cross_currency_basis_convention>(
-                mapped, "cross_currency_basis")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.flat_index == std::string(in.FlatIndex));
-            CHECK(out.spread_index == std::string(in.SpreadIndex));
-            CHECK(out.settlement_days == static_cast<int>(in.SettlementDays));
-            if (in.SpreadFixingDays)
-                CHECK(out.spread_fixing_days == static_cast<int>(*in.SpreadFixingDays));
-            if (in.FlatRateCutoff)
-                CHECK(out.flat_rate_cutoff == static_cast<int>(*in.FlatRateCutoff));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "CrossCurrencyBasis");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.CrossCurrencyBasis.size()) +
-             " CrossCurrencyBasis element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.CrossCurrencyBasis.size()));
-    }
-
-    // Forty-nine of the seventy-two at the commit this was written at. It is the
-    // largest category in the document, and three files carried nothing else.
-    CHECK(files_with_basis == 49);
 }
 
 TEST_CASE("conventions_intraday_power_load_round_trips", tags) {
-    int files_with_intraday_power = 0;
-    std::size_t elements_with_intraday_power = 0;
+    std::size_t elements = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
         const auto document = load(path);
-        if (document.IntradayPowerLoad.empty())
+        const auto profiles = root_of(document).children("IntradayPowerLoad");
+        if (profiles.empty())
             continue;
 
-        ++files_with_intraday_power;
-        elements_with_intraday_power += document.IntradayPowerLoad.size();
+        elements += profiles.size();
         const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::intraday_power_load_convention>(
-                    mapped, "intraday_power_load")
-                    .size() == document.IntradayPowerLoad.size());
-
-        for (std::size_t i = 0; i < document.IntradayPowerLoad.size(); ++i) {
-            const auto& in = document.IntradayPowerLoad[i];
-            const auto out = rows_of<ores::refdata::domain::intraday_power_load_convention>(
-                mapped, "intraday_power_load")[i];
-            CHECK(out.id == std::string(in.Id));
-            if (in.PowerLoadProfileData) {
-                const auto& profile = *in.PowerLoadProfileData;
-                if (profile.ExplicitDates)
-                    CHECK(out.explicit_load_profile.has_value());
-                if (profile.BusinessDayRules)
-                    CHECK(out.business_day_load_rules.has_value());
+        const auto rows = rows_of<ores::refdata::domain::intraday_power_load_convention>(
+            mapped, "intraday_power_load");
+        REQUIRE(rows.size() == profiles.size());
+        for (std::size_t i = 0; i < profiles.size(); ++i) {
+            if (const auto profile = profiles[i].child("PowerLoadProfileData")) {
+                if (profile->has("ExplicitDates"))
+                    CHECK(rows[i].explicit_load_profile.has_value());
+                if (profile->has("BusinessDayRules"))
+                    CHECK(rows[i].business_day_load_rules.has_value());
             }
         }
 
         // The two load profiles are written as text columns, so the mapper must
         // not report the category as skipped.
         CHECK(conventions_mapper::unmodelled(document).empty());
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "IntradayPowerLoad");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.IntradayPowerLoad.size()) +
-             " IntradayPowerLoad element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.IntradayPowerLoad.size()));
-
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.IntradayPowerLoad.size() == document.IntradayPowerLoad.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.IntradayPowerLoad.size(); ++i) {
-            INFO(path.string() + ": IntradayPowerLoad element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::intraday_power_load_convention>(
-                      remapped, "intraday_power_load")[i] ==
-                  rows_of<ores::refdata::domain::intraday_power_load_convention>(
-                      mapped, "intraday_power_load")[i]);
-        }
     }
 
     // One of the seventy-two files carries it, in two elements, one of each form.
-    CHECK(files_with_intraday_power == 1);
-    CHECK(elements_with_intraday_power == 2);
-}
-
-TEST_CASE("conventions_commodity_forward_round_trips", tags) {
-    int files_with_commodity_forward = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.CommodityForward.empty())
-            continue;
-
-        ++files_with_commodity_forward;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::commodity_forward_convention>(mapped,
-                                                                             "commodity_forward")
-                    .size() == document.CommodityForward.size());
-
-        for (std::size_t i = 0; i < document.CommodityForward.size(); ++i) {
-            const auto& in = document.CommodityForward[i];
-            const auto out = rows_of<ores::refdata::domain::commodity_forward_convention>(
-                mapped, "commodity_forward")[i];
-            CHECK(out.id == std::string(in.Id));
-            if (in.SpotDays)
-                CHECK(out.spot_days == static_cast<int>(*in.SpotDays));
-            if (in.PointsFactor)
-                CHECK(out.points_factor == static_cast<double>(*in.PointsFactor));
-            if (in.AdvanceCalendar)
-                CHECK(out.advance_calendar == std::string(*in.AdvanceCalendar));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "CommodityForward");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.CommodityForward.size()) +
-             " CommodityForward element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.CommodityForward.size()));
-
-        // The mapper stores a canonical spelling of the business day convention,
-        // so the export may differ from the document in that. What has to
-        // survive is the value: read the export back, map it again, and require
-        // the same entity field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.CommodityForward.size() == document.CommodityForward.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.CommodityForward.size(); ++i) {
-            INFO(path.string() + ": CommodityForward element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::commodity_forward_convention>(
-                      remapped, "commodity_forward")[i] ==
-                  rows_of<ores::refdata::domain::commodity_forward_convention>(
-                      mapped, "commodity_forward")[i]);
-        }
-    }
-
-    // Two of the seventy-two files carry it, in five elements between them.
-    CHECK(files_with_commodity_forward == 2);
+    CHECK(elements == 2);
 }
 
 TEST_CASE("conventions_bond_yield_round_trips", tags) {
-    int files_with_bond_yield = 0;
-    std::size_t elements_with_bond_yield = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.BondYield.empty())
-            continue;
-
-        ++files_with_bond_yield;
-        elements_with_bond_yield += document.BondYield.size();
-        const auto mapped = split_conventions(document);
-        REQUIRE(
-            rows_of<ores::refdata::domain::bond_yield_convention>(mapped, "bond_yield").size() ==
-            document.BondYield.size());
-
-        for (std::size_t i = 0; i < document.BondYield.size(); ++i) {
-            const auto& in = document.BondYield[i];
-            const auto out =
-                rows_of<ores::refdata::domain::bond_yield_convention>(mapped, "bond_yield")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.compounding == std::string(in.Compounding));
-            if (in.PriceType)
-                CHECK(out.price_type == std::string(*in.PriceType));
-            if (in.Accuracy)
-                CHECK(out.accuracy == static_cast<double>(*in.Accuracy));
-            if (in.Guess)
-                CHECK(out.guess == static_cast<double>(*in.Guess));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "BondYield");
-        INFO(path.string() + ": the document has " + std::to_string(document.BondYield.size()) +
-             " BondYield element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.BondYield.size()));
-
-        // The frequency is normalised to the canonical code the other tables
-        // hold, so the export may differ from the document there. What has to
-        // survive is the value: read the export back, map it again, and require
-        // the same entity field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.BondYield.size() == document.BondYield.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.BondYield.size(); ++i) {
-            INFO(path.string() + ": BondYield element " + std::to_string(i));
-            CHECK(
-                rows_of<ores::refdata::domain::bond_yield_convention>(remapped, "bond_yield")[i] ==
-                rows_of<ores::refdata::domain::bond_yield_convention>(mapped, "bond_yield")[i]);
-        }
-    }
+    std::size_t elements = 0;
+    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root()))
+        elements += root_of(load(path)).children("BondYield").size();
 
     // One of the seventy-two files carries it, in five elements.
-    CHECK(files_with_bond_yield == 1);
-    CHECK(elements_with_bond_yield == 5);
+    CHECK(elements == 5);
 }
 
-TEST_CASE("conventions_commodity_future_round_trips", tags) {
-    int files_with_commodity_future = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.CommodityFuture.empty())
-            continue;
-
-        ++files_with_commodity_future;
-        const auto mapped = split_conventions(document);
-        REQUIRE(
-            rows_of<ores::refdata::domain::commodity_future_convention>(mapped, "commodity_future")
-                .size() == document.CommodityFuture.size());
-
-        for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
-            const auto& in = document.CommodityFuture[i];
-            const auto out = rows_of<ores::refdata::domain::commodity_future_convention>(
-                mapped, "commodity_future")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.contract_frequency == to_string(in.ContractFrequency));
-            CHECK(out.calendar == std::string(in.Calendar));
-            if (in.AveragingData)
-                CHECK(out.averaging_commodity_name == std::string(in.AveragingData->CommodityName));
-            if (in.ProhibitedExpiries)
-                CHECK(out.prohibited_expiries.has_value());
-            if (in.FutureContinuationMappings)
-                CHECK(out.future_continuation_mappings.has_value());
-            if (in.OptionContinuationMappings)
-                CHECK(out.option_continuation_mappings.has_value());
-        }
-
-        // The four list-bearing fields are written as text columns now, so the
-        // mapper must not report any of them as skipped.
-        for (const auto& [name, count] : conventions_mapper::unmodelled(document)) {
-            INFO(path.string() + ": unexpected skip " + name);
-            CHECK(name.rfind("CommodityFuture.", 0) != 0);
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "CommodityFuture");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.CommodityFuture.size()) +
-             " CommodityFuture element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.CommodityFuture.size()));
-
-        // The mapper stores canonical spellings of the frequency and the
-        // business day conventions, so the export may differ from the document
-        // in those. What has to survive is the value: read the export back, map
-        // it again, and require the same entity field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.CommodityFuture.size() == document.CommodityFuture.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.CommodityFuture.size(); ++i) {
-            INFO(path.string() + ": CommodityFuture element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::commodity_future_convention>(
-                      remapped, "commodity_future")[i] ==
-                  rows_of<ores::refdata::domain::commodity_future_convention>(
-                      mapped, "commodity_future")[i]);
-        }
-    }
-
-    // Five of the seventy-two files carry it, and two of them carried nothing
-    // else unmodelled when it went in.
-    CHECK(files_with_commodity_future == 5);
-}
-
-TEST_CASE("conventions_cms_spread_option_round_trips", tags) {
-    int files_with_cms = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.CmsSpreadOption.empty())
-            continue;
-
-        ++files_with_cms;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::cms_spread_option_convention>(mapped,
-                                                                             "cms_spread_option")
-                    .size() == document.CmsSpreadOption.size());
-
-        for (std::size_t i = 0; i < document.CmsSpreadOption.size(); ++i) {
-            const auto& in = document.CmsSpreadOption[i];
-            const auto out = rows_of<ores::refdata::domain::cms_spread_option_convention>(
-                mapped, "cms_spread_option")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.forward_start == std::string(in.ForwardStart));
-            CHECK(out.spot_days == std::string(in.SpotDays));
-            CHECK(out.swap_tenor == std::string(in.SwapTenor));
-            CHECK(out.fixing_days == static_cast<int>(in.FixingDays));
-            CHECK(out.calendar == std::string(in.Calendar));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "CmsSpreadOption");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.CmsSpreadOption.size()) +
-             " CmsSpreadOption element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.CmsSpreadOption.size()));
-
-        // The mapper stores canonical spellings of the day count and the roll
-        // convention, so the export may differ from the document in those. What
-        // has to survive is the value: read the export back, map it again, and
-        // require the same entity field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.CmsSpreadOption.size() == document.CmsSpreadOption.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.CmsSpreadOption.size(); ++i) {
-            INFO(path.string() + ": CmsSpreadOption element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::cms_spread_option_convention>(
-                      remapped, "cms_spread_option")[i] ==
-                  rows_of<ores::refdata::domain::cms_spread_option_convention>(
-                      mapped, "cms_spread_option")[i]);
-        }
-    }
-
-    // Twelve of the seventy-two files carry it, and eleven of them carried
-    // nothing else unmodelled when it went in.
-    CHECK(files_with_cms == 12);
-}
-
-TEST_CASE("conventions_cross_currency_fix_float_round_trips", tags) {
-    int files_with_fix_float = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.CrossCurrencyFixFloat.empty())
-            continue;
-
-        ++files_with_fix_float;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-                    mapped, "cross_currency_fix_float")
-                    .size() == document.CrossCurrencyFixFloat.size());
-
-        for (std::size_t i = 0; i < document.CrossCurrencyFixFloat.size(); ++i) {
-            const auto& in = document.CrossCurrencyFixFloat[i];
-            const auto out = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-                mapped, "cross_currency_fix_float")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.settlement_days == static_cast<int>(in.SettlementDays));
-            CHECK(out.settlement_calendar == std::string(in.SettlementCalendar));
-            CHECK(out.fixed_currency == to_string(in.FixedCurrency));
-            CHECK(out.index == std::string(in.Index));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "CrossCurrencyFixFloat");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.CrossCurrencyFixFloat.size()) +
-             " CrossCurrencyFixFloat element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.CrossCurrencyFixFloat.size()));
-
-        // The mapper stores canonical spellings of the frequency, the two
-        // conventions and the day count, so the export may differ from the
-        // document in those. What has to survive is the value: read the export
-        // back, map it again, and require the same entity field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.CrossCurrencyFixFloat.size() == document.CrossCurrencyFixFloat.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.CrossCurrencyFixFloat.size(); ++i) {
-            INFO(path.string() + ": CrossCurrencyFixFloat element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-                      remapped, "cross_currency_fix_float")[i] ==
-                  rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-                      mapped, "cross_currency_fix_float")[i]);
-        }
-    }
-
-    // Eighteen of the seventy-two files carry it, and six of them carried
-    // nothing else unmodelled when it went in.
-    CHECK(files_with_fix_float == 18);
-}
-
-// The corpus sets none of the element's nine optional fields, so the walk above
-// cannot reach the half of the mapping that reads them. This document sets all
-// nine, including a zero-valued fixing days and a false resettable flag, which
-// are the two cases a mapper that tested the value rather than the presence
-// would drop.
+// The corpus never sets all nine of the optional fields of this convention, so
+// it cannot reach the half of the mapping that reads them. This document sets
+// all nine, including a zero-valued fixing days and a false resettable flag,
+// which are the two cases a mapper that tested the value rather than the
+// presence would drop.
 TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) {
     const std::string text = R"(<Conventions>
   <CrossCurrencyFixFloat>
@@ -661,19 +281,17 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) 
   </CrossCurrencyFixFloat>
 </Conventions>)";
 
-    conventions document;
-    load_data(text, document);
-    REQUIRE(document.CrossCurrencyFixFloat.size() == 1);
+    const auto document = conventions_mapper::read(text);
+    REQUIRE(root_of(document).children("CrossCurrencyFixFloat").size() == 1);
 
     const auto mapped = split_conventions(document);
-    REQUIRE(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-                mapped, "cross_currency_fix_float")
-                .size() == 1);
-    const auto out = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-        mapped, "cross_currency_fix_float")[0];
+    const auto rows = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+        mapped, "cross_currency_fix_float");
+    REQUIRE(rows.size() == 1);
+    const auto& out = rows[0];
     CHECK(out.eom.has_value());
     CHECK(out.is_resettable.has_value());
-    CHECK(out.float_index_is_resettable.has_value());
+    CHECK(out.float_index_is_resettable == false);
     CHECK(out.include_spread.has_value());
     REQUIRE(out.lookback.has_value());
     CHECK(*out.lookback == "1D");
@@ -684,386 +302,131 @@ TEST_CASE("conventions_cross_currency_fix_float_optional_fields_survive", tags) 
     CHECK(out.is_averaged.has_value());
     CHECK(out.observation_shift.has_value());
 
-    const std::string exported = save_data(join_conventions(mapped));
-    conventions reparsed;
-    load_data(exported, reparsed);
-    const auto remapped = split_conventions(reparsed);
-    REQUIRE(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-                remapped, "cross_currency_fix_float")
-                .size() == 1);
-    CHECK(rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
-              remapped, "cross_currency_fix_float")[0] == out);
+    const auto remapped = split_conventions(
+        conventions_mapper::read(conventions_mapper::write(join_conventions(mapped))));
+    const auto again = rows_of<ores::refdata::domain::cross_currency_fix_float_convention>(
+        remapped, "cross_currency_fix_float");
+    REQUIRE(again.size() == 1);
+    CHECK(again[0] == out);
 }
 
-TEST_CASE("conventions_inflation_swap_round_trips", tags) {
-    int files_with_inflation_swap = 0;
+TEST_CASE("conventions_inflation_swap_publication_schedules_are_modelled", tags) {
     int files_with_a_publication_schedule = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
         const auto document = load(path);
-        if (document.InflationSwap.empty())
+        const auto swaps = root_of(document).children("InflationSwap");
+        const bool carries_a_schedule = std::ranges::any_of(
+            swaps, [](const auto& swap) { return swap.has("PublicationSchedule"); });
+        if (!carries_a_schedule)
             continue;
-
-        ++files_with_inflation_swap;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::inflation_swap_convention>(mapped, "inflation_swap")
-                    .size() == document.InflationSwap.size());
-
-        bool carries_a_schedule = false;
-        for (std::size_t i = 0; i < document.InflationSwap.size(); ++i) {
-            const auto& in = document.InflationSwap[i];
-            const auto out = rows_of<ores::refdata::domain::inflation_swap_convention>(
-                mapped, "inflation_swap")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.index == std::string(in.Index));
-            CHECK(out.fix_calendar == std::string(in.FixCalendar));
-            CHECK(out.inflation_calendar == std::string(in.InflationCalendar));
-            if (in.PublicationSchedule)
-                carries_a_schedule = true;
-        }
 
         // A schedule of rules, dates and derived groups is written as text
         // columns, so the mapper must not report it as skipped.
-        if (carries_a_schedule) {
-            ++files_with_a_publication_schedule;
-            CHECK(conventions_mapper::unmodelled(document).count(
-                      "InflationSwap.PublicationSchedule") == 0);
-            for (const auto& out : rows_of<ores::refdata::domain::inflation_swap_convention>(
-                     mapped, "inflation_swap")) {
-                if (out.publication_schedule_rules)
-                    CHECK(!out.publication_schedule_rules->empty());
-            }
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "InflationSwap");
-        INFO(path.string() + ": the document has " + std::to_string(document.InflationSwap.size()) +
-             " InflationSwap element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.InflationSwap.size()));
-
-        // The mapper stores canonical spellings of the conventions and the day
-        // count, so the export may differ from the document in those. What has
-        // to survive is the value: read the export back, map it again, and
-        // require the same entity field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.InflationSwap.size() == document.InflationSwap.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.InflationSwap.size(); ++i) {
-            INFO(path.string() + ": InflationSwap element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::inflation_swap_convention>(remapped,
-                                                                            "inflation_swap")[i] ==
-                  rows_of<ores::refdata::domain::inflation_swap_convention>(mapped,
-                                                                            "inflation_swap")[i]);
+        ++files_with_a_publication_schedule;
+        CHECK(conventions_mapper::unmodelled(document).count(
+                  "InflationSwap.PublicationSchedule") == 0);
+        for (const auto& out : rows_of<ores::refdata::domain::inflation_swap_convention>(
+                 split_conventions(document), "inflation_swap")) {
+            if (out.publication_schedule_rules)
+                CHECK(!out.publication_schedule_rules->empty());
         }
     }
 
-    // Twenty-two of the seventy-two files carry it, and three of them carried
-    // nothing else unmodelled when it went in. Two carry a publication
-    // schedule, and both carry other unmodelled categories as well.
-    CHECK(files_with_inflation_swap == 22);
     CHECK(files_with_a_publication_schedule == 2);
-}
-
-TEST_CASE("conventions_bma_basis_swap_round_trips", tags) {
-    int files_with_bma = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.BMABasisSwap.empty())
-            continue;
-
-        ++files_with_bma;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::bma_basis_swap_convention>(mapped, "bma_basis_swap")
-                    .size() == document.BMABasisSwap.size());
-
-        for (std::size_t i = 0; i < document.BMABasisSwap.size(); ++i) {
-            const auto& in = document.BMABasisSwap[i];
-            const auto out = rows_of<ores::refdata::domain::bma_basis_swap_convention>(
-                mapped, "bma_basis_swap")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.index == std::string(in.Index));
-            CHECK(out.bma_index == std::string(in.BMAIndex));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "BMABasisSwap");
-        INFO(path.string() + ": the document has " + std::to_string(document.BMABasisSwap.size()) +
-             " BMABasisSwap element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.BMABasisSwap.size()));
-
-        // The mapper stores a canonical spelling of the two payment
-        // conventions, so the export writes a spelling the document may not
-        // have used. What has to survive is the value: read the export back,
-        // map it again, and require the same entity field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.BMABasisSwap.size() == document.BMABasisSwap.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.BMABasisSwap.size(); ++i) {
-            INFO(path.string() + ": BMABasisSwap element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::bma_basis_swap_convention>(remapped,
-                                                                            "bma_basis_swap")[i] ==
-                  rows_of<ores::refdata::domain::bma_basis_swap_convention>(mapped,
-                                                                            "bma_basis_swap")[i]);
-        }
-    }
-
-    // Sixteen of the seventy-two files carry it, and three of them carried
-    // nothing else unmodelled when it went in.
-    CHECK(files_with_bma == 16);
-}
-
-TEST_CASE("conventions_zero_inflation_index_round_trips", tags) {
-    int files_with_inflation_index = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.ZeroInflationIndex.empty())
-            continue;
-
-        ++files_with_inflation_index;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::zero_inflation_index_convention>(
-                    mapped, "zero_inflation_index")
-                    .size() == document.ZeroInflationIndex.size());
-
-        for (std::size_t i = 0; i < document.ZeroInflationIndex.size(); ++i) {
-            const auto& in = document.ZeroInflationIndex[i];
-            const auto out = rows_of<ores::refdata::domain::zero_inflation_index_convention>(
-                mapped, "zero_inflation_index")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.region_name == std::string(in.RegionName));
-            CHECK(out.region_code == std::string(in.RegionCode));
-            CHECK(out.frequency == to_string(in.Frequency));
-            CHECK(out.availability_lag == std::string(in.AvailabilityLag));
-            CHECK(out.currency == to_string(in.Currency));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "ZeroInflationIndex");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.ZeroInflationIndex.size()) +
-             " ZeroInflationIndex element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.ZeroInflationIndex.size()));
-
-        // The document spells a boolean thirteen ways, so the stored flag is
-        // compared the only way that does not restate the mapper's spelling
-        // table: read the export back, map it again, and require the same
-        // entity field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.ZeroInflationIndex.size() == document.ZeroInflationIndex.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.ZeroInflationIndex.size(); ++i) {
-            INFO(path.string() + ": ZeroInflationIndex element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::zero_inflation_index_convention>(
-                      remapped, "zero_inflation_index")[i] ==
-                  rows_of<ores::refdata::domain::zero_inflation_index_convention>(
-                      mapped, "zero_inflation_index")[i]);
-        }
-    }
-
-    // Six of the seventy-two files carry it, and five of them carried nothing
-    // else unmodelled when it went in.
-    CHECK(files_with_inflation_index == 6);
 }
 
 // The entity holds the index's seven scalar fields and not its rebasing events,
 // which ORE types as a list of doubles and the refdata schema has no column
-// for. No shipped file sets one, so the corpus walk above cannot show what
-// happens when one appears. This case builds that document and asserts the
-// mapper counts the field instead of dropping it: a skip that is counted keeps
-// the file out of the round-trip set, and a skip that is silent loses content.
+// for. No shipped file sets one, so the corpus walk cannot show what happens
+// when one appears. This case builds that document and asserts the mapper
+// counts the field instead of dropping it: a skip that is counted keeps the
+// file out of the round-trip set, and a skip that is silent loses content.
 TEST_CASE("conventions_zero_inflation_index_rebasing_events_are_counted", tags) {
-    zeroInflationIndexType index;
-    static_cast<std::string&>(index.Id) = "UKRPI";
-    static_cast<std::string&>(index.RegionName) = "UK";
-    static_cast<std::string&>(index.RegionCode) = "UK";
-    index.Revised = bool_::False;
-    index.Frequency = frequencyType::Monthly;
-    static_cast<std::string&>(index.AvailabilityLag) = "1M";
-    index.Currency = currencyCode::GBP;
+    const std::string without = R"(<Conventions>
+  <ZeroInflationIndex>
+    <Id>UKRPI</Id>
+    <RegionName>UK</RegionName>
+    <RegionCode>UK</RegionCode>
+    <Revised>false</Revised>
+    <Frequency>Monthly</Frequency>
+    <AvailabilityLag>1M</AvailabilityLag>
+    <Currency>GBP</Currency>
+  </ZeroInflationIndex>
+</Conventions>)";
+    CHECK(conventions_mapper::unmodelled(conventions_mapper::read(without)).empty());
 
-    conventions document;
-    document.ZeroInflationIndex.push_back(index);
-    CHECK(conventions_mapper::unmodelled(document).empty());
-
-    zeroInflationIndexType_RebasingEvents_t events;
-    events.Event.push_back(zeroInflationIndexType_RebasingEvents_t_Event_t(1.5));
-    index.RebasingEvents = events;
-    document.ZeroInflationIndex.clear();
-    document.ZeroInflationIndex.push_back(index);
-
-    const auto unmodelled = conventions_mapper::unmodelled(document);
+    const std::string with = R"(<Conventions>
+  <ZeroInflationIndex>
+    <Id>UKRPI</Id>
+    <RegionName>UK</RegionName>
+    <RegionCode>UK</RegionCode>
+    <Revised>false</Revised>
+    <Frequency>Monthly</Frequency>
+    <AvailabilityLag>1M</AvailabilityLag>
+    <Currency>GBP</Currency>
+    <RebasingEvents>
+      <Event date="2020-01-01">1.5</Event>
+    </RebasingEvents>
+  </ZeroInflationIndex>
+</Conventions>)";
+    const auto unmodelled = conventions_mapper::unmodelled(conventions_mapper::read(with));
     REQUIRE(unmodelled.count("ZeroInflationIndex.RebasingEvents") == 1);
     CHECK(unmodelled.at("ZeroInflationIndex.RebasingEvents") == 1);
 }
 
 TEST_CASE("conventions_tenor_basis_swap_round_trips", tags) {
-    int files_with_basis_swap = 0;
+    int files = 0;
 
     for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
         const auto document = load(path);
-        if (document.TenorBasisSwap.empty())
+        const auto swaps = root_of(document).children("TenorBasisSwap");
+        if (swaps.empty())
             continue;
 
-        ++files_with_basis_swap;
+        ++files;
         const auto mapped = split_conventions(document);
-        const auto mapped_centrals =
-            rows_of<ores::refdata::domain::convention>(mapped, "convention");
-        const auto mapped_pay_receives =
-            rows_of<ores::refdata::domain::tenor_basis_swap_pay_receive>(
-                mapped, "tenor_basis_swap_pay_receive");
-        const auto mapped_long_shorts = rows_of<ores::refdata::domain::tenor_basis_swap_long_short>(
+        const auto centrals = rows_of<ores::refdata::domain::convention>(mapped, "convention");
+        const auto pay_receives = rows_of<ores::refdata::domain::tenor_basis_swap_pay_receive>(
+            mapped, "tenor_basis_swap_pay_receive");
+        const auto long_shorts = rows_of<ores::refdata::domain::tenor_basis_swap_long_short>(
             mapped, "tenor_basis_swap_long_short");
-        REQUIRE(mapped_centrals.size() == document.TenorBasisSwap.size());
+        REQUIRE(centrals.size() == swaps.size());
 
-        for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
-            const auto& in = document.TenorBasisSwap[i];
-            const auto& central = mapped_centrals[i];
+        for (std::size_t i = 0; i < swaps.size(); ++i) {
+            const auto& in = swaps[i];
+            const auto& central = centrals[i];
             CHECK(central.kind_code == "TENOR_BASIS_SWAP");
-            CHECK(central.name == std::string(in.Id));
+            CHECK(central.name == in.text("Id").value_or(std::string()));
 
             const auto pay_receive = std::ranges::find_if(
-                mapped_pay_receives, [&](const auto& p) { return p.convention_id == central.id; });
+                pay_receives, [&](const auto& p) { return p.convention_id == central.id; });
             const auto long_short = std::ranges::find_if(
-                mapped_long_shorts, [&](const auto& l) { return l.convention_id == central.id; });
-            if (in.PayIndex)
-                CHECK(pay_receive->pay_index == std::string(*in.PayIndex));
-            if (in.ReceiveIndex)
-                CHECK(pay_receive->receive_index == std::string(*in.ReceiveIndex));
-            if (in.LongIndex)
-                CHECK(long_short->long_index == std::string(*in.LongIndex));
-            if (in.ShortIndex)
-                CHECK(long_short->short_index == std::string(*in.ShortIndex));
+                long_shorts, [&](const auto& l) { return l.convention_id == central.id; });
+            if (in.has("PayIndex"))
+                CHECK(pay_receive->pay_index == in.text("PayIndex"));
+            if (in.has("ReceiveIndex"))
+                CHECK(pay_receive->receive_index == in.text("ReceiveIndex"));
+            if (in.has("LongIndex"))
+                CHECK(long_short->long_index == in.text("LongIndex"));
+            if (in.has("ShortIndex"))
+                CHECK(long_short->short_index == in.text("ShortIndex"));
         }
 
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "TenorBasisSwap");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.TenorBasisSwap.size()) +
-             " TenorBasisSwap element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.TenorBasisSwap.size()));
+        const std::string exported = conventions_mapper::write(join_conventions(mapped));
+        CHECK(element_count(exported, "TenorBasisSwap") == static_cast<int>(swaps.size()));
 
-        // The mapper stores a canonical spelling of the sub-periods coupon
-        // type, so the export writes a spelling the document may not have used.
-        // What has to survive is the value: reading the export back and mapping
-        // it again must land on the same entity, field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.TenorBasisSwap.size() == document.TenorBasisSwap.size());
-
-        const auto remapped = split_conventions(reparsed);
-        const auto remapped_centrals =
-            rows_of<ores::refdata::domain::convention>(remapped, "convention");
-        const auto remapped_pay_receives =
-            rows_of<ores::refdata::domain::tenor_basis_swap_pay_receive>(
-                remapped, "tenor_basis_swap_pay_receive");
-        const auto remapped_long_shorts =
-            rows_of<ores::refdata::domain::tenor_basis_swap_long_short>(
-                remapped, "tenor_basis_swap_long_short");
-        for (std::size_t i = 0; i < document.TenorBasisSwap.size(); ++i) {
-            INFO(path.string() + ": TenorBasisSwap element " + std::to_string(i));
-            // The mapper mints a provisional key for each convention so its part
-            // can reach it inside one mapped document. Two maps of one document
-            // agree on the stated key, not on that key, so the comparison pairs
-            // the rows by the convention they belong to and drops the keys.
-            auto mapped_central = mapped_centrals[i];
-            auto remapped_central = remapped_centrals[i];
-            mapped_central.id = boost::uuids::uuid{};
-            remapped_central.id = boost::uuids::uuid{};
-            CHECK(remapped_central == mapped_central);
-
-            const auto parts_of = [](const auto& pay_receives,
-                                     const auto& long_shorts,
-                                     const boost::uuids::uuid& convention_id) {
-                std::vector<ores::refdata::domain::tenor_basis_swap_pay_receive> pay_receive;
-                for (const auto& p : pay_receives) {
-                    if (p.convention_id != convention_id)
-                        continue;
-                    auto part = p;
-                    part.id = boost::uuids::uuid{};
-                    part.convention_id = boost::uuids::uuid{};
-                    pay_receive.push_back(part);
-                }
-                std::vector<ores::refdata::domain::tenor_basis_swap_long_short> long_short;
-                for (const auto& l : long_shorts) {
-                    if (l.convention_id != convention_id)
-                        continue;
-                    auto part = l;
-                    part.id = boost::uuids::uuid{};
-                    part.convention_id = boost::uuids::uuid{};
-                    long_short.push_back(part);
-                }
-                return std::make_pair(pay_receive, long_short);
-            };
-            CHECK(parts_of(remapped_pay_receives, remapped_long_shorts, remapped_centrals[i].id) ==
-                  parts_of(mapped_pay_receives, mapped_long_shorts, mapped_centrals[i].id));
-        }
+        // The mapper mints a provisional key for each convention so its part can
+        // reach it inside one mapped document. Two maps of one document agree on
+        // the stated key and not on that key, which is why the comparison below
+        // pairs the rows by the convention they belong to.
+        const auto reparsed = conventions_mapper::read(exported, path.string());
+        INFO(path.string());
+        CHECK(conventions_difference(document, reparsed, path.string()).empty());
     }
 
-    // Twenty-nine of the seventy-two files carry it, and five of them carried
-    // nothing else unmodelled when it went in.
-    CHECK(files_with_basis_swap == 29);
-}
-
-TEST_CASE("conventions_tenor_basis_two_swap_round_trips", tags) {
-    int files_with_two_swap = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-        if (document.TenorBasisTwoSwap.empty())
-            continue;
-
-        ++files_with_two_swap;
-        const auto mapped = split_conventions(document);
-        REQUIRE(rows_of<ores::refdata::domain::tenor_basis_two_swap_convention>(
-                    mapped, "tenor_basis_two_swap")
-                    .size() == document.TenorBasisTwoSwap.size());
-
-        for (std::size_t i = 0; i < document.TenorBasisTwoSwap.size(); ++i) {
-            const auto& in = document.TenorBasisTwoSwap[i];
-            const auto out = rows_of<ores::refdata::domain::tenor_basis_two_swap_convention>(
-                mapped, "tenor_basis_two_swap")[i];
-            CHECK(out.id == std::string(in.Id));
-            CHECK(out.calendar == std::string(in.Calendar));
-            CHECK(out.long_index == std::string(in.LongIndex));
-            CHECK(out.short_index == std::string(in.ShortIndex));
-        }
-
-        const std::string exported = save_data(join_conventions(mapped));
-        const int written = element_count(exported, "TenorBasisTwoSwap");
-        INFO(path.string() + ": the document has " +
-             std::to_string(document.TenorBasisTwoSwap.size()) +
-             " TenorBasisTwoSwap element(s), the export " + std::to_string(written));
-        CHECK(written == static_cast<int>(document.TenorBasisTwoSwap.size()));
-
-        // The mapper stores a canonical spelling of each frequency, convention
-        // and day counter, so the export writes a spelling the document may not
-        // have used. What has to survive is the value: reading the export back
-        // and mapping it again must land on the same entity, field for field.
-        conventions reparsed;
-        load_data(exported, reparsed);
-        REQUIRE(reparsed.TenorBasisTwoSwap.size() == document.TenorBasisTwoSwap.size());
-
-        const auto remapped = split_conventions(reparsed);
-        for (std::size_t i = 0; i < document.TenorBasisTwoSwap.size(); ++i) {
-            INFO(path.string() + ": TenorBasisTwoSwap element " + std::to_string(i));
-            CHECK(rows_of<ores::refdata::domain::tenor_basis_two_swap_convention>(
-                      remapped, "tenor_basis_two_swap")[i] ==
-                  rows_of<ores::refdata::domain::tenor_basis_two_swap_convention>(
-                      mapped, "tenor_basis_two_swap")[i]);
-        }
-    }
-
-    // The largest single category left when it went in: it is what stood between
-    // twelve files and a clean round trip on its own.
-    CHECK(files_with_two_swap == 46);
+    // Twenty-nine of the seventy-two files carry it.
+    CHECK(files == 29);
 }
 
 TEST_CASE("conventions_files_using_only_modelled_categories_round_trip", tags) {
@@ -1162,7 +525,7 @@ std::filesystem::path digests_path() {
  * store's shape, and write that shape back out.
  */
 std::string exported_bytes(const std::filesystem::path& path) {
-    return save_data(join_conventions(split_conventions(load(path))));
+    return conventions_mapper::write(join_conventions(split_conventions(load(path))));
 }
 
 /**

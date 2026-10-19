@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/xml/roundtrip.hpp"
 #include "ores.platform/filesystem/file.hpp"
@@ -149,14 +149,13 @@ TEST_CASE("roundtrip mirrors every portfolio in the ORE example corpus", tags) {
             continue;
 
         const auto relative = fs::relative(entry.path(), out.path).string();
-        ores::ore::domain::portfolio p;
         try {
-            ores::ore::domain::load_data(file::read_content(entry.path()), p);
+            trades_in_outputs += ores::ore::domain::portfolio_projection::read(
+                                     file::read_content(entry.path()), relative)
+                                     .trade.size();
         } catch (const std::exception&) {
             unreadable.insert(relative);
-            continue;
         }
-        trades_in_outputs += p.Trade.size();
     }
 
     if (unreadable != known_export_gaps()) {

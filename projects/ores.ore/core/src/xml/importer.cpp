@@ -19,7 +19,6 @@
  */
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
-#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/portfolio_projection.hpp"
 #include "ores.ore.core/xml/binding.hpp"
 #include "ores.ore.core/xml/generated/calendar_adjustments.hpp"
@@ -238,9 +237,7 @@ domain::conventions_package importer::import_conventions(const std::filesystem::
     const std::string c(file::read_content(path));
     BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
 
-    domain::conventions conv;
-    domain::load_data(c, conv);
-    auto r = domain::split_conventions(conv);
+    auto r = domain::split_conventions(domain::conventions_mapper::read(c, path.generic_string()));
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing conventions from " << path.generic_string();
     return r;

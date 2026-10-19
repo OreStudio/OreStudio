@@ -28,6 +28,7 @@
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.core/export.hpp"
 #include "ores.refdata.core/service/conventions_bundle.hpp"
+#include <cstddef>
 #include <iterator>
 #include <stdexcept>
 #include <string>

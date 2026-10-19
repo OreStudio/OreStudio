@@ -9,7 +9,9 @@ each source file in the scopes below, the distinct convention family value
 types the file names while it reflects, and fails when a file names more than
 its budget.
 
-A file reflects when it includes an ``rfl`` header or calls ``rfl::``. The
+A file reflects when it includes an ``rfl`` header or calls ``rfl::``. Headers are
+measured as well as sources, because an inline template reflects wherever it is
+included. The
 families are the registry's: the check reads the value types out of the
 generated registry header, so a family added to the modelling tree joins the
 count on the next regeneration.
@@ -38,11 +40,13 @@ REGISTRY = ("projects/ores.refdata/api/include/ores.refdata.api/domain/"
 
 SCOPES = (
     "projects/ores.refdata/core/src",
+    "projects/ores.refdata/core/include",
     "projects/ores.ore/core/src",
+    "projects/ores.ore/core/include",
     "projects/ores.ore/service/src",
 )
 
-SUFFIXES = (".cpp", ".inc")
+SUFFIXES = (".cpp", ".hpp", ".inc")
 
 BUDGET = 1
 

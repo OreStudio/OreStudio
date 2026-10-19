@@ -415,8 +415,10 @@ CATALOGUE: tuple[Check, ...] = (
         argv=("python3", "build/scripts/check_translation_unit_budget.py"),
         classes=("cpp",),
         paths=("projects/ores.refdata/core/src/*",
+               "projects/ores.refdata/core/include/*",
                "projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp",
                "projects/ores.ore/core/src/*",
+               "projects/ores.ore/core/include/*",
                "projects/ores.ore/service/src/*",
                "build/scripts/check_translation_unit_budget.py"),
         fix="Move each family's serialisation into a unit of its own, or lower the "

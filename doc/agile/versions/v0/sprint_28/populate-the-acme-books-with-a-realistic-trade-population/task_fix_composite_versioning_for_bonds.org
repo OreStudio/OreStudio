@@ -7,20 +7,22 @@
 #+level: s1
 #+filetags: :populate-the-acme-books-with-a-realistic-trade-population:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/fix-composite-versioning-for-bonds
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-15
 #+updated: 2026-10-15
-#+environment: bright_faraday
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DA9DFFB-B7CE-4261-8E59-E309D7C58A52][Populate the ACME books with a realistic trade population]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Make every part of a bond write bump the version of its parent trade, and
+give the bond leg family an as-of read, so an as-of read can say which legs
+were current when.
 
 * Status
 
@@ -35,7 +37,13 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Acceptance
 
--
+- =bond_instrument=, =bond_leg= and the three leg children declare
+  =bump_parent_version= against the trade.
+- =bond_leg= and the three leg children declare =list_by_as_of=.
+- A test reads the version rows and leg rows back from the database.
+
+Met by =b4d21a8822=, merged to main before this branch was cut. The proof
+on real rows is in the task "Prove a bond rewrite versions the parent".
 
 * Plan
 
@@ -83,3 +91,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+No code changed on this branch. The fix shipped in =b4d21a8822= ("Bump the
+trade's version from every bond part write", 2026-10-15). The loader reads
+=bump_parent_version= from a child's Foreign keys section. The trade-anchor
+parts declared it in Columns, so no child bumped anything. The commit moved
+the flag into the section that is read, and set it on =bond_instrument= and
+the four leg tables. It gave the four leg tables =list_by_as_of=. The task
+"Prove a bond rewrite versions the parent" (PR #3407) proved both on rows
+read from the database.
+
+Gaps left open, with where each is recorded:
+
+- =bond_instrument= has the bump and no as-of read.
+- An as-of read of a parent window can report two child versions. The
+  trigger bumps the parent before it closes the child's own row. The
+  proof task has the trade id and the timestamps.
+- A bond issue leg names no trade and declares no bump. The generator
+  writes issue legs, so =bond_legs= stays empty in the ACME population.
+- =bond_issue= and its children, =bond_forward=, =bond_future=,
+  =bond_option=, =bond_repo= and =bond_trs= declare neither flag. I did
+  not check whether they hold rows keyed by a trade.

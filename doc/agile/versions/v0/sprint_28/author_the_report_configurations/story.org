@@ -41,6 +41,7 @@ Give the user guided screens to create and edit a report configuration and every
 |------+-------+-------+-----+-------------|
 | [[id:AE27A465-17F8-4853-888C-EE2F4824E60B][Scaffold story: Author the report configurations on guided screens]] | STARTED | 2026-10-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:48E64664-978C-420E-87E5-7291AA956E5B][Prototype the configuration screens]] | STARTED | 2026-10-19 | | Initial task for: Author the report configurations on guided screens |
+| [[id:B6747B04-A6C6-466F-B2A4-9EE2AC31F80F][Four-eyes sign-off for pricing engine changes]] | BACKLOG | | | Task for: Author the report configurations on guided screens |
 
 * Decisions
 

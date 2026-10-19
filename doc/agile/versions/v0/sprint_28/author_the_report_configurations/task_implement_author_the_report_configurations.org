@@ -8,7 +8,7 @@
 #+filetags: :author_the_report_configurations:sprint_28:v0:
 #+owner: marco
 #+branch: feature/author-the-report-configurations
-#+pr:
+#+pr: 3580
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-19
@@ -137,7 +137,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| #3580 | Prototype the pricing engine configuration screens |
 
 * Review
 

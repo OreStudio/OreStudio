@@ -27,11 +27,11 @@ completely in one change: reader, writer, and the deletion of its mapper.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Every reference data family reads and writes through the codec. Conventions moved last: the mapper reads codec records, and all 72 corpus documents round trip. |
+| Now          | Nothing. |
 | Waiting on   | Nothing. |
-| Next         | Close the task. The generated domain went in the same change. |
+| Next         | Nothing. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance

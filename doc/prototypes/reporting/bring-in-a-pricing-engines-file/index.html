@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bring in a pricing engines file prototype — Reporting prototypes</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+
+.tag.off{color:#9ca3af;border-color:#374151}
+.crumbs{font-size:.8rem;color:var(--ink-dim);display:flex;gap:6px;flex-wrap:wrap}
+.titlebar{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.titlebar h1{font-size:1.3rem}.titlebar .sub{color:var(--ink-dim);margin-top:2px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.danger{color:var(--bad);border-color:#5a2320}.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim);padding:2px 8px}.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.access{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.78rem;color:var(--ink-dim)}
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabbar a{padding:8px 14px;color:var(--ink-dim);border-bottom:2px solid transparent}.tabbar a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+.card .body{padding:16px;display:grid;gap:16px 20px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.card .body{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card .foot{border-top:1px solid var(--line-soft);padding:10px 16px;color:var(--ink-faint);font-size:.8rem}
+.dl .k{font-size:.78rem;color:var(--ink-faint)}.dl .v{margin-top:2px}.dl.wide{grid-column:1/-1}
+a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
+.listbar{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line-soft)}.listbar input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.listbar select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+tr.rec{cursor:pointer}tr.rec:hover td,tr.rec:focus td{background:#1d1d22;outline:none}
+th.sort{cursor:pointer}
+.pager{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;color:var(--ink-dim);font-size:.85rem;border-top:1px solid var(--line-soft);flex-wrap:wrap}
+.hist{display:grid;grid-template-columns:18rem 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+@media(max-width:820px){.hist{grid-template-columns:1fr}}
+.hist ol{margin:0;padding:0;list-style:none;border-right:1px solid var(--line)}
+.hist li{padding:10px 12px;border-bottom:1px solid var(--line-soft);cursor:pointer;display:grid;gap:2px}.hist li.on{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
+.hist .cmp{padding:12px;display:grid;gap:10px;align-content:start}
+.diff{font-family:var(--mono);font-size:.82rem}.diff .rm{background:#2a1517;color:#ffb3ad;padding:2px 8px}.diff .ad{background:#10261a;color:#9be9a8;padding:2px 8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
+.chart{display:flex;align-items:flex-end;gap:4px;height:48px;overflow-x:auto}.bar{width:14px;display:flex;flex-direction:column-reverse;cursor:pointer;flex:none}.bar i{display:block;width:100%}
+.axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-faint);margin-top:4px}.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
+.tl{display:grid;margin-top:4px}.daydiv{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px}
+.tl .item{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}.tl .item.mark{background:#1d2530}
+.tl .when{color:var(--ink-faint);font-family:var(--mono);font-size:.8rem}.emblem{color:var(--accent)}
+.tl .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tl .who{font-weight:600}
+.avatar{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:.7rem;color:var(--ink-dim)}
+.tl details summary{cursor:pointer;color:var(--ink-faint);margin-top:4px}.tl .diff{margin-top:6px}
+.dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
+.dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.dlg .dbody{padding:16px;display:grid;gap:14px}.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line-soft)}
+.field select,.field input[type=text],.field textarea{width:100%;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 8px}.field textarea{min-height:64px}.field .help{font-size:.78rem;color:var(--ink-faint)}
+.warnbox{border:1px solid #4a3a17;background:#201a0e;color:var(--warn);border-radius:var(--radius);padding:8px 10px}
+.okbox{border:1px solid #1f4d29;background:#0f1d14;color:var(--ok);border-radius:var(--radius);padding:8px 10px}
+.badbox{border:1px solid #5a2320;background:#231211;color:var(--bad);border-radius:var(--radius);padding:8px 10px}
+.journey { display: grid; grid-template-columns: 14rem 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 820px) { .journey { grid-template-columns: 1fr; } }
+.railnav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.railentry {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+.railentry.done { color: var(--ink-dim); }
+.railentry.current { background: var(--panel-2); color: var(--ink); font-weight: 500; }
+.railentry.ahead { color: var(--ink-faint); }
+.railmark {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 0.75rem;
+}
+.railmark.done { border-color: var(--ok); color: var(--ok); }
+.railmark.current { border-color: var(--accent); color: var(--accent); }
+.railmark.ahead { border-color: var(--line); color: var(--ink-faint); }
+.stepfoot {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.ml-auto { margin-left: auto; }
+.journey{margin-top:6px}.stepcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:grid;gap:14px}
+.stepcard>h2{font-size:1.1rem;text-transform:none;letter-spacing:0;color:var(--ink)}.stepcard .lead{color:var(--ink-dim)}
+.railentry{cursor:pointer}.railtag{margin-left:auto;font-size:.7rem;color:var(--ink-faint)}
+.mark{background:#201a0e}.chk{width:auto;min-width:0}
+td .sel{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;max-width:100%}
+.btn.small{padding:3px 9px;font-size:.8rem}.diffrow td{font-family:var(--mono);font-size:.82rem}
+.rm{background:#2a1517;color:#ffb3ad}.ad{background:#10261a;color:#9be9a8}
+.statline{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-dim)}.statline b{color:var(--ink)}
+.btn{white-space:nowrap;display:inline-block;text-decoration:none}a.btn{color:var(--ink)}a.btn.primary{color:#0d1117}
+details.menu{position:relative;display:inline-block}details.menu>summary{list-style:none;cursor:pointer}details.menu>summary::-webkit-details-marker{display:none}
+details.menu .items{position:absolute;right:0;top:110%;z-index:20;min-width:16rem;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid;padding:4px}
+details.menu .items a{padding:8px 10px;border-radius:6px;color:var(--ink)}details.menu .items a:hover{background:var(--panel-2)}
+.field label.plain,label.plain{text-transform:none;letter-spacing:0;font-size:inherit;color:var(--ink);display:block}
+label.plain{white-space:nowrap}
+.tag.info{color:#3b82f6;border-color:#1e3a8a}.tag.cls{color:#8b5cf6;border-color:#3b2a66}
+
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  Bringing in an ORE pricing engines file as a workflow of five steps on the
+  standard steps UI: the file and what it holds, what the system does not know
+  (a product type with no code, an element with no column, a duplicate), the
+  target (a new configuration, or a new version of one the party holds, with the
+  reach), the difference (removed, changed, added, with keep or drop for each
+  removed product) and the review. The parse and the difference are mocks.
+
+  Addresses: ?step=1..5&file=clean|unknown|omits&target=new|c2
+  The three files are fixtures; the products in clean are real pairs counted from
+  110 ORE example files.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<div id="layer"></div>
+
+<script>
+// FIXTURE. The product, model and engine triples are counted from the 110
+// pricingengine*.xml files under the ORE Examples folder, the first 45 by count.
+// The notes, usual values and instrument codes are this prototype's own wording.
+const TRIPLES = [
+  ['Swap','DiscountedCashflows','DiscountingSwapEngine',65],['CapFlooredIborLeg','BlackOrBachelier','BlackIborCouponPricer',54],
+  ['CMS','LinearTSR','LinearTSRPricer',47],['EquityOption','BlackScholesMerton','AnalyticEuropeanEngine',45],
+  ['CommodityForward','DiscountedCashflows','DiscountingCommodityForwardEngine',44],['Bond','DiscountedCashflows','DiscountingRiskyBondEngine',38],
+  ['CrossCurrencySwap','DiscountedCashflows','DiscountingCrossCurrencySwapEngine',37],['EuropeanSwaption','BlackBachelier','BlackBachelierSwaptionEngine',37],
+  ['FxForward','DiscountedCashflows','DiscountingFxForwardEngine',36],['FxOption','GarmanKohlhagen','AnalyticEuropeanEngine',36],
+  ['CreditDefaultSwap','DiscountedCashflows','MidPointCdsEngine',36],['CapFloor','IborCapModel','IborCapEngine',35],
+  ['BermudanSwaption','LGM','Grid',34],['EquityForward','DiscountedCashflows','DiscountingEquityForwardEngine',32],
+  ['EquityOptionAmerican','BlackScholesMerton','FdBlackScholesVanillaEngine',32],['FxOptionAmerican','GarmanKohlhagen','FdBlackScholesVanillaEngine',30],
+  ['CMSSpread','BrigoMercurio','Analytic',30],['CommoditySwap','DiscountedCashflows','CommoditySwapEngine',30],
+  ['Swap','CrossAssetModel','AMC',18],['CrossCurrencySwap','CrossAssetModel','AMC',15],['FlexiSwap','LGM','Grid',15],
+  ['YYCapFloor','YYCapModel','YYCapEngine',29],['CpiCapFloor','CpiCapModel','CpiCapEngine',24],['BondOption','Black','BlackBondOptionEngine',16]
+];
+const TYPES = [
+  ['Swap','Rates','Swap','An interest rate swap, fixed against floating or floating against floating.'],
+  ['CrossCurrencySwap','Rates','CrossCurrencySwap','A swap whose two legs pay in different currencies.'],
+  ['CapFloor','Rates','CapFloor','A cap or a floor on an interest rate index.'],
+  ['CMS','Rates','Swap','A leg that pays a constant maturity swap rate.'],
+  ['CMSSpread','Rates','Swap','A leg that pays the spread between two constant maturity swap rates.'],
+  ['EuropeanSwaption','Rates','Swaption','The right to enter a swap on one date.'],
+  ['BermudanSwaption','Rates','Swaption','The right to enter a swap on any of several dates.'],
+  ['FlexiSwap','Rates','Swap','A swap whose holder may choose the notional on each date.'],
+  ['FxForward','FX','FxForward','An agreement to exchange two currencies on a future date.'],
+  ['FxOption','FX','FxOption','A European option on an exchange rate.'],
+  ['FxOptionAmerican','FX','FxOption','An American option on an exchange rate.'],
+  ['Bond','Credit','Bond','A bond that carries credit risk.'],
+  ['CreditDefaultSwap','Credit','CreditDefaultSwap','Protection against the default of one name.'],
+  ['BondOption','Credit','Bond','An option on a bond.'],
+  ['EquityOption','Equity','EquityOption','A European option on a share or an index.'],
+  ['EquityOptionAmerican','Equity','EquityOption','An American option on a share or an index.'],
+  ['EquityForward','Equity','EquityForward','An agreement to buy or sell a share on a future date.'],
+  ['CommodityForward','Commodity','CommodityForward','An agreement to buy or sell a commodity on a future date.'],
+  ['CommoditySwap','Commodity','CommoditySwap','A swap of a fixed price against a commodity price.'],
+  ['YYCapFloor','Inflation','CapFloor','A cap or a floor on year-on-year inflation.'],
+  ['CpiCapFloor','Inflation','CapFloor','A cap or a floor on a consumer price index.']
+].map(([code, cls, instrument, desc]) => ({ code, cls, instrument, desc }));
+const typeOf = c => TYPES.find(t => t.code === c);
+const MODELS = [...new Set(TRIPLES.map(t => t[1]))].sort();
+const enginesFor = m => [...new Set(TRIPLES.filter(t => t[1] === m).map(t => t[2]))].sort();
+const ALL_ENGINES = [...new Set(TRIPLES.map(t => t[2]))].sort();
+const knownPair = (m, e) => TRIPLES.some(t => t[1] === m && t[2] === e);
+const usualFor = c => { const x = TRIPLES.filter(t => t[0] === c).sort((a, b) => b[3] - a[3])[0]; return x ? { model: x[1], engine: x[2], n: x[3] } : null; };
+// The settings a pair is known to take. kind: select (options), text, number.
+const SETTINGS = {
+  'BermudanSwaption|LGM|Grid': [
+    { scope: 'model', name: 'Calibration', kind: 'select', opts: ['Bootstrap', 'BestFit', 'None'], usual: 'Bootstrap', note: 'How the model is fitted to the swaption quotes.' },
+    { scope: 'model', name: 'CalibrationStrategy', kind: 'select', opts: ['CoterminalATM', 'CoterminalDealStrike', 'UnderlyingATM', 'UnderlyingDealStrike'], usual: 'CoterminalATM', note: 'Which swaptions the fit uses.' },
+    { scope: 'model', name: 'ReversionType', kind: 'select', opts: ['HullWhite', 'Hagan'], usual: 'HullWhite', note: 'The parameterisation of mean reversion.' },
+    { scope: 'model', name: 'VolatilityType', kind: 'select', opts: ['Hagan', 'HullWhite'], usual: 'Hagan', note: 'The parameterisation of volatility.' },
+    { scope: 'model', name: 'Volatility', kind: 'number', usual: '0.01', note: 'The starting volatility the fit moves from.' },
+    { scope: 'model', name: 'ShiftHorizon', kind: 'number', usual: '0.5', note: 'The horizon, in years, of the shift of the state variable.' },
+    { scope: 'engine', name: 'sx', kind: 'number', usual: '3.0', note: 'Width of the grid, in standard deviations, on the state axis.' },
+    { scope: 'engine', name: 'sy', kind: 'number', usual: '3.0', note: 'Width of the grid, in standard deviations, on the value axis.' },
+    { scope: 'engine', name: 'nx', kind: 'number', usual: '10', note: 'Number of grid points on the state axis.' },
+    { scope: 'engine', name: 'ny', kind: 'number', usual: '10', note: 'Number of grid points on the value axis.' }
+  ],
+  'Bond|DiscountedCashflows|DiscountingRiskyBondEngine': [
+    { scope: 'engine', name: 'TimestepPeriod', kind: 'text', usual: '6M', note: 'The step of the default probability grid.' }
+  ],
+  'Swap|DiscountedCashflows|DiscountingSwapEngine': [
+    { scope: 'engine', name: 'SensitivityTemplate', kind: 'select', opts: ['IR_Analytical'], usual: 'IR_Analytical', note: 'The sensitivity method a swap offers.' }
+  ]
+};
+const GLOBAL_KNOWN = [{ name: 'ContinueOnCalibrationError', kind: 'select', opts: ['true', 'false'], usual: 'true', note: 'Whether a failed calibration stops the run. True prices the product with the last good fit and records the error.' }];
+const settingsFor = (t, m, e) => SETTINGS[t + '|' + m + '|' + e] || [];
+const P = (scope, name, value) => ({ scope, name, value });
+const BERM = () => [P('model', 'Calibration', 'Bootstrap'), P('model', 'CalibrationStrategy', 'CoterminalATM'), P('model', 'ReversionType', 'HullWhite'), P('model', 'VolatilityType', 'Hagan'), P('model', 'Volatility', '0.01'), P('model', 'ShiftHorizon', '0.5'), P('engine', 'sx', '3.0'), P('engine', 'sy', '3.0'), P('engine', 'nx', '10'), P('engine', 'ny', '10')];
+const clone = x => JSON.parse(JSON.stringify(x));
+const TRADED = ['Swap', 'FxForward', 'Bond', 'EuropeanSwaption', 'BermudanSwaption', 'CapFloor', 'FxOption', 'CMS', 'CrossCurrencySwap', 'CreditDefaultSwap', 'EquityOption'];
+const REPORTS_ALL = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity', 'Cross-Entity Counterparty Concentration', 'Large Exposures'];
+const NOW = Date.parse('2026-10-19T10:00:00Z');
+const AMC_NOW = [
+  { type: 'Swap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
+  { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] },
+  { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() },
+  { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] },
+  { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] },
+  { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
+  { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] },
+  { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
+  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] }
+];
+const withEdit = (prods, fn) => { const c = clone(prods); fn(c); return c; };
+const amcV3 = withEdit(AMC_NOW, c => { c[2].params.find(p => p.name === 'VolatilityType').value = 'HullWhite'; });
+const amcV2 = amcV3.filter(p => p.type !== 'CMS');
+const amcV1 = withEdit(amcV2, c => { c[2].params.find(p => p.name === 'ShiftHorizon').value = '1.0'; });
+const GLOBAL_CFG = [{ name: 'ContinueOnCalibrationError', value: 'true' }];
+const CONFIGS = [
+  { id: 'c1', name: 'Group pricing engines', desc: 'The model and engine that price each product ACME Corporation Group trades.', variant: '', cfgRow: 'configuration 3b4103d0', reports: REPORTS_ALL.slice(0, 4), globals: clone(GLOBAL_CFG),
+    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] }, { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] }],
+    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', by: 'tenant provisioning service', reason: 'New record', note: '' }] },
+  { id: 'c2', name: 'Europe AMC pricing', desc: 'Pricing for the European entities, with the AMC engine for swaps and cross currency swaps.', variant: 'AMC', cfgRow: 'configuration 7a91c2e4', reports: REPORTS_ALL.slice(4), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', by: 'tenant provisioning service', reason: 'New record', note: '', snap: { products: amcV1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', snap: { products: amcV2, globals: GLOBAL_CFG } },
+      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', snap: { products: amcV3, globals: GLOBAL_CFG } },
+      { v: 4, at: '2026-10-16T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
+  { id: 'c3', name: 'US swaptions SABR', desc: 'A trial configuration for the US swaption desk.', variant: 'SABR', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
+    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] }, { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() }, { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] }],
+    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '' }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here' }] }
+];
+CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
+// A flat view of a document, so two documents can be compared as rows.
+const flat = (products, globals) => { const m = {}; (products || []).forEach(p => { m[p.type + ' › model'] = p.model; m[p.type + ' › engine'] = p.engine; (p.params || []).forEach(q => { m[p.type + ' › ' + q.scope + ' ' + q.name] = q.value; }); }); (globals || []).forEach(g => { m['global › ' + g.name] = g.value; }); return m; };
+const diffDocs = (a, b) => { const x = flat(a.products, a.globals), y = flat(b.products, b.globals), out = []; new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { if (x[k] !== y[k]) out.push({ k, from: x[k], to: y[k] }); }); return out; };
+
+const P0 = new URLSearchParams(location.search);
+const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
+const dash = '<span class="faint">—</span>';
+const rel = iso => { const s = Math.round((NOW - Date.parse(iso)) / 1000); return s < 90 ? 'just now' : s < 5400 ? Math.round(s / 60) + ' minutes ago' : s < 129600 ? Math.round(s / 3600) + ' hours ago' : Math.round(s / 86400) + ' days ago'; };
+const exact = iso => iso.replace('T', ' ').replace(':00Z', ' UTC');
+const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕', save: '✓', copy: '⧉' };
+const btn = (word, icon, cls, attrs) => `<button class="btn ${cls || ''}" ${attrs || ''}>${G[icon] ? G[icon] + ' ' : ''}${word}</button>`;
+let KEEP = [];
+function q(params) { const p = new URLSearchParams(); KEEP.forEach(k => { const v = new URLSearchParams(location.search).get(k); if (v) p.set(k, v); }); Object.entries(params).forEach(([k, v]) => p.set(k, v)); return '?' + p.toString(); }
+const href = params => esc(q(params));
+function nav(params) { window.history.pushState({}, '', q(params)); render(); }
+window.onpopstate = () => render();
+document.addEventListener('click', e => { const a = e.target.closest('a[data-nav]'); if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); window.history.pushState({}, '', a.getAttribute('href')); render(); });
+function crumbs(parts) { return `<div class="crumbs">${parts.map((p, i) => i === parts.length - 1 ? `<span>${p[0]}</span>` : `<a class="link" data-nav href="${p[1]}">${p[0]}</a>`).join('<span>›</span>')}</div>`; }
+const kv = (l, v, wide) => `<div class="dl ${wide ? 'wide' : ''}"><div class="k">${l}</div><div class="v">${v}</div></div>`;
+function dialog(title, body, footer, onClose) {
+  document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg" role="dialog" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button class="btn ghost" id="d-x" aria-label="Close">✕</button></header><div class="dbody">${body}</div><footer>${footer}</footer></div></div>`;
+  const close = () => { if (onClose && !onClose()) return; closeDlg(); };
+  document.getElementById('d-x').onclick = close; document.getElementById('bg').onclick = e => { if (e.target.id === 'bg') close(); };
+  const c = document.getElementById('d-cancel'); if (c) c.onclick = close;
+  return close;
+}
+function closeDlg() { document.getElementById('layer').innerHTML = ''; }
+const REASON_AMEND = [{ name: 'Rectification', note: true }, { name: 'Correction of a data entry error', note: true }, { name: 'Non-material update', note: false }];
+const reasonField = changed => { const offered = REASON_AMEND.filter(x => changed ? x.name !== 'Non-material update' : x.name === 'Non-material update');
+  return `<div class="field"><label>Change reason</label><select id="f-reason">${offered.map(x => `<option data-note="${x.note ? 1 : 0}">${x.name}</option>`).join('')}</select></div><div class="field"><label>Commentary</label><textarea id="f-note"></textarea><div class="help" id="f-nh"></div></div>`; };
+function ready(saveId) {
+  const reason = document.getElementById('f-reason'), note = document.getElementById('f-note'), nh = document.getElementById('f-nh');
+  const needs = () => reason && reason.selectedOptions[0] && reason.selectedOptions[0].dataset.note === '1';
+  const check = () => { const bad = needs() && !note.value.trim(); nh.textContent = needs() ? 'This reason needs a commentary.' : ''; const s = document.getElementById(saveId); if (s) s.disabled = s.dataset.block === '1' || bad; };
+  if (reason) { reason.onchange = check; note.oninput = check; check(); }
+}
+function chrome(label, bars) {
+  document.getElementById('note').textContent = 'Prototype · ' + label + ' · mock data, nothing is written to a server';
+  const opt = (key, vals, cur0) => vals.map(v => `<button data-k="${key}" data-v="${v}" class="${v === cur0 ? 'on' : ''}">${v}</button>`).join('');
+  document.getElementById('bar').innerHTML = bars.map(([k, vals, cur0]) => `<span class="label">${k}</span>${opt(k, vals, cur0)}`).join('<span class="sep">|</span>');
+  document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => { const p = new URLSearchParams(location.search); p.set(x.dataset.k, x.dataset.v); location.search = p.toString(); });
+}
+const typeCell = c => { const t = typeOf(c); return `<span class="mono">${c}</span>${t ? '' : ' ' + tag('no code', 'warn')}`; };
+const pairTag = (m, e) => !m || !e ? tag('incomplete', 'warn') : knownPair(m, e) ? '' : tag('pair not known to work', 'warn');
+const covered = c => TRADED.filter(t => c.products.some(p => p.type === t));
+const uncovered = c => TRADED.filter(t => !c.products.some(p => p.type === t));
+function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
+const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
+let hideSystem = false;
+function historyTab(c) {
+  const all = c.versions.slice().reverse(), cur = all[0];
+  const rows = all.filter(x => !(hideSystem && /service/.test(x.by)));
+  const entry = x => {
+    const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : null;
+    return `<div class="item"><div class="when">${x.at.slice(0, 10)}${x.v === cur.v ? ' <span class="emblem" title="Current version">●</span>' : ''}</div><div>
+      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}
+      ${d ? `<details style="margin-left:34px"><summary>Details</summary>${diffTable(d)}</details>` : '<div class="faint" style="margin-left:34px">The fixture keeps no values for this version.</div>'}</div></div>`; };
+  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. Revert writes an older version's values back as a new version.</div>
+  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${rows.map(entry).join('')}</div>`;
+}
+function revertDialog(c, v) {
+  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap);
+  dialog('Revert ' + c.name + '?', `<div>Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">Revert</button>`);
+  ready('d-save');
+  document.getElementById('d-save').onclick = () => { c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason: document.getElementById('f-reason').value, note: document.getElementById('f-note').value || 'Reverted to v' + v, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
+}
+function reportsTab(c) {
+  return `<div class="notice">A change to this configuration reaches the next run of each report below. A run already produced keeps what it ran with, and no operation says which version of the configuration that was.</div>
+  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Binds it as</th></tr></thead><tbody>${c.reports.map(r => `<tr><td><span class="link">${esc(r)}</span></td><td class="mono">pricing_engines</td></tr>`).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
+  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist: this is a fixture.</div>`;
+}
+
+const fileKey0 = P0.get('file') || 'clean', actor = 'analyst', actorName = 'market risk owner';
+KEEP = ['file'];
+const may = () => true;
+const XML = n => ({ clean: `<PricingEngines>\n  <Product type="Swap"><Model>CrossAssetModel</Model><Engine>AMC</Engine></Product>\n  <Product type="EuropeanSwaption"><Model>BlackBachelier</Model>…\n  <GlobalParameters><Parameter name="ContinueOnCalibrationError">true</Parameter></GlobalParameters>\n</PricingEngines>`, unknown: `<PricingEngines>\n  <Product type="FlexiCap"><Model>…</Model>…\n  <Product type="BermudanSwaption"><Model>LGM</Model><CalibrationBlock>…\n  <Product type="CapFloor"> … twice\n</PricingEngines>`, omits: `<PricingEngines>\n  <Product type="Swap"><Model>DiscountedCashflows</Model>…\n  <Product type="FxForward">…\n</PricingEngines>` })[n];
+const PR = (type, model, engine, params) => ({ type, model, engine, params: params || [] });
+const FILES = {
+  clean: { file: 'pricingengine_amc.xml', products: [PR('Swap', 'CrossAssetModel', 'AMC'), PR('EuropeanSwaption', 'BlackBachelier', 'BlackBachelierSwaptionEngine'), PR('BermudanSwaption', 'LGM', 'Grid', BERM().map(p => p.name === 'ShiftHorizon' ? P(p.scope, p.name, '1.0') : p)), PR('CapFloor', 'IborCapModel', 'IborCapEngine'), PR('FxForward', 'DiscountedCashflows', 'DiscountingFxForwardEngine'), PR('FxOption', 'GarmanKohlhagen', 'AnalyticEuropeanEngine'), PR('Bond', 'DiscountedCashflows', 'DiscountingRiskyBondEngine', [P('engine', 'TimestepPeriod', '1Y')])], globals: [{ name: 'ContinueOnCalibrationError', value: 'true' }], unreadable: [], dups: [] },
+  unknown: { file: 'pricingengine_sabr.xml', products: [PR('Swap', 'DiscountedCashflows', 'DiscountingSwapEngine'), PR('FlexiCap', 'LGM', 'Grid'), PR('BermudanSwaption', 'LGM', 'Grid', BERM()), PR('CapFloor', 'IborCapModel', 'IborCapEngine'), PR('CapFloor', 'BlackOrBachelier', 'BlackIborCouponPricer')], globals: [], unreadable: [{ where: 'BermudanSwaption', what: 'The CalibrationBlock element holds an inline calibration. The tables have no column for it.' }], dups: ['CapFloor'] },
+  omits: { file: 'pricingengine_basic.xml', products: [PR('Swap', 'DiscountedCashflows', 'DiscountingSwapEngine'), PR('FxForward', 'DiscountedCashflows', 'DiscountingFxForwardEngine')], globals: [], unreadable: [], dups: [] }
+};
+const STEPS = [['file', 'The file', 'Choose the file and read what it holds.'], ['unknown', 'What the system does not know', 'Product types without a code, elements with no column, and duplicates.'], ['target', 'The target', 'Save as a new configuration, or as a new version of one the party holds.'], ['diff', 'The difference', 'What the file adds, changes and removes.'], ['review', 'Review and save', 'Every value, read back before it is written.']];
+const S = { key: fileKey0, target: P0.get('target') || 'new', name: '', desc: '', skip: {}, dup: {}, removed: {}, saved: null };
+let step = Math.min(Math.max((Number(P0.get('step')) || 1) - 1, 0), 4), maxStep = step;
+const F = () => FILES[S.key], tgt = () => S.target === 'new' ? null : CONFIGS.find(c => c.id === S.target);
+const variantOf = f => { const m = /pricingengine_([A-Za-z0-9]+)\.xml/.exec(f); return m ? m[1].toUpperCase() : ''; };
+const unknownTypes = () => [...new Set(F().products.map(p => p.type).filter(t => !typeOf(t)))];
+// The file's products after the person's choices: unknown types skipped, a duplicate resolved.
+function fileProducts() {
+  const seen = {}, out = [];
+  F().products.forEach(p => { if (!typeOf(p.type) && S.skip[p.type] !== false) return; const n = (seen[p.type] = (seen[p.type] || 0) + 1); const pick = S.dup[p.type] || 1; if (F().dups.includes(p.type) && n !== pick) return; out.push(p); });
+  return out;
+}
+function compare() {
+  const t = tgt(), fp = fileProducts();
+  if (!t) return { added: fp, changed: [], removed: [] };
+  const added = fp.filter(p => !t.products.some(x => x.type === p.type)), changed = [], removed = t.products.filter(x => !fp.some(p => p.type === x.type));
+  fp.forEach(p => { const x = t.products.find(y => y.type === p.type); if (x) { const d = diffDocs({ products: [x] }, { products: [p] }); if (d.length) changed.push({ p, d }); } });
+  return { added, changed, removed };
+}
+const decision = t => S.removed[t] || 'keep';
+function finalProducts() { const c = compare(); return fileProducts().concat(c.removed.filter(x => decision(x.type) === 'keep')); }
+const valid = i => i === 2 ? (S.target !== 'new' || (S.name.trim() && !CONFIGS.some(c => c.name.toLowerCase() === S.name.trim().toLowerCase()))) : true;
+function s1() {
+  const f = F();
+  return `<div class="field"><label>File</label><select id="f-file">${Object.entries(FILES).map(([k, v]) => `<option value="${k}" ${S.key === k ? 'selected' : ''}>${v.file}</option>`).join('')}</select><div class="help">The three files are fixtures standing in for a file the person chooses or pastes. A file of another kind is refused with the root element it found.</div></div>
+  <pre class="mono" style="margin:0;overflow-x:auto;background:var(--panel-2);padding:8px;border-radius:6px;font-size:.8rem">${esc(XML(S.key))}</pre>
+  <div class="statline"><span><b>${f.products.length}</b> products</span><span><b>${new Set(f.products.map(p => p.model)).size}</b> models</span><span><b>${new Set(f.products.map(p => p.engine)).size}</b> engines</span><span><b>${f.products.reduce((n, p) => n + p.params.length, 0)}</b> parameters</span><span><b>${f.globals.length}</b> global</span></div>
+  <table><thead><tr><th>Product</th><th>Model</th><th>Engine</th><th>Parameters</th></tr></thead><tbody>${f.products.map(p => `<tr><td class="mono">${p.type}</td><td class="mono">${p.model}</td><td class="mono">${p.engine}</td><td class="num">${p.params.length}</td></tr>`).join('')}</tbody></table>
+  <div class="notice">The parse is a mock. No operation turns a person's file into a pricing engines document: this is where one is needed, and a build parses on the server, not in the browser.</div>`;
+}
+function s2() {
+  const u = unknownTypes(), f = F();
+  if (!u.length && !f.unreadable.length && !f.dups.length) return '<div class="okbox">Nothing in this file is unknown to the system. Every product type has a code, every element has a column and no type appears twice.</div>';
+  return `${u.length ? `<h2>Product types the system has no code for</h2><table><tbody>${u.map(t => `<tr><td class="mono">${t}</td><td><label class="plain"><input type="radio" name="sk-${t}" value="skip" ${S.skip[t] !== false ? 'checked' : ''}> Skip</label></td><td><label class="plain"><input type="radio" name="sk-${t}" value="add" ${S.skip[t] === false ? 'checked' : ''}> Add the type first</label>${S.skip[t] === false ? '<div class="faint">Adding a code writes the pricing engine type vocabulary, <span class="mono">analytics.v1.pricing_engine_types.put</span>, before the save.</div>' : ''}</td></tr>`).join('')}</tbody></table>` : ''}
+  ${f.unreadable.length ? `<h2>Elements the screen cannot read</h2><table><tbody>${f.unreadable.map(x => `<tr><td class="mono">${x.where}</td><td>${esc(x.what)}</td><td>${tag('dropped', 'warn')}</td></tr>`).join('')}</tbody></table>` : ''}
+  ${f.dups.length ? `<h2>Duplicates</h2>${f.dups.map(t => `<div class="card" style="padding:10px"><b class="mono">${t}</b> appears twice. Keep one.${f.products.filter(p => p.type === t).map((p, i) => `<div><label class="plain"><input type="radio" name="dup-${t}" value="${i + 1}" ${(S.dup[t] || 1) === i + 1 ? 'checked' : ''}> ${p.model} with ${p.engine}</label></div>`).join('')}</div>`).join('')}` : ''}`;
+}
+function s3() {
+  const t = tgt(), nameTaken = S.name.trim() && CONFIGS.some(c => c.name.toLowerCase() === S.name.trim().toLowerCase());
+  return `<div class="field"><label class="plain"><input type="radio" name="tg" value="new" ${S.target === 'new' ? 'checked' : ''}> Save as a new configuration</label>
+  <label class="plain"><input type="radio" name="tg" value="ver" ${S.target !== 'new' ? 'checked' : ''}> Save as a new version of a configuration the party holds</label></div>
+  ${S.target === 'new' ? `<div class="field"><label>Name</label><input type="text" id="f-name" value="${esc(S.name)}"><div class="help">${nameTaken ? '<span style="color:var(--bad)">A configuration with this name exists.</span>' : 'The name is new in this party.'}</div></div><div class="field"><label>Description</label><textarea id="f-desc">${esc(S.desc)}</textarea></div><div class="field"><label>Variant tag</label><input type="text" value="${esc(variantOf(F().file))}" readonly><div class="help">Filled from the file name when it follows the ORE naming. An empty tag when it does not.</div></div><div class="notice">A new configuration has nothing to compare, so the next step lists every product as added.</div>`
+  : `<div class="field"><label>Configuration</label><select id="f-tg">${CONFIGS.map(c => `<option value="${c.id}" ${S.target === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select></div>${t.reports.length ? `<div class="warnbox"><b>Reach.</b> ${t.reports.length} report${t.reports.length === 1 ? '' : 's'} bind${t.reports.length === 1 ? 's' : ''} this configuration: ${t.reports.map(esc).join(', ')}. The change reaches the next run of ${t.reports.length === 1 ? 'it' : 'each'}. A run already produced keeps what it ran with.</div>` : '<div class="notice">No report binds this configuration, so the change reaches no run.</div>'}`}`;
+}
+function s4() {
+  const t = tgt(), c = compare();
+  if (!t) return `<div class="notice">A new configuration has nothing to compare.</div><table><thead><tr><th>Change</th><th>Product</th></tr></thead><tbody>${c.added.map(p => `<tr><td>${tag('added', 'ok')}</td><td class="mono">${p.type} <span class="faint">${p.model} with ${p.engine}</span></td></tr>`).join('')}</tbody></table>`;
+  return `<div class="statline"><span><b>${c.removed.length}</b> removed</span><span><b>${c.changed.length}</b> changed</span><span><b>${c.added.length}</b> added</span><span>against ${esc(t.name)}, version ${t.ver}</span></div>
+  ${c.removed.length ? `<div class="warnbox"><b>Removed.</b> The configuration has these and the file does not. A file that omits a product usually leaves it out by accident, so the default is to keep it.</div><table><tbody>${c.removed.map(x => `<tr><td>${tag('removed', 'bad')}</td><td class="mono">${x.type} <span class="faint">${x.model} with ${x.engine}</span></td><td><label class="plain"><input type="radio" name="rm-${x.type}" value="keep" ${decision(x.type) === 'keep' ? 'checked' : ''}> Keep it</label></td><td><label class="plain"><input type="radio" name="rm-${x.type}" value="drop" ${decision(x.type) === 'drop' ? 'checked' : ''}> Drop it</label></td></tr>`).join('')}</tbody></table>` : '<div class="okbox">The file removes nothing.</div>'}
+  ${c.changed.length ? `<h2>Changed</h2>${c.changed.map(x => `<div><b class="mono">${x.p.type}</b>${diffTable(x.d)}</div>`).join('')}` : '<div class="muted">The file changes nothing the configuration has.</div>'}
+  ${c.added.length ? `<h2>Added</h2><table><tbody>${c.added.map(p => `<tr><td>${tag('added', 'ok')}</td><td class="mono">${p.type} <span class="faint">${p.model} with ${p.engine}</span></td></tr>`).join('')}</tbody></table>` : ''}
+  <div class="faint">The difference is the screen's own computation over two documents. No operation returns a diff.</div>`;
+}
+function s5() {
+  if (S.saved) return `<div class="okbox"><b>Saved.</b> ${esc(S.saved)}</div><div class="actions"><a class="btn primary" href="../see-the-pricing-engines-a-party-holds/?screen=record&id=c2&tab=history">Open the configuration's page</a></div><div class="faint">The link opens the neighbouring prototype, which has its own fixture. This page writes to its own memory only.</div>`;
+  const t = tgt(), c = compare(), fin = finalProducts(), skipped = unknownTypes().filter(x => S.skip[x] !== false), drops = c.removed.filter(x => decision(x.type) === 'drop');
+  return `<div class="statline"><span><b>${fin.length}</b> products written</span><span><b>${c.added.length}</b> added</span><span><b>${c.changed.length}</b> changed</span><span><b>${c.removed.length - drops.length}</b> kept</span><span><b>${drops.length}</b> dropped</span></div>
+  <table><thead><tr><th>#</th><th>Product</th><th>Model</th><th>Engine</th></tr></thead><tbody>${fin.map((p, i) => `<tr><td>${i + 1}</td><td class="mono">${p.type}</td><td class="mono">${p.model}</td><td class="mono">${p.engine}</td></tr>`).join('')}</tbody></table>
+  ${skipped.length ? `<div class="warnbox">Skipped, no code: ${skipped.map(x => `<span class="mono">${x}</span>`).join(', ')}.</div>` : ''}${F().unreadable.length ? `<div class="warnbox">Dropped, no column: ${F().unreadable.map(x => esc(x.where + ' › CalibrationBlock')).join(', ')}.</div>` : ''}
+  ${t ? reasonField(true).replace('<textarea id="f-note">', '<textarea id="f-note">Brought in from ' + F().file) + '<div class="faint">The write claims the version read. A configuration that changed since is refused with 409.</div>' : '<div class="notice">A new record is saved with the reason new record.</div>'}
+  <div class="notice">Save writes the document in one request. The service writes the three tables one after another with no unit of work, so a failure part way can leave a partial document. After a failed write the screen reads the document back and shows what landed.</div>`;
+}
+function render() {
+  const rail = STEPS.map((s, i) => { const st = i < step ? 'done' : i === step ? 'current' : 'ahead'; return `<li class="railentry ${st}" data-go="${i}"><span class="railmark ${st}">${i < step ? '✓' : i + 1}</span><span>${s[1]}</span>${i === 4 ? '<span class="railtag">final</span>' : ''}</li>`; }).join('');
+  const last = step === 4, body = [s1, s2, s3, s4, s5][step]();
+  const foot = `<div class="stepfoot">${step > 0 && !(last && S.saved) ? btn('Back', '', '', 'id="b-back"') : '<span></span>'}<span class="ml-auto"></span>${last ? (S.saved ? '' : btn('Save', 'save', 'primary', 'id="b-save"')) : btn('Next: ' + STEPS[step + 1][1].toLowerCase(), '', 'primary', `id="b-next" ${valid(step) ? '' : 'disabled'}`)}</div>`;
+  document.getElementById('app').innerHTML = `${crumbs([['Home', '#'], ['Reporting', '#'], ['Pricing engines', '../see-the-pricing-engines-a-party-holds/'], ['Bring in a file']])}<div class="titlebar"><div><h1>Bring in a pricing engines file</h1><div class="sub">A workflow of five steps. Every value on this page is a fixture, and nothing is written to a server.</div></div></div>
+  <div class="journey"><nav class="railnav"><ol>${rail}</ol></nav><div><div class="stepcard"><h2>${step + 1}. ${STEPS[step][1]}</h2><div class="lead">${STEPS[step][2]}</div>${body}</div>${foot}</div></div>`;
+  chrome('bring in a pricing engines file · step ' + (step + 1) + ' of 5 · ' + F().file, [['file', ['clean', 'unknown', 'omits'], S.key], ['target', ['new', 'c2'], S.target]]);
+  wire();
+}
+function go(i) { step = i; maxStep = Math.max(maxStep, i); const p = new URLSearchParams(location.search); p.set('step', i + 1); history.replaceState({}, '', '?' + p.toString()); render(); }
+function wire() {
+  const $ = id => document.getElementById(id), qa = s => document.querySelectorAll('#app ' + s);
+  qa('[data-go]').forEach(x => x.onclick = () => { const i = Number(x.dataset.go); if (i <= maxStep) go(i); });
+  if ($('b-next')) $('b-next').onclick = () => go(step + 1);
+  if ($('b-back')) $('b-back').onclick = () => go(step - 1);
+  if ($('f-file')) $('f-file').onchange = e => { S.key = e.target.value; S.skip = {}; S.dup = {}; S.removed = {}; render(); };
+  qa('[name^=sk-]').forEach(x => x.onchange = () => { S.skip[x.name.slice(3)] = x.value === 'skip'; render(); });
+  qa('[name^=dup-]').forEach(x => x.onchange = () => { S.dup[x.name.slice(4)] = Number(x.value); render(); });
+  qa('[name^=rm-]').forEach(x => x.onchange = () => { S.removed[x.name.slice(3)] = x.value; render(); });
+  qa('[name=tg]').forEach(x => x.onchange = () => { S.target = x.value === 'new' ? 'new' : 'c2'; render(); });
+  if ($('f-tg')) $('f-tg').onchange = e => { S.target = e.target.value; render(); };
+  if ($('f-name')) $('f-name').oninput = e => { S.name = e.target.value; const b = $('b-next'); if (b) b.disabled = !valid(2); const h = e.target.parentNode.querySelector('.help'); h.innerHTML = CONFIGS.some(c => c.name.toLowerCase() === S.name.trim().toLowerCase()) ? '<span style="color:var(--bad)">A configuration with this name exists.</span>' : 'The name is new in this party.'; };
+  if ($('f-desc')) $('f-desc').oninput = e => { S.desc = e.target.value; };
+  if ($('b-save')) { if (tgt()) ready('b-save'); $('b-save').onclick = () => { const t = tgt(), n = finalProducts().length; S.saved = t ? `${t.name} was written as version ${t.ver + 1} with ${n} products, from ${F().file}.` : `${S.name} was written as version 1 with ${n} products, with the reason new record.`; render(); }; }
+}
+render();
+
+</script>
+</body>
+</html>

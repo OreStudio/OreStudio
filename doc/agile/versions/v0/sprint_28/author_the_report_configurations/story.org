@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: D119E90A-FC7B-4ED2-8CCF-4658C7351345
+:END:
+#+title: Story: Author the report configurations on guided screens
+#+description: A person creates and edits a report configuration on screens that guide each step. A configuration holds many related entities, so each entity gets a screen that helps the person choose, check and connect its parts. The configuration screens link later to the report definition screens.
+#+type: story
+#+level: s2
+#+filetags: :web:ux:reporting:configuration:sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: solid_dirac
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Give the user guided screens to create and edit a report configuration and every entity it holds. The screens follow the record screen standard. They link to the report definition screens when those screens use a configuration.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- A prototype exists for the configuration and for every entity related to it.
+- Each prototype follows the record screen standard and the prototype rules in doc/prototypes/index.org.
+- Each prototype is registered on its group page and passes check_prototype_inventory.py.
+- The prototypes state how a configuration links to a report definition.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AE27A465-17F8-4853-888C-EE2F4824E60B][Scaffold story: Author the report configurations on guided screens]] | STARTED | 2026-10-19 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:48E64664-978C-420E-87E5-7291AA956E5B][Prototype the configuration screens]] | STARTED | 2026-10-19 | | Initial task for: Author the report configurations on guided screens |
+
+* Decisions
+
+* Out of scope
+
+-

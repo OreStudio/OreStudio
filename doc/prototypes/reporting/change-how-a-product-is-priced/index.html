@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Change how a product is priced prototype — Reporting prototypes</title>
+<style>
+:root{color-scheme:dark;--bg:#121214;--panel:#1a1a1e;--panel-2:#26262b;--line:#30363d;--line-soft:#21262d;--ink:#e3e3e6;--ink-dim:#a1a1aa;--ink-faint:#71717a;--accent:#58a6ff;--accent-dim:#21262d;--ok:#3fb950;--warn:#d29922;--bad:#f85149;--radius:.5rem;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--ink)}
+body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:2.5rem 1.5rem 8rem}
+h1,h2,h3{margin:0;font-weight:600}h1{font-size:1.15rem}h2{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+p{margin:0}ul{margin:0;padding:0;list-style:none}a{color:var(--accent);text-decoration:none}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+.mono{font-family:var(--mono)}.muted{color:var(--ink-dim)}.faint{color:var(--ink-faint)}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:14px}
+.top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:grid;gap:10px}
+.panel>h2{border-bottom:1px solid var(--line-soft);padding-bottom:6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.field{display:grid;gap:4px;min-width:170px}.field label{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint)}
+.field .value,.field select,.field input{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line-soft)}
+th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+td.num{text-align:right;font-family:var(--mono)}
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:.72rem;color:var(--ink-dim)}
+.tag.ok{color:var(--ok);border-color:#1f4d29}.tag.bad{color:var(--bad);border-color:#5a2320}.tag.warn{color:var(--warn);border-color:#4a3a17}
+.notice{border:1px dashed var(--line);border-radius:var(--radius);padding:10px 12px;color:var(--ink-dim);background:#161619}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:820px){.grid2{grid-template-columns:1fr}}
+.proto-note{position:fixed;top:0;left:0;right:0;z-index:60;padding:6px 14px;background:repeating-linear-gradient(45deg,#2a2113,#2a2113 10px,#241d11 10px,#241d11 20px);border-bottom:1px solid #4a3a17;color:var(--warn);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.proto-bar{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;display:flex;gap:2px;align-items:center;padding:5px 7px;background:#0b0e13;border:1px solid var(--line);border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.6);font-size:12px;max-width:95vw;flex-wrap:wrap;justify-content:center}
+.proto-bar button{background:none;border:none;color:var(--ink-dim);padding:6px 10px;border-radius:999px}
+.proto-bar button:hover{background:var(--panel-2);color:var(--ink)}.proto-bar button.on{background:var(--accent-dim);color:var(--ink)}
+.proto-bar .label{padding:0 8px}.proto-bar .sep{color:var(--line)}
+
+.tag.off{color:#9ca3af;border-color:#374151}
+.crumbs{font-size:.8rem;color:var(--ink-dim);display:flex;gap:6px;flex-wrap:wrap}
+.titlebar{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.titlebar h1{font-size:1.3rem}.titlebar .sub{color:var(--ink-dim);margin-top:2px}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.danger{color:var(--bad);border-color:#5a2320}.btn.ghost{background:none;border-color:transparent;color:var(--ink-dim);padding:2px 8px}.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.access{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:.78rem;color:var(--ink-dim)}
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tabbar a{padding:8px 14px;color:var(--ink-dim);border-bottom:2px solid transparent}.tabbar a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+.card .body{padding:16px;display:grid;gap:16px 20px;grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.card .body{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card .foot{border-top:1px solid var(--line-soft);padding:10px 16px;color:var(--ink-faint);font-size:.8rem}
+.dl .k{font-size:.78rem;color:var(--ink-faint)}.dl .v{margin-top:2px}.dl.wide{grid-column:1/-1}
+a.link{color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:2px}a.link:hover{text-decoration-color:var(--accent)}
+.listbar{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px solid var(--line-soft)}.listbar input{flex:1;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.listbar select{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+tr.rec{cursor:pointer}tr.rec:hover td,tr.rec:focus td{background:#1d1d22;outline:none}
+th.sort{cursor:pointer}
+.pager{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;color:var(--ink-dim);font-size:.85rem;border-top:1px solid var(--line-soft);flex-wrap:wrap}
+.hist{display:grid;grid-template-columns:18rem 1fr;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--panel)}
+@media(max-width:820px){.hist{grid-template-columns:1fr}}
+.hist ol{margin:0;padding:0;list-style:none;border-right:1px solid var(--line)}
+.hist li{padding:10px 12px;border-bottom:1px solid var(--line-soft);cursor:pointer;display:grid;gap:2px}.hist li.on{background:#1d2530;box-shadow:inset 3px 0 var(--accent)}
+.hist .cmp{padding:12px;display:grid;gap:10px;align-content:start}
+.diff{font-family:var(--mono);font-size:.82rem}.diff .rm{background:#2a1517;color:#ffb3ad;padding:2px 8px}.diff .ad{background:#10261a;color:#9be9a8;padding:2px 8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}.seg button{border:none;background:none;padding:5px 10px;color:var(--ink-dim)}.seg button.on{background:var(--accent-dim);color:var(--ink)}
+.chart{display:flex;align-items:flex-end;gap:4px;height:48px;overflow-x:auto}.bar{width:14px;display:flex;flex-direction:column-reverse;cursor:pointer;flex:none}.bar i{display:block;width:100%}
+.axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--ink-faint);margin-top:4px}.legend{display:flex;gap:14px;font-size:.78rem;color:var(--ink-dim);margin-top:6px}.legend i{display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px}
+.tl{display:grid;margin-top:4px}.daydiv{font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);padding:12px 0 4px}
+.tl .item{display:grid;grid-template-columns:86px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}.tl .item.mark{background:#1d2530}
+.tl .when{color:var(--ink-faint);font-family:var(--mono);font-size:.8rem}.emblem{color:var(--accent)}
+.tl .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tl .who{font-weight:600}
+.avatar{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line);font-size:.7rem;color:var(--ink-dim)}
+.tl details summary{cursor:pointer;color:var(--ink-faint);margin-top:4px}.tl .diff{margin-top:6px}
+.dlg-bg{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:18px}
+.dlg{width:min(600px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid}
+.dlg header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line-soft)}.dlg header h2{font-size:1rem;text-transform:none;letter-spacing:0;color:var(--ink)}
+.dlg .dbody{padding:16px;display:grid;gap:14px}.dlg footer{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line-soft)}
+.field select,.field input[type=text],.field textarea{width:100%;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:7px 8px}.field textarea{min-height:64px}.field .help{font-size:.78rem;color:var(--ink-faint)}
+.warnbox{border:1px solid #4a3a17;background:#201a0e;color:var(--warn);border-radius:var(--radius);padding:8px 10px}
+.okbox{border:1px solid #1f4d29;background:#0f1d14;color:var(--ok);border-radius:var(--radius);padding:8px 10px}
+.badbox{border:1px solid #5a2320;background:#231211;color:var(--bad);border-radius:var(--radius);padding:8px 10px}
+.journey { display: grid; grid-template-columns: 14rem 1fr; gap: 2rem; align-items: start; }
+@media (max-width: 820px) { .journey { grid-template-columns: 1fr; } }
+.railnav ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.railentry {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+.railentry.done { color: var(--ink-dim); }
+.railentry.current { background: var(--panel-2); color: var(--ink); font-weight: 500; }
+.railentry.ahead { color: var(--ink-faint); }
+.railmark {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 0.75rem;
+}
+.railmark.done { border-color: var(--ok); color: var(--ok); }
+.railmark.current { border-color: var(--accent); color: var(--accent); }
+.railmark.ahead { border-color: var(--line); color: var(--ink-faint); }
+.stepfoot {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+.ml-auto { margin-left: auto; }
+.journey{margin-top:6px}.stepcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;display:grid;gap:14px}
+.stepcard>h2{font-size:1.1rem;text-transform:none;letter-spacing:0;color:var(--ink)}.stepcard .lead{color:var(--ink-dim)}
+.railentry{cursor:pointer}.railtag{margin-left:auto;font-size:.7rem;color:var(--ink-faint)}
+.mark{background:#201a0e}.chk{width:auto;min-width:0}
+td .sel{background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;max-width:100%}
+.btn.small{padding:3px 9px;font-size:.8rem}.diffrow td{font-family:var(--mono);font-size:.82rem}
+.rm{background:#2a1517;color:#ffb3ad}.ad{background:#10261a;color:#9be9a8}
+.statline{display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-dim)}.statline b{color:var(--ink)}
+.btn{white-space:nowrap;display:inline-block;text-decoration:none}a.btn{color:var(--ink)}a.btn.primary{color:#0d1117}
+details.menu{position:relative;display:inline-block}details.menu>summary{list-style:none;cursor:pointer}details.menu>summary::-webkit-details-marker{display:none}
+details.menu .items{position:absolute;right:0;top:110%;z-index:20;min-width:16rem;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);display:grid;padding:4px}
+details.menu .items a{padding:8px 10px;border-radius:6px;color:var(--ink)}details.menu .items a:hover{background:var(--panel-2)}
+.field label.plain,label.plain{text-transform:none;letter-spacing:0;font-size:inherit;color:var(--ink);display:block}
+label.plain{white-space:nowrap}
+.tag.info{color:#3b82f6;border-color:#1e3a8a}.tag.cls{color:#8b5cf6;border-color:#3b2a66}
+
+</style>
+</head>
+<body>
+
+<!--
+  PROTOTYPE. Throwaway. Mock data, no backend, no build step, no session.
+
+  Changing one product row of a pricing engine configuration, drawn as the Record
+  screen standard draws an amend: the record page, the Edit dialog with a change
+  reason, a stale-version refusal (409) and the History tab with Revert. The one
+  dialog adds three things the standard leaves open: the reach (which reports bind
+  the configuration), the difference before and after, and the scope choice, to
+  change the shared configuration or to make a copy for one report.
+
+  Addresses: ?config=c1|c2|c3&tab=products|reports|history&open=<product type>
+  Switches in the bottom bar: ?bound=0|1|4 reports bind the configuration,
+  ?conflict=1 makes the first save refuse as a stale version.
+-->
+
+<div class="proto-note" id="note"></div>
+<div class="wrap" id="app"></div>
+<div class="proto-bar" id="bar"></div>
+<div id="layer"></div>
+
+<script>
+// FIXTURE. The product, model and engine triples are counted from the 110
+// pricingengine*.xml files under the ORE Examples folder, the first 45 by count.
+// The notes, usual values and instrument codes are this prototype's own wording.
+const TRIPLES = [
+  ['Swap','DiscountedCashflows','DiscountingSwapEngine',65],['CapFlooredIborLeg','BlackOrBachelier','BlackIborCouponPricer',54],
+  ['CMS','LinearTSR','LinearTSRPricer',47],['EquityOption','BlackScholesMerton','AnalyticEuropeanEngine',45],
+  ['CommodityForward','DiscountedCashflows','DiscountingCommodityForwardEngine',44],['Bond','DiscountedCashflows','DiscountingRiskyBondEngine',38],
+  ['CrossCurrencySwap','DiscountedCashflows','DiscountingCrossCurrencySwapEngine',37],['EuropeanSwaption','BlackBachelier','BlackBachelierSwaptionEngine',37],
+  ['FxForward','DiscountedCashflows','DiscountingFxForwardEngine',36],['FxOption','GarmanKohlhagen','AnalyticEuropeanEngine',36],
+  ['CreditDefaultSwap','DiscountedCashflows','MidPointCdsEngine',36],['CapFloor','IborCapModel','IborCapEngine',35],
+  ['BermudanSwaption','LGM','Grid',34],['EquityForward','DiscountedCashflows','DiscountingEquityForwardEngine',32],
+  ['EquityOptionAmerican','BlackScholesMerton','FdBlackScholesVanillaEngine',32],['FxOptionAmerican','GarmanKohlhagen','FdBlackScholesVanillaEngine',30],
+  ['CMSSpread','BrigoMercurio','Analytic',30],['CommoditySwap','DiscountedCashflows','CommoditySwapEngine',30],
+  ['Swap','CrossAssetModel','AMC',18],['CrossCurrencySwap','CrossAssetModel','AMC',15],['FlexiSwap','LGM','Grid',15],
+  ['YYCapFloor','YYCapModel','YYCapEngine',29],['CpiCapFloor','CpiCapModel','CpiCapEngine',24],['BondOption','Black','BlackBondOptionEngine',16]
+];
+const TYPES = [
+  ['Swap','Rates','Swap','An interest rate swap, fixed against floating or floating against floating.'],
+  ['CrossCurrencySwap','Rates','CrossCurrencySwap','A swap whose two legs pay in different currencies.'],
+  ['CapFloor','Rates','CapFloor','A cap or a floor on an interest rate index.'],
+  ['CMS','Rates','Swap','A leg that pays a constant maturity swap rate.'],
+  ['CMSSpread','Rates','Swap','A leg that pays the spread between two constant maturity swap rates.'],
+  ['EuropeanSwaption','Rates','Swaption','The right to enter a swap on one date.'],
+  ['BermudanSwaption','Rates','Swaption','The right to enter a swap on any of several dates.'],
+  ['FlexiSwap','Rates','Swap','A swap whose holder may choose the notional on each date.'],
+  ['FxForward','FX','FxForward','An agreement to exchange two currencies on a future date.'],
+  ['FxOption','FX','FxOption','A European option on an exchange rate.'],
+  ['FxOptionAmerican','FX','FxOption','An American option on an exchange rate.'],
+  ['Bond','Credit','Bond','A bond that carries credit risk.'],
+  ['CreditDefaultSwap','Credit','CreditDefaultSwap','Protection against the default of one name.'],
+  ['BondOption','Credit','Bond','An option on a bond.'],
+  ['EquityOption','Equity','EquityOption','A European option on a share or an index.'],
+  ['EquityOptionAmerican','Equity','EquityOption','An American option on a share or an index.'],
+  ['EquityForward','Equity','EquityForward','An agreement to buy or sell a share on a future date.'],
+  ['CommodityForward','Commodity','CommodityForward','An agreement to buy or sell a commodity on a future date.'],
+  ['CommoditySwap','Commodity','CommoditySwap','A swap of a fixed price against a commodity price.'],
+  ['YYCapFloor','Inflation','CapFloor','A cap or a floor on year-on-year inflation.'],
+  ['CpiCapFloor','Inflation','CapFloor','A cap or a floor on a consumer price index.']
+].map(([code, cls, instrument, desc]) => ({ code, cls, instrument, desc }));
+const typeOf = c => TYPES.find(t => t.code === c);
+const MODELS = [...new Set(TRIPLES.map(t => t[1]))].sort();
+const enginesFor = m => [...new Set(TRIPLES.filter(t => t[1] === m).map(t => t[2]))].sort();
+const ALL_ENGINES = [...new Set(TRIPLES.map(t => t[2]))].sort();
+const knownPair = (m, e) => TRIPLES.some(t => t[1] === m && t[2] === e);
+const usualFor = c => { const x = TRIPLES.filter(t => t[0] === c).sort((a, b) => b[3] - a[3])[0]; return x ? { model: x[1], engine: x[2], n: x[3] } : null; };
+// The settings a pair is known to take. kind: select (options), text, number.
+const SETTINGS = {
+  'BermudanSwaption|LGM|Grid': [
+    { scope: 'model', name: 'Calibration', kind: 'select', opts: ['Bootstrap', 'BestFit', 'None'], usual: 'Bootstrap', note: 'How the model is fitted to the swaption quotes.' },
+    { scope: 'model', name: 'CalibrationStrategy', kind: 'select', opts: ['CoterminalATM', 'CoterminalDealStrike', 'UnderlyingATM', 'UnderlyingDealStrike'], usual: 'CoterminalATM', note: 'Which swaptions the fit uses.' },
+    { scope: 'model', name: 'ReversionType', kind: 'select', opts: ['HullWhite', 'Hagan'], usual: 'HullWhite', note: 'The parameterisation of mean reversion.' },
+    { scope: 'model', name: 'VolatilityType', kind: 'select', opts: ['Hagan', 'HullWhite'], usual: 'Hagan', note: 'The parameterisation of volatility.' },
+    { scope: 'model', name: 'Volatility', kind: 'number', usual: '0.01', note: 'The starting volatility the fit moves from.' },
+    { scope: 'model', name: 'ShiftHorizon', kind: 'number', usual: '0.5', note: 'The horizon, in years, of the shift of the state variable.' },
+    { scope: 'engine', name: 'sx', kind: 'number', usual: '3.0', note: 'Width of the grid, in standard deviations, on the state axis.' },
+    { scope: 'engine', name: 'sy', kind: 'number', usual: '3.0', note: 'Width of the grid, in standard deviations, on the value axis.' },
+    { scope: 'engine', name: 'nx', kind: 'number', usual: '10', note: 'Number of grid points on the state axis.' },
+    { scope: 'engine', name: 'ny', kind: 'number', usual: '10', note: 'Number of grid points on the value axis.' }
+  ],
+  'Bond|DiscountedCashflows|DiscountingRiskyBondEngine': [
+    { scope: 'engine', name: 'TimestepPeriod', kind: 'text', usual: '6M', note: 'The step of the default probability grid.' }
+  ],
+  'Swap|DiscountedCashflows|DiscountingSwapEngine': [
+    { scope: 'engine', name: 'SensitivityTemplate', kind: 'select', opts: ['IR_Analytical'], usual: 'IR_Analytical', note: 'The sensitivity method a swap offers.' }
+  ]
+};
+const GLOBAL_KNOWN = [{ name: 'ContinueOnCalibrationError', kind: 'select', opts: ['true', 'false'], usual: 'true', note: 'Whether a failed calibration stops the run. True prices the product with the last good fit and records the error.' }];
+const settingsFor = (t, m, e) => SETTINGS[t + '|' + m + '|' + e] || [];
+const P = (scope, name, value) => ({ scope, name, value });
+const BERM = () => [P('model', 'Calibration', 'Bootstrap'), P('model', 'CalibrationStrategy', 'CoterminalATM'), P('model', 'ReversionType', 'HullWhite'), P('model', 'VolatilityType', 'Hagan'), P('model', 'Volatility', '0.01'), P('model', 'ShiftHorizon', '0.5'), P('engine', 'sx', '3.0'), P('engine', 'sy', '3.0'), P('engine', 'nx', '10'), P('engine', 'ny', '10')];
+const clone = x => JSON.parse(JSON.stringify(x));
+const TRADED = ['Swap', 'FxForward', 'Bond', 'EuropeanSwaption', 'BermudanSwaption', 'CapFloor', 'FxOption', 'CMS', 'CrossCurrencySwap', 'CreditDefaultSwap', 'EquityOption'];
+const REPORTS_ALL = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity', 'Cross-Entity Counterparty Concentration', 'Large Exposures'];
+const NOW = Date.parse('2026-10-19T10:00:00Z');
+const AMC_NOW = [
+  { type: 'Swap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
+  { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] },
+  { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() },
+  { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] },
+  { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] },
+  { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
+  { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] },
+  { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
+  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] }
+];
+const withEdit = (prods, fn) => { const c = clone(prods); fn(c); return c; };
+const amcV3 = withEdit(AMC_NOW, c => { c[2].params.find(p => p.name === 'VolatilityType').value = 'HullWhite'; });
+const amcV2 = amcV3.filter(p => p.type !== 'CMS');
+const amcV1 = withEdit(amcV2, c => { c[2].params.find(p => p.name === 'ShiftHorizon').value = '1.0'; });
+const GLOBAL_CFG = [{ name: 'ContinueOnCalibrationError', value: 'true' }];
+const CONFIGS = [
+  { id: 'c1', name: 'Group pricing engines', desc: 'The model and engine that price each product ACME Corporation Group trades.', variant: '', cfgRow: 'configuration 3b4103d0', reports: REPORTS_ALL.slice(0, 4), globals: clone(GLOBAL_CFG),
+    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] }, { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] }],
+    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', by: 'tenant provisioning service', reason: 'New record', note: '' }] },
+  { id: 'c2', name: 'Europe AMC pricing', desc: 'Pricing for the European entities, with the AMC engine for swaps and cross currency swaps.', variant: 'AMC', cfgRow: 'configuration 7a91c2e4', reports: REPORTS_ALL.slice(4), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', by: 'tenant provisioning service', reason: 'New record', note: '', snap: { products: amcV1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', snap: { products: amcV2, globals: GLOBAL_CFG } },
+      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', snap: { products: amcV3, globals: GLOBAL_CFG } },
+      { v: 4, at: '2026-10-16T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
+  { id: 'c3', name: 'US swaptions SABR', desc: 'A trial configuration for the US swaption desk.', variant: 'SABR', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
+    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] }, { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() }, { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] }],
+    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '' }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here' }] }
+];
+CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
+// A flat view of a document, so two documents can be compared as rows.
+const flat = (products, globals) => { const m = {}; (products || []).forEach(p => { m[p.type + ' › model'] = p.model; m[p.type + ' › engine'] = p.engine; (p.params || []).forEach(q => { m[p.type + ' › ' + q.scope + ' ' + q.name] = q.value; }); }); (globals || []).forEach(g => { m['global › ' + g.name] = g.value; }); return m; };
+const diffDocs = (a, b) => { const x = flat(a.products, a.globals), y = flat(b.products, b.globals), out = []; new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { if (x[k] !== y[k]) out.push({ k, from: x[k], to: y[k] }); }); return out; };
+
+const P0 = new URLSearchParams(location.search);
+const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const tag = (t, k) => `<span class="tag ${k || ''}">${t}</span>`;
+const dash = '<span class="faint">—</span>';
+const rel = iso => { const s = Math.round((NOW - Date.parse(iso)) / 1000); return s < 90 ? 'just now' : s < 5400 ? Math.round(s / 60) + ' minutes ago' : s < 129600 ? Math.round(s / 3600) + ' hours ago' : Math.round(s / 86400) + ' days ago'; };
+const exact = iso => iso.replace('T', ' ').replace(':00Z', ' UTC');
+const G = { refresh: '↻', add: '+', edit: '✎', delete: '🗑', revert: '↺', cancel: '✕', save: '✓', copy: '⧉' };
+const btn = (word, icon, cls, attrs) => `<button class="btn ${cls || ''}" ${attrs || ''}>${G[icon] ? G[icon] + ' ' : ''}${word}</button>`;
+let KEEP = [];
+function q(params) { const p = new URLSearchParams(); KEEP.forEach(k => { const v = new URLSearchParams(location.search).get(k); if (v) p.set(k, v); }); Object.entries(params).forEach(([k, v]) => p.set(k, v)); return '?' + p.toString(); }
+const href = params => esc(q(params));
+function nav(params) { window.history.pushState({}, '', q(params)); render(); }
+window.onpopstate = () => render();
+document.addEventListener('click', e => { const a = e.target.closest('a[data-nav]'); if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return; e.preventDefault(); window.history.pushState({}, '', a.getAttribute('href')); render(); });
+function crumbs(parts) { return `<div class="crumbs">${parts.map((p, i) => i === parts.length - 1 ? `<span>${p[0]}</span>` : `<a class="link" data-nav href="${p[1]}">${p[0]}</a>`).join('<span>›</span>')}</div>`; }
+const kv = (l, v, wide) => `<div class="dl ${wide ? 'wide' : ''}"><div class="k">${l}</div><div class="v">${v}</div></div>`;
+function dialog(title, body, footer, onClose) {
+  document.getElementById('layer').innerHTML = `<div class="dlg-bg" id="bg"><div class="dlg" role="dialog" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button class="btn ghost" id="d-x" aria-label="Close">✕</button></header><div class="dbody">${body}</div><footer>${footer}</footer></div></div>`;
+  const close = () => { if (onClose && !onClose()) return; closeDlg(); };
+  document.getElementById('d-x').onclick = close; document.getElementById('bg').onclick = e => { if (e.target.id === 'bg') close(); };
+  const c = document.getElementById('d-cancel'); if (c) c.onclick = close;
+  return close;
+}
+function closeDlg() { document.getElementById('layer').innerHTML = ''; }
+const REASON_AMEND = [{ name: 'Rectification', note: true }, { name: 'Correction of a data entry error', note: true }, { name: 'Non-material update', note: false }];
+const reasonField = changed => { const offered = REASON_AMEND.filter(x => changed ? x.name !== 'Non-material update' : x.name === 'Non-material update');
+  return `<div class="field"><label>Change reason</label><select id="f-reason">${offered.map(x => `<option data-note="${x.note ? 1 : 0}">${x.name}</option>`).join('')}</select></div><div class="field"><label>Commentary</label><textarea id="f-note"></textarea><div class="help" id="f-nh"></div></div>`; };
+function ready(saveId) {
+  const reason = document.getElementById('f-reason'), note = document.getElementById('f-note'), nh = document.getElementById('f-nh');
+  const needs = () => reason && reason.selectedOptions[0] && reason.selectedOptions[0].dataset.note === '1';
+  const check = () => { const bad = needs() && !note.value.trim(); nh.textContent = needs() ? 'This reason needs a commentary.' : ''; const s = document.getElementById(saveId); if (s) s.disabled = s.dataset.block === '1' || bad; };
+  if (reason) { reason.onchange = check; note.oninput = check; check(); }
+}
+function chrome(label, bars) {
+  document.getElementById('note').textContent = 'Prototype · ' + label + ' · mock data, nothing is written to a server';
+  const opt = (key, vals, cur0) => vals.map(v => `<button data-k="${key}" data-v="${v}" class="${v === cur0 ? 'on' : ''}">${v}</button>`).join('');
+  document.getElementById('bar').innerHTML = bars.map(([k, vals, cur0]) => `<span class="label">${k}</span>${opt(k, vals, cur0)}`).join('<span class="sep">|</span>');
+  document.querySelectorAll('#bar [data-k]').forEach(x => x.onclick = () => { const p = new URLSearchParams(location.search); p.set(x.dataset.k, x.dataset.v); location.search = p.toString(); });
+}
+const typeCell = c => { const t = typeOf(c); return `<span class="mono">${c}</span>${t ? '' : ' ' + tag('no code', 'warn')}`; };
+const pairTag = (m, e) => !m || !e ? tag('incomplete', 'warn') : knownPair(m, e) ? '' : tag('pair not known to work', 'warn');
+const covered = c => TRADED.filter(t => c.products.some(p => p.type === t));
+const uncovered = c => TRADED.filter(t => !c.products.some(p => p.type === t));
+function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
+const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
+let hideSystem = false;
+function historyTab(c) {
+  const all = c.versions.slice().reverse(), cur = all[0];
+  const rows = all.filter(x => !(hideSystem && /service/.test(x.by)));
+  const entry = x => {
+    const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : null;
+    return `<div class="item"><div class="when">${x.at.slice(0, 10)}${x.v === cur.v ? ' <span class="emblem" title="Current version">●</span>' : ''}</div><div>
+      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}
+      ${d ? `<details style="margin-left:34px"><summary>Details</summary>${diffTable(d)}</details>` : '<div class="faint" style="margin-left:34px">The fixture keeps no values for this version.</div>'}</div></div>`; };
+  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. Revert writes an older version's values back as a new version.</div>
+  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${rows.map(entry).join('')}</div>`;
+}
+function revertDialog(c, v) {
+  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap);
+  dialog('Revert ' + c.name + '?', `<div>Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">Revert</button>`);
+  ready('d-save');
+  document.getElementById('d-save').onclick = () => { c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason: document.getElementById('f-reason').value, note: document.getElementById('f-note').value || 'Reverted to v' + v, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
+}
+function reportsTab(c) {
+  return `<div class="notice">A change to this configuration reaches the next run of each report below. A run already produced keeps what it ran with, and no operation says which version of the configuration that was.</div>
+  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Binds it as</th></tr></thead><tbody>${c.reports.map(r => `<tr><td><span class="link">${esc(r)}</span></td><td class="mono">pricing_engines</td></tr>`).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
+  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist: this is a fixture.</div>`;
+}
+
+const bound = Number(P0.get('bound') || 4), conflict = P0.get('conflict') === '1', actor = 'analyst', actorName = 'market risk owner';
+KEEP = ['bound', 'conflict'];
+const may = a => true;
+const B = () => current.reports.length;
+const cfg = () => { const c = CONFIGS.find(x => x.id === (P0.get('config') || 'c2')); if (!c._set) { c.reports = REPORTS_ALL.slice(0, bound); c._set = 1; } return c; };
+let current = cfg(), tabNow = P0.get('tab') || 'products', draft = null, markType = null, banner = '', stale = conflict;
+const route = () => ({ tab: tabNow });
+const LIST = () => '../see-the-pricing-engines-a-party-holds/';
+function newProductParams(orig, d) { // the product's params after the draft
+  const keep = d.rows.filter(r => !(r.state === 'drop' && r.drop)), add = d.rows.filter(r => r.state === 'need' && r.add);
+  return keep.filter(r => r.state !== 'need').map(r => P(r.scope, r.name, r.value)).concat(add.map(r => P(r.scope, r.name, r.value)));
+}
+function openDraft(type) {
+  const p = current.products.find(x => x.type === type);
+  draft = { type, model: p.model, engine: p.engine, scope: B() <= 1 ? 'change' : 'copy', copyName: current.name + ' (copy)', rows: [] };
+  rebuildRows(p.params);
+}
+function rebuildRows(origParams) {
+  const known = settingsFor(draft.type, draft.model, draft.engine), old = draft.rows;
+  const orig = origParams || current.products.find(x => x.type === draft.type).params;
+  const rows = orig.map(p => { const k = known.find(s => s.name === p.name && s.scope === p.scope), prev = old.find(r => r.name === p.name && r.scope === p.scope);
+    return { scope: p.scope, name: p.name, value: prev ? prev.value : p.value, orig: p.value, state: k ? 'ok' : 'drop', drop: prev ? prev.drop : false, kind: k ? k.kind : 'text', opts: k && k.opts, note: k ? k.note : 'The new pair does not take this setting.' }; });
+  known.filter(s => !orig.some(p => p.name === s.name && p.scope === s.scope)).forEach(s => { const prev = old.find(r => r.name === s.name && r.scope === s.scope);
+    rows.push({ scope: s.scope, name: s.name, value: prev ? prev.value : s.usual, orig: null, state: 'need', add: prev ? prev.add : false, kind: s.kind, opts: s.opts, note: s.note }); });
+  draft.rows = rows;
+}
+function draftDoc() { const p = current.products.find(x => x.type === draft.type); return { before: { products: [p], globals: [] }, after: { products: [{ type: draft.type, model: draft.model, engine: draft.engine, params: newProductParams(p.params, draft) }], globals: [] } }; }
+const stateTag = r => r.state === 'drop' ? tag(r.drop ? 'will be dropped' : 'not taken by the pair, kept', 'warn') : r.state === 'need' ? tag(r.add ? 'will be added' : 'usually needed', 'warn') : r.value !== r.orig ? tag('changed', 'info') : '<span class="faint">unchanged</span>';
+const ctl = (r, i) => r.kind === 'select' ? `<select class="sel" data-pv="${i}">${r.opts.map(o => `<option ${o === r.value ? 'selected' : ''}>${o}</option>`).join('')}</select>` : `<input class="sel" data-pv="${i}" value="${esc(r.value)}">`;
+function reachPanel() {
+  if (B() === 0) return '<div class="notice"><b>Reach.</b> No report binds this configuration, so a change reaches no run.</div>';
+  const names = current.reports.map(esc).join(', ');
+  return `<div class="${B() > 1 ? 'warnbox' : 'notice'}"><b>Reach.</b> ${B() === 1 ? `One report binds this configuration: ${names}.` : `${B()} reports bind this configuration: ${names}.`} A change reaches the next run of ${B() === 1 ? 'it' : 'each'}. It does not reach a run already produced: a run keeps what it ran with, and no operation says which version of the configuration that was. A run made after the change is not comparable with a run made before it for this product.</div>`;
+}
+function editDialog() {
+  const d = draft, { before, after } = draftDoc(), diff = diffDocs(before, after), changed = diff.length > 0 || d.scope === 'copy';
+  const known = knownPair(d.model, d.engine), usual = usualFor(d.type);
+  const body = `${reachPanel()}
+  <div class="row"><div class="field"><label>Model</label><select id="f-model">${MODELS.map(m => `<option ${m === d.model ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
+  <div class="field"><label>Engine</label><select id="f-engine">${(enginesFor(d.model).includes(d.engine) ? enginesFor(d.model) : [d.engine].concat(enginesFor(d.model))).map(e => `<option ${e === d.engine ? 'selected' : ''}>${e}</option>`).join('')}</select></div></div>
+  ${known ? '' : `<div class="warnbox">${d.model} with ${d.engine} is not a pair the system has seen run. It is marked, not refused. Check the engine: the old one may not run this model.</div>`}
+  ${usual ? `<div class="faint">The usual pair for ${d.type} is ${usual.model} with ${usual.engine}.</div>` : ''}
+  <div class="card"><table><thead><tr><th>Setting</th><th>Value</th><th>State</th><th></th></tr></thead><tbody>${d.rows.map((r, i) => `<tr><td><span class="faint">${r.scope}</span> <span class="mono">${esc(r.name)}</span></td><td>${r.state === 'drop' && r.drop ? '<span class="faint">—</span>' : ctl(r, i)}</td><td>${stateTag(r)}</td><td>${r.state === 'drop' ? `<label class="plain"><input type="checkbox" data-dr="${i}" ${r.drop ? 'checked' : ''}> Drop</label>` : r.state === 'need' ? `<label class="plain"><input type="checkbox" data-ad="${i}" ${r.add ? 'checked' : ''}> Add</label>` : ''}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">This product has no setting.</td></tr>'}</tbody></table></div>
+  <h2>The difference</h2>${diffTable(diff)}
+  <div class="field"><label>Scope</label><label class="plain"><input type="radio" name="scope" value="change" ${d.scope === 'change' ? 'checked' : ''}> Change this configuration${B() > 1 ? ' for all ' + B() + ' reports' : ''}</label>
+  ${B() >= 1 ? `<label class="plain"><input type="radio" name="scope" value="copy" ${d.scope === 'copy' ? 'checked' : ''}> Make a copy for ${esc(current.reports[0])} only</label>` : ''}
+  ${d.scope === 'copy' ? `<input class="sel" id="f-copy" value="${esc(d.copyName)}"><div class="help">The whole configuration is copied with this change. Only ${esc(current.reports[0])} is rebound to the copy. The other ${B() - 1} keep this configuration. The copy and the rebinding are two requests, and no operation makes a copy.</div>` : ''}</div>
+  ${stale ? `<div class="badbox">This configuration changed since it was read (version ${current.ver + 1}). The save was refused. <button class="btn" id="b-reload">Reload</button></div>` : ''}
+  ${reasonField(diff.length > 0)}`;
+  dialog('Edit ' + d.type, body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" ${changed ? '' : 'data-block="1" disabled'}>${d.scope === 'copy' ? 'Save the copy' : 'Save'}</button>`, () => diff.length === 0 || confirm('You have unsaved changes. Close anyway?'));
+  ready('d-save');
+  const $ = id => document.getElementById(id);
+  $('f-model').onchange = e => { d.model = e.target.value; if (!enginesFor(d.model).includes(d.engine)) d.engine = enginesFor(d.model)[0] || d.engine; rebuildRows(); editDialog(); };
+  $('f-engine').onchange = e => { d.engine = e.target.value; rebuildRows(); editDialog(); };
+  document.querySelectorAll('#layer [data-pv]').forEach(x => x.onchange = () => { d.rows[Number(x.dataset.pv)].value = x.value; editDialog(); });
+  document.querySelectorAll('#layer [data-dr]').forEach(x => x.onchange = () => { d.rows[Number(x.dataset.dr)].drop = x.checked; editDialog(); });
+  document.querySelectorAll('#layer [data-ad]').forEach(x => x.onchange = () => { d.rows[Number(x.dataset.ad)].add = x.checked; editDialog(); });
+  document.querySelectorAll('#layer [name=scope]').forEach(x => x.onchange = () => { d.scope = x.value; editDialog(); });
+  if ($('f-copy')) $('f-copy').oninput = e => { d.copyName = e.target.value; };
+  if ($('b-reload')) $('b-reload').onclick = () => { stale = false; editDialog(); };
+  $('d-save').onclick = () => {
+    if (stale) { editDialog(); return; }
+    const reason = $('f-reason').value, note = $('f-note').value, params = newProductParams(null, d), p = { type: d.type, model: d.model, engine: d.engine, params };
+    if (d.scope === 'copy') {
+      const nc = { id: 'n' + Date.now(), name: d.copyName, desc: current.desc, variant: current.variant, cfgRow: 'configuration (new)', reports: [current.reports[0]], globals: clone(current.globals), products: current.products.map(x => x.type === d.type ? p : clone(x)), versions: [{ v: 1, at: new Date(NOW).toISOString(), by: actorName, reason: 'New record', note: 'Copy of ' + current.name }] };
+      nc.ver = 1; nc.changed = nc.versions[0].at; current.reports = current.reports.slice(1); CONFIGS.push(nc);
+      banner = `Saved the copy ${nc.name}. ${nc.reports[0]} is now bound to it. The other ${current.reports.length} keep ${current.name}.`; current = nc;
+    } else {
+      current.products = current.products.map(x => x.type === d.type ? p : x); current.ver++; current.changed = new Date(NOW).toISOString();
+      current.versions.push({ v: current.ver, at: current.changed, by: actorName, reason, note, snap: { products: clone(current.products), globals: clone(current.globals) } });
+      banner = `Saved ${d.type} as version ${current.ver}. ${current.reports.length ? 'The next run of ' + (current.reports.length === 1 ? current.reports[0] : 'each of the ' + current.reports.length + ' reports') + ' uses it.' : ''}`;
+    }
+    markType = d.type; draft = null; closeDlg(); setTimeout(() => { markType = null; render(); }, 3000); render();
+  };
+}
+function productsTab(c) {
+  return `<div class="card"><table><thead><tr><th>Product type</th><th>Model</th><th>Engine</th><th>Parameters</th><th></th></tr></thead><tbody>${c.products.map(p => `<tr class="${p.type === markType ? 'mark' : ''}"><td class="mono">${p.type}<div class="faint" style="font-size:.78rem;font-family:inherit">${esc(typeOf(p.type) ? typeOf(p.type).desc : '')}</div></td><td class="mono">${esc(p.model)}</td><td class="mono">${esc(p.engine)} ${pairTag(p.model, p.engine)}</td><td class="num">${p.params.length}</td><td>${btn('Edit', 'edit', 'small', `data-edit="${p.type}"`)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function render() {
+  const c = current, r = route(), tabs = [['products', 'Products'], ['reports', 'Reports'], ['history', 'History']];
+  const reportsTabHtml = reportsTab(c);
+  const body = r.tab === 'history' ? historyTab(c) : r.tab === 'reports' ? reportsTabHtml : productsTab(c);
+  document.getElementById('app').innerHTML = `${crumbs([['Home', '#'], ['Reporting', '#'], ['Pricing engines', LIST()], [esc(c.name)]])}
+  <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${c.variant ? esc(c.variant) : 'no variant'} · version ${c.ver}</div></div><div class="actions"><span class="access">✎ Editable</span></div></div>
+  ${banner ? `<div class="okbox">${esc(banner)}</div>` : ''}
+  <div class="tabbar">${tabs.map(([k, l]) => `<a data-tab="${k}" href="#" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;
+  chrome('change how a product is priced · ' + B() + ' bound report' + (B() === 1 ? '' : 's') + (stale ? ' · stale version' : ''), [['bound', ['0', '1', '4'], String(bound)], ['conflict', ['0', '1'], conflict ? '1' : '0']]);
+  document.querySelectorAll('#app [data-tab]').forEach(x => x.onclick = e => { e.preventDefault(); tabNow = x.dataset.tab; render(); });
+  document.querySelectorAll('#app [data-edit]').forEach(x => x.onclick = () => { openDraft(x.dataset.edit); editDialog(); });
+  const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };
+  document.querySelectorAll('#app [data-revert]').forEach(x => x.onclick = () => revertDialog(c, Number(x.dataset.revert)));
+  if (P0.get('open') && !draft && !window._opened) { window._opened = 1; openDraft(P0.get('open')); editDialog(); }
+}
+render();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: B3F897D1-BFE4-401A-9566-7680A462D9EC
+:END:
+#+title: Author a pricing engine configuration prototype
+#+description: Authoring a pricing engine configuration on the standard steps UI: six steps, with three readings of the model and engine step behind ?variant=A|B|C.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:ui:reporting:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+| Item          | Where                                             |
+|---------------+---------------------------------------------------|
+| Prototype     | [[file:author-a-pricing-engine-configuration/][the prototype]] |
+| Gemini review | none                                              |
+| Group         | [[file:index.org][Reporting prototypes]]            |
+
+* Summary
+
+This prototype draws the authoring journey on the standard steps UI, copied from the first-run prototype: the rail, its marks and the step foot. Six steps: name it and choose where to start, choose the products, choose the model and engine, set the parameters, check it, and review and save. The last step is final.
+
+The one open question is the layout of step 3, where each chosen product gets a model and an engine. The page carries three readings of that step and of nothing else, behind =?variant=A|B|C=.
+
+The page answers to the journey [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
+
+* Detail
+
+** The question the screen answers
+
+A pricing engine document is a long list of product types, each with a model, an engine and settings, and the names are ORE's own. The person knows what the party trades and has a view on how each product should be priced. They should not need to know which engines exist or which settings a model needs. The screen offers the usual pair for each product, narrows the engine to the ones known to run the model, says in words what each setting means, and checks the result against the products the party trades.
+
+** Three readings of the model and engine step
+
+- *A, a table.* One row for each product, with the model and engine in two combo boxes, *Use the usual*, a note on the pair and the order arrows. It is the densest, and a person reads the whole document at once.
+- *B, a card for each product.* The same fields on a card with the product's description, two cards across. It gives the description room, so a person who does not know =CMSSpread= can read what it is.
+- *C, a guided walk.* One product at a time, with Previous and Next. It suits a person who authors a configuration once and wants to be told what each product is.
+
+** Rules the page follows
+
+- *A pair that is not known to work is marked and never refused.* The person may know better than the list, and the server checks none of it.
+- *Nothing in step 5 blocks the save.* A finding is a statement. The review step repeats it.
+- *The usual pair is a suggestion.* It is the pair most product entries in the example files use for the product, and the page says where the suggestion comes from.
+- *A copy carries the products and settings and not the report bindings.*
+
+** What is fake
+
+Every value. The models, engines and pairs are counted from 110 ORE example files (123 product, model and engine triples; the page uses the 24 most common). The notes and usual values of the settings are this page's own wording, written for the Bermudan swaption pair, the risky bond and the swap, and a setting the page does not know is a text field. The traded product types are a fixture. The save writes to the page's memory only.
+
+** What the page states and does not fix
+
+No operation returns the models, the engines, the pairs that work or the settings a pair takes, and no service checks a document when it is written. The document write is not one transaction. The party's book is not readable. Each is stated on the page where it bites.
+
+** Where the code lives
+
+=doc/prototypes/reporting/author-a-pricing-engine-configuration/index.html=. One file, plain HTML, CSS and JavaScript, with the style and the script inline, no modules, no fetch and no build step.
+
+** What it argues
+
+- The standard steps UI carries the journey: six steps, the last final, one computed rail.
+- A pair that is not known to work is a mark, not a refusal.
+- The checks are the screen's own, and the page says no server check stands behind them.
+
+** The verdict
+
+None yet. This page is on the branch that proposes it and waits for review.
+
+** What it does not settle
+
+- Which of the three readings of step 3 is right. That is the question the variants exist to answer.
+- Whether the models and engines should be two lookup tables, or one table of pairs. The page reads a fixture of pairs and cannot decide.
+
+* See also
+
+- [[file:index.org][Reporting prototypes]] — the group, and what each prototype argues.
+- [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] — the journey this prototype answers.
+- [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] — the shape of the list, the page and the dialogs.
+- [[file:../setup/first-run/][First run]] — the prototype the standard steps UI is copied from.

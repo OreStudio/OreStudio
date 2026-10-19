@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 48E64664-978C-420E-87E5-7291AA956E5B
+:END:
+#+title: Task: Prototype the configuration screens
+#+description: Initial task for: Author the report configurations on guided screens
+#+type: task
+#+level: s1
+#+filetags: :author_the_report_configurations:sprint_28:v0:
+#+owner: marco
+#+branch: feature/author-the-report-configurations
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the user guided screens to create and edit a report configuration and every entity it holds. The screens follow the record screen standard. They link to the report definition screens when those screens use a configuration.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:D119E90A-FC7B-4ED2-8CCF-4658C7351345][Author the report configurations on guided screens]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- A prototype exists for the configuration and for every entity related to it.
+- Each prototype follows the record screen standard and the prototype rules in doc/prototypes/index.org.
+- Each prototype is registered on its group page and passes check_prototype_inventory.py.
+- The prototypes state how a configuration links to a report definition.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+** Rules the prototypes follow
+
+- Prototype rules: [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]]. Plain HTML, CSS and JavaScript under
+  =doc/prototypes/reporting/<name>/=. No framework, no build, no backend. Copy the
+  design tokens from =projects/ores.web/packages/web/src/styles.css=. Switch
+  variants and states with query parameters. Write a design note beside each
+  prototype. Register each prototype on =doc/prototypes/reporting/index.org=
+  with its review cell at =none=.
+- UX standard: [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]]. Use the shared parts it names for lists,
+  paging, the record page, change reasons, history, related records, icons,
+  states and feedback.
+- Memory: [[id:708C2462-C1F8-455B-B091-9D9690FEEAAB][Keep journey prototypes on main]].
+
+** Steps
+
+1. Read the ORE report configuration investigations. List every entity a
+   configuration holds and the type of each link between them.
+2. Group the entities into screens. Give each screen a guided flow: choose,
+   check, connect.
+3. Prototype the configuration screen and one screen for each related entity.
+4. Show on each screen how the configuration links to a report definition. The
+   report definition screens will use a configuration later.
+5. Write a design note for each prototype. Register each one on the group page.
+6. Run =build/scripts/check_prototype_inventory.py=.
+
+** Scope, settled
+
+A configuration is one of the five types a report definition binds:
+=conventions=, =pricing_engines=, =todays_market=, =curve_configuration= and
+=risk_report_config=. See [[id:4E0F3F61-7C25-44B5-9C3F-2F4B7B2E9A10][Create a report prototype]].
+One type at a time. Conventions run in another environment. Pricing engines go
+first. The other three follow.
+
+** Pricing engines: done
+
+Four journeys and four prototypes, in the reporting group.
+
+| Journey | Prototype |
+|---------+-----------|
+| [[id:386DD47E-DA9E-4EA7-B925-852048EE47B7][See the pricing engines a party holds]] | =doc/prototypes/reporting/see-the-pricing-engines-a-party-holds/= |
+| [[id:0D39E4B7-75FD-480A-A996-2234BCC7BCC8][Author a pricing engine configuration]] | =doc/prototypes/reporting/author-a-pricing-engine-configuration/= |
+| [[id:D998F36A-9716-48E7-BC70-BC4813115591][Change how a product is priced]] | =doc/prototypes/reporting/change-how-a-product-is-priced/= |
+| [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]] | =doc/prototypes/reporting/bring-in-a-pricing-engines-file/= |
+
+Each prototype is registered on the group page, has a design note, and passes
+=build/scripts/check_prototype_inventory.py=. Each journey carries a wireframe.
+None has a Gemini review.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+| ORE example files read for the product, model and engine pairs | 110 files, 123 distinct triples | =python3 -I triples.py <ORE>/Examples=, a throwaway script that counts =Product= elements in =pricingengine*.xml= | ace1bac61b |
+| Prototypes in the tree after this task | 80 in 20 groups, all listed | =python3 build/scripts/check_prototype_inventory.py= | ace1bac61b plus the working tree |
+
+* Notes
+
+- *Group.* The journeys and prototypes sit in the reporting group, not a new one,
+  because a configuration is bound by a report and the group already holds Create
+  a report and Change what a report runs. A group for the configurations can
+  split out later if the five types crowd it.
+- *Vocabulary.* The models, engines, pairs and settings come from a fixture. No
+  operation returns them, and no service checks a pricing engines document when
+  it is written. Each journey states the gap.
+- *Link to report definitions.* Each journey names the report journey that binds
+  or reads the configuration. The reach statement matches Change what a report
+  runs.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

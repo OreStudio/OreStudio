@@ -1,0 +1,48 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+salt
+{
+  <b>ORE STUDIO - REPORTING: SIGN OFF A PRICING ENGINE CHANGE</b>
+  Home > Reporting > Pricing engines > Sign-off
+  --
+  <b>THE QUEUE</b>
+  "Search the configuration and the change" | ^Show: open^
+  {#
+    Configuration | Cycle | Change | Proposed by | Sign-off | State | For you
+    End of day pricing | End of day | v4 to v5 | market risk owner | Quant 1 of 3 | Awaiting sign-off | Needs your sign-off
+    Intraday pricing | Intraday | v2 to v3 | market risk owner | 0 of 3 | Awaiting sign-off | -
+  }
+  --
+  <b>ONE PROPOSAL: END OF DAY PRICING, VERSION 5</b>
+  Awaiting sign-off - End of day - version 4 is in force until this is approved
+  [ Sign-off ] | [ Changes ] | [ Reach ] | [ History ]
+  Four eyes: the person who proposes a change cannot sign it off.
+  {#
+    Role | Decision | Person | When | Comment
+    Quant team | Approved | quant lead | 2 days ago | -
+    Market risk | Waiting | - | - | [ Approve ] | [ Reject ]
+    Model validation | Waiting | - | - | -
+  }
+  When all roles approve:
+  [ Make version 5 official ]
+  The proposer sees: You proposed this change. Another person in Market risk must sign it off.
+}
+
+@enduml

@@ -147,9 +147,11 @@ label.plain{white-space:nowrap}
   the configuration), the difference before and after, and the scope choice, to
   change the shared configuration or to make a copy for one report.
 
-  Addresses: ?config=c1|c2|c3&tab=products|reports|history&open=<product type>
-  Switches in the bottom bar: ?bound=0|1|4 reports bind the configuration,
-  ?conflict=1 makes the first save refuse as a stale version.
+  Addresses: ?config=c1|c2&tab=products|reports|history&open=<product type>
+  Switches in the bottom bar: ?status=approved|draft (an approved configuration takes a
+  proposal; a draft changes in place), ?bound=0|1|4 reports bind the configuration,
+  ?pending=1 shows a proposal already open, ?conflict=1 makes the first submit refuse as a
+  stale version.
 -->
 
 <div class="proto-note" id="note"></div>
@@ -230,7 +232,23 @@ const P = (scope, name, value) => ({ scope, name, value });
 const BERM = () => [P('model', 'Calibration', 'Bootstrap'), P('model', 'CalibrationStrategy', 'CoterminalATM'), P('model', 'ReversionType', 'HullWhite'), P('model', 'VolatilityType', 'Hagan'), P('model', 'Volatility', '0.01'), P('model', 'ShiftHorizon', '0.5'), P('engine', 'sx', '3.0'), P('engine', 'sy', '3.0'), P('engine', 'nx', '10'), P('engine', 'ny', '10')];
 const clone = x => JSON.parse(JSON.stringify(x));
 const TRADED = ['Swap', 'FxForward', 'Bond', 'EuropeanSwaption', 'BermudanSwaption', 'CapFloor', 'FxOption', 'CMS', 'CrossCurrencySwap', 'CreditDefaultSwap', 'EquityOption'];
-const REPORTS_ALL = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Group DV01 by book', 'Treasury Sensitivity', 'Cross-Entity Counterparty Concentration', 'Large Exposures'];
+const EOD_REPORTS = ['Group Consolidated Exposure', 'Board Risk Dashboard', 'Large Exposures', 'Cross-Entity Counterparty Concentration'];
+const INTRA_REPORTS = ['Treasury Sensitivity', 'Group DV01 by book'];
+const REPORTS_ALL = EOD_REPORTS.concat(INTRA_REPORTS);
+// FIXTURE. The product types each report's portfolio holds. No operation returns them.
+const REPORT_META = {
+  'Group Consolidated Exposure': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
+  'Board Risk Dashboard': { cycle: 'eod', portfolio: 'Group', needs: TRADED.slice() },
+  'Large Exposures': { cycle: 'eod', portfolio: 'Group counterparties', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap', 'CreditDefaultSwap'] },
+  'Cross-Entity Counterparty Concentration': { cycle: 'eod', portfolio: 'European entities', needs: ['Swap', 'FxForward', 'Bond', 'CreditDefaultSwap', 'CapFloor', 'EuropeanSwaption'] },
+  'Treasury Sensitivity': { cycle: 'intraday', portfolio: 'Treasury desk', needs: ['Swap', 'FxForward', 'Bond', 'CrossCurrencySwap'] },
+  'Group DV01 by book': { cycle: 'intraday', portfolio: 'Rates books', needs: ['Swap', 'CapFloor', 'EuropeanSwaption', 'BermudanSwaption', 'CMS'] }
+};
+const CYCLE_NAME = { eod: 'End of day', intraday: 'Intraday' };
+// ASSUMED. The roles and their order are for model risk to confirm. A build reads them from a policy.
+const ROLES = [{ id: 'quant', name: 'Quant team' }, { id: 'mr', name: 'Market risk' }, { id: 'mv', name: 'Model validation' }];
+const ROLE_PEOPLE = { quant: 'quant lead', mr: 'head of market risk', mv: 'model validator' };
+const SIGNED = at => ROLES.map(r => ({ role: r.id, by: ROLE_PEOPLE[r.id], at, state: 'approved' }));
 const NOW = Date.parse('2026-10-19T10:00:00Z');
 const AMC_NOW = [
   { type: 'Swap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
@@ -241,27 +259,50 @@ const AMC_NOW = [
   { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
   { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] },
   { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
-  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] }
+  { type: 'CrossCurrencySwap', model: 'CrossAssetModel', engine: 'AMC', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
 ];
 const withEdit = (prods, fn) => { const c = clone(prods); fn(c); return c; };
-const amcV3 = withEdit(AMC_NOW, c => { c[2].params.find(p => p.name === 'VolatilityType').value = 'HullWhite'; });
+const setParam = (p, name, value) => { p.params.find(x => x.name === name).value = value; };
+const amcV3 = withEdit(AMC_NOW, c => setParam(c[2], 'VolatilityType', 'HullWhite'));
 const amcV2 = amcV3.filter(p => p.type !== 'CMS');
-const amcV1 = withEdit(amcV2, c => { c[2].params.find(p => p.name === 'ShiftHorizon').value = '1.0'; });
+const amcV1 = withEdit(amcV2, c => setParam(c[2], 'ShiftHorizon', '1.0'));
+const INTRA_V2 = [
+  { type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] },
+  { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] },
+  { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM().map(p => (p.name === 'nx' || p.name === 'ny') ? P(p.scope, p.name, '6') : p) },
+  { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] },
+  { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] },
+  { type: 'FxOption', model: 'GarmanKohlhagen', engine: 'AnalyticEuropeanEngine', params: [] },
+  { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '1Y')] },
+  { type: 'CMS', model: 'LinearTSR', engine: 'LinearTSRPricer', params: [] },
+  { type: 'CrossCurrencySwap', model: 'DiscountedCashflows', engine: 'DiscountingCrossCurrencySwapEngine', params: [] },
+  { type: 'CreditDefaultSwap', model: 'DiscountedCashflows', engine: 'MidPointCdsEngine', params: [] },
+  { type: 'EquityOption', model: 'BlackScholesMerton', engine: 'AnalyticEuropeanEngine', params: [] }
+];
+const INTRA_V1 = withEdit(INTRA_V2, c => { setParam(c[2], 'nx', '10'); setParam(c[2], 'ny', '10'); });
 const GLOBAL_CFG = [{ name: 'ContinueOnCalibrationError', value: 'true' }];
+const SEED = { by: 'tenant provisioning service', reason: 'New record', note: 'Seeded at provisioning', approvals: null };
 const CONFIGS = [
-  { id: 'c1', name: 'Group pricing engines', desc: 'The model and engine that price each product ACME Corporation Group trades.', variant: '', cfgRow: 'configuration 3b4103d0', reports: REPORTS_ALL.slice(0, 4), globals: clone(GLOBAL_CFG),
-    products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'FxForward', model: 'DiscountedCashflows', engine: 'DiscountingFxForwardEngine', params: [] }, { type: 'Bond', model: 'DiscountedCashflows', engine: 'DiscountingRiskyBondEngine', params: [P('engine', 'TimestepPeriod', '6M')] }],
-    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', by: 'tenant provisioning service', reason: 'New record', note: '' }] },
-  { id: 'c2', name: 'Europe AMC pricing', desc: 'Pricing for the European entities, with the AMC engine for swaps and cross currency swaps.', variant: 'AMC', cfgRow: 'configuration 7a91c2e4', reports: REPORTS_ALL.slice(4), globals: clone(GLOBAL_CFG), products: AMC_NOW,
-    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', by: 'tenant provisioning service', reason: 'New record', note: '', snap: { products: amcV1, globals: GLOBAL_CFG } },
-      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', snap: { products: amcV2, globals: GLOBAL_CFG } },
-      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', snap: { products: amcV3, globals: GLOBAL_CFG } },
-      { v: 4, at: '2026-10-16T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
-  { id: 'c3', name: 'US swaptions SABR', desc: 'A trial configuration for the US swaption desk.', variant: 'SABR', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
+  { id: 'c1', name: 'Intraday pricing', desc: 'The official intraday pricing. The models are the cheaper ones, so a run finishes inside the cycle.', variant: '', status: 'approved', cycle: 'intraday', cfgRow: 'configuration 3b4103d0', reports: INTRA_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: INTRA_V2,
+    versions: [{ v: 1, at: '2026-09-01T09:00:00Z', ...SEED, snap: { products: INTRA_V1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-24T10:00:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Lighter grid for the Bermudan swaption', approvals: SIGNED('2026-09-26T12:00:00Z'), snap: { products: INTRA_V2, globals: GLOBAL_CFG } }] },
+  { id: 'c2', name: 'End of day pricing', desc: 'The official end of day pricing. It uses the AMC engine for swaps and cross currency swaps.', variant: 'AMC', status: 'approved', cycle: 'eod', cfgRow: 'configuration 7a91c2e4', reports: EOD_REPORTS.slice(), globals: clone(GLOBAL_CFG), products: AMC_NOW,
+    versions: [{ v: 1, at: '2026-09-01T09:05:00Z', ...SEED, snap: { products: amcV1, globals: GLOBAL_CFG } },
+      { v: 2, at: '2026-09-20T14:12:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Shorter shift horizon after the desk review', approvals: SIGNED('2026-09-22T11:00:00Z'), snap: { products: amcV2, globals: GLOBAL_CFG } },
+      { v: 3, at: '2026-10-02T11:30:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Added CMS', approvals: SIGNED('2026-10-05T15:20:00Z'), snap: { products: amcV3, globals: GLOBAL_CFG } },
+      { v: 4, at: '2026-10-12T16:45:00Z', by: 'tenant administrator', reason: 'Rectification', note: 'Desk moved to the Hagan volatility', approvals: SIGNED('2026-10-15T10:10:00Z'), snap: { products: AMC_NOW, globals: GLOBAL_CFG } }] },
+  { id: 'c3', name: 'US swaptions SABR trial', desc: 'A draft for the US swaption desk to try SABR. It prices a few products only, and no official report can bind it.', variant: 'SABR', status: 'draft', cycle: '', cfgRow: 'configuration 51d0b3aa', reports: [], globals: [],
     products: [{ type: 'Swap', model: 'DiscountedCashflows', engine: 'DiscountingSwapEngine', params: [] }, { type: 'EuropeanSwaption', model: 'BlackBachelier', engine: 'BlackBachelierSwaptionEngine', params: [] }, { type: 'BermudanSwaption', model: 'LGM', engine: 'Grid', params: BERM() }, { type: 'CapFloor', model: 'IborCapModel', engine: 'IborCapEngine', params: [] }],
-    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '' }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here' }] }
+    versions: [{ v: 1, at: '2026-10-05T10:00:00Z', by: 'market risk owner', reason: 'New record', note: '', approvals: null }, { v: 2, at: '2026-10-07T08:20:00Z', by: 'market risk owner', reason: 'Rectification', note: 'Dropped the CMS row, it is not traded here', approvals: null }] }
 ];
 CONFIGS.forEach(c => { c.ver = c.versions[c.versions.length - 1].v; c.changed = c.versions[c.versions.length - 1].at; });
+// A proposal is a new version of an approved configuration that waits for sign-off. The version in force does not change until it is approved.
+const PROPOSAL = { id: 'pr1', configId: 'c2', base: 4, ver: 5, by: 'market risk owner', at: '2026-10-17T15:10:00Z', reason: 'Rectification',
+  note: 'The desk disputes the Bermudan price. A best fit stays closer to the quoted swaptions.', state: 'pending',
+  products: withEdit(AMC_NOW, c => setParam(c[2], 'Calibration', 'BestFit')), globals: GLOBAL_CFG,
+  approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) };
 // A flat view of a document, so two documents can be compared as rows.
 const flat = (products, globals) => { const m = {}; (products || []).forEach(p => { m[p.type + ' › model'] = p.model; m[p.type + ' › engine'] = p.engine; (p.params || []).forEach(q => { m[p.type + ' › ' + q.scope + ' ' + q.name] = q.value; }); }); (globals || []).forEach(g => { m['global › ' + g.name] = g.value; }); return m; };
 const diffDocs = (a, b) => { const x = flat(a.products, a.globals), y = flat(b.products, b.globals), out = []; new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => { if (x[k] !== y[k]) out.push({ k, from: x[k], to: y[k] }); }); return out; };
@@ -309,6 +350,17 @@ const typeCell = c => { const t = typeOf(c); return `<span class="mono">${c}</sp
 const pairTag = (m, e) => !m || !e ? tag('incomplete', 'warn') : knownPair(m, e) ? '' : tag('pair not known to work', 'warn');
 const covered = c => TRADED.filter(t => c.products.some(p => p.type === t));
 const uncovered = c => TRADED.filter(t => !c.products.some(p => p.type === t));
+const STATUS = { approved: ['Approved', 'ok'], in_review: ['In review', 'warn'], draft: ['Draft', 'info'], retired: ['Retired', 'off'] };
+const statusTag = s => tag(STATUS[s][0], STATUS[s][1]);
+const officialTag = c => c.status === 'approved' && c.cycle ? tag('Official · ' + CYCLE_NAME[c.cycle], 'cls') : dash;
+const RULE = 'A report needs a price for every product type in its portfolio. A configuration that several reports bind must cover all of their portfolios together.';
+// What a configuration must cover: the union of the portfolios of the reports that bind it. With no report, the whole traded list.
+const needed = c => c.reports.length ? TRADED.filter(t => c.reports.some(r => (REPORT_META[r] || { needs: TRADED }).needs.includes(t))) : TRADED;
+const gaps = c => needed(c).filter(t => !c.products.some(p => p.type === t));
+const reportGaps = (c, r) => (REPORT_META[r] || { needs: TRADED }).needs.filter(t => !c.products.some(p => p.type === t));
+const signedBy = v => v.approvals === null ? 'Provisioned, not signed off' : v.approvals ? v.approvals.map(a => ROLES.find(r => r.id === a.role).name).join(', ') : '';
+const approvalsLine = v => v.approvals ? `<div class="faint" style="margin-left:34px">Signed off by ${v.approvals.map(a => esc(ROLES.find(r => r.id === a.role).name + ': ' + a.by)).join(' · ')}</div>` : (v.approvals === null && v.v === 1 && /service/.test(v.by) ? '<div class="faint" style="margin-left:34px">Provisioned by the seed. No sign-off is recorded.</div>' : '');
+const SIGNOFF = '../sign-off-a-pricing-engine-change/';
 function lastChanged(c) { const x = c.versions[c.versions.length - 1]; return `<div class="foot">Last changed: version ${x.v} · ${esc(x.by)} · <span title="${exact(x.at)}">${rel(x.at)}</span> · <span class="mono">${esc(x.reason)}</span>${x.note ? ' · “' + esc(x.note) + '”' : ''}</div>`; }
 const diffTable = d => d.length ? `<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>${d.map(x => `<tr class="diffrow"><td>${esc(x.k)}</td><td class="rm">${x.from == null ? '—' : esc(x.from)}</td><td class="ad">${x.to == null ? '—' : esc(x.to)}</td></tr>`).join('')}</tbody></table>` : '<div class="muted">No difference.</div>';
 let hideSystem = false;
@@ -318,29 +370,46 @@ function historyTab(c) {
   const entry = x => {
     const prev = c.versions.find(y => y.v === x.v - 1), d = x.snap && prev && prev.snap ? diffDocs(prev.snap, x.snap) : null;
     return `<div class="item"><div class="when">${x.at.slice(0, 10)}${x.v === cur.v ? ' <span class="emblem" title="Current version">●</span>' : ''}</div><div>
-      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} Revert</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
-      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}
+      <div class="head"><span class="avatar">${esc(x.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag(x.v === 1 ? 'Created' : 'Changed', x.v === 1 ? 'ok' : 'info')}${c.status === 'approved' && x.approvals ? tag('Approved', 'ok') : ''}<span class="mono faint">pricing_model_config v${x.v}</span><span class="tag warn mono">${esc(x.reason)}</span><span class="who">${esc(x.by)}</span>${x.v !== cur.v && x.snap && may('edit') ? `<button class="btn ghost" data-revert="${x.v}">${G.revert} ${c.status === 'approved' ? 'Propose a revert' : 'Revert'}</button>` : ''}<span class="faint" style="margin-left:auto" title="${exact(x.at)}">${rel(x.at)}</span></div>
+      ${x.note ? `<div class="muted" style="font-style:italic;margin-left:34px">${esc(x.note)}</div>` : ''}${approvalsLine(x)}
       ${d ? `<details style="margin-left:34px"><summary>Details</summary>${diffTable(d)}</details>` : '<div class="faint" style="margin-left:34px">The fixture keeps no values for this version.</div>'}</div></div>`; };
-  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. Revert writes an older version's values back as a new version.</div>
-  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${rows.map(entry).join('')}</div>`;
+  const prop = c.proposal ? `<div class="item"><div class="when">${c.proposal.at.slice(0, 10)}</div><div><div class="head"><span class="avatar">${esc(c.proposal.by.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase())}</span>${tag('Proposed', 'warn')}<span class="mono faint">pricing_model_config v${c.proposal.ver}</span><span class="tag warn mono">${esc(c.proposal.reason)}</span><span class="who">${esc(c.proposal.by)}</span><a class="btn ghost" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div><div class="muted" style="font-style:italic;margin-left:34px">${esc(c.proposal.note)}</div><div class="faint" style="margin-left:34px">Waiting for sign-off. It is not a version in force.</div></div></div>` : '';
+  return `<div class="muted">Every version of this configuration and its products, in one stream, newest first. ${c.status === 'approved' ? 'Each version in force shows who signed it off. Propose a revert writes an older version\'s values as a new proposal, which needs the same sign-off.' : 'Revert writes an older version\'s values back as a new version.'}</div>
+  <div class="actions" style="justify-content:flex-end"><button class="btn" id="sys">${hideSystem ? 'Show system activity' : 'Hide system activity'}</button></div><div class="tl">${prop}${rows.map(entry).join('')}</div>`;
 }
+const newProposal = (c, products, reason, note) => ({ id: 'new', configId: c.id, base: c.ver, ver: c.ver + 1, by: actorName, at: new Date(NOW).toISOString(), reason, note, state: 'pending', products: clone(products), globals: clone(c.globals), approvals: ROLES.map(r => ({ role: r.id, by: '', at: '', state: 'pending', comment: '' })) });
+const proposalIn = state => { const p = clone(PROPOSAL), ok = (i, by, at) => Object.assign(p.approvals[i], { by, at, state: 'approved' }); p.state = state;
+  if (state === 'partly' || state === 'rejected' || state === 'ready' || state === 'superseded') ok(0, ROLE_PEOPLE.quant, '2026-10-17T16:30:00Z');
+  if (state === 'ready') { ok(1, ROLE_PEOPLE.mr, '2026-10-18T09:15:00Z'); ok(2, ROLE_PEOPLE.mv, '2026-10-19T08:40:00Z'); }
+  if (state === 'rejected') Object.assign(p.approvals[1], { by: ROLE_PEOPLE.mr, at: '2026-10-18T09:15:00Z', state: 'rejected', comment: 'The best fit moves the ten year point by more than the policy allows. Add the back-test, then propose again.' });
+  if (state === 'superseded') { p.base = 3; p.ver = 4; p.at = '2026-10-10T15:10:00Z'; }
+  return p; };
+const pendingBanner = c => c.proposal ? `<div class="warnbox"><b>A proposed version ${c.proposal.ver} waits for sign-off.</b> ${c.proposal.approvals.filter(a => a.state === 'approved').length} of ${ROLES.length} roles have approved. Version ${c.ver} stays in force, and every report keeps running with it. <a class="link" href="${SIGNOFF}?screen=proposal&proposal=${c.proposal.state}">Open the sign-off</a></div>` : '';
 function revertDialog(c, v) {
-  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap);
-  dialog('Revert ' + c.name + '?', `<div>Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">Revert</button>`);
+  const old = c.versions.find(x => x.v === v), d = diffDocs({ products: c.products, globals: c.globals }, old.snap), official = c.status === 'approved';
+  dialog((official ? 'Propose a revert of ' : 'Revert ') + c.name + '?', `<div>${official ? `This does not change version ${c.ver}. It proposes a new version with the data from version ${v}. Version ${c.ver} stays in force until the sign-off completes. No version is lost.` : `Are you sure you want to revert '${esc(c.name)}' from version ${c.ver} back to version ${v}? This will create a new version with the data from version ${v}. No version is lost.`}</div>${diffTable(d)}${reasonField(true)}`, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save">${official ? 'Submit for sign-off' : 'Revert'}</button>`);
   ready('d-save');
-  document.getElementById('d-save').onclick = () => { c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason: document.getElementById('f-reason').value, note: document.getElementById('f-note').value || 'Reverted to v' + v, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
+  document.getElementById('d-save').onclick = () => {
+    const reason = document.getElementById('f-reason').value, note = document.getElementById('f-note').value || 'Reverted to v' + v;
+    if (official) { c.proposal = newProposal(c, old.snap.products, reason, note); closeDlg(); render(); return; }
+    c.products = clone(old.snap.products); c.globals = clone(old.snap.globals); c.ver++; c.versions.push({ v: c.ver, at: new Date(NOW).toISOString(), by: actorName, reason, note, approvals: null, snap: { products: clone(c.products), globals: clone(c.globals) } }); c.changed = new Date(NOW).toISOString(); closeDlg(); render(); };
 }
 function reportsTab(c) {
-  return `<div class="notice">A change to this configuration reaches the next run of each report below. A run already produced keeps what it ran with, and no operation says which version of the configuration that was.</div>
-  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Binds it as</th></tr></thead><tbody>${c.reports.map(r => `<tr><td><span class="link">${esc(r)}</span></td><td class="mono">pricing_engines</td></tr>`).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
-  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist: this is a fixture.</div>`;
+  const row = r => { const m = REPORT_META[r] || { cycle: '', portfolio: '', needs: TRADED }, g = reportGaps(c, r), off = c.cycle && m.cycle && m.cycle !== c.cycle;
+    return `<tr><td><span class="link">${esc(r)}</span></td><td>${m.cycle ? tag(CYCLE_NAME[m.cycle], 'cls') : dash}${off ? ' ' + tag('cycle differs', 'warn') : ''}</td><td>${esc(m.portfolio)}</td><td class="num">${m.needs.length}</td><td>${g.length ? tag(g.length + ' not priced', 'warn') + ' <span class="faint mono">' + g.join(', ') + '</span>' : tag('Covered', 'ok')}</td><td class="mono">${c.status === 'approved' ? 'version ' + c.ver : '—'}</td></tr>`; };
+  const un = gaps(c);
+  return `<div class="notice">${RULE}</div>
+  ${c.status === 'approved' ? `<div class="notice">A report binds this configuration and runs with the version in force, which is version ${c.ver}. A change reaches the next run of each report below once it is approved. A run already produced keeps what it ran with, and no operation says which version that was.</div>` : `<div class="warnbox">${c.status === 'draft' ? 'This is a draft. No official report can bind it, so a change here reaches no run.' : 'This configuration is not in force.'}</div>`}
+  <div class="card">${c.reports.length ? `<table><thead><tr><th>Report</th><th>Cycle</th><th>Portfolio</th><th>Product types it needs</th><th>Priced here</th><th>Runs with</th></tr></thead><tbody>${c.reports.map(row).join('')}</tbody></table>` : '<div class="body"><div class="muted">No report binds this configuration. A change here reaches no run.</div></div>'}</div>
+  ${c.reports.length ? `<div class="${un.length ? 'warnbox' : 'okbox'}">${un.length ? `Together the reports need ${needed(c).length} product types. Not priced here: ${un.map(u => `<span class="mono">${u}</span>`).join(', ')}.` : `Together the reports need ${needed(c).length} product types, and this configuration prices all of them.`}</div>` : ''}
+  <div class="faint">Each report name opens that report's page in the reports a party runs. The read that lists the reports bound to one configuration does not exist. The cycle, the portfolio and the product types of a portfolio are fixtures. A binding to a version does not exist either: the report binds the configuration, and runs with the version in force.</div>`;
 }
 
-const bound = Number(P0.get('bound') || 4), conflict = P0.get('conflict') === '1', actor = 'analyst', actorName = 'market risk owner';
-KEEP = ['bound', 'conflict'];
+const bound = Number(P0.get('bound') || 4), conflict = P0.get('conflict') === '1', status0 = P0.get('status') === 'draft' ? 'draft' : 'approved', pending0 = P0.get('pending') === '1', actor = 'analyst', actorName = 'market risk owner';
+KEEP = ['bound', 'conflict', 'status', 'pending'];
 const may = a => true;
 const B = () => current.reports.length;
-const cfg = () => { const c = CONFIGS.find(x => x.id === (P0.get('config') || 'c2')); if (!c._set) { c.reports = REPORTS_ALL.slice(0, bound); c._set = 1; } return c; };
+const cfg = () => { const c = CONFIGS.find(x => x.id === (status0 === 'draft' ? 'c3' : (P0.get('config') || 'c2'))); if (!c._set) { c.reports = c.status === 'draft' ? [] : (c.cycle === 'intraday' ? INTRA_REPORTS : EOD_REPORTS).slice(0, bound); c._set = 1; } if (pending0) c.proposal = proposalIn('partly'); return c; };
 let current = cfg(), tabNow = P0.get('tab') || 'products', draft = null, markType = null, banner = '', stale = conflict;
 const route = () => ({ tab: tabNow });
 const LIST = () => '../see-the-pricing-engines-a-party-holds/';
@@ -350,7 +419,7 @@ function newProductParams(orig, d) { // the product's params after the draft
 }
 function openDraft(type) {
   const p = current.products.find(x => x.type === type);
-  draft = { type, model: p.model, engine: p.engine, scope: B() <= 1 ? 'change' : 'copy', copyName: current.name + ' (copy)', rows: [] };
+  draft = { type, model: p.model, engine: p.engine, scope: current.status === 'approved' ? 'propose' : 'inplace', copyName: current.name + ' (draft copy)', rows: [] };
   rebuildRows(p.params);
 }
 function rebuildRows(origParams) {
@@ -366,12 +435,14 @@ function draftDoc() { const p = current.products.find(x => x.type === draft.type
 const stateTag = r => r.state === 'drop' ? tag(r.drop ? 'will be dropped' : 'not taken by the pair, kept', 'warn') : r.state === 'need' ? tag(r.add ? 'will be added' : 'usually needed', 'warn') : r.value !== r.orig ? tag('changed', 'info') : '<span class="faint">unchanged</span>';
 const ctl = (r, i) => r.kind === 'select' ? `<select class="sel" data-pv="${i}">${r.opts.map(o => `<option ${o === r.value ? 'selected' : ''}>${o}</option>`).join('')}</select>` : `<input class="sel" data-pv="${i}" value="${esc(r.value)}">`;
 function reachPanel() {
-  if (B() === 0) return '<div class="notice"><b>Reach.</b> No report binds this configuration, so a change reaches no run.</div>';
+  const open = current.proposal ? `<div class="warnbox">A proposal for version ${current.proposal.ver} is already open, based on version ${current.proposal.base}. A second proposal is based on version ${current.ver} too. The first one approved becomes the version in force, and the other must be rebased.</div>` : '';
+  if (current.status !== 'approved') return '<div class="notice"><b>Reach.</b> This is a draft. No official report can bind it, so a change reaches no run. A draft changes in place, with no sign-off.</div>';
+  if (B() === 0) return open + '<div class="notice"><b>Reach.</b> No report binds this configuration, so a change reaches no run once it is approved.</div>';
   const names = current.reports.map(esc).join(', ');
-  return `<div class="${B() > 1 ? 'warnbox' : 'notice'}"><b>Reach.</b> ${B() === 1 ? `One report binds this configuration: ${names}.` : `${B()} reports bind this configuration: ${names}.`} A change reaches the next run of ${B() === 1 ? 'it' : 'each'}. It does not reach a run already produced: a run keeps what it ran with, and no operation says which version of the configuration that was. A run made after the change is not comparable with a run made before it for this product.</div>`;
+  return open + `<div class="${B() > 1 ? 'warnbox' : 'notice'}"><b>Reach.</b> Nothing changes now. Version ${current.ver} stays in force until the sign-off completes. After that, the change reaches the next run of ${B() === 1 ? 'the one report that binds this configuration: ' : 'each of the ' + B() + ' reports that bind it: '}${names}. It does not reach a run already produced: a run keeps what it ran with, and no operation says which version of the configuration that was. A run made after the change is not comparable with a run made before it for this product.</div>`;
 }
 function editDialog() {
-  const d = draft, { before, after } = draftDoc(), diff = diffDocs(before, after), changed = diff.length > 0 || d.scope === 'copy';
+  const d = draft, { before, after } = draftDoc(), diff = diffDocs(before, after), changed = diff.length > 0 || d.scope === 'copy', official = current.status === 'approved';
   const known = knownPair(d.model, d.engine), usual = usualFor(d.type);
   const body = `${reachPanel()}
   <div class="row"><div class="field"><label>Model</label><select id="f-model">${MODELS.map(m => `<option ${m === d.model ? 'selected' : ''}>${m}</option>`).join('')}</select></div>
@@ -380,12 +451,12 @@ function editDialog() {
   ${usual ? `<div class="faint">The usual pair for ${d.type} is ${usual.model} with ${usual.engine}.</div>` : ''}
   <div class="card"><table><thead><tr><th>Setting</th><th>Value</th><th>State</th><th></th></tr></thead><tbody>${d.rows.map((r, i) => `<tr><td><span class="faint">${r.scope}</span> <span class="mono">${esc(r.name)}</span></td><td>${r.state === 'drop' && r.drop ? '<span class="faint">—</span>' : ctl(r, i)}</td><td>${stateTag(r)}</td><td>${r.state === 'drop' ? `<label class="plain"><input type="checkbox" data-dr="${i}" ${r.drop ? 'checked' : ''}> Drop</label>` : r.state === 'need' ? `<label class="plain"><input type="checkbox" data-ad="${i}" ${r.add ? 'checked' : ''}> Add</label>` : ''}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">This product has no setting.</td></tr>'}</tbody></table></div>
   <h2>The difference</h2>${diffTable(diff)}
-  <div class="field"><label>Scope</label><label class="plain"><input type="radio" name="scope" value="change" ${d.scope === 'change' ? 'checked' : ''}> Change this configuration${B() > 1 ? ' for all ' + B() + ' reports' : ''}</label>
-  ${B() >= 1 ? `<label class="plain"><input type="radio" name="scope" value="copy" ${d.scope === 'copy' ? 'checked' : ''}> Make a copy for ${esc(current.reports[0])} only</label>` : ''}
-  ${d.scope === 'copy' ? `<input class="sel" id="f-copy" value="${esc(d.copyName)}"><div class="help">The whole configuration is copied with this change. Only ${esc(current.reports[0])} is rebound to the copy. The other ${B() - 1} keep this configuration. The copy and the rebinding are two requests, and no operation makes a copy.</div>` : ''}</div>
-  ${stale ? `<div class="badbox">This configuration changed since it was read (version ${current.ver + 1}). The save was refused. <button class="btn" id="b-reload">Reload</button></div>` : ''}
+  ${official ? `<div class="field"><label>What to do with the change</label><label class="plain"><input type="radio" name="scope" value="propose" ${d.scope === 'propose' ? 'checked' : ''}> Propose a new version of ${esc(current.name)}</label>
+  <label class="plain"><input type="radio" name="scope" value="copy" ${d.scope === 'copy' ? 'checked' : ''}> Try it in a draft copy</label>
+  ${d.scope === 'propose' ? `<div class="help">Version ${current.ver + 1} waits for sign-off by ${ROLES.map(r => r.name).join(', ')}. The person who proposes it cannot sign it off. Version ${current.ver} stays in force until then.</div>` : `<input class="sel" id="f-copy" value="${esc(d.copyName)}"><div class="help">The whole configuration is copied with this change, as a draft. No report is rebound, and no official report can bind a draft. Use it to test. No operation makes a copy.</div>`}</div>` : ''}
+  ${stale ? `<div class="badbox">This configuration changed since it was read (version ${current.ver + 1}). The ${d.scope === 'propose' ? 'proposal' : 'save'} was refused. <button class="btn" id="b-reload">Reload</button></div>` : ''}
   ${reasonField(diff.length > 0)}`;
-  dialog('Edit ' + d.type, body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" ${changed ? '' : 'data-block="1" disabled'}>${d.scope === 'copy' ? 'Save the copy' : 'Save'}</button>`, () => diff.length === 0 || confirm('You have unsaved changes. Close anyway?'));
+  dialog((official ? 'Propose a change to ' : 'Edit ') + d.type, body, `<button class="btn" id="d-cancel">${G.cancel} Cancel</button><button class="btn primary" id="d-save" ${changed ? '' : 'data-block="1" disabled'}>${d.scope === 'propose' ? 'Submit for sign-off' : d.scope === 'copy' ? 'Save the draft copy' : 'Save'}</button>`, () => diff.length === 0 || confirm('You have unsaved changes. Close anyway?'));
   ready('d-save');
   const $ = id => document.getElementById(id);
   $('f-model').onchange = e => { d.model = e.target.value; if (!enginesFor(d.model).includes(d.engine)) d.engine = enginesFor(d.model)[0] || d.engine; rebuildRows(); editDialog(); };
@@ -399,30 +470,34 @@ function editDialog() {
   $('d-save').onclick = () => {
     if (stale) { editDialog(); return; }
     const reason = $('f-reason').value, note = $('f-note').value, params = newProductParams(null, d), p = { type: d.type, model: d.model, engine: d.engine, params };
-    if (d.scope === 'copy') {
-      const nc = { id: 'n' + Date.now(), name: d.copyName, desc: current.desc, variant: current.variant, cfgRow: 'configuration (new)', reports: [current.reports[0]], globals: clone(current.globals), products: current.products.map(x => x.type === d.type ? p : clone(x)), versions: [{ v: 1, at: new Date(NOW).toISOString(), by: actorName, reason: 'New record', note: 'Copy of ' + current.name }] };
-      nc.ver = 1; nc.changed = nc.versions[0].at; current.reports = current.reports.slice(1); CONFIGS.push(nc);
-      banner = `Saved the copy ${nc.name}. ${nc.reports[0]} is now bound to it. The other ${current.reports.length} keep ${current.name}.`; current = nc;
+    if (d.scope === 'propose') {
+      const prods = current.products.map(x => x.type === d.type ? p : x);
+      current.proposal = newProposal(current, prods, reason, note);
+      banner = `Proposed version ${current.ver + 1}. Version ${current.ver} stays in force until the sign-off completes. ${current.reports.length ? 'The next run of ' + (current.reports.length === 1 ? current.reports[0] : 'each of the ' + current.reports.length + ' reports') + ' still uses version ' + current.ver + '.' : ''}`;
+    } else if (d.scope === 'copy') {
+      const nc = { id: 'n' + Date.now(), name: d.copyName, desc: current.desc, variant: current.variant, status: 'draft', cycle: '', cfgRow: 'configuration (new)', reports: [], globals: clone(current.globals), products: current.products.map(x => x.type === d.type ? p : clone(x)), versions: [{ v: 1, at: new Date(NOW).toISOString(), by: actorName, reason: 'New record', note: 'Copy of ' + current.name, approvals: null }] };
+      nc.ver = 1; nc.changed = nc.versions[0].at; CONFIGS.push(nc);
+      banner = `Saved the draft copy ${nc.name}. No report is bound to it, and ${current.name} is unchanged.`; current = nc;
     } else {
       current.products = current.products.map(x => x.type === d.type ? p : x); current.ver++; current.changed = new Date(NOW).toISOString();
-      current.versions.push({ v: current.ver, at: current.changed, by: actorName, reason, note, snap: { products: clone(current.products), globals: clone(current.globals) } });
-      banner = `Saved ${d.type} as version ${current.ver}. ${current.reports.length ? 'The next run of ' + (current.reports.length === 1 ? current.reports[0] : 'each of the ' + current.reports.length + ' reports') + ' uses it.' : ''}`;
+      current.versions.push({ v: current.ver, at: current.changed, by: actorName, reason, note, approvals: null, snap: { products: clone(current.products), globals: clone(current.globals) } });
+      banner = `Saved ${d.type} as version ${current.ver} of the draft. It reaches no run.`;
     }
     markType = d.type; draft = null; closeDlg(); setTimeout(() => { markType = null; render(); }, 3000); render();
   };
 }
 function productsTab(c) {
-  return `<div class="card"><table><thead><tr><th>Product type</th><th>Model</th><th>Engine</th><th>Parameters</th><th></th></tr></thead><tbody>${c.products.map(p => `<tr class="${p.type === markType ? 'mark' : ''}"><td class="mono">${p.type}<div class="faint" style="font-size:.78rem;font-family:inherit">${esc(typeOf(p.type) ? typeOf(p.type).desc : '')}</div></td><td class="mono">${esc(p.model)}</td><td class="mono">${esc(p.engine)} ${pairTag(p.model, p.engine)}</td><td class="num">${p.params.length}</td><td>${btn('Edit', 'edit', 'small', `data-edit="${p.type}"`)}</td></tr>`).join('')}</tbody></table></div>`;
+  return `<div class="card"><table><thead><tr><th>Product type</th><th>Model</th><th>Engine</th><th>Parameters</th><th></th></tr></thead><tbody>${c.products.map(p => `<tr class="${p.type === markType ? 'mark' : ''}"><td class="mono">${p.type}${c.proposal && c.proposal.products.some(x => x.type === p.type && diffDocs({ products: [p] }, { products: [x] }).length) ? ' ' + tag('change proposed', 'warn') : ''}<div class="faint" style="font-size:.78rem;font-family:inherit">${esc(typeOf(p.type) ? typeOf(p.type).desc : '')}</div></td><td class="mono">${esc(p.model)}</td><td class="mono">${esc(p.engine)} ${pairTag(p.model, p.engine)}</td><td class="num">${p.params.length}</td><td>${btn(c.status === 'approved' ? 'Propose' : 'Edit', 'edit', 'small', `data-edit="${p.type}"`)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function render() {
   const c = current, r = route(), tabs = [['products', 'Products'], ['reports', 'Reports'], ['history', 'History']];
   const reportsTabHtml = reportsTab(c);
   const body = r.tab === 'history' ? historyTab(c) : r.tab === 'reports' ? reportsTabHtml : productsTab(c);
   document.getElementById('app').innerHTML = `${crumbs([['Home', '#'], ['Reporting', '#'], ['Pricing engines', LIST()], [esc(c.name)]])}
-  <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${c.variant ? esc(c.variant) : 'no variant'} · version ${c.ver}</div></div><div class="actions"><span class="access">✎ Editable</span></div></div>
-  ${banner ? `<div class="okbox">${esc(banner)}</div>` : ''}
+  <div class="titlebar"><div><h1>${esc(c.name)}</h1><div class="sub">${statusTag(c.status)} ${officialTag(c) === dash ? '' : officialTag(c)} version ${c.ver}${c.variant ? ' · ' + esc(c.variant) : ''}</div></div><div class="actions"><span class="access">✎ Editable</span></div></div>
+  ${banner ? `<div class="okbox">${esc(banner)}</div>` : ''}${pendingBanner(c)}
   <div class="tabbar">${tabs.map(([k, l]) => `<a data-tab="${k}" href="#" class="${r.tab === k ? 'on' : ''}">${l}</a>`).join('')}</div>${body}`;
-  chrome('change how a product is priced · ' + B() + ' bound report' + (B() === 1 ? '' : 's') + (stale ? ' · stale version' : ''), [['bound', ['0', '1', '4'], String(bound)], ['conflict', ['0', '1'], conflict ? '1' : '0']]);
+  chrome('change how a product is priced · ' + c.status + ' · ' + B() + ' bound report' + (B() === 1 ? '' : 's') + (stale ? ' · stale version' : ''), [['status', ['approved', 'draft'], status0], ['bound', ['0', '1', '4'], String(bound)], ['pending', ['0', '1'], pending0 ? '1' : '0'], ['conflict', ['0', '1'], conflict ? '1' : '0']]);
   document.querySelectorAll('#app [data-tab]').forEach(x => x.onclick = e => { e.preventDefault(); tabNow = x.dataset.tab; render(); });
   document.querySelectorAll('#app [data-edit]').forEach(x => x.onclick = () => { openDraft(x.dataset.edit); editDialog(); });
   const sys = document.getElementById('sys'); if (sys) sys.onclick = () => { hideSystem = !hideSystem; render(); };

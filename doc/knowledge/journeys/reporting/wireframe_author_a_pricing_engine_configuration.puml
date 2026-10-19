@@ -23,25 +23,38 @@ salt
   --
   {#
     Step | What it carries
-    1 | name it, and choose where to start
+    1 | name it, say what it is for, and choose where to start
     2 | choose the products
     3 | choose the model and the engine
     4 | set the parameters
-    5 | check it
-    6 | review and save (final)
+    5 | check it against what the reports need
+    6 | review and submit (final)
   }
+  --
+  <b>STEP 1 - WHAT IS IT FOR</b>
+  A party holds few official configurations. A configuration made here starts as a draft.
+  { (X) A draft to try a change. No official report can bind it. }
+  { ( ) A candidate for the official End of day configuration }
+  { ( ) A candidate for the official Intraday configuration }
   --
   <b>STEP 3 - THE MODEL AND THE ENGINE</b>
   Each chosen product gets a model and an engine. The engine list narrows to the engines known to run the model.
   {#
     Product | Model | Engine | The usual | What the pair does
     Swap | ^DiscountedCashflows^ | ^DiscountingSwapEngine^ | [ Use the usual ] | discounts the cashflows
-    EuropeanSwaption | ^BlackBachelier^ | ^BlackBachelierSwaptionEngine^ | [ Use the usual ] | prices by the Black or Bachelier formula
     BermudanSwaption | ^LGM^ | ^Grid^ | [ Use the usual ] | lattice on a calibrated one-factor model
     CapFloor | ^IborCapModel^ | ^AMC^ | [ Use the usual ] | MARKED: pair not known to work
   }
   A marked pair is a statement, not a refusal. No server check stands behind it.
-  [ Back ] | [ Next: the parameters ]
+  --
+  <b>STEP 5 - CHECK IT</b>
+  A report needs a price for every product type in its portfolio.
+  Coverage: 9 of the 11 product types the end of day reports need have a row.
+  Not covered: CreditDefaultSwap, EquityOption.
+  --
+  <b>STEP 6 - REVIEW AND SUBMIT</b>
+  [ Back ] | [ Save as draft ] | [ Submit for sign-off ]
+  Submit is not offered while a needed product type has no row.
 }
 
 @enduml

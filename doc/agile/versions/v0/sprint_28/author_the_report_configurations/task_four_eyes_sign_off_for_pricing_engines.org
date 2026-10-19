@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A second person approves each change to a pricing engine configuration before a report can run with it. The screens show who proposed a change, who approved it and when. Start this task after the main configuration UI is implemented.
+Build the sign-off that the sign-off journey and prototype draw. Each role that model risk names approves each change to an official pricing engine configuration before a report can run with it, and the person who proposed a change cannot sign it off. This is the implementation, and it starts after the main configuration UI is implemented. The journey and the prototype are in the task Govern the pricing engine configurations.
 
 * Status
 
@@ -35,9 +35,12 @@ A second person approves each change to a pricing engine configuration before a 
 
 * Acceptance
 
-- A journey describes how a change is proposed, reviewed, approved or rejected.
-- A prototype shows the pending change, the approver's view and the refusal when the proposer approves their own change.
-- The prototype is registered on its group page and passes check_prototype_inventory.py.
+- The server holds a proposal, a decision and a status, and a policy that names the roles.
+- The server refuses an approval from the person who proposed the change, and from a person with no role for the row.
+- A proposal never replaces the rows that a run reads. Making it official changes the version in force in one step.
+- A run records the version of the configuration it used.
+- A direct write to an approved version is refused.
+- The screens follow the sign-off prototype.
 
 * Plan
 

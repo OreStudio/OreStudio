@@ -23,29 +23,32 @@ salt
   Home > Reporting > Pricing engines
   --
   <b>THE LIST</b>
+  A party holds few official configurations, one for each cycle. A draft is for trying a change.
   [ Refresh ] | [ + Add ] | [ Workflows v ]
-  "Search the name or description" | { Variant: ^all^ } | { Used by reports: ^any^ }
+  "Search the name or description" | ^Variant: all^ | ^Status: all^ | ^Used by reports: any^
   {#
-    Name | Variant | Products | Reports | Last changed
-    Group pricing engines | - | 3 | 4 | 2 hours ago
-    Europe AMC pricing | AMC | 9 | 2 | 3 days ago
-    US swaptions SABR | SABR | 6 | 0 | 12 days ago
+    Name | Status | Official for | Variant | Products | Reports | Last changed
+    End of day pricing (1 proposal) | Approved | End of day | AMC | 11 | 4 | 7 days ago
+    Intraday pricing | Approved | Intraday | - | 11 | 2 | 25 days ago
+    US swaptions SABR trial | Draft | - | SABR | 4 | 0 | 12 days ago
   }
   1-3 of 3 | [ First ] | [ Previous ] | [ Next ] | [ Last ] | Page size ^15^
   --
-  <b>ONE CONFIGURATION: EUROPE AMC PRICING</b>
-  AMC - version 4 | Editable | [ Edit ] | [ Delete ]
+  <b>ONE CONFIGURATION: END OF DAY PRICING</b>
+  Approved - Official for End of day - version 4 - AMC - Editable
+  [ Propose a change ]
+  A proposed version 5 waits for sign-off. 1 of 3 roles have approved. Version 4 stays in force.
+  [ Open the sign-off ]
   [ Details ] | [ Products ] | [ Parameters ] | [ Reports ] | [ History ]
   --
-  Coverage: 9 of the 11 product types the party trades have a row.
-  Not covered: CreditDefaultSwap, EquityOption. A product with no row has no model in a run.
+  Coverage: the reports that bind it need 11 product types, and 11 have a row here.
   {#
-    Product | Instrument | Model | Engine | Parameters
-    Swap | Swap | CrossAssetModel | AMC | 0
-    EuropeanSwaption | Swaption | BlackBachelier | BlackBachelierSwaptionEngine | 1
-    BermudanSwaption | Swaption | LGM | Grid | 10
+    Report | Cycle | Needs | Priced here | Runs with
+    Group Consolidated Exposure | End of day | 11 | Covered | version 4
+    Large Exposures | End of day | 5 | Covered | version 4
+    Cross-Entity Counterparty Concentration | End of day | 6 | Covered | version 4
   }
-  [ + Add ]
+  An approved version never changes in place. A change is a proposal, and it needs sign-off.
 }
 
 @enduml

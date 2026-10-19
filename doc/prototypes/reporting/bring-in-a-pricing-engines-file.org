@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :prototype:ui:reporting:
 #+created: 2026-10-19
-#+updated: 2026-10-19
+#+updated: 2026-10-20
 
 | Item          | Where                                             |
 |---------------+---------------------------------------------------|
@@ -17,7 +17,7 @@
 
 * Summary
 
-This prototype draws the import of an ORE =pricingengine.xml= as a workflow of five steps on the standard steps UI. The difference is the screen's reason to exist: a file is a replacement for a document the party may already hold, and a person who brings one in must read what it adds, what it changes and, above all, what it leaves out.
+This prototype draws the import of an ORE =pricingengine.xml= as a workflow of five steps on the standard steps UI. The difference is the screen's reason to exist: a file is a replacement for a document the party may already hold, and a person who brings one in must read what it adds, what it changes and, above all, what it leaves out. A file never becomes official directly. A new file is saved as a draft. A file put into an approved configuration is a proposal for a new version, and waits for sign-off. A file put into a draft changes the draft in place.
 
 The page answers to the journey [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring in a pricing engines file]]. It is throwaway: it reads no service, writes nothing to one, and states which parts of the interaction no operation supports. It follows the [[id:2BF7F03F-6BF4-45FF-8E26-4D3B4E2D943D][Record screen standard]] and the rules in [[file:../index.org][Prototypes]]: plain HTML, CSS and JavaScript, no framework, no build and no backend, with the design tokens of =projects/ores.web/packages/web/src/styles.css=.
 
@@ -30,7 +30,7 @@ The page answers to the journey [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring
 ** States and switches
 
 - =?file=clean|unknown|omits=. =clean= reads without a finding. =unknown= holds a product type with no code, an element with no column and a type that appears twice. =omits= holds two products, so the target loses seven.
-- =?target=new|c2=: save as a new configuration, or as a new version of the Europe AMC configuration, which two reports bind.
+- =?target=new|c2|c3=: save as a new draft, put the file into the approved End of day pricing, which four reports bind, or put it into the draft US swaptions SABR trial. Each target has its own button: *Save as draft*, *Submit for sign-off* or *Save*.
 - =?step=1..5=.
 
 ** Rules the page follows
@@ -39,7 +39,8 @@ The page answers to the journey [[id:BC2066E8-C595-47C0-97CE-19DF182F616E][Bring
 - *An element with no column is dropped, and the page says so*. It is listed in the review, so it is not lost silently.
 - *A duplicate is resolved by the person.* The page does not pick.
 - *A new version asks for a change reason and a commentary and claims the version read*, as the standard says.
-- *The reach is stated before the target is chosen*, for a target that reports bind.
+- *The reach is stated before the target is chosen*, for a target that reports bind. For an approved target it says that nothing changes until the sign-off completes.
+- *A proposal does not change the configuration.* The review says that the version in force stays in force and that the person who submits cannot sign off.
 
 ** What is fake
 

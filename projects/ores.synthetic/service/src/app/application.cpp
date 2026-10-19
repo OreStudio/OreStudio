@@ -22,14 +22,18 @@
 #include "../feed_kind_registry.hpp"
 #include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/party_context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
+#include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.api/domain/step_subjects.hpp"
@@ -59,12 +63,15 @@ constexpr std::string_view service_version = ORES_VERSION;
 // registry knows. The startability gate lives on the attempt itself, and the
 // walk adds its own auto_start term, which is genuinely about blameless boot
 // behaviour rather than about a kind.
+//
+// A context sees only its own tenant's collections, plus the system ones. The
+// walk therefore runs once for each tenant (see auto_start_all_tenants).
 auto& auto_start_lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.service.app.auto_start");
     return instance;
 }
 
-void auto_start_feeds(feed_controller& ctrl,
+int auto_start_feeds(feed_controller& ctrl,
                       const feed_kind_registry& registry,
                       const ores::synthetic::feed::feed_build_context& bctx,
                       const ores::database::context& ctx) {
@@ -72,6 +79,11 @@ void auto_start_feeds(feed_controller& ctrl,
     for (const auto& target : registry.targets(ctx)) {
         const auto& c = target.row.candidate;
         if (!c.auto_start)
+            continue;
+        // A system feed runs once for every tenant, so only the system tenant
+        // starts it.
+        if (target.container_scope == ores::synthetic::domain::scope::system &&
+            !feed_kind_registry::is_system_caller(ctx))
             continue;
         try {
             auto attempt = registry.make_feed(target, bctx);
@@ -103,7 +115,46 @@ void auto_start_feeds(feed_controller& ctrl,
                 << "): " << e.what();
         }
     }
-    BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";
+    BOOST_LOG_SEV(auto_start_lg(), info)
+        << "Auto-started " << started << " enabled feed(s) for tenant " << ctx.tenant_id().to_string()
+        << ".";
+    return started;
+}
+
+// The context a tenant's walk reads through. A party's collection is visible
+// only to a context with the party in its visible set, and a tenant has
+// exactly one root party whose subtree is every party of the tenant.
+ores::database::context tenant_walk_context(const ores::database::context& db_ctx,
+                                            const std::string& tenant) {
+    const auto tenant_ctx = ores::database::service::tenant_context::with_tenant(db_ctx, tenant);
+    for (const auto& party : ores::refdata::repository::party_repository().read_latest(tenant_ctx))
+        if (!party.parent_party_id)
+            return ores::database::service::party_context::with_party(
+                tenant_ctx, tenant_ctx.tenant_id(), party.id, tenant_ctx.actor());
+    return tenant_ctx;
+}
+
+// The service's own context belongs to the system tenant, so it cannot read a
+// tenant's collections. Walk the system tenant first, then every other tenant
+// through a context of its own. A tenant that fails does not stop the others.
+int auto_start_all_tenants(feed_controller& ctrl,
+                           const feed_kind_registry& registry,
+                           const ores::synthetic::feed::feed_build_context& bctx,
+                           const ores::database::context& db_ctx) {
+    int started = auto_start_feeds(ctrl, registry, bctx, db_ctx);
+    const auto system = ores::utility::uuid::tenant_id::system().to_string();
+    for (const auto& tenant : ores::iam::repository::tenant_repository().read_latest(db_ctx)) {
+        const auto id = boost::uuids::to_string(tenant.id);
+        if (id == system || tenant.status != "active")
+            continue;
+        try {
+            started += auto_start_feeds(ctrl, registry, bctx, tenant_walk_context(db_ctx, id));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auto_start_lg(), error)
+                << "Failed to auto-start feeds for tenant " << id << ": " << e.what();
+        }
+    }
+    return started;
 }
 }
 
@@ -191,7 +242,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     // Autonomous, config-driven generation: one boot-time walk starts every
     // auto-startable feed of every kind. Each feed resolves its own series
     // and publishes on its synthetic producer channel.
-    auto_start_feeds(*ctrl, registry, bctx, db_ctx);
+    auto_start_all_tenants(*ctrl, registry, bctx, db_ctx);
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — " << ctrl->running_count()
                               << " feed(s) auto-started; waiting for control signals";
 

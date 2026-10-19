@@ -30,7 +30,8 @@ the claims and the cache rules. A component that uses run grants states only
 its own choices, which are its role, its audience, its resource name and the
 moments it grants and revokes.
 [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] is the
-first such component.
+first such component. [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]]
+is the second: the synthetic service restores a tenant's feeds with it.
 
 * Detail
 
@@ -240,3 +241,4 @@ so a fault in one caller cannot exhaust it.
 - [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:C79B5E4D-71D0-44C2-9D06-444EA2AC1CB7][Scheduled Work Acting as a Tenant]] — the pattern this page implements.
 - [[id:B3165E6F-AE8C-4DBD-8F87-2EC4F276FCF0][Report execution at scale]] — the first component to use run grants.
+- [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]] — the synthetic service's use of them.

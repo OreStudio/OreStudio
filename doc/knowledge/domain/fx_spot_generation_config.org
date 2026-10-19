@@ -78,7 +78,9 @@ The two flags are orthogonal and they answer different questions.
 
 - =enabled= says the config is startable at all. A disabled config may not be
   started by an auto-start pass or by a manual Start action.
-- =auto_start= says the config starts on its own when the service comes up.
+- =auto_start= says the config starts on its own when the service comes up,
+  in every active tenant. A feed that reads marketdata starts only when its
+  collection holds a run grant. A Start by a person gives the grant.
   A config can be enabled and not auto-start, which is the shape a legacy or
   alternate-index variant takes when it lives beside a currency's primary
   config.

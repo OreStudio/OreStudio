@@ -49,9 +49,11 @@ refdata at construction. The variant is what lets the factory keep one
 inside =make= rather than at every call site.
 
 =feed_build_context= carries the inputs every builder shares, which are the
-raw NATS client, the authenticated client and the caller's bearer token.
-The token is forwarded on delegated lookups so a vintage resolution runs in
-the caller's tenant and party context rather than the service account's.
+raw NATS client, the authenticated client and the run token of the feed's
+collection. The token is forwarded on delegated lookups, so a vintage
+resolution runs in the tenant and party of the collection's grant and not in
+the service account's. It is the same whether a person or a restore starts the
+feed. See [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]].
 
 ** The fact the code shape does not show
 

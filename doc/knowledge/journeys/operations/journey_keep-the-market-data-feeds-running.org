@@ -32,13 +32,15 @@ acting from the system tenant in system administration mode, as the
 [[id:5E970C7F-68EA-42BF-B73E-997C4A003762][Operations journeys]] group sets
 out. Changing a binding needs =marketdata::feed_bindings:write= or
 =marketdata::feed_bindings:delete=; starting and stopping a feed needs the
-synthetic and market data permissions the producer services hold. The trigger
+permission of the feed's kind and the run permission. The feed then acts under
+the run grant of its collection, as [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]] states. The trigger
 is a service restart, a feed the desk says is silent, a new source to bring up,
 or a routine check. The journey starts at *Operations*, then *Market data
 feeds*, and ends when the operator leaves the screen.
 
 Two facts shape the screen. A binding is stored and versioned; the running set
-is live and not stored. And a binding names a producer source, not a series:
+is live and not stored, and a restart of the producer service rebuilds it from
+the =enabled= and =auto_start= flags of every tenant's feed configs. And a binding names a producer source, not a series:
 the series a source writes is resolved per tick from the datum's =oresmd_uri=.
 The screen must therefore join a stored row to a live set, and infer the series
 from what has been written; see /What is missing/.
@@ -70,8 +72,9 @@ from what has been written; see /What is missing/.
 6. *Start a feed.* The person chooses *Start*, on one binding or on a folder
    subtree. The system resolves the folder subtree, starts every feed under it,
    of every kind, and reports the counts: started, already running and skipped,
-   with a per-kind breakdown. The subject exists; the web client does not call
-   it today; see /What is missing/.
+   with a per-kind breakdown. The first Start of a collection gives the consent
+   that lets its feeds act in its tenant and party. The subject exists; the web
+   client does not call it today; see /What is missing/.
 7. *Stop a feed.* The person chooses *Stop*, on one binding or on a folder
    subtree. The system stops every running feed under it and reports how many
    stopped, by kind.
@@ -99,36 +102,22 @@ re-reads it from the service.
 A quiet binding has not ticked, whatever its feed is doing. The status is read
 from the age of the last tick once the running set is known, and it does not ask
 whether the feed is running, so a feed that runs and writes nothing reads quiet
-in the same way as one that stopped. The
-running set is the first thing to read next, because it is not stored: it is the
-producer service's memory, and a restart empties it.
+in the same way as one that stopped. The running set is the first thing to read
+next, because it is not stored: it is the producer service's memory.
 
-The observed case, AUD/USD's synthetic feed on 2026-10-18, is the shape to
-expect. The ticks ran for five minutes and stopped at 2026-10-17 18:49:06. The
-instance that replaced the publisher started at about 18:50:01 and did not start
-them again; its boot pass logged 24 feeds, none of them AUD/USD's. The shutdown
-of the instance it replaced is not in the journal, so what stopped the ticks
-fifty-five seconds earlier is not established, and the answer does not need it:
-the restart did not bring the feed back, and no later restart has. The binding
-stayed enabled. The ingest loop stayed subscribed and reported =last_tick=never=
-for every binding it holds. The newest observation is still the one from the
-evening before.
+A restart of the producer service starts every enabled auto-start feed of every
+active tenant again, so a quiet binding after a restart is a feed that did not
+start. The log of the producer service names the reason for each feed it skipped.
+There are three:
 
-Two facts make the quiet row hard to act on. A feed started on demand lives only
-in the producer's memory, so a restart of any service loses it, and nothing
-stores that it was running. And the config behind the binding belongs to the
-party that wrote it, so a person acting as another party cannot start it: the
-shell answers =No feed matching '<source>'= for a source that is not in that
-person's feed list.
+- The collection holds no run grant, because no person has started it yet.
+- The grant lapsed, because its grantor lost a permission of the role or left.
+- Another running feed holds the same series.
 
-So the person reads the row, confirms the source is absent from the running set,
-and then finds the party that owns the producer config and starts the feed from
-that session. Nothing in the product offers that route yet; see /What is
-missing/.
-
-A restart is the moment to re-read the running set rather than the moment to
-trust the previous reading of it, because the set is the producer's memory and
-the new instance starts with an empty one.
+A person who holds the permissions starts the collection from the shell, which
+gives a new consent and starts the feed. A feed that was running when the service
+stopped needs no such step. The binding stays enabled, the ingest loop stays
+subscribed, and the feed ticks again as soon as the restore has started it.
 
 * Screens and wireframes
 
@@ -254,17 +243,7 @@ missing/.
    can disagree. The candidate is a single stored field that says a feed is up,
    or a read that returns both together. Until then the screen shows both and
    says what each one means.
-8. *A restart does not bring a tenant's feed back.* The boot walk starts the
-   auto-start configs the producer service's own context can read, and that
-   context is the installation's system tenant, so a tenant's feed is neither
-   read nor started. A feed started on demand is held only in memory and nothing
-   stores that it was running. The candidate is a boot walk that reads every
-   tenant's configs, or a stored running set that a restart restores. Until then
-   the operator starts the feed again by hand, from a session that acts as the
-   party that owns the config, and a person acting as another party cannot: the
-   feed list is scoped to the caller's party. See
-   [[id:83FF505F-F58B-4AA6-9FA6-98F4EE29A9B7][Boot auto-start never starts a tenant's feeds]].
-9. *The screen says quiet but not why.* =statusOf= calls a binding quiet when its
+8. *The screen says quiet but not why.* =statusOf= calls a binding quiet when its
    last tick is older than 600 seconds or it has none, and it never looks at the
    running set to say which of the two it is, so a stopped feed and a feed that
    was never started read the same. The candidate is a second sentence beside the

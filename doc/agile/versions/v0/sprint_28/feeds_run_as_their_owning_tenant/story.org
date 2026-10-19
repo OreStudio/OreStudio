@@ -1,0 +1,62 @@
+:PROPERTIES:
+:ID: 7BD95E98-55F2-4A23-8A4F-F437723E7453
+:END:
+#+title: Story: A feed runs as the tenant that owns it
+#+description: A feed acts for the tenant that owns it, under a run token that the synthetic service exchanges for the collection's run grant. The caller of Start is checked once, at the command. A Start and a restart use the same exchange.
+#+type: story
+#+level: s2
+#+filetags: :sprint_28:v0:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+A feed acts for its owning tenant with the narrowest authority, whoever or whatever started it. The same feed behaves the same at boot, after a restart and on a button press.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:3CEE598D-47C8-4EC0-9E01-19CE79CCA4CD][Sprint 28]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-10-19                               |
+
+* Acceptance
+
+- A vintage-priced ACME feed starts at boot and after a restart.
+- The Start command checks the caller's permission, and nothing else about the caller reaches the feed.
+- A bound feed's binding is created with the collection's run token, with or without a person.
+- A Start on a collection with no run grant gives the consent. IAM refuses a grantor who lacks a permission of the role.
+- The knowledge notes state this model, with the sequence and state diagrams.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:06026B39-A688-4B6C-AD79-FDC5C0C1A2F1][Scaffold story: A feed runs as the tenant that owns it]] | DONE | 2026-10-19 | 2026-10-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:054CDCEB-C107-4DA2-9E32-057D7B43A391][Implement run-grant identity for feeds]] | BACKLOG | | | Initial task for: A feed runs as the tenant that owns it |
+
+* Decisions
+
+- The model is the Scheduled Work Acting as a Tenant pattern, which reporting
+  already uses. IAM gets no new operation. The model is stated in
+  [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]].
+- The consent is one run grant per collection of feeds, stored in the
+  collection's =run_grant_id=. The first Start by a person gives it.
+- The role is =SyntheticFeedRun=: marketdata series and observations read, and
+  feed bindings read and write. The audience is =ores.synthetic.service=.
+- A feed that reads no marketdata needs no token.
+- A running feed publishes under the service's identity. A lapsed grant stops
+  the next start, not the running feed.
+
+* Out of scope
+
+- A screen that shows whether a collection holds a grant.
+- Revoking a grant when a collection's party changes. A collection has no party change.

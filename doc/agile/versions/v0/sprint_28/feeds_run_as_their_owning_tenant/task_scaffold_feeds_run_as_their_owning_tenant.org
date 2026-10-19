@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: 06026B39-A688-4B6C-AD79-FDC5C0C1A2F1
+:END:
+#+title: Task: Scaffold story: A feed runs as the tenant that owns it
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :feeds_run_as_their_owning_tenant:sprint_28:v0:
+#+owner: marco
+#+branch: feature/feeds-run-as-their-owning-tenant
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7BD95E98-55F2-4A23-8A4F-F437723E7453][A feed runs as the tenant that owns it]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+State the target model for the identity of a feed in the knowledge notes, with the sequence and state diagrams, before any code changes.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:7BD95E98-55F2-4A23-8A4F-F437723E7453][A feed runs as the tenant that owns it]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
+
+* Acceptance
+
+- =feed_execution_identity.org= states the three questions, the consent, the Start, the restore and the states of a feed.
+- The feed controller, factory, binding, config and journey notes state the same model.
+
+* Plan
+
+The existing pattern fits, so the notes reuse it and add no new IAM surface:
+the pattern note, the run grants note and reporting's choices already hold the
+mechanism. The new note holds only the synthetic service's choices and three
+=plantuml= diagrams. The other notes keep one sentence each and link to it.
+Each diagram has its =.puml= source and its =.png= beside it.
+
+* Measurements
+
+Every number this task claims about a tree, with the command that produced it
+and the commit it was measured at. A number without both is not a measurement,
+because a clean-up record describes a tree and trunk moves under a branch: a
+consumer count, a gate's component count and a suite's size all change with no
+code changing, and the reader of a bare number cannot tell which tree it came
+from. Where the raw output matters, put it in an =evidence/= file beside the
+task and name that file in the Command column.
+
+| What | Value | Command | Commit |
+|------+-------+---------+--------|
+|      |       |         |        |
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=)
+that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The knowledge notes state the target model.
+
+- New note: =doc/knowledge/architecture/feed_execution_identity.org=, with
+  =feed_start_sequence=, =feed_restore_sequence= and =feed_run_states= as
+  =.puml= and =.png=.
+- Updated notes: the feed controller, the factory and kind seam, the feed
+  binding, the FX spot config, the keep-the-feeds-running journey, the market
+  data architecture list, the run grants note and the pattern note.
+- The duplicate capture for the boot walk is discarded. The earlier story
+  covers it.

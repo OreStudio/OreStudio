@@ -103,8 +103,10 @@ relationship the schema does not carry.
   entity default.
 - =save_if_absent= reads before it writes, so a feed started, stopped and
   restarted keeps one binding row instead of gaining a second.
-- An internal start with no end user session binds nothing, because it has
-  no party to bind under. The feed runs and no binding appears.
+- A start with no end user session binds nothing, because it has no party to
+  subscribe. A restore after a restart is such a start. The feed runs and the
+  stored bindings stand. See
+  [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]].
 - The model deliberately binds to no variability profile. The
   =uuid-surrogate-lookup= profile would also enable the shell command facet,
   and the binding model has no shell verb today.

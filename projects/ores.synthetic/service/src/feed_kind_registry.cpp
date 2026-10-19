@@ -95,6 +95,7 @@ feed_kind make_fx_spot_kind() {
             c.display_name = fx.oresmd_uri;
             c.enabled = fx.enabled;
             c.auto_start = fx.auto_start;
+            c.vintage_priced = fx.price_source == "vintage";
             c.folder_id = fx.folder_id;
             c.vintage_anchor = [fx] {
                 feed_vintage_anchor a;
@@ -190,6 +191,7 @@ feed_kind make_ir_curve_kind() {
             c.display_name = cfg.currency_code + "/" + cfg.index_family;
             c.enabled = cfg.enabled;
             c.auto_start = cfg.auto_start;
+            c.vintage_priced = cfg.price_source == "vintage";
             c.folder_id = cfg.folder_id;
             c.vintage_anchor = [ctx, cfg] {
                 feed_vintage_anchor a;
@@ -427,6 +429,7 @@ std::optional<feed_start_target> feed_kind_registry::make_target(
     target.container_enabled = found->second.enabled;
     target.binding_mode = found->second.binding_mode;
     target.container_scope = found->second.scope;
+    target.run_grant_id = found->second.run_grant_id;
     return target;
 }
 

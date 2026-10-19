@@ -87,6 +87,14 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'compute::workunits:read');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'ReportRun', 'compute::results:read');
 
+    -- The role a feed acts with when it starts from a vintage price. A person
+    -- grants it when they first start a collection, and only if they hold both
+    -- permissions; a run token carries it, narrowed to what the grantor still
+    -- holds.
+    PERFORM ores_iam_roles_upsert_fn(ores_utility_system_tenant_id_fn(), 'SyntheticFeedRun', 'Synthetic feed run - the series and observations a feed reads to resolve its vintage price');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticFeedRun', 'marketdata::market_series:read');
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticFeedRun', 'marketdata::market_observations:read');
+
     -- Assign permissions to SuperAdmin role (platform-level)
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SuperAdmin', '*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SuperAdmin', 'iam::tenants:create');
@@ -644,10 +652,11 @@ BEGIN
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'scheduler::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'compute::*');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'telemetry::*');
-    -- Synthetic reads series and observations to replay a vintage, which the
-    -- marketdata read handlers do not gate, and saves the feed bindings of the
-    -- feeds it starts. Its ticks reach marketdata over NATS, not through a
-    -- handler.
+    -- Synthetic saves the feed bindings of the feeds a person starts, with that
+    -- person's token. It exchanges a collection's run grant for the token that
+    -- reads the series and observations of a vintage. Its ticks reach marketdata
+    -- over NATS, not through a handler.
+    PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'iam::run_grants:exchange');
     PERFORM ores_iam_role_permissions_assign_fn(ores_utility_system_tenant_id_fn(), 'SyntheticService', 'marketdata::feed_bindings:write');
 
     -- ORE Import service: workflow management + delegated refdata/trading writes

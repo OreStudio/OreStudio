@@ -20,6 +20,7 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FEED_CONTROLLER_HPP
 #define ORES_SYNTHETIC_SERVICE_FEED_CONTROLLER_HPP
 
+#include "feed_run_identity.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
@@ -142,12 +143,23 @@ private:
 public:
     // nats is the raw transport the feeds build with, kept so a caller
     // constructs the controller and the build context from one client.
-    // auth_nats builds the default marketdata binding store.
+    // auth_nats builds the default marketdata binding store and the identity
+    // that every start of a feed runs under.
     feed_controller(ores::nats::service::client& nats,
                     ores::nats::service::nats_client& auth_nats,
                     std::shared_ptr<feed_binding_store> bindings = {})
-        : bindings_(bindings ? std::move(bindings) : make_marketdata_binding_store(auth_nats)) {
+        : bindings_(bindings ? std::move(bindings) : make_marketdata_binding_store(auth_nats))
+        , identity_(feed_run_identity::make(auth_nats)) {
         (void)nats;
+    }
+
+    /**
+     * @brief The identity a start runs the feed as. The controller owns it so
+     * that every start of every kind, whether a person or a restore causes it,
+     * shares one run token cache.
+     */
+    feed_run_identity& identity() {
+        return identity_;
     }
 
     ~feed_controller() {
@@ -436,6 +448,8 @@ private:
 
     // Injected or, by default, the marketdata-over-NATS store.
     std::shared_ptr<feed_binding_store> bindings_;
+
+    feed_run_identity identity_;
 
     mutable std::mutex mu_;
     std::map<std::string, running_feed> feeds_;

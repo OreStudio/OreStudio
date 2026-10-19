@@ -58,6 +58,7 @@ generate_synthetic_market_data_generation_config(utility::generation::generation
     r.enabled = faker::datatype::boolean();
     r.dataset_id = std::nullopt;
     r.provider_code = std::string("bloomberg");
+    r.run_grant_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

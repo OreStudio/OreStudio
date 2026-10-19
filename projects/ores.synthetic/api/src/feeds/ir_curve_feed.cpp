@@ -156,7 +156,7 @@ std::string lowercase(std::string s) {
 double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                                     const ores::synthetic::domain::ir_curve_generation_config& cfg,
                                     const std::vector<ir_curve_resolved_entry>& resolved,
-                                    const std::string& caller_bearer_token) {
+                                    const std::string& run_token) {
     const auto* anchor = select_vintage_anchor_entry(resolved);
     if (!anchor) {
         throw vintage_data_missing_error(
@@ -186,7 +186,7 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
                                          "': " + anchor_uri.error());
 
     const auto found = find_vintage_observation(auth_nats,
-                                                caller_bearer_token,
+                                                run_token,
                                                 cfg.vintage_series_uri,
                                                 *anchor_uri,
                                                 cfg.vintage_source,
@@ -212,7 +212,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
         definitions,
     const ir_curve_refdata_context& refctx,
     ores::synthetic::domain::binding_mode binding_mode,
-    const std::string& caller_bearer_token) {
+    const std::string& run_token) {
     auto resolved = resolve(entries, refctx, cfg.fixed_leg_payment_frequency_code);
 
     // "vintage" resolves the initial_rate parameter from a real market_observation, overriding
@@ -220,8 +220,7 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // See the field's own doc comment for the vintage semantics.
     auto cfg_values = values;
     if (cfg.price_source == "vintage") {
-        const auto initial_rate =
-            resolve_vintage_initial_rate(auth_nats, cfg, resolved, caller_bearer_token);
+        const auto initial_rate = resolve_vintage_initial_rate(auth_nats, cfg, resolved, run_token);
         const auto def_it =
             std::find_if(definitions.begin(), definitions.end(), [&](const auto& d) {
                 return lowercase(d.process_type_code) == lowercase(cfg.process_type) &&

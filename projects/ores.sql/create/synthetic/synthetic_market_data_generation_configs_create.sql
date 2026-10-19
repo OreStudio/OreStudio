@@ -49,6 +49,7 @@ create table if not exists "ores_synthetic_market_data_generation_configs_tbl" (
     "enabled" boolean not null,
     "dataset_id" uuid null,
     "provider_code" text not null,
+    "run_grant_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

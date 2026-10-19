@@ -24,6 +24,7 @@ set(files
     "feed_config_handler_tests.cpp"
     "feed_controller_tests.cpp"
     "feed_kind_registry_tests.cpp"
+    "feed_run_identity_tests.cpp"
     "folder_feed_control_handler_tests.cpp"
     "ir_curve_feed_vintage_tests.cpp"
     "ir_curve_template_resolver_tests.cpp"

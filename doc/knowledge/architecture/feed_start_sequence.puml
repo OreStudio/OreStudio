@@ -1,0 +1,56 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Starting a feed: the command, the consent and the run token
+
+hide footbox
+skinparam sequenceMessageAlign left
+
+actor "Operator" as op
+participant "Synthetic service" as syn
+participant "IAM" as iam
+participant "Marketdata" as md
+
+op -> syn : synthetic.v1.ops.start_feed(config id)\nAuthorization: the operator's token
+syn -> syn : check the operator's permissions\n(the kind's config permission and the run permission)
+
+alt the collection holds no run grant
+    syn -> iam : iam.v1.run_grants.put(resource, role, audience)\nthe operator's token, relayed
+    iam -> iam : check the operator holds every permission\nof the role in the collection's party
+    iam --> syn : grant id
+    syn -> syn : record the grant id on the collection
+end
+
+syn -> iam : iam.v1.ops.exchange_run_grant(grant id, run id)\nAuthorization: the service's own token
+iam -> iam : check the audience, the grant, the tenant and the grantor\npermissions = the role's, limited to the grantor's now
+iam --> syn : run token (five minutes)
+
+syn -> md : read the vintage series and observations\nAuthorization: the run token
+syn -> syn : start the feed
+syn -> md : create the operator's feed binding if absent\nAuthorization: the operator's token
+
+syn --> op : started
+
+note over syn
+    The operator's token serves the permission check,
+    the consent and the operator's own binding.
+    The feed itself does not depend on who pressed Start.
+end note
+
+@enduml

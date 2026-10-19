@@ -1,0 +1,53 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Restoring the feeds when the synthetic service starts
+
+hide footbox
+skinparam sequenceMessageAlign left
+
+participant "Synthetic service" as syn
+database "Feed configs" as db
+participant "IAM" as iam
+participant "Marketdata" as md
+
+syn -> db : list the active tenants
+loop each tenant, the system tenant first
+    syn -> db : read the collections and feeds\nin the tenant, through its root party
+    loop each feed with enabled and auto_start
+        alt the collection holds a run grant
+            syn -> iam : iam.v1.ops.exchange_run_grant(grant id, run id)\nAuthorization: the service's own token
+            iam --> syn : run token, or refused (grant lapsed)
+        end
+        alt a token is held, or the feed has a fixed price
+            syn -> md : read the vintage series and observations\nAuthorization: the run token
+            syn -> syn : start the feed
+        else the feed starts from a vintage and has no token
+            syn -> syn : skip the feed and log the reason
+        end
+    end
+end
+
+note over syn
+    A restart uses the same exchange as the Start command.
+    No person is present, so the stored consent stands in for the operator.
+    A restore creates no binding: the stored bindings stand.
+end note
+
+@enduml

@@ -61,7 +61,8 @@ consumer that reads it, and to know where a new asset class plugs in.
    a feed publishes can reach storage at all.
 6. [[id:39057B64-8F85-4882-9B66-D2D4FC7468E4][The feed controller]]. The
    one owner of the running feeds, what each start result means, and the
-   binding rule a start applies.
+   binding rule a start applies. [[id:A7D1927B-CB42-49A9-94EF-DBB40225274C][The identity a feed runs as]]
+   states whose authority the start uses and how a restart restores the feeds.
 7. [[id:D67C930B-261F-480B-B5EF-020C6D617333][The feed factory and the kind
    seam]]. How a kind string selects a producer builder and how the lifecycle
    stays unchanged as kinds are added.

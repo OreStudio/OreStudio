@@ -97,7 +97,7 @@ conventions to it.
 #+ATTR_HTML: :class hug-leading
 | Entity | What contributes | Model |
 |--------+------------------+-------|
-| =conventions_document= | The 27 families, still carried as one message today | |
+| =conventions_bundle= | The 27 families, still carried as one message today | |
 | =report_definition=, =run_document= | The run the conventions are bound to | |
 | =portfolio=, =book= | The imported tree | |
 | =trade= | The imported trades | |

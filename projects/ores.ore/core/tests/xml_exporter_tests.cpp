@@ -395,8 +395,8 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
   </Trade>
 </Portfolio>
 )";
-    const auto imported =
-        ores::ore::domain::portfolio_projection::map(ores::ore::domain::portfolio_projection::read(doc));
+    const auto imported = ores::ore::domain::portfolio_projection::map(
+        ores::ore::domain::portfolio_projection::read(doc));
     REQUIRE(imported.size() == 1);
     auto instrument = imported.front().instrument;
 

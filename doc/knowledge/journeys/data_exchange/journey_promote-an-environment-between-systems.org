@@ -94,7 +94,7 @@ or ticket where the person records the hop. The web UI has no promotion screen.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =conventions_document= | Every family the promotion moves | |
+| =conventions_bundle= | Every family the promotion moves | |
 | =run_document=, =report_definition= | The configuration the run binds | |
 | =portfolio=, =book=, =trade= | The trade data | |
 | =market_observation=, =market_fixing= | The market data | |

@@ -24,7 +24,7 @@
 #include "ores.refdata.api/domain/bundle_import_item.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.core/service/conventions_bundle.hpp"
-#include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include <boost/uuid/uuid_io.hpp>

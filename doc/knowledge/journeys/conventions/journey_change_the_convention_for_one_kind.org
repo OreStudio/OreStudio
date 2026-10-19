@@ -326,5 +326,5 @@ version.
 
 - [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
 - [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections this page fills
-- =conventions_document_service::save= — the wider write that replaces the party's rows kind by kind
+- =conventions_bundle_service::apply= — the wider write that replaces the party's rows kind by kind
 - =ore.v1.ops.export_run_configuration= — the export that reads the party's document and ignores the bound configuration

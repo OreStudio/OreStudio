@@ -17,6 +17,7 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/xml/roundtrip_harness.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
@@ -50,12 +51,11 @@ fs::path corpus_root() {
 
 
 ores::ore::xml::roundtrip_kind conventions_kind() {
-    return ores::ore::xml::make_roundtrip_kind<conventions,
-                                               ores::refdata::messaging::conventions_document>(
+    return ores::ore::xml::make_roundtrip_kind<conventions, ores::ore::domain::conventions_package>(
         "conventions",
         "conventions",
-        &conventions_mapper::map,
-        &conventions_mapper::reverse,
+        &ores::ore::domain::split_conventions,
+        &ores::ore::domain::join_conventions,
         ores::ore::xml::parsed_text_difference<conventions>);
 }
 

@@ -90,7 +90,7 @@ file.
 #+ATTR_HTML: :class hug-leading
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
-| =conventions_document= | The family rows the file carries | |
+| =conventions_bundle= | The family rows the file carries | |
 | =curve_configuration_document= | The curve definitions | |
 | =report_definition=, =run_document= | The binding the import stores against | |
 | =swap_convention= or the named family | The rows the person checks | |

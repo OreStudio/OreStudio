@@ -85,11 +85,6 @@ private:
 
 public:
     /**
-     * @brief Maps all recognised convention types from an ORE conventions doc.
-     */
-    static ores::refdata::messaging::conventions_document map(const conventions& v);
-
-    /**
      * @brief The categories the document carries that no entity models, and how
      * many elements each holds.
      *
@@ -160,11 +155,6 @@ public:
     map_commodity_forward(const commodityForwardType& v);
 
     static refdata::domain::bond_yield_convention map_bond_yield(const bondYield& v);
-
-    /**
-     * @brief Reconstructs an ORE conventions XML document from mapped domain conventions.
-     */
-    static domain::conventions reverse(const ores::refdata::messaging::conventions_document& v);
 };
 
 /**

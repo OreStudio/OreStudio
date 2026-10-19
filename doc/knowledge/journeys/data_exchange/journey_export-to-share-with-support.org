@@ -89,7 +89,7 @@ and ticket system. The web UI has no export route.
 |--------+---------------------+-------|
 | =trade=, =instrument= | The trade data the portfolio export writes | |
 | =run_document=, =configuration_binding= | The run the export walks | |
-| =conventions_document= | The conventions the run export writes | |
+| =conventions_bundle= | The conventions the run export writes | |
 | =market_observation=, =market_fixing= | The quotes and fixings | |
 
 * Operations and messages

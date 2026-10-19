@@ -27,7 +27,6 @@
 #include "ores.refdata.core/repository/tenor_basis_swap_long_short_repository.hpp"
 #include "ores.refdata.core/repository/tenor_basis_swap_pay_receive_repository.hpp"
 #include "ores.refdata.core/service/conventions_bundle.hpp"
-#include "ores.refdata.core/service/conventions_document_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -146,7 +145,6 @@ conventions_bundle conventions_bundle_service::read() {
 
 conventions_apply_result conventions_bundle_service::apply(const conventions_bundle& bundle) {
     conventions_apply_result result;
-    conventions_save_result applied;
 
     auto central = decode_family<domain::convention>(bundle, central_family, ctx_);
     auto pay_receive =
@@ -165,13 +163,12 @@ conventions_apply_result conventions_bundle_service::apply(const conventions_bun
     for (const auto& row : bundle.rows) {
         if (belongs_to_the_tenor_bundle(row.family))
             continue;
-        if (!apply_staged_family(ctx_, row.family, row.payload, applied))
+        if (!apply_staged_family(ctx_, row.family, row.payload, result))
             throw std::runtime_error("The registry does not know the convention family '" +
                                      row.family + "'.");
     }
 
     close_omitted_leg_forms(ctx_, forms);
-    result.world_kept = std::move(applied.world_kept);
     return result;
 }
 

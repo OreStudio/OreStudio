@@ -17,12 +17,15 @@
  *
  */
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid.hpp>
 #include <algorithm>
 #include <map>
 #include <rfl/json.hpp>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace ores::ore::domain {
 
@@ -60,13 +63,28 @@ std::map<std::string, int> element_counts(const std::string& xml) {
 
 constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
 
-/// The document without the family whose identity is not a value.
-ores::refdata::messaging::conventions_document
-without_tenor_basis_swap(ores::refdata::messaging::conventions_document d) {
-    std::erase_if(d.convention, [](const auto& c) { return c.kind_code == tenor_basis_swap_kind; });
-    d.tenor_basis_swap_pay_receive.clear();
-    d.tenor_basis_swap_long_short.clear();
-    return d;
+bool is_tenor_basis_swap_family(const std::string& family) {
+    return family == "convention" || family == "tenor_basis_swap_pay_receive" ||
+           family == "tenor_basis_swap_long_short";
+}
+
+/// The package without the families whose identity is not a value.
+std::string without_tenor_basis_swap(const conventions_package& p) {
+    std::string out;
+    for (const auto& row : p.bundle.rows) {
+        if (is_tenor_basis_swap_family(row.family))
+            continue;
+        out += row.family + "\x1f" + std::to_string(row.sequence) + "\x1f" + row.payload + "\n";
+    }
+    return out + rfl::json::write(p.fx);
+}
+
+template <typename Row>
+Row decode(const refdata::service::conventions_bundle_row& row) {
+    auto decoded = rfl::json::read<Row>(row.payload);
+    if (!decoded)
+        throw std::runtime_error("A conventions payload does not decode: " + row.family);
+    return std::move(*decoded);
 }
 
 /// A tenor basis swap's facts, keyed by the identity the mapper states.
@@ -76,31 +94,42 @@ without_tenor_basis_swap(ores::refdata::messaging::conventions_document d) {
 /// within a single map. What two maps do agree on is the stated identity, the
 /// kind and the name, so the comparison pairs the conventions by that and drops
 /// the provisional keys before it compares the rest.
-std::map<std::string, std::string>
-tenor_basis_swap_facts(const ores::refdata::messaging::conventions_document& d) {
+std::map<std::string, std::string> tenor_basis_swap_facts(const conventions_package& p) {
+    std::vector<refdata::domain::tenor_basis_swap_pay_receive> pay_receives;
+    std::vector<refdata::domain::tenor_basis_swap_long_short> long_shorts;
+    for (const auto& row : p.bundle.rows) {
+        if (row.family == "tenor_basis_swap_pay_receive")
+            pay_receives.push_back(decode<refdata::domain::tenor_basis_swap_pay_receive>(row));
+        else if (row.family == "tenor_basis_swap_long_short")
+            long_shorts.push_back(decode<refdata::domain::tenor_basis_swap_long_short>(row));
+    }
+
     std::map<std::string, std::string> out;
-    for (const auto& c : d.convention) {
+    for (const auto& row : p.bundle.rows) {
+        if (row.family != "convention")
+            continue;
+        const auto c = decode<refdata::domain::convention>(row);
         if (c.kind_code != tenor_basis_swap_kind)
             continue;
-        ores::refdata::messaging::tenor_basis_swap_convention_item item;
+        refdata::messaging::tenor_basis_swap_convention_item item;
         auto central = c;
         central.id = boost::uuids::uuid{};
         item.convention = central;
-        for (const auto& p : d.tenor_basis_swap_pay_receive) {
-            if (p.convention_id != c.id)
+        for (const auto& part : pay_receives) {
+            if (part.convention_id != c.id)
                 continue;
-            auto part = p;
-            part.id = boost::uuids::uuid{};
-            part.convention_id = boost::uuids::uuid{};
-            item.pay_receive.push_back(part);
+            auto copy = part;
+            copy.id = boost::uuids::uuid{};
+            copy.convention_id = boost::uuids::uuid{};
+            item.pay_receive.push_back(copy);
         }
-        for (const auto& l : d.tenor_basis_swap_long_short) {
-            if (l.convention_id != c.id)
+        for (const auto& part : long_shorts) {
+            if (part.convention_id != c.id)
                 continue;
-            auto part = l;
-            part.id = boost::uuids::uuid{};
-            part.convention_id = boost::uuids::uuid{};
-            item.long_short.push_back(part);
+            auto copy = part;
+            copy.id = boost::uuids::uuid{};
+            copy.convention_id = boost::uuids::uuid{};
+            item.long_short.push_back(copy);
         }
         out[c.kind_code + "\x1f" + c.name] = rfl::json::write(item);
     }
@@ -136,10 +165,9 @@ std::string conventions_difference(const conventions& original,
     // that normalisation is deliberate and carries the same information, so
     // comparing the mapped values tolerates it. A value the mapper got wrong
     // survives neither direction, so this catches it.
-    const auto mapped_document = conventions_mapper::map(original);
-    const auto mapped_export = conventions_mapper::map(exported);
-    if (rfl::json::write(without_tenor_basis_swap(mapped_document)) !=
-        rfl::json::write(without_tenor_basis_swap(mapped_export)))
+    const auto mapped_document = split_conventions(original);
+    const auto mapped_export = split_conventions(exported);
+    if (without_tenor_basis_swap(mapped_document) != without_tenor_basis_swap(mapped_export))
         return path + ": the export reads back as different conventions";
 
     if (tenor_basis_swap_facts(mapped_document) != tenor_basis_swap_facts(mapped_export))

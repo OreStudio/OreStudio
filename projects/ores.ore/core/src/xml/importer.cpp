@@ -231,8 +231,7 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
 }
 
 
-ores::refdata::messaging::conventions_document
-importer::import_conventions(const std::filesystem::path& path) {
+domain::conventions_package importer::import_conventions(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
 
     using namespace ores::platform::filesystem;
@@ -241,7 +240,7 @@ importer::import_conventions(const std::filesystem::path& path) {
 
     domain::conventions conv;
     domain::load_data(c, conv);
-    const auto r = domain::conventions_mapper::map(conv);
+    auto r = domain::split_conventions(conv);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing conventions from " << path.generic_string();
     return r;

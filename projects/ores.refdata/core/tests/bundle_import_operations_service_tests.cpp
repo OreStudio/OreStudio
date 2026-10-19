@@ -19,7 +19,7 @@
  */
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
-#include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
@@ -52,7 +52,7 @@ ores::database::context database_less_context() {
 
 TEST_CASE("the staged dispatch returns false for a family the registry does not know", tags) {
     auto ctx = database_less_context();
-    ores::refdata::service::conventions_save_result result;
+    ores::refdata::service::conventions_apply_result result;
 
     CHECK_FALSE(ores::refdata::service::apply_staged_family(ctx, "no_such_family", "[]", result));
 }
@@ -63,7 +63,7 @@ TEST_CASE("the staged dispatch has a branch for every registry family", tags) {
     REQUIRE(ores::refdata::domain::convention_family_count > 0);
     for (std::size_t i = 0; i < ores::refdata::domain::convention_family_count; ++i) {
         const auto family = std::string(ores::refdata::domain::convention_families[i].key);
-        ores::refdata::service::conventions_save_result result;
+        ores::refdata::service::conventions_apply_result result;
         auto reached_its_branch = false;
         try {
             // An array cannot decode into a family's value type, so a known

@@ -95,7 +95,7 @@ family at a time, so finding a partially written document is a manual sweep.
 | Entity | What it contributes | Model |
 |--------+---------------------+-------|
 | =workflow_instance=, =workflow_step= | The failure, its log and the saved ids | |
-| =conventions_document= | The families that were written before the failure | |
+| =conventions_bundle= | The families that were written before the failure | |
 | =run_document=, =configuration_binding= | The binding the undo removes | |
 | =trade= | The per-item failures and the saved rows | |
 | =market_observation=, =market_fixing= | The sections a market import kept | |

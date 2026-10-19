@@ -19,6 +19,7 @@
  */
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
+#include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
@@ -86,14 +87,14 @@ conventions load_conventions() {
 
 /**
  * @brief Round-trip a single fxType through map_fx then back through the
- * aggregate reverse() (individual reverse_fx is not exposed publicly).
+ * package join (individual reverse_fx is not exposed publicly).
  */
 ores::ore::domain::fxType roundtrip_single(const ores::ore::domain::fxType& original) {
     const ores::refdata::messaging::fx_convention mapped = conventions_mapper::map_fx(original);
 
-    ores::refdata::messaging::conventions_document wrapper;
+    ores::ore::domain::conventions_package wrapper;
     wrapper.fx.push_back(mapped);
-    const conventions reversed = conventions_mapper::reverse(wrapper);
+    const conventions reversed = ores::ore::domain::join_conventions(wrapper);
 
     REQUIRE(reversed.FX.size() == 1);
     return reversed.FX.front();

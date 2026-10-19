@@ -22,7 +22,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.refdata.api/domain/convention_family_registry.hpp"
 #include "ores.refdata.core/export.hpp"
-#include "ores.refdata.core/service/conventions_document_service.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <rfl/json.hpp>
 #include <utility>

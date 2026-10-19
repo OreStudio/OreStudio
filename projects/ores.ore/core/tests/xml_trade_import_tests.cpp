@@ -291,4 +291,3 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.issue.issuer;
 }
-

@@ -349,5 +349,5 @@ with their counts and their provenance.
 - [[id:AFE1E3F9-F687-4CA7-AA6D-C9AAF727D00D][User Journey Extraction Standard]] — the checklist this journey is written against
 - [[id:CA94C762-B0C8-40E7-85CE-D4C6355023CC][Document type: user_journey]] — the eleven sections this page fills
 - =ores_refdata_publish_conventions_from_dq_fn= — the function that wrote 25 of the 26 kinds
-- =conventions_document_service= — the read and the write of the whole party document
+- =conventions_bundle_service= — the read of the party's families and the write of a bundle of them
 - =ore.v1.ops.export_run_configuration= — the export that writes the conventions file from the party and not from the configuration

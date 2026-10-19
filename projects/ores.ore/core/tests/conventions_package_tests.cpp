@@ -38,10 +38,9 @@
  * @file conventions_package_tests.cpp
  * @brief The ORE document split at the family boundary, and put back together.
  *
- * The package replaces the aggregate as the mapper's intermediate shape, so it
- * has to agree with that aggregate before any caller moves onto it. The whole
- * corpus is the comparison: every file the export can round trip has to leave
- * the package as the same bytes the document leaves it as.
+ * The package is the mapper's intermediate shape. The corpus is the comparison:
+ * every file carries as many rows as it has elements, and the export bytes the
+ * round trip tests pin come out of the package.
  */
 
 namespace {
@@ -67,34 +66,6 @@ conventions load(const std::filesystem::path& path) {
     return document;
 }
 
-/**
- * @brief What the export writes today, through the aggregate.
- */
-std::string document_bytes(const conventions& document) {
-    return save_data(conventions_mapper::reverse(conventions_mapper::map(document)));
-}
-
-}
-
-TEST_CASE("a_corpus_file_leaves_the_package_as_the_document_leaves_it", tags) {
-    int walked = 0;
-
-    for (const auto& path : ores::ore::xml::files_of_kind("conventions", corpus_root())) {
-        const auto document = load(path);
-
-        // A file carrying a category no entity models cannot round trip either
-        // way, and which those are is the round trip suite's measurement.
-        if (!conventions_mapper::unmodelled(document).empty())
-            continue;
-
-        ++walked;
-        const std::string via_package = save_data(join_conventions(split_conventions(document)));
-
-        INFO(path.string());
-        CHECK(via_package == document_bytes(document));
-    }
-
-    CHECK(walked == 72);
 }
 
 TEST_CASE("the_package_carries_one_row_for_every_document_element", tags) {

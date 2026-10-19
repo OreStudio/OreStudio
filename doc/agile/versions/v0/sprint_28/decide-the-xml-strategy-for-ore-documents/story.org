@@ -80,7 +80,7 @@ the work that follows is broken into tasks.
 | [[id:DBC23EE5-046F-48B8-985B-38E1726180F7][Map the analytics documents that have no mapper]] | ABANDONED | | | Simulation, sensitivity analysis, SIMM calibration and the cross asset model. The largest of the unmapped families and the one that exercises the most of the schema. |
 | [[id:1ADD3134-823B-45F4-B76B-B38AB47507AC][Build the faithful document layer]] | DONE | | 2026-10-17 | Put the scanner in product code with the transient document model and the writer, and prove over the corpus that every document reads, writes back, compares equal and still validates against input.xsd. This layer needs no schema, so it lands before the schema tables. |
 | [[id:9781E5B4-012B-4012-9670-BCB39058BA3D][Delete the document families nothing reads]] | DONE | 2026-10-17 | 2026-10-17 | Seven of the twenty corpus root elements have no product consumer. Do not map them; delete their tests and their dead mapper, and record the census that says which families those are. |
-| [[id:B8F21E54-2B20-4FF3-A02D-4B8DD0AB792F][Cut the vector growth in the portfolio read]] | STARTED | 2026-10-19 | | The portfolio read spends a third of its instructions growing the trade vector and moving large trade records. Measure, then reserve or avoid the move. |
+| [[id:B8F21E54-2B20-4FF3-A02D-4B8DD0AB792F][Cut the vector growth in the portfolio read]] | DONE | 2026-10-19 | 2026-10-19 | The portfolio read spends a third of its instructions growing the trade vector and moving large trade records. Measure, then reserve or avoid the move. |
 
 * Decisions
 

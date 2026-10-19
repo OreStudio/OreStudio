@@ -133,6 +133,100 @@ No new gap in the specification. Decision 15 of the trade page review, a
 workflow with its own address, does not apply here: booking is the Add of the
 list and the page is its own address.
 
+** Structure page review, 2026-10-19
+
+Read at =3a7764a929=: =doc/prototypes/trades/structure-page/prototype.js= (all 255
+lines) against the sections "A structure and a package" and "Workflows on the
+entity screen", and the general rules. The code was read, not run. The page has
+three screens: the list, the page of one structure, and the workflow that groups
+trades.
+
+What already matches: the tree is a panel beside the page, with a row for each
+structure and trade; the page says how the kind confirms and prices; the list
+indents inner structures under their root; grouping is a workflow with its own
+address and steps; the rules the server enforces are stated before the write.
+
+| # | Difference | Where | Action |
+|---+------------+-------+--------|
+| 1 | The trail names Trades twice in the group screen | =prototype.js:48= | Fix |
+| 2 | The line under the title is a second row of six chips, with the kind, the template, the confirmation, the pricing and a "version read from the legs" chip. The specification allows one line: identifier, state and versions | =:78= | Fix. Keep the kind and the identifier in the line. The confirmation and pricing are on the "How it confirms and prices" card already |
+| 3 | A tab, and a click in the tree, reload the page with a new address | =:95=, =:109=, =:115= | Fix. Switch in place, as on the trade page |
+| 4 | Party, counterparty, template, the structure it is inside, and the trade in the leg card are plain text. The money in the tree, the members and the grouping table has no flag | =:84-88=, =:119=, =:135-136=, =:148=, =:205= | Fix. Use =ref()= and =moneyRef()= |
+| 5 | "Link a trade" is in the Workflows menu and on the Trades card. It is the Add of the card. A workflow is listed once and has several steps | =:73=, =:143= | Fix. Remove it from the menu |
+| 6 | The "+ Link a trade" label carries a plus | =:143= | Fix |
+| 7 | Link and Unlink save without the kind of change, without commentary and without the version precondition. Unlink asks a reason only. Neither has the unsaved-changes guard | =:160-175= | Fix. Use the Edit pattern |
+| 8 | After a save, the card shows the new legs at once and Refresh turns gold. The specification says a save does not reload the page: the old rows stay until Refresh | =:165=, =:174= | Fix |
+| 9 | Link and Unlink add no entry to History. The entries it shows for the legs read as entries of the structure, with no record name | =:150-157=, =:165= | Fix. One rail with the records Structure, Member and Leg |
+| 10 | Narration of what is absent: the chip "version read from the legs", the field "Internal version: Read from the legs", the field "Inside" explaining a root, and the tree note | =:79=, =:93=, =:88=, =:127= | Fix. Remove |
+| 11 | The list holds page, size and filter in memory. No order is stated or sortable, and there is no search. The request line states a filter and no order | =:239=, =:253= | Fix. Same address and order rules as the trade list |
+| 12 | The list and the page have no loading, error or refused state | =:240=, =:63= | Fix |
+| 13 | A reader without the right is told to "ask a tenant administrator for the Trader role", with no link, and the whole workflow is drawn under the notice | =:236= | Fix. Use =needsRole()= and draw nothing else |
+| 14 | The grouping steps and the Create button ask no reason or commentary. Leaving a half-chosen group asks nothing | =:200-233= | Fix |
+| 15 | A confirmation line says "The server enforces this too, and answers with an error" | =:206= | Fix. Remove |
+
+** ORE portfolio review, 2026-10-19
+
+Read at =3a7764a929=: =doc/prototypes/trades/ore-portfolio/prototype.js= (all 156
+lines) against "Workflows on the entity screen" and the general rules. The code
+was read, not run. Import and export are two workflows, each with its own address
+(=?mode=export=).
+
+What already matches: each workflow has its own address; the person sees the plan
+before anything is written; a refused trade is listed with its reason; the import
+can be rolled back; the result of an export says where the file is.
+
+| # | Difference | Where | Action |
+|---+------------+-------+--------|
+| 1 | The trail names Trades twice | =prototype.js:9= | Fix |
+| 2 | Each workflow page carries a Workflows menu that opens the other workflow. The menu belongs to the entity screen, which lists each workflow once. The trade list already lists both | =:110=, =:154= | Fix. Remove the menu from both |
+| 3 | A reader without the right is told to ask a tenant administrator for the Operations role, with no link. The page is drawn in full under the notice | =:18= | Fix. Use =needsRole()= and draw nothing else |
+| 4 | The step is held in memory. Back leaves the workflow. A person who reloads loses the choices | =:40=, =:58= | Decide. A step in the address, or a guard on leaving |
+| 5 | Leaving with choices made asks nothing | whole file | Fix. Ask "You have unsaved changes. Close anyway?" |
+| 6 | The parent portfolio is free text. A portfolio exists or is created, so it needs a combo box with the portfolios that exist | =:83= | Fix |
+| 7 | The counterparty, the trade type, the book and the netting set are text or chips. The counterparty in the choices has no link | =:85=, =:91-92=, =:148= | Fix. Use =ref()= |
+| 8 | Confirm and Export ask no reason or commentary. Both write with a change intent | =:96-101=, =:150= | Fix |
+| 9 | The import and export calls have no loading state, and no failure that names the operation, the status and the request id. A failed call cannot be shown | =:112-117=, =:150= | Fix. Use =failure()= |
+| 10 | Roll back this import asks nothing and gives no reason | =:107=, =:118= | Decide. A confirmation dialog |
+| 11 | The preview lists every row with no pager. The export check shows twelve rows and the line "Showing 12 of N" | =:90-92=, =:149= | Fix. Use =pager()= |
+| 12 | A disabled button gives no reason: Find portfolio files, Continue, Import, Export | =:71=, =:80=, =:93=, =:150= | Fix. Put the reason in the tooltip |
+
+** Trade entry review, 2026-10-19
+
+Read at =3a7764a929=: =trade-entry/entry-shell.js=, =index.html=, =pricing.html=, and
+in =booking.js= the header, validation, field helpers, audit list and the actions
+=mutate=, =authorise=, =removeComponent= and =setMode=. I did not read the whole of
+=booking.js= (1098 lines), =catalogue.js= or =pricing.js=. The code was read, not run.
+
+These two pages, the structure editor and the pricing screen, are not entity
+screens. They are workbenches for one structure that edit it in place. The
+specification names the structure editor only as the model for the tree panel.
+They are the oldest prototype: they use =innerHTML= and not =h()=, and they have
+their own stylesheet. Many differences follow from that, and some are the design
+the prototype argues for. Those are marked Decide.
+
+| # | Difference | Where | Action |
+|---+------------+-------+--------|
+| 1 | The shell is drawn with =noRoles: true=, so no control has a permission. A reader can Authorise, Add, Remove and Book | =entry-shell.js:11= | Fix. Read =CAN.structure= and draw only the controls it allows |
+| 2 | Every edit saves at once and raises the structure version. There is no Save, no kind of change, no reason, no commentary and no version precondition | =booking.js:84= | Decide. This is the design of the editor (a component change bumps the version). The Edit pattern may not suit a workbench |
+| 3 | Authorise and Withdraw change the state with one click, with no reason or confirmation | =booking.js:94=, =index.html:28= | Fix. Check the four-eyes section of the specification first |
+| 4 | Remove a component and the switch between Strategy and Package rewrite the structure at once, with no confirmation and no undo | =booking.js:1019=, =:1029= | Fix |
+| 5 | The header is a title, a sub line and badges. It has no Refresh, no loaded-at, no state chip in the line, and the version chip is a second element | =index.html:13-31=, =booking.js:183= | Fix. Use =pageHead()= and =refreshButton()= |
+| 6 | The audit list is a time and a text, newest first. It has no author photo, no version, no reason, no chart and no link to the trade page | =booking.js:863= | Fix. Use =timeline()= |
+| 7 | The actor in the audit list is the literal "marco" | =booking.js:86=, =:96= | Fix. Use =ME= |
+| 8 | A currency, a long or short side, an option type and a calendar are free text. The generic form lets the reader type anything into the side. No Clear on an optional field | =booking.js:563=, =:245=, =pricing.html:157= | Fix. Use =valueInput()= |
+| 9 | The selected component, its tab and the mode are in memory and local storage, not in the address | =booking.js:19=, =:60= | Fix |
+| 10 | The dialogs (product type, form from trades, price a new trade) have no loaded-at and no guard on Cancel | =index.html:85-105=, =pricing.html:126-183= | Fix |
+| 11 | Narration of what is absent: "Package mode enforces nothing structural", the topology note, and the "Valid" banner | =booking.js:216=, =:183-211= | Fix. Remove |
+| 12 | Counterparties, trade ids, currencies and products are text. The trades in the "form from trades" dialog have no link | =booking.js:950= | Fix. Use =ref()= and =tradeLink()= |
+| 13 | The pricing screen ticks market data on a timer and redraws on its own. The specification says a screen does not read again by itself | =pricing.js:241= | Decide. The specification has no line for live market data |
+| 14 | The pricing screen has a Book button that books a trade from a price. Booking is the Add of the trade list, and Book a trade is the page for it. The two paths book differently | =pricing.html:87=, =pricing.js:359= | Decide. A gap in the specification: booking from a priced ticket |
+
+Gaps in the specification found by the three reviews:
+
+- Whether a workbench that edits in place (the structure editor) follows the Edit pattern.
+- Booking from a priced ticket.
+- Live market data on a screen.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

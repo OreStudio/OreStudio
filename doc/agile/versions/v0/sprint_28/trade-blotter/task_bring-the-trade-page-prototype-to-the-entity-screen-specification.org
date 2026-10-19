@@ -99,6 +99,35 @@ state pass. The scripts are not kept.
 the same appended rules. The other four prototypes were not reviewed against the
 specification. They get the shared =timeline=, header and footer changes only.
 
+** Book a trade, 2026-10-19
+
+The twelve differences of the book a trade review are fixed in =book-a-trade/prototype.js=.
+=common.js= gained =valueInput()=, =failure()= and =needsRole()=, in all five folders. The
+Edit dialog of the trade page uses =valueInput()=, so both screens draw a combo box, a date
+input, a fixed value and Clear the same way.
+
+| # | Fix |
+|---+-----|
+| 1 | The terms use =valueInput()=: combo boxes for currency, calendar, option type and the other sets, date inputs, Clear on optional terms |
+| 2 | The party, counterparty, book and trade type are links in the review and the result |
+| 3 | A currency or calendar combo shows its flag |
+| 4 | The Review tab asks for the reason and commentary |
+| 5 | A reader sees what the screen needs and a link to request each role that gives it |
+| 6 | A refusal and a half-booked trade name the operation, status, code and request id |
+| 7 | The Review tab counts what is left to fix. The tooltip of Book gives the first |
+| 8 | A touched form asks "You have unsaved changes. Close anyway?" before the page or a link is left |
+| 9 | The booked trade takes the currency of its terms |
+| 10 | The mode choice has no activity codes. The review gives the kind of booking in words |
+| 11 | The count of types that cannot be booked and the closed counterparty note are gone |
+| 12 | The label is "Add a row" |
+
+The breadcrumb also named Trades twice. That is fixed here. The structure page and
+the ORE portfolio page have the same fault and are in the next task.
+
+Checked in headless Chrome at the commit of this change. A scripted run of the form,
+the review, the booking and the result passes. The reader, duplicate and half-booked
+states pass. The earlier trade page scripts pass again.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=)

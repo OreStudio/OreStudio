@@ -283,18 +283,7 @@ function openAmend(t, c) {
         const rowsOff = act === 'null_amend' || (!a.economic && c.economic && act !== 'misbooking_correction');
         const reasons = REASON_CODES.filter(r => diff.length ? r[0] !== 'trade.no_change' : r[0] === 'trade.no_change');
         if (!reasons.find(r => r[0] === reason)) reason = reasons[0][0];
-        /* A value that exists is chosen from a combo box. A fixed value is shown, never edited. An optional value has a Clear control. */
-        const inputFor = (fd, i) => {
-            if (fd.fixed) return h('div', { class: 'static' }, ivalue(fd.value));
-            const off = !allowed(fd), set = v => { draft[i] = v; draw2(); };
-            let el;
-            if (fd.type === 'ccy' || fd.options) {
-                const list = fd.type === 'ccy' ? CCYS : fd.options;
-                el = select(list.includes(draft[i]) ? list : [draft[i]].concat(list), draft[i], set);
-            } else el = h('input', { class: 'field-input', type: fd.type === 'date' ? 'date' : 'text', value: draft[i], oninput: e => set(e.target.value) });
-            el.disabled = off;
-            return fd.optional ? h('div', { class: 'withclear' }, el, h('button', { class: 'btn small', disabled: off || draft[i] === '', onclick: () => { draft[i] = ''; draw(); } }, 'Clear')) : el;
-        };
+        const inputFor = (fd, i) => valueInput(fd, draft[i], (v, redraw) => { draft[i] = v; redraw ? draw() : draw2(); }, !allowed(fd));
         fill(body,
             STATE_P === 'conflict' ? h('div', { class: 'notice warn' }, h('b', null, 'Priya Natarajan saved v' + (t.ver + 1) + ' while you were editing. '), 'fixed_rate moved from 2.8500 % to 2.9000 %. ',
                 h('button', { class: 'btn small', onclick: () => toast('Your edit now sits on top of v' + (t.ver + 1) + '.') }, 'Keep my edit'), ' ', h('button', { class: 'btn small', onclick: () => toast('The form now holds the new values.') }, 'Take the new values')) : null,

@@ -464,6 +464,29 @@ function select(options, value, onchange) {
         options.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return h('option', { value: v, selected: v === value }, l); }));
 }
 
+/* The input for one field of a card. A value that exists is chosen from a combo box, a date has a date input,
+ * a fixed value is shown and never edited, and an optional value has Clear. */
+function valueInput(fd, value, set, off) {
+    if (fd.fixed) return h('div', { class: 'static' }, ivalue(value));
+    let el;
+    const flagged = list => list.map(c => [c, (FLAGS[c] ? FLAGS[c] + ' ' : '') + c]);
+    if (fd.type === 'ccy' || fd.type === 'calendar' || fd.options) {
+        const list = fd.type === 'ccy' ? CCYS : fd.type === 'calendar' ? CALENDARS : fd.options;
+        el = select(flagged(list.includes(value) ? list : [value].concat(list)), value, set);
+    } else el = h('input', { class: 'field-input', type: fd.type === 'date' ? 'date' : 'text', value, oninput: e => set(e.target.value) });
+    el.disabled = !!off;
+    return fd.optional ? h('div', { class: 'withclear' }, el, h('button', { class: 'btn small', disabled: !!off || value === '', onclick: () => set('', true) }, 'Clear')) : el;
+}
+/* A failed request names its operation, status, server code and the first eight characters of the request id. */
+function failure(op, status, code, id, text, actions) {
+    return h('div', { class: 'notice bad' }, h('b', null, text + ' '), h('span', { class: 'mono small' }, op + ' answered ' + status + ' ' + code + ' (request ' + id.slice(0, 8) + '). '), actions);
+}
+/* A screen the reader cannot use names what it needs and links to a request for each role that allows it. */
+function needsRole(screen, need, roles) {
+    return h('div', { class: 'notice warn' }, h('b', null, 'You cannot use ' + screen + '. '), 'It needs the right to ' + need + '. You can ask for: ',
+        roles.map((r, i) => [i ? ', ' : '', h('a', { href: '#', 'data-ref': 'access-request:' + r.toLowerCase().replace(/ /g, '-') }, r)]), '.');
+}
+
 /* ---------- cards and fields ---------- */
 function showValue(fd) {
     if (fd.node) return fd.node;

@@ -51,6 +51,7 @@ A convention is declared once, in its own entity, and carries only its own field
 | [[id:2DAA2FFE-2346-42DB-B865-32ACAEB2FB64][Use as_of consistently for reads]] | BACKLOG | | | Every exported set is read at one bitemporal instant. Route paged reads through the generated as_of path and record the instant in the manifest. |
 | [[id:6E7E20DA-D08B-410B-B1B8-A571C40F83CF][Apply the same shape to the curve configuration document]] | BACKLOG | | | The curve configuration document is the same defect: one aggregate carrying every curve family, still on the wire in the translation unit that failed on MSVC. Move it onto its families and a bundle, as the conventions document was moved. |
 | [[id:6D9C9C2F-7C45-4811-95BE-B9FC1AF63687][Reconcile the record with the merged work]] | DONE | 2026-10-18 | 2026-10-18 | Correct the story and its tasks so the record states what merged and what remains. Stamp the delivered tasks DONE, record their PRs, write the acceptance criteria and results the scaffold left blank, and name the decisions the tasks settled. |
+| [[id:795E541C-1D22-4CFE-9686-2AD7E019560D][Split the ORE side into per-family units]] | DONE | 2026-10-19 | 2026-10-19 | Task for: Refactor conventions onto families and bundles |
 
 * Decisions
 

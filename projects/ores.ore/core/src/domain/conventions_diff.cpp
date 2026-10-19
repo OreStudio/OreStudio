@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "conventions_family_units.hpp"
 #include "ores.ore.core/domain/conventions_mapper.hpp"
 #include "ores.ore.core/domain/conventions_package.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -61,18 +62,11 @@ std::map<std::string, int> element_counts(const std::string& xml) {
     return names;
 }
 
-constexpr std::string_view tenor_basis_swap_kind = "TENOR_BASIS_SWAP";
-
-bool is_tenor_basis_swap_family(const std::string& family) {
-    return family == "convention" || family == "tenor_basis_swap_pay_receive" ||
-           family == "tenor_basis_swap_long_short";
-}
-
 /// The package without the families whose identity is not a value.
 std::string without_tenor_basis_swap(const conventions_package& p) {
     std::string out;
     for (const auto& row : p.bundle.rows) {
-        if (is_tenor_basis_swap_family(row.family))
+        if (conventions_family::is_tenor_basis_swap_family(row.family))
             continue;
         out += row.family + "\x1f" + std::to_string(row.sequence) + "\x1f" + row.payload + "\n";
     }
@@ -109,7 +103,7 @@ std::map<std::string, std::string> tenor_basis_swap_facts(const conventions_pack
         if (row.family != "convention")
             continue;
         const auto c = decode<refdata::domain::convention>(row);
-        if (c.kind_code != tenor_basis_swap_kind)
+        if (c.kind_code != conventions_family::tenor_basis_swap_kind)
             continue;
         refdata::messaging::tenor_basis_swap_convention_item item;
         auto central = c;

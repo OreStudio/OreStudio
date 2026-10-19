@@ -20,233 +20,275 @@
  */
 
 /**
- * One report definition: what it is, how its latest run went, and the fields a
- * person may change.
+ * One report definition, as the record screen standard draws a record page: the
+ * trail, the display field as the title, the key and version line, then the
+ * actions, the tabs in the address, the details with the last-changed line, and
+ * the history of the record.
  *
- * The form offers six of the record's fields and the BFF rebuilds the write
- * from the read it makes at write time, so a field this screen does not show
- * keeps its stored value. The version the form was filled from travels with the
- * write, so a definition somebody else changed in between is a conflict rather
- * than a silent overwrite. A successful save reads the definition again and
- * states what the server now holds.
+ * A change is made in the record dialog the standard names, opened by Edit on
+ * the card it changes, and never in a form on the page. The BFF rebuilds the
+ * write from the read it makes at write time, so a field the dialog does not
+ * offer keeps its stored value, and the version the dialog was filled from
+ * travels with the write so a record somebody else changed is a conflict rather
+ * than a silent overwrite.
+ *
+ * The page's own gaps are stated where they matter and not faked: the server
+ * offers no delete for a definition, no create, and no server search of the
+ * runs it lists, so the page offers none of those actions.
  */
 
 import { useState, type ReactNode } from 'react';
-import { useParams } from 'react-router';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ReportDefinitionView, ReportDetail } from '@ores/wire-protocol/browser';
-import { api, type ReportEdit } from '../api/client.js';
+import { Link, Navigate, useNavigate, useParams } from 'react-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ReportDetail } from '@ores/wire-protocol/browser';
+import { api } from '../api/client.js';
 import { useHolds } from '../access/holds.js';
 import { PERMISSION } from '../access/permissions.js';
 import { useTranslation } from '../i18n/Provider.js';
+import { RecordDetails, RecordDialog, RecordHeader, type FieldSpec } from '../refdata/records.js';
+import { RecordStoreProvider } from '../refdata/store.js';
+import { useEntityChanges } from '../events/useEntityChanges.js';
+import { useLoadState } from '../events/useLoadState.js';
 import { Crumbs } from '../refdata/shared.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
-import { ScreenFrame } from '../shell/ScreenFrame.js';
-import { PATHS } from '../shell/paths.js';
-import {
-    Button,
-    Detail,
-    Field,
-    Input,
-    Notice,
-    PageHeader,
-    Tag,
-    Textarea,
-} from '../ui/Primitives.js';
-import { formatDateTime } from '../ui/Time.js';
-import { HealthTag, ProblemCounts, formatDuration, runDuration } from './shared.js';
+import { PATHS, reportPath } from '../shell/paths.js';
+import { AccessMark } from '../ui/AccessMark.js';
+import { RefreshButton } from '../ui/RefreshButton.js';
+import { Detail, Notice, PageHeader } from '../ui/Primitives.js';
+import { RelativeTime } from '../ui/Time.js';
+import { REPORTS_EVENTS, REPORTS_RESOURCE, REPORTING, reportingStore } from './store.js';
+import { Absent, HealthTag, formatDuration, runDuration } from './shared.js';
 
-/** The address one definition's row and record are read from. */
-export function reportKey(name: string): readonly unknown[] {
-    return ['reporting', 'report', name];
+/** Where one definition's record is cached. */
+export function reportKey(id: string): readonly unknown[] {
+    return ['records', REPORTS_RESOURCE, 'key', id];
+}
+
+/** The eight characters a person reads to tell one identifier from another. */
+function shortId(id: string): string {
+    return id.slice(0, 8);
 }
 
 /**
- * Why an edit to a definition is made, from the seeded reasons.
+ * The definition's own fields, in the order the record states them.
  *
- * `common.non_material_update` is the reason that applies to an amend and needs
- * no commentary, which is what a screen writing one field has to say.
+ * The field table drives the details and the dialog both, so the two cannot
+ * disagree about what a definition holds. A field that is fixed once the record
+ * exists is marked, so the dialog refuses to edit it.
  */
-const EDIT_REASON = 'common.non_material_update';
+const DEFINITION_FIELDS: readonly FieldSpec[] = [
+    {
+        field: 'name',
+        history: 'Name',
+        labelKey: 'reporting.fields.name',
+        kind: { kind: 'text', max: 200 },
+        fixed: true,
+    },
+    {
+        field: 'description',
+        history: 'Description',
+        labelKey: 'reporting.fields.description',
+        kind: { kind: 'text', max: 2000 },
+        blank: true,
+    },
+    {
+        field: 'report_type',
+        history: 'Report Type',
+        labelKey: 'reporting.fields.report_type',
+        kind: { kind: 'text', max: 100 },
+        fixed: true,
+    },
+    {
+        field: 'schedule_expression',
+        history: 'Schedule Expression',
+        labelKey: 'reporting.fields.schedule_expression',
+        kind: { kind: 'text', max: 200 },
+        help: 'reporting.detail.scheduleExpressionHint',
+    },
+    {
+        field: 'concurrency_policy',
+        history: 'Concurrency Policy',
+        labelKey: 'reporting.fields.concurrency_policy',
+        kind: { kind: 'text', max: 100 },
+        fixed: true,
+    },
+    {
+        field: 'prepared_input_key',
+        history: 'Prepared Input Key',
+        labelKey: 'reporting.fields.prepared_input_key',
+        kind: { kind: 'text', max: 500 },
+        blank: true,
+        help: 'reporting.detail.preparedInputKeyHint',
+    },
+    {
+        field: 'pre_processing',
+        history: 'Pre-Processing',
+        labelKey: 'reporting.fields.pre_processing',
+        kind: { kind: 'text', max: 2000 },
+        blank: true,
+    },
+    {
+        field: 'post_processing',
+        history: 'Post-Processing',
+        labelKey: 'reporting.fields.post_processing',
+        kind: { kind: 'text', max: 2000 },
+        blank: true,
+    },
+    {
+        field: 'is_official',
+        history: 'Is Official',
+        labelKey: 'reporting.fields.is_official',
+        kind: { kind: 'bool' },
+        help: 'reporting.detail.isOfficialHint',
+    },
+];
 
-/** The parts of a definition the screen states but does not edit. */
-function ReadOnlyFields({ definition }: { readonly definition: ReportDefinitionView }): ReactNode {
-    const { t, language } = useTranslation();
+/**
+ * The record page, inside the store the shared record parts read.
+ *
+ * The store is the reporting one, so the dialog, the revert dialog and the
+ * details read and write the reporting routes and not reference data's.
+ */
+export function ReportPage(): ReactNode {
     return (
-        <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-3">
-            <Detail label={t('reporting.detail.name')} value={definition.name} mono />
-            <Detail
-                label={t('reporting.detail.description')}
-                value={definition.description === '' ? '—' : definition.description}
-            />
-            <Detail label={t('reporting.detail.reportType')} value={definition.reportType} mono />
-            <Detail label={t('reporting.detail.party')} value={definition.partyId} mono />
-            <Detail
-                label={t('reporting.detail.concurrencyPolicy')}
-                value={definition.concurrencyPolicy}
-                mono
-            />
-            <Detail
-                label={t('reporting.detail.schedulerJob')}
-                value={definition.schedulerJobId ?? t('reporting.cell.notStated')}
-                mono={definition.schedulerJobId !== null}
-            />
-            <Detail
-                label={t('reporting.detail.runGrant')}
-                value={definition.runGrantId ?? t('reporting.cell.notStated')}
-                mono={definition.runGrantId !== null}
-            />
-            <Detail label={t('reporting.detail.version')} value={String(definition.version)} mono />
-            <Detail label={t('reporting.detail.modifiedBy')} value={definition.modifiedBy} />
-            <Detail label={t('reporting.detail.performedBy')} value={definition.performedBy} />
-            <Detail
-                label={t('reporting.detail.changeReason')}
-                value={definition.changeReasonCode}
-                mono
-            />
-            <Detail
-                label={t('reporting.detail.commentary')}
-                value={definition.changeCommentary === '' ? '—' : definition.changeCommentary}
-            />
-            <Detail
-                label={t('reporting.detail.recordedAt')}
-                value={formatDateTime(definition.recordedAt, language)}
-            />
-        </dl>
+        <RecordStoreProvider store={reportingStore}>
+            <ReportBody />
+        </RecordStoreProvider>
     );
 }
 
-/** The draft the form edits, taken from the record it was drawn from. */
-function draftOf(definition: ReportDefinitionView): ReportEdit {
-    return {
-        description: definition.description,
-        schedule_expression: definition.scheduleExpression,
-        is_official: definition.isOfficial,
-        pre_processing: definition.preProcessing,
-        prepared_input_key: definition.preparedInputKey,
-        post_processing: definition.postProcessing,
+function ReportBody(): ReactNode {
+    const { id = '' } = useParams();
+    const { t } = useTranslation();
+    const holds = useHolds();
+    const mayEdit = holds(PERMISSION.reportDefinitionsWrite);
+    const queries = useQueryClient();
+    const [editing, setEditing] = useState(false);
+    const detail = useQuery({ queryKey: reportKey(id), queryFn: () => api.report(id) });
+    const load = useLoadState([['records', REPORTS_RESOURCE]]);
+    const news = useEntityChanges([REPORTS_EVENTS], load);
+    /*
+     * A definition is opened by its id. An address saved before that names the
+     * definition's name, and the name is shared by the same report in other
+     * parties, so it is resolved to one id and the page is reopened at it.
+     */
+    if (detail.isError) {
+        return (
+            <div className="space-y-4">
+                <Crumbs
+                    parts={[
+                        ...useAreaRoot('reporting'),
+                        { label: t('reporting.title'), to: PATHS.reports },
+                    ]}
+                />
+                <Notice tone="error">{detail.error.message}</Notice>
+                <LegacyName id={id} />
+            </div>
+        );
+    }
+
+    if (detail.isPending) {
+        return (
+            <div className="space-y-4">
+                <Crumbs
+                    parts={[
+                        ...useAreaRoot('reporting'),
+                        { label: t('reporting.title'), to: PATHS.reports },
+                    ]}
+                />
+                <p className="text-sm text-ink-muted" role="status">
+                    {t('common.loading')}
+                </p>
+            </div>
+        );
+    }
+
+    const { definition, report, unread } = detail.data;
+    /*
+     * Refresh reads again what the page shows and nothing else. It does not
+     * reload the page, because a save's own change event turns this button gold
+     * like any other change.
+     */
+    const reload = (): void => {
+        void queries.invalidateQueries({ queryKey: reportKey(definition.id) });
     };
+    return (
+        <div className="space-y-4">
+            <RecordHeader
+                crumbs={[
+                    ...useAreaRoot('reporting'),
+                    { label: t('reporting.title'), to: PATHS.reports },
+                    { label: definition.name },
+                ]}
+                title={definition.name}
+                recordKey={shortId(definition.id)}
+                version={definition.version}
+                subdued
+                access={mayEdit}
+                onEdit={mayEdit ? () => setEditing(true) : undefined}
+                own={<RefreshButton onClick={reload} load={load} news={news} />}
+            />
+            <div className="space-y-4">
+                <RecordDetails
+                    specs={DEFINITION_FIELDS}
+                    row={definition}
+                    heading={{
+                        title: t('reporting.detail.record'),
+                        onEdit: mayEdit ? () => setEditing(true) : undefined,
+                    }}
+                    extra={[
+                        [
+                            t('reporting.detail.party'),
+                            <PartyDetail detail={detail.data} />,
+                            t('reporting.detail.partyHint'),
+                        ],
+                        [
+                            t('reporting.detail.health'),
+                            <HealthTag
+                                health={report.health}
+                                stateName={report.stateName}
+                                hasRun={report.latestRun !== null}
+                            />,
+                            t('reporting.detail.healthHint'),
+                        ],
+                    ]}
+                />
+                <section className="card space-y-4 p-4">
+                    <header className="flex flex-wrap items-baseline justify-between gap-2">
+                        <h2 className="text-sm font-medium">{t('reporting.detail.latestRun')}</h2>
+                        <AccessMark canWrite={false} />
+                    </header>
+                    <LatestRun detail={detail.data} unread={unread} />
+                </section>
+                <Notice tone="info">{t('reporting.detail.gaps')}</Notice>
+            </div>
+            {editing && (
+                <RecordDialog
+                    title={t('refdata.records.editTitle', { code: definition.name })}
+                    resource={REPORTS_RESOURCE}
+                    specs={DEFINITION_FIELDS}
+                    row={definition}
+                    keep={['id']}
+                    onClose={() => setEditing(false)}
+                />
+            )}
+        </div>
+    );
 }
 
-/**
- * The edit form.
- *
- * It is drawn afresh from each read, so a save that changes the version
- * repopulates it with what the server now holds rather than with what was typed.
- */
-function EditForm({
-    detail,
-    onSaved,
-}: {
-    readonly detail: ReportDetail;
-    readonly onSaved: (version: number) => void;
-}): ReactNode {
+/** The party the definition belongs to, by name, and the page of the party it names. */
+function PartyDetail({ detail }: { readonly detail: ReportDetail }): ReactNode {
     const { t } = useTranslation();
-    const client = useQueryClient();
-    const [draft, setDraft] = useState<ReportEdit>(() => draftOf(detail.definition));
-    const [refusal, setRefusal] = useState<string | null>(null);
-    const save = useMutation({
-        mutationFn: (edit: ReportEdit) =>
-            api.saveReport(detail.definition.name, {
-                version: detail.definition.version,
-                change: edit,
-                reasonCode: EDIT_REASON,
-                commentary: '',
-            }),
-        onSuccess: async (saved) => {
-            setRefusal(null);
-            onSaved(saved.definition.version);
-            client.setQueryData(reportKey(saved.definition.name), saved);
-            await client.invalidateQueries({ queryKey: reportKey(saved.definition.name) });
-        },
-        onError: (error: Error) => setRefusal(error.message),
-    });
-
+    if (detail.definition.party_name === '') {
+        return <span className="text-ink-faint">{t('reporting.cell.partyNotStated')}</span>;
+    }
     return (
-        <form
-            className="space-y-4"
-            onSubmit={(event) => {
-                event.preventDefault();
-                save.mutate(draft);
-            }}
+        <Link
+            to={`/parties/${encodeURIComponent(detail.definition.party_id)}`}
+            className="text-accent hover:text-accent-bright"
         >
-            {refusal !== null && <Notice tone="error">{refusal}</Notice>}
-            <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={t('reporting.detail.description')} className="sm:col-span-2">
-                    <Textarea
-                        rows={3}
-                        value={draft.description}
-                        onChange={(event) =>
-                            setDraft({ ...draft, description: event.target.value })
-                        }
-                    />
-                </Field>
-                <Field
-                    label={t('reporting.detail.scheduleExpression')}
-                    hint={t('reporting.detail.scheduleExpressionHint')}
-                >
-                    <Input
-                        value={draft.schedule_expression}
-                        required
-                        maxLength={200}
-                        onChange={(event) =>
-                            setDraft({ ...draft, schedule_expression: event.target.value })
-                        }
-                    />
-                </Field>
-                <Field
-                    label={t('reporting.detail.preparedInputKey')}
-                    hint={t('reporting.detail.preparedInputKeyHint')}
-                >
-                    <Input
-                        value={draft.prepared_input_key}
-                        maxLength={500}
-                        onChange={(event) =>
-                            setDraft({ ...draft, prepared_input_key: event.target.value })
-                        }
-                    />
-                </Field>
-                <Field label={t('reporting.detail.preProcessing')}>
-                    <Input
-                        value={draft.pre_processing}
-                        maxLength={2000}
-                        onChange={(event) =>
-                            setDraft({ ...draft, pre_processing: event.target.value })
-                        }
-                    />
-                </Field>
-                <Field label={t('reporting.detail.postProcessing')}>
-                    <Input
-                        value={draft.post_processing}
-                        maxLength={2000}
-                        onChange={(event) =>
-                            setDraft({ ...draft, post_processing: event.target.value })
-                        }
-                    />
-                </Field>
-                <div>
-                    <span className="mb-1.5 block text-sm font-medium text-ink-muted">
-                        {t('reporting.detail.isOfficial')}
-                    </span>
-                    <label className="flex items-center gap-2 text-sm">
-                        <input
-                            type="checkbox"
-                            checked={draft.is_official}
-                            onChange={(event) =>
-                                setDraft({ ...draft, is_official: event.target.checked })
-                            }
-                        />
-                        <span>{t('reporting.detail.isOfficialHint')}</span>
-                    </label>
-                </div>
-            </div>
-            <div className="flex items-center gap-3">
-                <Button type="submit" variant="primary" pending={save.isPending}>
-                    {t('reporting.detail.save')}
-                </Button>
-                <span className="text-xs text-ink-faint">{t('reporting.detail.editLead')}</span>
-            </div>
-        </form>
+            {detail.definition.party_name}
+        </Link>
     );
 }
 
@@ -257,13 +299,14 @@ function EditForm({
  * latest-run read that failed, in which case nothing about the run was checked.
  */
 function LatestRun({
-    report,
+    detail,
     unread,
 }: {
-    readonly report: ReportDetail['report'];
+    readonly detail: ReportDetail;
     readonly unread: ReportDetail['unread'];
 }): ReactNode {
-    const { t, language } = useTranslation();
+    const { t } = useTranslation();
+    const { report } = detail;
     if (report.latestRun === null) {
         const refusal = unread.find((entry) => entry.cell === 'latestRun');
         if (refusal !== undefined) {
@@ -276,141 +319,98 @@ function LatestRun({
         return <p className="text-sm text-ink-muted">{t('reporting.detail.neverRun')}</p>;
     }
     const ms = runDuration(report.latestRun.startedAt, report.latestRun.completedAt);
+    const countsUnread = unread.some((entry) => entry.cell === 'errors');
     return (
         <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-4">
             <Detail
                 label={t('reporting.detail.started')}
                 value={
-                    report.latestRun.startedAt === null
-                        ? '—'
-                        : formatDateTime(report.latestRun.startedAt, language)
+                    report.latestRun.startedAt === null ? (
+                        <Absent />
+                    ) : (
+                        <RelativeTime at={report.latestRun.startedAt} />
+                    )
+                }
+            />
+            <Detail
+                label={t('reporting.detail.completed')}
+                value={
+                    report.latestRun.completedAt === null ? (
+                        <Absent />
+                    ) : (
+                        <RelativeTime at={report.latestRun.completedAt} />
+                    )
                 }
             />
             <Detail
                 label={t('reporting.columns.duration')}
-                value={ms === null ? '—' : formatDuration(ms, t)}
-                mono
+                value={ms === null ? <Absent /> : formatDuration(ms, t)}
             />
             <Detail
-                label={t('reporting.columns.problems')}
+                label={t('reporting.columns.errors')}
                 value={
-                    <ProblemCounts
-                        errors={report.latestRun.errors}
-                        warnings={report.latestRun.warnings}
-                    />
+                    countsUnread
+                        ? t('reporting.cell.unread')
+                        : String(report.latestRun.errors ?? '')
+                }
+            />
+            <Detail
+                label={t('reporting.columns.warnings')}
+                value={
+                    countsUnread
+                        ? t('reporting.cell.unread')
+                        : String(report.latestRun.warnings ?? '')
                 }
             />
             <Detail
                 label={t('reporting.columns.schedule')}
                 value={
-                    report.nextFireAt === null
-                        ? t('reporting.detail.noNextFire')
-                        : t('reporting.cell.nextFire', {
-                              at: formatDateTime(report.nextFireAt, language),
-                          })
+                    report.nextFireAt === null ? (
+                        t('reporting.detail.noNextFire')
+                    ) : (
+                        <RelativeTime at={report.nextFireAt} />
+                    )
                 }
             />
         </dl>
     );
 }
 
-export function ReportPage(): ReactNode {
-    const { name = '' } = useParams();
+/**
+ * The retired name-based address, resolved to the id the page is opened by.
+ *
+ * The server answers only when one definition in scope carries the name, so a
+ * name shared between parties is never guessed at. A name that resolves sends
+ * the reader to the id's own address, which is the address a link should hold.
+ */
+function LegacyName({ id }: { readonly id: string }): ReactNode {
     const { t } = useTranslation();
-    const holds = useHolds();
-    const mayEdit = holds(PERMISSION.reportDefinitionsWrite);
-    const [savedVersion, setSavedVersion] = useState<number | null>(null);
-    const detail = useQuery({ queryKey: reportKey(name), queryFn: () => api.report(name) });
-    const trail = (
-        <Crumbs
-            parts={[
-                ...useAreaRoot('reporting'),
-                { label: t('reporting.title'), to: PATHS.reports },
-                { label: name },
-            ]}
-        />
-    );
-
-    if (detail.isPending) {
+    const navigate = useNavigate();
+    const resolved = useQuery({
+        queryKey: ['reporting', 'by-name', id],
+        queryFn: () => api.reportIdByName(id),
+        retry: false,
+    });
+    if (resolved.data !== undefined) {
+        return <Navigate to={reportPath(resolved.data)} replace />;
+    }
+    if (resolved.isError) {
         return (
-            <ScreenFrame trail={trail} title={name} description={t('reporting.detail.lead')}>
-                <p className="text-sm text-ink-muted" role="status">
-                    {t('reporting.loading')}
-                </p>
-            </ScreenFrame>
+            <Notice tone="info">
+                <span className="mr-3">{resolved.error.message}</span>
+                <Link to={PATHS.reports} className="text-accent hover:text-accent-bright">
+                    {t('refdata.records.backToList')}
+                </Link>
+            </Notice>
         );
     }
-
-    if (detail.isError) {
-        return (
-            <ScreenFrame trail={trail} title={name} description={t('reporting.detail.lead')}>
-                <Notice tone="error">{detail.error.message}</Notice>
-            </ScreenFrame>
-        );
-    }
-
-    const { report, definition, unread } = detail.data;
-    const healthChecked = !unread.some(
-        (entry) => entry.cell === 'latestRun' || entry.cell === 'health',
-    );
     return (
-        <div className="space-y-6">
-            <div>
-                {trail}
-                <PageHeader
-                    title={report.name}
-                    description={t('reporting.detail.lead')}
-                    actions={
-                        <HealthTag
-                            health={report.health}
-                            stateName={report.stateName}
-                            checked={healthChecked}
-                        />
-                    }
-                />
-            </div>
-
-            {savedVersion !== null && (
-                <Notice tone="success">
-                    {t('reporting.detail.saved', { version: savedVersion })}
-                </Notice>
-            )}
-
-            <section className="card space-y-4 p-4">
-                <header className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="text-sm font-medium">{t('reporting.detail.latestRun')}</h2>
-                    <span className="text-xs text-ink-faint">
-                        {t('reporting.detail.latestRunLead')}
-                    </span>
-                </header>
-                <LatestRun report={report} unread={unread} />
-            </section>
-
-            <section className="card space-y-4 p-4">
-                <header className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="text-sm font-medium">{t('reporting.detail.record')}</h2>
-                    <Tag tone="muted">{t('reporting.detail.readOnly')}</Tag>
-                </header>
-                <ReadOnlyFields definition={definition} />
-            </section>
-
-            {mayEdit ? (
-                <section className="card space-y-4 p-4">
-                    <header className="flex flex-wrap items-baseline justify-between gap-2">
-                        <h2 className="text-sm font-medium">{t('reporting.detail.edit')}</h2>
-                        <span className="text-xs text-ink-faint">
-                            {t('reporting.detail.editLead')}
-                        </span>
-                    </header>
-                    <EditForm
-                        key={definition.version}
-                        detail={detail.data}
-                        onSaved={setSavedVersion}
-                    />
-                </section>
-            ) : (
-                <Notice tone="info">{t('reporting.detail.mayNotEdit')}</Notice>
-            )}
-        </div>
+        <button
+            type="button"
+            className="text-sm text-accent"
+            onClick={() => void navigate(PATHS.reports)}
+        >
+            {t('refdata.records.backToList')}
+        </button>
     );
 }

@@ -25,28 +25,35 @@ import { Route } from 'react-router';
 import { wireTimestamp } from '@ores/wire-protocol/browser';
 import type { ReportDetail, ReportsPage } from '@ores/wire-protocol/browser';
 import { textOf } from '../textOf.js';
+import { createTranslator } from '../i18n/translate.js';
+import { enFlat } from '../i18n/locales/en.js';
+import { FIRST_PAGE, pageKey } from '../refdata/RecordList.js';
 import { accessOf, renderRecords } from '../refdata/testSupport.js';
 import { reportKey } from './ReportPage.js';
-import { REPORTS_QUERY_KEY, ReportsPage as ReportsScreen } from './ReportsPage.js';
+import { MY_PARTIES_QUERY_KEY, ReportsPage as ReportsScreen, unreadNotes } from './ReportsPage.js';
 import { ReportPage } from './ReportPage.js';
 
 /**
  * The reporting screens, rendered from a seeded query cache.
  *
- * They read what a person reads: the cells of a row, the word each one states,
- * and the fields the edit form is filled from. Nothing here depends on how the
- * table or the form is laid out.
+ * They read what a person reads: the cells of a row, the words a state states,
+ * the address a row opens, and the fields the page states about one record.
  */
 
-const PARTY = '77777777-7777-4777-8777-777777777777';
+const HOME = '77777777-7777-4777-8777-777777777777';
+const ELSEWHERE = '88888888-8888-4888-8888-888888888888';
+const DAILY = '55555555-5555-4555-8555-555555555555';
+const AUDIT_AT_HOME = '66666666-6666-4666-8666-666666666666';
+const AUDIT_ELSEWHERE = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const RUN = '99999999-9999-4999-8999-999999999999';
-const NAME = 'ACME daily PnL';
-const MONTH_END = 'ACME month-end risk';
+const AUDIT_NAME = 'Audit Trail Summary';
 
-const DAILY = {
-    name: NAME,
+const DAILY_ROW = {
+    id: DAILY,
+    name: 'ACME daily PnL',
     reportType: 'pnl',
-    partyId: PARTY,
+    partyId: HOME,
+    partyName: 'ACME Corporation',
     partyCode: 'ACMCOR',
     scheduleExpression: '0 0 9 * * ?',
     health: 'completed with errors' as const,
@@ -61,11 +68,13 @@ const DAILY = {
     nextFireAt: wireTimestamp('2026-10-18 09:00:00.000000Z'),
 };
 
-const MONTH = {
-    name: MONTH_END,
+const AUDIT_ROW = {
+    id: AUDIT_ELSEWHERE,
+    name: AUDIT_NAME,
     reportType: 'risk',
-    partyId: PARTY,
-    partyCode: null,
+    partyId: ELSEWHERE,
+    partyName: 'ACME Hong Kong',
+    partyCode: 'ACCOHK',
     scheduleExpression: '0 0 9 L * ?',
     health: 'never run' as const,
     stateName: '',
@@ -74,75 +83,70 @@ const MONTH = {
 };
 
 const PAGE: ReportsPage = {
-    rows: [DAILY, MONTH],
-    tally: {
-        failed: 0,
-        completedWithErrors: 1,
-        running: 0,
-        neverRun: 1,
-        completedClean: 0,
-        unknown: 0,
-        unstated: 0,
-    },
+    rows: [DAILY_ROW, AUDIT_ROW],
+    total: 2,
     unread: [],
+};
+
+const PARTIES = {
+    defaultPartyId: HOME,
+    parties: [
+        {
+            partyId: HOME,
+            name: 'ACME Corporation',
+            shortCode: 'ACMCOR',
+            partyCategory: 'Operational',
+            businessCenterCode: 'GBLO',
+        },
+        {
+            partyId: ELSEWHERE,
+            name: 'ACME Hong Kong',
+            shortCode: 'ACCOHK',
+            partyCategory: 'Operational',
+            businessCenterCode: 'HKHH',
+        },
+    ],
 };
 
 const DETAIL: ReportDetail = {
-    report: DAILY,
+    report: AUDIT_ROW,
     unread: [],
     definition: {
-        name: NAME,
-        description: 'ACME daily PnL definition',
-        reportType: 'pnl',
-        partyId: PARTY,
-        scheduleExpression: '0 0 9 * * ?',
-        concurrencyPolicy: 'forbid',
-        isOfficial: true,
-        preProcessing: 'none',
-        preparedInputKey: 'acme/daily',
-        postProcessing: 'none',
-        schedulerJobId: null,
-        runGrantId: null,
-        fsmStateId: null,
+        id: AUDIT_ELSEWHERE,
+        name: AUDIT_NAME,
+        description: 'Audit trail for the Hong Kong party',
+        report_type: 'risk',
+        party_id: ELSEWHERE,
+        party_name: 'ACME Hong Kong',
+        party_code: 'ACCOHK',
+        schedule_expression: '0 0 9 L * ?',
+        concurrency_policy: 'forbid',
+        is_official: true,
+        pre_processing: 'none',
+        prepared_input_key: 'acme/audit',
+        post_processing: 'none',
         version: 3,
-        modifiedBy: 'priya',
-        performedBy: 'priya',
-        changeReasonCode: 'common.new_record',
-        changeCommentary: '',
-        recordedAt: '2026-10-17 08:00:00.000000Z',
+        modified_by: 'priya',
+        performed_by: 'priya',
+        change_reason_code: 'common.non_material_update',
+        change_commentary: '',
+        recorded_at: '2026-10-17 08:00:00.000000Z',
     },
 };
 
-function list(seed: (client: QueryClient) => void = () => undefined): string {
+/** The list drawn at its own address, from a cache the test seeds. */
+function list(
+    seed: (client: QueryClient) => void = () => undefined,
+    path = '/reporting/reports',
+): string {
     return renderRecords(
-        '/reporting/reports',
+        path,
         [],
         <Route path="/reporting/reports" element={<ReportsScreen />} />,
         (client) => {
-            client.setQueryData(REPORTS_QUERY_KEY, PAGE);
+            client.setQueryData(MY_PARTIES_QUERY_KEY, PARTIES);
+            client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), PAGE);
             seed(client);
-        },
-    );
-}
-
-/** The list drawn from a page that states its own rows and unread reads. */
-function listPage(page: ReportsPage): string {
-    return renderRecords(
-        '/reporting/reports',
-        [],
-        <Route path="/reporting/reports" element={<ReportsScreen />} />,
-        (client) => client.setQueryData(REPORTS_QUERY_KEY, page),
-    );
-}
-
-function detail(codes: string[] = ['reporting::report_definitions:write']): string {
-    return renderRecords(
-        `/reporting/reports/${encodeURIComponent(NAME)}`,
-        [],
-        <Route path="/reporting/reports/:name" element={<ReportPage />} />,
-        (client) => {
-            client.setQueryData(['my-access'], accessOf(codes));
-            client.setQueryData(reportKey(NAME), DETAIL);
         },
     );
 }
@@ -165,134 +169,218 @@ function rowText(html: string, name: string): string {
     return textOf(start.split('</tr>')[0] ?? '');
 }
 
-describe('the list of reports a party runs', () => {
+/** The detail page of one definition, drawn from a cache the test seeds. */
+function detail(codes: string[] = ['reporting::report_definitions:write']): string {
+    return renderRecords(
+        `/reporting/reports/${AUDIT_ELSEWHERE}`,
+        [],
+        <Route path="/reporting/reports/:id" element={<ReportPage />} />,
+        (client) => {
+            client.setQueryData(['my-access'], accessOf(codes));
+            client.setQueryData(reportKey(AUDIT_ELSEWHERE), DETAIL);
+        },
+    );
+}
+
+describe('the list of reports the parties run', () => {
     it('renders the trail Home, Reporting, Reports', () => {
         expect(trailOf(list())).toBe('Home › Reporting › Reports');
     });
 
-    it('draws one row per definition, with the cells the server composed', () => {
-        const row = rowText(list(), NAME);
+    it('opens each row by the id that names one definition', () => {
+        const html = list();
 
-        expect(row).toContain('ACME daily PnL');
-        expect(row).toContain('ACMCOR');
+        // The name is shared by the same report in other parties, so the address
+        // is the id and not the name.
+        expect(html).toContain(`href="/reporting/reports/${AUDIT_ELSEWHERE}"`);
+        expect(html).toContain(`href="/reporting/reports/${DAILY}"`);
+        expect(html).not.toContain('href="/reporting/reports/Audit%20Trail%20Summary"');
+    });
+
+    it('states what it holds, and the parties it spans, in its lead sentence', () => {
+        expect(textOf(list())).toContain(
+            'The report definitions the parties you work in own, with the health of each latest run.',
+        );
+    });
+
+    it('tags each party by its name and never by its code', () => {
+        const row = rowText(list(), AUDIT_NAME);
+
+        expect(row).toContain('ACME Hong Kong');
+        expect(row).not.toContain('ACCOHK');
+    });
+
+    it('states the page the server returned, with the total it counted', () => {
+        const page = textOf(
+            list((client) =>
+                client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+                    ...PAGE,
+                    total: 78,
+                }),
+            ),
+        );
+
+        // The pager is the request's own numbers, and the size is the standard's
+        // default; Load all is not offered for a total this size at this page.
+        expect(page).toContain('1–2 of 78');
+        expect(page).toContain('Page size');
+        expect(page).toContain('15');
+        expect(page).toContain('First');
+        expect(page).toContain('Next');
+    });
+
+    it('draws the cells the server composed', () => {
+        const row = rowText(list(), 'ACME daily PnL');
+
         expect(row).toContain('0 0 9 * * ?');
-        expect(row).toContain('completed with errors');
-        expect(row).toContain('3 errors');
-        expect(row).toContain('2 warnings');
+        expect(row).toContain('Completed with errors');
+        expect(row).toContain('3');
+        expect(row).toContain('2');
         // The run started at 08:00:00 and completed at 08:00:12.5, stated as a length.
         expect(row).toContain('12.5 s');
-        expect(row).toContain('next');
     });
 
     it('states a definition that never ran as never run, and not as clean', () => {
-        const row = rowText(list(), MONTH_END);
+        const row = rowText(list(), AUDIT_NAME);
 
-        expect(row).toContain('never run');
+        expect(row).toContain('Never run');
         expect(row).not.toContain('completed');
         expect(row).toContain('—');
-        expect(row).toContain('not stated');
     });
 
-    it('states how many definitions the list holds, and not the placeholder', () => {
-        const page = textOf(list());
-
-        // Two rows in the fixture, so the count is the row count and not a literal.
-        expect(page).toContain('2 definitions');
-        expect(page).not.toContain('{count}');
-    });
-
-    it('counts the rows by health word before any row is read', () => {
-        const page = textOf(list());
-
-        expect(page).toContain('Health of the latest run');
-        expect(page).toContain('completed with errors');
-        expect(page).toContain('never run');
-    });
-
-    it('states a row it could not read as unknown, not as never run', () => {
-        const unchecked: ReportsPage = {
-            rows: [{ ...MONTH, health: null }],
-            tally: { ...PAGE.tally, neverRun: 0, unknown: 1 },
-            unread: [{ cell: 'latestRun', message: 'The latest run read was refused.' }],
-        };
-        const page = listPage(unchecked);
-        const row = rowText(page, MONTH_END);
-
-        expect(row).toContain('unknown');
-        expect(row).not.toContain('never run');
-        // The warning line names the read that failed, as it does for any cell.
-        expect(textOf(page)).toContain(
-            'Latest run started could not be read: The latest run read was refused.',
-        );
-    });
-
-    it('states a party that owns no definition in words', () => {
+    it('says it is loading before the first page arrives', () => {
         const page = textOf(
-            renderRecords(
-                '/reporting/reports',
-                [],
-                <Route path="/reporting/reports" element={<ReportsScreen />} />,
-                (client) => {
-                    client.setQueryData(REPORTS_QUERY_KEY, {
-                        rows: [],
-                        tally: PAGE.tally,
-                        unread: [],
-                    });
-                },
+            list((client) => client.removeQueries({ queryKey: ['records', 'reports'] })),
+        );
+
+        expect(page).toContain('Loading...');
+    });
+
+    it('says the list holds nothing yet, in words', () => {
+        const page = textOf(
+            list((client) =>
+                client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+                    rows: [],
+                    total: 0,
+                    unread: [],
+                }),
             ),
         );
 
-        expect(page).toContain('This party owns no report definition');
+        expect(page).toContain('There are no reports yet.');
     });
 
-    it('states which read failed when a cell is empty for want of it', () => {
-        const page = textOf(
-            renderRecords(
-                '/reporting/reports',
-                [],
-                <Route path="/reporting/reports" element={<ReportsScreen />} />,
-                (client) => {
-                    client.setQueryData(REPORTS_QUERY_KEY, {
-                        rows: PAGE.rows,
-                        tally: PAGE.tally,
-                        unread: [{ cell: 'parties', message: 'Read refused.' }],
-                    });
-                },
+    it('says which cell could not be read, in the words of the column that holds it', () => {
+        expect(
+            unreadNotes(
+                [{ cell: 'latestRun', message: 'The latest run read was refused.' }],
+                createTranslator('en', enFlat, enFlat).t,
             ),
+        ).toEqual([
+            {
+                tone: 'warn',
+                text: 'Latest run started could not be read: The latest run read was refused.',
+            },
+        ]);
+    });
+
+    it('draws the notes a read states above the table, and claims no word it did not read', () => {
+        const html = list((client) =>
+            client.setQueryData(pageKey({ key: 'reports' }, FIRST_PAGE), {
+                rows: [{ ...AUDIT_ROW, health: null }],
+                total: 1,
+                notes: [{ tone: 'warn', text: 'The latest run read was refused.' }],
+            }),
         );
 
-        expect(page).toContain('Party could not be read: Read refused.');
+        // Above the table, so a person reads why a cell is empty before the rows.
+        expect(html.indexOf('The latest run read was refused.')).toBeLessThan(
+            html.indexOf('<tbody'),
+        );
+        // No run was read, so the row claims no word at all.
+        expect(rowText(html, AUDIT_NAME)).toContain('Unknown');
+    });
+
+    it('says what the server cannot do, so a missing control is a stated gap', () => {
+        const page = textOf(list());
+
+        expect(page).toContain('The server does not search report definitions');
+        expect(page).toContain('No column of a report definition is declared sortable');
+        expect(page).toContain('The server counts no definition by health');
+    });
+
+    it('offers the party filter, with the parties the session works in', () => {
+        const html = list();
+
+        expect(html).toContain('All parties');
+        expect(html).toContain('ACME Hong Kong');
     });
 });
 
 describe('one report definition', () => {
-    it('renders the trail Home, Reporting, Reports, then the definition', () => {
-        expect(trailOf(detail())).toBe(`Home › Reporting › Reports › ${NAME}`);
+    it('renders the trail Home, Reporting, Reports, then the name', () => {
+        expect(trailOf(detail())).toBe(`Home › Reporting › Reports › ${AUDIT_NAME}`);
     });
 
-    it('fills the edit form from the record it read', () => {
+    it('states the key and the version under the title', () => {
+        // The id is shortened because it is an identifier; the version is the one read.
+        expect(textOf(detail())).toContain('aaaaaaaa · version 3');
+    });
+
+    it('draws the party by its name, and links to the party it names', () => {
         const html = detail();
 
-        // A textarea states its value as its content, an input as an attribute.
-        expect(html).toContain('ACME daily PnL definition</textarea>');
-        expect(html).toContain('value="0 0 9 * * ?"');
-        expect(html).toContain('value="acme/daily"');
-        expect(html).toContain('value="none"');
-        expect(html).toContain('checked=""');
-        expect(textOf(html)).toContain('Save');
+        expect(textOf(html)).toContain('ACME Hong Kong');
+        expect(html).toContain(`href="/parties/${ELSEWHERE}"`);
+        expect(textOf(html)).not.toContain('ACCOHK');
+    });
+
+    it('offers Edit and no form on the page, because a change is made in a dialog', () => {
+        const html = detail();
+
+        expect(textOf(html)).toContain('Edit');
+        expect(html).not.toContain('<textarea');
+        expect(html).not.toContain('Schedule expression</label>');
+    });
+
+    it('states the fields the record holds, and the access mark', () => {
+        const page = textOf(detail());
+
+        expect(page).toContain('Definition');
+        expect(page).toContain('Report type');
+        expect(page).toContain('forbid');
+        expect(page).toContain('Editable');
+    });
+
+    it('closes the details with the provenance of the version it read', () => {
+        const page = textOf(detail());
+
+        expect(page).toContain('version 3');
+        expect(page).toContain('priya');
+        expect(page).toContain('common.non_material_update');
+    });
+
+    it('draws no History tab, and says why in the page own words', () => {
+        const html = detail();
+
+        // The versions cannot be read by id yet: the server looks the row up by a
+        // name that four parties share, so the tab would answer with another
+        // party's versions. The page states the gap rather than drawing it.
+        expect(html).not.toContain('role="tab"');
+        expect(textOf(html)).toContain('It draws no History tab either');
     });
 
     it('says a run it could not read was not checked, not that it never ran', () => {
         const page = textOf(
             renderRecords(
-                `/reporting/reports/${encodeURIComponent(MONTH_END)}`,
+                `/reporting/reports/${AUDIT_ELSEWHERE}`,
                 [],
-                <Route path="/reporting/reports/:name" element={<ReportPage />} />,
+                <Route path="/reporting/reports/:id" element={<ReportPage />} />,
                 (client) => {
                     client.setQueryData(['my-access'], accessOf([]));
-                    client.setQueryData(reportKey(MONTH_END), {
-                        report: { ...MONTH, health: null },
-                        definition: { ...DETAIL.definition, name: MONTH_END },
+                    client.setQueryData(reportKey(AUDIT_ELSEWHERE), {
+                        report: { ...AUDIT_ROW, health: null },
+                        definition: DETAIL.definition,
                         unread: [
                             { cell: 'latestRun', message: 'The latest run read was refused.' },
                         ],
@@ -306,18 +394,16 @@ describe('one report definition', () => {
         expect(page).not.toContain('has never run');
     });
 
-    it('states the fields the form does not write as read only', () => {
-        const page = textOf(detail());
-
-        expect(page).toContain('forbid');
-        expect(page).toContain('common.new_record');
-        expect(page).toContain('read only');
-    });
-
-    it('offers no form to a person who may not change a definition', () => {
+    it('offers no Edit to a person who may not change a definition', () => {
         const page = textOf(detail(['reporting::report_definitions:read']));
 
-        expect(page).not.toContain('Save');
-        expect(page).toContain('Editing needs permission to change report definitions');
+        expect(page).not.toContain('Edit');
+        expect(page).toContain('Read only');
+    });
+
+    it('says what the page cannot do, so a missing action is a stated gap', () => {
+        expect(textOf(detail())).toContain(
+            'This page offers no Delete and no Add: no route removes a definition yet',
+        );
     });
 });

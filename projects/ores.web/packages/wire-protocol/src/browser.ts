@@ -354,9 +354,9 @@ export {
     reportDefinitionViewSchema,
     reportDetailSchema,
     reportHealthWordSchema,
+    reportIdReplySchema,
     reportRowViewSchema,
     reportRunViewSchema,
-    reportTallyViewSchema,
     reportUnreadSchema,
     reportsPageSchema,
 } from './reporting.js';
@@ -364,9 +364,9 @@ export type {
     ReportDefinitionView,
     ReportDetail,
     ReportHealthWord,
+    ReportId,
     ReportRowView,
     ReportRunView,
-    ReportTallyView,
     ReportUnread,
     ReportsPage,
 } from './reporting.js';

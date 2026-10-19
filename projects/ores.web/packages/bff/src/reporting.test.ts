@@ -54,7 +54,10 @@ function siteConfiguration(): ReturnType<typeof loadSiteConfiguration> {
 
 const ok = { outcome: 'ok', code: '', message: '', fields: [] };
 
-function buildTestServer(replies: Readonly<Record<string, unknown>>): {
+/** A canned reply, or a function of the request body for a read whose answer depends on it. */
+type Canned = unknown | ((body: unknown) => unknown);
+
+function buildTestServer(replies: Readonly<Record<string, Canned>>): {
     readonly server: ReturnType<typeof buildServer>;
     readonly sessionId: string;
     readonly calls: { subject: string; body: unknown }[];
@@ -71,7 +74,8 @@ function buildTestServer(replies: Readonly<Record<string, unknown>>): {
             if (!(subject in replies)) {
                 throw new Error(`No canned reply for ${subject}`);
             }
-            return schema.parse(replies[subject]);
+            const canned = replies[subject];
+            return schema.parse(typeof canned === 'function' ? canned(body) : canned);
         },
         async close(): Promise<void> {
             return undefined;
@@ -119,12 +123,15 @@ function send(
     });
 }
 
+/** The login party, and a party below it that the same account also works in. */
 const PARTY = '77777777-7777-4777-8777-777777777777';
 const OTHER_PARTY = '88888888-8888-4888-8888-888888888888';
+
 const DAILY = '55555555-5555-4555-8555-555555555555';
-const MONTH_END = '66666666-6666-4666-8666-666666666666';
+const AUDIT_AT_HOME = '66666666-6666-4666-8666-666666666666';
+const AUDIT_ELSEWHERE = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const DAILY_RUN = '99999999-9999-4999-8999-999999999999';
-const QUEST = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const UNKNOWN_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const INTENT = { reason_code: 'common.non_material_update', commentary: '' };
 
 const DEFINITIONS = 'reporting.v1.report_definitions.list';
@@ -133,19 +140,28 @@ const HEALTH = 'reporting.v1.ops.get_report_instance_health';
 const COUNTS = 'reporting.v1.ops.get_report_error_counts';
 const NEXT_FIRE = 'reporting.v1.ops.get_next_fire';
 const MY_PARTIES = 'iam.v1.ops.get_my_parties';
+const PUT = 'reporting.v1.report_definitions.put';
 
-function definition(id: string, name: string, reportType: string): Record<string, unknown> {
+/** The name two parties both give a definition. */
+const AUDIT_NAME = 'Audit Trail Summary';
+
+function definition(
+    id: string,
+    name: string,
+    reportType: string,
+    partyId: string = PARTY,
+): Record<string, unknown> {
     return {
         version: 3,
         id,
         name,
-        party_id: PARTY,
+        party_id: partyId,
         description: `${name} definition`,
         report_type: reportType,
         fsm_state_id: null,
         schedule_expression: '0 0 9 * * ?',
         concurrency_policy: 'forbid',
-        scheduler_job_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        scheduler_job_id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
         run_grant_id: null,
         pre_processing: 'none',
         prepared_input_key: 'acme/daily',
@@ -159,17 +175,43 @@ function definition(id: string, name: string, reportType: string): Record<string
     };
 }
 
+/** Every definition the session's parties own, in the order the read states them. */
+const ALL_DEFINITIONS = [
+    definition(DAILY, 'ACME daily PnL', 'pnl'),
+    definition(AUDIT_AT_HOME, AUDIT_NAME, 'risk'),
+    definition(AUDIT_ELSEWHERE, AUDIT_NAME, 'risk', OTHER_PARTY),
+];
+
+/**
+ * The definitions read, answered as the generated read answers it: the page it
+ * was asked for, narrowed by the party and by the ids it named, with the total
+ * of every row that matches.
+ */
+function definitionsReply(body: unknown): Record<string, unknown> {
+    const request = (body ?? {}) as {
+        offset?: number;
+        limit?: number;
+        filter?: { id_one_of?: string[] | null; party_id?: string | null } | null;
+    };
+    let rows = ALL_DEFINITIONS;
+    // A member that is set narrows the rows; one stated as null narrows nothing.
+    const ids = request.filter?.id_one_of;
+    const partyId = request.filter?.party_id;
+    if (ids != null) {
+        rows = rows.filter((row) => ids.includes(String(row['id'])));
+    }
+    if (partyId != null) {
+        rows = rows.filter((row) => row['party_id'] === partyId);
+    }
+    const offset = request.offset ?? 0;
+    const limit = request.limit ?? rows.length;
+    return { result: ok, definitions: rows.slice(offset, offset + limit), total: rows.length };
+}
+
 /** The reads a list of these definitions makes, with the values this file asserts. */
-function listReplies(): Record<string, unknown> {
+function listReplies(): Record<string, Canned> {
     return {
-        [DEFINITIONS]: {
-            result: ok,
-            definitions: [
-                definition(DAILY, 'ACME daily PnL', 'pnl'),
-                definition(MONTH_END, 'ACME month-end risk', 'risk'),
-            ],
-            total: 2,
-        },
+        [DEFINITIONS]: definitionsReply,
         [MY_PARTIES]: {
             result: ok,
             default_party_id: PARTY,
@@ -180,6 +222,13 @@ function listReplies(): Record<string, unknown> {
                     short_code: 'ACMCOR',
                     party_category: 'Operational',
                     business_center_code: 'GBLO',
+                },
+                {
+                    party_id: OTHER_PARTY,
+                    name: 'ACME Hong Kong',
+                    short_code: 'ACCOHK',
+                    party_category: 'Operational',
+                    business_center_code: 'HKHH',
                 },
             ],
         },
@@ -212,68 +261,115 @@ function listReplies(): Record<string, unknown> {
             result: ok,
             schedules: [
                 { definition_id: DAILY, next_fire_at: '2026-10-18 09:00:00.000000Z' },
-                { definition_id: MONTH_END, next_fire_at: null },
+                { definition_id: AUDIT_AT_HOME, next_fire_at: null },
+                { definition_id: AUDIT_ELSEWHERE, next_fire_at: null },
             ],
         },
     };
 }
 
-describe('reporting routes', () => {
-    it('composes one row per definition from the six reads it makes', async () => {
-        const { server, sessionId, calls } = buildTestServer(listReplies());
+/** The subjects a read of the list makes, in the order it makes them. */
+const LIST_SUBJECTS = [DEFINITIONS, MY_PARTIES, LATEST, NEXT_FIRE, HEALTH, COUNTS];
+
+describe('the list of reports the parties run', () => {
+    it('gives every row the id that names one definition exactly', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
         const response = await send(server, sessionId, 'GET', '/api/reporting/reports');
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({
-            rows: [
-                {
-                    name: 'ACME daily PnL',
-                    reportType: 'pnl',
-                    partyId: PARTY,
-                    partyCode: 'ACMCOR',
-                    scheduleExpression: '0 0 9 * * ?',
-                    health: 'completed with errors',
-                    stateName: 'completed',
-                    latestRun: {
-                        id: DAILY_RUN,
-                        startedAt: '2026-10-17 08:00:00.000000Z',
-                        completedAt: '2026-10-17 08:00:12.500000Z',
-                        errors: 3,
-                        warnings: 2,
-                    },
-                    nextFireAt: '2026-10-18 09:00:00.000000Z',
-                },
-                {
-                    name: 'ACME month-end risk',
-                    reportType: 'risk',
-                    partyId: PARTY,
-                    partyCode: 'ACMCOR',
-                    scheduleExpression: '0 0 9 * * ?',
-                    health: 'never run',
-                    stateName: '',
-                    latestRun: null,
-                    nextFireAt: null,
-                },
-            ],
-            tally: {
-                failed: 0,
-                completedWithErrors: 1,
-                running: 0,
-                neverRun: 1,
-                completedClean: 0,
-                unknown: 0,
-                unstated: 0,
-            },
-            unread: [],
-        });
-        expect(calls.map((call) => call.subject)).toEqual([
-            DEFINITIONS,
-            MY_PARTIES,
-            LATEST,
-            NEXT_FIRE,
-            HEALTH,
-            COUNTS,
+        expect(response.json().rows.map((row: { id: string }) => row.id)).toEqual([
+            DAILY,
+            AUDIT_AT_HOME,
+            AUDIT_ELSEWHERE,
         ]);
+        expect(response.json().total).toBe(3);
+    });
+
+    it('composes each row from the reads it makes, and carries no tally nobody counted', async () => {
+        const { server, sessionId, calls } = buildTestServer(listReplies());
+        const response = await send(server, sessionId, 'GET', '/api/reporting/reports');
+
+        expect(response.json().rows[0]).toEqual({
+            id: DAILY,
+            name: 'ACME daily PnL',
+            reportType: 'pnl',
+            partyId: PARTY,
+            partyName: 'ACME Corporation',
+            partyCode: 'ACMCOR',
+            scheduleExpression: '0 0 9 * * ?',
+            health: 'completed with errors',
+            stateName: 'completed',
+            latestRun: {
+                id: DAILY_RUN,
+                startedAt: '2026-10-17 08:00:00.000000Z',
+                completedAt: '2026-10-17 08:00:12.500000Z',
+                errors: 3,
+                warnings: 2,
+            },
+            nextFireAt: '2026-10-18 09:00:00.000000Z',
+        });
+        expect(response.json().tally).toBeUndefined();
+        expect(calls.map((call) => call.subject)).toEqual(LIST_SUBJECTS);
+    });
+
+    it('names each row party by name, so the tag shows a name and not a code', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(server, sessionId, 'GET', '/api/reporting/reports');
+
+        const elsewhere = response
+            .json()
+            .rows.find((row: { id: string }) => row.id === AUDIT_ELSEWHERE);
+        expect(elsewhere.partyName).toBe('ACME Hong Kong');
+        expect(elsewhere.partyCode).toBe('ACCOHK');
+    });
+
+    it('reads one page and states the total the pager is built from', async () => {
+        const { server, sessionId, calls } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/reports?offset=1&limit=1',
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().rows).toHaveLength(1);
+        expect(response.json().rows[0].id).toBe(AUDIT_AT_HOME);
+        expect(response.json().total).toBe(3);
+        // The page's decorations are read for the page's rows only.
+        const latest = calls.find((call) => call.subject === LATEST);
+        expect(latest?.body).toEqual({ definition_ids: [AUDIT_AT_HOME] });
+    });
+
+    it('narrows the page to one party on the server, not in the browser', async () => {
+        const { server, sessionId, calls } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports?party_id=${OTHER_PARTY}`,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().rows.map((row: { id: string }) => row.id)).toEqual([
+            AUDIT_ELSEWHERE,
+        ]);
+        expect(response.json().total).toBe(1);
+        const read = calls.find((call) => call.subject === DEFINITIONS);
+        // Every member is stated, because the wire decoder reads the filter whole.
+        expect((read?.body as { filter: unknown }).filter).toEqual({
+            party_id: OTHER_PARTY,
+            id_one_of: null,
+            party_id_one_of: null,
+        });
+    });
+
+    it('refuses a page a caller may not ask for', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(server, sessionId, 'GET', '/api/reporting/reports?limit=5000');
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json().message).toContain('limit');
     });
 
     it('keeps the row and states the reason when one read fails', async () => {
@@ -285,7 +381,7 @@ describe('reporting routes', () => {
 
         expect(response.statusCode).toBe(200);
         const body = response.json();
-        expect(body.rows).toHaveLength(2);
+        expect(body.rows).toHaveLength(3);
         expect(body.rows[0].name).toBe('ACME daily PnL');
         expect(body.rows[0].nextFireAt).toBeNull();
         expect(body.rows[0].health).toBe('completed with errors');
@@ -306,7 +402,11 @@ describe('reporting routes', () => {
         const body = response.json();
         // No run was observed, so there is no word to state: never run is a fact
         // about the definition and this read is a fact about the request.
-        expect(body.rows.map((row: Record<string, unknown>) => row.health)).toEqual([null, null]);
+        expect(body.rows.map((row: Record<string, unknown>) => row.health)).toEqual([
+            null,
+            null,
+            null,
+        ]);
         expect(body.rows[0].latestRun).toBeNull();
         // The cells the other reads filled survive the one that failed.
         expect(body.rows[0].partyCode).toBe('ACMCOR');
@@ -314,15 +414,6 @@ describe('reporting routes', () => {
         expect(body.unread).toEqual([
             { cell: 'latestRun', message: `No canned reply for ${LATEST}` },
         ]);
-        expect(body.tally).toEqual({
-            failed: 0,
-            completedWithErrors: 0,
-            running: 0,
-            neverRun: 0,
-            completedClean: 0,
-            unknown: 2,
-            unstated: 0,
-        });
     });
 
     it('refuses the list when the definitions themselves cannot be read', async () => {
@@ -344,214 +435,11 @@ describe('reporting routes', () => {
         const response = await send(server, sessionId, 'GET', '/api/reporting/reports');
 
         expect(response.statusCode).toBe(200);
-        expect(response.json()).toEqual({
-            rows: [],
-            tally: {
-                failed: 0,
-                completedWithErrors: 0,
-                running: 0,
-                neverRun: 0,
-                completedClean: 0,
-                unknown: 0,
-                unstated: 0,
-            },
-            unread: [],
-        });
+        expect(response.json()).toEqual({ rows: [], total: 0, unread: [] });
         expect(calls).toHaveLength(1);
     });
 
-    it('reads one definition with the row the list would draw for it', async () => {
-        const replies = listReplies();
-        const { server, sessionId, calls } = buildTestServer({
-            ...replies,
-            [LATEST]: {
-                result: ok,
-                instances: [
-                    {
-                        id: DAILY_RUN,
-                        definition_id: DAILY,
-                        started_at: '2026-10-17 08:00:00.000000Z',
-                        completed_at: '2026-10-17 08:00:12.500000Z',
-                    },
-                ],
-            },
-            'reporting.v1.report_definitions.get': {
-                result: ok,
-                report_definition: definition(DAILY, 'ACME daily PnL', 'pnl'),
-            },
-        });
-
-        const response = await send(
-            server,
-            sessionId,
-            'GET',
-            '/api/reporting/reports/ACME%20daily%20PnL',
-        );
-
-        expect(response.statusCode).toBe(200);
-        const body = response.json();
-        expect(body.report.name).toBe('ACME daily PnL');
-        expect(body.report.health).toBe('completed with errors');
-        expect(body.definition).toEqual({
-            name: 'ACME daily PnL',
-            description: 'ACME daily PnL definition',
-            reportType: 'pnl',
-            partyId: PARTY,
-            scheduleExpression: '0 0 9 * * ?',
-            concurrencyPolicy: 'forbid',
-            isOfficial: true,
-            preProcessing: 'none',
-            preparedInputKey: 'acme/daily',
-            postProcessing: 'none',
-            schedulerJobId: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
-            runGrantId: null,
-            fsmStateId: null,
-            version: 3,
-            modifiedBy: 'priya',
-            performedBy: 'priya',
-            changeReasonCode: 'common.new_record',
-            changeCommentary: '',
-            recordedAt: '2026-10-17 08:00:00.000000Z',
-        });
-        expect(calls[0]).toEqual({
-            subject: 'reporting.v1.report_definitions.get',
-            body: { key: { name: 'ACME daily PnL' } },
-        });
-    });
-
-    it('answers a definition that does not exist as absent', async () => {
-        const { server, sessionId } = buildTestServer({
-            'reporting.v1.report_definitions.get': { result: ok, report_definition: null },
-        });
-
-        const response = await send(server, sessionId, 'GET', '/api/reporting/reports/none');
-
-        expect(response.statusCode).toBe(404);
-        expect(response.json().code).toBe('not-found');
-    });
-
-    it('writes the six offered fields and rebuilds the rest from the read', async () => {
-        const replies = listReplies();
-        const { server, sessionId, calls } = buildTestServer({
-            ...replies,
-            'reporting.v1.report_definitions.get': {
-                result: ok,
-                report_definition: definition(DAILY, 'ACME daily PnL', 'pnl'),
-            },
-            'reporting.v1.report_definitions.put': {
-                result: ok,
-                report_definition: {
-                    ...definition(DAILY, 'ACME daily PnL', 'pnl'),
-                    schedule_expression: '0 30 8 * * ?',
-                    version: 4,
-                },
-            },
-        });
-
-        const response = await send(
-            server,
-            sessionId,
-            'PUT',
-            '/api/reporting/reports/ACME%20daily%20PnL',
-            {
-                version: 3,
-                change: {
-                    description: 'Daily PnL for the desk',
-                    schedule_expression: '0 30 8 * * ?',
-                    is_official: false,
-                    pre_processing: 'none',
-                    prepared_input_key: 'acme/daily',
-                    post_processing: 'none',
-                },
-                intent: INTENT,
-            },
-        );
-
-        expect(response.statusCode).toBe(200);
-        expect(response.json().definition.scheduleExpression).toBe('0 30 8 * * ?');
-        expect(response.json().definition.version).toBe(4);
-        expect(calls.map((call) => call.subject)).toContain('reporting.v1.report_definitions.put');
-        const put = calls.find((call) => call.subject === 'reporting.v1.report_definitions.put')
-            ?.body as { change: { write: Record<string, unknown>; precondition: unknown } };
-        expect(put.change.precondition).toEqual({ kind: 'must_match_version', version: 3 });
-        expect(put.change.write).toEqual({
-            id: DAILY,
-            name: 'ACME daily PnL',
-            party_id: PARTY,
-            description: 'Daily PnL for the desk',
-            report_type: 'pnl',
-            fsm_state_id: null,
-            schedule_expression: '0 30 8 * * ?',
-            concurrency_policy: 'forbid',
-            scheduler_job_id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
-            run_grant_id: null,
-            pre_processing: 'none',
-            prepared_input_key: 'acme/daily',
-            post_processing: 'none',
-            is_official: false,
-        });
-    });
-
-    it('reports a refused write with the status the server stated', async () => {
-        const { server, sessionId } = buildTestServer({
-            'reporting.v1.report_definitions.get': {
-                result: ok,
-                report_definition: definition(DAILY, 'ACME daily PnL', 'pnl'),
-            },
-            'reporting.v1.report_definitions.put': {
-                result: { ...ok, outcome: 'conflict', message: 'The definition moved on.' },
-            },
-        });
-
-        const response = await send(
-            server,
-            sessionId,
-            'PUT',
-            '/api/reporting/reports/ACME%20daily%20PnL',
-            {
-                version: 3,
-                change: {
-                    description: '',
-                    schedule_expression: '0 0 9 * * ?',
-                    is_official: true,
-                    pre_processing: 'none',
-                    prepared_input_key: 'acme/daily',
-                    post_processing: 'none',
-                },
-                intent: INTENT,
-            },
-        );
-
-        expect(response.statusCode).toBe(409);
-        expect(response.json()).toEqual({
-            code: 'conflict',
-            message: 'The definition moved on.',
-        });
-    });
-
-    it('refuses a write that states no intent', async () => {
-        const { server, sessionId } = buildTestServer({});
-        const response = await send(
-            server,
-            sessionId,
-            'PUT',
-            '/api/reporting/reports/ACME%20daily%20PnL',
-            {
-                version: 3,
-                change: {
-                    description: '',
-                    schedule_expression: '0 0 9 * * ?',
-                    is_official: true,
-                    pre_processing: 'none',
-                    prepared_input_key: 'acme/daily',
-                    post_processing: 'none',
-                },
-            },
-        );
-        expect(response.statusCode).toBe(400);
-    });
-
-    it('leaves the party cell empty when the parties cannot be named', async () => {
+    it('leaves the party cells empty when the parties cannot be named', async () => {
         const replies = listReplies();
         delete replies[MY_PARTIES];
         const { server, sessionId } = buildTestServer(replies);
@@ -559,6 +447,7 @@ describe('reporting routes', () => {
         const response = await send(server, sessionId, 'GET', '/api/reporting/reports');
 
         expect(response.json().rows[0].partyCode).toBeNull();
+        expect(response.json().rows[0].partyName).toBe('');
         expect(response.json().unread).toEqual([
             { cell: 'parties', message: `No canned reply for ${MY_PARTIES}` },
         ]);
@@ -572,10 +461,10 @@ describe('reporting routes', () => {
             parties: [
                 {
                     party_id: OTHER_PARTY,
-                    name: 'Other',
-                    short_code: 'OTHER',
+                    name: 'ACME Hong Kong',
+                    short_code: 'ACCOHK',
                     party_category: 'Operational',
-                    business_center_code: 'USNY',
+                    business_center_code: 'HKHH',
                 },
             ],
         };
@@ -584,7 +473,224 @@ describe('reporting routes', () => {
         const response = await send(server, sessionId, 'GET', '/api/reporting/reports');
 
         expect(response.json().rows[0].partyId).toBe(PARTY);
+        expect(response.json().rows[0].partyName).toBe('');
         expect(response.json().rows[0].partyCode).toBeNull();
         expect(response.json().unread).toEqual([]);
+    });
+});
+
+describe('one report definition', () => {
+    it('reads the definition the id names, and not one of the same name elsewhere', async () => {
+        const { server, sessionId, calls } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${AUDIT_ELSEWHERE}`,
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().report.id).toBe(AUDIT_ELSEWHERE);
+        expect(response.json().report.partyName).toBe('ACME Hong Kong');
+        expect(response.json().definition).toEqual({
+            id: AUDIT_ELSEWHERE,
+            name: AUDIT_NAME,
+            description: `${AUDIT_NAME} definition`,
+            report_type: 'risk',
+            party_id: OTHER_PARTY,
+            party_name: 'ACME Hong Kong',
+            party_code: 'ACCOHK',
+            schedule_expression: '0 0 9 * * ?',
+            concurrency_policy: 'forbid',
+            is_official: true,
+            pre_processing: 'none',
+            prepared_input_key: 'acme/daily',
+            post_processing: 'none',
+            version: 3,
+            modified_by: 'priya',
+            performed_by: 'priya',
+            change_reason_code: 'common.new_record',
+            change_commentary: '',
+            recorded_at: '2026-10-17 08:00:00.000000Z',
+        });
+        // The read names the id, not the name, so two rows of one name cannot be
+        // confused for each other.
+        expect(calls[0]).toEqual({
+            subject: DEFINITIONS,
+            body: {
+                offset: 0,
+                limit: 1,
+                order: { field: '', descending: false },
+                filter: { party_id: null, id_one_of: [AUDIT_ELSEWHERE], party_id_one_of: null },
+                as_of: null,
+            },
+        });
+    });
+
+    it('opens two different records for two definitions of one name', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const home = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${AUDIT_AT_HOME}`,
+        );
+        const elsewhere = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${AUDIT_ELSEWHERE}`,
+        );
+
+        expect(home.json().definition.name).toBe(AUDIT_NAME);
+        expect(elsewhere.json().definition.name).toBe(AUDIT_NAME);
+        expect(home.json().definition.id).not.toBe(elsewhere.json().definition.id);
+        expect(home.json().definition.party_name).toBe('ACME Corporation');
+        expect(elsewhere.json().definition.party_name).toBe('ACME Hong Kong');
+    });
+
+    it('answers a definition that does not exist as absent', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/${UNKNOWN_ID}`,
+        );
+
+        expect(response.statusCode).toBe(404);
+        expect(response.json().code).toBe('not-found');
+    });
+
+    it('refuses an address that is not an id', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(server, sessionId, 'GET', '/api/reporting/reports/not-an-id');
+
+        expect(response.statusCode).toBe(400);
+    });
+
+    it('resolves a retired name-based address to the one definition that carries it', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            '/api/reporting/reports/by-name/ACME%20daily%20PnL',
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toEqual({ id: DAILY });
+    });
+
+    it('refuses to guess when two parties share a name', async () => {
+        const { server, sessionId } = buildTestServer(listReplies());
+        const response = await send(
+            server,
+            sessionId,
+            'GET',
+            `/api/reporting/reports/by-name/${encodeURIComponent(AUDIT_NAME)}`,
+        );
+
+        expect(response.statusCode).toBe(409);
+        expect(response.json().message).toContain('2 report definitions');
+    });
+
+    it('writes the record it read, and not another party row of the same name', async () => {
+        const replies = listReplies();
+        replies[PUT] = {
+            result: ok,
+            report_definition: {
+                ...definition(AUDIT_ELSEWHERE, AUDIT_NAME, 'risk', OTHER_PARTY),
+                schedule_expression: '0 30 8 * * ?',
+                version: 4,
+            },
+        };
+        const { server, sessionId, calls } = buildTestServer(replies);
+
+        const response = await send(
+            server,
+            sessionId,
+            'PUT',
+            `/api/reporting/reports/${AUDIT_ELSEWHERE}`,
+            {
+                version: 3,
+                change: {
+                    description: 'Audit trail, month end',
+                    schedule_expression: '0 30 8 * * ?',
+                    is_official: false,
+                    pre_processing: 'none',
+                    prepared_input_key: 'acme/daily',
+                    post_processing: 'none',
+                },
+                intent: INTENT,
+            },
+        );
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().definition.schedule_expression).toBe('0 30 8 * * ?');
+        expect(response.json().definition.version).toBe(4);
+        const put = calls.find((call) => call.subject === PUT)?.body as {
+            change: { write: Record<string, unknown>; precondition: unknown };
+        };
+        expect(put.change.precondition).toEqual({ kind: 'must_match_version', version: 3 });
+        expect(put.change.write).toEqual({
+            id: AUDIT_ELSEWHERE,
+            name: AUDIT_NAME,
+            party_id: OTHER_PARTY,
+            description: 'Audit trail, month end',
+            report_type: 'risk',
+            fsm_state_id: null,
+            schedule_expression: '0 30 8 * * ?',
+            concurrency_policy: 'forbid',
+            scheduler_job_id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+            run_grant_id: null,
+            pre_processing: 'none',
+            prepared_input_key: 'acme/daily',
+            post_processing: 'none',
+            is_official: false,
+        });
+    });
+
+    it('reports a refused write with the status the server stated', async () => {
+        const replies = listReplies();
+        replies[PUT] = {
+            result: { ...ok, outcome: 'conflict', message: 'The definition moved on.' },
+        };
+        const { server, sessionId } = buildTestServer(replies);
+
+        const response = await send(server, sessionId, 'PUT', `/api/reporting/reports/${DAILY}`, {
+            version: 3,
+            change: {
+                description: '',
+                schedule_expression: '0 0 9 * * ?',
+                is_official: true,
+                pre_processing: 'none',
+                prepared_input_key: 'acme/daily',
+                post_processing: 'none',
+            },
+            intent: INTENT,
+        });
+
+        expect(response.statusCode).toBe(409);
+        expect(response.json()).toEqual({
+            code: 'conflict',
+            message: 'The definition moved on.',
+        });
+    });
+
+    it('refuses a write that states no intent', async () => {
+        const { server, sessionId } = buildTestServer({});
+        const response = await send(server, sessionId, 'PUT', `/api/reporting/reports/${DAILY}`, {
+            version: 3,
+            change: {
+                description: '',
+                schedule_expression: '0 0 9 * * ?',
+                is_official: true,
+                pre_processing: 'none',
+                prepared_input_key: 'acme/daily',
+                post_processing: 'none',
+            },
+        });
+        expect(response.statusCode).toBe(400);
     });
 });

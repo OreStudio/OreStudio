@@ -153,6 +153,7 @@ import {
     type WireTimestamp,
     wireTimestampSchema,
     reportDetailSchema,
+    reportIdReplySchema,
     reportsPageSchema,
     type ReportDetail,
     type ReportsPage,
@@ -1199,22 +1200,56 @@ export const api = {
     },
 
     /**
-     * The reports the session's party runs, one row per definition.
+     * One page of the reports the parties the person works in run.
      *
-     * The BFF composes the definition, its latest run, the health of that run,
-     * its problem counts and its next fire, so a row arrives ready to draw. A
-     * read that failed leaves its own cells empty and is named in `unread`,
-     * which is why a row can be partial and still be a row.
+     * The BFF composes each definition with its latest run, the health of that
+     * run, its problem counts and its next fire, so a row arrives ready to draw.
+     * A read that failed leaves its own cells empty and is named in `unread`,
+     * which is why a row can be partial and still be a row. The page goes to the
+     * server, so the count is the server's total and not the length of a page.
      */
-    async reports(): Promise<ReportsPage> {
-        return reportsPageSchema.parse(await request('/api/reporting/reports', { method: 'GET' }));
+    async reports(page: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly sort: string;
+        readonly descending: boolean;
+        /** The party the list is narrowed to, or null for every party in scope. */
+        readonly partyId: string | null;
+    }): Promise<ReportsPage> {
+        const query = new URLSearchParams({
+            offset: String(page.offset),
+            limit: String(page.limit),
+            sort: page.sort,
+            descending: page.descending ? 'true' : 'false',
+        });
+        if (page.partyId !== null) {
+            query.set('party_id', page.partyId);
+        }
+        return reportsPageSchema.parse(
+            await request(`/api/reporting/reports?${query.toString()}`, { method: 'GET' }),
+        );
     },
 
-    /** One definition, its composed row, and every field the detail screen states. */
-    async report(name: string): Promise<ReportDetail> {
+    /** One definition by its id, its composed row, and every field the detail screen states. */
+    async report(id: string): Promise<ReportDetail> {
         return reportDetailSchema.parse(
-            await request(`/api/reporting/reports/${encodeURIComponent(name)}`, { method: 'GET' }),
+            await request(`/api/reporting/reports/${encodeURIComponent(id)}`, { method: 'GET' }),
         );
+    },
+
+    /**
+     * The id of the one definition of the parties in scope that carries a name.
+     *
+     * A definition is opened by its id, because the same report in two parties is
+     * two records of one name. An address saved before that still names a name,
+     * and the server answers it only when one definition carries it.
+     */
+    async reportIdByName(name: string): Promise<string> {
+        return reportIdReplySchema.parse(
+            await request(`/api/reporting/reports/by-name/${encodeURIComponent(name)}`, {
+                method: 'GET',
+            }),
+        ).id;
     },
 
     /**
@@ -1226,7 +1261,7 @@ export const api = {
      * changed in between is a conflict rather than a silent overwrite.
      */
     async saveReport(
-        name: string,
+        id: string,
         edit: {
             readonly version: number;
             readonly change: ReportEdit;
@@ -1235,7 +1270,7 @@ export const api = {
         },
     ): Promise<ReportDetail> {
         return reportDetailSchema.parse(
-            await request(`/api/reporting/reports/${encodeURIComponent(name)}`, {
+            await request(`/api/reporting/reports/${encodeURIComponent(id)}`, {
                 method: 'PUT',
                 headers: JSON_HEADERS,
                 body: JSON.stringify({

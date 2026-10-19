@@ -42,11 +42,15 @@ describe('the addresses of the screens', () => {
         expect(PATHS.reports).toBe('/reporting/reports');
     });
 
-    it('are named by one helper when they take a name', () => {
+    it('are named by one helper when they take a key', () => {
         expect(personPath('ada lovelace')).toBe('/organisation/people/ada%20lovelace');
         expect(rolePath('r1')).toBe('/organisation/roles/r1');
         expect(rescuePath('ada')).toBe('/organisation/rescue?username=ada');
-        expect(reportPath('ACME daily PnL')).toBe('/reporting/reports/ACME%20daily%20PnL');
+        // A report definition is named by its id, because its name is shared
+        // across the parties a session sees.
+        expect(reportPath('55555555-5555-4555-8555-555555555555')).toBe(
+            '/reporting/reports/55555555-5555-4555-8555-555555555555',
+        );
     });
 
     it('leave no earlier address that is also a current one', () => {

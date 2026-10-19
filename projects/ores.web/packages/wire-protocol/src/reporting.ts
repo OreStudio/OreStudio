@@ -67,6 +67,15 @@ export type ReportRunView = z.infer<typeof reportRunViewSchema>;
 /**
  * One row: a definition and everything the list says about it.
  *
+ * `id` is the row's identity, and the only name a page is opened by: the
+ * definition's name is not unique, because the table is unique on
+ * (tenant, name, party) and a session sees several parties. Two definitions of
+ * the same name are two rows, and only the id tells them apart.
+ *
+ * The party is stated by name, because a person reads the party's name and not
+ * its short code; `partyCode` is carried beside it for the screens that already
+ * speak in codes.
+ *
  * `health` is null when the server states no word for the run's state, which is
  * the two states the mapping has not decided; `stateName` is the state the word
  * would have come from, so the row can say which one it was. A null cell beside
@@ -74,9 +83,11 @@ export type ReportRunView = z.infer<typeof reportRunViewSchema>;
  * entry says why.
  */
 export const reportRowViewSchema = z.object({
+    id: z.string(),
     name: z.string(),
     reportType: z.string(),
     partyId: z.string(),
+    partyName: z.string(),
     partyCode: z.string().nullable(),
     scheduleExpression: z.string(),
     health: reportHealthWordSchema.nullable(),
@@ -86,21 +97,6 @@ export const reportRowViewSchema = z.object({
 });
 
 export type ReportRowView = z.infer<typeof reportRowViewSchema>;
-
-/** The rows counted by health word, so the shape of the party reads before any row does. */
-export const reportTallyViewSchema = z.object({
-    failed: z.int().nonnegative(),
-    completedWithErrors: z.int().nonnegative(),
-    running: z.int().nonnegative(),
-    neverRun: z.int().nonnegative(),
-    completedClean: z.int().nonnegative(),
-    /** The rows whose health could not be read, so nothing about them is known. */
-    unknown: z.int().nonnegative(),
-    /** The rows whose run states a word no health word covers. */
-    unstated: z.int().nonnegative(),
-});
-
-export type ReportTallyView = z.infer<typeof reportTallyViewSchema>;
 
 /**
  * A read the list composes that failed.
@@ -115,41 +111,48 @@ export const reportUnreadSchema = z.object({
 
 export type ReportUnread = z.infer<typeof reportUnreadSchema>;
 
+/** One page of rows and the server's total, which is what the pager is built from. */
 export const reportsPageSchema = z.object({
     rows: z.array(reportRowViewSchema),
-    tally: reportTallyViewSchema,
+    total: z.int().nonnegative(),
     unread: z.array(reportUnreadSchema),
 });
 
 export type ReportsPage = z.infer<typeof reportsPageSchema>;
 
 /**
- * The definition as the detail screen reads it, field for field.
+ * The definition as the detail screen reads it, under the field names the record
+ * holds.
  *
- * It is the record the edit form fills from, and the fields it does not offer
- * are the ones a save must not blank: the BFF rebuilds the write from this read
- * rather than from what the browser sends back.
+ * It is a record row, so the shared record parts draw and edit it: the field
+ * table names these fields, and the server's history names the same ones. The
+ * fields a save must not blank are not the browser's to send at all: the BFF
+ * rebuilds the write from this read rather than from what the browser returns.
+ *
+ * The two identifiers the record also carries, its scheduler job and its run
+ * grant, are left out because a screen never shows an identifier, and the write
+ * carries them over from the read.
  */
 export const reportDefinitionViewSchema = z.object({
+    id: z.string(),
     name: z.string(),
     description: z.string(),
-    reportType: z.string(),
-    partyId: z.string(),
-    scheduleExpression: z.string(),
-    concurrencyPolicy: z.string(),
-    isOfficial: z.boolean(),
-    preProcessing: z.string(),
-    preparedInputKey: z.string(),
-    postProcessing: z.string(),
-    schedulerJobId: z.string().nullable(),
-    runGrantId: z.string().nullable(),
-    fsmStateId: z.string().nullable(),
+    report_type: z.string(),
+    party_id: z.string(),
+    party_name: z.string(),
+    party_code: z.string().nullable(),
+    schedule_expression: z.string(),
+    concurrency_policy: z.string(),
+    is_official: z.boolean(),
+    pre_processing: z.string(),
+    prepared_input_key: z.string(),
+    post_processing: z.string(),
     version: z.int().nonnegative(),
-    modifiedBy: z.string(),
-    performedBy: z.string(),
-    changeReasonCode: z.string(),
-    changeCommentary: z.string(),
-    recordedAt: z.string(),
+    modified_by: z.string(),
+    performed_by: z.string(),
+    change_reason_code: z.string(),
+    change_commentary: z.string(),
+    recorded_at: z.string(),
 });
 
 export type ReportDefinitionView = z.infer<typeof reportDefinitionViewSchema>;
@@ -166,3 +169,15 @@ export const reportDetailSchema = z.object({
 });
 
 export type ReportDetail = z.infer<typeof reportDetailSchema>;
+
+/**
+ * The row a retired name-based address resolves to.
+ *
+ * A definition is opened by its id, because its name is shared by the same
+ * report in other parties. An address saved before the change still names a
+ * name, so it is answered with the one row that carries it, or refused when
+ * more than one does.
+ */
+export const reportIdReplySchema = z.object({ id: z.string() });
+
+export type ReportId = z.infer<typeof reportIdReplySchema>;

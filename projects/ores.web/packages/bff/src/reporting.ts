@@ -27,7 +27,7 @@ import { subjects as instanceSubjects } from '@ores/wire-protocol/generated/repo
 import { subjects as errorSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_error_event_protocol';
 import { subjects as operationSubjects } from '@ores/wire-protocol/generated/reporting/protocol/report_operations_protocol';
 import { HttpFailure, invalidRequest, notFound } from './errors.js';
-import { input, intentSchema, readAll, resultSchema, row, text } from './refdata-calls.js';
+import { intentSchema, readAll, resultSchema, row, text } from './refdata-calls.js';
 import type { LiveSession } from './sessions.js';
 
 /*
@@ -35,11 +35,24 @@ import type { LiveSession } from './sessions.js';
  * one definition read and edited.
  *
  * The server answers the definitions, each definition's latest run, the health
- * word of that run, its problem counts, its next fire and the party's short
- * code as six separate reads. Composing them here rather than in the browser is
- * what lets the list degrade one cell at a time: the row is a definition, and
- * everything else on it is a decoration that can be absent and say why.
+ * word of that run, its problem counts, its next fire and the party's name and
+ * short code as six separate reads. Composing them here rather than in the
+ * browser is what lets the list degrade one cell at a time: the row is a
+ * definition, and everything else on it is a decoration that can be absent and
+ * say why.
+ *
+ * A definition is named by its id throughout. Its name is not a key a session
+ * can read by: the table is unique on (tenant, name, party), and a session that
+ * sees several parties therefore sees several definitions of one name. The
+ * id is the primary key, so nothing in the model has to move for the screen to
+ * be right.
  */
+
+/** The page a list opens on, as the record screen standard sets it. */
+const DEFAULT_PAGE_SIZE = 15;
+
+/** The largest page a caller may ask for, as the generated read allows. */
+const MAX_PAGE_SIZE = 1000;
 
 /** The words a row's health cell can hold. The server derives them; this only names them. */
 const HEALTH_WORDS = [
@@ -79,9 +92,11 @@ interface RunView {
  * never parses them.
  */
 interface ReportRow {
+    readonly id: string;
     readonly name: string;
     readonly reportType: string;
     readonly partyId: string;
+    readonly partyName: string;
     readonly partyCode: string | null;
     readonly scheduleExpression: string;
     readonly health: HealthWord | null;
@@ -90,44 +105,62 @@ interface ReportRow {
     readonly nextFireAt: string | null;
 }
 
-interface Tally {
-    readonly failed: number;
-    readonly completedWithErrors: number;
-    readonly running: number;
-    readonly neverRun: number;
-    readonly completedClean: number;
-    /** The rows whose health could not be read, so nothing about them is known. */
-    readonly unknown: number;
-    readonly unstated: number;
-}
-
-/** The definition as the detail screen reads it. */
-interface DefinitionView {
+/** A party as the session's own account states it: the name a person reads, and the code. */
+interface PartyName {
     readonly name: string;
-    readonly description: string;
-    readonly reportType: string;
-    readonly partyId: string;
-    readonly scheduleExpression: string;
-    readonly concurrencyPolicy: string;
-    readonly isOfficial: boolean;
-    readonly preProcessing: string;
-    readonly preparedInputKey: string;
-    readonly postProcessing: string;
-    readonly schedulerJobId: string | null;
-    readonly runGrantId: string | null;
-    readonly fsmStateId: string | null;
-    readonly version: number;
-    readonly modifiedBy: string;
-    readonly performedBy: string;
-    readonly changeReasonCode: string;
-    readonly changeCommentary: string;
-    readonly recordedAt: string;
+    readonly shortCode: string;
 }
 
-const reportNameSchema = z.string().trim().min(1).max(200);
+/**
+ * One page of definitions and the server's total, which is what the pager is
+ * built from. A page is what the list shows, so the decorations are composed for
+ * its rows only.
+ */
+interface DefinitionPage {
+    readonly definitions: readonly Record<string, unknown>[];
+    readonly total: number;
+}
 
-const nameParam = (request: FastifyRequest): string =>
-    input(reportNameSchema, (request.params as { name: string }).name);
+const pageQuerySchema = z.object({
+    offset: z.coerce.number().pipe(z.int().min(0)).default(0),
+    limit: z.coerce.number().pipe(z.int().min(1).max(MAX_PAGE_SIZE)).default(DEFAULT_PAGE_SIZE),
+    sort: z.string().max(100).default(''),
+    descending: z
+        .enum(['true', 'false'])
+        .default('false')
+        .transform((value) => value === 'true'),
+    /** The party the list is narrowed to, from a filter of the page. */
+    party_id: z.uuid().optional(),
+});
+
+const idSchema = z.uuid();
+
+/**
+ * The generated definition filter, with every member stated.
+ *
+ * The wire decoder reads the filter as a whole record, so a member left out is a
+ * filter that does not decode; a member that is not set is stated as null.
+ */
+interface DefinitionFilter {
+    readonly party_id: string | null;
+    readonly id_one_of: readonly string[] | null;
+    readonly party_id_one_of: readonly string[] | null;
+}
+
+/** The filter that narrows to one party, or to one definition by its id. */
+function definitionFilter(members: {
+    readonly partyId?: string;
+    readonly idOneOf?: readonly string[];
+}): DefinitionFilter {
+    return {
+        party_id: members.partyId ?? null,
+        id_one_of: members.idOneOf ?? null,
+        party_id_one_of: null,
+    };
+}
+
+const idParam = (request: FastifyRequest): string =>
+    parseInput(idSchema, (request.params as { id: string }).id, 'A definition is named by its id.');
 
 const nullableText = (value: unknown): string | null => {
     const stated = text(value);
@@ -140,6 +173,24 @@ const healthOf = (value: unknown): HealthWord | null => {
     const word = text(value);
     return HEALTH_WORDS.find((candidate) => candidate === word) ?? null;
 };
+
+/**
+ * A request's input read against its schema, or a 400 that names the task.
+ *
+ * The shared `input` states the schema's own complaint, which names a field and
+ * not what the person was doing, so these routes say what the request was.
+ */
+function parseInput<Schema extends z.ZodType>(
+    schema: Schema,
+    value: unknown,
+    message: string,
+): z.infer<Schema> {
+    const parsed = schema.safeParse(value);
+    if (!parsed.success) {
+        throw invalidRequest(message);
+    }
+    return parsed.data;
+}
 
 /**
  * Runs one decoration, or records that it could not be read.
@@ -161,12 +212,101 @@ async function decorate<T>(
     }
 }
 
-/** The definitions the session's parties own, page by page. */
-async function readDefinitions(session: LiveSession): Promise<readonly Record<string, unknown>[]> {
-    return readAll(session, definitionSubjects.list_report_definitions_request, 'definitions', {
-        filter: null,
-        as_of: null,
-    });
+/** One page of the definitions the session's parties own, with the server's total. */
+async function readDefinitionsPage(
+    session: LiveSession,
+    page: {
+        readonly offset: number;
+        readonly limit: number;
+        readonly sort: string;
+        readonly descending: boolean;
+        readonly partyId: string | null;
+    },
+): Promise<DefinitionPage> {
+    const filter = page.partyId === null ? null : definitionFilter({ partyId: page.partyId });
+    const reply = await session.client.callAuthenticated(
+        definitionSubjects.list_report_definitions_request,
+        {
+            offset: page.offset,
+            limit: page.limit,
+            order: { field: page.sort, descending: page.descending },
+            filter,
+            as_of: null,
+        },
+        z.looseObject({
+            result: resultSchema,
+            definitions: z.array(row).default([]),
+            total: z.int().nonnegative().default(0),
+        }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusalOf(reply.result);
+    }
+    return { definitions: reply.definitions, total: reply.total };
+}
+
+/**
+ * One definition, by the id that names it.
+ *
+ * The generated read by key takes a name, and a name is shared across parties,
+ * so the row is read with the list's one-of filter on the primary key instead.
+ * That is the same read the list makes, narrowed to one row, so no model change
+ * is needed to read a definition exactly.
+ */
+async function readDefinition(session: LiveSession, id: string): Promise<Record<string, unknown>> {
+    const reply = await session.client.callAuthenticated(
+        definitionSubjects.list_report_definitions_request,
+        {
+            offset: 0,
+            limit: 1,
+            order: { field: '', descending: false },
+            filter: definitionFilter({ idOneOf: [id] }),
+            as_of: null,
+        },
+        z.looseObject({ result: resultSchema, definitions: z.array(row).default([]) }),
+    );
+    if (reply.result.outcome !== 'ok') {
+        throw refusalOf(reply.result);
+    }
+    const [definition] = reply.definitions;
+    if (definition === undefined) {
+        throw notFound(
+            'That report definition does not exist, or it belongs to a party you do not work in.',
+        );
+    }
+    return definition;
+}
+
+/**
+ * The id the retired name-based address resolves to.
+ *
+ * An address saved before definitions were opened by id names a name, and a name
+ * is only unique within a party. The generated read filters on no name, so the
+ * definitions in the session's scope are read and matched here. It answers only
+ * when exactly one of them carries the name; two definitions of one name are two
+ * records, and guessing one of them is the defect this route exists to retire.
+ */
+async function idForName(session: LiveSession, name: string): Promise<string> {
+    const definitions = await readAll(
+        session,
+        definitionSubjects.list_report_definitions_request,
+        'definitions',
+        { filter: null, as_of: null },
+    );
+    const named = definitions.filter((definition) => text(definition['name']) === name);
+    const [only] = named;
+    if (only === undefined) {
+        throw notFound(
+            'No report definition of the parties you work in has that name. It may have been renamed.',
+        );
+    }
+    if (named.length > 1) {
+        throw new HttpFailure(409, {
+            code: 'conflict',
+            message: `${named.length} report definitions of the parties you work in are named ${name}. Opening one of them needs its id: choose the row in the list instead.`,
+        });
+    }
+    return text(only['id']);
 }
 
 /** The latest run of each definition named, one entry per definition that has run. */
@@ -249,18 +389,21 @@ async function readNextFires(
 }
 
 /**
- * The short code of each party the caller's own account works in.
+ * The name and short code of each party the caller's own account works in.
  *
- * The session carries the party's name and no code (G11), so the code comes
- * from the account's own parties and from nowhere else. A row whose party is not
- * in this answer keeps an empty Party cell rather than a guessed one.
+ * The session carries the party's name and no code, so both come from the
+ * account's own parties and from nowhere else. That read is also the list of
+ * parties a filter may offer, so it answers the only parties the screen can
+ * name. A row whose party is not in this answer keeps empty party cells rather
+ * than a guessed one.
  */
-async function readPartyCodes(session: LiveSession): Promise<ReadonlyMap<string, string>> {
+async function readPartyNames(session: LiveSession): Promise<ReadonlyMap<string, PartyName>> {
     const parties = await readMyParties(session.client);
     return new Map(
-        parties.parties
-            .filter((party) => party.shortCode !== '')
-            .map((party) => [party.partyId, party.shortCode]),
+        parties.parties.map((party) => [
+            party.partyId,
+            { name: party.name, shortCode: party.shortCode },
+        ]),
     );
 }
 
@@ -305,7 +448,7 @@ function rowOf(
     definition: Record<string, unknown>,
     decorated: {
         /** Undefined when the read that names the parties failed. */
-        readonly partyCodes: ReadonlyMap<string, string> | undefined;
+        readonly parties: ReadonlyMap<string, PartyName> | undefined;
         /** Undefined when the latest runs could not be read. */
         readonly runs: ReadonlyMap<string, Record<string, unknown>> | undefined;
         readonly health: ReadonlyMap<string, { health: HealthWord | null; stateName: string }>;
@@ -321,12 +464,15 @@ function rowOf(
     const runId = run === undefined ? '' : text(run['id']);
     const stated = decorated.health.get(runId);
     const counted = decorated.counts?.get(runId);
+    const party = decorated.parties?.get(partyId);
 
     return {
+        id,
         name: text(definition['name']),
         reportType: text(definition['report_type']),
         partyId,
-        partyCode: decorated.partyCodes?.get(partyId) ?? null,
+        partyName: party?.name ?? '',
+        partyCode: party === undefined || party.shortCode === '' ? null : party.shortCode,
         scheduleExpression: text(definition['schedule_expression']),
         health: healthOfRow(run, stated, decorated.runs),
         stateName: stated?.stateName ?? '',
@@ -346,69 +492,31 @@ function rowOf(
     };
 }
 
-function tallyOf(rows: readonly ReportRow[], unread: readonly Unread[]): Tally {
-    const tally = {
-        failed: 0,
-        completedWithErrors: 0,
-        running: 0,
-        neverRun: 0,
-        completedClean: 0,
-        unknown: 0,
-        unstated: 0,
-    };
-    // A word the server did not state because the read that derives it failed
-    // is unknown, not unstated: the state was never read, so no word covers it.
-    const healthUnread = unread.some(
-        (entry) => entry.cell === 'latestRun' || entry.cell === 'health',
-    );
-    for (const row of rows) {
-        switch (row.health) {
-            case 'failed':
-                tally.failed += 1;
-                break;
-            case 'completed with errors':
-                tally.completedWithErrors += 1;
-                break;
-            case 'running':
-                tally.running += 1;
-                break;
-            case 'never run':
-                tally.neverRun += 1;
-                break;
-            case 'completed clean':
-                tally.completedClean += 1;
-                break;
-            default:
-                if (healthUnread) {
-                    tally.unknown += 1;
-                } else {
-                    tally.unstated += 1;
-                }
-        }
-    }
-    return tally;
-}
-
 /**
  * The rows of the definitions named, with every cell the server can supply.
  *
  * The independent decodings are read at once, and the two that need a run's id
  * follow the latest-run read. A decoration that fails is absent from the rows
  * and present in `unread`, so a screen draws those cells empty and says which
- * read refused it.
+ * read refused it. The parties are returned as well, because the definition's
+ * own record states its party by the same read.
  */
 async function compose(
     session: LiveSession,
     definitions: readonly Record<string, unknown>[],
-): Promise<{ rows: ReportRow[]; tally: Tally; unread: Unread[] }> {
+): Promise<{
+    rows: ReportRow[];
+    unread: Unread[];
+    parties: ReadonlyMap<string, PartyName> | undefined;
+}> {
     const unread: Unread[] = [];
     const ids = definitions.map((definition) => text(definition['id'])).filter((id) => id !== '');
     if (ids.length === 0) {
-        return { rows: [], tally: tallyOf([], unread), unread };
+        return { rows: [], unread, parties: new Map() };
     }
 
-    const [partyCodes, runs, nextFires] = await Promise.all([
-        decorate('parties', unread, () => readPartyCodes(session)),
+    const [parties, runs, nextFires] = await Promise.all([
+        decorate('parties', unread, () => readPartyNames(session)),
         decorate('latestRun', unread, () => readLatestRuns(session, ids)),
         decorate('nextFire', unread, () => readNextFires(session, ids)),
     ]);
@@ -432,7 +540,7 @@ async function compose(
     const rows = definitions
         .map((definition) =>
             rowOf(definition, {
-                partyCodes,
+                parties,
                 runs: runs === undefined ? undefined : byDefinition,
                 health,
                 counts,
@@ -441,49 +549,43 @@ async function compose(
         )
         .sort((left, right) => left.name.localeCompare(right.name));
 
-    return { rows, tally: tallyOf(rows, unread), unread };
+    return { rows, unread, parties };
 }
 
-/** The definition the address names, as the read returns it. */
-async function readDefinition(
-    session: LiveSession,
-    name: string,
-): Promise<Record<string, unknown>> {
-    const reply = await session.client.callAuthenticated(
-        definitionSubjects.get_report_definition_request,
-        { key: { name } },
-        z.looseObject({ result: resultSchema, report_definition: row.nullable().default(null) }),
-    );
-    if (reply.result.outcome !== 'ok') {
-        throw refusalOf(reply.result);
-    }
-    if (reply.report_definition === null) {
-        throw notFound(`No report definition is named ${name}.`);
-    }
-    return reply.report_definition;
-}
-
-function definitionOf(definition: Record<string, unknown>): DefinitionView {
+/**
+ * The definition as the record page reads it, under the names the record holds.
+ *
+ * It is a record row, so the shared record parts draw and edit it: the field
+ * table names these fields, and the server's history names the same ones. The
+ * party is stated by its name and its code, because a screen never shows an
+ * identifier where a name would do.
+ */
+function definitionRowOf(
+    definition: Record<string, unknown>,
+    parties: ReadonlyMap<string, PartyName> | undefined,
+): Record<string, unknown> {
+    const partyId = text(definition['party_id']);
+    const party = parties?.get(partyId);
     return {
+        id: text(definition['id']),
         name: text(definition['name']),
         description: text(definition['description']),
-        reportType: text(definition['report_type']),
-        partyId: text(definition['party_id']),
-        scheduleExpression: text(definition['schedule_expression']),
-        concurrencyPolicy: text(definition['concurrency_policy']),
-        isOfficial: definition['is_official'] === true,
-        preProcessing: text(definition['pre_processing']),
-        preparedInputKey: text(definition['prepared_input_key']),
-        postProcessing: text(definition['post_processing']),
-        schedulerJobId: nullableText(definition['scheduler_job_id']),
-        runGrantId: nullableText(definition['run_grant_id']),
-        fsmStateId: nullableText(definition['fsm_state_id']),
+        report_type: text(definition['report_type']),
+        party_id: partyId,
+        party_name: party?.name ?? '',
+        party_code: party === undefined || party.shortCode === '' ? null : party.shortCode,
+        schedule_expression: text(definition['schedule_expression']),
+        concurrency_policy: text(definition['concurrency_policy']),
+        is_official: definition['is_official'] === true,
+        pre_processing: text(definition['pre_processing']),
+        prepared_input_key: text(definition['prepared_input_key']),
+        post_processing: text(definition['post_processing']),
         version: countOf(definition['version']),
-        modifiedBy: text(definition['modified_by']),
-        performedBy: text(definition['performed_by']),
-        changeReasonCode: text(definition['change_reason_code']),
-        changeCommentary: text(definition['change_commentary']),
-        recordedAt: text(definition['recorded_at']),
+        modified_by: text(definition['modified_by']),
+        performed_by: text(definition['performed_by']),
+        change_reason_code: text(definition['change_reason_code']),
+        change_commentary: text(definition['change_commentary']),
+        recorded_at: text(definition['recorded_at']),
     };
 }
 
@@ -543,21 +645,25 @@ function writeOf(
 async function detailOf(
     session: LiveSession,
     definition: Record<string, unknown>,
-): Promise<{ report: ReportRow; definition: DefinitionView; unread: Unread[] }> {
+): Promise<{ report: ReportRow; definition: Record<string, unknown>; unread: Unread[] }> {
     const composed = await compose(session, [definition]);
     const [report] = composed.rows;
     if (report === undefined) {
         throw notFound('The report definition could not be composed.');
     }
-    return { report, definition: definitionOf(definition), unread: composed.unread };
+    return {
+        report,
+        definition: definitionRowOf(definition, composed.parties),
+        unread: composed.unread,
+    };
 }
 
 /**
  * The reporting routes the list and the detail screen call.
  *
  * Party scope is the session's throughout: the definitions read is scoped by
- * row-level security on the caller's own parties, and no request field names a
- * party.
+ * row-level security on the caller's own parties, and the party filter narrows
+ * that scope to one of them. A party the caller does not work in matches no row.
  */
 export function registerReportingRoutes(
     server: FastifyInstance,
@@ -565,19 +671,51 @@ export function registerReportingRoutes(
 ): void {
     server.get('/api/reporting/reports', async (request) => {
         const session = requireSession(request);
-        return compose(session, await readDefinitions(session));
+        const page = parseInput(
+            pageQuerySchema,
+            request.query,
+            'A page names an offset, a limit of 1 to 1000, an order and a party.',
+        );
+        const read = await readDefinitionsPage(session, {
+            offset: page.offset,
+            limit: page.limit,
+            sort: page.sort,
+            descending: page.descending,
+            partyId: page.party_id ?? null,
+        });
+        const composed = await compose(session, read.definitions);
+        return { rows: composed.rows, total: read.total, unread: composed.unread };
     });
 
-    server.get('/api/reporting/reports/:name', async (request) => {
+    /*
+     * The retired name-based address. It answers with the id of the one
+     * definition that carries the name, and refuses when the name is shared, so
+     * a saved link still arrives while a shared name is never guessed.
+     */
+    server.get('/api/reporting/reports/by-name/:name', async (request) => {
         const session = requireSession(request);
-        return detailOf(session, await readDefinition(session, nameParam(request)));
+        const name = parseInput(
+            z.string().trim().min(1).max(200),
+            (request.params as { name: string }).name,
+            'A definition is named by a name of 1 to 200 characters.',
+        );
+        return { id: await idForName(session, name) };
     });
 
-    server.put('/api/reporting/reports/:name', async (request) => {
+    server.get('/api/reporting/reports/:id', async (request) => {
         const session = requireSession(request);
-        const name = nameParam(request);
-        const body = input(editBodySchema, request.body);
-        const definition = await readDefinition(session, name);
+        return detailOf(session, await readDefinition(session, idParam(request)));
+    });
+
+    server.put('/api/reporting/reports/:id', async (request) => {
+        const session = requireSession(request);
+        const id = idParam(request);
+        const body = parseInput(
+            editBodySchema,
+            request.body,
+            'A write names the version it was read at, the fields it changes and its reason.',
+        );
+        const definition = await readDefinition(session, id);
         const reply = await session.client.callAuthenticated(
             definitionSubjects.put_report_definition_request,
             {
@@ -595,6 +733,6 @@ export function registerReportingRoutes(
         if (reply.result.outcome !== 'ok') {
             throw refusalOf(reply.result);
         }
-        return detailOf(session, reply.report_definition ?? (await readDefinition(session, name)));
+        return detailOf(session, reply.report_definition ?? (await readDefinition(session, id)));
     });
 }

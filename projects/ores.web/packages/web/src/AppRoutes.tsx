@@ -682,10 +682,11 @@ export function AppRoutes({
             />
             {/*
              * Reporting, the area and its screens: the area page draws the
-             * cards of the area, the list is the reports the session's party
-             * runs, and the third route is one definition's page. Each screen
-             * sits under the address of its area. The list and the page are
-             * tables, so they take the width.
+             * cards of the area, the list is the reports the session's parties
+             * run, and the third route is one definition's page, named by its
+             * id because its name is shared across parties. Each screen sits
+             * under the address of its area. The list and the page are tables,
+             * so they take the width.
              */}
             <Route
                 path={PATHS.reporting}
@@ -712,7 +713,7 @@ export function AppRoutes({
                 )}
             />
             <Route
-                path={`${PATHS.reports}/:name`}
+                path={`${PATHS.reports}/:id`}
                 element={signedIn(
                     gate.version,
                     session,

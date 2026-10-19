@@ -74,11 +74,13 @@ export function gridNodePath(hostId: string): string {
 /**
  * The address of one report definition's page.
  *
- * The definition's name is its key, so the address states it and no other read
- * is needed to resolve it.
+ * The definition is named by its id, because its name is not unique: the record
+ * is unique on (tenant, name, party), so a person who works in several parties
+ * sees several definitions of one name. The id is the primary key, so the
+ * address names one record exactly.
  */
-export function reportPath(name: string): string {
-    return `${PATHS.reports}/${encodeURIComponent(name)}`;
+export function reportPath(id: string): string {
+    return `${PATHS.reports}/${encodeURIComponent(id)}`;
 }
 
 /** The address of the rescue screen for one account. */

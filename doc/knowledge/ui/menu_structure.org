@@ -337,7 +337,7 @@ the same thing. A screen has one address.
 | Sign-ins | =/operations/sign-ins= |
 | Reporting, the area page | =/reporting= |
 | Reports | =/reporting/reports= |
-| A report definition's page | =/reporting/reports/:name= |
+| A report definition's page | =/reporting/reports/:id= |
 | Development, with its tabs Tests, Board and Backlog | =/development= |
 | A test scenario | =/development/tests/:id= |
 | A document | =/development/docs/:id= |

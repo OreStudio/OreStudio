@@ -62,7 +62,7 @@ describe('the Reporting area page', () => {
 
         expect(words).toContain('Reports');
         expect(words).toContain(
-            'The definitions this party runs, and the health of each latest run.',
+            'The definitions the parties you work in run, and the health of each latest run.',
         );
         expect(html).toContain('href="/reporting/reports"');
     });
@@ -74,7 +74,7 @@ describe('the Reporting area page', () => {
     it('draws no card for a person who does not hold the read', () => {
         const html = page([]);
 
-        expect(textOf(html)).not.toContain('The definitions this party runs');
+        expect(textOf(html)).not.toContain('The definitions the parties you work in run');
         expect(html).not.toContain('href="/reporting/reports"');
     });
 });

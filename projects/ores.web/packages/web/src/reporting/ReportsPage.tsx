@@ -23,94 +23,162 @@
  * The reports a party runs, from
  * doc/knowledge/journeys/reporting/journey_see_the_reports_a_party_runs.org.
  *
- * One row per definition the session's party owns. The row is an arc: the
+ * One row per definition the session's parties own. The row is an arc: the
  * definition exists, its latest run started and took a length of time, that run
  * is healthy or it is not, and the definition runs again. Health is derived from
  * the latest run and never from the definition, and a definition that never ran
  * says so in words rather than reading as clean.
  *
- * The owner cell the prototype draws has no source and is left out (G10), and
- * the on-demand and paused words wait on G14, so the schedule cell states the
- * expression and nothing about whether a job will fire it.
+ * The list spans the parties the session can see, which for an administrator is
+ * the tenant's parties under the login party, so every row states its party and
+ * the party filter narrows the rows to one. That is the list the entity screen
+ * specification draws: it names what it holds in its lead sentence, tags each
+ * party by name, and filters on the server.
+ *
+ * Three things the standard asks for have no server answer, and the screen says
+ * so rather than reading every row to work them out: the generated read declares
+ * no searchable and no sortable field, and nothing counts the rows by health.
  */
 
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import type { ReportRowView, ReportTallyView, ReportUnread } from '@ores/wire-protocol/browser';
+import type { ReportRowView, ReportUnread } from '@ores/wire-protocol/browser';
 import { api } from '../api/client.js';
 import { useTranslation } from '../i18n/Provider.js';
-import { Crumbs } from '../refdata/shared.js';
 import { useAreaRoot } from '../shell/AreaTrail.js';
 import { ScreenFrame } from '../shell/ScreenFrame.js';
+import { Crumbs } from '../refdata/shared.js';
 import { reportPath } from '../shell/paths.js';
-import { Metric } from '../ui/Metric.js';
-import { Notice, PageHeader, Tag } from '../ui/Primitives.js';
-import { RefreshQueries } from '../ui/RefreshButton.js';
-import { formatDateTime } from '../ui/Time.js';
 import {
-    Absent,
-    HealthTag,
-    ProblemCounts,
-    formatCount,
-    formatDuration,
-    runDuration,
-} from './shared.js';
+    RecordList,
+    type ListColumn,
+    type ListFilter,
+    type ListSource,
+} from '../refdata/RecordList.js';
+import { Notice, Tag } from '../ui/Primitives.js';
+import { RelativeTime } from '../ui/Time.js';
+import { REPORTS_EVENTS } from './store.js';
+import { Absent, HealthTag, formatCount, formatDuration, runDuration } from './shared.js';
 
-/** The address the list's rows are read from, and the key they are cached under. */
-export const REPORTS_QUERY_KEY = ['reporting', 'reports'] as const;
+/** The key the list's pages are cached under, and the prefix its load state reads. */
+export const REPORTS_QUERY_KEY = ['records', 'reports'] as const;
+
+/** The parties the session's account works in, which are the parties the filter may offer. */
+export const MY_PARTIES_QUERY_KEY = ['my-parties'] as const;
 
 /** The column of the row each unread read would have filled. */
 const CELL_COLUMNS: Readonly<Record<ReportUnread['cell'], string>> = {
     parties: 'reporting.columns.party',
     latestRun: 'reporting.columns.latestRun',
     health: 'reporting.columns.health',
-    errors: 'reporting.columns.problems',
+    errors: 'reporting.columns.errors',
     nextFire: 'reporting.columns.schedule',
 };
 
-/** The reads that failed, so the cells they would have filled say why they are empty. */
-function UnreadNote({ unread }: { readonly unread: readonly ReportUnread[] }): ReactNode {
-    const { t } = useTranslation();
-    if (unread.length === 0) {
-        return null;
-    }
-    return (
-        <Notice tone="warn">
-            <ul className="space-y-1">
-                {unread.map((entry) => (
-                    <li key={entry.cell}>
-                        {t('reporting.unread', {
-                            cell: t(CELL_COLUMNS[entry.cell]),
-                            message: entry.message,
-                        })}
-                    </li>
-                ))}
-            </ul>
-        </Notice>
-    );
+/**
+ * The reads that failed, so the cells they would have filled say why they are
+ * empty. It sits above the table, where the list states what it knows about the
+ * page before the rows.
+ */
+export function unreadNotes(
+    unread: readonly ReportUnread[],
+    t: (key: string, values?: Record<string, string>) => string,
+): readonly { readonly tone: 'warn'; readonly text: string }[] {
+    return unread.map((entry) => ({
+        tone: 'warn' as const,
+        text: t('reporting.unread', {
+            cell: t(CELL_COLUMNS[entry.cell]),
+            message: entry.message,
+        }),
+    }));
 }
 
-/** The party's short code, or a word saying it is not stated rather than a guess. */
-function PartyCell({ row }: { readonly row: ReportRowView }): ReactNode {
+/**
+ * The parties in scope, as the filter's choices.
+ *
+ * The choices are the parties the session's own account works in, so a filter
+ * offers only values that exist and that the person may read. The list waits for
+ * them rather than drawing a filter it cannot fill.
+ */
+function usePartyFilter(): {
+    readonly filter: ListFilter | undefined;
+    readonly pending: boolean;
+    readonly error: string | null;
+} {
     const { t } = useTranslation();
-    if (row.partyCode === null) {
+    const parties = useQuery({ queryKey: MY_PARTIES_QUERY_KEY, queryFn: api.myParties });
+    if (parties.isPending) {
+        return { filter: undefined, pending: true, error: null };
+    }
+    if (parties.isError) {
+        return { filter: undefined, pending: false, error: parties.error.message };
+    }
+    return {
+        filter: {
+            kind: 'choice',
+            id: 'party',
+            label: t('reporting.columns.party'),
+            all: t('reporting.filter.allParties'),
+            choices: parties.data.parties.map((party) => ({
+                value: party.partyId,
+                label: party.name,
+            })),
+        },
+        pending: false,
+        error: null,
+    };
+}
+
+/** The parties the rows come from, read one page at a time. */
+function useReportSource(party: ListFilter | undefined): ListSource<ReportRowView> {
+    const { t } = useTranslation();
+    return {
+        key: 'reports',
+        read: async (page) => {
+            const answer = await api.reports({
+                offset: page.offset,
+                limit: page.limit,
+                sort: page.sort,
+                descending: page.descending,
+                partyId: page.filters['party'] ?? null,
+            });
+            // A read that failed costs its own cell, and the list says which one
+            // above the table rather than losing the rows it could compose.
+            return {
+                rows: answer.rows,
+                total: answer.total,
+                notes: unreadNotes(answer.unread, t),
+            };
+        },
+        // The generated read searches and orders no field of a definition, so
+        // the list offers neither rather than filtering its own page.
+        search: false,
+        sortable: [],
+        ...(party === undefined ? {} : { filters: [party] }),
+        mayAdd: false,
+        watches: [REPORTS_EVENTS],
+        // The change event names a definition by its name, which is the key the
+        // model declares for the row.
+        recordKey: (row) => ({ name: row.name }),
+    };
+}
+
+/** The party a row belongs to, as the tag the entity screen specification draws. */
+function PartyTag({ row }: { readonly row: ReportRowView }): ReactNode {
+    const { t } = useTranslation();
+    if (row.partyName === '') {
         return <span className="text-ink-faint">{t('reporting.cell.partyNotStated')}</span>;
     }
-    return <span className="font-mono">{row.partyCode}</span>;
+    return <Tag>{row.partyName}</Tag>;
 }
 
 /** When the latest run started, or an absence when the definition never ran. */
 function StartedCell({ row }: { readonly row: ReportRowView }): ReactNode {
-    const { language } = useTranslation();
-    if (row.latestRun === null || row.latestRun.startedAt === null) {
+    if (row.latestRun?.startedAt == null) {
         return <Absent />;
     }
-    return (
-        <time dateTime={row.latestRun.startedAt} className="font-mono">
-            {formatDateTime(row.latestRun.startedAt, language)}
-        </time>
-    );
+    return <RelativeTime at={row.latestRun.startedAt} />;
 }
 
 /** How long the latest run took, or an absence when it has not finished. */
@@ -123,201 +191,186 @@ function DurationCell({ row }: { readonly row: ReportRowView }): ReactNode {
     if (ms === null) {
         return <Absent />;
     }
-    return <span className="font-mono tabular-nums">{formatDuration(ms, t)}</span>;
+    return <>{formatDuration(ms, t)}</>;
+}
+
+/** A count of one severity the run recorded, or an absence when nothing was read. */
+function ProblemCount({ value }: { readonly value: number | null }): ReactNode {
+    const { language } = useTranslation();
+    if (value === null) {
+        return <Absent />;
+    }
+    return <>{formatCount(value, language)}</>;
 }
 
 /** The expression the definition runs on, with the next fire when the scheduler states one. */
 function ScheduleCell({ row }: { readonly row: ReportRowView }): ReactNode {
-    const { t, language } = useTranslation();
+    const { t } = useTranslation();
     return (
         <span className="flex flex-col gap-1">
             <span className="font-mono text-xs">{row.scheduleExpression}</span>
             {row.nextFireAt !== null && (
                 <span className="text-xs text-ink-faint">
-                    {t('reporting.cell.nextFire', {
-                        at: formatDateTime(row.nextFireAt, language),
-                    })}
+                    <RelativeTime at={row.nextFireAt} />
                 </span>
             )}
         </span>
     );
 }
 
-/** The five words, counted, so the shape of the party reads before any row does. */
-function Tally({ tally }: { readonly tally: ReportTallyView }): ReactNode {
-    const { t, language } = useTranslation();
-    const cards: (readonly [string, number])[] = [
-        [t('reporting.health.failed'), tally.failed],
-        [t('reporting.health.completedWithErrors'), tally.completedWithErrors],
-        [t('reporting.health.running'), tally.running],
-        [t('reporting.health.neverRun'), tally.neverRun],
-        [t('reporting.health.completedClean'), tally.completedClean],
-    ];
-    // Unknown rows are counted beside the five words rather than inside them: a
-    // run that could not be read is not a run that never happened.
-    if (tally.unknown > 0) {
-        cards.push([t('reporting.health.unknown'), tally.unknown]);
-    }
-    return (
-        <section className="card space-y-3 p-4">
-            <header className="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 className="text-sm font-medium">{t('reporting.tally.title')}</h2>
-                <span className="text-xs text-ink-faint">{t('reporting.tally.lead')}</span>
-            </header>
-            <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
-                {cards.map(([label, count]) => (
-                    <Metric key={label} value={formatCount(count, language)} label={label} />
-                ))}
-            </div>
-            {tally.unstated > 0 && (
-                <p className="text-xs text-ink-faint">
-                    {t('reporting.tally.unstated', {
-                        count: formatCount(tally.unstated, language),
-                    })}
-                </p>
-            )}
-        </section>
-    );
-}
-
-/** The rows, one per definition, in the order the server sorted them. */
-function Rows({
-    rows,
-    healthChecked,
-}: {
-    readonly rows: readonly ReportRowView[];
-    /** False when the read that derives the health word failed for every row. */
-    readonly healthChecked: boolean;
-}): ReactNode {
+/**
+ * The column list of the reports, in the standard's order: the display field
+ * first, then the party the row belongs to, then what the row says about its
+ * latest run. A count is a number, so it is stated in its own column, right
+ * aligned and tabular, and never as a word a screen invented.
+ */
+function useColumns(): readonly ListColumn<ReportRowView>[] {
     const { t } = useTranslation();
-    if (rows.length === 0) {
-        return (
-            <p className="text-sm text-ink-muted" role="status">
-                {t('reporting.empty')}
-            </p>
-        );
-    }
-    return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-                <thead className="text-left text-xs text-ink-faint">
-                    <tr>
-                        <th className="py-1 font-normal">{t('reporting.columns.report')}</th>
-                        <th className="py-1 font-normal">{t('reporting.columns.party')}</th>
-                        <th className="py-1 font-normal">{t('reporting.columns.schedule')}</th>
-                        <th className="py-1 font-normal">{t('reporting.columns.latestRun')}</th>
-                        <th className="py-1 font-normal">{t('reporting.columns.duration')}</th>
-                        <th className="py-1 font-normal">{t('reporting.columns.health')}</th>
-                        <th className="py-1 font-normal">{t('reporting.columns.problems')}</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-line-subtle">
-                    {rows.map((row) => (
-                        <tr key={row.name}>
-                            <td className="py-2">
-                                <Link to={reportPath(row.name)} className="text-accent">
-                                    {row.name}
-                                </Link>
-                                <span className="ml-2 text-xs text-ink-faint">
-                                    {row.reportType}
-                                </span>
-                            </td>
-                            <td className="py-2">
-                                <PartyCell row={row} />
-                            </td>
-                            <td className="py-2">
-                                <ScheduleCell row={row} />
-                            </td>
-                            <td className="py-2 whitespace-nowrap">
-                                <StartedCell row={row} />
-                            </td>
-                            <td className="py-2 whitespace-nowrap">
-                                <DurationCell row={row} />
-                            </td>
-                            <td className="py-2">
-                                <HealthTag
-                                    health={row.health}
-                                    stateName={row.stateName}
-                                    checked={healthChecked}
-                                />
-                            </td>
-                            <td className="py-2">
-                                {row.latestRun === null ? (
-                                    <Absent />
-                                ) : (
-                                    <ProblemCounts
-                                        errors={row.latestRun.errors}
-                                        warnings={row.latestRun.warnings}
-                                    />
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
+    return [
+        {
+            id: 'name',
+            header: t('reporting.columns.report'),
+            cell: (row) => (
+                <Link to={reportPath(row.id)} className="text-accent">
+                    {row.name}
+                </Link>
+            ),
+        },
+        {
+            id: 'party',
+            header: t('reporting.columns.party'),
+            cell: (row) => <PartyTag row={row} />,
+        },
+        {
+            id: 'reportType',
+            header: t('reporting.columns.reportType'),
+            cell: (row) => row.reportType,
+            mono: true,
+        },
+        {
+            id: 'schedule',
+            header: t('reporting.columns.schedule'),
+            cell: (row) => <ScheduleCell row={row} />,
+        },
+        {
+            id: 'latestRun',
+            header: t('reporting.columns.latestRun'),
+            cell: (row) => <StartedCell row={row} />,
+        },
+        {
+            id: 'duration',
+            header: t('reporting.columns.duration'),
+            cell: (row) => <DurationCell row={row} />,
+            mono: true,
+            numeric: true,
+        },
+        {
+            id: 'health',
+            header: t('reporting.columns.health'),
+            cell: (row) => (
+                <HealthTag
+                    health={row.health}
+                    stateName={row.stateName}
+                    hasRun={row.latestRun !== null}
+                />
+            ),
+        },
+        {
+            id: 'errors',
+            header: t('reporting.columns.errors'),
+            cell: (row) => <ProblemCount value={row.latestRun?.errors ?? null} />,
+            mono: true,
+            numeric: true,
+        },
+        {
+            id: 'warnings',
+            header: t('reporting.columns.warnings'),
+            cell: (row) => <ProblemCount value={row.latestRun?.warnings ?? null} />,
+            mono: true,
+            numeric: true,
+        },
+    ];
 }
 
 export function ReportsPage(): ReactNode {
-    const { t, language } = useTranslation();
-    const reports = useQuery({ queryKey: REPORTS_QUERY_KEY, queryFn: api.reports });
-    const trail = <Crumbs parts={[...useAreaRoot('reporting'), { label: t('reporting.title') }]} />;
+    const { t } = useTranslation();
+    const { filter, pending, error } = usePartyFilter();
+    const source = useReportSource(filter);
+    const trail = [...useAreaRoot('reporting'), { label: t('reporting.title') }];
+    const lead = t('reporting.lead');
 
-    if (reports.isPending) {
+    if (pending) {
         return (
             <ScreenFrame
-                trail={trail}
+                trail={<Crumbs parts={trail} />}
                 title={t('reporting.title')}
-                description={t('reporting.description')}
+                description={lead}
             >
                 <p className="text-sm text-ink-muted" role="status">
-                    {t('reporting.loading')}
+                    {t('common.loading')}
                 </p>
             </ScreenFrame>
         );
     }
 
-    if (reports.isError) {
+    if (error !== null) {
         return (
             <ScreenFrame
-                trail={trail}
+                trail={<Crumbs parts={trail} />}
                 title={t('reporting.title')}
-                description={t('reporting.description')}
+                description={lead}
             >
-                <Notice tone="error">{reports.error.message}</Notice>
+                <Notice tone="error">{error}</Notice>
             </ScreenFrame>
         );
     }
 
-    const { rows, tally, unread } = reports.data;
-    const healthChecked = !unread.some(
-        (entry) => entry.cell === 'latestRun' || entry.cell === 'health',
-    );
+    return <ReportsList source={source} trail={trail} />;
+}
+
+/**
+ * The list itself, drawn once the parties it filters by are known.
+ *
+ * The notes above the table are the page's gaps, said once and not faked: a
+ * read that refused, and the three things the generated read cannot do.
+ */
+function ReportsList({
+    source,
+    trail,
+}: {
+    readonly source: ListSource<ReportRowView>;
+    readonly trail: readonly { readonly label: string; readonly to?: string }[];
+}): ReactNode {
+    const { t } = useTranslation();
+    const columns = useColumns();
     return (
-        <div className="space-y-6">
-            <div>
-                {trail}
-                <PageHeader
-                    title={t('reporting.title')}
-                    description={t('reporting.description')}
-                    actions={<RefreshQueries keys={[REPORTS_QUERY_KEY]} />}
-                />
-            </div>
-            <UnreadNote unread={unread} />
-            <Tally tally={tally} />
-            <section className="card space-y-4 p-4">
-                <header className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="text-sm font-medium">{t('reporting.list.title')}</h2>
-                    <span className="text-xs text-ink-faint">
-                        {t('reporting.list.lead', {
-                            count: formatCount(rows.length, language),
-                        })}
-                    </span>
-                </header>
-                <Rows rows={rows} healthChecked={healthChecked} />
-                <p className="text-xs text-ink-faint">{t('reporting.list.note')}</p>
-            </section>
-        </div>
+        <RecordList
+            source={source}
+            title={t('reporting.title')}
+            lead={t('reporting.lead')}
+            crumbs={trail}
+            columns={columns}
+            pathOf={(row) => reportPath(row.id)}
+            notes={gapNotes(t)}
+        />
     );
+}
+
+/**
+ * What the page knows before any row is read, and what the reads that decorate
+ * the rows could not say.
+ *
+ * The generated read declares no searchable field, no sortable field and no
+ * count by health, so the list has no search box, no column order and no tally
+ * until the contract gains them. The screen states that instead of reading every
+ * row to work it out in the browser.
+ */
+function gapNotes(
+    t: (key: string) => string,
+): readonly { readonly tone: 'info'; readonly text: string }[] {
+    return [
+        { tone: 'info' as const, text: t('reporting.gaps.search') },
+        { tone: 'info' as const, text: t('reporting.gaps.order') },
+        { tone: 'info' as const, text: t('reporting.gaps.healthCount') },
+    ];
 }

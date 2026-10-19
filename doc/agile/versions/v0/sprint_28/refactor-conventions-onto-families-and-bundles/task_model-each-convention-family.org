@@ -225,6 +225,9 @@ via its "Verifies task" field.
 | 6 | #3562: the package header says one row per element, when a tenor basis swap element is a central row plus its part rows. | conventions_package.hpp | Fixed | The header now says one row per stored row and names the element that is more than one. |
 | 7 | #3562: =conventions_document_service::save= is production-dead, with only tests calling it. | conventions_document_service.cpp | Accepted, recorded | Step 4 deletes it with the type it takes. |
 | 8 | #3562: the benchmark rows and the generated shell script are unrelated to a conventions refactor. | benchmarks, shell scripts | Accepted, explained | The gate asks for a benchmark row after a change to the XML code, and it fails on trunk without the shell script, so neither can wait for a separate branch. |
+| 9 | #3562: the skipped FX convention name was spelled by hand in the run store and in the run configuration operations, where the mapper already owned the name. | run_store.cpp, run_configuration_operations.cpp | Fixed | =skipped_fx_conventions= builds the list from a package, and both callers use it. |
+| 10 | #3562: the row count test checked five of twenty-three families by name. | conventions_package_tests.cpp | Fixed | The test now compares every row outside the three tenor basis swap families with the sum of all other elements in the document. |
+| 11 | #3562: =ores.ore.core= links =ores.refdata.core= publicly because the package header exposes =conventions_bundle=. | CMakeLists.txt | Accepted, recorded | The bundle is the boundary's own type. The link goes private again if the bundle moves to the api component. |
 
 * Result
 

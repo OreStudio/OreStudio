@@ -2,6 +2,7 @@
 :ID: 26F8B022-84E9-41CD-BA89-6881DF4369DB
 :ores.cpp.shell-command.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.convention-family.enabled: true
 :END:
 #+title: ores.refdata.tenor_basis_swap_pay_receive
 #+description: Codegen entity model for the refdata =tenor_basis_swap_pay_receive= part. The paying and receiving leg form of a tenor basis swap convention.

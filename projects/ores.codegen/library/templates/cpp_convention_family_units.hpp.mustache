@@ -1,0 +1,28 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-registry.unit_declarations.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_registry}}
+#ifndef ORES_REFDATA_CORE_SERVICE_CONVENTION_FAMILY_UNITS_HPP
+#define ORES_REFDATA_CORE_SERVICE_CONVENTION_FAMILY_UNITS_HPP
+
+#include "ores.database/domain/context.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
+#include <string>
+#include <vector>
+
+namespace ores::refdata::service::convention_family {
+
+// One pair per convention family. Each pair is defined in a translation unit
+// of its own, so no unit instantiates the serialisation of two families.
+{{#families}}
+
+void apply_{{key}}(const ores::database::context& ctx,
+                   const std::string& payload,
+                   conventions_apply_result& result);
+
+std::vector<std::string> read_{{key}}_payloads(const ores::database::context& ctx);
+{{/families}}
+
+}
+
+#endif
+{{/convention_registry}}

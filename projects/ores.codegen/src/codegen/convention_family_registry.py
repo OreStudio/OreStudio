@@ -17,13 +17,13 @@ it by row key rather than by party: such a model declares
 ``#+convention_write: by_id``. The mode is ``party`` by default, ``world`` when
 the table has no ``party_id`` column, and ``by_id`` when declared.
 
-This module derives the list and nothing else. The three C++ artefacts that
-state it -- the registry header, the apply fragment and the includes fragment
--- are rendered from the ``ores.cpp.convention-registry`` facet, which the
-generator feeds with :func:`codegen.core.convention_family_context`. Python
-therefore owns the derivation and the templates own the rendering, so the
-output has one source and the templates are editable like every other
-generated artefact.
+This module derives the list and nothing else. The C++ artefacts that state it
+-- the registry header, the units declarations and the dispatch -- are
+rendered from the ``ores.cpp.convention-registry`` facet, and each family's own
+unit from the ``ores.cpp.convention-family`` facet. The generator feeds both
+with :func:`codegen.core.convention_family_context`. Python therefore owns the
+derivation and the templates own the rendering, so the output has one source
+and the templates are editable like every other generated artefact.
 """
 
 from __future__ import annotations

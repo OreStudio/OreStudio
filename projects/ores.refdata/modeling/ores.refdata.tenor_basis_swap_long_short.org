@@ -2,6 +2,7 @@
 :ID: 8B1BDAB2-3EC8-47DE-9E52-91C1D2AA51D8
 :ores.cpp.shell-command.enabled: true
 :ores.sql.schema.domain_entity_artefact_create.enabled: true
+:ores.cpp.convention-family.enabled: true
 :END:
 #+title: ores.refdata.tenor_basis_swap_long_short
 #+description: Codegen entity model for the refdata =tenor_basis_swap_long_short= part. The long and short leg form of a tenor basis swap convention.

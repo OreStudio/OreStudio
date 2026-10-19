@@ -407,6 +407,21 @@ CATALOGUE: tuple[Check, ...] = (
                "benchmarks/xml/inputs.tsv"),
         fix="Run ./benchmarks/xml/run.sh and commit benchmarks/xml/history.tsv.",
     ),
+    # The conventions document held every family in one type, and a unit that
+    # reflected it broke the MSVC build. This keeps a unit to one family.
+    Check(
+        id="translation-unit-budget",
+        title="No unit reflects more convention families than its budget",
+        argv=("python3", "build/scripts/check_translation_unit_budget.py"),
+        classes=("cpp",),
+        paths=("projects/ores.refdata/core/src/*",
+               "projects/ores.refdata/api/include/ores.refdata.api/domain/convention_family_registry.hpp",
+               "projects/ores.ore/core/src/*",
+               "projects/ores.ore/service/src/*",
+               "build/scripts/check_translation_unit_budget.py"),
+        fix="Move each family's serialisation into a unit of its own, or lower the "
+            "ceiling in KNOWN when a file has improved.",
+    ),
     # A family is either supported by a table, migrating from a mapper, or
     # unused and on its way out with xsdcpp. The census is a decision; this
     # check is whether the tree still agrees with it.

@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 3C4ACF88-9693-495D-8EBB-3A225F2F90ED
+:END:
+#+title: ores.cpp.convention-registry.dispatch
+#+description: The staged-apply and payload-read dispatch over the per-family units, one table row per convention family.
+#+type: archetype
+#+output: projects/ores.refdata/core/src/service/convention_family_dispatch.cpp
+#+facet: ores.cpp.convention-registry
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-10-19
+#+updated: 2026-10-19
+
+The two exported entry points of the conventions service, =apply_staged_family=
+and =read_family_payloads=, as a lookup over a table of function pointers. The
+table has one row per registry family, and two assertions tie it to the
+registry: the row count, so a family without a unit fails to compile, and the
+key order. The unit includes the declarations header alone, so it reflects no
+family type.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_convention_family_dispatch.cpp.mustache=.
+
+#+begin_src mustache :tangle cpp_convention_family_dispatch.cpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.convention-registry.dispatch.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#convention_registry}}
+#include "convention_family_apply.hpp"
+#include "convention_family_units.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.refdata.api/domain/convention_family_registry.hpp"
+#include "ores.refdata.core/export.hpp"
+#include "ores.refdata.core/service/conventions_bundle.hpp"
+#include <iterator>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace ores::refdata::service {
+
+namespace {
+
+struct family_unit {
+    std::string_view key;
+    void (*apply)(const ores::database::context&,
+                  const std::string&,
+                  conventions_apply_result&);
+    std::vector<std::string> (*read)(const ores::database::context&);
+};
+
+// One row per registry family, in the registry's order. A family with no row
+// fails the first assertion, and a row out of order fails the second.
+constexpr family_unit units[] = {
+{{#families}}
+    {"{{key}}", &convention_family::apply_{{key}}, &convention_family::read_{{key}}_payloads},
+{{/families}}
+};
+
+static_assert(std::size(units) == domain::convention_family_count,
+              "Every convention family needs a unit.");
+
+constexpr bool units_follow_the_registry() {
+    for (std::size_t i = 0; i < std::size(units); ++i)
+        if (units[i].key != domain::convention_families[i].key)
+            return false;
+    return true;
+}
+
+static_assert(units_follow_the_registry(), "The units follow the registry's order.");
+
+const family_unit* unit_of(const std::string& family) {
+    for (const auto& unit : units)
+        if (unit.key == family)
+            return &unit;
+    return nullptr;
+}
+
+}
+
+// Staged families: the unit for one family decodes its payload into its own
+// type, so this unit reflects none.
+bool apply_staged_family(const ores::database::context& ctx,
+                         const std::string& family,
+                         const std::string& payload,
+                         conventions_apply_result& result) {
+    const auto* unit = unit_of(family);
+    if (!unit)
+        return false;
+    unit->apply(ctx, payload, result);
+    return true;
+}
+
+// Payload reads: each unit reads one family's live rows and serialises each as
+// its own type, so an in-process caller sees the bytes the wire carries.
+std::vector<std::string> read_family_payloads(const ores::database::context& ctx,
+                                              const std::string& family) {
+    const auto* unit = unit_of(family);
+    if (!unit)
+        throw std::logic_error("The registry does not know the convention family '" + family + "'.");
+    return unit->read(ctx);
+}
+
+}
+{{/convention_registry}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF][ores.cpp.convention-registry]]
+- [[id:52719EAF-3C58-4278-9DD7-784BBFC4DC0B][ores.cpp.convention-registry.unit_declarations]] — the functions the table points at.
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]

@@ -5,8 +5,8 @@ The registry is derived from the refdata entity models that declare
 ``#+convention_family: <key>``. Scope comes from the model's ``party_id``
 column and the write mode from its scope or from ``#+convention_write: by_id``.
 The derivation and the rendering are tested apart: the derivation decides what
-the families are, and the three templates of the
-``ores.cpp.convention-registry`` facet decide how they are written.
+the families are, and the templates of the ``ores.cpp.convention-registry`` and
+``ores.cpp.convention-family`` facets decide how they are written.
 """
 
 import re
@@ -20,7 +20,11 @@ from codegen.convention_family_registry import (  # noqa: E402
     discover_entries,
     parse_header,
 )
-from codegen.core import convention_family_context, render_template  # noqa: E402
+from codegen.core import (  # noqa: E402
+    convention_family_context,
+    convention_unit_context,
+    render_template,
+)
 
 TEMPLATES = REPO_ROOT / "projects/ores.codegen/library/templates"
 
@@ -145,19 +149,30 @@ def test_an_unknown_write_mode_is_rejected(tmp_path):
         raise AssertionError("an unknown write mode must be rejected")
 
 
-def test_the_context_groups_each_family_by_its_write_mode(tmp_path):
+def test_the_context_lists_each_family_with_its_write_mode_flags(tmp_path):
     context = convention_family_context(_tree(tmp_path, THREE))
 
     assert [family["key"] for family in context["families"]] == [
         "convention", "ibor_index", "ois"]
-    assert [family["key"] for family in context["party"]] == ["ois"]
-    assert [family["key"] for family in context["by_id"]] == ["convention"]
-    assert [family["key"] for family in context["world"]] == ["ibor_index"]
-    assert context["repositories"] == [
-        {"repository": "convention_repository"},
-        {"repository": "ibor_index_convention_repository"},
-        {"repository": "ois_convention_repository"},
-    ]
+    assert [
+        (family["is_party"], family["is_by_id"], family["is_world"])
+        for family in context["families"]
+    ] == [(False, True, False), (False, False, True), (True, False, False)]
+
+
+def test_a_unit_context_is_the_one_family_the_entity_is(tmp_path):
+    root = _tree(tmp_path, THREE)
+
+    unit = convention_unit_context(root, "ibor_index_convention")
+
+    assert unit["key"] == "ibor_index"
+    assert unit["is_world"] is True
+    try:
+        convention_unit_context(root, "no_such_convention")
+    except ValueError as error:
+        assert "not a convention family entity" in str(error)
+    else:
+        raise AssertionError("an entity that is not a family has no unit")
 
 
 def test_the_header_states_every_family_the_models_declare(tmp_path):
@@ -172,53 +187,79 @@ def test_the_header_states_every_family_the_models_declare(tmp_path):
     assert stated[2].domain_type == "ores::refdata::domain::ois_convention"
 
 
-def test_the_apply_fragment_calls_one_helper_per_family_in_its_mode(tmp_path):
-    root = _tree(tmp_path, THREE)
+def test_the_header_ties_each_key_to_its_row(tmp_path):
+    text = _render("cpp_convention_family_registry.hpp.mustache", _tree(tmp_path, THREE))
 
-    text = _render("cpp_convention_family_apply.inc.mustache", root)
+    assert "enum class convention_family_key : std::size_t {" in text
+    for key in ("convention", "ibor_index", "ois"):
+        assert re.search(
+            r"static_assert\(convention_families\[static_cast<std::size_t>\("
+            rf"convention_family_key::{key}\)\]\.key\s*==\s*\"{key}\"\);",
+            text,
+        )
 
-    assert text.count("replace_party_rows(ctx,") == 1
-    assert text.count("replace_rows_by_id(ctx,") == 1
-    assert text.count("add_missing_world_rows(ctx,") == 1
-    assert text.count("_repository()") == 6
-    # No function takes the whole set of families at once.
-    for bulk in ("apply_party_families", "apply_families_by_id", "apply_world_families",
-                 "read_party_families", "read_families_by_id", "read_world_families"):
-        assert bulk not in text
-    # Two dispatchers branch on the family, the apply and the payload read.
-    assert text.count('if (family == "ois")') == 2
-    assert text.count("return false;") == 1
 
-    # Each payload branch reads the repository of the family it names, so a
-    # rename that pairs a key with the wrong table fails here rather than in a
-    # test that only counts branches.
-    reader = text.split("read_family_payloads(")[1]
-    branches = re.findall(
-        r'if \(family == "([a-z_]+)"\) \{\s*'
-        r'std::vector<std::string> payloads;\s*'
-        r'for \(const auto& row : ([a-z_]+)_repository\(\)\.read_latest\(ctx\)\)\s*'
-        r'payloads\.push_back\(rfl::json::write\(row\)\);\s*'
-        r'return payloads;\s*\}',
-        reader,
+def test_the_units_header_declares_one_pair_per_family(tmp_path):
+    text = _render("cpp_convention_family_units.hpp.mustache", _tree(tmp_path, THREE))
+
+    applies = re.findall(r"void apply_([a-z_]+)\(", text)
+    reads = re.findall(r"read_([a-z_]+)_payloads\(", text)
+    assert applies == reads == ["convention", "ibor_index", "ois"]
+    # The declarations take and return strings alone, so the header names no
+    # family type.
+    assert "ores::refdata::domain" not in text
+
+
+def test_the_dispatch_has_one_row_per_family_and_names_no_family_type(tmp_path):
+    text = _render("cpp_convention_family_dispatch.cpp.mustache", _tree(tmp_path, THREE))
+
+    rows = re.findall(
+        r'\{"([a-z_]+)", &convention_family::apply_([a-z_]+), '
+        r"&convention_family::read_([a-z_]+)_payloads\}",
+        text,
     )
-    assert branches == [
-        ("convention", "convention"),
-        ("ibor_index", "ibor_index_convention"),
-        ("ois", "ois_convention"),
-    ]
-    assert 'throw std::logic_error' in reader
+    assert rows == [(key, key, key) for key in ("convention", "ibor_index", "ois")]
+    assert "static_assert(std::size(units) == domain::convention_family_count" in text
+    assert "rfl::" not in text
+    assert "ores::refdata::domain::" not in text.replace(
+        "domain::convention_families", "").replace("domain::convention_family_count", "")
+    assert "std::logic_error" in text
 
 
-def test_the_includes_name_each_repository_once_in_order(tmp_path):
+def _render_unit(root: Path, entity: str) -> str:
+    return render_template(
+        str(TEMPLATES / "cpp_convention_family_unit.cpp.mustache"),
+        {"cpp_license": "", "convention_unit": convention_unit_context(root, entity)},
+    )
+
+
+def test_a_unit_writes_its_family_in_the_mode_the_registry_states(tmp_path):
     root = _tree(tmp_path, THREE)
 
-    text = _render("cpp_convention_family_apply_includes.inc.mustache", root)
+    party = _render_unit(root, "ois_convention")
+    by_id = _render_unit(root, "convention")
+    world = _render_unit(root, "ibor_index_convention")
 
-    includes = [
-        line for line in text.splitlines() if line.startswith("#include")
-    ]
+    assert "replace_party_rows(ctx," in party
+    assert "replace_rows_by_id" not in party
+    assert "replace_rows_by_id(ctx," in by_id
+    assert "replace_party_rows" not in by_id
+    assert "add_missing_world_rows(ctx," in world
+    assert "result.world_kept" in world
+    # Only the world mode reads the result, so the others mark it unused.
+    assert "[[maybe_unused]] conventions_apply_result& result" in party
+    assert "[[maybe_unused]]" not in world
+
+
+def test_a_unit_reflects_its_own_type_and_includes_its_own_repository(tmp_path):
+    text = _render_unit(_tree(tmp_path, THREE), "ois_convention")
+
+    assert text.count("rfl::json::read<ores::refdata::domain::ois_convention>") == 1
+    assert text.count("ores::refdata::domain::") == text.count(
+        "ores::refdata::domain::ois_convention")
+    includes = [line for line in text.splitlines() if "repository/" in line]
     assert includes == [
-        '#include "ores.refdata.core/repository/convention_repository.hpp"',
-        '#include "ores.refdata.core/repository/ibor_index_convention_repository.hpp"',
-        '#include "ores.refdata.core/repository/ois_convention_repository.hpp"',
+        '#include "ores.refdata.core/repository/ois_convention_repository.hpp"'
     ]
+    assert "void apply_ois(" in text
+    assert "std::vector<std::string> read_ois_payloads(" in text

@@ -2,7 +2,7 @@
 :ID: B1B96CF0-77B1-4E4A-8672-BB1E3E8DC7DF
 :END:
 #+title: ores.cpp.convention-registry
-#+description: The C++ face of the convention family registry: the header that enumerates every family, the apply fragment and the includes it needs. Opt-in.
+#+description: The C++ face of the convention family registry: the header that enumerates every family and its key, the per-family declarations and the dispatch over them. Opt-in.
 #+type: facet
 #+model_types: component
 #+default: disabled
@@ -22,17 +22,18 @@ table to them.
 
 A convention family is an entity model that declares =#+convention_family:=.
 The family list is derived from those declarations, and three C++ artefacts
-are rendered from it: a registry header that enumerates every family and its
-write mode, an apply fragment that carries one write call per family, and the
-includes fragment that names the repositories the apply calls. The fragment
-lets the conventions service write every family from the registry instead of
-naming each one by hand, so a family added to the modelling tree arrives in
-the service on the next regeneration.
+are rendered from it: a registry header that enumerates every family, its write
+mode and its key, a header that declares one apply function and one payload-read
+function per family, and a dispatch unit that looks the family up in a table of
+those functions. The per-family functions themselves are rendered by the
+[[id:390E401F-EF5C-4E3F-BB18-48A00D37CAA9][ores.cpp.convention-family]] facet, one translation unit for each family. A family
+added to the modelling tree arrives in the service on the next regeneration,
+and a family with no unit fails the dispatch's assertions at compile time.
 
 The facet is opt-in and renders nothing by default. It is addressed to a
 /component/ model rather than to a family, because the artefacts are one set
 per component and not one file per entity: the header lands in the component's
-API and the two fragments in its core service. The archetypes therefore carry
+API and the units header and dispatch in its core service. The archetypes therefore carry
 literal =#+output:= paths, which is the one place in the library a path names
 its component rather than spelling it from the model.
 
@@ -44,8 +45,7 @@ into its own tree, which no component wants.
 
 The archetypes read one context, =convention_registry=, which the generator
 builds only for the three templates of this facet. It exposes =component=, the
-=families= list in family-key order, the =repositories= list the includes
-fragment emits, and the three =party=, =by_id= and =world= groupings of the
+=families= list in family-key order, and the three =party=, =by_id= and =world= groupings of the
 same entries. Each family states =key=, =entity=, =domain_type=,
 =subject_stem=, =party_scoped=, =write_mode= and the =is_party=, =is_by_id=,
 =is_world= one-hot flags the staged branch switches on.
@@ -54,8 +54,8 @@ same entries. Each family states =key=, =entity=, =domain_type=,
 
 | Archetype | Description |
 |-----------+-------------|
-| [[id:932062BD-9759-496E-B4F1-796A53DC2FF2][ores.cpp.convention-registry.apply_fragment]] | The apply, read, staged-import and payload-read bodies of the conventions service, one call per convention family, compiled inside the service. |
-| [[id:5CC4694E-C342-41EB-9C9E-A3C6CDB264FE][ores.cpp.convention-registry.apply_includes]] | The repository includes the apply fragment needs, one per convention family, rendered outside the namespace that compiles the fragment. |
+| [[id:3C4ACF88-9693-495D-8EBB-3A225F2F90ED][ores.cpp.convention-registry.dispatch]] | The staged-apply and payload-read dispatch over the per-family units, one table row per convention family. |
+| [[id:52719EAF-3C58-4278-9DD7-784BBFC4DC0B][ores.cpp.convention-registry.unit_declarations]] | The declarations of the per-family apply and payload-read functions, one pair per convention family, so the dispatch unit names no family type. |
 | [[id:59F508CD-A259-4024-B5F9-BFC019E75ED6][ores.cpp.convention-registry.registry_header]] | The constexpr table of every convention family and its write mode, rendered from the refdata entity models that declare =#+convention_family:=. |
 
 * See also

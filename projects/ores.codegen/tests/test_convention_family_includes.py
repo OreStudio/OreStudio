@@ -1,23 +1,37 @@
-"""The apply fragment and its includes name the same repositories."""
+"""Every convention family has a generated unit, and each unit reflects its own type."""
 
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-FRAGMENT = ROOT / "projects/ores.refdata/core/src/service/convention_family_apply.inc"
-INCLUDES = ROOT / "projects/ores.refdata/core/src/service/convention_family_apply_includes.inc"
+sys.path.insert(0, str(ROOT / "projects/ores.codegen/src"))
+
+from codegen.convention_family_registry import discover_entries  # noqa: E402
+
+SERVICE = ROOT / "projects/ores.refdata/core/src/service"
 
 
-def test_every_repository_the_fragment_calls_is_included():
-    """A repository the fragment calls but does not include is a compile error."""
-    called = set(re.findall(r"([a-z_]+_repository)\(\)", FRAGMENT.read_text()))
-    included = set(
-        re.findall(r"repository/([a-z_]+)\.hpp", INCLUDES.read_text(encoding="utf-8"))
-    )
-    assert called == included
+def _units():
+    return {
+        entry.entity: (SERVICE / f"convention_family_{entry.entity}.cpp").read_text()
+        for entry in discover_entries(ROOT)
+    }
 
 
-def test_every_include_names_a_file_that_exists():
-    for header in re.findall(r"repository/([a-z_]+)\.hpp", INCLUDES.read_text()):
-        path = ROOT / "projects/ores.refdata/core/include/ores.refdata.core/repository"
-        assert (path / f"{header}.hpp").exists(), header
+def test_every_registry_family_has_a_generated_unit():
+    for entry in discover_entries(ROOT):
+        assert (SERVICE / f"convention_family_{entry.entity}.cpp").exists(), entry.entity
+
+
+def test_every_unit_includes_the_repository_of_its_own_entity_and_no_other():
+    for entity, text in _units().items():
+        repositories = re.findall(r'#include "ores\.refdata\.core/repository/([a-z_]+)\.hpp"', text)
+        assert repositories == [f"{entity}_repository"], entity
+
+
+def test_every_unit_names_the_domain_type_of_its_own_family_and_no_other():
+    for entry in discover_entries(ROOT):
+        text = _units()[entry.entity]
+        named = set(re.findall(r"ores::refdata::domain::[a-z_]+", text))
+        assert named == {entry.domain_type}, entry.entity

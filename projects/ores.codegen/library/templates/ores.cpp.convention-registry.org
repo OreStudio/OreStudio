@@ -55,8 +55,8 @@ same entries. Each family states =key=, =entity=, =domain_type=,
 | Archetype | Description |
 |-----------+-------------|
 | [[id:3C4ACF88-9693-495D-8EBB-3A225F2F90ED][ores.cpp.convention-registry.dispatch]] | The staged-apply and payload-read dispatch over the per-family units, one table row per convention family. |
-| [[id:52719EAF-3C58-4278-9DD7-784BBFC4DC0B][ores.cpp.convention-registry.unit_declarations]] | The declarations of the per-family apply and payload-read functions, one pair per convention family, so the dispatch unit names no family type. |
 | [[id:59F508CD-A259-4024-B5F9-BFC019E75ED6][ores.cpp.convention-registry.registry_header]] | The constexpr table of every convention family and its write mode, rendered from the refdata entity models that declare =#+convention_family:=. |
+| [[id:52719EAF-3C58-4278-9DD7-784BBFC4DC0B][ores.cpp.convention-registry.unit_declarations]] | The declarations of the per-family apply and payload-read functions, one pair per convention family, so the dispatch unit names no family type. |
 
 * See also
 

@@ -7,8 +7,8 @@
 #+level: s1
 #+filetags: :decide-the-xml-strategy-for-ore-documents:sprint_28:v0:
 #+owner: marco
-#+branch: feature/project-the-portfolio-document
-#+pr: 3560
+#+branch: feature/project-todays-market
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -29,9 +29,9 @@ completely in one change: reader, writer, and the deletion of its mapper.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:36BA97C5-F6F8-4101-9141-40390B35237A][Decide the XML strategy for ORE documents]] |
-| Now          | Every reference data family except conventions, and the portfolio, reads and writes through the codec. The portfolio projection replaces the importer and exporter path and the nine mappers, and every corpus portfolio exports a document that binds. |
+| Now          | Every reference data family except conventions reads and writes through the codec. Today's market joined them: its projection replaces the mapper, and all 99 corpus documents round trip. |
 | Waiting on   | The conventions registry refactor, which prime origin owns on =step3-ore-package=. |
-| Next         | Conventions, then today's market, then the generated domain removal. |
+| Next         | Conventions, then the generated domain removal. |
 | Last touched | 2026-10-19                               |
 
 * Acceptance
@@ -371,6 +371,22 @@ task and name that file in the Command column.
 | XML suites after the portfolio projection | 372 cases, 44,364 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]"= | cb494c4e8c |
 | Corpus portfolios that export and read back | 132 of 132 | =publish/bin/ores.ore.core.tests "roundtrip mirrors every portfolio in the ORE example corpus"= | cb494c4e8c |
 | Mapper files and suites deleted with the portfolio path | 9 mappers, 13 suites | =git show --stat cb494c4e8c= | cb494c4e8c |
+| Today's market documents that project and project back | 99 of 99 | =publish/bin/ores.ore.core.tests "[todaysmarket]"= | see the PR |
+| XML suites after the today's market projection | 370 cases, 44,389 assertions | =publish/bin/ores.ore.core.tests "[ore][xml]~[database]"= | see the PR |
+
+* Today's market moved onto the codec
+
+=todays_market_projection= replaces =todays_market_mapper= and owns reading and
+writing, so the run store and the run configuration service ask it for a
+document. The twenty-four collections are four shapes, so one table of codecs
+states each collection once, and one table of binding attributes serves both
+directions. The old mapper held the same knowledge twice, once per direction.
+
+The mapper's tests moved with it. The corpus walk now compares records, not
+written text, so an attribute written empty and one left out stay different. It
+finds 99 documents, not 98: =simm_todaysmarket.xml= has a root element the old
+walk's file-name prefix missed, and it round trips. The two structural suites
+that loaded the generated binding duplicated the value harness and are gone.
 
 * Notes
 
@@ -429,17 +445,15 @@ via its "Verifies task" field.
 
 * Result
 
-Every reference data document except conventions, and the portfolio, is on the
-codec. The family census reports 13 supported, 0 migrating and 7 unused. The XML
+Every reference data document except conventions is on the codec. The family census reports 13 supported, 0 migrating and 7 unused. The XML
 suites pass, and every portfolio in the example corpus exports a document that
 binds.
 
-Two steps remain before the generated domain can go. Conventions moves first,
-and it waits on the registry refactor prime origin owns on =step3-ore-package=.
-Today's market follows, and its reader is one of the files that branch changes.
-Then the generated domain, the sibling-checkout wiring and the two regeneration
-patches go in one change.
+One step remains before the generated domain can go: conventions. It waits on
+the registry refactor prime origin owns on =step3-ore-package=. Then the
+generated domain, the sibling-checkout wiring and the two regeneration patches
+go in one change.
 
-Until the last step, five files include =domain/domain.hpp=: =domain.cpp= (the
-generated serialiser), =run_store.cpp=, =run_configuration_operations.cpp=,
-=importer.cpp= and =exporter.cpp=.
+Until that step, the files that include =domain/domain.hpp= are =domain.cpp=
+(the generated serialiser), =run_store.cpp=, =run_configuration_operations.cpp=,
+=importer.cpp= and =exporter.cpp=, and each keeps it only for conventions.

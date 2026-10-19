@@ -22,9 +22,8 @@
 #include "ores.analytics.core/service/todays_market_document_service.hpp"
 #include "ores.database/domain/party_scope.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.ore.core/domain/domain.hpp"
-#include "ores.ore.core/domain/todays_market_mapper.hpp"
-#include "ores.ore.core/xml/roundtrip_harness.hpp"
+#include "ores.ore.core/domain/todays_market_projection.hpp"
+#include "ores.ore.core/xml/record_diff.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -50,17 +49,15 @@ std::filesystem::path ore_path(const std::string& relative) {
 
 using ores::analytics::repository::todays_market_collection_repository;
 using ores::analytics::repository::todays_market_config_repository;
-using ores::ore::domain::todays_market_mapper;
-using ores::ore::domain::todaysmarket;
-using ores::ore::xml::parsed_text_difference;
+using ores::ore::domain::todays_market_projection;
 using ores::platform::filesystem::file;
 using ores::testing::scoped_database_helper;
 
 /**
  * The whole path, through the database: a corpus document is parsed, mapped into
  * the analytics entities, written to PostgreSQL, read back, and only then turned
- * into a document again. The in-memory walk proves the mapper over all ninety-
- * eight files; this proves the tables hold what the mapper produces.
+ * into a document again. The in-memory walk proves the projection over every corpus
+ * file; this proves the tables hold what the projection produces.
  */
 TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
     auto lg(ores::logging::make_logger(test_suite));
@@ -71,10 +68,10 @@ TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
     const auto f = ore_path("examples/Products/Input/todaysmarket.xml");
     const std::string content = file::read_content(f);
 
-    todaysmarket original;
-    ores::ore::domain::load_data(content, original);
+    const auto original = todays_market_projection::read(content);
 
-    ores::analytics::messaging::todays_market_document mapped = todays_market_mapper::map(original);
+    ores::analytics::messaging::todays_market_document mapped =
+        todays_market_projection::map(original);
     ores::database::domain::assign_party(mapped, boost::uuids::random_generator()());
     REQUIRE(!mapped.collections.empty());
     REQUIRE(!mapped.entries.empty());
@@ -110,20 +107,24 @@ TEST_CASE("todays_market_roundtrip_through_the_database", tags) {
     CHECK(holds_an_ampersand);
 
     // Export from what the database returned, not from what was written.
-    const todaysmarket rebuilt = todays_market_mapper::reverse(from_database);
-    const std::string difference = parsed_text_difference(original, rebuilt, f.string());
-    INFO(difference);
-    CHECK(difference.empty());
+    const auto rebuilt = todays_market_projection::read(
+        todays_market_projection::write(todays_market_projection::reverse(from_database)));
+    const auto difference = ores::ore::xml::compare_records(
+        *ores::ore::xml::generated::todays_market::todays_market_document().root,
+        &original,
+        &rebuilt);
+    INFO(f.string());
+    if (difference)
+        INFO(difference->path << ": " << difference->detail);
+    CHECK_FALSE(difference);
 }
 
 TEST_CASE("a collection naming a kind ORE does not have is refused", tags) {
     scoped_database_helper h;
 
     const auto f = ore_path("examples/Products/Input/todaysmarket.xml");
-    todaysmarket original;
-    ores::ore::domain::load_data(file::read_content(f), original);
-
-    auto mapped = todays_market_mapper::map(original);
+    auto mapped =
+        todays_market_projection::map(todays_market_projection::read(file::read_content(f)));
     REQUIRE(!mapped.collections.empty());
     auto collection = mapped.collections.front();
     collection.collection = "YieldCurve";
@@ -137,10 +138,8 @@ TEST_CASE("a collection naming a kind ORE does not have is refused", tags) {
 TEST_CASE("a party sees only its own today's market configuration", tags) {
     scoped_database_helper h;
     auto parties = ores::ore::tests::make_two_parties(h);
-    todaysmarket original;
-    ores::ore::domain::load_data(
-        file::read_content(ore_path("examples/Products/Input/todaysmarket.xml")), original);
-    auto mapped = todays_market_mapper::map(original);
+    auto mapped = todays_market_projection::map(todays_market_projection::read(
+        file::read_content(ore_path("examples/Products/Input/todaysmarket.xml"))));
     ores::database::domain::assign_party(mapped, parties.a);
 
     ores::analytics::repository::todays_market_config_repository repo;

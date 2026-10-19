@@ -2665,6 +2665,7 @@ const pt: SourceCatalogue = {
                 'ibor-index': 'Índice IBOR',
                 'overnight-index': 'Índice overnight',
                 'swap-index': 'Índice de swap nomeado',
+                'zero-inflation-index': 'Índice de inflação zero',
                 tenor: 'Resolução de prazo',
                 'currency-pair': 'Par de moedas',
             },

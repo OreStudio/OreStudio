@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/replace-the-bff-family-list
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
 #+updated: 2026-10-18
-#+environment:
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,23 +26,23 @@ The web layer stops keeping its own list of convention families. It reads the li
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:0781E7E1-EF38-4030-8627-13210FA75792][Refactor conventions onto families and bundles]] |
-| Now          | The first attempt was built, verified and then closed. Nothing is merged. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Rebuild it on the template pipeline #3500 merged, so the twin is rendered by the facet instead of a script. |
-| Last touched | 2026-10-18                               |
+| Next         | Nothing. |
+| Last touched | 2026-10-19                               |
 
 * Acceptance
 
-- The BFF builds its family list from the generated registry, and no hand-written table of families remains in =conventions.ts=.
+- The BFF builds its list of plain document families from the generated registry. =conventions.ts= holds no hand-written entry for a plain document family. It keeps three stated screen choices: the composite family, the kinds the document does not carry, and the writable keys.
 - The C++ header and the TypeScript module come from the same facet and are rendered together, so one regeneration updates both.
 - The generated TypeScript lives under source control, so a regeneration cannot delete the file the BFF imports.
 - =npm run typecheck= and the BFF suite pass with the generated list in place.
 
 * Plan
 
-Extend the registry facet to render the TypeScript twin, commit it, then have the BFF read it instead of its own table.
+Add a TypeScript facet that renders the registry from the same derivation as the C++ header, commit the module, then have the BFF read it. The registry cannot say which entries the screen shows, so the BFF keeps a short table of screen choices beside the generated list.
 
 * Measurements
 
@@ -56,13 +56,21 @@ task and name that file in the Command column.
 
 | What | Value | Command | Commit |
 |------+-------+---------+--------|
-|      |       |         |        |
+| Registry entries | 26, of which 3 are absorbed by the composite and 23 are listed as plain families | =grep -c "key: '"= on the generated module | 7515c50292 plus this change |
+| Families on the screen | 25 before (table rows in =origin/main= =conventions.ts=), 26 after: 23 plain, 1 composite, 2 screen-only | =grep -c= on the old table and the BFF test =names each family once= | 7515c50292 plus this change |
+| BFF suite | 67 files, 794 tests passed | =npm test= in =packages/bff= | 7515c50292 plus this change |
+| Web suite | 1656 tests passed | =npm test= in =packages/web= | 7515c50292 plus this change |
+| Registry module tests | 12 passed | =venv/bin/python -m pytest tests/test_convention_family_registry.py= in =projects/ores.codegen= | 7515c50292 plus this change |
 
 * Notes
 
 - The first attempt was PR #3479. It built the family tables from a generated TypeScript twin and passed on that branch. It was closed unmerged because it was raised outside the process, with no environment tag and no task trailer.
 - That attempt also conflicted with #3474 in the generator both changed. The generator has since been retired for a facet, so the conflict is gone and the retry extends the facet rather than a script.
 - The TypeScript twin must be committed. The staging branch generated the C++ and SQL addresses only, and the web build then failed to resolve the domain modules it imports.
+- The registry and the screen do not describe the same set, so a straight swap was not possible. The registry has 26 entries. The screen drops three of them, =convention=, =tenor_basis_swap_pay_receive= and =tenor_basis_swap_long_short=, because the composite =tenor-basis-swap= stands for them. The screen also lists =tenor= and =currency-pair=, which the conventions document does not carry. The registry has no =writable= field.
+- The screen order is now alphabetical by key. It was the order of the hand-written table.
+- =zero_inflation_index= is a document family that the old table omitted. It now appears on the screen, and the three locale files carry its label.
+- The data classification page does not support a bundle of these kinds. A set that needs a screen to be true fails the relatedness test. The capture =name-a-set-of-kinds-that-a-screen-groups= records the open question.
 - A stale twin survives in =projects/ores.web/packages/wire-protocol/dist/generated/refdata/domain/convention_family_registry.js= on this checkout. =dist= is ignored and untracked, so the file is a leftover compile artefact and not a second copy of the registry. Nothing reads it once the source module exists.
 
 * Test Scenarios
@@ -90,3 +98,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The BFF no longer holds a list of plain document families. A new TypeScript facet, =ores.ts.convention-registry=, renders =convention_family_registry.ts= from the derivation that renders the C++ header, so one regeneration updates both. The module is committed under =wire-protocol/src/generated/refdata/domain=. =conventions.ts= filters out the three registry entries that the composite stands for, adds the composite and the two kinds the document does not carry, and sorts the result by key.
+
+The acceptance line was reworded with the owner's agreement. The registry cannot state which entries the screen shows or which it writes, so three screen choices stay hand-written and the code says so. The gain is that a plain document family reaches the screen with no edit. =zero-inflation-index= is the first, and its label is in the English, Portuguese and French locale files.
+
+Four tests in =conventions.test.ts= guard the link. They check that every registry family is listed or absorbed, that the only extra entries are the composite and the two screen-only kinds, that each family's subject prefix matches the registry's subject stem, and that no key repeats. The BFF suite, the web suite and the registry tests pass.
+
+The data classification page does not name the set the screen groups. The capture =name-a-set-of-kinds-that-a-screen-groups= holds that question.

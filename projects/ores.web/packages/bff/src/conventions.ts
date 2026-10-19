@@ -28,6 +28,7 @@ import { subjects as conventionSubjects } from '@ores/wire-protocol/generated/re
 import { subjects as tenorBasisSwapConventionSubjects } from '@ores/wire-protocol/generated/refdata/protocol/tenor_basis_swap_convention_protocol';
 import { subjects as dayCountSubjects } from '@ores/wire-protocol/generated/refdata/protocol/day_count_fraction_type_protocol';
 import { subjects as floatingIndexSubjects } from '@ores/wire-protocol/generated/refdata/protocol/floating_index_type_protocol';
+import { CONVENTION_FAMILY_ENTRIES } from '@ores/wire-protocol/generated/refdata/domain/convention_family_registry';
 import { subjects as paymentFrequencySubjects } from '@ores/wire-protocol/generated/refdata/protocol/payment_frequency_protocol';
 import { subjects as subPeriodSubjects } from '@ores/wire-protocol/generated/refdata/protocol/sub_periods_coupon_type_protocol';
 import { invalidRequest, notFound } from './errors.js';
@@ -37,9 +38,11 @@ import type { LiveSession } from './sessions.js';
 /**
  * One instrument family and the convention entity that serves it.
  *
- * The server carries one list per convention entity and nothing that maps an
- * instrument family to its entity, so the mapping is stated here once, from the
- * journey document's table. `writable` marks the two families whose terms the
+ * The plain document families come from the generated registry, so a family
+ * added to the modelling tree reaches the screen with no edit here. What the
+ * registry cannot state is stated below: the composite family, the kinds the
+ * screen lists that the conventions document does not carry, and which
+ * families the screen writes. `writable` marks the two families whose terms the
  * screen draws in full; the rest are listed and read, and are not written until
  * their terms are drawn.
  */
@@ -49,38 +52,6 @@ export interface ConventionFamily {
     readonly prefix: string;
     readonly writable: boolean;
 }
-
-const FAMILY_TABLE: readonly (readonly [string, string, boolean])[] = [
-    ['deposit', 'deposit_convention', true],
-    ['fra', 'fra_convention', false],
-    ['future', 'future_convention', false],
-    ['ois', 'ois_convention', false],
-    ['average-ois', 'average_ois_convention', false],
-    ['swap', 'swap_convention', true],
-    ['tenor-basis-swap', 'tenor_basis_swap_convention', false],
-    ['tenor-basis-two-swap', 'tenor_basis_two_swap_convention', false],
-    ['cross-currency-basis', 'cross_currency_basis_convention', false],
-    ['cross-currency-fix-float', 'cross_currency_fix_float_convention', false],
-    ['bond-yield', 'bond_yield_convention', false],
-    ['cds', 'cds_convention', false],
-    ['cms-spread-option', 'cms_spread_option_convention', false],
-    ['commodity-forward', 'commodity_forward_convention', false],
-    ['commodity-future', 'commodity_future_convention', false],
-    ['fx-option', 'fx_option_convention', false],
-    ['bma-basis-swap', 'bma_basis_swap_convention', false],
-    ['zero', 'zero_convention', false],
-    ['inflation-swap', 'inflation_swap_convention', false],
-    ['intraday-power-load', 'intraday_power_load_convention', false],
-    ['ibor-index', 'ibor_index_convention', false],
-    ['overnight-index', 'overnight_index_convention', false],
-    ['swap-index', 'swap_index_convention', false],
-    ['tenor', 'tenor_convention', false],
-    ['currency-pair', 'currency_pair_convention', false],
-];
-
-export const CONVENTION_FAMILIES: readonly ConventionFamily[] = FAMILY_TABLE.map(
-    ([key, entity, writable]) => ({ key, entity, prefix: `${entity}s`, writable }),
-);
 
 /**
  * A family whose entity is a composite: one central convention row plus the
@@ -94,6 +65,10 @@ export const CONVENTION_FAMILIES: readonly ConventionFamily[] = FAMILY_TABLE.map
  * A family absent from this table is a plain entity whose own list is the page.
  */
 interface CompositeFamily {
+    /** The entity the screen shows the family as. */
+    readonly entity: string;
+    /** The registry families the composite stands for, so the screen lists none of them alone. */
+    readonly registryKeys: readonly string[];
     /** The kind_code every central row of the family carries. */
     readonly kindCode: string;
     /** The family subject that answers a set of central keys with their parts. */
@@ -102,11 +77,39 @@ interface CompositeFamily {
 
 const COMPOSITE_FAMILIES: Readonly<Record<string, CompositeFamily>> = {
     'tenor-basis-swap': {
+        entity: 'tenor_basis_swap_convention',
+        registryKeys: ['convention', 'tenor_basis_swap_pay_receive', 'tenor_basis_swap_long_short'],
         kindCode: 'TENOR_BASIS_SWAP',
         getManySubject:
             tenorBasisSwapConventionSubjects.get_many_tenor_basis_swap_conventions_request,
     },
 };
+
+/** Kinds the screen lists that the conventions document does not carry. */
+const SCREEN_ONLY_ENTITIES: readonly (readonly [string, string])[] = [
+    ['tenor', 'tenor_convention'],
+    ['currency-pair', 'currency_pair_convention'],
+];
+
+const WRITABLE_FAMILIES: ReadonlySet<string> = new Set(['deposit', 'swap']);
+
+const ABSORBED_REGISTRY_KEYS: ReadonlySet<string> = new Set(
+    Object.values(COMPOSITE_FAMILIES).flatMap((composite) => composite.registryKeys),
+);
+
+function screenFamily(key: string, entity: string): ConventionFamily {
+    return { key, entity, prefix: `${entity}s`, writable: WRITABLE_FAMILIES.has(key) };
+}
+
+export const CONVENTION_FAMILIES: readonly ConventionFamily[] = [
+    ...CONVENTION_FAMILY_ENTRIES.filter((entry) => !ABSORBED_REGISTRY_KEYS.has(entry.key)).map(
+        (entry) => screenFamily(entry.key.replaceAll('_', '-'), entry.entity),
+    ),
+    ...Object.entries(COMPOSITE_FAMILIES).map(([key, composite]) =>
+        screenFamily(key, composite.entity),
+    ),
+    ...SCREEN_ONLY_ENTITIES.map(([key, entity]) => screenFamily(key, entity)),
+].sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
 
 /**
  * The columns of a part that the central row owns: its own identity, its link

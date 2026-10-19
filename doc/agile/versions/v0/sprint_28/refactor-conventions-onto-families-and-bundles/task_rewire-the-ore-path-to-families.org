@@ -8,7 +8,7 @@
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
 #+branch: feature/rewire-the-ore-path-to-families
-#+pr:
+#+pr: 3567
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -80,6 +80,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3567][#3567]] | [agile] Close the rewire task |
 | [[https://github.com/OreStudio/OreStudio/pull/3475][#3475]] | [ore,refdata] Move the ORE path onto the conventions import |
 
 * Review

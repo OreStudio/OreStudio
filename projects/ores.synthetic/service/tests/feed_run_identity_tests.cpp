@@ -212,3 +212,22 @@ TEST_CASE("a_refusal_by_iam_to_give_the_consent_reaches_the_caller", tags) {
     CHECK(fake.recorded.empty());
     CHECK(fake.exchanges.empty());
 }
+
+TEST_CASE("a_grant_given_earlier_in_the_process_and_since_revoked_is_replaced_by_a_person", tags) {
+    fake_ports fake;
+    feed_run_identity identity(fake.ports());
+    const auto ctx = make_test_context();
+    auto first = target(true, std::nullopt, "feed-1");
+    REQUIRE(identity.run_token_for(first, ctx, "person-token"));
+
+    fake.refused_grant = fake.grant_to_give;
+    fake.grant_to_give = "33333333-3333-3333-3333-333333333333";
+    auto second = target(true, std::nullopt, "feed-2");
+    second.row.candidate.container_id = first.row.candidate.container_id;
+
+    const auto token = identity.run_token_for(second, ctx, "person-token");
+
+    REQUIRE(token);
+    CHECK(fake.grants_created.size() == 2);
+    CHECK(fake.exchanges.back().grant_id == "33333333-3333-3333-3333-333333333333");
+}

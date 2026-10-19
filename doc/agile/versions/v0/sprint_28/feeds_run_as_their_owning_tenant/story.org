@@ -60,5 +60,6 @@ A feed acts for its owning tenant with the narrowest authority, whoever or whate
 
 * Out of scope
 
+- Revoking a grant when its collection is deleted.
 - A screen that shows whether a collection holds a grant.
 - Revoking a grant when a collection's party changes. A collection has no party change.

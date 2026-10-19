@@ -71,7 +71,9 @@ feed that starts from a vintage price holds one.
 - *Used.* Every start exchanges the grant for a run token, whether a person or a
   restore causes it. The run identifier is the feed config id. The service keeps
   tokens in a run token cache.
-- *Ended.* Deleting the collection revokes the grant.
+- *Ended.* A person who holds =iam::run_grants:revoke= revokes the grant, and
+  IAM answers =grant_lapsed= from then on. Deleting a collection leaves its
+  grant in place until someone revokes it.
 - *Lapsed.* IAM answers =grant_lapsed= when the grantor no longer holds the
   role's permissions or is no longer active. The feed does not start. A restore
   logs the reason. A Start by a person who holds the permissions is a new consent

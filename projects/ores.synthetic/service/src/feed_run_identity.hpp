@@ -148,17 +148,19 @@ public:
             "synthetic.market_data_generation_config/" + boost::uuids::to_string(feed.container_id);
 
         auto grant = target.run_grant_id ? target.run_grant_id : given_for(feed.container_id);
+        bool given_now = false;
         if (!grant) {
             const auto given = consent(resource, feed.container_id, ctx, person_bearer);
             if (!given)
                 return std::unexpected(given.error());
             grant = *given;
+            given_now = true;
         }
 
         auto key = key_of(*grant, feed);
         auto token = tokens_.token_for(key, tenant);
-        if (token.empty() && target.run_grant_id && !person_bearer.empty()) {
-            // The grant the collection holds is lapsed or revoked. A person's
+        if (token.empty() && !given_now && !person_bearer.empty()) {
+            // The grant that the collection holds is lapsed or revoked. A person's
             // Start is a new consent that replaces it.
             tokens_.invalidate(key);
             const auto given = consent(resource, feed.container_id, ctx, person_bearer);

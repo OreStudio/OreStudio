@@ -95,7 +95,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Important: a grant given earlier in the process and revoked since is never replaced, because the replacement ran only for a grant stored on the collection | =feed_run_identity.hpp= | accepted | Fixed: the replacement runs for any grant that was not given in the same call. New test case. |
+| 2 | Important: the note says deleting a collection revokes its grant, and the code does not | =feed_execution_identity.org= | accepted | The note now states what happens. Capture filed: revoke_a_collections_run_grant_on_delete. |
+| 3 | Minor: the consenting person's party is not checked against the collection's party, as reporting checks it | =feed_run_identity.hpp= | declined | A tenant administrator acting at the root party starts collections of child parties today, and the check would refuse them. IAM already checks the permissions. |
+| 4 | Minor: reporting keeps its own copy of the grant create call | =report_run_grant_service.cpp= | declined | Moving reporting onto =create_run_grant= is a separate change with its own tests. |
+| 5 | Minor: misspell-fixer reports hits | sprint 25 pages | declined | The hits are old and outside this change. |
 
 * Result
 

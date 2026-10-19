@@ -8,7 +8,7 @@
 #+filetags: :refactor-conventions-onto-families-and-bundles:sprint_28:v0:
 #+owner: marco
 #+branch: feature/replace-the-bff-family-list
-#+pr:
+#+pr: 3578
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-10-17
@@ -88,6 +88,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/3578][#3578]] | [web] Read the convention family list from the generated registry |
 | [[https://github.com/OreStudio/OreStudio/pull/3479][#3479]] | [web,refdata] Read the conventions families from the registry (closed) |
 | [[https://github.com/OreStudio/OreStudio/pull/3480][#3480]] | [agile] Record where the BFF registry work stands |
 

@@ -42,16 +42,16 @@ struct parameter {
 };
 struct parameter_list_type {
     std::uint64_t present = 0;
-    std::vector<parameter> parameter;
+    std::vector<struct parameter> parameter;
 };
 struct analytic {
     std::uint64_t present = 0;
     std::string type;
-    std::vector<parameter> parameter;
+    std::vector<struct parameter> parameter;
 };
 struct analytics_type {
     std::uint64_t present = 0;
-    std::vector<analytic> analytic;
+    std::vector<struct analytic> analytic;
 };
 struct ore {
     std::uint64_t present = 0;

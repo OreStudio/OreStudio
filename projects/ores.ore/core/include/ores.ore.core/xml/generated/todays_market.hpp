@@ -116,7 +116,7 @@ struct yield_curve {
 struct yield_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<yield_curve> yield_curve;
+    std::vector<struct yield_curve> yield_curve;
 };
 struct discounting_curve {
     std::uint64_t present = 0;
@@ -126,7 +126,7 @@ struct discounting_curve {
 struct discount_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<discounting_curve> discounting_curve;
+    std::vector<struct discounting_curve> discounting_curve;
 };
 struct index {
     std::uint64_t present = 0;
@@ -136,7 +136,7 @@ struct index {
 struct index_forwarding_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<index> index;
+    std::vector<struct index> index;
 };
 struct swap_index {
     std::uint64_t present = 0;
@@ -146,7 +146,7 @@ struct swap_index {
 struct swap_index_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<swap_index> swap_index;
+    std::vector<struct swap_index> swap_index;
 };
 struct zero_inflation_index_curve {
     std::uint64_t present = 0;
@@ -156,7 +156,7 @@ struct zero_inflation_index_curve {
 struct zero_inflation_index_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<zero_inflation_index_curve> zero_inflation_index_curve;
+    std::vector<struct zero_inflation_index_curve> zero_inflation_index_curve;
 };
 struct yy_inflation_index_curve {
     std::uint64_t present = 0;
@@ -166,7 +166,7 @@ struct yy_inflation_index_curve {
 struct yy_inflation_index_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<yy_inflation_index_curve> yy_inflation_index_curve;
+    std::vector<struct yy_inflation_index_curve> yy_inflation_index_curve;
 };
 struct fx_spot {
     std::uint64_t present = 0;
@@ -176,7 +176,7 @@ struct fx_spot {
 struct fx_spots_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<fx_spot> fx_spot;
+    std::vector<struct fx_spot> fx_spot;
 };
 struct fx_volatility {
     std::uint64_t present = 0;
@@ -186,7 +186,7 @@ struct fx_volatility {
 struct fx_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<fx_volatility> fx_volatility;
+    std::vector<struct fx_volatility> fx_volatility;
 };
 struct swaption_volatility {
     std::uint64_t present = 0;
@@ -197,7 +197,7 @@ struct swaption_volatility {
 struct swaption_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<swaption_volatility> swaption_volatility;
+    std::vector<struct swaption_volatility> swaption_volatility;
 };
 struct yield_volatility {
     std::uint64_t present = 0;
@@ -207,7 +207,7 @@ struct yield_volatility {
 struct yield_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<yield_volatility> yield_volatility;
+    std::vector<struct yield_volatility> yield_volatility;
 };
 struct cap_floor_volatility {
     std::uint64_t present = 0;
@@ -218,7 +218,7 @@ struct cap_floor_volatility {
 struct cap_floor_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<cap_floor_volatility> cap_floor_volatility;
+    std::vector<struct cap_floor_volatility> cap_floor_volatility;
 };
 struct cds_volatility {
     std::uint64_t present = 0;
@@ -228,7 +228,7 @@ struct cds_volatility {
 struct cds_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<cds_volatility> cds_volatility;
+    std::vector<struct cds_volatility> cds_volatility;
 };
 struct default_curve {
     std::uint64_t present = 0;
@@ -238,7 +238,7 @@ struct default_curve {
 struct default_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<default_curve> default_curve;
+    std::vector<struct default_curve> default_curve;
 };
 struct yy_inflation_cap_floor_volatility {
     std::uint64_t present = 0;
@@ -248,7 +248,7 @@ struct yy_inflation_cap_floor_volatility {
 struct yy_inflation_cap_floor_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<yy_inflation_cap_floor_volatility> yy_inflation_cap_floor_volatility;
+    std::vector<struct yy_inflation_cap_floor_volatility> yy_inflation_cap_floor_volatility;
 };
 struct zero_inflation_cap_floor_volatility {
     std::uint64_t present = 0;
@@ -258,7 +258,7 @@ struct zero_inflation_cap_floor_volatility {
 struct zero_inflation_cap_floor_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<zero_inflation_cap_floor_volatility> zero_inflation_cap_floor_volatility;
+    std::vector<struct zero_inflation_cap_floor_volatility> zero_inflation_cap_floor_volatility;
 };
 struct equity_curve {
     std::uint64_t present = 0;
@@ -268,7 +268,7 @@ struct equity_curve {
 struct equity_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<equity_curve> equity_curve;
+    std::vector<struct equity_curve> equity_curve;
 };
 struct equity_volatility {
     std::uint64_t present = 0;
@@ -278,7 +278,7 @@ struct equity_volatility {
 struct equity_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<equity_volatility> equity_volatility;
+    std::vector<struct equity_volatility> equity_volatility;
 };
 struct security {
     std::uint64_t present = 0;
@@ -288,7 +288,7 @@ struct security {
 struct securities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<security> security;
+    std::vector<struct security> security;
 };
 struct base_correlation {
     std::uint64_t present = 0;
@@ -298,7 +298,7 @@ struct base_correlation {
 struct base_correlations_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<base_correlation> base_correlation;
+    std::vector<struct base_correlation> base_correlation;
 };
 struct commodity_curve {
     std::uint64_t present = 0;
@@ -308,7 +308,7 @@ struct commodity_curve {
 struct commodity_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<commodity_curve> commodity_curve;
+    std::vector<struct commodity_curve> commodity_curve;
 };
 struct commodity_volatility {
     std::uint64_t present = 0;
@@ -318,7 +318,7 @@ struct commodity_volatility {
 struct commodity_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<commodity_volatility> commodity_volatility;
+    std::vector<struct commodity_volatility> commodity_volatility;
 };
 struct correlation {
     std::uint64_t present = 0;
@@ -328,7 +328,7 @@ struct correlation {
 struct correlations_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<correlation> correlation;
+    std::vector<struct correlation> correlation;
 };
 struct bond_future_volatility {
     std::uint64_t present = 0;
@@ -338,7 +338,7 @@ struct bond_future_volatility {
 struct bond_future_volatilities_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<bond_future_volatility> bond_future_volatility;
+    std::vector<struct bond_future_volatility> bond_future_volatility;
 };
 struct intraday_power_price_curve {
     std::uint64_t present = 0;
@@ -348,7 +348,7 @@ struct intraday_power_price_curve {
 struct intraday_power_price_curves_type {
     std::uint64_t present = 0;
     std::string id;
-    std::vector<intraday_power_price_curve> intraday_power_price_curve;
+    std::vector<struct intraday_power_price_curve> intraday_power_price_curve;
 };
 struct todaysmarket {
     std::uint64_t present = 0;

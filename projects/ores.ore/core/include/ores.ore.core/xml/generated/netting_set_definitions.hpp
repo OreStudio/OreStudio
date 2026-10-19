@@ -62,7 +62,7 @@ struct currencies {
 };
 struct eligible_collaterals {
     std::uint64_t present = 0;
-    currencies currencies;
+    struct currencies currencies;
 };
 struct csa_details {
     std::uint64_t present = 0;
@@ -73,12 +73,12 @@ struct csa_details {
     ores::utility::decimal::decimal threshold_receive;
     ores::utility::decimal::decimal minimum_transfer_amount_pay;
     ores::utility::decimal::decimal minimum_transfer_amount_receive;
-    independent_amount independent_amount;
-    margining_frequency margining_frequency;
+    struct independent_amount independent_amount;
+    struct margining_frequency margining_frequency;
     std::string margin_period_of_risk;
     ores::utility::decimal::decimal collateral_compounding_spread_receive;
     ores::utility::decimal::decimal collateral_compounding_spread_pay;
-    eligible_collaterals eligible_collaterals;
+    struct eligible_collaterals eligible_collaterals;
     std::string apply_initial_margin;
     std::int16_t initial_margin_type = 0;
     std::string calculate_im_amount;
@@ -88,14 +88,14 @@ struct csa_details {
 struct netting_set {
     std::uint64_t present = 0;
     std::string netting_set_id;
-    netting_set_details netting_set_details;
+    struct netting_set_details netting_set_details;
     std::string active_csa_flag;
-    csa_details csa_details;
+    struct csa_details csa_details;
     ores::utility::decimal::decimal risk_weight;
 };
 struct nettingsetdefinitions {
     std::uint64_t present = 0;
-    std::vector<netting_set> netting_set;
+    std::vector<struct netting_set> netting_set;
 };
 
 ORES_ORE_CORE_EXPORT auto netting_set_definitions_document() -> const document_type&;

@@ -43,28 +43,28 @@ struct parameter {
 };
 struct model_parameters {
     std::uint64_t present = 0;
-    std::vector<parameter> parameter;
+    std::vector<struct parameter> parameter;
 };
 struct engine_parameters {
     std::uint64_t present = 0;
-    std::vector<parameter> parameter;
+    std::vector<struct parameter> parameter;
 };
 struct product {
     std::uint64_t present = 0;
     std::string type;
     std::string model;
-    model_parameters model_parameters;
+    struct model_parameters model_parameters;
     std::string engine;
-    engine_parameters engine_parameters;
+    struct engine_parameters engine_parameters;
 };
 struct global_parameters {
     std::uint64_t present = 0;
-    std::vector<parameter> parameter;
+    std::vector<struct parameter> parameter;
 };
 struct pricingengines {
     std::uint64_t present = 0;
-    std::vector<product> product;
-    global_parameters global_parameters;
+    std::vector<struct product> product;
+    struct global_parameters global_parameters;
 };
 
 ORES_ORE_CORE_EXPORT auto pricing_engines_document() -> const document_type&;

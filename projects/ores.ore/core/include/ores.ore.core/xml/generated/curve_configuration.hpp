@@ -209,13 +209,13 @@ struct default_curves_type {
 };
 struct global_report_configuration {
     std::uint64_t present = 0;
-    fx_volatilities fx_volatilities;
-    equity_volatilities equity_volatilities;
-    commodity_volatilities commodity_volatilities;
-    ir_swaption_volatilities ir_swaption_volatilities;
-    ir_cap_floor_volatilities ir_cap_floor_volatilities;
-    yield_curves yield_curves;
-    inflation_cap_floor_volatilities inflation_cap_floor_volatilities;
+    struct fx_volatilities fx_volatilities;
+    struct equity_volatilities equity_volatilities;
+    struct commodity_volatilities commodity_volatilities;
+    struct ir_swaption_volatilities ir_swaption_volatilities;
+    struct ir_cap_floor_volatilities ir_cap_floor_volatilities;
+    struct yield_curves yield_curves;
+    struct inflation_cap_floor_volatilities inflation_cap_floor_volatilities;
     default_curves_type default_curves;
 };
 struct fx_spot {
@@ -225,7 +225,7 @@ struct fx_spot {
 };
 struct fx_spots {
     std::uint64_t present = 0;
-    std::vector<fx_spot> fx_spot;
+    std::vector<struct fx_spot> fx_spot;
 };
 struct parametric_smile_config_parameter {
     std::uint64_t present = 0;
@@ -281,7 +281,7 @@ struct fx_volatility {
 };
 struct record_fx_volatilities {
     std::uint64_t present = 0;
-    std::vector<fx_volatility> fx_volatility;
+    std::vector<struct fx_volatility> fx_volatility;
 };
 struct source {
     std::uint64_t present = 0;
@@ -296,14 +296,14 @@ struct target {
 };
 struct proxy_config {
     std::uint64_t present = 0;
-    source source;
-    target target;
+    struct source source;
+    struct target target;
 };
 struct swaption_volatility {
     std::uint64_t present = 0;
     std::string curve_id;
     std::string curve_description;
-    proxy_config proxy_config;
+    struct proxy_config proxy_config;
     std::int16_t dimension = 0;
     std::int16_t volatility_type = 0;
     std::string interpolation;
@@ -327,7 +327,7 @@ struct swaption_volatility {
 };
 struct swaption_volatilities {
     std::uint64_t present = 0;
-    std::vector<swaption_volatility> swaption_volatility;
+    std::vector<struct swaption_volatility> swaption_volatility;
 };
 struct yield_volatility {
     std::uint64_t present = 0;
@@ -346,7 +346,7 @@ struct yield_volatility {
 };
 struct yield_volatilities {
     std::uint64_t present = 0;
-    std::vector<yield_volatility> yield_volatility;
+    std::vector<struct yield_volatility> yield_volatility;
 };
 struct source_type {
     std::uint64_t present = 0;
@@ -417,7 +417,7 @@ struct cap_floor_volatility {
 };
 struct cap_floor_volatilities {
     std::uint64_t present = 0;
-    std::vector<cap_floor_volatility> cap_floor_volatility;
+    std::vector<struct cap_floor_volatility> cap_floor_volatility;
 };
 struct term {
     std::uint64_t present = 0;
@@ -427,7 +427,7 @@ struct term {
 };
 struct terms {
     std::uint64_t present = 0;
-    std::vector<term> term;
+    std::vector<struct term> term;
 };
 struct constant_volatility_config {
     std::uint64_t present = 0;
@@ -445,7 +445,7 @@ struct quote {
 };
 struct quote_type {
     std::uint64_t present = 0;
-    std::vector<quote> quote;
+    std::vector<struct quote> quote;
 };
 struct volatility_curve_config {
     std::uint64_t present = 0;
@@ -518,12 +518,12 @@ struct cds_volatility {
     std::uint64_t present = 0;
     std::string curve_id;
     std::string curve_description;
-    terms terms;
+    struct terms terms;
     std::string expiries;
     constant_volatility_config constant;
     volatility_curve_config curve;
     volatility_strike_surface_config strike_surface;
-    proxy_surface proxy_surface;
+    struct proxy_surface proxy_surface;
     std::int16_t day_counter = 0;
     std::string calendar;
     std::string strike_type;
@@ -533,7 +533,7 @@ struct cds_volatility {
 };
 struct cds_volatilities {
     std::uint64_t present = 0;
-    std::vector<cds_volatility> cds_volatility;
+    std::vector<struct cds_volatility> cds_volatility;
 };
 struct source_curves {
     std::uint64_t present = 0;
@@ -557,8 +557,8 @@ struct configuration {
     std::string source_curve;
     std::string pillars;
     std::int64_t spot_lag = 0;
-    source_curves source_curves;
-    switch_dates switch_dates;
+    struct source_curves source_curves;
+    struct switch_dates switch_dates;
     std::string initial_state;
     std::string states;
     std::string calendar;
@@ -573,7 +573,7 @@ struct configuration {
 };
 struct configurations {
     std::uint64_t present = 0;
-    std::vector<configuration> configuration;
+    std::vector<struct configuration> configuration;
 };
 struct source_curves_type {
     std::uint64_t present = 0;
@@ -588,7 +588,7 @@ struct default_curve {
     std::string curve_id;
     std::string curve_description;
     std::int16_t currency = 0;
-    configurations configurations;
+    struct configurations configurations;
     std::int16_t type = 0;
     std::string discount_curve;
     std::int16_t day_counter = 0;
@@ -615,7 +615,7 @@ struct default_curve {
 };
 struct default_curves {
     std::uint64_t present = 0;
-    std::vector<default_curve> default_curve;
+    std::vector<struct default_curve> default_curve;
 };
 struct direct_segment_type {
     std::uint64_t present = 0;
@@ -643,7 +643,7 @@ struct composite_quote {
 };
 struct composite_quote_type {
     std::uint64_t present = 0;
-    std::vector<composite_quote> composite_quote;
+    std::vector<struct composite_quote> composite_quote;
 };
 struct aois_segment_type {
     std::uint64_t present = 0;
@@ -714,7 +714,7 @@ struct index_curve {
 };
 struct index_curves {
     std::uint64_t present = 0;
-    std::vector<index_curve> index_curve;
+    std::vector<struct index_curve> index_curve;
 };
 struct ibor_index_curve {
     std::uint64_t present = 0;
@@ -723,7 +723,7 @@ struct ibor_index_curve {
 };
 struct ibor_index_curves {
     std::uint64_t present = 0;
-    std::vector<ibor_index_curve> ibor_index_curve;
+    std::vector<struct ibor_index_curve> ibor_index_curve;
 };
 struct inflation_index_curve {
     std::uint64_t present = 0;
@@ -732,7 +732,7 @@ struct inflation_index_curve {
 };
 struct inflation_index_curves {
     std::uint64_t present = 0;
-    std::vector<inflation_index_curve> inflation_index_curve;
+    std::vector<struct inflation_index_curve> inflation_index_curve;
 };
 struct fitted_bond_type {
     std::uint64_t present = 0;
@@ -741,9 +741,9 @@ struct fitted_bond_type {
     std::string pillar_choice;
     std::int64_t priority = 0;
     std::int64_t min_distance = 0;
-    index_curves index_curves;
-    ibor_index_curves ibor_index_curves;
-    inflation_index_curves inflation_index_curves;
+    struct index_curves index_curves;
+    struct ibor_index_curves ibor_index_curves;
+    struct inflation_index_curves inflation_index_curves;
     std::string extrapolate_flat;
 };
 struct index_curve_type {
@@ -795,7 +795,7 @@ struct yield_plus_default_type {
     std::string type;
     std::string reference_curve;
     record_default_curves default_curves;
-    weights weights;
+    struct weights weights;
 };
 struct ibor_fallback_type {
     std::uint64_t present = 0;
@@ -843,7 +843,7 @@ struct yield_curve {
 };
 struct record_yield_curves {
     std::uint64_t present = 0;
-    std::vector<yield_curve> yield_curve;
+    std::vector<struct yield_curve> yield_curve;
 };
 struct inlf_segment_type {
     std::uint64_t present = 0;
@@ -887,7 +887,7 @@ struct inflation_curve {
 };
 struct inflation_curves {
     std::uint64_t present = 0;
-    std::vector<inflation_curve> inflation_curve;
+    std::vector<struct inflation_curve> inflation_curve;
 };
 struct inflation_cap_floor_volatility {
     std::uint64_t present = 0;
@@ -917,7 +917,7 @@ struct inflation_cap_floor_volatility {
 };
 struct inflation_cap_floor_volatlities {
     std::uint64_t present = 0;
-    std::vector<inflation_cap_floor_volatility> inflation_cap_floor_volatility;
+    std::vector<struct inflation_cap_floor_volatility> inflation_cap_floor_volatility;
 };
 struct dividend_interpolation {
     std::uint64_t present = 0;
@@ -936,13 +936,13 @@ struct equity_curve {
     std::string spot_quote;
     quote_type quotes;
     std::int16_t day_counter = 0;
-    dividend_interpolation dividend_interpolation;
+    struct dividend_interpolation dividend_interpolation;
     std::int16_t dividend_extrapolation = 0;
     std::int16_t extrapolation = 0;
 };
 struct equity_curves {
     std::uint64_t present = 0;
-    std::vector<equity_curve> equity_curve;
+    std::vector<struct equity_curve> equity_curve;
 };
 struct volatility_moneyness_surface_config {
     std::uint64_t present = 0;
@@ -1011,7 +1011,7 @@ struct volatility_config {
     volatility_moneyness_surface_config moneyness_surface;
     volatility_delta_surface_config delta_surface;
     volatility_apo_future_surface_config apo_future_surface;
-    proxy_surface proxy_surface;
+    struct proxy_surface proxy_surface;
 };
 struct equity_volatility {
     std::uint64_t present = 0;
@@ -1025,13 +1025,13 @@ struct equity_volatility {
     std::int16_t day_counter = 0;
     std::int16_t time_extrapolation = 0;
     std::int16_t strike_extrapolation = 0;
-    volatility_config volatility_config;
+    struct volatility_config volatility_config;
     constant_volatility_config constant;
     volatility_curve_config curve;
     volatility_strike_surface_config strike_surface;
     volatility_moneyness_surface_config moneyness_surface;
     volatility_delta_surface_config delta_surface;
-    proxy_surface proxy_surface;
+    struct proxy_surface proxy_surface;
     std::string calendar;
     one_dim_solver_config_type one_dim_solver_config;
     std::int16_t prefer_out_of_the_money = 0;
@@ -1039,7 +1039,7 @@ struct equity_volatility {
 };
 struct record_equity_volatilities {
     std::uint64_t present = 0;
-    std::vector<equity_volatility> equity_volatility;
+    std::vector<struct equity_volatility> equity_volatility;
 };
 struct security {
     std::uint64_t present = 0;
@@ -1053,7 +1053,7 @@ struct security {
 };
 struct securities {
     std::uint64_t present = 0;
-    std::vector<security> security;
+    std::vector<struct security> security;
 };
 struct grid {
     std::uint64_t present = 0;
@@ -1062,7 +1062,7 @@ struct grid {
 };
 struct recovery_grid {
     std::uint64_t present = 0;
-    std::vector<grid> grid;
+    std::vector<struct grid> grid;
 };
 struct probabilities {
     std::uint64_t present = 0;
@@ -1071,7 +1071,7 @@ struct probabilities {
 };
 struct recovery_probabilities {
     std::uint64_t present = 0;
-    std::vector<probabilities> probabilities;
+    std::vector<struct probabilities> probabilities;
 };
 struct quote_types {
     std::uint64_t present = 0;
@@ -1097,13 +1097,13 @@ struct base_correlation {
     std::string currency;
     std::int16_t calibrate_constituents_to_index_spread = 0;
     std::int16_t use_assumed_recovery = 0;
-    recovery_grid recovery_grid;
-    recovery_probabilities recovery_probabilities;
-    quote_types quote_types;
+    struct recovery_grid recovery_grid;
+    struct recovery_probabilities recovery_probabilities;
+    struct quote_types quote_types;
 };
 struct base_correlations {
     std::uint64_t present = 0;
-    std::vector<base_correlation> base_correlation;
+    std::vector<struct base_correlation> base_correlation;
 };
 struct commodity_basis_config {
     std::uint64_t present = 0;
@@ -1167,14 +1167,14 @@ struct commodity_volatility {
     std::string instrument_type;
     std::int64_t calendar_spread_offset = 0;
     std::string calendar_spread_underlying_name;
-    volatility_config volatility_config;
+    struct volatility_config volatility_config;
     constant_volatility_config constant;
     volatility_curve_config curve;
     volatility_strike_surface_config strike_surface;
     volatility_moneyness_surface_config moneyness_surface;
     volatility_delta_surface_config delta_surface;
     volatility_apo_future_surface_config apo_future_surface;
-    proxy_surface proxy_surface;
+    struct proxy_surface proxy_surface;
     std::int16_t day_counter = 0;
     std::string calendar;
     std::string future_conventions;
@@ -1188,7 +1188,7 @@ struct commodity_volatility {
 };
 struct record_commodity_volatilities {
     std::uint64_t present = 0;
-    std::vector<commodity_volatility> commodity_volatility;
+    std::vector<struct commodity_volatility> commodity_volatility;
 };
 struct correlation {
     std::uint64_t present = 0;
@@ -1211,14 +1211,14 @@ struct correlation {
 };
 struct correlations {
     std::uint64_t present = 0;
-    std::vector<correlation> correlation;
+    std::vector<struct correlation> correlation;
 };
 struct bond_future_volatility {
     std::uint64_t present = 0;
     std::string curve_id;
     std::string curve_description;
     std::string contract_name;
-    volatility_config volatility_config;
+    struct volatility_config volatility_config;
     volatility_strike_surface_config strike_surface;
     std::int16_t day_counter = 0;
     std::string calendar;
@@ -1231,7 +1231,7 @@ struct bond_future_volatility {
 };
 struct bond_future_volatilities {
     std::uint64_t present = 0;
-    std::vector<bond_future_volatility> bond_future_volatility;
+    std::vector<struct bond_future_volatility> bond_future_volatility;
 };
 struct intraday_power_curve {
     std::uint64_t present = 0;
@@ -1244,30 +1244,30 @@ struct intraday_power_curve {
 };
 struct intraday_power_curves {
     std::uint64_t present = 0;
-    std::vector<intraday_power_curve> intraday_power_curve;
+    std::vector<struct intraday_power_curve> intraday_power_curve;
 };
 struct curveconfiguration {
     std::uint64_t present = 0;
     global_report_configuration report_configuration;
-    fx_spots fx_spots;
+    struct fx_spots fx_spots;
     record_fx_volatilities fx_volatilities;
-    swaption_volatilities swaption_volatilities;
-    yield_volatilities yield_volatilities;
-    cap_floor_volatilities cap_floor_volatilities;
-    cds_volatilities cds_volatilities;
-    default_curves default_curves;
+    struct swaption_volatilities swaption_volatilities;
+    struct yield_volatilities yield_volatilities;
+    struct cap_floor_volatilities cap_floor_volatilities;
+    struct cds_volatilities cds_volatilities;
+    struct default_curves default_curves;
     record_yield_curves yield_curves;
-    inflation_curves inflation_curves;
+    struct inflation_curves inflation_curves;
     inflation_cap_floor_volatlities inflation_cap_floor_volatilities;
-    equity_curves equity_curves;
+    struct equity_curves equity_curves;
     record_equity_volatilities equity_volatilities;
-    securities securities;
-    base_correlations base_correlations;
+    struct securities securities;
+    struct base_correlations base_correlations;
     sim_commodity_curves commodity_curves;
     record_commodity_volatilities commodity_volatilities;
-    correlations correlations;
-    bond_future_volatilities bond_future_volatilities;
-    intraday_power_curves intraday_power_curves;
+    struct correlations correlations;
+    struct bond_future_volatilities bond_future_volatilities;
+    struct intraday_power_curves intraday_power_curves;
 };
 
 ORES_ORE_CORE_EXPORT auto curve_configuration_document() -> const document_type&;

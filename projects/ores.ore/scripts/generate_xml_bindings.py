@@ -838,12 +838,13 @@ def cpp_names(schema, ordered):
 def shadowed_types(schema, ordered, names):
     """The (struct, type) pairs where a member hides the type it names.
 
-    A member may be named after its own type: `quote_type quote_type;` is read
-    as a declaration, because the member's name is not in scope while its type
-    is written. A different member written earlier with that name is in scope,
-    and the type must then be spelled with the `struct` keyword so it still
-    resolves. This is the only place the generator needs that spelling, so no
-    type has to be renamed for it.
+    A member may be named after its own type. Clang accepts `data data;`, but
+    gcc rejects it with -Wchanges-meaning, because the name means the type in
+    the declaration and the member after it. A different member of the record
+    with that name, written before or after the use, changes the meaning the
+    same way. In every case the type is spelled with the `struct` keyword so
+    it still resolves. This is the only place the generator needs that
+    spelling, so no type has to be renamed for it.
     """
     # The members are listed in the order the record declares them, which is
     # the order render writes them: attributes first, then elements.
@@ -863,13 +864,13 @@ def shadowed_types(schema, ordered, names):
 
     shadowed = set()
     for holder, held in fields.items():
-        for index, (_member, target) in enumerate(held):
+        for _member, target in held:
             if target is None or target not in names:
                 continue
             name = names[target]
-            # A member named after its own type compiles; one declared before
-            # the use hides the type, and only that use needs the keyword.
-            if any(earlier == name for earlier, _ in held[:index]):
+            # Any member of the record takes the type's name: the member
+            # itself, one declared before the use, or one declared after it.
+            if any(member == name for member, _ in held):
                 shadowed.add((holder, target))
     return shadowed
 

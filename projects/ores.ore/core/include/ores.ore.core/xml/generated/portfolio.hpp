@@ -494,9 +494,9 @@ struct envelope {
     std::uint64_t present = 0;
     std::string counter_party;
     std::string netting_set_id;
-    netting_set_details netting_set_details;
-    portfolio_ids portfolio_ids;
-    additional_fields additional_fields;
+    struct netting_set_details netting_set_details;
+    struct portfolio_ids portfolio_ids;
+    struct additional_fields additional_fields;
     std::vector<residual_element> extras;
 };
 struct schedule_data_rules_type {
@@ -556,7 +556,7 @@ struct trade_action {
 };
 struct trade_actions {
     std::uint64_t present = 0;
-    std::vector<trade_action> trade_action;
+    std::vector<struct trade_action> trade_action;
 };
 struct amortization_data {
     std::uint64_t present = 0;
@@ -569,7 +569,7 @@ struct amortization_data {
 };
 struct amortizations {
     std::uint64_t present = 0;
-    std::vector<amortization_data> amortization_data;
+    std::vector<struct amortization_data> amortization_data;
 };
 struct notional {
     std::uint64_t present = 0;
@@ -593,9 +593,9 @@ struct exchanges {
 };
 struct notionals {
     std::uint64_t present = 0;
-    std::vector<notional> notional;
+    std::vector<struct notional> notional;
     std::vector<fxreset> fx_reset;
-    std::vector<exchanges> exchanges;
+    std::vector<struct exchanges> exchanges;
 };
 struct payment_dates {
     std::uint64_t present = 0;
@@ -630,11 +630,11 @@ struct amount {
 };
 struct cashflow {
     std::uint64_t present = 0;
-    std::vector<amount> amount;
+    std::vector<struct amount> amount;
 };
 struct cashflow_data {
     std::uint64_t present = 0;
-    cashflow cashflow;
+    struct cashflow cashflow;
 };
 struct rate {
     std::uint64_t present = 0;
@@ -643,11 +643,11 @@ struct rate {
 };
 struct rates {
     std::uint64_t present = 0;
-    std::vector<rate> rate;
+    std::vector<struct rate> rate;
 };
 struct fixed_leg_data {
     std::uint64_t present = 0;
-    rates rates;
+    struct rates rates;
 };
 struct float_with_attribute {
     std::uint64_t present = 0;
@@ -677,7 +677,7 @@ struct fixing {
 };
 struct trade_level_fixings {
     std::uint64_t present = 0;
-    std::vector<fixing> fixing;
+    std::vector<struct fixing> fixing;
 };
 struct stub_interpolation {
     std::uint64_t present = 0;
@@ -699,10 +699,10 @@ struct floating_leg_data {
     std::string has_sub_periods;
     std::string include_spread;
     std::string is_not_resetting_xccy;
-    spreads spreads;
-    caps caps;
-    floors floors;
-    gearings gearings;
+    struct spreads spreads;
+    struct caps caps;
+    struct floors floors;
+    struct gearings gearings;
     std::string naked_option;
     std::string local_cap_floor;
     schedule_data fixing_schedule;
@@ -721,7 +721,7 @@ struct coupon {
 };
 struct coupons {
     std::uint64_t present = 0;
-    std::vector<coupon> coupon;
+    std::vector<struct coupon> coupon;
 };
 struct upper_bound {
     std::uint64_t present = 0;
@@ -730,7 +730,7 @@ struct upper_bound {
 };
 struct upper_bounds {
     std::uint64_t present = 0;
-    std::vector<upper_bound> upper_bound;
+    std::vector<struct upper_bound> upper_bound;
 };
 struct lower_bound {
     std::uint64_t present = 0;
@@ -739,14 +739,14 @@ struct lower_bound {
 };
 struct lower_bounds {
     std::uint64_t present = 0;
-    std::vector<lower_bound> lower_bound;
+    std::vector<struct lower_bound> lower_bound;
 };
 struct range_accrual_leg_data {
     std::uint64_t present = 0;
-    floating_leg_data floating_leg_data;
-    coupons coupons;
-    upper_bounds upper_bounds;
-    lower_bounds lower_bounds;
+    struct floating_leg_data floating_leg_data;
+    struct coupons coupons;
+    struct upper_bounds upper_bounds;
+    struct lower_bounds lower_bounds;
 };
 struct rate_type {
     std::uint64_t present = 0;
@@ -767,8 +767,8 @@ struct cpi_leg_data {
     std::vector<std::string> interpolation;
     std::vector<std::int16_t> interpolated;
     std::vector<std::int16_t> subtract_inflation_notional;
-    std::vector<caps> caps;
-    std::vector<floors> floors;
+    std::vector<struct caps> caps;
+    std::vector<struct floors> floors;
     std::vector<ores::utility::decimal::decimal> final_flow_cap;
     std::vector<ores::utility::decimal::decimal> final_flow_floor;
     std::vector<std::string> naked_option;
@@ -780,10 +780,10 @@ struct yy_leg_data {
     std::string index;
     std::int64_t fixing_days = 0;
     std::string observation_lag;
-    gearings gearings;
-    spreads spreads;
-    caps caps;
-    floors floors;
+    struct gearings gearings;
+    struct spreads spreads;
+    struct caps caps;
+    struct floors floors;
     std::string naked_option;
     std::string add_inflation_notional;
     std::string irregular_yo_y;
@@ -793,10 +793,10 @@ struct cms_leg_data {
     std::string index;
     std::string is_in_arrears;
     std::int64_t fixing_days = 0;
-    spreads spreads;
-    caps caps;
-    floors floors;
-    gearings gearings;
+    struct spreads spreads;
+    struct caps caps;
+    struct floors floors;
+    struct gearings gearings;
     std::string naked_option;
 };
 struct cmb_leg_data {
@@ -804,10 +804,10 @@ struct cmb_leg_data {
     std::string index;
     std::string is_in_arrears;
     std::int64_t fixing_days = 0;
-    spreads spreads;
-    caps caps;
-    floors floors;
-    gearings gearings;
+    struct spreads spreads;
+    struct caps caps;
+    struct floors floors;
+    struct gearings gearings;
     std::string naked_option;
     std::string credit_risk;
 };
@@ -816,10 +816,10 @@ struct cms_leg_data_type {
     std::string index;
     std::string is_in_arrears;
     std::int64_t fixing_days = 0;
-    spreads spreads;
-    caps caps;
-    floors floors;
-    gearings gearings;
+    struct spreads spreads;
+    struct caps caps;
+    struct floors floors;
+    struct gearings gearings;
     std::string naked_option;
 };
 struct call_strikes {
@@ -843,12 +843,12 @@ struct digital_cms_leg_data {
     std::vector<cms_leg_data_type> cms_leg_data;
     std::vector<std::string> call_position;
     std::vector<std::string> is_call_atm_included;
-    std::vector<call_strikes> call_strikes;
-    std::vector<call_payoffs> call_payoffs;
+    std::vector<struct call_strikes> call_strikes;
+    std::vector<struct call_payoffs> call_payoffs;
     std::vector<std::string> put_position;
     std::vector<std::string> is_put_atm_included;
-    std::vector<put_strikes> put_strikes;
-    std::vector<put_payoffs> put_payoffs;
+    std::vector<struct put_strikes> put_strikes;
+    std::vector<struct put_payoffs> put_payoffs;
 };
 struct duration_adjusted_cms_leg_data {
     std::uint64_t present = 0;
@@ -856,10 +856,10 @@ struct duration_adjusted_cms_leg_data {
     std::int64_t duration = 0;
     std::string is_in_arrears;
     std::int64_t fixing_days = 0;
-    spreads spreads;
-    caps caps;
-    floors floors;
-    gearings gearings;
+    struct spreads spreads;
+    struct caps caps;
+    struct floors floors;
+    struct gearings gearings;
     std::string naked_option;
 };
 struct cms_spread_leg_data {
@@ -868,10 +868,10 @@ struct cms_spread_leg_data {
     std::string index2;
     std::string is_in_arrears;
     std::int64_t fixing_days = 0;
-    spreads spreads;
-    caps caps;
-    floors floors;
-    gearings gearings;
+    struct spreads spreads;
+    struct caps caps;
+    struct floors floors;
+    struct gearings gearings;
     std::string naked_option;
 };
 struct cms_spread_leg_data_type {
@@ -880,10 +880,10 @@ struct cms_spread_leg_data_type {
     std::string index2;
     std::string is_in_arrears;
     std::int64_t fixing_days = 0;
-    spreads spreads;
-    caps caps;
-    floors floors;
-    gearings gearings;
+    struct spreads spreads;
+    struct caps caps;
+    struct floors floors;
+    struct gearings gearings;
     std::string naked_option;
 };
 struct call_strikes_type {
@@ -933,7 +933,7 @@ struct underlying {
 };
 struct underlyings {
     std::uint64_t present = 0;
-    std::vector<underlying> underlying;
+    std::vector<struct underlying> underlying;
 };
 struct fx_terms {
     std::uint64_t present = 0;
@@ -947,15 +947,15 @@ struct equity_leg_data {
     ores::utility::decimal::decimal quantity;
     std::string return_type;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     ores::utility::decimal::decimal initial_price;
     std::string initial_price_currency;
     ores::utility::decimal::decimal dividend_factor;
     std::string notional_reset;
     schedule_data valuation_schedule;
     std::int64_t fixing_days = 0;
-    fx_terms fx_terms;
+    struct fx_terms fx_terms;
 };
 struct rate_type_type {
     std::uint64_t present = 0;
@@ -993,8 +993,8 @@ struct equity_leg_data_type {
     ores::utility::decimal::decimal quantity;
     std::string return_type;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     ores::utility::decimal::decimal initial_price;
     std::string initial_price_currency;
     ores::utility::decimal::decimal dividend_factor;
@@ -1017,7 +1017,7 @@ struct quantity {
 };
 struct quantities_type {
     std::uint64_t present = 0;
-    std::vector<quantity> quantity;
+    std::vector<struct quantity> quantity;
 };
 struct price {
     std::uint64_t present = 0;
@@ -1026,7 +1026,7 @@ struct price {
 };
 struct prices_type {
     std::uint64_t present = 0;
-    std::vector<price> price;
+    std::vector<struct price> price;
 };
 struct commodity_fixed_leg_data {
     std::uint64_t present = 0;
@@ -1046,12 +1046,12 @@ struct commodity_floating_leg_data {
     quantities_type quantities;
     std::int16_t commodity_quantity_frequency = 0;
     std::int16_t commodity_pay_relative_to = 0;
-    spreads spreads;
-    gearings gearings;
+    struct spreads spreads;
+    struct gearings gearings;
     std::int16_t pricing_date_rule = 0;
     std::string pricing_calendar;
     std::int64_t pricing_lag = 0;
-    pricing_dates pricing_dates;
+    struct pricing_dates pricing_dates;
     std::string is_averaged;
     std::string is_in_arrears;
     std::int64_t future_month_offset = 0;
@@ -1086,7 +1086,7 @@ struct load_profile_datum {
 };
 struct explicit_load_profile_type {
     std::uint64_t present = 0;
-    std::vector<load_profile_datum> load_profile_datum;
+    std::vector<struct load_profile_datum> load_profile_datum;
 };
 struct load_profile_business_day_rule {
     std::uint64_t present = 0;
@@ -1097,7 +1097,7 @@ struct load_profile_business_day_rule {
 };
 struct rule_based_load_profile_type {
     std::uint64_t present = 0;
-    std::vector<load_profile_business_day_rule> load_profile_business_day_rule;
+    std::vector<struct load_profile_business_day_rule> load_profile_business_day_rule;
 };
 struct power_load_profile_data_type {
     std::uint64_t present = 0;
@@ -1108,8 +1108,8 @@ struct intraday_power_floating_leg_data {
     std::uint64_t present = 0;
     std::string name;
     quantities_type quantities;
-    spreads spreads;
-    gearings gearings;
+    struct spreads spreads;
+    struct gearings gearings;
     std::string pricing_calendar;
     std::string include_period_start;
     std::string include_period_end;
@@ -1147,31 +1147,31 @@ struct leg_data {
     std::int16_t notional_payment_lag_anchor = 0;
     std::string payment_calendar;
     std::int16_t day_counter = 0;
-    amortizations amortizations;
-    notionals notionals;
+    struct amortizations amortizations;
+    struct notionals notionals;
     struct schedule_data schedule_data;
-    payment_dates payment_dates;
-    indexings indexings;
+    struct payment_dates payment_dates;
+    struct indexings indexings;
     std::int16_t last_period_day_counter = 0;
-    cashflow_data cashflow_data;
-    fixed_leg_data fixed_leg_data;
-    floating_leg_data floating_leg_data;
-    range_accrual_leg_data range_accrual_leg_data;
-    cpi_leg_data cpi_leg_data;
-    yy_leg_data yy_leg_data;
-    cms_leg_data cms_leg_data;
-    cmb_leg_data cmb_leg_data;
-    digital_cms_leg_data digital_cms_leg_data;
-    duration_adjusted_cms_leg_data duration_adjusted_cms_leg_data;
-    cms_spread_leg_data cms_spread_leg_data;
-    digital_cms_spread_leg_data digital_cms_spread_leg_data;
-    equity_leg_data equity_leg_data;
-    zero_coupon_fixed_leg_data zero_coupon_fixed_leg_data;
-    equity_margin_leg_data equity_margin_leg_data;
-    commodity_fixed_leg_data commodity_fixed_leg_data;
-    commodity_floating_leg_data commodity_floating_leg_data;
-    intraday_power_floating_leg_data intraday_power_floating_leg_data;
-    formula_based_leg_data formula_based_leg_data;
+    struct cashflow_data cashflow_data;
+    struct fixed_leg_data fixed_leg_data;
+    struct floating_leg_data floating_leg_data;
+    struct range_accrual_leg_data range_accrual_leg_data;
+    struct cpi_leg_data cpi_leg_data;
+    struct yy_leg_data yy_leg_data;
+    struct cms_leg_data cms_leg_data;
+    struct cmb_leg_data cmb_leg_data;
+    struct digital_cms_leg_data digital_cms_leg_data;
+    struct duration_adjusted_cms_leg_data duration_adjusted_cms_leg_data;
+    struct cms_spread_leg_data cms_spread_leg_data;
+    struct digital_cms_spread_leg_data digital_cms_spread_leg_data;
+    struct equity_leg_data equity_leg_data;
+    struct zero_coupon_fixed_leg_data zero_coupon_fixed_leg_data;
+    struct equity_margin_leg_data equity_margin_leg_data;
+    struct commodity_fixed_leg_data commodity_fixed_leg_data;
+    struct commodity_floating_leg_data commodity_floating_leg_data;
+    struct intraday_power_floating_leg_data intraday_power_floating_leg_data;
+    struct formula_based_leg_data formula_based_leg_data;
     std::string strict_notional_dates;
     struct schedule_data payment_schedule;
     settlement_data_type settlement_data;
@@ -1181,7 +1181,7 @@ struct swap_data {
     std::string round_netted_floating_legs;
     std::int64_t netting_precision = 0;
     std::int16_t settlement = 0;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct settlement_data_type_type {
     std::uint64_t present = 0;
@@ -1198,7 +1198,7 @@ struct premium {
 };
 struct premium_data {
     std::uint64_t present = 0;
-    std::vector<premium> premium;
+    std::vector<struct premium> premium;
 };
 struct exercise_fee {
     std::uint64_t present = 0;
@@ -1209,7 +1209,7 @@ struct exercise_fee {
 };
 struct exercise_fees {
     std::uint64_t present = 0;
-    std::vector<exercise_fee> exercise_fee;
+    std::vector<struct exercise_fee> exercise_fee;
 };
 struct exercise_dates {
     std::uint64_t present = 0;
@@ -1233,8 +1233,8 @@ struct rules {
 };
 struct option_payment_data {
     std::uint64_t present = 0;
-    dates dates;
-    rules rules;
+    struct dates dates;
+    struct rules rules;
 };
 struct settlement_data {
     std::uint64_t present = 0;
@@ -1261,21 +1261,21 @@ struct option_data {
     std::string premium_pay_date;
     premium_data premiums;
     std::string exercise_prices;
-    exercise_fees exercise_fees;
+    struct exercise_fees exercise_fees;
     std::string exercise_fee_settlement_period;
     std::string exercise_fee_settlement_calendar;
     std::string exercise_fee_settlement_convention;
-    exercise_dates exercise_dates;
+    struct exercise_dates exercise_dates;
     schedule_data exercise_schedule;
     std::int16_t automatic_exercise = 0;
     option_exercise_data exercise_data;
     option_payment_data payment_data;
-    settlement_data settlement_data;
+    struct settlement_data settlement_data;
 };
 struct callable_swap_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    std::vector<leg_data> leg_data;
+    struct option_data option_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct st_free_style_long_short {
     std::uint64_t present = 0;
@@ -1290,7 +1290,7 @@ struct st_free_style_index {
 struct st_free_style_event_schedule {
     std::uint64_t present = 0;
     std::string type;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     derived_schedule_type derived_schedule;
 };
 struct st_free_style_number {
@@ -1324,14 +1324,14 @@ struct arc_option_data {
 };
 struct swaption_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    std::vector<leg_data> leg_data;
+    struct option_data option_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct swaption_straddle_data {
     std::uint64_t present = 0;
     std::vector<std::string> long_short;
-    option_data option_data;
-    std::vector<leg_data> leg_data;
+    struct option_data option_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct variance_swap_data {
     std::uint64_t present = 0;
@@ -1339,8 +1339,8 @@ struct variance_swap_data {
     std::string end_date;
     std::int16_t currency = 0;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     std::string long_short;
     ores::utility::decimal::decimal strike;
     ores::utility::decimal::decimal notional;
@@ -1395,7 +1395,7 @@ struct fx_average_forward_data {
 };
 struct fx_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::int16_t bought_currency = 0;
     ores::utility::decimal::decimal bought_amount;
     std::int16_t sold_currency = 0;
@@ -1412,7 +1412,7 @@ struct barrier_data {
     std::int16_t type = 0;
     std::int16_t strict_comparison = 0;
     std::int16_t style = 0;
-    levels levels;
+    struct levels levels;
     ores::utility::decimal::decimal rebate;
     std::int16_t rebate_currency = 0;
     std::int16_t rebate_pay_time = 0;
@@ -1420,8 +1420,8 @@ struct barrier_data {
 };
 struct fx_barrier_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    barrier_data barrier_data;
+    struct option_data option_data;
+    struct barrier_data barrier_data;
     std::string start_date;
     std::string calendar;
     std::string fx_index;
@@ -1434,7 +1434,7 @@ struct fx_barrier_option_data {
 };
 struct fx_digital_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     ores::utility::decimal::decimal strike;
     std::int16_t payoff_currency = 0;
     ores::utility::decimal::decimal payoff_amount;
@@ -1443,12 +1443,12 @@ struct fx_digital_option_data {
 };
 struct barriers {
     std::uint64_t present = 0;
-    std::vector<barrier_data> barrier_data;
+    std::vector<struct barrier_data> barrier_data;
 };
 struct fx_kiko_barrier_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    barriers barriers;
+    struct option_data option_data;
+    struct barriers barriers;
     std::string start_date;
     std::string calendar;
     std::string fx_index;
@@ -1459,8 +1459,8 @@ struct fx_kiko_barrier_option_data {
 };
 struct fx_digital_barrier_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    barrier_data barrier_data;
+    struct option_data option_data;
+    struct barrier_data barrier_data;
     std::string start_date;
     std::string calendar;
     std::string fx_index;
@@ -1474,8 +1474,8 @@ struct fx_digital_barrier_option_data {
 };
 struct fx_touch_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    barrier_data barrier_data;
+    struct option_data option_data;
+    struct barrier_data barrier_data;
     std::int16_t foreign_currency = 0;
     std::int16_t domestic_currency = 0;
     std::int16_t payoff_currency = 0;
@@ -1507,7 +1507,7 @@ struct notionals_type {
     std::uint64_t present = 0;
     std::vector<notional_type> notional;
     std::vector<fxreset> fx_reset;
-    std::vector<exchanges> exchanges;
+    std::vector<struct exchanges> exchanges;
 };
 struct payment_dates_type {
     std::uint64_t present = 0;
@@ -1525,27 +1525,27 @@ struct leg_data_capfloor {
     std::int16_t payment_lag_anchor = 0;
     std::string payment_calendar;
     notionals_type notionals;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     payment_dates_type payment_dates;
-    cashflow_data cashflow_data;
-    fixed_leg_data fixed_leg_data;
-    floating_leg_data floating_leg_data;
-    range_accrual_leg_data range_accrual_leg_data;
-    cpi_leg_data cpi_leg_data;
-    yy_leg_data yy_leg_data;
-    cms_leg_data cms_leg_data;
-    cmb_leg_data cmb_leg_data;
-    digital_cms_leg_data digital_cms_leg_data;
-    duration_adjusted_cms_leg_data duration_adjusted_cms_leg_data;
-    cms_spread_leg_data cms_spread_leg_data;
-    digital_cms_spread_leg_data digital_cms_spread_leg_data;
-    equity_leg_data equity_leg_data;
-    zero_coupon_fixed_leg_data zero_coupon_fixed_leg_data;
-    equity_margin_leg_data equity_margin_leg_data;
-    commodity_fixed_leg_data commodity_fixed_leg_data;
-    commodity_floating_leg_data commodity_floating_leg_data;
-    intraday_power_floating_leg_data intraday_power_floating_leg_data;
-    formula_based_leg_data formula_based_leg_data;
+    struct cashflow_data cashflow_data;
+    struct fixed_leg_data fixed_leg_data;
+    struct floating_leg_data floating_leg_data;
+    struct range_accrual_leg_data range_accrual_leg_data;
+    struct cpi_leg_data cpi_leg_data;
+    struct yy_leg_data yy_leg_data;
+    struct cms_leg_data cms_leg_data;
+    struct cmb_leg_data cmb_leg_data;
+    struct digital_cms_leg_data digital_cms_leg_data;
+    struct duration_adjusted_cms_leg_data duration_adjusted_cms_leg_data;
+    struct cms_spread_leg_data cms_spread_leg_data;
+    struct digital_cms_spread_leg_data digital_cms_spread_leg_data;
+    struct equity_leg_data equity_leg_data;
+    struct zero_coupon_fixed_leg_data zero_coupon_fixed_leg_data;
+    struct equity_margin_leg_data equity_margin_leg_data;
+    struct commodity_fixed_leg_data commodity_fixed_leg_data;
+    struct commodity_floating_leg_data commodity_floating_leg_data;
+    struct intraday_power_floating_leg_data intraday_power_floating_leg_data;
+    struct formula_based_leg_data formula_based_leg_data;
 };
 struct cap {
     std::uint64_t present = 0;
@@ -1554,7 +1554,7 @@ struct cap {
 };
 struct record_caps {
     std::uint64_t present = 0;
-    std::vector<cap> cap;
+    std::vector<struct cap> cap;
 };
 struct floor {
     std::uint64_t present = 0;
@@ -1563,7 +1563,7 @@ struct floor {
 };
 struct record_floors {
     std::uint64_t present = 0;
-    std::vector<floor> floor;
+    std::vector<struct floor> floor;
 };
 struct cap_floor_data {
     std::uint64_t present = 0;
@@ -1578,7 +1578,7 @@ struct cap_floor_data {
 };
 struct rate_digital_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string index;
     ores::utility::decimal::decimal strike;
     ores::utility::decimal::decimal payoff_amount;
@@ -1588,10 +1588,10 @@ struct rate_digital_option_data {
 };
 struct equity_future_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal strike;
     ores::utility::decimal::decimal quantity;
@@ -1616,23 +1616,23 @@ struct strike_data {
 };
 struct equity_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     std::string currency;
     std::string strike_currency;
     ores::utility::decimal::decimal quantity;
     std::string strike;
-    strike_data strike_data;
+    struct strike_data strike_data;
 };
 struct equity_auto_delta_hedged_underlying_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string name;
     std::string currency;
     std::string strike;
-    strike_data strike_data;
+    struct strike_data strike_data;
     std::string strike_currency;
     ores::utility::decimal::decimal quantity;
 };
@@ -1650,17 +1650,17 @@ struct equity_auto_delta_hedged_option_data {
 };
 struct eq_barrier_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    barrier_data barrier_data;
+    struct option_data option_data;
+    struct barrier_data barrier_data;
     std::string start_date;
     std::string calendar;
     std::string eq_index;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     std::int16_t currency = 0;
     std::string strike;
-    strike_data strike_data;
+    struct strike_data strike_data;
     ores::utility::decimal::decimal quantity;
 };
 struct eq_forward_settlement_data_rules_type {
@@ -1680,8 +1680,8 @@ struct equity_forward_data {
     std::int16_t long_short = 0;
     std::string maturity;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     std::string currency;
     ores::utility::decimal::decimal strike;
     std::string strike_currency;
@@ -1690,22 +1690,22 @@ struct equity_forward_data {
 };
 struct eq_digital_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     ores::utility::decimal::decimal strike;
     std::int16_t payoff_currency = 0;
     ores::utility::decimal::decimal payoff_amount;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     ores::utility::decimal::decimal quantity;
 };
 struct eq_touch_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    barrier_data barrier_data;
+    struct option_data option_data;
+    struct barrier_data barrier_data;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     std::int16_t payoff_currency = 0;
     ores::utility::decimal::decimal payoff_amount;
     std::string start_date;
@@ -1715,8 +1715,8 @@ struct eq_touch_option_data {
 struct cliquet_option_data {
     std::uint64_t present = 0;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
+    struct underlying underlying;
+    struct underlyings underlyings;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal notional;
     std::int16_t long_short = 0;
@@ -1726,7 +1726,7 @@ struct cliquet_option_data {
     ores::utility::decimal::decimal local_floor;
     ores::utility::decimal::decimal global_cap;
     ores::utility::decimal::decimal global_floor;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     std::int64_t settlement_days = 0;
     ores::utility::decimal::decimal premium;
     std::string premium_payment_date;
@@ -1749,7 +1749,7 @@ struct bond_data {
     std::string bond_notional;
     std::int16_t price_type = 0;
     std::string payer;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
     std::int16_t credit_risk = 0;
     std::string sub_type;
 };
@@ -1771,7 +1771,7 @@ struct record_premium_data {
 };
 struct forward_bond_data {
     std::uint64_t present = 0;
-    bond_data bond_data;
+    struct bond_data bond_data;
     record_settlement_data settlement_data;
     record_premium_data premium_data;
     std::string long_in_forward;
@@ -1787,11 +1787,11 @@ struct bond_future_data {
 };
 struct bond_future_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string contract_name;
     ores::utility::decimal::decimal contract_notional;
     std::string strike;
-    strike_data strike_data;
+    struct strike_data strike_data;
 };
 struct reference_information {
     std::uint64_t present = 0;
@@ -1804,7 +1804,7 @@ struct credit_default_swap_data {
     std::uint64_t present = 0;
     std::string issuer_id;
     std::string credit_curve_id;
-    reference_information reference_information;
+    struct reference_information reference_information;
     std::string reference_obligation;
     std::int16_t settles_accrual = 0;
     std::int16_t rebates_accrual = 0;
@@ -1814,7 +1814,7 @@ struct credit_default_swap_data {
     std::string upfront_date;
     ores::utility::decimal::decimal upfront_fee;
     ores::utility::decimal::decimal fixed_recovery_rate;
-    leg_data leg_data;
+    struct leg_data leg_data;
     std::string trade_date;
     std::int64_t cash_settlement_days = 0;
 };
@@ -1825,13 +1825,13 @@ struct auction_settlement_information {
 };
 struct credit_default_swap_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    credit_default_swap_data credit_default_swap_data;
+    struct option_data option_data;
+    struct credit_default_swap_data credit_default_swap_data;
     ores::utility::decimal::decimal strike;
     std::int16_t strike_type = 0;
     std::int16_t knock_out = 0;
     std::string term;
-    auction_settlement_information auction_settlement_information;
+    struct auction_settlement_information auction_settlement_information;
 };
 struct comm_forward_settlement_data {
     std::uint64_t present = 0;
@@ -1874,19 +1874,19 @@ struct intraday_power_forward_data {
 };
 struct commodity_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string name;
     std::int16_t currency = 0;
     std::string strike;
-    strike_data strike_data;
+    struct strike_data strike_data;
     ores::utility::decimal::decimal quantity;
     std::int16_t is_future_price = 0;
     std::string future_expiry_date;
 };
 struct commodity_digital_average_price_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    barrier_data barrier_data;
+    struct option_data option_data;
+    struct barrier_data barrier_data;
     std::string name;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal digital_cash_payoff;
@@ -1910,7 +1910,7 @@ struct commodity_digital_average_price_option_data {
 };
 struct commodity_digital_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string name;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal strike;
@@ -1927,8 +1927,8 @@ struct commodity_spread_option_strip_payment_data {
 };
 struct commodity_spread_option_data {
     std::uint64_t present = 0;
-    std::vector<leg_data> leg_data;
-    option_data option_data;
+    std::vector<struct leg_data> leg_data;
+    struct option_data option_data;
     ores::utility::decimal::decimal spread_strike;
     commodity_spread_option_strip_payment_data option_strip_payment_dates;
 };
@@ -1936,17 +1936,17 @@ struct commodity_swap_data {
     std::uint64_t present = 0;
     std::string round_netted_floating_legs;
     std::int64_t netting_precision = 0;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct commodity_swaption_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    std::vector<leg_data> leg_data;
+    struct option_data option_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct commodity_average_price_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
-    barrier_data barrier_data;
+    struct option_data option_data;
+    struct barrier_data barrier_data;
     std::string name;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal quantity;
@@ -1979,12 +1979,12 @@ struct strikes {
 struct calls_puts_type {
     std::uint64_t present = 0;
     long_shorts_type long_shorts;
-    strikes strikes;
-    barrier_data barrier_data;
+    struct strikes strikes;
+    struct barrier_data barrier_data;
 };
 struct commodity_option_strip_data {
     std::uint64_t present = 0;
-    leg_data leg_data;
+    struct leg_data leg_data;
     calls_puts_type calls;
     calls_puts_type puts;
     std::string premium_amount;
@@ -1999,37 +1999,37 @@ struct commodity_option_strip_data {
 struct commodity_position_data {
     std::uint64_t present = 0;
     ores::utility::decimal::decimal quantity;
-    std::vector<underlying> underlying;
+    std::vector<struct underlying> underlying;
 };
 struct single_underlying_asian_option_data {
     std::uint64_t present = 0;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal quantity;
     std::string strike;
-    strike_data strike_data;
-    underlying underlying;
-    option_data option_data;
+    struct strike_data strike_data;
+    struct underlying underlying;
+    struct option_data option_data;
     std::string settlement;
     schedule_data observation_dates;
 };
 struct bond_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string strike;
-    strike_data strike_data;
+    struct strike_data strike_data;
     std::string redemption;
     std::string price_type;
     std::int16_t knocks_out = 0;
-    bond_data bond_data;
+    struct bond_data bond_data;
 };
 struct repo_data {
     std::uint64_t present = 0;
-    leg_data leg_data;
+    struct leg_data leg_data;
 };
 struct bond_repo_data {
     std::uint64_t present = 0;
-    bond_data bond_data;
-    repo_data repo_data;
+    struct bond_data bond_data;
+    struct repo_data repo_data;
 };
 struct total_return_data_payment_dates_type {
     std::uint64_t present = 0;
@@ -2056,27 +2056,27 @@ struct total_return_data {
     total_return_data_payment_dates_type payment_dates;
     std::int16_t fx_conversion = 0;
     fx_terms_data fx_terms;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     std::string pay_bond_cash_flows_immediately;
     std::int16_t payment_lag_unit = 0;
     std::int16_t payment_lag_anchor = 0;
 };
 struct funding_data {
     std::uint64_t present = 0;
-    leg_data leg_data;
+    struct leg_data leg_data;
 };
 struct bond_trs_data {
     std::uint64_t present = 0;
-    bond_data bond_data;
-    total_return_data total_return_data;
-    funding_data funding_data;
+    struct bond_data bond_data;
+    struct total_return_data total_return_data;
+    struct funding_data funding_data;
 };
 struct name_data {
     std::uint64_t present = 0;
     std::string issuer_id;
     std::string qualifier;
     std::string credit_curve_id;
-    reference_information reference_information;
+    struct reference_information reference_information;
     ores::utility::decimal::decimal notional;
     ores::utility::decimal::decimal weight;
     std::int16_t currency = 0;
@@ -2105,24 +2105,24 @@ struct cdo_data {
     ores::utility::decimal::decimal fixed_recovery_rate;
     ores::utility::decimal::decimal attachment_point;
     ores::utility::decimal::decimal detachment_point;
-    leg_data leg_data;
-    basket_data basket_data;
+    struct leg_data leg_data;
+    struct basket_data basket_data;
 };
 struct independent_payments {
     std::uint64_t present = 0;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct contingent_payments {
     std::uint64_t present = 0;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct default_payments {
     std::uint64_t present = 0;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct recovery_payments {
     std::uint64_t present = 0;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct credit_linked_swap_data {
     std::uint64_t present = 0;
@@ -2130,10 +2130,10 @@ struct credit_linked_swap_data {
     std::int16_t settles_accrual = 0;
     ores::utility::decimal::decimal fixed_recovery_rate;
     std::string default_payment_time;
-    independent_payments independent_payments;
-    contingent_payments contingent_payments;
-    default_payments default_payments;
-    recovery_payments recovery_payments;
+    struct independent_payments independent_payments;
+    struct contingent_payments contingent_payments;
+    struct default_payments default_payments;
+    struct recovery_payments recovery_payments;
 };
 struct index_credit_default_swap_data {
     std::uint64_t present = 0;
@@ -2146,10 +2146,10 @@ struct index_credit_default_swap_data {
     std::string protection_start;
     std::string upfront_date;
     ores::utility::decimal::decimal upfront_fee;
-    leg_data leg_data;
+    struct leg_data leg_data;
     std::string trade_date;
     std::int64_t cash_settlement_days = 0;
-    basket_data basket_data;
+    struct basket_data basket_data;
 };
 struct index_credit_default_swap_option_data {
     std::uint64_t present = 0;
@@ -2159,8 +2159,8 @@ struct index_credit_default_swap_option_data {
     std::int16_t strike_type = 0;
     std::string trade_date;
     std::string front_end_protection_start_date;
-    option_data option_data;
-    index_credit_default_swap_data index_credit_default_swap_data;
+    struct option_data option_data;
+    struct index_credit_default_swap_data index_credit_default_swap_data;
 };
 struct style_type {
     std::uint64_t present = 0;
@@ -2214,7 +2214,7 @@ struct trigger_ratio {
 };
 struct trigger_ratios {
     std::uint64_t present = 0;
-    std::vector<trigger_ratio> trigger_ratio;
+    std::vector<struct trigger_ratio> trigger_ratio;
 };
 struct n_of_m_trigger {
     std::uint64_t present = 0;
@@ -2223,7 +2223,7 @@ struct n_of_m_trigger {
 };
 struct n_of_m_triggers {
     std::uint64_t present = 0;
-    std::vector<n_of_m_trigger> n_of_m_trigger;
+    std::vector<struct n_of_m_trigger> n_of_m_trigger;
 };
 struct cr_increase {
     std::uint64_t present = 0;
@@ -2232,29 +2232,29 @@ struct cr_increase {
 };
 struct cr_increases {
     std::uint64_t present = 0;
-    std::vector<cr_increase> cr_increase;
+    std::vector<struct cr_increase> cr_increase;
 };
 struct conversion_ratio_increase {
     std::uint64_t present = 0;
     ores::utility::decimal::decimal cap;
     std::string stock_prices;
-    cr_increases cr_increases;
+    struct cr_increases cr_increases;
 };
 struct make_whole {
     std::uint64_t present = 0;
-    conversion_ratio_increase conversion_ratio_increase;
+    struct conversion_ratio_increase conversion_ratio_increase;
 };
 struct cb_call_data {
     std::uint64_t present = 0;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     styles_type styles;
     record_prices_type prices;
     price_types_type price_types;
     include_accruals_type include_accruals;
-    soft soft;
-    trigger_ratios trigger_ratios;
-    n_of_m_triggers n_of_m_triggers;
-    make_whole make_whole;
+    struct soft soft;
+    struct trigger_ratios trigger_ratios;
+    struct n_of_m_triggers n_of_m_triggers;
+    struct make_whole make_whole;
 };
 struct style_type_type {
     std::uint64_t present = 0;
@@ -2272,7 +2272,7 @@ struct conversion_ratio {
 };
 struct conversion_ratios {
     std::uint64_t present = 0;
-    std::vector<conversion_ratio> conversion_ratio;
+    std::vector<struct conversion_ratio> conversion_ratio;
 };
 struct amount_type {
     std::uint64_t present = 0;
@@ -2286,7 +2286,7 @@ struct amounts {
 struct fixed_amount_conversion {
     std::uint64_t present = 0;
     std::string currency;
-    amounts amounts;
+    struct amounts amounts;
 };
 struct observation {
     std::uint64_t present = 0;
@@ -2295,7 +2295,7 @@ struct observation {
 };
 struct observations {
     std::uint64_t present = 0;
-    std::vector<observation> observation;
+    std::vector<struct observation> observation;
 };
 struct barrier {
     std::uint64_t present = 0;
@@ -2304,11 +2304,11 @@ struct barrier {
 };
 struct barriers_type {
     std::uint64_t present = 0;
-    std::vector<barrier> barrier;
+    std::vector<struct barrier> barrier;
 };
 struct cb_contingent_conversion_data {
     std::uint64_t present = 0;
-    observations observations;
+    struct observations observations;
     barriers_type barriers;
 };
 struct cb_peps_data {
@@ -2331,7 +2331,7 @@ struct reference {
 };
 struct references {
     std::uint64_t present = 0;
-    std::vector<reference> reference;
+    std::vector<struct reference> reference;
 };
 struct threshold {
     std::uint64_t present = 0;
@@ -2340,7 +2340,7 @@ struct threshold {
 };
 struct thresholds {
     std::uint64_t present = 0;
-    std::vector<threshold> threshold;
+    std::vector<struct threshold> threshold;
 };
 struct gearing {
     std::uint64_t present = 0;
@@ -2349,7 +2349,7 @@ struct gearing {
 };
 struct record_gearings {
     std::uint64_t present = 0;
-    std::vector<gearing> gearing;
+    std::vector<struct gearing> gearing;
 };
 struct floor_type {
     std::uint64_t present = 0;
@@ -2367,16 +2367,16 @@ struct gloobal_floor {
 };
 struct global_floors {
     std::uint64_t present = 0;
-    std::vector<gloobal_floor> gloobal_floor;
+    std::vector<struct gloobal_floor> gloobal_floor;
 };
 struct cb_conversion_reset_data {
     std::uint64_t present = 0;
-    schedule_data schedule_data;
-    references references;
-    thresholds thresholds;
+    struct schedule_data schedule_data;
+    struct references references;
+    struct thresholds thresholds;
     record_gearings gearings;
     floors_type floors;
-    global_floors global_floors;
+    struct global_floors global_floors;
 };
 struct cb_exchangeable_data {
     std::uint64_t present = 0;
@@ -2386,14 +2386,14 @@ struct cb_exchangeable_data {
 };
 struct cb_conversion_data {
     std::uint64_t present = 0;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     cb_conversion_data_styles_type styles;
-    conversion_ratios conversion_ratios;
-    fixed_amount_conversion fixed_amount_conversion;
+    struct conversion_ratios conversion_ratios;
+    struct fixed_amount_conversion fixed_amount_conversion;
     cb_contingent_conversion_data contingent_conversion;
     cb_mandatory_conversion_data mandatory_conversion;
     cb_conversion_reset_data conversion_resets;
-    underlying underlying;
+    struct underlying underlying;
     std::string fx_index;
     std::string fx_index_calendar;
     std::int64_t fx_index_fixing_days = 0;
@@ -2406,7 +2406,7 @@ struct adjustment_style {
 };
 struct adjustment_styles {
     std::uint64_t present = 0;
-    std::vector<adjustment_style> adjustment_style;
+    std::vector<struct adjustment_style> adjustment_style;
 };
 struct dividend_type {
     std::uint64_t present = 0;
@@ -2415,7 +2415,7 @@ struct dividend_type {
 };
 struct dividend_types {
     std::uint64_t present = 0;
-    std::vector<dividend_type> dividend_type;
+    std::vector<struct dividend_type> dividend_type;
 };
 struct threshold_type {
     std::uint64_t present = 0;
@@ -2428,14 +2428,14 @@ struct thresholds_type {
 };
 struct cb_dividend_protection_data {
     std::uint64_t present = 0;
-    schedule_data schedule_data;
-    adjustment_styles adjustment_styles;
-    dividend_types dividend_types;
+    struct schedule_data schedule_data;
+    struct adjustment_styles adjustment_styles;
+    struct dividend_types dividend_types;
     thresholds_type thresholds;
 };
 struct convertible_bond_data {
     std::uint64_t present = 0;
-    bond_data bond_data;
+    struct bond_data bond_data;
     cb_call_data call_data;
     cb_call_data put_data;
     cb_conversion_data conversion_data;
@@ -2444,8 +2444,8 @@ struct convertible_bond_data {
 };
 struct ascot_data {
     std::uint64_t present = 0;
-    convertible_bond_data convertible_bond_data;
-    option_data option_data;
+    struct convertible_bond_data convertible_bond_data;
+    struct option_data option_data;
     funding_data reference_swap_data;
 };
 struct style {
@@ -2455,7 +2455,7 @@ struct style {
 };
 struct styles {
     std::uint64_t present = 0;
-    std::vector<style> style;
+    std::vector<struct style> style;
 };
 struct price_type {
     std::uint64_t present = 0;
@@ -2482,26 +2482,26 @@ struct include_accrual {
 };
 struct include_accruals {
     std::uint64_t present = 0;
-    std::vector<include_accrual> include_accrual;
+    std::vector<struct include_accrual> include_accrual;
 };
 struct callable_bond_call_data {
     std::uint64_t present = 0;
-    schedule_data schedule_data;
-    styles styles;
-    prices prices;
-    price_types price_types;
-    include_accruals include_accruals;
+    struct schedule_data schedule_data;
+    struct styles styles;
+    struct prices prices;
+    struct price_types price_types;
+    struct include_accruals include_accruals;
 };
 struct callable_bond_data {
     std::uint64_t present = 0;
-    bond_data bond_data;
+    struct bond_data bond_data;
     callable_bond_call_data call_data;
     callable_bond_call_data put_data;
 };
 struct tlock_data {
     std::uint64_t present = 0;
     std::int16_t payer = 0;
-    bond_data bond_data;
+    struct bond_data bond_data;
     ores::utility::decimal::decimal reference_rate;
     std::int16_t day_counter = 0;
     std::string termination_date;
@@ -2510,13 +2510,13 @@ struct tlock_data {
 };
 struct protection_fee {
     std::uint64_t present = 0;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct record_underlying {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::string naked_option;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
     tlock_data treasury_lock_data;
 };
 struct rpa_data {
@@ -2528,7 +2528,7 @@ struct rpa_data {
     std::string issuer_id;
     std::string settles_accrual;
     ores::utility::decimal::decimal fixed_recovery_rate;
-    protection_fee protection_fee;
+    struct protection_fee protection_fee;
     record_underlying underlying;
 };
 struct cbo_investment {
@@ -2541,17 +2541,17 @@ struct bond_basket_data {
     std::uint64_t present = 0;
     ores::utility::decimal::decimal quantity;
     std::string identifier;
-    std::vector<underlying> underlying;
+    std::vector<struct underlying> underlying;
 };
 struct equity_position_data {
     std::uint64_t present = 0;
     ores::utility::decimal::decimal quantity;
-    std::vector<underlying> underlying;
+    std::vector<struct underlying> underlying;
 };
 struct equity_option_underlying_data {
     std::uint64_t present = 0;
-    underlying underlying;
-    option_data option_data;
+    struct underlying underlying;
+    struct option_data option_data;
     ores::utility::decimal::decimal strike;
 };
 struct equity_option_position_data {
@@ -2622,7 +2622,7 @@ struct pairwise_variance_swap_data2 {
 };
 struct eq_outperformance_option_data {
     std::uint64_t present = 0;
-    option_data option_data;
+    struct option_data option_data;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal notional;
     underlying underlying1;
@@ -2649,9 +2649,9 @@ struct lower_notional_bounds {
 };
 struct flexi_swap_data {
     std::uint64_t present = 0;
-    std::vector<lower_notional_bounds> lower_notional_bounds;
+    std::vector<struct lower_notional_bounds> lower_notional_bounds;
     std::int16_t option_long_short = 0;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct notionals_notional_type_type {
     std::uint64_t present = 0;
@@ -2671,14 +2671,14 @@ struct tranche {
 };
 struct tranches {
     std::uint64_t present = 0;
-    std::vector<tranche> tranche;
-    schedule_data schedule_data;
+    std::vector<struct tranche> tranche;
+    struct schedule_data schedule_data;
 };
 struct bg_swap_data {
     std::uint64_t present = 0;
     std::string reference_security;
-    tranches tranches;
-    std::vector<leg_data> leg_data;
+    struct tranches tranches;
+    std::vector<struct leg_data> leg_data;
 };
 struct st_free_style_option_type {
     std::uint64_t present = 0;
@@ -2728,7 +2728,7 @@ struct basket_variance_swap_data2 {
     std::int16_t long_short = 0;
     ores::utility::decimal::decimal strike;
     ores::utility::decimal::decimal notional;
-    underlyings underlyings;
+    struct underlyings underlyings;
     schedule_data valuation_schedule;
     std::string squared_payoff;
     ores::utility::decimal::decimal cap;
@@ -3051,7 +3051,7 @@ struct forward_volatility_agreement_data2 {
     std::string fva_date;
     std::string option_expiry;
     std::string premium_date;
-    underlying underlying;
+    struct underlying underlying;
     std::int16_t long_short = 0;
     ores::utility::decimal::decimal implied_vol_strike;
     ores::utility::decimal::decimal quantity;
@@ -3070,7 +3070,7 @@ struct strike {
 };
 struct record_strikes {
     std::uint64_t present = 0;
-    std::vector<strike> strike;
+    std::vector<struct strike> strike;
 };
 struct range_bound {
     std::uint64_t present = 0;
@@ -3083,12 +3083,12 @@ struct range_bound {
 };
 struct range_bounds {
     std::uint64_t present = 0;
-    std::vector<range_bound> range_bound;
+    std::vector<struct range_bound> range_bound;
 };
 struct range_bounds_type {
     std::uint64_t present = 0;
     std::string start_date;
-    std::vector<range_bound> range_bound;
+    std::vector<struct range_bound> range_bound;
 };
 struct range_bound_set {
     std::uint64_t present = 0;
@@ -3096,7 +3096,7 @@ struct range_bound_set {
 };
 struct tarf_data2_barriers_type {
     std::uint64_t present = 0;
-    std::vector<barrier_data> barrier_data;
+    std::vector<struct barrier_data> barrier_data;
 };
 struct tarf_data2 {
     std::uint64_t present = 0;
@@ -3106,23 +3106,23 @@ struct tarf_data2 {
     ores::utility::decimal::decimal target_points;
     ores::utility::decimal::decimal strike;
     record_strikes strikes;
-    underlying underlying;
-    schedule_data schedule_data;
+    struct underlying underlying;
+    struct schedule_data schedule_data;
     std::string settlement_lag;
     std::string settlement_calendar;
     std::int16_t settlement_convention = 0;
-    option_data option_data;
-    range_bounds range_bounds;
-    range_bound_set range_bound_set;
+    struct option_data option_data;
+    struct range_bounds range_bounds;
+    struct range_bound_set range_bound_set;
     tarf_data2_barriers_type barriers;
 };
 struct accumulator_data_range_bounds_type {
     std::uint64_t present = 0;
-    std::vector<range_bound> range_bound;
+    std::vector<struct range_bound> range_bound;
 };
 struct accumulator_data_barriers_type {
     std::uint64_t present = 0;
-    std::vector<barrier_data> barrier_data;
+    std::vector<struct barrier_data> barrier_data;
 };
 struct accumulator_data {
     std::uint64_t present = 0;
@@ -3131,7 +3131,7 @@ struct accumulator_data {
     std::string daily_fixing_amount;
     ores::utility::decimal::decimal strike;
     struct underlying underlying;
-    option_data option_data;
+    struct option_data option_data;
     std::string start_date;
     schedule_data observation_dates;
     schedule_data pricing_dates;
@@ -3180,42 +3180,42 @@ struct window_barrier_option_data2 {
     std::int16_t currency = 0;
     ores::utility::decimal::decimal fixing_amount;
     std::string strike;
-    strike_data strike_data;
-    underlying underlying;
-    option_data option_data;
+    struct strike_data strike_data;
+    struct underlying underlying;
+    struct option_data option_data;
     std::string start_date;
     std::string end_date;
-    barrier_data barrier_data;
+    struct barrier_data barrier_data;
 };
 struct basket_option_data {
     std::uint64_t present = 0;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal notional;
     ores::utility::decimal::decimal strike;
-    underlyings underlyings;
-    option_data option_data;
+    struct underlyings underlyings;
+    struct option_data option_data;
     std::string settlement;
     schedule_data observation_dates;
 };
 struct generic_barrier_option_data_barriers_type {
     std::uint64_t present = 0;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     std::string start_date;
     std::string end_date;
-    std::vector<barrier_data> barrier_data;
+    std::vector<struct barrier_data> barrier_data;
     std::int16_t kiko_type = 0;
 };
 struct transatlantic_barrier {
     std::uint64_t present = 0;
-    std::vector<barrier_data> barrier_data;
+    std::vector<struct barrier_data> barrier_data;
 };
 struct generic_barrier_option_data {
     std::uint64_t present = 0;
     std::int16_t pay_currency = 0;
     std::string name;
-    underlying underlying;
-    underlyings underlyings;
-    option_data option_data;
+    struct underlying underlying;
+    struct underlyings underlyings;
+    struct option_data option_data;
     std::string settlement_date;
     std::string settlement_lag;
     std::string settlement_calendar;
@@ -3224,24 +3224,24 @@ struct generic_barrier_option_data {
     ores::utility::decimal::decimal strike;
     ores::utility::decimal::decimal amount;
     generic_barrier_option_data_barriers_type barriers;
-    transatlantic_barrier transatlantic_barrier;
+    struct transatlantic_barrier transatlantic_barrier;
 };
 struct rainbow_option_data {
     std::uint64_t present = 0;
     std::int16_t currency = 0;
     ores::utility::decimal::decimal notional;
     ores::utility::decimal::decimal strike;
-    underlyings underlyings;
-    option_data option_data;
+    struct underlyings underlyings;
+    struct option_data option_data;
     std::string settlement;
 };
 struct fixing_dates {
     std::uint64_t present = 0;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
 };
 struct settlement_dates {
     std::uint64_t present = 0;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
 };
 struct accumulation_factors {
     std::uint64_t present = 0;
@@ -3252,12 +3252,12 @@ struct autocallable01_data {
     ores::utility::decimal::decimal notional_amount;
     ores::utility::decimal::decimal determination_level;
     ores::utility::decimal::decimal trigger_level;
-    underlying underlying;
+    struct underlying underlying;
     std::int16_t position = 0;
     std::int16_t pay_ccy = 0;
-    fixing_dates fixing_dates;
-    settlement_dates settlement_dates;
-    accumulation_factors accumulation_factors;
+    struct fixing_dates fixing_dates;
+    struct settlement_dates settlement_dates;
+    struct accumulation_factors accumulation_factors;
     ores::utility::decimal::decimal cap;
 };
 struct double_digital_option_data {
@@ -3290,8 +3290,8 @@ struct performance_option01_data {
     ores::utility::decimal::decimal participation_rate;
     std::string valuation_date;
     std::string settlement_date;
-    underlyings underlyings;
-    strike_prices strike_prices;
+    struct underlyings underlyings;
+    struct strike_prices strike_prices;
     ores::utility::decimal::decimal strike;
     std::int16_t strike_included = 0;
     std::int16_t position = 0;
@@ -3304,7 +3304,7 @@ struct result {
 };
 struct results {
     std::uint64_t present = 0;
-    std::vector<result> result;
+    std::vector<struct result> result;
 };
 struct parameter {
     std::uint64_t present = 0;
@@ -3313,7 +3313,7 @@ struct parameter {
 };
 struct model_parameters {
     std::uint64_t present = 0;
-    parameter parameter;
+    struct parameter parameter;
 };
 struct parameter_type {
     std::uint64_t present = 0;
@@ -3326,8 +3326,8 @@ struct engine_parameters {
 };
 struct pricing_engine_config_overwrite {
     std::uint64_t present = 0;
-    model_parameters model_parameters;
-    engine_parameters engine_parameters;
+    struct model_parameters model_parameters;
+    struct engine_parameters engine_parameters;
 };
 struct strikes_type_type {
     std::uint64_t present = 0;
@@ -3340,7 +3340,7 @@ struct calibration {
 };
 struct calibration_spec {
     std::uint64_t present = 0;
-    std::vector<calibration> calibration;
+    std::vector<struct calibration> calibration;
 };
 struct schedule_coarsening {
     std::uint64_t present = 0;
@@ -3354,11 +3354,11 @@ struct new_schedule {
     std::uint64_t present = 0;
     std::string name;
     std::string operation;
-    schedules schedules;
+    struct schedules schedules;
 };
 struct new_schedules {
     std::uint64_t present = 0;
-    std::vector<new_schedule> new_schedule;
+    std::vector<struct new_schedule> new_schedule;
 };
 struct sticky_close_out_states {
     std::uint64_t present = 0;
@@ -3370,7 +3370,7 @@ struct model_states {
 };
 struct conditional_expectation {
     std::uint64_t present = 0;
-    model_states model_states;
+    struct model_states model_states;
 };
 struct components_type {
     std::uint64_t present = 0;
@@ -3384,21 +3384,21 @@ struct target {
 struct amc_cg {
     std::uint64_t present = 0;
     components_type components;
-    target target;
+    struct target target;
 };
 struct ore_script {
     std::uint64_t present = 0;
     std::string purpose;
     std::string code;
     std::string npv;
-    results results;
-    pricing_engine_config_overwrite pricing_engine_config_overwrite;
-    calibration_spec calibration_spec;
-    schedule_coarsening schedule_coarsening;
-    new_schedules new_schedules;
-    sticky_close_out_states sticky_close_out_states;
-    conditional_expectation conditional_expectation;
-    amc_cg amc_cg;
+    struct results results;
+    struct pricing_engine_config_overwrite pricing_engine_config_overwrite;
+    struct calibration_spec calibration_spec;
+    struct schedule_coarsening schedule_coarsening;
+    struct new_schedules new_schedules;
+    struct sticky_close_out_states sticky_close_out_states;
+    struct conditional_expectation conditional_expectation;
+    struct amc_cg amc_cg;
 };
 struct values {
     std::uint64_t present = 0;
@@ -3408,7 +3408,7 @@ struct number {
     std::uint64_t present = 0;
     std::string name;
     std::string value;
-    values values;
+    struct values values;
 };
 struct values_type {
     std::uint64_t present = 0;
@@ -3434,7 +3434,7 @@ struct event {
     std::uint64_t present = 0;
     std::string name;
     std::string value;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     derived_schedule_type derived_schedule;
     std::int16_t apply_coarsening = 0;
 };
@@ -3450,18 +3450,18 @@ struct daycounter {
 };
 struct data {
     std::uint64_t present = 0;
-    std::vector<number> number;
-    std::vector<currency> currency;
-    std::vector<index> index;
-    std::vector<event> event;
-    std::vector<daycounter> daycounter;
+    std::vector<struct number> number;
+    std::vector<struct currency> currency;
+    std::vector<struct index> index;
+    std::vector<struct event> event;
+    std::vector<struct daycounter> daycounter;
 };
 struct scripted_trade_data {
     std::uint64_t present = 0;
     std::string script_name;
     std::string product_tag;
     ore_script script;
-    data data;
+    struct data data;
 };
 struct vanilla_basket_option_data {
     std::uint64_t present = 0;
@@ -3577,8 +3577,8 @@ struct worst_of_basket_swap_data2 {
     ores::utility::decimal::decimal quantity;
     ores::utility::decimal::decimal initial_fixed_rate;
     std::string initial_fixed_pay_date;
-    underlyings underlyings;
-    initial_prices initial_prices;
+    struct underlyings underlyings;
+    struct initial_prices initial_prices;
     std::string knock_in_pay_date;
     schedule_data floating_period_schedule;
     schedule_data floating_fixing_schedule;
@@ -3587,9 +3587,9 @@ struct worst_of_basket_swap_data2 {
     schedule_data fixed_pay_dates;
     schedule_data knock_out_determination_schedule;
     schedule_data fixed_accrual_schedule;
-    knock_out_levels knock_out_levels;
+    struct knock_out_levels knock_out_levels;
     std::string bermudan_knock_in;
-    fixed_trigger_levels fixed_trigger_levels;
+    struct fixed_trigger_levels fixed_trigger_levels;
     ores::utility::decimal::decimal knock_in_level;
     schedule_data knock_in_determination_schedule;
     ores::utility::decimal::decimal fixed_rate;
@@ -3864,7 +3864,7 @@ struct best_entry_option_data2 {
     std::string premium_date;
     std::string settlement_date;
     schedule_data strike_observation_dates;
-    underlying underlying;
+    struct underlying underlying;
 };
 struct tarf_data {
     std::uint64_t present = 0;
@@ -4231,9 +4231,9 @@ struct lapse_hedge_swap_data {
 };
 struct knock_out_swap_data {
     std::uint64_t present = 0;
-    barrier_data barrier_data;
+    struct barrier_data barrier_data;
     std::string barrier_start_date;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct lpi_swap_data {
     std::uint64_t present = 0;
@@ -4283,7 +4283,7 @@ struct strike_resettable_option_data2 {
     ores::utility::decimal::decimal quantity;
     std::int16_t trigger_type = 0;
     ores::utility::decimal::decimal trigger_price;
-    underlying underlying;
+    struct underlying underlying;
     std::string expiry_date;
     std::string settlement_date;
     ores::utility::decimal::decimal premium;
@@ -4294,116 +4294,116 @@ struct component_sub_trade {
     std::uint64_t present[3] = {0};
     std::string id;
     std::int16_t sub_trade_type = 0;
-    envelope envelope;
-    trade_actions trade_actions;
+    struct envelope envelope;
+    struct trade_actions trade_actions;
     struct swap_data cross_currency_swap_data;
     struct swap_data inflation_swap_data;
     struct swap_data swap_data;
     struct swap_data equity_swap_data;
-    callable_swap_data callable_swap_data;
-    arc_option_data arc_option_data;
-    swaption_data swaption_data;
-    swaption_straddle_data swaption_straddle_data;
+    struct callable_swap_data callable_swap_data;
+    struct arc_option_data arc_option_data;
+    struct swaption_data swaption_data;
+    struct swaption_straddle_data swaption_straddle_data;
     struct variance_swap_data variance_swap_data;
     struct variance_swap_data equity_variance_swap_data;
     struct variance_swap_data fx_variance_swap_data;
     struct variance_swap_data commodity_variance_swap_data;
-    forward_rate_agreement_data forward_rate_agreement_data;
-    fx_forward_data fx_forward_data;
-    fx_average_forward_data fx_average_forward_data;
-    fx_option_data fx_option_data;
+    struct forward_rate_agreement_data forward_rate_agreement_data;
+    struct fx_forward_data fx_forward_data;
+    struct fx_average_forward_data fx_average_forward_data;
+    struct fx_option_data fx_option_data;
     struct fx_barrier_option_data fx_barrier_option_data;
     struct fx_barrier_option_data fx_double_barrier_option_data;
-    fx_digital_option_data fx_digital_option_data;
+    struct fx_digital_option_data fx_digital_option_data;
     struct fx_barrier_option_data fx_european_barrier_option_data;
-    fx_kiko_barrier_option_data fx_kiko_barrier_option_data;
-    fx_digital_barrier_option_data fx_digital_barrier_option_data;
+    struct fx_kiko_barrier_option_data fx_kiko_barrier_option_data;
+    struct fx_digital_barrier_option_data fx_digital_barrier_option_data;
     struct fx_touch_option_data fx_touch_option_data;
     struct fx_touch_option_data fx_double_touch_option_data;
-    fx_swap_data fx_swap_data;
-    cap_floor_data cap_floor_data;
-    rate_digital_option_data rate_digital_option_data;
-    equity_future_option_data equity_future_option_data;
-    equity_option_data equity_option_data;
-    equity_auto_delta_hedged_option_data equity_auto_delta_hedged_option_data;
+    struct fx_swap_data fx_swap_data;
+    struct cap_floor_data cap_floor_data;
+    struct rate_digital_option_data rate_digital_option_data;
+    struct equity_future_option_data equity_future_option_data;
+    struct equity_option_data equity_option_data;
+    struct equity_auto_delta_hedged_option_data equity_auto_delta_hedged_option_data;
     eq_barrier_option_data equity_barrier_option_data;
     eq_barrier_option_data equity_double_barrier_option_data;
-    equity_forward_data equity_forward_data;
+    struct equity_forward_data equity_forward_data;
     eq_barrier_option_data equity_european_barrier_option_data;
     eq_digital_option_data equity_digital_option_data;
     eq_touch_option_data equity_double_touch_option_data;
     eq_touch_option_data equity_touch_option_data;
     cliquet_option_data equity_cliquet_option_data;
-    bond_data bond_data;
-    forward_bond_data forward_bond_data;
-    bond_future_data bond_future_data;
-    bond_future_option_data bond_future_option_data;
-    credit_default_swap_data credit_default_swap_data;
-    credit_default_swap_option_data credit_default_swap_option_data;
-    commodity_forward_data commodity_forward_data;
-    intraday_power_forward_data intraday_power_forward_data;
-    commodity_option_data commodity_option_data;
-    commodity_digital_average_price_option_data commodity_digital_average_price_option_data;
-    commodity_digital_option_data commodity_digital_option_data;
-    commodity_spread_option_data commodity_spread_option_data;
-    commodity_swap_data commodity_swap_data;
-    commodity_swaption_data commodity_swaption_data;
-    commodity_average_price_option_data commodity_average_price_option_data;
-    commodity_option_strip_data commodity_option_strip_data;
-    commodity_position_data commodity_position_data;
+    struct bond_data bond_data;
+    struct forward_bond_data forward_bond_data;
+    struct bond_future_data bond_future_data;
+    struct bond_future_option_data bond_future_option_data;
+    struct credit_default_swap_data credit_default_swap_data;
+    struct credit_default_swap_option_data credit_default_swap_option_data;
+    struct commodity_forward_data commodity_forward_data;
+    struct intraday_power_forward_data intraday_power_forward_data;
+    struct commodity_option_data commodity_option_data;
+    struct commodity_digital_average_price_option_data commodity_digital_average_price_option_data;
+    struct commodity_digital_option_data commodity_digital_option_data;
+    struct commodity_spread_option_data commodity_spread_option_data;
+    struct commodity_swap_data commodity_swap_data;
+    struct commodity_swaption_data commodity_swaption_data;
+    struct commodity_average_price_option_data commodity_average_price_option_data;
+    struct commodity_option_strip_data commodity_option_strip_data;
+    struct commodity_position_data commodity_position_data;
     single_underlying_asian_option_data equity_asian_option_data;
     single_underlying_asian_option_data fx_asian_option_data;
     single_underlying_asian_option_data commodity_asian_option_data;
-    bond_option_data bond_option_data;
-    bond_repo_data bond_repo_data;
-    bond_trs_data bond_trs_data;
-    cdo_data cdo_data;
-    credit_linked_swap_data credit_linked_swap_data;
-    index_credit_default_swap_data index_credit_default_swap_data;
-    index_credit_default_swap_option_data index_credit_default_swap_option_data;
-    ascot_data ascot_data;
-    convertible_bond_data convertible_bond_data;
-    callable_bond_data callable_bond_data;
+    struct bond_option_data bond_option_data;
+    struct bond_repo_data bond_repo_data;
+    struct bond_trs_data bond_trs_data;
+    struct cdo_data cdo_data;
+    struct credit_linked_swap_data credit_linked_swap_data;
+    struct index_credit_default_swap_data index_credit_default_swap_data;
+    struct index_credit_default_swap_option_data index_credit_default_swap_option_data;
+    struct ascot_data ascot_data;
+    struct convertible_bond_data convertible_bond_data;
+    struct callable_bond_data callable_bond_data;
     tlock_data treasury_lock_data;
     rpa_data risk_participation_agreement_data;
     std::vector<std::uint32_t> cbo_data;
     std::vector<struct cbodata> cbo_data_arena;
-    bond_basket_data bond_basket_data;
-    equity_position_data equity_position_data;
-    equity_option_position_data equity_option_position_data;
+    struct bond_basket_data bond_basket_data;
+    struct equity_position_data equity_position_data;
+    struct equity_option_position_data equity_option_position_data;
     std::vector<std::uint32_t> total_return_swap_data;
     std::vector<struct total_return_swap_data> total_return_swap_data_arena;
     std::vector<std::uint32_t> contract_for_difference_data;
     std::vector<struct total_return_swap_data> contract_for_difference_data_arena;
-    composite_trade_data composite_trade_data;
+    struct composite_trade_data composite_trade_data;
     pairwise_variance_swap_data1 pairwise_variance_swap_data;
     pairwise_variance_swap_data2 equity_pairwise_variance_swap_data;
     pairwise_variance_swap_data2 fx_pairwise_variance_swap_data;
     eq_outperformance_option_data equity_outperformance_option_data;
-    flexi_swap_data flexi_swap_data;
+    struct flexi_swap_data flexi_swap_data;
     bg_swap_data balance_guaranteed_swap_data;
-    commodity_revenue_option_data commodity_revenue_option_data;
-    basket_variance_swap_data basket_variance_swap_data;
+    struct commodity_revenue_option_data commodity_revenue_option_data;
+    struct basket_variance_swap_data basket_variance_swap_data;
     basket_variance_swap_data2 equity_basket_variance_swap_data;
     basket_variance_swap_data2 fx_basket_variance_swap_data;
     basket_variance_swap_data2 commodity_basket_variance_swap_data;
-    extended_accumulator_data extended_accumulator_data;
-    variance_option_data variance_option_data;
-    variance_dispersion_swap_data variance_dispersion_swap_data;
-    kiko_variance_swap_data kiko_variance_swap_data;
-    corridor_variance_swap_data corridor_variance_swap_data;
-    indexed_corridor_variance_swap_data indexed_corridor_variance_swap_data;
-    kiko_corridor_variance_swap_data kiko_corridor_variance_swap_data;
-    corridor_variance_dispersion_swap_data corridor_variance_dispersion_swap_data;
-    ko_corridor_variance_dispersion_swap_data ko_corridor_variance_dispersion_swap_data;
-    pairwise_geometric_variance_dispersion_swap_data
+    struct extended_accumulator_data extended_accumulator_data;
+    struct variance_option_data variance_option_data;
+    struct variance_dispersion_swap_data variance_dispersion_swap_data;
+    struct kiko_variance_swap_data kiko_variance_swap_data;
+    struct corridor_variance_swap_data corridor_variance_swap_data;
+    struct indexed_corridor_variance_swap_data indexed_corridor_variance_swap_data;
+    struct kiko_corridor_variance_swap_data kiko_corridor_variance_swap_data;
+    struct corridor_variance_dispersion_swap_data corridor_variance_dispersion_swap_data;
+    struct ko_corridor_variance_dispersion_swap_data ko_corridor_variance_dispersion_swap_data;
+    struct pairwise_geometric_variance_dispersion_swap_data
         pairwise_geometric_variance_dispersion_swap_data;
-    conditional_variance_swap01_data conditional_variance_swap01_data;
-    conditional_variance_swap02_data conditional_variance_swap02_data;
-    gamma_swap_data gamma_swap_data;
-    best_entry_option_data best_entry_option_data;
-    dual_euro_binary_option_data dual_euro_binary_option_data;
-    dual_euro_binary_option_double_ko_data dual_euro_binary_option_double_ko_data;
+    struct conditional_variance_swap01_data conditional_variance_swap01_data;
+    struct conditional_variance_swap02_data conditional_variance_swap02_data;
+    struct gamma_swap_data gamma_swap_data;
+    struct best_entry_option_data best_entry_option_data;
+    struct dual_euro_binary_option_data dual_euro_binary_option_data;
+    struct dual_euro_binary_option_double_ko_data dual_euro_binary_option_double_ko_data;
     vol_barrier_option_data volatility_barrier_option_data;
     forward_volatility_agreement_data2 fx_forward_volatility_agreement_data;
     forward_volatility_agreement_data2 equity_forward_volatility_agreement_data;
@@ -4414,76 +4414,77 @@ struct component_sub_trade {
     accumulator_data fx_accumulator_data;
     accumulator_data equity_accumulator_data;
     accumulator_data commodity_accumulator_data;
-    callable_range_accrual_data callable_range_accrual_data;
+    struct callable_range_accrual_data callable_range_accrual_data;
     window_barrier_option_data2 fx_window_barrier_option_data;
     window_barrier_option_data2 equity_window_barrier_option_data;
     window_barrier_option_data2 commodity_window_barier_option_data;
     basket_option_data equity_basket_option_data;
     basket_option_data fx_basket_option_data;
     basket_option_data commodity_basket_option_data;
-    generic_barrier_option_data fx_generic_barrier_option_data;
-    generic_barrier_option_data equity_generic_barrier_option_data;
-    generic_barrier_option_data commodity_generic_barrier_option_data;
+    struct generic_barrier_option_data fx_generic_barrier_option_data;
+    struct generic_barrier_option_data equity_generic_barrier_option_data;
+    struct generic_barrier_option_data commodity_generic_barrier_option_data;
     rainbow_option_data equity_rainbow_option_data;
     rainbow_option_data fx_rainbow_option_data;
     rainbow_option_data commodity_rainbow_option_data;
-    autocallable01_data autocallable01_data;
-    double_digital_option_data double_digital_option_data;
-    performance_option01_data performance_option01_data;
-    scripted_trade_data scripted_trade_data;
-    vanilla_basket_option_data vanilla_basket_option_data;
-    asian_basket_option_data asian_basket_option_data;
-    average_strike_basket_option_data average_strike_basket_option_data;
-    lookback_call_basket_option_data lookback_call_basket_option_data;
-    lookback_put_basket_option_data lookback_put_basket_option_data;
-    best_of_airbag_data best_of_airbag_data;
-    worst_of_basket_swap_data worst_of_basket_swap_data;
+    struct autocallable01_data autocallable01_data;
+    struct double_digital_option_data double_digital_option_data;
+    struct performance_option01_data performance_option01_data;
+    struct scripted_trade_data scripted_trade_data;
+    struct vanilla_basket_option_data vanilla_basket_option_data;
+    struct asian_basket_option_data asian_basket_option_data;
+    struct average_strike_basket_option_data average_strike_basket_option_data;
+    struct lookback_call_basket_option_data lookback_call_basket_option_data;
+    struct lookback_put_basket_option_data lookback_put_basket_option_data;
+    struct best_of_airbag_data best_of_airbag_data;
+    struct worst_of_basket_swap_data worst_of_basket_swap_data;
     worst_of_basket_swap_data2 fx_worst_of_basket_swap_data;
     worst_of_basket_swap_data2 equity_worst_of_basket_swap_data;
     worst_of_basket_swap_data2 commodity_worst_of_basket_swap_data;
-    worst_performance_rainbow_option01_data worst_performance_rainbow_option01_data;
-    worst_performance_rainbow_option02_data worst_performance_rainbow_option02_data;
-    worst_performance_rainbow_option03_data worst_performance_rainbow_option03_data;
-    worst_performance_rainbow_option04_data worst_performance_rainbow_option04_data;
-    worst_performance_rainbow_option05_data worst_performance_rainbow_option05_data;
-    worst_performance_rainbow_option06_data worst_performance_rainbow_option06_data;
-    worst_performance_rainbow_option07_data worst_performance_rainbow_option07_data;
-    worst_performance_rainbow_option08_data worst_performance_rainbow_option08_data;
-    worst_performance_rainbow_option09_data worst_performance_rainbow_option09_data;
-    best_of_asset_or_cash_rainbow_option_data best_of_asset_or_cash_rainbow_option_data;
-    worst_of_asset_or_cash_rainbow_option_data worst_of_asset_or_cash_rainbow_option_data;
-    min_rainbow_option_data min_rainbow_option_data;
-    max_rainbow_option_data max_rainbow_option_data;
-    window_barrier_option_data window_barrier_option_data;
-    accumulator01_data accumulator01_data;
-    accumulator02_data accumulator02_data;
+    struct worst_performance_rainbow_option01_data worst_performance_rainbow_option01_data;
+    struct worst_performance_rainbow_option02_data worst_performance_rainbow_option02_data;
+    struct worst_performance_rainbow_option03_data worst_performance_rainbow_option03_data;
+    struct worst_performance_rainbow_option04_data worst_performance_rainbow_option04_data;
+    struct worst_performance_rainbow_option05_data worst_performance_rainbow_option05_data;
+    struct worst_performance_rainbow_option06_data worst_performance_rainbow_option06_data;
+    struct worst_performance_rainbow_option07_data worst_performance_rainbow_option07_data;
+    struct worst_performance_rainbow_option08_data worst_performance_rainbow_option08_data;
+    struct worst_performance_rainbow_option09_data worst_performance_rainbow_option09_data;
+    struct best_of_asset_or_cash_rainbow_option_data best_of_asset_or_cash_rainbow_option_data;
+    struct worst_of_asset_or_cash_rainbow_option_data worst_of_asset_or_cash_rainbow_option_data;
+    struct min_rainbow_option_data min_rainbow_option_data;
+    struct max_rainbow_option_data max_rainbow_option_data;
+    struct window_barrier_option_data window_barrier_option_data;
+    struct accumulator01_data accumulator01_data;
+    struct accumulator02_data accumulator02_data;
     best_entry_option_data2 equity_best_entry_option_data;
     best_entry_option_data2 fx_best_entry_option_data;
     best_entry_option_data2 commodity_best_entry_option_data;
     tarf_data ta_rf_data;
-    european_rainbow_call_spread_option_data european_rainbow_call_spread_option_data;
-    rainbow_call_spread_barrier_option_data rainbow_call_spread_barrier_option_data;
-    asian_rainbow_call_spread_option_data asian_rainbow_call_spread_option_data;
-    asian_ir_cap_floor_data asian_ir_cap_floor_data;
-    forward_volatility_agreement_data forward_volatility_agreement_data;
-    correlation_swap_data correlation_swap_data;
-    asset_linked_cliquet_option_data asset_linked_cliquet_option_data;
-    constant_maturity_volatility_swap_data constant_maturity_volatility_swap_data;
-    cms_cap_floor_barrier_data cms_cap_floor_barrier_data;
-    fixed_strike_forward_starting_option_data fixed_strike_forward_starting_option_data;
-    floating_strike_forward_starting_option_data floating_strike_forward_starting_option_data;
-    forward_starting_swaption_data forward_starting_swaption_data;
-    floored_average_cpizciis_data floored_average_cpizciis_data;
+    struct european_rainbow_call_spread_option_data european_rainbow_call_spread_option_data;
+    struct rainbow_call_spread_barrier_option_data rainbow_call_spread_barrier_option_data;
+    struct asian_rainbow_call_spread_option_data asian_rainbow_call_spread_option_data;
+    struct asian_ir_cap_floor_data asian_ir_cap_floor_data;
+    struct forward_volatility_agreement_data forward_volatility_agreement_data;
+    struct correlation_swap_data correlation_swap_data;
+    struct asset_linked_cliquet_option_data asset_linked_cliquet_option_data;
+    struct constant_maturity_volatility_swap_data constant_maturity_volatility_swap_data;
+    struct cms_cap_floor_barrier_data cms_cap_floor_barrier_data;
+    struct fixed_strike_forward_starting_option_data fixed_strike_forward_starting_option_data;
+    struct floating_strike_forward_starting_option_data
+        floating_strike_forward_starting_option_data;
+    struct forward_starting_swaption_data forward_starting_swaption_data;
+    struct floored_average_cpizciis_data floored_average_cpizciis_data;
     generic_barrier_option_data_raw generic_barrier_option_data;
-    moving_max_yyiis_data moving_max_yyiis_data;
-    irregular_yyiis_data irregular_yyiis_data;
-    european_option_barrier_data european_option_barrier_data;
-    ladder_lock_in_option_data ladder_lock_in_option_data;
-    lapse_hedge_swap_data lapse_hedge_swap_data;
-    knock_out_swap_data knock_out_swap_data;
-    lpi_swap_data lpi_swap_data;
-    cash_position_data cash_position_data;
-    strike_resettable_option_data strike_resettable_option_data;
+    struct moving_max_yyiis_data moving_max_yyiis_data;
+    struct irregular_yyiis_data irregular_yyiis_data;
+    struct european_option_barrier_data european_option_barrier_data;
+    struct ladder_lock_in_option_data ladder_lock_in_option_data;
+    struct lapse_hedge_swap_data lapse_hedge_swap_data;
+    struct knock_out_swap_data knock_out_swap_data;
+    struct lpi_swap_data lpi_swap_data;
+    struct cash_position_data cash_position_data;
+    struct strike_resettable_option_data strike_resettable_option_data;
     strike_resettable_option_data2 equity_strike_resettable_option_data;
     strike_resettable_option_data2 fx_strike_resettable_option_data;
     strike_resettable_option_data2 commodity_strike_resettable_option_data;
@@ -4503,11 +4504,11 @@ struct portfolio_index_trade_data {
 };
 struct trs_underlying_data {
     std::uint64_t present = 0;
-    std::vector<derivative> derivative;
+    std::vector<struct derivative> derivative;
     std::vector<std::uint32_t> trade;
     std::vector<struct component_trade> trade_arena;
     std::vector<component_sub_trade> sub_trade;
-    std::vector<portfolio_index_trade_data> portfolio_index_trade_data;
+    std::vector<struct portfolio_index_trade_data> portfolio_index_trade_data;
 };
 struct trs_return_data_payment_dates_type {
     std::uint64_t present = 0;
@@ -4517,7 +4518,7 @@ struct trs_return_data {
     std::uint64_t present = 0;
     std::string payer;
     std::int16_t currency = 0;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
     std::string observation_lag;
     std::int16_t observation_convention = 0;
     std::string observation_calendar;
@@ -4536,11 +4537,11 @@ struct trs_funding_data {
     std::uint64_t present = 0;
     std::vector<std::int64_t> funding_reset_grace_period;
     std::vector<std::int16_t> notional_type;
-    std::vector<leg_data> leg_data;
+    std::vector<struct leg_data> leg_data;
 };
 struct trs_additional_cashflow_data {
     std::uint64_t present = 0;
-    leg_data leg_data;
+    struct leg_data leg_data;
 };
 struct total_return_swap_data {
     std::uint64_t present = 0;
@@ -4553,114 +4554,114 @@ struct component_trade {
     std::uint64_t present[3] = {0};
     std::string id;
     std::int16_t trade_type = 0;
-    envelope envelope;
-    trade_actions trade_actions;
+    struct envelope envelope;
+    struct trade_actions trade_actions;
     struct swap_data cross_currency_swap_data;
     struct swap_data inflation_swap_data;
     struct swap_data swap_data;
     struct swap_data equity_swap_data;
-    callable_swap_data callable_swap_data;
-    arc_option_data arc_option_data;
-    swaption_data swaption_data;
-    swaption_straddle_data swaption_straddle_data;
+    struct callable_swap_data callable_swap_data;
+    struct arc_option_data arc_option_data;
+    struct swaption_data swaption_data;
+    struct swaption_straddle_data swaption_straddle_data;
     struct variance_swap_data variance_swap_data;
     struct variance_swap_data equity_variance_swap_data;
     struct variance_swap_data fx_variance_swap_data;
     struct variance_swap_data commodity_variance_swap_data;
-    forward_rate_agreement_data forward_rate_agreement_data;
-    fx_forward_data fx_forward_data;
-    fx_average_forward_data fx_average_forward_data;
-    fx_option_data fx_option_data;
+    struct forward_rate_agreement_data forward_rate_agreement_data;
+    struct fx_forward_data fx_forward_data;
+    struct fx_average_forward_data fx_average_forward_data;
+    struct fx_option_data fx_option_data;
     struct fx_barrier_option_data fx_barrier_option_data;
     struct fx_barrier_option_data fx_double_barrier_option_data;
-    fx_digital_option_data fx_digital_option_data;
+    struct fx_digital_option_data fx_digital_option_data;
     struct fx_barrier_option_data fx_european_barrier_option_data;
-    fx_kiko_barrier_option_data fx_kiko_barrier_option_data;
-    fx_digital_barrier_option_data fx_digital_barrier_option_data;
+    struct fx_kiko_barrier_option_data fx_kiko_barrier_option_data;
+    struct fx_digital_barrier_option_data fx_digital_barrier_option_data;
     struct fx_touch_option_data fx_touch_option_data;
     struct fx_touch_option_data fx_double_touch_option_data;
-    fx_swap_data fx_swap_data;
-    cap_floor_data cap_floor_data;
-    rate_digital_option_data rate_digital_option_data;
-    equity_future_option_data equity_future_option_data;
-    equity_option_data equity_option_data;
-    equity_auto_delta_hedged_option_data equity_auto_delta_hedged_option_data;
+    struct fx_swap_data fx_swap_data;
+    struct cap_floor_data cap_floor_data;
+    struct rate_digital_option_data rate_digital_option_data;
+    struct equity_future_option_data equity_future_option_data;
+    struct equity_option_data equity_option_data;
+    struct equity_auto_delta_hedged_option_data equity_auto_delta_hedged_option_data;
     eq_barrier_option_data equity_barrier_option_data;
     eq_barrier_option_data equity_double_barrier_option_data;
-    equity_forward_data equity_forward_data;
+    struct equity_forward_data equity_forward_data;
     eq_barrier_option_data equity_european_barrier_option_data;
     eq_digital_option_data equity_digital_option_data;
     eq_touch_option_data equity_double_touch_option_data;
     eq_touch_option_data equity_touch_option_data;
     cliquet_option_data equity_cliquet_option_data;
-    bond_data bond_data;
-    forward_bond_data forward_bond_data;
-    bond_future_data bond_future_data;
-    bond_future_option_data bond_future_option_data;
-    credit_default_swap_data credit_default_swap_data;
-    credit_default_swap_option_data credit_default_swap_option_data;
-    commodity_forward_data commodity_forward_data;
-    intraday_power_forward_data intraday_power_forward_data;
-    commodity_option_data commodity_option_data;
-    commodity_digital_average_price_option_data commodity_digital_average_price_option_data;
-    commodity_digital_option_data commodity_digital_option_data;
-    commodity_spread_option_data commodity_spread_option_data;
-    commodity_swap_data commodity_swap_data;
-    commodity_swaption_data commodity_swaption_data;
-    commodity_average_price_option_data commodity_average_price_option_data;
-    commodity_option_strip_data commodity_option_strip_data;
-    commodity_position_data commodity_position_data;
+    struct bond_data bond_data;
+    struct forward_bond_data forward_bond_data;
+    struct bond_future_data bond_future_data;
+    struct bond_future_option_data bond_future_option_data;
+    struct credit_default_swap_data credit_default_swap_data;
+    struct credit_default_swap_option_data credit_default_swap_option_data;
+    struct commodity_forward_data commodity_forward_data;
+    struct intraday_power_forward_data intraday_power_forward_data;
+    struct commodity_option_data commodity_option_data;
+    struct commodity_digital_average_price_option_data commodity_digital_average_price_option_data;
+    struct commodity_digital_option_data commodity_digital_option_data;
+    struct commodity_spread_option_data commodity_spread_option_data;
+    struct commodity_swap_data commodity_swap_data;
+    struct commodity_swaption_data commodity_swaption_data;
+    struct commodity_average_price_option_data commodity_average_price_option_data;
+    struct commodity_option_strip_data commodity_option_strip_data;
+    struct commodity_position_data commodity_position_data;
     single_underlying_asian_option_data equity_asian_option_data;
     single_underlying_asian_option_data fx_asian_option_data;
     single_underlying_asian_option_data commodity_asian_option_data;
-    bond_option_data bond_option_data;
-    bond_repo_data bond_repo_data;
-    bond_trs_data bond_trs_data;
-    cdo_data cdo_data;
-    credit_linked_swap_data credit_linked_swap_data;
-    index_credit_default_swap_data index_credit_default_swap_data;
-    index_credit_default_swap_option_data index_credit_default_swap_option_data;
-    ascot_data ascot_data;
-    convertible_bond_data convertible_bond_data;
-    callable_bond_data callable_bond_data;
+    struct bond_option_data bond_option_data;
+    struct bond_repo_data bond_repo_data;
+    struct bond_trs_data bond_trs_data;
+    struct cdo_data cdo_data;
+    struct credit_linked_swap_data credit_linked_swap_data;
+    struct index_credit_default_swap_data index_credit_default_swap_data;
+    struct index_credit_default_swap_option_data index_credit_default_swap_option_data;
+    struct ascot_data ascot_data;
+    struct convertible_bond_data convertible_bond_data;
+    struct callable_bond_data callable_bond_data;
     tlock_data treasury_lock_data;
     rpa_data risk_participation_agreement_data;
     std::vector<std::uint32_t> cbo_data;
     std::vector<struct cbodata> cbo_data_arena;
-    bond_basket_data bond_basket_data;
-    equity_position_data equity_position_data;
-    equity_option_position_data equity_option_position_data;
+    struct bond_basket_data bond_basket_data;
+    struct equity_position_data equity_position_data;
+    struct equity_option_position_data equity_option_position_data;
     struct total_return_swap_data total_return_swap_data;
     struct total_return_swap_data contract_for_difference_data;
-    composite_trade_data composite_trade_data;
+    struct composite_trade_data composite_trade_data;
     pairwise_variance_swap_data1 pairwise_variance_swap_data;
     pairwise_variance_swap_data2 equity_pairwise_variance_swap_data;
     pairwise_variance_swap_data2 fx_pairwise_variance_swap_data;
     eq_outperformance_option_data equity_outperformance_option_data;
-    flexi_swap_data flexi_swap_data;
+    struct flexi_swap_data flexi_swap_data;
     bg_swap_data balance_guaranteed_swap_data;
-    commodity_revenue_option_data commodity_revenue_option_data;
-    basket_variance_swap_data basket_variance_swap_data;
+    struct commodity_revenue_option_data commodity_revenue_option_data;
+    struct basket_variance_swap_data basket_variance_swap_data;
     basket_variance_swap_data2 equity_basket_variance_swap_data;
     basket_variance_swap_data2 fx_basket_variance_swap_data;
     basket_variance_swap_data2 commodity_basket_variance_swap_data;
-    extended_accumulator_data extended_accumulator_data;
-    variance_option_data variance_option_data;
-    variance_dispersion_swap_data variance_dispersion_swap_data;
-    kiko_variance_swap_data kiko_variance_swap_data;
-    corridor_variance_swap_data corridor_variance_swap_data;
-    indexed_corridor_variance_swap_data indexed_corridor_variance_swap_data;
-    kiko_corridor_variance_swap_data kiko_corridor_variance_swap_data;
-    corridor_variance_dispersion_swap_data corridor_variance_dispersion_swap_data;
-    ko_corridor_variance_dispersion_swap_data ko_corridor_variance_dispersion_swap_data;
-    pairwise_geometric_variance_dispersion_swap_data
+    struct extended_accumulator_data extended_accumulator_data;
+    struct variance_option_data variance_option_data;
+    struct variance_dispersion_swap_data variance_dispersion_swap_data;
+    struct kiko_variance_swap_data kiko_variance_swap_data;
+    struct corridor_variance_swap_data corridor_variance_swap_data;
+    struct indexed_corridor_variance_swap_data indexed_corridor_variance_swap_data;
+    struct kiko_corridor_variance_swap_data kiko_corridor_variance_swap_data;
+    struct corridor_variance_dispersion_swap_data corridor_variance_dispersion_swap_data;
+    struct ko_corridor_variance_dispersion_swap_data ko_corridor_variance_dispersion_swap_data;
+    struct pairwise_geometric_variance_dispersion_swap_data
         pairwise_geometric_variance_dispersion_swap_data;
-    conditional_variance_swap01_data conditional_variance_swap01_data;
-    conditional_variance_swap02_data conditional_variance_swap02_data;
-    gamma_swap_data gamma_swap_data;
-    best_entry_option_data best_entry_option_data;
-    dual_euro_binary_option_data dual_euro_binary_option_data;
-    dual_euro_binary_option_double_ko_data dual_euro_binary_option_double_ko_data;
+    struct conditional_variance_swap01_data conditional_variance_swap01_data;
+    struct conditional_variance_swap02_data conditional_variance_swap02_data;
+    struct gamma_swap_data gamma_swap_data;
+    struct best_entry_option_data best_entry_option_data;
+    struct dual_euro_binary_option_data dual_euro_binary_option_data;
+    struct dual_euro_binary_option_double_ko_data dual_euro_binary_option_double_ko_data;
     vol_barrier_option_data volatility_barrier_option_data;
     forward_volatility_agreement_data2 fx_forward_volatility_agreement_data;
     forward_volatility_agreement_data2 equity_forward_volatility_agreement_data;
@@ -4671,76 +4672,77 @@ struct component_trade {
     accumulator_data fx_accumulator_data;
     accumulator_data equity_accumulator_data;
     accumulator_data commodity_accumulator_data;
-    callable_range_accrual_data callable_range_accrual_data;
+    struct callable_range_accrual_data callable_range_accrual_data;
     window_barrier_option_data2 fx_window_barrier_option_data;
     window_barrier_option_data2 equity_window_barrier_option_data;
     window_barrier_option_data2 commodity_window_barier_option_data;
     basket_option_data equity_basket_option_data;
     basket_option_data fx_basket_option_data;
     basket_option_data commodity_basket_option_data;
-    generic_barrier_option_data fx_generic_barrier_option_data;
-    generic_barrier_option_data equity_generic_barrier_option_data;
-    generic_barrier_option_data commodity_generic_barrier_option_data;
+    struct generic_barrier_option_data fx_generic_barrier_option_data;
+    struct generic_barrier_option_data equity_generic_barrier_option_data;
+    struct generic_barrier_option_data commodity_generic_barrier_option_data;
     rainbow_option_data equity_rainbow_option_data;
     rainbow_option_data fx_rainbow_option_data;
     rainbow_option_data commodity_rainbow_option_data;
-    autocallable01_data autocallable01_data;
-    double_digital_option_data double_digital_option_data;
-    performance_option01_data performance_option01_data;
-    scripted_trade_data scripted_trade_data;
-    vanilla_basket_option_data vanilla_basket_option_data;
-    asian_basket_option_data asian_basket_option_data;
-    average_strike_basket_option_data average_strike_basket_option_data;
-    lookback_call_basket_option_data lookback_call_basket_option_data;
-    lookback_put_basket_option_data lookback_put_basket_option_data;
-    best_of_airbag_data best_of_airbag_data;
-    worst_of_basket_swap_data worst_of_basket_swap_data;
+    struct autocallable01_data autocallable01_data;
+    struct double_digital_option_data double_digital_option_data;
+    struct performance_option01_data performance_option01_data;
+    struct scripted_trade_data scripted_trade_data;
+    struct vanilla_basket_option_data vanilla_basket_option_data;
+    struct asian_basket_option_data asian_basket_option_data;
+    struct average_strike_basket_option_data average_strike_basket_option_data;
+    struct lookback_call_basket_option_data lookback_call_basket_option_data;
+    struct lookback_put_basket_option_data lookback_put_basket_option_data;
+    struct best_of_airbag_data best_of_airbag_data;
+    struct worst_of_basket_swap_data worst_of_basket_swap_data;
     worst_of_basket_swap_data2 fx_worst_of_basket_swap_data;
     worst_of_basket_swap_data2 equity_worst_of_basket_swap_data;
     worst_of_basket_swap_data2 commodity_worst_of_basket_swap_data;
-    worst_performance_rainbow_option01_data worst_performance_rainbow_option01_data;
-    worst_performance_rainbow_option02_data worst_performance_rainbow_option02_data;
-    worst_performance_rainbow_option03_data worst_performance_rainbow_option03_data;
-    worst_performance_rainbow_option04_data worst_performance_rainbow_option04_data;
-    worst_performance_rainbow_option05_data worst_performance_rainbow_option05_data;
-    worst_performance_rainbow_option06_data worst_performance_rainbow_option06_data;
-    worst_performance_rainbow_option07_data worst_performance_rainbow_option07_data;
-    worst_performance_rainbow_option08_data worst_performance_rainbow_option08_data;
-    worst_performance_rainbow_option09_data worst_performance_rainbow_option09_data;
-    best_of_asset_or_cash_rainbow_option_data best_of_asset_or_cash_rainbow_option_data;
-    worst_of_asset_or_cash_rainbow_option_data worst_of_asset_or_cash_rainbow_option_data;
-    min_rainbow_option_data min_rainbow_option_data;
-    max_rainbow_option_data max_rainbow_option_data;
-    window_barrier_option_data window_barrier_option_data;
-    accumulator01_data accumulator01_data;
-    accumulator02_data accumulator02_data;
+    struct worst_performance_rainbow_option01_data worst_performance_rainbow_option01_data;
+    struct worst_performance_rainbow_option02_data worst_performance_rainbow_option02_data;
+    struct worst_performance_rainbow_option03_data worst_performance_rainbow_option03_data;
+    struct worst_performance_rainbow_option04_data worst_performance_rainbow_option04_data;
+    struct worst_performance_rainbow_option05_data worst_performance_rainbow_option05_data;
+    struct worst_performance_rainbow_option06_data worst_performance_rainbow_option06_data;
+    struct worst_performance_rainbow_option07_data worst_performance_rainbow_option07_data;
+    struct worst_performance_rainbow_option08_data worst_performance_rainbow_option08_data;
+    struct worst_performance_rainbow_option09_data worst_performance_rainbow_option09_data;
+    struct best_of_asset_or_cash_rainbow_option_data best_of_asset_or_cash_rainbow_option_data;
+    struct worst_of_asset_or_cash_rainbow_option_data worst_of_asset_or_cash_rainbow_option_data;
+    struct min_rainbow_option_data min_rainbow_option_data;
+    struct max_rainbow_option_data max_rainbow_option_data;
+    struct window_barrier_option_data window_barrier_option_data;
+    struct accumulator01_data accumulator01_data;
+    struct accumulator02_data accumulator02_data;
     best_entry_option_data2 equity_best_entry_option_data;
     best_entry_option_data2 fx_best_entry_option_data;
     best_entry_option_data2 commodity_best_entry_option_data;
     tarf_data ta_rf_data;
-    european_rainbow_call_spread_option_data european_rainbow_call_spread_option_data;
-    rainbow_call_spread_barrier_option_data rainbow_call_spread_barrier_option_data;
-    asian_rainbow_call_spread_option_data asian_rainbow_call_spread_option_data;
-    asian_ir_cap_floor_data asian_ir_cap_floor_data;
-    forward_volatility_agreement_data forward_volatility_agreement_data;
-    correlation_swap_data correlation_swap_data;
-    asset_linked_cliquet_option_data asset_linked_cliquet_option_data;
-    constant_maturity_volatility_swap_data constant_maturity_volatility_swap_data;
-    cms_cap_floor_barrier_data cms_cap_floor_barrier_data;
-    fixed_strike_forward_starting_option_data fixed_strike_forward_starting_option_data;
-    floating_strike_forward_starting_option_data floating_strike_forward_starting_option_data;
-    forward_starting_swaption_data forward_starting_swaption_data;
-    floored_average_cpizciis_data floored_average_cpizciis_data;
+    struct european_rainbow_call_spread_option_data european_rainbow_call_spread_option_data;
+    struct rainbow_call_spread_barrier_option_data rainbow_call_spread_barrier_option_data;
+    struct asian_rainbow_call_spread_option_data asian_rainbow_call_spread_option_data;
+    struct asian_ir_cap_floor_data asian_ir_cap_floor_data;
+    struct forward_volatility_agreement_data forward_volatility_agreement_data;
+    struct correlation_swap_data correlation_swap_data;
+    struct asset_linked_cliquet_option_data asset_linked_cliquet_option_data;
+    struct constant_maturity_volatility_swap_data constant_maturity_volatility_swap_data;
+    struct cms_cap_floor_barrier_data cms_cap_floor_barrier_data;
+    struct fixed_strike_forward_starting_option_data fixed_strike_forward_starting_option_data;
+    struct floating_strike_forward_starting_option_data
+        floating_strike_forward_starting_option_data;
+    struct forward_starting_swaption_data forward_starting_swaption_data;
+    struct floored_average_cpizciis_data floored_average_cpizciis_data;
     generic_barrier_option_data_raw generic_barrier_option_data;
-    moving_max_yyiis_data moving_max_yyiis_data;
-    irregular_yyiis_data irregular_yyiis_data;
-    european_option_barrier_data european_option_barrier_data;
-    ladder_lock_in_option_data ladder_lock_in_option_data;
-    lapse_hedge_swap_data lapse_hedge_swap_data;
-    knock_out_swap_data knock_out_swap_data;
-    lpi_swap_data lpi_swap_data;
-    cash_position_data cash_position_data;
-    strike_resettable_option_data strike_resettable_option_data;
+    struct moving_max_yyiis_data moving_max_yyiis_data;
+    struct irregular_yyiis_data irregular_yyiis_data;
+    struct european_option_barrier_data european_option_barrier_data;
+    struct ladder_lock_in_option_data ladder_lock_in_option_data;
+    struct lapse_hedge_swap_data lapse_hedge_swap_data;
+    struct knock_out_swap_data knock_out_swap_data;
+    struct lpi_swap_data lpi_swap_data;
+    struct cash_position_data cash_position_data;
+    struct strike_resettable_option_data strike_resettable_option_data;
     strike_resettable_option_data2 equity_strike_resettable_option_data;
     strike_resettable_option_data2 fx_strike_resettable_option_data;
     strike_resettable_option_data2 commodity_strike_resettable_option_data;
@@ -4756,25 +4758,25 @@ struct cbotranche {
     ores::utility::decimal::decimal ic_ratio;
     ores::utility::decimal::decimal oc_ratio;
     ores::utility::decimal::decimal notional;
-    cashflow_data cashflow_data;
-    fixed_leg_data fixed_leg_data;
-    floating_leg_data floating_leg_data;
-    range_accrual_leg_data range_accrual_leg_data;
-    cpi_leg_data cpi_leg_data;
-    yy_leg_data yy_leg_data;
-    cms_leg_data cms_leg_data;
-    cmb_leg_data cmb_leg_data;
-    digital_cms_leg_data digital_cms_leg_data;
-    duration_adjusted_cms_leg_data duration_adjusted_cms_leg_data;
-    cms_spread_leg_data cms_spread_leg_data;
-    digital_cms_spread_leg_data digital_cms_spread_leg_data;
-    equity_leg_data equity_leg_data;
-    zero_coupon_fixed_leg_data zero_coupon_fixed_leg_data;
-    equity_margin_leg_data equity_margin_leg_data;
-    commodity_fixed_leg_data commodity_fixed_leg_data;
-    commodity_floating_leg_data commodity_floating_leg_data;
-    intraday_power_floating_leg_data intraday_power_floating_leg_data;
-    formula_based_leg_data formula_based_leg_data;
+    struct cashflow_data cashflow_data;
+    struct fixed_leg_data fixed_leg_data;
+    struct floating_leg_data floating_leg_data;
+    struct range_accrual_leg_data range_accrual_leg_data;
+    struct cpi_leg_data cpi_leg_data;
+    struct yy_leg_data yy_leg_data;
+    struct cms_leg_data cms_leg_data;
+    struct cmb_leg_data cmb_leg_data;
+    struct digital_cms_leg_data digital_cms_leg_data;
+    struct duration_adjusted_cms_leg_data duration_adjusted_cms_leg_data;
+    struct cms_spread_leg_data cms_spread_leg_data;
+    struct digital_cms_spread_leg_data digital_cms_spread_leg_data;
+    struct equity_leg_data equity_leg_data;
+    struct zero_coupon_fixed_leg_data zero_coupon_fixed_leg_data;
+    struct equity_margin_leg_data equity_margin_leg_data;
+    struct commodity_fixed_leg_data commodity_fixed_leg_data;
+    struct commodity_floating_leg_data commodity_floating_leg_data;
+    struct intraday_power_floating_leg_data intraday_power_floating_leg_data;
+    struct formula_based_leg_data formula_based_leg_data;
 };
 struct cbotranches {
     std::uint64_t present = 0;
@@ -4792,124 +4794,124 @@ struct cbo_structure {
     ores::utility::decimal::decimal equity_kicker;
     cbo_bond_basket_data bond_basket_data;
     cbotranches cbo_tranches;
-    schedule_data schedule_data;
+    struct schedule_data schedule_data;
 };
 struct cbodata {
     std::uint64_t present = 0;
-    cbo_investment cbo_investment;
-    cbo_structure cbo_structure;
+    struct cbo_investment cbo_investment;
+    struct cbo_structure cbo_structure;
 };
 struct trade {
     std::uint64_t present[3] = {0};
     std::string id;
     std::int16_t trade_type = 0;
-    envelope envelope;
-    trade_actions trade_actions;
+    struct envelope envelope;
+    struct trade_actions trade_actions;
     struct swap_data cross_currency_swap_data;
     struct swap_data inflation_swap_data;
     struct swap_data swap_data;
     struct swap_data equity_swap_data;
-    callable_swap_data callable_swap_data;
-    arc_option_data arc_option_data;
-    swaption_data swaption_data;
-    swaption_straddle_data swaption_straddle_data;
+    struct callable_swap_data callable_swap_data;
+    struct arc_option_data arc_option_data;
+    struct swaption_data swaption_data;
+    struct swaption_straddle_data swaption_straddle_data;
     struct variance_swap_data variance_swap_data;
     struct variance_swap_data equity_variance_swap_data;
     struct variance_swap_data fx_variance_swap_data;
     struct variance_swap_data commodity_variance_swap_data;
-    forward_rate_agreement_data forward_rate_agreement_data;
-    fx_forward_data fx_forward_data;
-    fx_average_forward_data fx_average_forward_data;
-    fx_option_data fx_option_data;
+    struct forward_rate_agreement_data forward_rate_agreement_data;
+    struct fx_forward_data fx_forward_data;
+    struct fx_average_forward_data fx_average_forward_data;
+    struct fx_option_data fx_option_data;
     struct fx_barrier_option_data fx_barrier_option_data;
     struct fx_barrier_option_data fx_double_barrier_option_data;
-    fx_digital_option_data fx_digital_option_data;
+    struct fx_digital_option_data fx_digital_option_data;
     struct fx_barrier_option_data fx_european_barrier_option_data;
-    fx_kiko_barrier_option_data fx_kiko_barrier_option_data;
-    fx_digital_barrier_option_data fx_digital_barrier_option_data;
+    struct fx_kiko_barrier_option_data fx_kiko_barrier_option_data;
+    struct fx_digital_barrier_option_data fx_digital_barrier_option_data;
     struct fx_touch_option_data fx_touch_option_data;
     struct fx_touch_option_data fx_double_touch_option_data;
-    fx_swap_data fx_swap_data;
-    cap_floor_data cap_floor_data;
-    rate_digital_option_data rate_digital_option_data;
-    equity_future_option_data equity_future_option_data;
-    equity_option_data equity_option_data;
-    equity_auto_delta_hedged_option_data equity_auto_delta_hedged_option_data;
+    struct fx_swap_data fx_swap_data;
+    struct cap_floor_data cap_floor_data;
+    struct rate_digital_option_data rate_digital_option_data;
+    struct equity_future_option_data equity_future_option_data;
+    struct equity_option_data equity_option_data;
+    struct equity_auto_delta_hedged_option_data equity_auto_delta_hedged_option_data;
     eq_barrier_option_data equity_barrier_option_data;
     eq_barrier_option_data equity_double_barrier_option_data;
-    equity_forward_data equity_forward_data;
+    struct equity_forward_data equity_forward_data;
     eq_barrier_option_data equity_european_barrier_option_data;
     eq_digital_option_data equity_digital_option_data;
     eq_touch_option_data equity_double_touch_option_data;
     eq_touch_option_data equity_touch_option_data;
     cliquet_option_data equity_cliquet_option_data;
-    bond_data bond_data;
-    forward_bond_data forward_bond_data;
-    bond_future_data bond_future_data;
-    bond_future_option_data bond_future_option_data;
-    credit_default_swap_data credit_default_swap_data;
-    credit_default_swap_option_data credit_default_swap_option_data;
-    commodity_forward_data commodity_forward_data;
-    intraday_power_forward_data intraday_power_forward_data;
-    commodity_option_data commodity_option_data;
-    commodity_digital_average_price_option_data commodity_digital_average_price_option_data;
-    commodity_digital_option_data commodity_digital_option_data;
-    commodity_spread_option_data commodity_spread_option_data;
-    commodity_swap_data commodity_swap_data;
-    commodity_swaption_data commodity_swaption_data;
-    commodity_average_price_option_data commodity_average_price_option_data;
-    commodity_option_strip_data commodity_option_strip_data;
-    commodity_position_data commodity_position_data;
+    struct bond_data bond_data;
+    struct forward_bond_data forward_bond_data;
+    struct bond_future_data bond_future_data;
+    struct bond_future_option_data bond_future_option_data;
+    struct credit_default_swap_data credit_default_swap_data;
+    struct credit_default_swap_option_data credit_default_swap_option_data;
+    struct commodity_forward_data commodity_forward_data;
+    struct intraday_power_forward_data intraday_power_forward_data;
+    struct commodity_option_data commodity_option_data;
+    struct commodity_digital_average_price_option_data commodity_digital_average_price_option_data;
+    struct commodity_digital_option_data commodity_digital_option_data;
+    struct commodity_spread_option_data commodity_spread_option_data;
+    struct commodity_swap_data commodity_swap_data;
+    struct commodity_swaption_data commodity_swaption_data;
+    struct commodity_average_price_option_data commodity_average_price_option_data;
+    struct commodity_option_strip_data commodity_option_strip_data;
+    struct commodity_position_data commodity_position_data;
     single_underlying_asian_option_data equity_asian_option_data;
     single_underlying_asian_option_data fx_asian_option_data;
     single_underlying_asian_option_data commodity_asian_option_data;
-    bond_option_data bond_option_data;
-    bond_repo_data bond_repo_data;
-    bond_trs_data bond_trs_data;
-    cdo_data cdo_data;
-    credit_linked_swap_data credit_linked_swap_data;
-    index_credit_default_swap_data index_credit_default_swap_data;
-    index_credit_default_swap_option_data index_credit_default_swap_option_data;
-    ascot_data ascot_data;
-    convertible_bond_data convertible_bond_data;
-    callable_bond_data callable_bond_data;
+    struct bond_option_data bond_option_data;
+    struct bond_repo_data bond_repo_data;
+    struct bond_trs_data bond_trs_data;
+    struct cdo_data cdo_data;
+    struct credit_linked_swap_data credit_linked_swap_data;
+    struct index_credit_default_swap_data index_credit_default_swap_data;
+    struct index_credit_default_swap_option_data index_credit_default_swap_option_data;
+    struct ascot_data ascot_data;
+    struct convertible_bond_data convertible_bond_data;
+    struct callable_bond_data callable_bond_data;
     tlock_data treasury_lock_data;
     rpa_data risk_participation_agreement_data;
     cbodata cbo_data;
-    bond_basket_data bond_basket_data;
-    equity_position_data equity_position_data;
-    equity_option_position_data equity_option_position_data;
+    struct bond_basket_data bond_basket_data;
+    struct equity_position_data equity_position_data;
+    struct equity_option_position_data equity_option_position_data;
     struct total_return_swap_data total_return_swap_data;
     struct total_return_swap_data contract_for_difference_data;
-    composite_trade_data composite_trade_data;
+    struct composite_trade_data composite_trade_data;
     pairwise_variance_swap_data1 pairwise_variance_swap_data;
     pairwise_variance_swap_data2 equity_pairwise_variance_swap_data;
     pairwise_variance_swap_data2 fx_pairwise_variance_swap_data;
     eq_outperformance_option_data equity_outperformance_option_data;
-    flexi_swap_data flexi_swap_data;
+    struct flexi_swap_data flexi_swap_data;
     bg_swap_data balance_guaranteed_swap_data;
-    commodity_revenue_option_data commodity_revenue_option_data;
-    basket_variance_swap_data basket_variance_swap_data;
+    struct commodity_revenue_option_data commodity_revenue_option_data;
+    struct basket_variance_swap_data basket_variance_swap_data;
     basket_variance_swap_data2 equity_basket_variance_swap_data;
     basket_variance_swap_data2 fx_basket_variance_swap_data;
     basket_variance_swap_data2 commodity_basket_variance_swap_data;
-    extended_accumulator_data extended_accumulator_data;
-    variance_option_data variance_option_data;
-    variance_dispersion_swap_data variance_dispersion_swap_data;
-    kiko_variance_swap_data kiko_variance_swap_data;
-    corridor_variance_swap_data corridor_variance_swap_data;
-    indexed_corridor_variance_swap_data indexed_corridor_variance_swap_data;
-    kiko_corridor_variance_swap_data kiko_corridor_variance_swap_data;
-    corridor_variance_dispersion_swap_data corridor_variance_dispersion_swap_data;
-    ko_corridor_variance_dispersion_swap_data ko_corridor_variance_dispersion_swap_data;
-    pairwise_geometric_variance_dispersion_swap_data
+    struct extended_accumulator_data extended_accumulator_data;
+    struct variance_option_data variance_option_data;
+    struct variance_dispersion_swap_data variance_dispersion_swap_data;
+    struct kiko_variance_swap_data kiko_variance_swap_data;
+    struct corridor_variance_swap_data corridor_variance_swap_data;
+    struct indexed_corridor_variance_swap_data indexed_corridor_variance_swap_data;
+    struct kiko_corridor_variance_swap_data kiko_corridor_variance_swap_data;
+    struct corridor_variance_dispersion_swap_data corridor_variance_dispersion_swap_data;
+    struct ko_corridor_variance_dispersion_swap_data ko_corridor_variance_dispersion_swap_data;
+    struct pairwise_geometric_variance_dispersion_swap_data
         pairwise_geometric_variance_dispersion_swap_data;
-    conditional_variance_swap01_data conditional_variance_swap01_data;
-    conditional_variance_swap02_data conditional_variance_swap02_data;
-    gamma_swap_data gamma_swap_data;
-    best_entry_option_data best_entry_option_data;
-    dual_euro_binary_option_data dual_euro_binary_option_data;
-    dual_euro_binary_option_double_ko_data dual_euro_binary_option_double_ko_data;
+    struct conditional_variance_swap01_data conditional_variance_swap01_data;
+    struct conditional_variance_swap02_data conditional_variance_swap02_data;
+    struct gamma_swap_data gamma_swap_data;
+    struct best_entry_option_data best_entry_option_data;
+    struct dual_euro_binary_option_data dual_euro_binary_option_data;
+    struct dual_euro_binary_option_double_ko_data dual_euro_binary_option_double_ko_data;
     vol_barrier_option_data volatility_barrier_option_data;
     forward_volatility_agreement_data2 fx_forward_volatility_agreement_data;
     forward_volatility_agreement_data2 equity_forward_volatility_agreement_data;
@@ -4920,83 +4922,84 @@ struct trade {
     accumulator_data fx_accumulator_data;
     accumulator_data equity_accumulator_data;
     accumulator_data commodity_accumulator_data;
-    callable_range_accrual_data callable_range_accrual_data;
+    struct callable_range_accrual_data callable_range_accrual_data;
     window_barrier_option_data2 fx_window_barrier_option_data;
     window_barrier_option_data2 equity_window_barrier_option_data;
     window_barrier_option_data2 commodity_window_barier_option_data;
     basket_option_data equity_basket_option_data;
     basket_option_data fx_basket_option_data;
     basket_option_data commodity_basket_option_data;
-    generic_barrier_option_data fx_generic_barrier_option_data;
-    generic_barrier_option_data equity_generic_barrier_option_data;
-    generic_barrier_option_data commodity_generic_barrier_option_data;
+    struct generic_barrier_option_data fx_generic_barrier_option_data;
+    struct generic_barrier_option_data equity_generic_barrier_option_data;
+    struct generic_barrier_option_data commodity_generic_barrier_option_data;
     rainbow_option_data equity_rainbow_option_data;
     rainbow_option_data fx_rainbow_option_data;
     rainbow_option_data commodity_rainbow_option_data;
-    autocallable01_data autocallable01_data;
-    double_digital_option_data double_digital_option_data;
-    performance_option01_data performance_option01_data;
-    scripted_trade_data scripted_trade_data;
-    vanilla_basket_option_data vanilla_basket_option_data;
-    asian_basket_option_data asian_basket_option_data;
-    average_strike_basket_option_data average_strike_basket_option_data;
-    lookback_call_basket_option_data lookback_call_basket_option_data;
-    lookback_put_basket_option_data lookback_put_basket_option_data;
-    best_of_airbag_data best_of_airbag_data;
-    worst_of_basket_swap_data worst_of_basket_swap_data;
+    struct autocallable01_data autocallable01_data;
+    struct double_digital_option_data double_digital_option_data;
+    struct performance_option01_data performance_option01_data;
+    struct scripted_trade_data scripted_trade_data;
+    struct vanilla_basket_option_data vanilla_basket_option_data;
+    struct asian_basket_option_data asian_basket_option_data;
+    struct average_strike_basket_option_data average_strike_basket_option_data;
+    struct lookback_call_basket_option_data lookback_call_basket_option_data;
+    struct lookback_put_basket_option_data lookback_put_basket_option_data;
+    struct best_of_airbag_data best_of_airbag_data;
+    struct worst_of_basket_swap_data worst_of_basket_swap_data;
     worst_of_basket_swap_data2 fx_worst_of_basket_swap_data;
     worst_of_basket_swap_data2 equity_worst_of_basket_swap_data;
     worst_of_basket_swap_data2 commodity_worst_of_basket_swap_data;
-    worst_performance_rainbow_option01_data worst_performance_rainbow_option01_data;
-    worst_performance_rainbow_option02_data worst_performance_rainbow_option02_data;
-    worst_performance_rainbow_option03_data worst_performance_rainbow_option03_data;
-    worst_performance_rainbow_option04_data worst_performance_rainbow_option04_data;
-    worst_performance_rainbow_option05_data worst_performance_rainbow_option05_data;
-    worst_performance_rainbow_option06_data worst_performance_rainbow_option06_data;
-    worst_performance_rainbow_option07_data worst_performance_rainbow_option07_data;
-    worst_performance_rainbow_option08_data worst_performance_rainbow_option08_data;
-    worst_performance_rainbow_option09_data worst_performance_rainbow_option09_data;
-    best_of_asset_or_cash_rainbow_option_data best_of_asset_or_cash_rainbow_option_data;
-    worst_of_asset_or_cash_rainbow_option_data worst_of_asset_or_cash_rainbow_option_data;
-    min_rainbow_option_data min_rainbow_option_data;
-    max_rainbow_option_data max_rainbow_option_data;
-    window_barrier_option_data window_barrier_option_data;
-    accumulator01_data accumulator01_data;
-    accumulator02_data accumulator02_data;
+    struct worst_performance_rainbow_option01_data worst_performance_rainbow_option01_data;
+    struct worst_performance_rainbow_option02_data worst_performance_rainbow_option02_data;
+    struct worst_performance_rainbow_option03_data worst_performance_rainbow_option03_data;
+    struct worst_performance_rainbow_option04_data worst_performance_rainbow_option04_data;
+    struct worst_performance_rainbow_option05_data worst_performance_rainbow_option05_data;
+    struct worst_performance_rainbow_option06_data worst_performance_rainbow_option06_data;
+    struct worst_performance_rainbow_option07_data worst_performance_rainbow_option07_data;
+    struct worst_performance_rainbow_option08_data worst_performance_rainbow_option08_data;
+    struct worst_performance_rainbow_option09_data worst_performance_rainbow_option09_data;
+    struct best_of_asset_or_cash_rainbow_option_data best_of_asset_or_cash_rainbow_option_data;
+    struct worst_of_asset_or_cash_rainbow_option_data worst_of_asset_or_cash_rainbow_option_data;
+    struct min_rainbow_option_data min_rainbow_option_data;
+    struct max_rainbow_option_data max_rainbow_option_data;
+    struct window_barrier_option_data window_barrier_option_data;
+    struct accumulator01_data accumulator01_data;
+    struct accumulator02_data accumulator02_data;
     best_entry_option_data2 equity_best_entry_option_data;
     best_entry_option_data2 fx_best_entry_option_data;
     best_entry_option_data2 commodity_best_entry_option_data;
     tarf_data ta_rf_data;
-    european_rainbow_call_spread_option_data european_rainbow_call_spread_option_data;
-    rainbow_call_spread_barrier_option_data rainbow_call_spread_barrier_option_data;
-    asian_rainbow_call_spread_option_data asian_rainbow_call_spread_option_data;
-    asian_ir_cap_floor_data asian_ir_cap_floor_data;
-    forward_volatility_agreement_data forward_volatility_agreement_data;
-    correlation_swap_data correlation_swap_data;
-    asset_linked_cliquet_option_data asset_linked_cliquet_option_data;
-    constant_maturity_volatility_swap_data constant_maturity_volatility_swap_data;
-    cms_cap_floor_barrier_data cms_cap_floor_barrier_data;
-    fixed_strike_forward_starting_option_data fixed_strike_forward_starting_option_data;
-    floating_strike_forward_starting_option_data floating_strike_forward_starting_option_data;
-    forward_starting_swaption_data forward_starting_swaption_data;
-    floored_average_cpizciis_data floored_average_cpizciis_data;
+    struct european_rainbow_call_spread_option_data european_rainbow_call_spread_option_data;
+    struct rainbow_call_spread_barrier_option_data rainbow_call_spread_barrier_option_data;
+    struct asian_rainbow_call_spread_option_data asian_rainbow_call_spread_option_data;
+    struct asian_ir_cap_floor_data asian_ir_cap_floor_data;
+    struct forward_volatility_agreement_data forward_volatility_agreement_data;
+    struct correlation_swap_data correlation_swap_data;
+    struct asset_linked_cliquet_option_data asset_linked_cliquet_option_data;
+    struct constant_maturity_volatility_swap_data constant_maturity_volatility_swap_data;
+    struct cms_cap_floor_barrier_data cms_cap_floor_barrier_data;
+    struct fixed_strike_forward_starting_option_data fixed_strike_forward_starting_option_data;
+    struct floating_strike_forward_starting_option_data
+        floating_strike_forward_starting_option_data;
+    struct forward_starting_swaption_data forward_starting_swaption_data;
+    struct floored_average_cpizciis_data floored_average_cpizciis_data;
     generic_barrier_option_data_raw generic_barrier_option_data;
-    moving_max_yyiis_data moving_max_yyiis_data;
-    irregular_yyiis_data irregular_yyiis_data;
-    european_option_barrier_data european_option_barrier_data;
-    ladder_lock_in_option_data ladder_lock_in_option_data;
-    lapse_hedge_swap_data lapse_hedge_swap_data;
-    knock_out_swap_data knock_out_swap_data;
-    lpi_swap_data lpi_swap_data;
-    cash_position_data cash_position_data;
-    strike_resettable_option_data strike_resettable_option_data;
+    struct moving_max_yyiis_data moving_max_yyiis_data;
+    struct irregular_yyiis_data irregular_yyiis_data;
+    struct european_option_barrier_data european_option_barrier_data;
+    struct ladder_lock_in_option_data ladder_lock_in_option_data;
+    struct lapse_hedge_swap_data lapse_hedge_swap_data;
+    struct knock_out_swap_data knock_out_swap_data;
+    struct lpi_swap_data lpi_swap_data;
+    struct cash_position_data cash_position_data;
+    struct strike_resettable_option_data strike_resettable_option_data;
     strike_resettable_option_data2 equity_strike_resettable_option_data;
     strike_resettable_option_data2 fx_strike_resettable_option_data;
     strike_resettable_option_data2 commodity_strike_resettable_option_data;
 };
 struct portfolio {
     std::uint64_t present = 0;
-    std::vector<trade> trade;
+    std::vector<struct trade> trade;
 };
 
 ORES_ORE_CORE_EXPORT auto portfolio_document() -> const document_type&;
